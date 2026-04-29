@@ -1,0 +1,9 @@
+﻿@model SchoolManagementSystem.Models.ViewModels.Academic.SectionViewModel
+@{ ViewData["Title"] = Model.IsEditMode ? "Edit Section" : "Add Section"; }
+
+<div class="row justify-content-center"><div class="col-lg-6"><div class="d-flex align-items-center mb-4"><a href="/Section/Index" class="btn btn-outline-secondary btn-sm me-3"><i class="bi bi-arrow-left"></i> Back</a><h2 class="mb-0">@(Model.IsEditMode ? "Edit Section" : "Add Section")</h2></div><div class="card shadow-sm"><div class="card-body p-4">
+<form asp-action="CreateEdit" method="post"><input type="hidden" asp-for="Id" />
+<div class="mb-3"><label asp-for="SchoolClassId" class="form-label">SchoolClassId <span class="text-danger">*</span></label><input asp-for="SchoolClassId" class="form-control" /><span asp-validation-for="SchoolClassId" class="text-danger small"></span></div>
+<div class="mb-3"><label asp-for="Name" class="form-label">Name <span class="text-danger">*</span></label><input asp-for="Name" class="form-control" /><span asp-validation-for="Name" class="text-danger small"></span></div>
+<div class="d-flex gap-2"><button type="submit" class="btn btn-primary px-4"><i class="bi bi-save me-1"></i> Save</button><a href="/Section/Index" class="btn btn-outline-secondary px-4">Cancel</a></div></form></div></div></div></div>
+@section Scripts { @{await Html.RenderPartialAsync("_ValidationScriptsPartial");} }

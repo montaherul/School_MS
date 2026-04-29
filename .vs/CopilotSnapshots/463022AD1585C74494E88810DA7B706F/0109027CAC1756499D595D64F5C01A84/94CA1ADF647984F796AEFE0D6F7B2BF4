@@ -1,0 +1,99 @@
+﻿using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.EntityFrameworkCore;
+using SchoolManagementSystem.Data;
+using SchoolManagementSystem.Helpers.Email;
+using SchoolManagementSystem.Helpers.Files;
+using SchoolManagementSystem.Helpers.Pdf;
+using SchoolManagementSystem.Helpers.Security;
+using SchoolManagementSystem.Middleware;
+using SchoolManagementSystem.Repositories.Implementations;
+using SchoolManagementSystem.Repositories.Interfaces;
+using SchoolManagementSystem.Service.Implementations.Dashboard;
+using SchoolManagementSystem.Service.Interfaces.Dashboard;
+using SchoolManagementSystem.Services.Implementations.Admissions;
+using SchoolManagementSystem.Services.Implementations.Students;
+using SchoolManagementSystem.Services.Interfaces.Admissions;
+using SchoolManagementSystem.Services.Interfaces.Students;
+using SchoolManagementSystem.UnitOfWork.Implementations;
+using SchoolManagementSystem.UnitOfWork.Interfaces;
+
+var builder = WebApplication.CreateBuilder(args);
+var dataProtectionKeysPath = Path.Combine(builder.Environment.ContentRootPath, "App_Data", "DataProtectionKeys");
+Directory.CreateDirectory(dataProtectionKeysPath);
+
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+
+// Add services to the container.
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add(new Microsoft.AspNetCore.Mvc.AutoValidateAntiforgeryTokenAttribute());
+});
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(dataProtectionKeysPath));
+builder.Services.AddDbContext<SchoolDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("SchoolDb"),
+        sql => sql.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null)));
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Auth/Login";
+        options.LogoutPath = "/Auth/Logout";
+        options.AccessDeniedPath = "/Home/Privacy";
+        options.SlidingExpiration = true;
+        options.ExpireTimeSpan = TimeSpan.FromHours(2);
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SameSite = SameSiteMode.Strict;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    });
+builder.Services.AddAuthorization();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email"));
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<IStudentService, StudentService>();
+builder.Services.AddScoped<IAdmissionService, AdmissionService>();
+builder.Services.AddScoped<SchoolManagementSystem.Services.Interfaces.Academic.IAcademicYearService, SchoolManagementSystem.Services.Implementations.Academic.AcademicYearService>();
+builder.Services.AddScoped<SchoolManagementSystem.Services.Interfaces.Academic.ISchoolClassService, SchoolManagementSystem.Services.Implementations.Academic.SchoolClassService>();
+builder.Services.AddScoped<SchoolManagementSystem.Services.Interfaces.Academic.ISectionService, SchoolManagementSystem.Services.Implementations.Academic.SectionService>();
+builder.Services.AddScoped<SchoolManagementSystem.Services.Interfaces.Academic.ISubjectService, SchoolManagementSystem.Services.Implementations.Academic.SubjectService>();
+builder.Services.AddScoped<SchoolManagementSystem.Services.Interfaces.Fees.IFeeStructureService, SchoolManagementSystem.Services.Implementations.Fees.FeeStructureService>();
+builder.Services.AddScoped<SchoolManagementSystem.Services.Interfaces.Attendance.IAttendanceRecordService, SchoolManagementSystem.Services.Implementations.Attendance.AttendanceRecordService>();
+builder.Services.AddScoped<IPasswordHashService, Pbkdf2PasswordHashService>();
+builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
+builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
+builder.Services.AddScoped<IPdfGenerator, PlainPdfGenerator>();
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Home/Error");
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
+}
+
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+
+app.UseRouting();
+
+app.UseSession();
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseMiddleware<AuditLoggingMiddleware>();
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+
+app.Run();

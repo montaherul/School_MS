@@ -1,0 +1,49 @@
+@model SchoolManagementSystem.Models.ViewModels.Auth.SetPasswordViewModel
+
+@{
+    ViewData["Title"] = "Activate Account";
+    Layout = "_Layout";
+}
+
+<div class="auth-panel">
+    <h1>Set your password</h1>
+    <p class="text-muted">This link will expire in 24 hours.</p>
+
+    @if (TempData["SuccessMessage"] is string successMessage)
+    {
+        <div class="alert alert-success">
+            @successMessage
+        </div>
+    }
+
+    <form asp-action="Activate" method="post">
+        @Html.AntiForgeryToken()
+
+        <input type="hidden" asp-for="Token" />
+
+        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+        <div class="mb-3">
+            <label asp-for="Password" class="form-label"></label>
+            <input asp-for="Password" class="form-control" autocomplete="new-password" />
+            <span asp-validation-for="Password" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="ConfirmPassword" class="form-label"></label>
+            <input asp-for="ConfirmPassword" class="form-control" autocomplete="new-password" />
+            <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+        </div>
+
+        <button class="btn btn-primary w-100" type="submit">Activate</button>
+    </form>
+
+    <div class="mt-3 text-center">
+        <a asp-action="Login" class="text-decoration-none">Back to login</a>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+

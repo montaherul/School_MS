@@ -1,0 +1,26 @@
+@model SchoolManagementSystem.Models.ViewModels.Shared.CrudDetailsViewModel
+@{
+    ViewData["Title"] = $"Delete {Model.ModuleName}";
+}
+
+<div class="page-title">
+    <h1>@ViewData["Title"]</h1>
+    <a asp-controller="@Model.ControllerName" asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+</div>
+
+<div class="panel">
+    <p>Confirm delete for this @Model.ModuleName record.</p>
+    <dl class="row">
+        @foreach (var field in Model.Fields.Take(6))
+        {
+            <dt class="col-sm-3">@field.Label</dt>
+            <dd class="col-sm-9">@field.Value</dd>
+        }
+    </dl>
+    <form asp-controller="@Model.ControllerName" asp-action="DeleteConfirmed" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="id" value="@Model.Id" />
+        <button class="btn btn-danger" type="submit">Delete</button>
+        <a asp-controller="@Model.ControllerName" asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+    </form>
+</div>

@@ -1,0 +1,908 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\services\\implementations\\admissions\\admissionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:services\\implementations\\admissions\\admissionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\views\\admission\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:views\\admission\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\models\\dtos\\student\\studentdtos.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:models\\dtos\\student\\studentdtos.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\helpers\\email\\smtpemailsender.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:helpers\\email\\smtpemailsender.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\models\\entities\\academic\\academicentities.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:models\\entities\\academic\\academicentities.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\data\\schooldbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:data\\schooldbcontext.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\models\\entities\\teacher\\teacherentities.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:models\\entities\\teacher\\teacherentities.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\models\\entities\\academic\\classsubject.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:models\\entities\\academic\\classsubject.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\migrations\\20260428192927_initialcreate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:migrations\\20260428192927_initialcreate.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\controllers\\academic\\schoolclasscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:controllers\\academic\\schoolclasscontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\models\\dtos\\academic\\schoolclassdtos.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:models\\dtos\\academic\\schoolclassdtos.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\models\\viewmodels\\academic\\schoolclassviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:models\\viewmodels\\academic\\schoolclassviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\models\\viewmodels\\academic\\subjectviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:models\\viewmodels\\academic\\subjectviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\models\\viewmodels\\academic\\sectionviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:models\\viewmodels\\academic\\sectionviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\models\\viewmodels\\academic\\academicyearviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:models\\viewmodels\\academic\\academicyearviewmodel.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\models\\dtos\\academic\\academicyeardtos.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:models\\dtos\\academic\\academicyeardtos.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\models\\dtos\\academic\\sectiondtos.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:models\\dtos\\academic\\sectiondtos.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\models\\dtos\\academic\\subjectdtos.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:models\\dtos\\academic\\subjectdtos.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\data\\dbinitializer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:data\\dbinitializer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\islam\\.copilot\\plans\\plan-teacher-management-module-overhaul.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|MarkdownSecurePreview"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\views\\section\\createedit.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:views\\section\\createedit.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\models\\entities\\student\\studententities.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:models\\entities\\student\\studententities.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\models\\entities\\admission\\admissionentities.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:models\\entities\\admission\\admissionentities.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\controllers\\teachercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:controllers\\teachercontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\services\\interfaces\\academic\\isectionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:services\\interfaces\\academic\\isectionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\controllers\\academic\\sectioncontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:controllers\\academic\\sectioncontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\services\\implementations\\academic\\sectionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:services\\implementations\\academic\\sectionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\service\\implementations\\dashboard\\dashboardservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:service\\implementations\\dashboard\\dashboardservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\views\\student\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:views\\student\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\services\\implementations\\students\\studentservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:services\\implementations\\students\\studentservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\controllers\\studentcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:controllers\\studentcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\controllers\\admissioncontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:controllers\\admissioncontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\views\\admission\\createedit.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:views\\admission\\createedit.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\models\\dtos\\admission\\admissiondtos.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:models\\dtos\\admission\\admissiondtos.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\views\\student\\createedit.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:views\\student\\createedit.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\schoolmanagementsystem.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:schoolmanagementsystem.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\services\\interfaces\\admissions\\iadmissionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:services\\interfaces\\admissions\\iadmissionservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:views\\shared\\_layout.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\wwwroot\\css\\site.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:wwwroot\\css\\site.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\services\\interfaces\\students\\istudentservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:services\\interfaces\\students\\istudentservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\service\\interfaces\\dashboard\\idashboardservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:service\\interfaces\\dashboard\\idashboardservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Migrations\\20260427124222_UpdateAdmissionFields.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:Migrations\\20260427124222_UpdateAdmissionFields.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\islam\\.copilot\\plans\\plan-admission-and-student-entities-expansion.md||{EFC0BB08-EA7D-40C6-A696-C870411A895B}|MarkdownSecurePreview"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|G:\\Microsoft Visual Studio\\Microsoft Visual Studio18Insiders\\MSBuild\\Current\\Bin\\amd64\\Microsoft.Common.CurrentVersion.targets||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\islam\\AppData\\Local\\Temp\\.vsdbgsrc\\e9d507d91c729423d2219f71dbb4f35c9a66ad10c370fa4a4407d654fa39388c\\ThrowHelper.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\views\\attendancerecord\\createedit.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:views\\attendancerecord\\createedit.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\views\\feestructure\\createedit.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:views\\feestructure\\createedit.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\views\\subject\\createedit.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:views\\subject\\createedit.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\views\\schoolclass\\createedit.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:views\\schoolclass\\createedit.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\views\\dashboard\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:views\\dashboard\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\views\\schoolclass\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:views\\schoolclass\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\views\\teacher\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:views\\teacher\\index.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|c:\\users\\islam\\onedrive\\documents\\new project\\mvcsqlserverapp\\views\\teacher\\createedit.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:views\\teacher\\createedit.cshtml||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 5,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{0ad07096-bba9-4900-a651-0598d26f6d24}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{aa2115a1-9712-457b-9047-dbb71ca2cdd2}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "SchoolClassDtos.cs",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Models\\DTOs\\Academic\\SchoolClassDtos.cs",
+              "RelativeDocumentMoniker": "Models\\DTOs\\Academic\\SchoolClassDtos.cs",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Models\\DTOs\\Academic\\SchoolClassDtos.cs",
+              "RelativeToolTip": "Models\\DTOs\\Academic\\SchoolClassDtos.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAABUAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-28T19:02:11.023Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "AcademicEntities.cs",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Models\\Entities\\Academic\\AcademicEntities.cs",
+              "RelativeDocumentMoniker": "Models\\Entities\\Academic\\AcademicEntities.cs",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Models\\Entities\\Academic\\AcademicEntities.cs",
+              "RelativeToolTip": "Models\\Entities\\Academic\\AcademicEntities.cs",
+              "ViewState": "AgIAACYAAAAAAAAAAAAcwDkAAAAiAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-28T11:55:08.158Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "StudentDtos.cs",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Models\\DTOs\\Student\\StudentDtos.cs",
+              "RelativeDocumentMoniker": "Models\\DTOs\\Student\\StudentDtos.cs",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Models\\DTOs\\Student\\StudentDtos.cs",
+              "RelativeToolTip": "Models\\DTOs\\Student\\StudentDtos.cs",
+              "ViewState": "AgIAAHEAAAAAAAAAAAAIwJIAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-27T11:28:23.263Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "AdmissionService.cs",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Services\\Implementations\\Admissions\\AdmissionService.cs",
+              "RelativeDocumentMoniker": "Services\\Implementations\\Admissions\\AdmissionService.cs",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Services\\Implementations\\Admissions\\AdmissionService.cs*",
+              "RelativeToolTip": "Services\\Implementations\\Admissions\\AdmissionService.cs*",
+              "ViewState": "AgIAAHUAAAAAAAAAAAAmwI0AAAAZAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-27T10:43:42.77Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "SmtpEmailSender.cs",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Helpers\\Email\\SmtpEmailSender.cs",
+              "RelativeDocumentMoniker": "Helpers\\Email\\SmtpEmailSender.cs",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Helpers\\Email\\SmtpEmailSender.cs",
+              "RelativeToolTip": "Helpers\\Email\\SmtpEmailSender.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-29T08:23:14.528Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Views\\Admission\\Index.cshtml",
+              "RelativeDocumentMoniker": "Views\\Admission\\Index.cshtml",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Views\\Admission\\Index.cshtml",
+              "RelativeToolTip": "Views\\Admission\\Index.cshtml",
+              "ViewState": "AgIAAFEBAAAAAAAAAAAQwH8BAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-27T10:23:45.566Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "SchoolClassViewModel.cs",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Models\\ViewModels\\Academic\\SchoolClassViewModel.cs",
+              "RelativeDocumentMoniker": "Models\\ViewModels\\Academic\\SchoolClassViewModel.cs",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Models\\ViewModels\\Academic\\SchoolClassViewModel.cs",
+              "RelativeToolTip": "Models\\ViewModels\\Academic\\SchoolClassViewModel.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-28T19:09:25.595Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "appsettings.json",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\appsettings.json",
+              "RelativeDocumentMoniker": "appsettings.json",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\appsettings.json",
+              "RelativeToolTip": "appsettings.json",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
+              "WhenOpened": "2026-04-28T19:20:23.106Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "SubjectViewModel.cs",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Models\\ViewModels\\Academic\\SubjectViewModel.cs",
+              "RelativeDocumentMoniker": "Models\\ViewModels\\Academic\\SubjectViewModel.cs",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Models\\ViewModels\\Academic\\SubjectViewModel.cs",
+              "RelativeToolTip": "Models\\ViewModels\\Academic\\SubjectViewModel.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-28T19:09:27.284Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "SchoolClassController.cs",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Controllers\\Academic\\SchoolClassController.cs",
+              "RelativeDocumentMoniker": "Controllers\\Academic\\SchoolClassController.cs",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Controllers\\Academic\\SchoolClassController.cs",
+              "RelativeToolTip": "Controllers\\Academic\\SchoolClassController.cs",
+              "ViewState": "AgIAACwAAAAAAAAAAAAuwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-28T19:12:59.624Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "20260428192927_InitialCreate.cs",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Migrations\\20260428192927_InitialCreate.cs",
+              "RelativeDocumentMoniker": "Migrations\\20260428192927_InitialCreate.cs",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Migrations\\20260428192927_InitialCreate.cs",
+              "RelativeToolTip": "Migrations\\20260428192927_InitialCreate.cs",
+              "ViewState": "AgIAAIQJAAAAAAAAAAAcwI0JAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-28T19:34:34.028Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "ClassSubject.cs",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Models\\Entities\\Academic\\ClassSubject.cs",
+              "RelativeDocumentMoniker": "Models\\Entities\\Academic\\ClassSubject.cs",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Models\\Entities\\Academic\\ClassSubject.cs",
+              "RelativeToolTip": "Models\\Entities\\Academic\\ClassSubject.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAcAAAAwAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-28T19:04:43.168Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "SchoolDbContext.cs",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Data\\SchoolDbContext.cs",
+              "RelativeDocumentMoniker": "Data\\SchoolDbContext.cs",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Data\\SchoolDbContext.cs",
+              "RelativeToolTip": "Data\\SchoolDbContext.cs",
+              "ViewState": "AgIAAEsAAAAAAAAAAAAowHcAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-28T13:17:13.012Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "SectionViewModel.cs",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Models\\ViewModels\\Academic\\SectionViewModel.cs",
+              "RelativeDocumentMoniker": "Models\\ViewModels\\Academic\\SectionViewModel.cs",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Models\\ViewModels\\Academic\\SectionViewModel.cs",
+              "RelativeToolTip": "Models\\ViewModels\\Academic\\SectionViewModel.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-28T19:09:26.508Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 15,
+              "Title": "AcademicYearViewModel.cs",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Models\\ViewModels\\Academic\\AcademicYearViewModel.cs",
+              "RelativeDocumentMoniker": "Models\\ViewModels\\Academic\\AcademicYearViewModel.cs",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Models\\ViewModels\\Academic\\AcademicYearViewModel.cs",
+              "RelativeToolTip": "Models\\ViewModels\\Academic\\AcademicYearViewModel.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-28T19:09:24.421Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 16,
+              "Title": "AcademicYearDtos.cs",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Models\\DTOs\\Academic\\AcademicYearDtos.cs",
+              "RelativeDocumentMoniker": "Models\\DTOs\\Academic\\AcademicYearDtos.cs",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Models\\DTOs\\Academic\\AcademicYearDtos.cs",
+              "RelativeToolTip": "Models\\DTOs\\Academic\\AcademicYearDtos.cs",
+              "ViewState": "AgIAAA8AAAAAAAAAAAAmwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-28T19:08:55.942Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "TeacherEntities.cs",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Models\\Entities\\Teacher\\TeacherEntities.cs",
+              "RelativeDocumentMoniker": "Models\\Entities\\Teacher\\TeacherEntities.cs",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Models\\Entities\\Teacher\\TeacherEntities.cs",
+              "RelativeToolTip": "Models\\Entities\\Teacher\\TeacherEntities.cs",
+              "ViewState": "AgIAAEIAAAAAAAAAAAA4wFAAAAAwAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-28T18:18:06.667Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 20,
+              "Title": "plan-teacher-management-module-overhaul.md [Preview]",
+              "DocumentMoniker": "C:\\Users\\islam\\.copilot\\plans\\plan-teacher-management-module-overhaul.md",
+              "RelativeDocumentMoniker": "..\\..\\..\\..\\.copilot\\plans\\plan-teacher-management-module-overhaul.md",
+              "ToolTip": "C:\\Users\\islam\\.copilot\\plans\\plan-teacher-management-module-overhaul.md [Preview]",
+              "RelativeToolTip": "..\\..\\..\\..\\.copilot\\plans\\plan-teacher-management-module-overhaul.md [Preview]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2026-04-28T13:48:38.267Z",
+              "EditorCaption": " [Preview]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 54,
+              "Title": "CreateEdit.cshtml",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Views\\Teacher\\CreateEdit.cshtml",
+              "RelativeDocumentMoniker": "Views\\Teacher\\CreateEdit.cshtml",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Views\\Teacher\\CreateEdit.cshtml",
+              "RelativeToolTip": "Views\\Teacher\\CreateEdit.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAIBJwAEAAABIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-28T13:53:28.539Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 18,
+              "Title": "SubjectDtos.cs",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Models\\DTOs\\Academic\\SubjectDtos.cs",
+              "RelativeDocumentMoniker": "Models\\DTOs\\Academic\\SubjectDtos.cs",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Models\\DTOs\\Academic\\SubjectDtos.cs",
+              "RelativeToolTip": "Models\\DTOs\\Academic\\SubjectDtos.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-28T12:40:08.196Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 17,
+              "Title": "SectionDtos.cs",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Models\\DTOs\\Academic\\SectionDtos.cs",
+              "RelativeDocumentMoniker": "Models\\DTOs\\Academic\\SectionDtos.cs",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Models\\DTOs\\Academic\\SectionDtos.cs",
+              "RelativeToolTip": "Models\\DTOs\\Academic\\SectionDtos.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAAAdAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-28T11:52:16.781Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 19,
+              "Title": "DbInitializer.cs",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Data\\DbInitializer.cs",
+              "RelativeDocumentMoniker": "Data\\DbInitializer.cs",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Data\\DbInitializer.cs",
+              "RelativeToolTip": "Data\\DbInitializer.cs",
+              "ViewState": "AgIAAHIAAAAAAAAAAAAowIwAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-28T13:50:08.25Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 53,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Views\\Teacher\\Index.cshtml",
+              "RelativeDocumentMoniker": "Views\\Teacher\\Index.cshtml",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Views\\Teacher\\Index.cshtml",
+              "RelativeToolTip": "Views\\Teacher\\Index.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAIBJwAIAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-28T13:52:36.86Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 21,
+              "Title": "CreateEdit.cshtml",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Views\\Section\\CreateEdit.cshtml",
+              "RelativeDocumentMoniker": "Views\\Section\\CreateEdit.cshtml",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Views\\Section\\CreateEdit.cshtml",
+              "RelativeToolTip": "Views\\Section\\CreateEdit.cshtml",
+              "ViewState": "AgIAABMAAAAAAAAAAAAjwEQAAAABAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-27T10:21:47.311Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 22,
+              "Title": "StudentEntities.cs",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Models\\Entities\\Student\\StudentEntities.cs",
+              "RelativeDocumentMoniker": "Models\\Entities\\Student\\StudentEntities.cs",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Models\\Entities\\Student\\StudentEntities.cs",
+              "RelativeToolTip": "Models\\Entities\\Student\\StudentEntities.cs",
+              "ViewState": "AgIAAIoAAAAAAAAAAAAcwKAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-27T11:26:55.444Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 23,
+              "Title": "AdmissionEntities.cs",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Models\\Entities\\Admission\\AdmissionEntities.cs",
+              "RelativeDocumentMoniker": "Models\\Entities\\Admission\\AdmissionEntities.cs",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Models\\Entities\\Admission\\AdmissionEntities.cs",
+              "RelativeToolTip": "Models\\Entities\\Admission\\AdmissionEntities.cs",
+              "ViewState": "AgIAAFAAAAAAAAAAAAAiwFgAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-27T11:26:35.741Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 24,
+              "Title": "TeacherController.cs",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Controllers\\TeacherController.cs",
+              "RelativeDocumentMoniker": "Controllers\\TeacherController.cs",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Controllers\\TeacherController.cs",
+              "RelativeToolTip": "Controllers\\TeacherController.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-28T13:14:55.313Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 25,
+              "Title": "ISectionService.cs",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Services\\Interfaces\\Academic\\ISectionService.cs",
+              "RelativeDocumentMoniker": "Services\\Interfaces\\Academic\\ISectionService.cs",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Services\\Interfaces\\Academic\\ISectionService.cs",
+              "RelativeToolTip": "Services\\Interfaces\\Academic\\ISectionService.cs",
+              "ViewState": "AgIAAAIAAAAAAAAAAADgvwAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-28T12:38:29.341Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 26,
+              "Title": "SectionController.cs",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Controllers\\Academic\\SectionController.cs",
+              "RelativeDocumentMoniker": "Controllers\\Academic\\SectionController.cs",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Controllers\\Academic\\SectionController.cs",
+              "RelativeToolTip": "Controllers\\Academic\\SectionController.cs",
+              "ViewState": "AgIAAB0AAAAAAAAAAAAmwDUAAAAFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-28T12:34:58.595Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 27,
+              "Title": "SectionService.cs",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Services\\Implementations\\Academic\\SectionService.cs",
+              "RelativeDocumentMoniker": "Services\\Implementations\\Academic\\SectionService.cs",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Services\\Implementations\\Academic\\SectionService.cs",
+              "RelativeToolTip": "Services\\Implementations\\Academic\\SectionService.cs",
+              "ViewState": "AgIAAB0AAAAAAAAAAAAwwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-28T12:34:51.596Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 28,
+              "Title": "DashboardService.cs",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Service\\Implementations\\Dashboard\\DashboardService.cs",
+              "RelativeDocumentMoniker": "Service\\Implementations\\Dashboard\\DashboardService.cs",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Service\\Implementations\\Dashboard\\DashboardService.cs",
+              "RelativeToolTip": "Service\\Implementations\\Dashboard\\DashboardService.cs",
+              "ViewState": "AgIAABAAAAAAAAAAAAAgwB8AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-27T12:25:57.398Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 29,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Views\\Student\\Index.cshtml",
+              "RelativeDocumentMoniker": "Views\\Student\\Index.cshtml",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Views\\Student\\Index.cshtml",
+              "RelativeToolTip": "Views\\Student\\Index.cshtml",
+              "ViewState": "AgIAABcBAAAAAAAAAAAtwC8BAABFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-27T17:42:58.14Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 30,
+              "Title": "StudentService.cs",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Services\\Implementations\\Students\\StudentService.cs",
+              "RelativeDocumentMoniker": "Services\\Implementations\\Students\\StudentService.cs",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Services\\Implementations\\Students\\StudentService.cs",
+              "RelativeToolTip": "Services\\Implementations\\Students\\StudentService.cs",
+              "ViewState": "AgIAADgBAAAAAAAAAAAwwE4BAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-27T12:56:40.433Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 34,
+              "Title": "AdmissionDtos.cs",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Models\\DTOs\\Admission\\AdmissionDtos.cs",
+              "RelativeDocumentMoniker": "Models\\DTOs\\Admission\\AdmissionDtos.cs",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Models\\DTOs\\Admission\\AdmissionDtos.cs",
+              "RelativeToolTip": "Models\\DTOs\\Admission\\AdmissionDtos.cs",
+              "ViewState": "AgIAAD0AAAAAAAAAAAAIwEIAAAAjAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-28T04:03:41.567Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 40,
+              "Title": "IStudentService.cs",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Services\\Interfaces\\Students\\IStudentService.cs",
+              "RelativeDocumentMoniker": "Services\\Interfaces\\Students\\IStudentService.cs",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Services\\Interfaces\\Students\\IStudentService.cs",
+              "RelativeToolTip": "Services\\Interfaces\\Students\\IStudentService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAA0AAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-27T13:00:50.333Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 37,
+              "Title": "IAdmissionService.cs",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Services\\Interfaces\\Admissions\\IAdmissionService.cs",
+              "RelativeDocumentMoniker": "Services\\Interfaces\\Admissions\\IAdmissionService.cs",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Services\\Interfaces\\Admissions\\IAdmissionService.cs",
+              "RelativeToolTip": "Services\\Interfaces\\Admissions\\IAdmissionService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-27T10:43:42.508Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 31,
+              "Title": "StudentController.cs",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Controllers\\StudentController.cs",
+              "RelativeDocumentMoniker": "Controllers\\StudentController.cs",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Controllers\\StudentController.cs",
+              "RelativeToolTip": "Controllers\\StudentController.cs",
+              "ViewState": "AgIAAEUAAAAAAAAAAAAIwHsAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-27T12:57:07.751Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 33,
+              "Title": "CreateEdit.cshtml",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Views\\Admission\\CreateEdit.cshtml",
+              "RelativeDocumentMoniker": "Views\\Admission\\CreateEdit.cshtml",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Views\\Admission\\CreateEdit.cshtml",
+              "RelativeToolTip": "Views\\Admission\\CreateEdit.cshtml",
+              "ViewState": "AgIAAD4BAAAAAAAAAAAowGEBAABTAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-27T10:23:55.742Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 32,
+              "Title": "AdmissionController.cs",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Controllers\\AdmissionController.cs",
+              "RelativeDocumentMoniker": "Controllers\\AdmissionController.cs",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Controllers\\AdmissionController.cs",
+              "RelativeToolTip": "Controllers\\AdmissionController.cs",
+              "ViewState": "AgIAAJ4AAAAAAAAAAAAAALkAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-27T10:23:29.646Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 35,
+              "Title": "CreateEdit.cshtml",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Views\\Student\\CreateEdit.cshtml",
+              "RelativeDocumentMoniker": "Views\\Student\\CreateEdit.cshtml",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Views\\Student\\CreateEdit.cshtml",
+              "RelativeToolTip": "Views\\Student\\CreateEdit.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAFIBAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-27T10:19:50.751Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 36,
+              "Title": "SchoolManagementSystem.csproj",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\SchoolManagementSystem.csproj",
+              "RelativeDocumentMoniker": "SchoolManagementSystem.csproj",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\SchoolManagementSystem.csproj",
+              "RelativeToolTip": "SchoolManagementSystem.csproj",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2026-04-27T19:45:38.308Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 38,
+              "Title": "_Layout.cshtml",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Views\\Shared\\_Layout.cshtml",
+              "RelativeDocumentMoniker": "Views\\Shared\\_Layout.cshtml",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Views\\Shared\\_Layout.cshtml",
+              "RelativeToolTip": "Views\\Shared\\_Layout.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAoAAABvAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-27T10:24:18.941Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 39,
+              "Title": "site.css",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\wwwroot\\css\\site.css",
+              "RelativeDocumentMoniker": "wwwroot\\css\\site.css",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\wwwroot\\css\\site.css",
+              "RelativeToolTip": "wwwroot\\css\\site.css",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAL0AAAAJAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
+              "WhenOpened": "2026-04-27T18:27:15.45Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 41,
+              "Title": "IDashboardService.cs",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Service\\Interfaces\\Dashboard\\IDashboardService.cs",
+              "RelativeDocumentMoniker": "Service\\Interfaces\\Dashboard\\IDashboardService.cs",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Service\\Interfaces\\Dashboard\\IDashboardService.cs",
+              "RelativeToolTip": "Service\\Interfaces\\Dashboard\\IDashboardService.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-27T12:32:17.897Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 42,
+              "Title": "20260427124222_UpdateAdmissionFields.cs",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Migrations\\20260427124222_UpdateAdmissionFields.cs",
+              "RelativeDocumentMoniker": "Migrations\\20260427124222_UpdateAdmissionFields.cs",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Migrations\\20260427124222_UpdateAdmissionFields.cs",
+              "RelativeToolTip": "Migrations\\20260427124222_UpdateAdmissionFields.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-27T12:42:23.029Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 43,
+              "Title": "plan-admission-and-student-entities-expansion.md [Preview]",
+              "DocumentMoniker": "C:\\Users\\islam\\.copilot\\plans\\plan-admission-and-student-entities-expansion.md",
+              "RelativeDocumentMoniker": "..\\..\\..\\..\\.copilot\\plans\\plan-admission-and-student-entities-expansion.md",
+              "ToolTip": "C:\\Users\\islam\\.copilot\\plans\\plan-admission-and-student-entities-expansion.md [Preview]",
+              "RelativeToolTip": "..\\..\\..\\..\\.copilot\\plans\\plan-admission-and-student-entities-expansion.md [Preview]",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001818|",
+              "WhenOpened": "2026-04-27T11:23:48.231Z",
+              "EditorCaption": " [Preview]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 51,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Views\\Dashboard\\Index.cshtml",
+              "RelativeDocumentMoniker": "Views\\Dashboard\\Index.cshtml",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Views\\Dashboard\\Index.cshtml",
+              "RelativeToolTip": "Views\\Dashboard\\Index.cshtml",
+              "ViewState": "AgIAAD0AAAAAAAAAAIBZwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-27T10:26:55.777Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 52,
+              "Title": "Index.cshtml",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Views\\SchoolClass\\Index.cshtml",
+              "RelativeDocumentMoniker": "Views\\SchoolClass\\Index.cshtml",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Views\\SchoolClass\\Index.cshtml",
+              "RelativeToolTip": "Views\\SchoolClass\\Index.cshtml",
+              "ViewState": "AgIAAAAAAAAAAAAAAABRwAQAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-27T11:04:18.363Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 50,
+              "Title": "CreateEdit.cshtml",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Views\\SchoolClass\\CreateEdit.cshtml",
+              "RelativeDocumentMoniker": "Views\\SchoolClass\\CreateEdit.cshtml",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Views\\SchoolClass\\CreateEdit.cshtml",
+              "RelativeToolTip": "Views\\SchoolClass\\CreateEdit.cshtml",
+              "ViewState": "AgIAABQAAAAAAAAAAABhwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-27T10:22:16.295Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 49,
+              "Title": "CreateEdit.cshtml",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Views\\Subject\\CreateEdit.cshtml",
+              "RelativeDocumentMoniker": "Views\\Subject\\CreateEdit.cshtml",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Views\\Subject\\CreateEdit.cshtml",
+              "RelativeToolTip": "Views\\Subject\\CreateEdit.cshtml",
+              "ViewState": "AgIAABQAAAAAAAAAAABhwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-27T10:21:22.062Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 48,
+              "Title": "CreateEdit.cshtml",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Views\\FeeStructure\\CreateEdit.cshtml",
+              "RelativeDocumentMoniker": "Views\\FeeStructure\\CreateEdit.cshtml",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Views\\FeeStructure\\CreateEdit.cshtml",
+              "RelativeToolTip": "Views\\FeeStructure\\CreateEdit.cshtml",
+              "ViewState": "AgIAACMAAAAAAAAAAABhwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-27T10:20:54.105Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 47,
+              "Title": "CreateEdit.cshtml",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Views\\AttendanceRecord\\CreateEdit.cshtml",
+              "RelativeDocumentMoniker": "Views\\AttendanceRecord\\CreateEdit.cshtml",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Views\\AttendanceRecord\\CreateEdit.cshtml",
+              "RelativeToolTip": "Views\\AttendanceRecord\\CreateEdit.cshtml",
+              "ViewState": "AgIAACsAAAAAAAAAACBjwAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000759|",
+              "WhenOpened": "2026-04-27T10:20:30.923Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 44,
+              "Title": "Microsoft.Common.CurrentVersion.targets",
+              "DocumentMoniker": "G:\\Microsoft Visual Studio\\Microsoft Visual Studio18Insiders\\MSBuild\\Current\\Bin\\amd64\\Microsoft.Common.CurrentVersion.targets",
+              "ToolTip": "G:\\Microsoft Visual Studio\\Microsoft Visual Studio18Insiders\\MSBuild\\Current\\Bin\\amd64\\Microsoft.Common.CurrentVersion.targets",
+              "ViewState": "AgIAAAEVAAAAAAAAAAAuwBQVAAAEAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003801|",
+              "WhenOpened": "2026-04-27T10:12:49.762Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 45,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\MvcSqlServerApp\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAAFIAAAAAAAAAAABRwBQAAAAxAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-27T09:39:24.505Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 46,
+              "Title": "ThrowHelper.cs",
+              "DocumentMoniker": "C:\\Users\\islam\\AppData\\Local\\Temp\\.vsdbgsrc\\e9d507d91c729423d2219f71dbb4f35c9a66ad10c370fa4a4407d654fa39388c\\ThrowHelper.cs",
+              "RelativeDocumentMoniker": "..\\..\\..\\..\\AppData\\Local\\Temp\\.vsdbgsrc\\e9d507d91c729423d2219f71dbb4f35c9a66ad10c370fa4a4407d654fa39388c\\ThrowHelper.cs",
+              "ToolTip": "C:\\Users\\islam\\AppData\\Local\\Temp\\.vsdbgsrc\\e9d507d91c729423d2219f71dbb4f35c9a66ad10c370fa4a4407d654fa39388c\\ThrowHelper.cs",
+              "RelativeToolTip": "..\\..\\..\\..\\AppData\\Local\\Temp\\.vsdbgsrc\\e9d507d91c729423d2219f71dbb4f35c9a66ad10c370fa4a4407d654fa39388c\\ThrowHelper.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAACAAAAAQAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2026-04-27T09:42:47.012Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
