@@ -1,0 +1,53 @@
+@{
+    var module = (string)(ViewData["Module"] ?? "Students");
+    var columns = ((string)(ViewData["Columns"] ?? "")).Split(',', StringSplitOptions.RemoveEmptyEntries);
+    ViewData["Title"] = module;
+}
+
+<div class="page-title">
+    <h1>@module</h1>
+    <div>
+        <button class="btn btn-outline-secondary" id="exportCsv">Export CSV</button>
+        <button class="btn btn-primary">Create @module.TrimEnd('s')</button>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="module-toolbar">
+        <input id="searchBox" class="form-control" placeholder="Search @module" />
+        <span class="text-muted">Server pagination with Tabulator</span>
+    </div>
+    <div id="moduleGrid"></div>
+</div>
+
+@section Scripts {
+    <script>
+        const moduleName = "@module";
+        const columns = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(columns.Select(x => new { title = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(x.Replace("Id", " ID")), field = x, headerFilter = false })));
+        let searchTerm = "";
+
+        const grid = new Tabulator("#moduleGrid", {
+            layout: "fitColumns",
+            ajaxURL: "/Modules/Data",
+            ajaxParams: () => ({ id: moduleName, search: searchTerm }),
+            pagination: true,
+            paginationMode: "remote",
+            paginationSize: 10,
+            paginationSizeSelector: [10, 20, 50, 100],
+            ajaxResponse: function(url, params, response) {
+                return response;
+            },
+            columns
+        });
+
+        document.getElementById("searchBox").addEventListener("input", function () {
+            searchTerm = this.value;
+            window.clearTimeout(this.searchTimer);
+            this.searchTimer = window.setTimeout(() => grid.setData(), 250);
+        });
+
+        document.getElementById("exportCsv").addEventListener("click", function () {
+            grid.download("csv", `${moduleName}.csv`);
+        });
+    </script>
+}

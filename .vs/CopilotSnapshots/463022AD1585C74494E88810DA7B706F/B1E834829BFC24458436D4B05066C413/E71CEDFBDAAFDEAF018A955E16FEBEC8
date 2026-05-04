@@ -1,0 +1,67 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - SchoolMS</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link href="https://unpkg.com/tabulator-tables@6.3.1/dist/css/tabulator_bootstrap5.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/SchoolManagementSystem.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <a class="brand" asp-controller="Dashboard" asp-action="Index">SchoolMS</a>
+            <nav>
+                <a asp-controller="Dashboard" asp-action="Index">Dashboard</a>
+                <a href="/Admission/Index">Admissions</a>
+                <a asp-controller="Student" asp-action="Index">Students</a>
+                <a href="/Modules/Academics">Academics</a>
+                <a href="/Modules/Attendance">Attendance</a>
+                <a href="/Modules/Exams">Exams</a>
+                <a href="/Modules/Results">Results</a>
+                <a href="/Modules/Assignments">Assignments</a>
+                <a href="/Modules/Fees">Fees</a>
+                <a href="/Modules/Communication">Communication</a>
+                <a href="/Modules/Library">Library</a>
+                <a href="/Modules/Transport">Transport</a>
+                <a href="/Modules/Health">Health</a>
+                <a href="/Modules/Reports">Reports</a>
+                <a href="/Modules/Users">Users</a>
+                <a href="/Modules/Roles">RBAC</a>
+                <a href="/Modules/Notifications">Notifications</a>
+                <a href="/Modules/System">System</a>
+            </nav>
+        </aside>
+        <div class="main-panel">
+            <header class="topbar">
+                <div>
+                    <span class="school-name">School Management System</span>
+                    <span class="session-pill">Session 2026</span>
+                </div>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <form asp-controller="Auth" asp-action="Logout" method="post">
+                        @Html.AntiForgeryToken()
+                        <button class="user-pill logout-button" type="submit">@User.Identity.Name</button>
+                    </form>
+                }
+                else
+                {
+                    <a class="user-pill" asp-controller="Auth" asp-action="Login">Login</a>
+                }
+            </header>
+            <main role="main" class="content">
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

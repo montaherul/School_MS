@@ -1,0 +1,110 @@
+@{
+    ViewData["Title"] = "Academic Years";
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0"><i class="bi bi-calendar3 me-2"></i>Academic Years</h2>
+    <a href="/AcademicYear/CreateEdit" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-1"></i>Add Academic Year
+    </a>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div id="data-table"></div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete <strong id="deleteName"></strong>?
+                <br><small class="text-muted">This action cannot be undone.</small>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                    <i class="bi bi-trash me-1"></i>Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<link href="https://unpkg.com/tabulator-tables@6.2.5/dist/css/tabulator_bootstrap5.min.css" rel="stylesheet">
+<script src="https://unpkg.com/tabulator-tables@6.2.5/dist/js/tabulator.min.js"></script>
+
+<style>
+    .tabulator .tabulator-header { background-color: #f8f9fa; font-weight: 600; }
+    .tabulator-row:hover { background-color: #f1f3f5 !important; }
+    .btn-action { padding: 2px 10px; font-size: 0.8rem; }
+</style>
+
+<script>
+    var pendingDeleteId = null;
+    var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+
+    var columns = [
+        { title: "#", formatter: "rownum", hozAlign: "center", width: 50, headerSort: false },
+        { title: "Name", field: "name", headerFilter: "input", minWidth: 150 },
+        { title: "Starts On", field: "startsOn", hozAlign: "center", width: 150 },
+        { title: "Ends On", field: "endsOn", hozAlign: "center", width: 150 },
+        { title: "Status", field: "isActive", hozAlign: "center", width: 100, formatter: function(cell) {
+            return cell.getValue() ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-secondary">Inactive</span>';
+        }},
+        { title: "Actions", field: "id", hozAlign: "center", headerSort: false, width: 120, formatter: function() {
+            return `
+                <button class="btn btn-warning btn-action edit-btn me-1"><i class="bi bi-pencil-fill"></i></button>
+                <button class="btn btn-danger btn-action delete-btn"><i class="bi bi-trash-fill"></i></button>
+            `;
+        }, cellClick: function(e, cell) {
+            var id = cell.getRow().getData().id;
+            var name = cell.getRow().getData().name;
+            if (e.target.closest(".edit-btn")) window.location.href = `/AcademicYear/CreateEdit/${id}`;
+            if (e.target.closest(".delete-btn")) {
+                pendingDeleteId = id;
+                document.getElementById('deleteName').textContent = name;
+                deleteModal.show();
+            }
+        }}
+    ];
+
+    var table = new Tabulator("#data-table", {
+        height: "60vh",
+        layout: "fitColumns",
+        pagination: true,
+        paginationMode: "remote",
+        filterMode: "remote",
+        paginationSize: 10,
+        ajaxURL: '@Url.Action("GetList", "AcademicYear")',
+        ajaxResponse: function(url, params, response) { return { data: response.data, last_page: response.last_page }; },
+        columns: columns,
+        placeholder: "<div class='p-4 text-center text-muted'>No records found</div>"
+    });
+
+    document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+        if (!pendingDeleteId) return;
+        fetch(`/AcademicYear/Delete/${pendingDeleteId}`)
+            .then(res => res.json())
+            .then(data => {
+                deleteModal.hide();
+                if (data.success) { table.replaceData(); }
+            });
+    });
+</script>
+}

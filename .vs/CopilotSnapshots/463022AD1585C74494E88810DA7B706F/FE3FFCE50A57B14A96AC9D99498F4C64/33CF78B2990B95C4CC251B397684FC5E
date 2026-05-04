@@ -1,0 +1,94 @@
+﻿@model SchoolManagementSystem.Models.ViewModels.Dashboard.DashboardViewModel
+@using System.Text.Json
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="page-title">
+    <h1>Dashboard</h1>
+    <a class="btn btn-primary" href="/Admission/Index">Review Admissions</a>
+</div>
+
+<section class="metric-grid">
+    <div class="metric-card">
+        <div class="metric-label">Students</div>
+        <div class="metric-value">@Model.TotalStudents</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">Pending Admissions</div>
+        <div class="metric-value">@Model.PendingAdmissions</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">Fees Collected</div>
+        <div class="metric-value">@Model.FeesCollected.ToString("N0")</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">Fees Due</div>
+        <div class="metric-value">@Model.FeesDue.ToString("N0")</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">Attendance</div>
+        <div class="metric-value">@Model.AttendancePercentage%</div>
+    </div>
+</section>
+
+<section class="dashboard-grid">
+    <div class="panel">
+        <h2 class="h5">Students by Class</h2>
+        <canvas id="studentsChart" height="160"></canvas>
+    </div>
+    <div class="panel">
+        <h2 class="h5">Monthly Collections</h2>
+        <canvas id="feesChart" height="160"></canvas>
+    </div>
+    <div class="panel">
+        <h2 class="h5">Recent Activity</h2>
+        <div class="list-group list-group-flush">
+            @foreach (var item in Model.RecentActivities)
+            {
+                <div class="list-group-item px-0">
+                    <strong>@item.Module</strong>
+                    <div>@item.Title</div>
+                    <small class="text-muted">@item.At.ToString("yyyy-MM-dd HH:mm")</small>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="panel">
+        <h2 class="h5">Operational Modules</h2>
+        <div class="d-flex flex-wrap gap-2">
+            <a class="btn btn-outline-secondary btn-sm" href="/Admission/Index">Admissions</a>
+            <a class="btn btn-outline-secondary btn-sm" href="/Student/Index">Students</a>
+            <a class="btn btn-outline-secondary btn-sm" href="/AttendanceRecord/Index">Attendance</a>
+            <a class="btn btn-outline-secondary btn-sm" href="/FeeStructure/Index">Fees</a>
+            <a class="btn btn-outline-secondary btn-sm" href="/SchoolClass/Index">Classes</a>
+            <a class="btn btn-outline-secondary btn-sm" href="/Section/Index">Sections</a>
+            <a class="btn btn-outline-secondary btn-sm" href="/Subject/Index">Subjects</a>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        const studentsByClass = @Html.Raw(JsonSerializer.Serialize(Model.StudentsByClass));
+        const monthlyCollections = @Html.Raw(JsonSerializer.Serialize(Model.MonthlyCollections));
+
+        new Chart(document.getElementById("studentsChart"), {
+            type: "bar",
+            data: {
+                labels: studentsByClass.map(x => x.Label),
+                datasets: [{ label: "Students", data: studentsByClass.map(x => x.Value), backgroundColor: "#2563eb" }]
+            },
+            options: { responsive: true, plugins: { legend: { display: false } } }
+        });
+
+        new Chart(document.getElementById("feesChart"), {
+            type: "line",
+            data: {
+                labels: monthlyCollections.map(x => x.Label),
+                datasets: [{ label: "Collections", data: monthlyCollections.map(x => x.Value), borderColor: "#059669", backgroundColor: "rgba(5,150,105,.12)", fill: true }]
+            },
+            options: { responsive: true }
+        });
+    </script>
+}

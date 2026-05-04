@@ -1,0 +1,73 @@
+@model SchoolManagementSystem.Models.ViewModels.User.UserIndexViewModel
+
+@{
+    ViewData["Title"] = "Users";
+}
+
+<div class="page-title">
+    <h1>Users</h1>
+    <a asp-action="Create" class="btn btn-primary">Create User</a>
+</div>
+
+@if (TempData["SuccessMessage"] is string message)
+{
+    <div class="alert alert-success">@message</div>
+}
+
+<div class="panel">
+    <form method="get" class="module-toolbar mb-3">
+        <input class="form-control" name="search" value="@Model.Search" placeholder="Search by username or email" />
+        <div class="mt-2 d-flex gap-2">
+            <button class="btn btn-outline-secondary" type="submit">Search</button>
+            <a asp-action="Index" class="btn btn-outline-secondary">Clear</a>
+        </div>
+    </form>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Status</th>
+                    <th>Roles</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Items)
+                {
+                    <tr>
+                        <td>@item.UserName</td>
+                        <td>@item.Email</td>
+                        <td>@item.PhoneNumber</td>
+                        <td>
+                            @item.Status
+                            @if (item.IsDeleted)
+                            {
+                                <span class="badge bg-danger ms-1">Deleted</span>
+                            }
+                        </td>
+                        <td>@item.RolesText</td>
+                        <td class="text-end">
+                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary">View</a>
+                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">Edit</a>
+                            <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">Delete</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center">
+        <span>Page @Model.Page of @Model.TotalPages (@Model.TotalItems total)</span>
+        <div>
+            <a class="btn btn-sm btn-outline-secondary @(Model.Page <= 1 ? "disabled" : "")"
+               asp-route-page="@(Model.Page - 1)" asp-route-search="@Model.Search">Previous</a>
+            <a class="btn btn-sm btn-outline-secondary @(Model.Page >= Model.TotalPages ? "disabled" : "")"
+               asp-route-page="@(Model.Page + 1)" asp-route-search="@Model.Search">Next</a>
+        </div>
+    </div>
+</div>

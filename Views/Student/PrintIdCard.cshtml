@@ -1,0 +1,143 @@
+@model SchoolManagementSystem.Models.DTOs.Student.StudentUpsertDto
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ID Card - @Model.FullName</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background: #f0f2f5; padding: 40px 0; }
+        .id-card-container { display: flex; gap: 40px; justify-content: center; align-items: center; min-height: 80vh; }
+        
+        .id-card { 
+            width: 320px; height: 500px; 
+            background: white; border-radius: 18px; 
+            overflow: hidden; position: relative; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1); 
+            border: 1px solid #ddd;
+            background-image: radial-gradient(#f1f1f1 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+        
+        .text-orange { color: #fd7e14; }
+        .card-footer-accent { position: absolute; bottom: 0; left: 0; right: 0; height: 10px; background: linear-gradient(90deg, #134e4a, #fd7e14); }
+        .card-bg-shapes { 
+            position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; 
+            background: linear-gradient(135deg, rgba(19, 78, 74, 0.05), rgba(253, 126, 20, 0.05)); 
+            border-radius: 50%; z-index: 0;
+        }
+
+        .school-name { font-size: 0.9rem; color: #134e4a; letter-spacing: 0.5px; }
+        .card-title-label { font-size: 0.6rem; color: #fd7e14; font-weight: bold; letter-spacing: 2px; }
+        
+        .student-photo-container { 
+            width: 140px; height: 160px; 
+            background: #f8f9fa; border: 4px solid white; 
+            border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            overflow: hidden; display: flex; align-items: center; justify-content: center;
+            position: relative; z-index: 1;
+        }
+        .student-photo-container img { width: 100%; height: 100%; object-fit: cover; }
+        .student-photo-container i { font-size: 5rem; color: #ddd; }
+
+        .student-name { font-size: 1.4rem; color: #134e4a; }
+        .student-details { text-align: left; background: rgba(19, 78, 74, 0.03); padding: 15px; border-radius: 12px; }
+        .detail-row { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.85rem; }
+        .detail-row span { color: #666; }
+        .detail-row strong { color: #333; }
+
+        .back { background: #fff; }
+        .card-header-back { background: #134e4a; height: 80px; border-radius: 0 0 50% 50% / 0 0 20px 20px; }
+        .emergency-contact { font-size: 1.1rem; color: #134e4a; }
+
+        @@media print {
+            body { background: white; padding: 0; margin: 0; }
+            .id-card-container { min-height: auto; padding: 20px; }
+            .id-card { box-shadow: none; border: 1px solid #ddd; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .no-print { display: none !important; }
+            @@page { size: landscape; margin: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container text-center no-print mb-4">
+        <h3 class="fw-bold">ID Card Export Portal</h3>
+        <p class="text-muted">Review your card below and click Download to save as PDF.</p>
+        <button class="btn btn-primary rounded-pill px-4" onclick="window.print()">
+            <i class="bi bi-download me-2"></i>Download / Print PDF
+        </button>
+        <a href="javascript:history.back()" class="btn btn-outline-secondary rounded-pill px-4 ms-2">Go Back</a>
+    </div>
+
+    <div class="id-card-container">
+        <!-- Front Side -->
+        <div class="id-card front">
+            <div class="card-bg-shapes"></div>
+            <div class="card-header text-center pt-3">
+                <div class="school-logo mb-1">
+                    <i class="bi bi-mortarboard-fill text-primary" style="font-size: 1.5rem;"></i>
+                </div>
+                <h6 class="school-name fw-bold mb-0">SCHOOL MANAGEMENT SYSTEM</h6>
+                <p class="card-title-label text-uppercase mb-0">Student Identity Card</p>
+            </div>
+            <div class="card-content text-center px-3">
+                <div class="student-photo-container my-2 mx-auto">
+                    @if (!string.IsNullOrEmpty(Model.ProfilePicturePath)) { <img src="@Model.ProfilePicturePath" /> }
+                    else { <i class="bi bi-person-fill"></i> }
+                </div>
+                <h5 class="student-name fw-bold mb-1">@Model.FullName</h5>
+                <div class="student-details mt-2">
+                    <div class="detail-row"><span>ID No</span><strong>@Model.StudentNo</strong></div>
+                    <div class="detail-row"><span>Class</span><strong>Class @Model.ClassId</strong></div>
+                    <div class="detail-row"><span>Roll</span><strong>@(Model.RollNumber.ToString("D4"))</strong></div>
+                    <div class="detail-row"><span>Father</span><strong>@Model.FatherName</strong></div>
+                    <div class="detail-row"><span>Blood Group </span><strong>@Model.BloodGroup</strong></div>
+                </div>
+            </div>
+            <div class="card-footer-accent"></div>
+        </div>
+
+        <!-- Back Side -->
+        <div class="id-card back">
+            <div class="card-bg-shapes-back"></div>
+            <div class="card-header-back text-center pt-4">
+                <h6 class="fw-bold text-white mb-0">IMPORTANT INFORMATION</h6>
+            </div>
+            <div class="card-content-back text-center px-4 pt-3">
+                <div class="help-label text-orange fw-bold small">FOR HELP</div>
+                <div class="emergency-contact fw-bold mb-3">+880 1875989022</div>
+                 <div class="qr-container my-3 p-2 bg-white rounded-3 shadow-sm mx-auto" style="width: 100px;">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=@Model.StudentNo"
+                         style="width:100%; display:block;"
+                         alt="QR Code" />
+
+                    <div class="small fw-bold text-muted mt-1" style="font-size: 0.5rem;">
+                        Scan for Attendance
+                    </div>
+                </div>
+
+                <div class="school-address text-muted small mt-2">
+                    Chatogram,Bangladesh<br/>
+                    info@schoolms.com
+                </div>
+
+                <div class="principal-sign-area mt-4">
+                    <div class="sign-line mx-auto" style="width: 100px; border-top: 1px solid #ccc;"></div>
+                    <div class="principal-label small text-muted">Principal Signature</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Auto-open print dialog for convenience
+        window.onload = function() {
+            // Uncomment if you want it to pop up immediately
+            // setTimeout(() => window.print(), 1000);
+        }
+    </script>
+</body>
+</html>

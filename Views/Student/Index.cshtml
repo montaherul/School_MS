@@ -1,0 +1,348 @@
+@{
+    ViewData["Title"] = "Student Management";
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@Html.AntiForgeryToken()
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0"><i class="bi bi-person-lines-fill me-2"></i>Students</h2>
+    <a href="/Student/CreateEdit" class="btn btn-primary">
+        <i class="bi bi-person-plus-fill me-1"></i>Add Student
+    </a>
+</div>
+<div class="d-flex gap-2 mb-3">
+    <select id="classFilter" class="form-select w-auto">
+        <option value="">All Classes</option>
+    </select>
+
+    <select id="sectionFilter" class="form-select w-auto">
+        <option value="">All Sections</option>
+    </select>
+</div>
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div id="data-table"></div>
+    </div>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title text-danger">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Confirm Delete
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete <strong id="deleteName"></strong>?
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button class="btn btn-danger" id="confirmDeleteBtn">
+                    <i class="bi bi-trash me-1"></i>Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link href="https://unpkg.com/tabulator-tables@6.2.5/dist/css/tabulator_bootstrap5.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/tabulator-tables@6.2.5/dist/js/tabulator.min.js"></script>
+
+    <style>
+        .tabulator .tabulator-header {
+        background: #f8f9fa;
+        font-weight: 600;
+        }
+
+        .tabulator-row:hover {
+        background: #f1f3f5 !important;
+        }
+    </style>
+
+    <script>
+        var pendingDeleteId = null;
+        var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+
+        // 🔹 DETAILS VIEW
+        function rowDetailsFormatter(row) {
+        var d = row.getData();
+
+        return `
+        <div class="p-3 bg-light border rounded">
+
+        <!-- 🔥 PROFILE -->
+        <div class="text-center mb-3">
+        ${d.profilePicturePath
+        ? `<img src="${d.profilePicturePath}" style="width:100px;height:100px;border-radius:50%;object-fit:cover;border:2px solid #ddd;" />`
+        : `<img src="/images/default-user.png" style="width:100px;height:100px;border-radius:50%;" />`
+        }
+        </div>
+
+        <!-- 🔥 QR + INFO ROW -->
+        <div class="row">
+
+        <!-- LEFT SIDE (DETAILS) -->
+        <div class="col-md-8">
+        <div class="row">
+        <div class="col-md-6">
+        <b>Father:</b> ${d.fatherName ?? ''}<br/>
+        <b>Father Occupation:</b> ${d.fatherOccupation ?? ''}<br/>
+        <b>Mother:</b> ${d.motherName ?? ''}<br/>
+        <b>Mother Occupation:</b> ${d.motherOccupation ?? ''}
+        </div>
+
+        <div class="col-md-6">
+        <b>Guardian:</b> ${d.guardianName ?? ''}<br/>
+        <b>Guardian Phone:</b> ${d.fatherOrGuardianMobileNo ?? ''}<br/>
+        <b>Email:</b> ${d.emailAddress ?? ''}
+        </div>
+        </div>
+        </div>
+
+        <!-- RIGHT SIDE (QR CARD) -->
+        <div class="col-md-4">
+        <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-body p-3 text-center">
+
+        <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${d.studentNo}"
+        class="img-fluid border p-2 bg-white rounded shadow-sm mb-2" />
+
+        <h6 class="fw-bold mb-1">Digital Identity</h6>
+        <p class="text-muted small mb-2">Scan for Attendance</p>
+
+        <a href="/Student/PrintIdCard/${d.id}"
+        class="btn btn-primary btn-sm rounded-pill w-100">
+        <i class="bi bi-download me-1"></i> ID Card
+        </a>
+
+        </div>
+        </div>
+        </div>
+
+        </div>
+
+        <hr/>
+
+        <!-- ADDRESS -->
+        <div class="row">
+        <div class="col-md-6">
+        <b>Present Address</b><br/>
+        ${d.presentVillage ?? ''}, ${d.presentPostOffice ?? ''}, ${d.presentThana ?? ''}, ${d.presentDistrict ?? ''}
+        </div>
+
+        <div class="col-md-6">
+        <b>Permanent Address</b><br/>
+        ${d.permanentVillage ?? ''}, ${d.permanentPostOffice ?? ''}, ${d.permanentThana ?? ''}, ${d.permanentDistrict ?? ''}
+        </div>
+        </div>
+
+        <hr/>
+
+        <div>
+        <b>Blood:</b> ${d.bloodGroup ?? ''} |
+        <b>Religion:</b> ${d.religion ?? ''} |
+        <b>Nationality:</b> ${d.nationality ?? ''}
+        </div>
+
+        </div>
+        `;
+        }
+
+        // 🔹 COLUMNS
+        var columns = [
+
+        {
+        title: "",
+        formatter: function(){
+        return "<i class='bi bi-plus-circle-fill text-success fs-5'></i>";
+        },
+        width: 60,
+        hozAlign: "center",
+        headerSort: false,
+        cellClick: function(e, cell){
+        const row = cell.getRow();
+        row.toggle();
+
+        const icon = cell.getElement().querySelector("i");
+        icon.classList.toggle("bi-plus-circle");
+        icon.classList.toggle("bi-dash-circle");
+        }
+        },
+
+        {
+        title: "Photo",
+        field: "profilePicturePath",
+        width: 80,
+        hozAlign: "center",
+        formatter: function(cell){
+        const url = cell.getValue();
+
+        if(!url){
+        return "<img src='/images/default-user.png' style='width:40px;height:40px;border-radius:50%;object-fit:cover;' />";
+        }
+
+        return `<img src="${url}"
+        style="width:40px;height:40px;border-radius:50%;object-fit:cover;border:1px solid #ddd;" />`;
+        }
+        },
+
+        { title:"#", formatter:"rownum", width:50 },
+        { title:"Student No", field:"studentNo", headerFilter:"input" },
+        { title:"Name", field:"fullName", headerFilter:"input" },
+        { title:"Class", field:"className" },
+        { title:"Section", field:"sectionName" },
+        { title:"Roll", field:"rollNumber" },
+
+        {
+        title:"Status",
+        field:"status",
+        formatter:function(cell){
+        return cell.getValue()==="Active"
+        ? "<span class='badge bg-success'>Active</span>"
+        : "<span class='badge bg-secondary'>"+cell.getValue()+"</span>";
+        }
+        },
+
+        {
+        title:"Actions",
+        field:"id",
+        formatter:function(){
+        return `
+        <button class="btn btn-info btn-sm view-btn me-1 text-white"><i class="bi bi-eye"></i></button>
+        <button class="btn btn-warning btn-sm edit-btn me-1"><i class="bi bi-pencil"></i></button>
+        <button class="btn btn-danger btn-sm delete-btn"><i class="bi bi-trash"></i></button>`;
+        },
+        cellClick:function(e, cell){
+        var d = cell.getRow().getData();
+
+        if(e.target.closest(".view-btn")){
+        window.location.href = "/Student/Details/" + d.studentNo;
+        }
+
+        if(e.target.closest(".edit-btn")){
+        window.location.href = "/Student/CreateEdit/" + d.id;
+        }
+
+        if(e.target.closest(".delete-btn")){
+        pendingDeleteId = d.id;
+        document.getElementById("deleteName").textContent = d.fullName;
+        deleteModal.show();
+        }
+        }
+        }
+
+        ];
+
+        // 🔹 TABLE
+        var table = new Tabulator("#data-table", {
+        height: "calc(100vh - 200px)",
+        layout:"fitColumns",
+
+        // 🔥 ADD THIS (GROUP BY CLASS → SECTION)
+        groupBy: ["className", "sectionName"],
+
+        groupHeader: function(value, count, data, group){
+        if(group.getField() === "className"){
+        return `<span class="fw-bold text-primary">Class: ${value} (${count})</span>`;
+        } else {
+        return `<span class="fw-bold text-success ms-3">Section: ${value} (${count})</span>`;
+        }
+        },
+
+        pagination:true,
+        paginationMode:"local",
+        filterMode:"local",
+
+        ajaxURL:'@Url.Action("GetList", "Student")',
+
+        ajaxResponse:function(url,params,res){
+       // console.log("API DATA:", res.data); // 🔥 ADD THIS
+        return res.data;
+        },
+
+        columns:columns,
+
+        rowFormatter:function(row){
+        var el = document.createElement("div");
+        el.style.display = "none";
+        el.innerHTML = rowDetailsFormatter(row);
+
+        row.getElement().appendChild(el);
+
+        row.toggle = function(){
+        el.style.display = el.style.display==="none"?"block":"none";
+        };
+        }
+        });
+
+        // 🔹 DELETE
+        document.getElementById("confirmDeleteBtn").addEventListener("click",function(){
+            if(!pendingDeleteId) return;
+
+            fetch("/Student/DeleteConfirmed/" + pendingDeleteId, {
+                method: "POST",
+                headers: {
+                    "RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]').value,
+                    "Accept": "application/json"
+                }
+            })
+            .then(r=>r.json())
+            .then(d=>{
+                deleteModal.hide();
+                if(d.success) table.setData(); // use setData() to refresh
+                else alert(d.message);
+            });
+        });
+
+
+
+
+        // 🔥 POPULATE FILTERS
+        table.on("dataLoaded", function(data){
+
+        let classes = [...new Set(data.map(x => x.className))];
+        let sections = [...new Set(data.map(x => x.sectionName))];
+        const classSelect = document.getElementById("classFilter");
+        const sectionSelect = document.getElementById("sectionFilter");
+
+        classSelect.innerHTML = "<option value=''>All Classes</option>";
+        sectionSelect.innerHTML = "<option value=''>All Sections</option>";
+
+        classes.forEach(c => classSelect.innerHTML += `<option value="${c}">${c}</option>`);
+        sections.forEach(s => sectionSelect.innerHTML += `<option value="${s}">${s}</option>`);});
+
+        // 🔥 APPLY FILTER
+        function applyFilters(){
+        const c = document.getElementById("classFilter").value;
+        const s = document.getElementById("sectionFilter").value;
+
+        let filters = [];
+        if(c) filters.push({field:"className", type:"=", value:c});
+        if(s) filters.push({field:"sectionName", type:"=", value:s});
+        table.setFilter(filters);
+        }
+
+        document.getElementById("classFilter").addEventListener("change", applyFilters);
+        document.getElementById("sectionFilter").addEventListener("change", applyFilters);
+    </script>
+}

@@ -1,0 +1,145 @@
+using System.ComponentModel.DataAnnotations;
+using SchoolManagementSystem.Models.Entities.Base;
+using SchoolManagementSystem.Models.Entities.Teachers;
+namespace SchoolManagementSystem.Models.Entities.Academic;
+
+public class AcademicYear : BaseEntity
+{
+    [MaxLength(30)]
+    public string Name { get; set; } = string.Empty;
+
+    public DateTime StartsOn { get; set; }
+    public DateTime EndsOn { get; set; }
+    public bool IsActive { get; set; }
+}
+
+public class SchoolClass : BaseEntity
+{
+    [MaxLength(60)]
+    public string Name { get; set; } = string.Empty;
+
+    public int SortOrder { get; set; }
+    public ICollection<Section> Sections { get; set; } = new List<Section>();
+    public SchoolClass(string name) // ✅ matches property
+    {
+        Name = name;
+    }
+    public SchoolClass() { }
+}
+
+public class Section : BaseEntity
+{
+    public int SchoolClassId { get; set; }
+    public SchoolClass? SchoolClass { get; set; }
+
+    [MaxLength(20)]
+    public string Name { get; set; } = string.Empty;
+}
+
+public class Subject : BaseEntity
+{
+    [MaxLength(30)]
+    public string Code { get; set; } = string.Empty;
+
+    [MaxLength(100)]
+    public string Name { get; set; } = string.Empty;
+}
+
+//public class TeacherProfile : BaseEntity
+//{
+//    [MaxLength(30)]
+//    public string EmployeeNo { get; set; } = string.Empty;
+
+//    [MaxLength(120)]
+//    public string FullName { get; set; } = string.Empty;
+
+//    [MaxLength(120)]
+//    public string Designation { get; set; } = "Lecturer";
+
+//    [MaxLength(100)]
+//    public string Department { get; set; } = string.Empty;
+
+//    [MaxLength(30)]
+//    public string Phone { get; set; } = string.Empty;
+
+//    [MaxLength(100)]
+//    public string Email { get; set; } = string.Empty;
+
+//    public DateTime? DateOfBirth { get; set; }
+//    public DateTime? JoiningDate { get; set; }
+
+//    [MaxLength(500)]
+//    public string Address { get; set; } = string.Empty;
+
+//    [MaxLength(100)]
+//    public string EmergencyContactName { get; set; } = string.Empty;
+
+//    [MaxLength(30)]
+//    public string EmergencyContactPhone { get; set; } = string.Empty;
+
+//    [MaxLength(20)]
+//    public string Status { get; set; } = "Active"; // Active, OnLeave, Resigned, Terminated
+
+//    [MaxLength(255)]
+//    public string ProfilePhotoPath { get; set; } = string.Empty;
+//}
+
+
+//public class ClassSubjectTeacher : BaseEntity
+//{
+//    public int SchoolClassId { get; set; }
+//    public int SectionId { get; set; }
+//    public int SubjectId { get; set; }
+//    public int TeacherProfileId { get; set; }
+//    public int AcademicYearId { get; set; }
+
+//}
+public class ClassSubjectTeacher : BaseEntity
+{
+    public int ClassSubjectId { get; set; }
+    public ClassSubject? ClassSubject { get; set; }
+
+    public int TeacherId { get; set; }   // ✅ FIXED
+    public Teacher? Teacher { get; set; }
+
+    public int AcademicYearId { get; set; }
+}
+public class Syllabus : BaseEntity
+{
+    public int SchoolClassId { get; set; }
+    public int SubjectId { get; set; }
+
+    [MaxLength(260)]
+    public string FilePath { get; set; } = string.Empty;
+}
+
+public class LessonPlan : BaseEntity
+{
+    public int TeacherId { get; set; }   // ✅ FIXED
+    public Teacher? Teacher { get; set; }
+
+    public int SubjectId { get; set; }
+    public DateTime LessonDate { get; set; }
+
+    public string Topic { get; set; } = string.Empty;
+    public string Plan { get; set; } = string.Empty;
+}
+
+public class StudyMaterial : BaseEntity
+{
+    public int SchoolClassId { get; set; }
+    public int SubjectId { get; set; }
+
+    [MaxLength(160)]
+    public string Title { get; set; } = string.Empty;
+
+    [MaxLength(260)]
+    public string ResourceUrl { get; set; } = string.Empty;
+}
+public class StudentGroup : BaseEntity
+{
+    [MaxLength(50)]
+    public string Name { get; set; } = string.Empty;
+
+    public ICollection<ClassSubject> ClassSubjects { get; set; } = new List<ClassSubject>();
+}

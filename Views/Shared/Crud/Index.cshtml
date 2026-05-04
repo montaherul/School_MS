@@ -1,0 +1,65 @@
+@model SchoolManagementSystem.Models.ViewModels.Shared.CrudListViewModel
+@{
+    ViewData["Title"] = Model.ModuleName;
+    bool isStudent = User.IsInRole("Student");
+    bool canManage = !isStudent && (User.IsInRole("Super Admin") || User.IsInRole("Principal") || User.IsInRole("Assistant Head") || User.IsInRole("Senior Lecturer") || User.IsInRole("Lecturer") || User.IsInRole("Office Staff"));
+}
+
+<div class="page-title">
+    <h1>@Model.ModuleName</h1>
+    @if (canManage)
+    {
+        <a asp-controller="@Model.ControllerName" asp-action="Create" class="btn btn-primary">Create</a>
+    }
+</div>
+
+@if (TempData["SuccessMessage"] is string message)
+{
+    <div class="alert alert-success">@message</div>
+}
+
+<div class="panel">
+    <form method="get" class="module-toolbar">
+        <input class="form-control" name="search" value="@Model.Search" placeholder="Search @Model.ModuleName" />
+        <button class="btn btn-outline-secondary" type="submit">Search</button>
+    </form>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    @foreach (var column in Model.Columns)
+                    {
+                        <th>@column</th>
+                    }
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in Model.Rows)
+                {
+                    <tr>
+                        @foreach (var column in Model.Columns)
+                        {
+                            <td>@row.GetValueOrDefault(column)</td>
+                        }
+                        <td class="text-end">
+                            <a asp-controller="@Model.ControllerName" asp-action="Details" asp-route-id="@row["Id"]" class="btn btn-sm btn-outline-secondary">View</a>
+                            @if (canManage)
+                            {
+                                <a asp-controller="@Model.ControllerName" asp-action="Edit" asp-route-id="@row["Id"]" class="btn btn-sm btn-outline-primary">Edit</a>
+                                <a asp-controller="@Model.ControllerName" asp-action="Delete" asp-route-id="@row["Id"]" class="btn btn-sm btn-outline-danger">Delete</a>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <div class="d-flex justify-content-between align-items-center">
+        <span>Page @Model.Page of @Model.TotalPages (@Model.TotalItems total)</span>
+        <div>
+            <a class="btn btn-sm btn-outline-secondary @(Model.Page <= 1 ? "disabled" : "")" asp-route-page="@(Model.Page - 1)" asp-route-search="@Model.Search">Previous</a>
+            <a class="btn btn-sm btn-outline-secondary @(Model.Page >= Model.TotalPages ? "disabled" : "")" asp-route-page="@(Model.Page + 1)" asp-route-search="@Model.Search">Next</a>
+        </div>
+    </div>
+</div>

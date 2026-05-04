@@ -1,0 +1,12 @@
+﻿@model SchoolManagementSystem.Models.ViewModels.Attendance.AttendanceRecordViewModel
+@{ ViewData["Title"] = Model.IsEditMode ? "Edit AttendanceRecord" : "Add AttendanceRecord"; }
+
+<div class="row justify-content-center"><div class="col-lg-6"><div class="d-flex align-items-center mb-4"><a href="/AttendanceRecord/Index" class="btn btn-outline-secondary btn-sm me-3"><i class="bi bi-arrow-left"></i> Back</a><h2 class="mb-0">@(Model.IsEditMode ? "Edit AttendanceRecord" : "Add AttendanceRecord")</h2></div><div class="card shadow-sm"><div class="card-body p-4">
+<form asp-action="CreateEdit" method="post"><input type="hidden" asp-for="Id" />
+<div class="mb-3"><label asp-for="StudentId" class="form-label">StudentId <span class="text-danger">*</span></label><input asp-for="StudentId" class="form-control" /><span asp-validation-for="StudentId" class="text-danger small"></span></div>
+<div class="mb-3"><label asp-for="SchoolClassId" class="form-label">SchoolClassId <span class="text-danger">*</span></label><input asp-for="SchoolClassId" class="form-control" /><span asp-validation-for="SchoolClassId" class="text-danger small"></span></div>
+<div class="mb-3"><label asp-for="SectionId" class="form-label">SectionId <span class="text-danger">*</span></label><input asp-for="SectionId" class="form-control" /><span asp-validation-for="SectionId" class="text-danger small"></span></div>
+<div class="mb-3"><label asp-for="Status" class="form-label">Status <span class="text-danger">*</span></label><input asp-for="Status" class="form-control" /><span asp-validation-for="Status" class="text-danger small"></span></div>
+<div class="mb-3"><label asp-for="Remarks" class="form-label">Remarks <span class="text-danger">*</span></label><input asp-for="Remarks" class="form-control" /><span asp-validation-for="Remarks" class="text-danger small"></span></div>
+<div class="d-flex gap-2"><button type="submit" class="btn btn-primary px-4"><i class="bi bi-save me-1"></i> Save</button><a href="/AttendanceRecord/Index" class="btn btn-outline-secondary px-4">Cancel</a></div></form></div></div></div></div>
+@section Scripts { @{await Html.RenderPartialAsync("_ValidationScriptsPartial");} }

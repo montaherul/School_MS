@@ -1,0 +1,188 @@
+@model SchoolManagementSystem.Models.ViewModels.Dashboard.StudentDashboardViewModel
+@{
+    ViewData["Title"] = "Student Portal";
+}
+
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="card border-0 bg-primary text-white p-4 rounded-4 shadow-sm">
+            <div class="d-flex align-items-center">
+                <div class="me-4">
+                    <i class="bi bi-person-badge" style="font-size: 3rem;"></i>
+                </div>
+                <div>
+                    <h2 class="mb-0">Welcome, @Model.FullName</h2>
+                    <p class="mb-0 opacity-75">ID: @Model.StudentNo | @Model.ClassName - @Model.SectionName (Roll: @Model.RollNumber)</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Attendance Card -->
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body text-center p-4">
+                <div class="rounded-circle bg-success bg-opacity-10 text-success d-inline-flex align-items-center justify-content-center mb-3" style="width:60px;height:60px;">
+                    <i class="bi bi-calendar-check" style="font-size: 1.5rem;"></i>
+                </div>
+                <h5 class="text-muted small text-uppercase fw-bold">Attendance</h5>
+                <h2 class="display-6 fw-bold mb-0">@Model.AttendancePercentage%</h2>
+                <p class="text-muted small">Total Attendance</p>
+                <div class="progress mt-3" style="height: 8px;">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: @Model.AttendancePercentage%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fees Card -->
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body text-center p-4">
+                <div class="rounded-circle bg-danger bg-opacity-10 text-danger d-inline-flex align-items-center justify-content-center mb-3" style="width:60px;height:60px;">
+                    <i class="bi bi-currency-dollar" style="font-size: 1.5rem;"></i>
+                </div>
+                <h5 class="text-muted small text-uppercase fw-bold">Outstanding Fees</h5>
+                <h2 class="display-6 fw-bold mb-0">৳@Model.TotalDue</h2>
+                <p class="text-muted small">Total Due Amount</p>
+                <a href="/Payment" class="btn btn-outline-danger btn-sm mt-2 rounded-pill">Pay Now</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Card -->
+    <div class="col-md-4">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-body text-center p-4">
+                <div class="rounded-circle bg-info bg-opacity-10 text-info d-inline-flex align-items-center justify-content-center mb-3" style="width:60px;height:60px;">
+                    <i class="bi bi-check-circle" style="font-size: 1.5rem;"></i>
+                </div>
+                <h5 class="text-muted small text-uppercase fw-bold">Academic Status</h5>
+                <h2 class="display-6 fw-bold mb-0">@Model.StudentStatus</h2>
+                <p class="text-muted small">Current Enrollment Status</p>
+                <span class="badge bg-info text-dark rounded-pill">Session 2026</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-1">
+    <!-- Upcoming Assignments -->
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-header bg-white border-0 p-4 pb-0 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold">Upcoming Assignments</h5>
+                <a href="/Assignment" class="small text-decoration-none">View All</a>
+            </div>
+            <div class="card-body p-4">
+                @if (Model.UpcomingAssignments != null && Model.UpcomingAssignments.Any())
+                {
+                    <div class="list-group list-group-flush">
+                        @foreach (var assignment in Model.UpcomingAssignments)
+                        {
+                            <div class="list-group-item px-0 py-3 border-0 border-bottom">
+                                <div class="d-flex justify-content-between">
+                                    <h6 class="mb-1 fw-bold">@assignment.Title</h6>
+                                    <span class="badge bg-light text-primary rounded-pill small">@assignment.Subject</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center mt-2">
+                                    <small class="text-muted"><i class="bi bi-clock me-1"></i>Due: @assignment.Deadline.ToString("dd MMM, hh:mm tt")</small>
+                                    @if ((assignment.Deadline - DateTime.Now).TotalDays < 2)
+                                    {
+                                        <span class="text-danger tiny fw-bold"><i class="bi bi-exclamation-triangle me-1"></i>Urgent</span>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-4">
+                        <i class="bi bi-journal-check text-muted" style="font-size: 2rem;"></i>
+                        <p class="text-muted mt-2">No pending assignments!</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Notice Board -->
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm rounded-4 h-100">
+            <div class="card-header bg-white border-0 p-4 pb-0 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0 fw-bold">Recent Notices</h5>
+                <a href="/Communication" class="small text-decoration-none">View All</a>
+            </div>
+            <div class="card-body p-4">
+                @if (Model.RecentNotices != null && Model.RecentNotices.Any())
+                {
+                    <div class="list-group list-group-flush">
+                        @foreach (var notice in Model.RecentNotices)
+                        {
+                            <div class="list-group-item px-0 py-3 border-0 border-bottom">
+                                <div class="d-flex justify-content-between">
+                                    <h6 class="mb-1 fw-bold">@notice.Title</h6>
+                                    <small class="text-muted">@notice.At.ToString("dd MMM")</small>
+                                </div>
+                                <p class="mb-0 text-muted small">@notice.Summary</p>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <p class="text-muted text-center py-4">No recent notices available.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mt-1">
+    <!-- Quick Links -->
+    <div class="col-12">
+        <div class="card border-0 shadow-sm rounded-4 bg-light">
+            <div class="card-body p-4">
+                <h5 class="fw-bold mb-4 text-center">Quick Portal Access</h5>
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <a href="/Details" class="btn btn-white w-100 text-start shadow-sm rounded-3 p-3">
+                            <i class="bi bi-person-circle me-2 text-primary"></i> My Profile
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="/Result" class="btn btn-white w-100 text-start shadow-sm rounded-3 p-3">
+                            <i class="bi bi-journal-text me-2 text-success"></i> My Results
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="/AttendanceRecord" class="btn btn-white w-100 text-start shadow-sm rounded-3 p-3">
+                            <i class="bi bi-calendar3 me-2 text-warning"></i> My Attendance
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="/FeeStructure" class="btn btn-white w-100 text-start shadow-sm rounded-3 p-3">
+                            <i class="bi bi-wallet2 me-2 text-info"></i> Fee Structure
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .tiny { font-size: 0.75rem; }
+    .btn-white {
+        background: #fff;
+        border: 1px solid transparent;
+        transition: all 0.2s;
+    }
+    .btn-white:hover {
+        border-color: var(--bs-primary);
+        transform: translateY(-2px);
+    }
+</style>

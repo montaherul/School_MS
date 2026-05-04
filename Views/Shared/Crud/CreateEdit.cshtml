@@ -1,0 +1,47 @@
+@model SchoolManagementSystem.Models.ViewModels.Shared.CrudFormViewModel
+@{
+    ViewData["Title"] = Model.IsEditMode ? $"Edit {Model.ModuleName}" : $"Create {Model.ModuleName}";
+}
+
+<div class="page-title">
+    <h1>@ViewData["Title"]</h1>
+    <a asp-controller="@Model.ControllerName" asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+</div>
+
+<div class="panel">
+    <form asp-controller="@Model.ControllerName" asp-action="Save" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="Id" value="@Model.Id" />
+        <div class="row g-3">
+            @foreach (var field in Model.Fields)
+            {
+                <div class="col-md-6">
+                    <label class="form-label" for="@field.Name">@field.Label</label>
+                    @if (field.Options.Count > 0)
+                    {
+                        <select class="form-select" id="@field.Name" name="@field.Name">
+                            @foreach (var option in field.Options)
+                            {
+                                <option value="@option" selected="@(option == field.Value)">@option</option>
+                            }
+                        </select>
+                    }
+                    else if (field.InputType == "checkbox")
+                    {
+                        <div class="form-check">
+                            <input class="form-check-input" id="@field.Name" name="@field.Name" type="checkbox" value="true" checked="@(field.Value == "true")" />
+                        </div>
+                    }
+                    else
+                    {
+                        <input class="form-control" id="@field.Name" name="@field.Name" type="@field.InputType" value="@field.Value" required="@field.IsRequired" />
+                    }
+                </div>
+            }
+        </div>
+        <div class="mt-4">
+            <button class="btn btn-primary" type="submit">Save</button>
+            <a asp-controller="@Model.ControllerName" asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+        </div>
+    </form>
+</div>

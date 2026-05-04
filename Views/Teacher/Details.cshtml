@@ -1,0 +1,120 @@
+@model SchoolManagementSystem.Models.Entities.Teachers.Teacher
+@{
+    ViewData["Title"] = "Teacher Profile";
+}
+
+<div class="row g-4 mb-4 align-items-center">
+    <div class="col-auto">
+        <div class="profile-pic-container border rounded-circle overflow-hidden shadow-sm" style="width: 120px; height: 120px; background: #f8f9fa;">
+            @if (!string.IsNullOrEmpty(Model.ProfilePicturePath))
+            {
+                <img src="@Model.ProfilePicturePath" class="w-100 h-100 object-fit-cover" alt="Profile Picture" />
+            }
+            else
+            {
+                <div class="w-100 h-100 d-flex align-items-center justify-content-center text-muted">
+                    <i class="bi bi-person-workspace" style="font-size: 4rem;"></i>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="col">
+        <h1 class="mb-1 fw-bold">@Model.FullName</h1>
+        <p class="text-muted mb-0 lead">@Model.Designation | ID: @Model.TeacherNo</p>
+    </div>
+    <div class="col-auto">
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary px-4 rounded-pill">
+            <i class="bi bi-pencil-square me-2"></i>Edit Profile
+        </a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-8">
+        <!-- Professional Info -->
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-header bg-white border-0 p-4 pb-0">
+                <h5 class="fw-bold mb-0">Professional Summary</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <label class="text-muted small text-uppercase fw-bold">Department</label>
+                        <p class="mb-0 fw-medium">@(Model.Department ?? "General Academic")</p>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="text-muted small text-uppercase fw-bold">Joining Date</label>
+                        <p class="mb-0 fw-medium">@(Model.JoiningDate?.ToString("dd MMM yyyy") ?? "N/A")</p>
+                    </div>
+                    <div class="col-sm-12">
+                        <label class="text-muted small text-uppercase fw-bold">Qualification</label>
+                        <p class="mb-0 fw-medium">@(Model.Qualification ?? "Not specified")</p>
+                    </div>
+                    <div class="col-sm-12">
+                        <label class="text-muted small text-uppercase fw-bold">Specialization</label>
+                        <p class="mb-0 fw-medium">@(Model.Specialization ?? "Not specified")</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact & Demographics -->
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-header bg-white border-0 p-4 pb-0">
+                <h5 class="fw-bold mb-0">Contact & Demographics</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <label class="text-muted small text-uppercase fw-bold">Mobile Number</label>
+                        <p class="mb-0 fw-medium">@Model.MobileNumber</p>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="text-muted small text-uppercase fw-bold">Email Address</label>
+                        <p class="mb-0 fw-medium">@(Model.EmailAddress ?? "N/A")</p>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="text-muted small text-uppercase fw-bold">Gender</label>
+                        <p class="mb-0 fw-medium">@Model.Gender</p>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="text-muted small text-uppercase fw-bold">Blood Group</label>
+                        <p class="mb-0 fw-medium text-danger fw-bold">@(Model.BloodGroup ?? "N/A")</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- Digital Identity QR -->
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-body p-4 text-center">
+                <div class="mb-3">
+                    <img src="https://chart.googleapis.com/chart?chs=180x180&cht=qr&chl=@Model.TeacherNo&choe=UTF-8" 
+                         class="img-fluid border p-2 bg-white rounded shadow-sm" 
+                         alt="Teacher QR Code" 
+                         title="@Model.TeacherNo" />
+                </div>
+                <h6 class="fw-bold mb-1">Digital Identity</h6>
+                <p class="text-muted small mb-3">Scan for Attendance</p>
+                <button class="btn btn-success btn-sm w-100 rounded-pill" onclick="window.print()">
+                    <i class="bi bi-printer me-1"></i>Print ID Card
+                </button>
+            </div>
+        </div>
+
+        <!-- System Status -->
+        <div class="card border-0 shadow-sm rounded-4 bg-light">
+            <div class="card-body p-4">
+                <h6 class="fw-bold mb-3">Account Status</h6>
+                <div class="d-flex align-items-center">
+                    <div class="rounded-circle bg-success me-2" style="width: 10px; height: 10px;"></div>
+                    <span class="fw-medium">@Model.Status</span>
+                </div>
+                <hr />
+                <small class="text-muted">Last updated on @(Model.UpdatedAt?.ToString("dd MMM, yyyy") ?? "Never")</small>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,19 @@
+@model SchoolManagementSystem.Models.DTOs.Student.StudentUpsertDto
+@{
+    ViewData["Title"] = "Delete Student";
+}
+
+<div class="page-title">
+    <h1>Delete Student</h1>
+    <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+</div>
+
+<div class="panel">
+    <p>Are you sure you want to delete <strong>@Model.FullName</strong>?</p>
+    <form asp-action="DeleteConfirmed" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="id" value="@Model.Id" />
+        <button type="submit" class="btn btn-danger">Delete</button>
+        <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+    </form>
+</div>
