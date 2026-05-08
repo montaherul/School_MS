@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "dHRPmp8MajY=",
+  "dgSpecHash": "k7gAg2y2naM=",
   "success": true,
   "projectFilePath": "C:\\Users\\islam\\OneDrive\\Documents\\New project\\SchoolMS\\SchoolManagementSystem.csproj",
   "expectedPackageFiles": [
@@ -9,6 +9,7 @@
     "C:\\Users\\islam\\.nuget\\packages\\bouncycastle.cryptography\\2.6.2\\bouncycastle.cryptography.2.6.2.nupkg.sha512",
     "C:\\Users\\islam\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\islam\\.nuget\\packages\\itext\\8.0.5\\itext.8.0.5.nupkg.sha512",
+    "C:\\Users\\islam\\.nuget\\packages\\itext.bouncy-castle-adapter\\8.0.5\\itext.bouncy-castle-adapter.8.0.5.nupkg.sha512",
     "C:\\Users\\islam\\.nuget\\packages\\itext.commons\\8.0.5\\itext.commons.8.0.5.nupkg.sha512",
     "C:\\Users\\islam\\.nuget\\packages\\itext7\\8.0.5\\itext7.8.0.5.nupkg.sha512",
     "C:\\Users\\islam\\.nuget\\packages\\mailkit\\4.16.0\\mailkit.4.16.0.nupkg.sha512",

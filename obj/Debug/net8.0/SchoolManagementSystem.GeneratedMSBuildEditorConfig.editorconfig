@@ -22,6 +22,10 @@ build_property._RazorSourceGeneratorDebug =
 build_property.EffectiveAnalysisLevelStyle = 8.0
 build_property.EnableCodeStyleSeverity = 
 
+[C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/AcademicYear/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNhZGVtaWNZZWFyXENyZWF0ZS5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/AcademicYear/CreateEdit.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNhZGVtaWNZZWFyXENyZWF0ZUVkaXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
@@ -34,8 +38,28 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNhZGVtaWNZZWFyXERldGFpbHMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/AcademicYear/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNhZGVtaWNZZWFyXEVkaXQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/AcademicYear/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNhZGVtaWNZZWFyXEluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/AdminResult/AllResults.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5SZXN1bHRcQWxsUmVzdWx0cy5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/AdminResult/AllSubjects.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5SZXN1bHRcQWxsU3ViamVjdHMuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/AdminResult/Dashboard.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5SZXN1bHRcRGFzaGJvYXJkLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/AdminResult/MeritLists.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaW5SZXN1bHRcTWVyaXRMaXN0cy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/Admission/Apply.cshtml]
@@ -60,22 +84,6 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/Admission/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWRtaXNzaW9uXEluZGV4LmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/Assignment/CreateEdit.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXNzaWdubWVudFxDcmVhdGVFZGl0LmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/Assignment/Delete.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXNzaWdubWVudFxEZWxldGUuY3NodG1s
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/Assignment/Details.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXNzaWdubWVudFxEZXRhaWxzLmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/Assignment/Index.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQXNzaWdubWVudFxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/AttendanceRecord/CreateEdit.cshtml]
@@ -134,6 +142,14 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGFzaGJvYXJkXFN0dWRlbnRJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/Dashboard/TeacherIndex.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGFzaGJvYXJkXFRlYWNoZXJJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/Exam/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRXhhbVxDcmVhdGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/Exam/CreateEdit.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRXhhbVxDcmVhdGVFZGl0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
@@ -144,6 +160,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/Exam/Details.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRXhhbVxEZXRhaWxzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/Exam/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRXhhbVxFZGl0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/Exam/Index.cshtml]
@@ -274,6 +294,26 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUmVwb3J0XEluZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/ResultManagement/AdminIndex.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUmVzdWx0TWFuYWdlbWVudFxBZG1pbkluZGV4LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/ResultManagement/MarkEntry.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUmVzdWx0TWFuYWdlbWVudFxNYXJrRW50cnkuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/ResultManagement/ReEvaluationDashboard.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUmVzdWx0TWFuYWdlbWVudFxSZUV2YWx1YXRpb25EYXNoYm9hcmQuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/ResultManagement/StudentIndex.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUmVzdWx0TWFuYWdlbWVudFxTdHVkZW50SW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/ResultManagement/TeacherEntry.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUmVzdWx0TWFuYWdlbWVudFxUZWFjaGVyRW50cnkuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/Result/CreateEdit.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUmVzdWx0XENyZWF0ZUVkaXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
@@ -306,6 +346,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUm9sZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/SchoolClass/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2Nob29sQ2xhc3NcQ3JlYXRlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/SchoolClass/CreateEdit.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2Nob29sQ2xhc3NcQ3JlYXRlRWRpdC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
@@ -318,8 +362,16 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2Nob29sQ2xhc3NcRGV0YWlscy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/SchoolClass/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2Nob29sQ2xhc3NcRWRpdC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/SchoolClass/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2Nob29sQ2xhc3NcSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/Section/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2VjdGlvblxDcmVhdGUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/Section/CreateEdit.cshtml]
@@ -332,6 +384,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/Section/Details.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2VjdGlvblxEZXRhaWxzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/Section/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2VjdGlvblxFZGl0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/Section/Index.cshtml]
@@ -370,6 +426,26 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/StudentClassAssignment/CreateEdit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3R1ZGVudENsYXNzQXNzaWdubWVudFxDcmVhdGVFZGl0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/StudentClassAssignment/Delete.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3R1ZGVudENsYXNzQXNzaWdubWVudFxEZWxldGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/StudentClassAssignment/Details.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3R1ZGVudENsYXNzQXNzaWdubWVudFxEZXRhaWxzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/StudentClassAssignment/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3R1ZGVudENsYXNzQXNzaWdubWVudFxJbmRleC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/Student/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3R1ZGVudFxDcmVhdGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/Student/CreateEdit.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3R1ZGVudFxDcmVhdGVFZGl0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
@@ -382,12 +458,20 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3R1ZGVudFxEZXRhaWxzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/Student/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3R1ZGVudFxFZGl0LmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/Student/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3R1ZGVudFxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/Student/PrintIdCard.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3R1ZGVudFxQcmludElkQ2FyZC5jc2h0bWw=
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/Subject/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3ViamVjdFxDcmVhdGUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/Subject/CreateEdit.cshtml]
@@ -400,6 +484,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/Subject/Details.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3ViamVjdFxEZXRhaWxzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/Subject/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3ViamVjdFxFZGl0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/Subject/Index.cshtml]
@@ -422,6 +510,14 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU3lzdGVtU2V0dGluZ3NcSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/TeacherAssignment/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVhY2hlckFzc2lnbm1lbnRcSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/Teacher/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVhY2hlclxDcmVhdGUuY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/Teacher/CreateEdit.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVhY2hlclxDcmVhdGVFZGl0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
@@ -432,6 +528,10 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/Teacher/Details.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVhY2hlclxEZXRhaWxzLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/Teacher/Edit.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVGVhY2hlclxFZGl0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/islam/OneDrive/Documents/New project/SchoolMS/Views/Teacher/Index.cshtml]

@@ -6,10 +6,14 @@ public class AttendanceRecordListItemDto
 {
     public int Id { get; set; }
     public int StudentId { get; set; }
+    public string StudentName { get; set; } = string.Empty;
     public int SchoolClassId { get; set; }
+    public string ClassName { get; set; } = string.Empty;
     public int SectionId { get; set; }
+    public string SectionName { get; set; } = string.Empty;
     public SchoolManagementSystem.Models.Enums.AttendanceStatus Status { get; set; }
     public string Remarks { get; set; } = string.Empty;
+    public int TotalRecords { get; set; }
 }
 
 public class AttendanceRecordUpsertDto

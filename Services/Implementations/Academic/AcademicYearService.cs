@@ -20,28 +20,38 @@ public class AcademicYearService : IAcademicYearService
     {
         page = Math.Max(page, 1);
         pageSize = Math.Clamp(pageSize, 5, 100);
-        var term = search?.Trim();
 
-        var query = _db.AcademicYears
-            .Where(x => !x.IsDeleted)
-            .Where(x => term == null || x.Name.Contains(term));
+        var items = new List<AcademicYearListItemDto>();
+        int totalCount = 0;
 
-        var total = await query.CountAsync(cancellationToken);
-        var items = await query
-            .OrderByDescending(x => x.StartsOn)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .Select(x => new AcademicYearListItemDto
+        using (var command = _db.Database.GetDbConnection().CreateCommand())
+        {
+            command.CommandText = "sp_GetAcademicYearList";
+            command.CommandType = System.Data.CommandType.StoredProcedure;
+            command.Parameters.Add(new Microsoft.Data.SqlClient.SqlParameter("@PageNumber", page));
+            command.Parameters.Add(new Microsoft.Data.SqlClient.SqlParameter("@PageSize", pageSize));
+            command.Parameters.Add(new Microsoft.Data.SqlClient.SqlParameter("@SearchTerm", (object?)search ?? DBNull.Value));
+
+            await _db.Database.OpenConnectionAsync(cancellationToken);
+            using (var reader = await command.ExecuteReaderAsync(cancellationToken))
             {
-                Id = x.Id,
-                Name = x.Name,
-                StartsOn = x.StartsOn.ToString("yyyy-MM-dd"),
-                EndsOn = x.EndsOn.ToString("yyyy-MM-dd"),
-                IsActive = x.IsActive
-            })
-            .ToListAsync(cancellationToken);
+                while (await reader.ReadAsync(cancellationToken))
+                {
+                    items.Add(new AcademicYearListItemDto
+                    {
+                        Id = reader.GetInt32(0),
+                        Name = reader.GetString(1),
+                        StartsOn = reader.GetDateTime(2).ToString("yyyy-MM-dd"),
+                        EndsOn = reader.GetDateTime(3).ToString("yyyy-MM-dd"),
+                        IsActive = reader.GetBoolean(4)
+                    });
+                    totalCount = reader.IsDBNull(5) ? 0 : reader.GetInt32(5);
+                }
+            }
+            await _db.Database.CloseConnectionAsync();
+        }
 
-        return new PagedResult<AcademicYearListItemDto> { Items = items, Page = page, PageSize = pageSize, TotalItems = total };
+        return new PagedResult<AcademicYearListItemDto> { Items = items, Page = page, PageSize = pageSize, TotalItems = totalCount };
     }
 
     public async Task<AcademicYearUpsertDto?> GetForEditAsync(int id, CancellationToken cancellationToken = default)

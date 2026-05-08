@@ -15,6 +15,9 @@ public class AttendanceRecord : BaseEntity
 
     [MaxLength(240)]
     public string? Remarks { get; set; }
+
+    public int? CreatedByUserId { get; set; }
+    public int? UpdatedByUserId { get; set; }
 }
 
 public class LeaveApplication : BaseEntity

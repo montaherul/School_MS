@@ -4,70 +4,138 @@
     ViewData["Title"] = "Users";
 }
 
-<div class="page-title">
-    <h1>Users</h1>
-    <a asp-action="Create" class="btn btn-primary">Create User</a>
+<div class="page-title d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="mb-1"><i class="bi bi-person-gear me-2"></i>Users</h1>
+        <p class="text-muted mb-0">Manage system users, roles, and account statuses</p>
+    </div>
+    <a asp-action="Create" class="btn btn-primary shadow-sm">
+        <i class="bi bi-plus-circle me-1"></i> Create User
+    </a>
 </div>
 
 @if (TempData["SuccessMessage"] is string message)
 {
-    <div class="alert alert-success">@message</div>
+    <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>@message
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
 }
 
-<div class="panel">
-    <form method="get" class="module-toolbar mb-3">
-        <input class="form-control" name="search" value="@Model.Search" placeholder="Search by username or email" />
-        <div class="mt-2 d-flex gap-2">
-            <button class="btn btn-outline-secondary" type="submit">Search</button>
-            <a asp-action="Index" class="btn btn-outline-secondary">Clear</a>
-        </div>
-    </form>
-
-    <div class="table-responsive">
-        <table class="table table-hover align-middle">
-            <thead>
-                <tr>
-                    <th>User</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Status</th>
-                    <th>Roles</th>
-                    <th class="text-end">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model.Items)
-                {
-                    <tr>
-                        <td>@item.UserName</td>
-                        <td>@item.Email</td>
-                        <td>@item.PhoneNumber</td>
-                        <td>
-                            @item.Status
-                            @if (item.IsDeleted)
-                            {
-                                <span class="badge bg-danger ms-1">Deleted</span>
-                            }
-                        </td>
-                        <td>@item.RolesText</td>
-                        <td class="text-end">
-                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-secondary">View</a>
-                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary">Edit</a>
-                            <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-outline-danger">Delete</a>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-
-    <div class="d-flex justify-content-between align-items-center">
-        <span>Page @Model.Page of @Model.TotalPages (@Model.TotalItems total)</span>
-        <div>
-            <a class="btn btn-sm btn-outline-secondary @(Model.Page <= 1 ? "disabled" : "")"
-               asp-route-page="@(Model.Page - 1)" asp-route-search="@Model.Search">Previous</a>
-            <a class="btn btn-sm btn-outline-secondary @(Model.Page >= Model.TotalPages ? "disabled" : "")"
-               asp-route-page="@(Model.Page + 1)" asp-route-search="@Model.Search">Next</a>
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-8">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" id="userInput" class="form-control border-start-0" placeholder="Search by username or email...">
+                    <button class="btn btn-outline-secondary" type="button" id="userSearchBtn">Search</button>
+                </div>
+            </div>
+            <div class="col-md-4 text-end">
+                <button class="btn btn-outline-secondary" id="refreshUsersBtn">
+                    <i class="bi bi-arrow-clockwise me-1"></i> Refresh
+                </button>
+            </div>
         </div>
     </div>
 </div>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div id="user-table"></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var table = new Tabulator("#user-table", {
+            height: "calc(100vh - 300px)",
+            layout: "fitColumns",
+            pagination: true,
+            paginationMode: "remote",
+            ajaxURL: "/User/Index",
+            paginationSize: 10,
+            paginationDataSent: {
+                "page": "page",
+                "size": "pageSize"
+            },
+            ajaxConfig: "GET",
+            ajaxResponse: function(url, params, response) {
+                return {
+                    data: response.data,
+                    last_page: response.last_page,
+                };
+            },
+            columns: [
+                { title: "User", field: "userName", widthGrow: 2, formatter: function(cell) {
+                    return `<div class="d-flex align-items-center">
+                        <div class="avatar-sm bg-primary-soft text-primary rounded-circle d-flex align-items-center justify-content-center me-2" style="width:32px;height:32px;font-size:12px;font-weight:700;">
+                            ${cell.getValue().substring(0, 2).toUpperCase()}
+                        </div>
+                        <div class="fw-bold">${cell.getValue()}</div>
+                    </div>`;
+                }},
+                { title: "Email", field: "email", widthGrow: 2 },
+                { title: "Phone", field: "phoneNumber", widthGrow: 1.5, formatter: function(cell) {
+                    return cell.getValue() || '<span class="text-muted small">N/A</span>';
+                }},
+                { title: "Status", field: "status", width: 120, formatter: function(cell) {
+                    var status = cell.getValue();
+                    var isDeleted = cell.getData().isDeleted;
+                    var badgeClass = "bg-secondary";
+                    var statusText = status;
+
+                    if (status === 1) { badgeClass = "bg-success"; statusText = "Active"; }
+                    else if (status === 0) { badgeClass = "bg-warning"; statusText = "Pending"; }
+                    else if (status === 2) { badgeClass = "bg-danger"; statusText = "Inactive"; }
+
+                    var html = `<span class="badge ${badgeClass}">${statusText}</span>`;
+                    if (isDeleted) html += `<span class="badge bg-dark ms-1">Deleted</span>`;
+                    return html;
+                }},
+                { title: "Roles", field: "rolesText", widthGrow: 2, formatter: function(cell) {
+                    var roles = cell.getValue();
+                    if (!roles) return '<span class="text-muted small">No roles</span>';
+                    return roles.split(', ').map(r => `<span class="badge border text-dark bg-light me-1">${r}</span>`).join('');
+                }},
+                { title: "Actions", field: "id", width: 180, hozAlign: "right", headerSort: false, formatter: function(cell) {
+                    var id = cell.getValue();
+                    return `
+                        <div class="btn-group btn-group-sm">
+                            <a href="/User/Details/${id}" class="btn btn-outline-secondary" title="View"><i class="bi bi-eye"></i></a>
+                            <a href="/User/Edit/${id}" class="btn btn-outline-primary" title="Edit"><i class="bi bi-pencil"></i></a>
+                            <a href="/User/Delete/${id}" class="btn btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></a>
+                        </div>
+                    `;
+                }}
+            ],
+            placeholder: "No users found"
+        });
+
+        document.getElementById("userSearchBtn").addEventListener("click", function() {
+            var search = document.getElementById("userInput").value;
+            table.setFilter("search", "=", search);
+        });
+
+        document.getElementById("userInput").addEventListener("keypress", function(e) {
+            if (e.key === "Enter") {
+                document.getElementById("userSearchBtn").click();
+            }
+        });
+
+        document.getElementById("refreshUsersBtn").addEventListener("click", function() {
+            table.setData();
+        });
+    </script>
+
+    <style>
+        .bg-primary-soft { background-color: rgba(26, 86, 219, 0.1); }
+        .tabulator { border: none !important; }
+        .tabulator .tabulator-header { background-color: #f8f9fa; border-bottom: 1px solid #e2e8f0; }
+        .tabulator .tabulator-header .tabulator-col { background-color: #f8f9fa; font-weight: 700; color: #475569; padding: 12px 8px; }
+        .tabulator .tabulator-row { border-bottom: 1px solid #f1f5f9; }
+        .tabulator .tabulator-row:hover { background-color: #f8fafc !important; }
+        .tabulator .tabulator-row .tabulator-cell { padding: 12px 8px; vertical-align: middle; }
+    </style>
+}

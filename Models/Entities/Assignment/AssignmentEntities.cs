@@ -22,6 +22,9 @@ public class AssignmentTask : BaseEntity
 
     [MaxLength(260)]
     public string? AttachmentPath { get; set; }
+
+    public int? CreatedByUserId { get; set; }
+    public int? UpdatedByUserId { get; set; }
 }
 
 public class AssignmentSubmission : BaseEntity

@@ -1,0 +1,249 @@
+﻿using System.ComponentModel.DataAnnotations;
+using SchoolManagementSystem.Models.Entities.Base;
+using SchoolManagementSystem.Models.Enums;
+
+namespace SchoolManagementSystem.Models.Entities.Result;
+
+/// <summary>
+/// Mark Entry: Teacher enters component-wise marks for students in an exam
+/// Supports draft/submit workflow with proper state management
+/// </summary>
+public class MarkEntry : BaseEntity
+{
+    public int ExamId { get; set; }
+    public int StudentId { get; set; }
+    public int SubjectId { get; set; }
+
+    /// <summary>
+    /// Component-wise marks entry
+    /// </summary>
+    public decimal? WrittenMarks { get; set; }
+    public decimal? MCQMarks { get; set; }
+    public decimal? CQMarks { get; set; }
+    public decimal? PracticalMarks { get; set; }
+    public decimal? VivaMarks { get; set; }
+    public decimal? LabMarks { get; set; }
+    public decimal? OralMarks { get; set; }
+    public decimal? AssignmentMarks { get; set; }
+    public decimal? ContinuousAssessmentMarks { get; set; }
+
+    /// <summary>
+    /// For Primary classes: Competency-based marks
+    /// </summary>
+    public decimal? CompetencyMarks { get; set; }
+    public decimal? BehaviourMarks { get; set; }
+    public decimal? ParticipationMarks { get; set; }
+
+    /// <summary>
+    /// Total obtained marks (calculated from components)
+    /// </summary>
+    public decimal MarksObtained { get; set; } = 0;
+
+    [MaxLength(10)]
+    public string? Grade { get; set; }
+    public decimal? GradePoint { get; set; }
+
+    public int EnteredByTeacherId { get; set; }
+    public ResultWorkflowStatus Status { get; set; } = ResultWorkflowStatus.Draft;
+    public bool IsLocked { get; set; } = false;
+    public DateTime? LockedAt { get; set; }
+    public DateTime? SubmittedAt { get; set; }
+
+    // Navigation Properties
+    public virtual Exam.Exam Exam { get; set; } = null!;
+    public virtual Student.Student Student { get; set; } = null!;
+    public virtual Academic.Subject Subject { get; set; } = null!;
+    public virtual Teachers.Teacher EnteredByTeacher { get; set; } = null!;
+
+    public int? CreatedByUserId { get; set; }
+    public int? UpdatedByUserId { get; set; }
+
+    /// <summary>
+    /// Audit trail for mark changes
+    /// </summary>
+    public virtual ICollection<MarkAuditLog> AuditLogs { get; set; } = [];
+}
+
+/// <summary>
+/// Mark Audit Log: Tracks all changes to mark entries for compliance and auditing
+/// </summary>
+public class MarkAuditLog : BaseEntity
+{
+    public int MarkEntryId { get; set; }
+    public decimal OldMarks { get; set; }
+    public decimal NewMarks { get; set; }
+    public int ChangedByUserId { get; set; }
+    [MaxLength(260)]
+    public string? Reason { get; set; }
+
+    public virtual MarkEntry MarkEntry { get; set; } = null!;
+}
+
+/// <summary>
+/// Mark Entry Draft: Temporary storage for bulk mark uploads and draft entries
+/// </summary>
+public class MarkEntryDraft : BaseEntity
+{
+    public int ExamId { get; set; }
+    public int StudentId { get; set; }
+    public int SubjectId { get; set; }
+
+    /// <summary>
+    /// Component-wise marks in draft
+    /// </summary>
+    public decimal? WrittenMarks { get; set; }
+    public decimal? MCQMarks { get; set; }
+    public decimal? CQMarks { get; set; }
+    public decimal? PracticalMarks { get; set; }
+    public decimal? VivaMarks { get; set; }
+    public decimal? LabMarks { get; set; }
+    public decimal? OralMarks { get; set; }
+
+    public decimal TotalMarks { get; set; } = 0;
+    [MaxLength(500)]
+    public string? Notes { get; set; }
+
+    public bool IsApproved { get; set; } = false;
+    public bool IsRejected { get; set; } = false;
+    [MaxLength(260)]
+    public string? RejectionReason { get; set; }
+
+    public int CreatedByTeacherId { get; set; }
+    public DateTime DraftSavedAt { get; set; } = DateTime.Now;
+
+    public virtual Exam.Exam Exam { get; set; } = null!;
+    public virtual Student.Student Student { get; set; } = null!;
+    public virtual Academic.Subject Subject { get; set; } = null!;
+}
+
+/// <summary>
+/// GPA Configuration / Grading Rule: Bangladesh grading system
+/// 80-100 = A+ = 5.00, 70-79 = A = 4.00, 60-69 = A- = 3.50, 50-59 = B = 3.00,
+/// 40-49 = C = 2.00, 33-39 = D = 1.00, 0-32 = F = 0.00
+/// </summary>
+public class GradingRule : BaseEntity
+{
+    [MaxLength(10)]
+    public string Grade { get; set; } = string.Empty;
+
+    public decimal MinMarks { get; set; } = 0;
+    public decimal MaxMarks { get; set; } = 100;
+    public decimal GradePoint { get; set; } = 0;
+
+    [MaxLength(50)]
+    public string Description { get; set; } = string.Empty;
+
+    public int DisplayOrder { get; set; } = 0;
+    public bool IsActive { get; set; } = true;
+}
+
+public class ResultPublication : BaseEntity
+{
+    public int ExamId { get; set; }
+    public ResultWorkflowStatus Status { get; set; } = ResultWorkflowStatus.Submitted;
+    public DateTime? PublishedAt { get; set; }
+    public int? ApprovedByUserId { get; set; }
+    public bool IsLocked { get; set; }
+
+    // Navigation Properties
+    public virtual Exam.Exam Exam { get; set; } = null!;
+}
+
+public class ReportCard : BaseEntity
+{
+    public int ExamId { get; set; }
+    public int StudentId { get; set; }
+
+    [MaxLength(260)]
+    public string PdfPath { get; set; } = string.Empty;
+
+    public decimal Gpa { get; set; }
+
+    // Navigation Properties
+    public virtual Exam.Exam Exam { get; set; } = null!;
+    public virtual Student.Student Student { get; set; } = null!;
+}
+
+public class StudentSubjectResult : BaseEntity
+{
+    public int ExamId { get; set; }
+    public int StudentId { get; set; }
+    public int SubjectId { get; set; }
+    public decimal MarksObtained { get; set; }
+    [MaxLength(10)]
+    public string Grade { get; set; } = string.Empty;
+    public decimal GradePoint { get; set; }
+    public bool IsPassed { get; set; }
+
+    // Navigation Properties
+    public virtual Exam.Exam Exam { get; set; } = null!;
+    public virtual Student.Student Student { get; set; } = null!;
+    public virtual Academic.Subject Subject { get; set; } = null!;
+}
+
+public class StudentExamResult : BaseEntity
+{
+    public int ExamId { get; set; }
+    public int StudentId { get; set; }
+    public decimal TotalMarks { get; set; }
+    public decimal Gpa { get; set; }
+    [MaxLength(10)]
+    public string Grade { get; set; } = string.Empty;
+    public int Position { get; set; }
+    public bool IsPassed { get; set; }
+    public ResultWorkflowStatus Status { get; set; } = ResultWorkflowStatus.Draft;
+    public DateTime? PublishedAt { get; set; }
+
+    // Navigation Properties
+    public virtual Exam.Exam Exam { get; set; } = null!;
+    public virtual Student.Student Student { get; set; } = null!;
+}
+
+public class FinalResult : BaseEntity
+{
+    public int AcademicYearId { get; set; }
+    public int StudentId { get; set; }
+    public decimal FinalGpa { get; set; }
+    public int FinalPosition { get; set; }
+    public PromotionStatus PromotionStatus { get; set; } = PromotionStatus.Pending;
+    public bool IsPassed { get; set; }
+
+    // Navigation Properties
+    public virtual Academic.AcademicYear AcademicYear { get; set; } = null!;
+    public virtual Student.Student Student { get; set; } = null!;
+}
+
+public class ResultAuditLog : BaseEntity
+{
+    public int ExamId { get; set; }
+    public int StudentId { get; set; }
+    public int SubjectId { get; set; }
+    public decimal OldMarks { get; set; }
+    public decimal NewMarks { get; set; }
+    public int ChangedByUserId { get; set; }
+    [MaxLength(260)]
+    public string? Reason { get; set; }
+
+    // Navigation Properties
+    public virtual Exam.Exam Exam { get; set; } = null!;
+    public virtual Student.Student Student { get; set; } = null!;
+    public virtual Academic.Subject Subject { get; set; } = null!;
+}
+
+public class ReEvaluationRequest : BaseEntity
+{
+    public int ExamId { get; set; }
+    public int StudentId { get; set; }
+    public int SubjectId { get; set; }
+    public int RequestedByUserId { get; set; }
+    public ReEvaluationStatus Status { get; set; } = ReEvaluationStatus.Requested;
+    public decimal OldMarks { get; set; }
+    public decimal? NewMarks { get; set; }
+    [MaxLength(400)]
+    public string? Notes { get; set; }
+
+    // Navigation Properties
+    public virtual Exam.Exam Exam { get; set; } = null!;
+    public virtual Student.Student Student { get; set; } = null!;
+    public virtual Academic.Subject Subject { get; set; } = null!;
+}

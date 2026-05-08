@@ -19,6 +19,7 @@ public class UserListItemVm
     public AccountStatus Status { get; set; }
     public bool IsDeleted { get; set; }
     public string RolesText { get; set; } = string.Empty;
+    public int TotalRecords { get; set; }
 }
 
 public class UserIndexViewModel

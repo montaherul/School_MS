@@ -16,20 +16,26 @@ public class SmtpEmailSender : IEmailSender
 
     public async Task SendAsync(string to, string subject, string htmlBody, CancellationToken cancellationToken = default)
     {
-        var message = new MimeMessage();
-        message.From.Add(MailboxAddress.Parse(_options.From));
-        message.To.Add(MailboxAddress.Parse(to));
-        message.Subject = subject;
-        message.Body = new BodyBuilder { HtmlBody = htmlBody }.ToMessageBody();
-
         using var client = new SmtpClient();
         try
         {
-            await client.ConnectAsync(
-                _options.Host,
-                _options.Port,
-                _options.EnableSsl ? SecureSocketOptions.StartTls : SecureSocketOptions.Auto,
-                cancellationToken);
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress("School Management System", _options.From));
+            message.To.Add(MailboxAddress.Parse(to));
+            message.Subject = subject;
+            message.Body = new BodyBuilder { HtmlBody = htmlBody }.ToMessageBody();
+
+            // For common local development/server issues with SSL certificates
+            client.ServerCertificateValidationCallback = (s, c, h, e) => true;
+            client.CheckCertificateRevocation = false;
+            client.Timeout = 10000; // 10 seconds timeout
+
+            // Determine security based on port
+            var security = SecureSocketOptions.Auto;
+            if (_options.Port == 465) security = SecureSocketOptions.SslOnConnect;
+            else if (_options.Port == 587) security = SecureSocketOptions.StartTls;
+
+            await client.ConnectAsync(_options.Host, _options.Port, security, cancellationToken);
 
             if (!string.IsNullOrWhiteSpace(_options.UserName))
             {
@@ -41,8 +47,9 @@ public class SmtpEmailSender : IEmailSender
         }
         catch (Exception ex)
         {
-            // Log the exception, but don't fail the entire process just because email failed.
-            Console.WriteLine($"Email sending failed: {ex.Message}");
+            // Log with more detail
+            System.Diagnostics.Debug.WriteLine($"[Email Error] To: {to}, Error: {ex.Message}");
+            Console.WriteLine($"[Email Error] To: {to}, Error: {ex}");
         }
     }
 }

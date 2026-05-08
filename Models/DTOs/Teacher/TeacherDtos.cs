@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
 
 namespace SchoolManagementSystem.Models.DTOs.Teacher;
@@ -42,6 +42,8 @@ public class TeacherListItemDto
 public class TeacherUpsertDto
 {
     public int Id { get; set; }
+
+    public string TeacherNo { get; set; } = string.Empty;
 
     [Required, MaxLength(120), Display(Name = "Full Name (English)")]
     public string FullName { get; set; } = string.Empty;

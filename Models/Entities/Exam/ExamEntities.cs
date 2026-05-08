@@ -1,38 +1,174 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Models.Entities.Base;
+using SchoolManagementSystem.Models.Enums;
 
 namespace SchoolManagementSystem.Models.Entities.Exam;
 
+/// <summary>
+/// Exam Types: Half Yearly, Annual, Final, Pre-Test, Test, First Terminal, Second Terminal
+/// </summary>
+public class ExamType : BaseEntity
+{
+    [MaxLength(100)]
+    public string Name { get; set; } = string.Empty;
+
+    [MaxLength(50)]
+    public string Code { get; set; } = string.Empty;
+
+    [MaxLength(500)]
+    public string Description { get; set; } = string.Empty;
+
+    public int DisplayOrder { get; set; } = 0;
+    public bool IsActive { get; set; } = true;
+
+    // Navigation
+    public virtual ICollection<ExamConfiguration> ExamConfigurations { get; set; } = [];
+}
+
+/// <summary>
+/// Exam Configuration: Defines which exams belong to which class group
+/// E.g., Class 1-2 has 3 exams (First Terminal, Second Terminal, Final)
+/// Class 6-9 has 2 exams (Half Yearly, Annual)
+/// Class 10 has 2 exams (Pre-Test, Test)
+/// </summary>
+public class ExamConfiguration : BaseEntity
+{
+    public int ExamTypeId { get; set; }
+    public int ClassId { get; set; }
+
+    [MaxLength(100)]
+    public string DisplayName { get; set; } = string.Empty;
+
+    public decimal ExamWeightage { get; set; } = 100; // Percentage weight in final calculation
+    public int DisplayOrder { get; set; } = 0;
+    public bool IsActive { get; set; } = true;
+
+    // Navigation
+    public virtual ExamType ExamType { get; set; } = null!;
+    public virtual SchoolClass Class { get; set; } = null!;
+}
+
+/// <summary>
+/// Subject Component: Defines mark distribution for a subject
+/// E.g., Written=50, MCQ=30, Practical=20 for Science
+/// </summary>
+public class SubjectComponent : BaseEntity
+{
+    public int ClassSubjectId { get; set; }
+
+    [MaxLength(100)]
+    public string ComponentName { get; set; } = string.Empty; // Written, MCQ, Practical, CQ, Viva, Lab, Oral, etc.
+
+    public decimal MaxMarks { get; set; } = 0;
+    public int DisplayOrder { get; set; } = 0;
+    public bool IsRequired { get; set; } = true;
+    public bool IsActive { get; set; } = true;
+
+    // Navigation
+    public virtual ClassSubject ClassSubject { get; set; } = null!;
+}
+
+/// <summary>
+/// GPA Configuration: Defines how GPA is calculated
+/// Supports Bangladesh grading system:
+/// 80-100 = A+ = 5.00, 70-79 = A = 4.00, 60-69 = A- = 3.50, 50-59 = B = 3.00, 
+/// 40-49 = C = 2.00, 33-39 = D = 1.00, 0-32 = F = 0.00
+/// </summary>
+public class GpaConfiguration : BaseEntity
+{
+    [MaxLength(10)]
+    public string Grade { get; set; } = string.Empty;
+
+    public decimal MinMarks { get; set; } = 0;
+    public decimal MaxMarks { get; set; } = 100;
+    public decimal GradePoint { get; set; } = 0;
+
+    [MaxLength(50)]
+    public string Description { get; set; } = string.Empty;
+
+    public int DisplayOrder { get; set; } = 0;
+    public bool IsActive { get; set; } = true;
+}
+
+/// <summary>
+/// Main Exam Entity
+/// </summary>
 public class Exam : BaseEntity
 {
     [MaxLength(100)]
     public string Name { get; set; } = string.Empty;
 
+    public ExamTerm Term { get; set; } = ExamTerm.Other;
+    public ResultWorkflowStatus Status { get; set; } = ResultWorkflowStatus.Draft;
+
     public int AcademicYearId { get; set; }
     public DateOnly StartsOn { get; set; }
     public DateOnly EndsOn { get; set; }
+
+    public bool IsLocked { get; set; } = false;
+    public DateTime? LockedAt { get; set; }
+    public int? LockedByUserId { get; set; }
+
+    // Navigation
+    public virtual ICollection<ExamSubject> ExamSubjects { get; set; } = [];
+    public virtual ICollection<ExamSchedule> ExamSchedules { get; set; } = [];
 }
 
+/// <summary>
+/// Exam Subject: Maps subjects to exams with marks configuration
+/// </summary>
 public class ExamSubject : BaseEntity
 {
     public int ExamId { get; set; }
     public int SubjectId { get; set; }
+
     public decimal FullMarks { get; set; } = 100;
     public decimal PassMarks { get; set; } = 33;
+    public bool IsOptional { get; set; } = false;
+
+    // Component-wise marks for flexible configuration
+    public decimal? WrittenMarks { get; set; }
+    public decimal? MCQMarks { get; set; }
+    public decimal? PracticalMarks { get; set; }
+    public decimal? VivaMarks { get; set; }
+    public decimal? LabMarks { get; set; }
+    public decimal? ContinuousAssessmentMarks { get; set; }
+    public decimal? OralMarks { get; set; }
+    public decimal? AssignmentMarks { get; set; }
+
+    // Navigation
+    public virtual Exam Exam { get; set; } = null!;
+    public virtual Subject Subject { get; set; } = null!;
 }
 
+/// <summary>
+/// Exam Schedule: Date, time, and room assignment for each subject's exam
+/// </summary>
 public class ExamSchedule : BaseEntity
 {
     public int ExamId { get; set; }
     public int SubjectId { get; set; }
+
     public DateOnly ExamDate { get; set; }
     public TimeOnly StartsAt { get; set; }
     public TimeOnly EndsAt { get; set; }
 
     [MaxLength(80)]
     public string RoomNo { get; set; } = string.Empty;
+
+    [MaxLength(500)]
+    public string Instructions { get; set; } = string.Empty;
+
+    // Navigation
+    public virtual Exam Exam { get; set; } = null!;
+    public virtual Subject Subject { get; set; } = null!;
 }
 
+/// <summary>
+/// Admit Card: Generated for each student for each exam
+/// </summary>
 public class AdmitCard : BaseEntity
 {
     public int ExamId { get; set; }
@@ -40,8 +176,14 @@ public class AdmitCard : BaseEntity
 
     [MaxLength(40)]
     public string CardNo { get; set; } = string.Empty;
+
+    public DateTime? PrintedAt { get; set; }
+    public bool IsGenerated { get; set; } = false;
 }
 
+/// <summary>
+/// Seating Plan: Seat assignment for exam hall management
+/// </summary>
 public class SeatingPlan : BaseEntity
 {
     public int ExamId { get; set; }
@@ -49,4 +191,10 @@ public class SeatingPlan : BaseEntity
 
     [MaxLength(40)]
     public string SeatNo { get; set; } = string.Empty;
+
+    [MaxLength(100)]
+    public string HallNo { get; set; } = string.Empty;
+
+    public int? BlockNo { get; set; }
+    public int? RowNo { get; set; }
 }

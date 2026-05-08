@@ -874,7 +874,7 @@ namespace SchoolManagementSystem.Migrations
                         new
                         {
                             Id = 13,
-                            Code = "SCI_GEN",
+                            Code = "SCI",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
                             IsDeleted = false,

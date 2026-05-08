@@ -67,4 +67,10 @@ wwwroot\uploads\admissions\be1e6c53-96c4-46f5-97b0-d66ff2fb08b7.jpg
 wwwroot\uploads\admissions\bf51e366-5f50-4922-82fe-14982be0ea1d.jpg
 wwwroot\uploads\admissions\f0f0d59a-5312-4156-8873-55be17983e7b.png
 wwwroot\uploads\admissions\f3b54ac1-22d6-4421-b63e-e9bac2130fe9.jpeg
+wwwroot\uploads\admissions\f8376918-24f3-43e5-9c99-d11c5d4d2968.png
+wwwroot\uploads\students\96e3efd1-9126-44b5-9cd6-5784597bbf30.png
 wwwroot\uploads\students\f530d535-d486-44b0-9bd2-7160e9d0b35d.jpg
+wwwroot\uploads\teachers\640bf31dac3740a8a3be178650267857.png
+wwwroot\uploads\teachers\6e454593821e46a9a9b44bfa266fc7ce.png
+wwwroot\uploads\teachers\7dc96707c6d24da299c8bc8a710d574b.png
+wwwroot\uploads\teachers\9594b993691845b8ac355fba72c195e9.png

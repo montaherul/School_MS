@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SchoolManagementSystem.Data;
 using SchoolManagementSystem.Models.DTOs.Attendance;
 using SchoolManagementSystem.Models.ViewModels.Attendance;
 using SchoolManagementSystem.Services.Interfaces.Attendance;
@@ -12,7 +13,12 @@ namespace SchoolManagementSystem.Controllers.Attendance;
 public class AttendanceRecordController : Controller
 {
     private readonly IAttendanceRecordService _service;
-    public AttendanceRecordController(IAttendanceRecordService service) { _service = service; }
+    private readonly SchoolDbContext _db;
+    public AttendanceRecordController(IAttendanceRecordService service, SchoolDbContext db) 
+    { 
+        _service = service; 
+        _db = db;
+    }
 
     public IActionResult Index() { return View(); }
 
@@ -25,26 +31,41 @@ public class AttendanceRecordController : Controller
     [HttpGet]
     public async Task<IActionResult> GetList(int page = 1, int size = 10, string? search = null)
     {
+        int? studentId = null;
         if (User.IsInRole("Student"))
         {
-            var studentId = GetStudentIdSync();
+            studentId = GetStudentIdSync();
             if (studentId == null) return Json(new { data = new List<object>(), last_page = 0 });
-            
-            // Note: In a real app, I'd update the service to filter. 
-            // For now, I'll filter the result here or just pass the studentId if the service supported it.
-            // Since the service doesn't support it yet, I'll do a manual fetch if it's a student.
-            var result = await _service.GetPagedAsync(page, size, search);
-            var filtered = result.Items.Where(i => i.StudentId == studentId.Value).ToList();
-            return Json(new { data = filtered, last_page = Math.Ceiling((double)filtered.Count / size) });
         }
-        var resultOrig = await _service.GetPagedAsync(page, size, search);
-        return Json(new { data = resultOrig.Items, last_page = Math.Ceiling((double)resultOrig.TotalItems / resultOrig.PageSize) });
+
+        var result = await _service.GetPagedAsync(page, size, search, studentId);
+        return Json(new { data = result.Items, last_page = Math.Ceiling((double)result.TotalItems / result.PageSize) });
     }
 
     [HttpGet]
     [Authorize(Roles = "Super Admin,Principal,Assistant Head,Senior Lecturer,Lecturer")]
     public async Task<IActionResult> CreateEdit(int? id)
     {
+        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!int.TryParse(userIdStr, out var userId)) return RedirectToAction("Index", "Home");
+
+        bool isStaff = User.IsInRole("Super Admin") || User.IsInRole("Principal") || User.IsInRole("Assistant Head");
+        
+        if (!isStaff)
+        {
+            // For Lecturers/Senior Lecturers, load only assigned classes/sections
+            var teacher = await _db.Teachers.FirstOrDefaultAsync(t => t.UserId == userId && !t.IsDeleted);
+            if (teacher != null)
+            {
+                ViewBag.AssignedClasses = await _db.TeacherClassAssignments
+                    .Include(a => a.Class)
+                    .Where(a => a.TeacherId == teacher.Id && !a.IsDeleted)
+                    .Select(a => new { a.ClassId, ClassName = a.Class.Name })
+                    .Distinct()
+                    .ToListAsync();
+            }
+        }
+
         if (id.HasValue && id > 0)
         {
             var dto = await _service.GetForEditAsync(id.Value);

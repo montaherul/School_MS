@@ -7,6 +7,8 @@ public class SubjectListItemDto
     public int Id { get; set; }
     public string Code { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
+    public bool IsReligionSubject { get; set; }
+    public string? ReligionType { get; set; }
 }
 
 public class SubjectUpsertDto
@@ -18,5 +20,7 @@ public class SubjectUpsertDto
     [Required]
     [StringLength(100)]
     public string Name { get; set; } = string.Empty;
+    public bool IsReligionSubject { get; set; }
+    public string? ReligionType { get; set; }
 }
 

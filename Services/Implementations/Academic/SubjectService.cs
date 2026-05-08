@@ -19,48 +19,45 @@ public class SubjectService : ISubjectService
        string? search,
        CancellationToken cancellationToken = default)
     {
-        // ✅ Pagination safety
         page = Math.Max(page, 1);
         pageSize = Math.Clamp(pageSize, 5, 100);
 
-        var term = search?.Trim();
+        var items = new List<SubjectListItemDto>();
+        int totalCount = 0;
 
-        // ✅ Base query (No Tracking for performance)
-        var query = _db.Subjects
-            .AsNoTracking()
-            .Where(x => !x.IsDeleted);
-
-        // ✅ Improved search (Code + Name)
-        if (!string.IsNullOrWhiteSpace(term))
+        using (var command = _db.Database.GetDbConnection().CreateCommand())
         {
-            query = query.Where(x =>
-                x.Code.Contains(term) ||
-                x.Name.Contains(term)
-            );
-        }
+            command.CommandText = "sp_GetSubjectList";
+            command.CommandType = System.Data.CommandType.StoredProcedure;
+            command.Parameters.Add(new Microsoft.Data.SqlClient.SqlParameter("@PageNumber", page));
+            command.Parameters.Add(new Microsoft.Data.SqlClient.SqlParameter("@PageSize", pageSize));
+            command.Parameters.Add(new Microsoft.Data.SqlClient.SqlParameter("@SearchTerm", (object?)search ?? DBNull.Value));
 
-        // ✅ Total count
-        var total = await query.CountAsync(cancellationToken);
-
-        // ✅ Data fetch
-        var items = await query
-            .OrderByDescending(x => x.Id)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .Select(x => new SubjectListItemDto
+            await _db.Database.OpenConnectionAsync(cancellationToken);
+            using (var reader = await command.ExecuteReaderAsync(cancellationToken))
             {
-                Id = x.Id,
-                Code = x.Code,
-                Name = x.Name
-            })
-            .ToListAsync(cancellationToken);
+                while (await reader.ReadAsync(cancellationToken))
+                {
+                    items.Add(new SubjectListItemDto
+                    {
+                        Id = reader.GetInt32(0),
+                        Code = reader.GetString(1),
+                        Name = reader.GetString(2),
+                        IsReligionSubject = reader.GetBoolean(4),
+                        ReligionType = reader.IsDBNull(5) ? null : reader.GetString(5)
+                    });
+                    totalCount = reader.IsDBNull(3) ? 0 : reader.GetInt32(3);
+                }
+            }
+            await _db.Database.CloseConnectionAsync();
+        }
 
         return new PagedResult<SubjectListItemDto>
         {
             Items = items,
             Page = page,
             PageSize = pageSize,
-            TotalItems = total
+            TotalItems = totalCount
         };
     }
 
@@ -68,7 +65,14 @@ public class SubjectService : ISubjectService
     {
         var entity = await _db.Subjects.FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted, cancellationToken);
         if (entity is null) return null;
-        return new SubjectUpsertDto { Id = entity.Id,Code = entity.Code,Name = entity.Name,        };
+        return new SubjectUpsertDto 
+        { 
+            Id = entity.Id,
+            Code = entity.Code,
+            Name = entity.Name,
+            IsReligionSubject = entity.IsReligionSubject,
+            ReligionType = entity.ReligionType
+        };
     }
 
     public async Task<int> CreateAsync(
@@ -101,6 +105,8 @@ public class SubjectService : ISubjectService
         {
             Code = code,
             Name = name,
+            IsReligionSubject = dto.IsReligionSubject,
+            ReligionType = dto.ReligionType,
             CreatedBy = createdBy
         };
 
@@ -143,6 +149,8 @@ public class SubjectService : ISubjectService
 
         entity.Code = code;
         entity.Name = name;
+        entity.IsReligionSubject = dto.IsReligionSubject;
+        entity.ReligionType = dto.ReligionType;
         entity.UpdatedBy = updatedBy;
         entity.UpdatedAt = DateTime.UtcNow;
 
@@ -154,4 +162,3 @@ public class SubjectService : ISubjectService
         entity.IsDeleted = true; entity.UpdatedBy = updatedBy; entity.UpdatedAt = DateTime.UtcNow; await _db.SaveChangesAsync(cancellationToken);
     }
 }
-

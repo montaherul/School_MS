@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using SchoolManagementSystem.Models.Entities.Base;
+using SchoolManagementSystem.Models.Entities.Auth;
 
 namespace SchoolManagementSystem.Models.Entities.System;
 
@@ -34,4 +35,24 @@ public class BackupRecord : BaseEntity
 
     public DateTime BackupAt { get; set; } = DateTime.UtcNow;
     public bool Restored { get; set; }
+}
+
+public class ActivityLog : BaseEntity
+{
+    public int? UserId { get; set; }
+    public ApplicationUser? User { get; set; }
+
+    [MaxLength(100)]
+    public string Action { get; set; } = string.Empty;
+
+    [MaxLength(100)]
+    public string Module { get; set; } = string.Empty;
+
+    public int? RecordId { get; set; }
+
+    public string? OldValues { get; set; }
+    public string? NewValues { get; set; }
+
+    [MaxLength(64)]
+    public string? IpAddress { get; set; }
 }

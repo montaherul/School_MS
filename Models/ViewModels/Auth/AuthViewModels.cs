@@ -61,3 +61,9 @@ public class SetPasswordViewModel
     [Compare(nameof(Password), ErrorMessage = "Passwords do not match.")]
     public string ConfirmPassword { get; set; } = string.Empty;
 }
+
+public class VerifyOtpViewModel
+{
+    public string UserNameOrEmail { get; set; } = string.Empty;
+    public string Otp { get; set; } = string.Empty;
+}

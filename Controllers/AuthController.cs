@@ -134,10 +134,12 @@ public class AuthController : Controller
                  (u.UserName == model.UserNameOrEmail || u.Email == model.UserNameOrEmail),
             cancellationToken);
 
+        const string successMsg = "If the account exists, a password reset OTP has been sent to the registered email.";
+        
         if (user is null)
         {
-            ViewBag.Message = "If the account exists, a password reset OTP has been sent to the registered email.";
-            return View(new ForgotPasswordViewModel());
+            TempData["SuccessMessage"] = successMsg;
+            return RedirectToAction(nameof(ResetPassword), new { userNameOrEmail = model.UserNameOrEmail });
         }
 
         // Invalidate previous unused OTPs for this user.
@@ -161,20 +163,63 @@ public class AuthController : Controller
 
         await _db.SaveChangesAsync(cancellationToken);
 
-        var expiresAtLocal = DateTime.UtcNow.AddMinutes(10).ToString("u");
         var htmlBody = $@"
-<p>Your password reset OTP for <b>SchoolMS</b> is: <b>{otp}</b></p>
-<p>It expires at: <b>{expiresAtLocal}</b></p>
-<p>If you did not request this, you can ignore this email.</p>";
+<div style='font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;'>
+    <h2 style='color: #1a56db;'>Password Reset</h2>
+    <p>Hello,</p>
+    <p>You requested a password reset for your <b>SchoolMS</b> account.</p>
+    <div style='background: #f0f7ff; padding: 15px; text-align: center; border-radius: 8px; margin: 20px 0;'>
+        <span style='font-size: 24px; font-weight: bold; letter-spacing: 5px; color: #1a56db;'>{otp}</span>
+    </div>
+    <p>This code will expire in 10 minutes.</p>
+    <p>If you did not request this, please ignore this email.</p>
+    <hr style='border: none; border-top: 1px solid #eee; margin: 20px 0;'>
+    <p style='font-size: 12px; color: #666;'>School Management System</p>
+</div>";
 
         await _emailSender.SendAsync(
             to: user.Email,
-            subject: "Password Reset OTP",
+            subject: "Password Reset Code",
             htmlBody: htmlBody,
             cancellationToken: cancellationToken);
 
-        ViewBag.Message = "If the account exists, a password reset OTP has been sent to the registered email.";
-        return View(new ForgotPasswordViewModel());
+        TempData["SuccessMessage"] = successMsg;
+        return RedirectToAction(nameof(ResetPassword), new { userNameOrEmail = model.UserNameOrEmail });
+    }
+
+    [AllowAnonymous]
+    [HttpPost]
+    [IgnoreAntiforgeryToken]
+    public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpViewModel model, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(model.UserNameOrEmail) || string.IsNullOrWhiteSpace(model.Otp))
+        {
+            return Json(new { success = false, message = "Username/Email and OTP are required." });
+        }
+
+        var user = await _db.Users.FirstOrDefaultAsync(
+            u => u.Status == AccountStatus.Active &&
+                 u.IsEmailConfirmed &&
+                 !u.IsDeleted &&
+                 (u.UserName == model.UserNameOrEmail || u.Email == model.UserNameOrEmail),
+            cancellationToken);
+
+        if (user is null)
+        {
+            return Json(new { success = false, message = "Invalid account or OTP." });
+        }
+
+        var token = await _db.PasswordResetTokens
+            .Where(t => t.UserId == user.Id && !t.Used && t.ExpiresAt > DateTime.UtcNow && t.Otp == model.Otp)
+            .OrderByDescending(t => t.Id)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (token is null)
+        {
+            return Json(new { success = false, message = "Invalid or expired OTP." });
+        }
+
+        return Json(new { success = true, message = "OTP verified successfully." });
     }
 
     [AllowAnonymous]

@@ -1,120 +1,298 @@
-@model SchoolManagementSystem.Models.Entities.Teachers.Teacher
+@model SchoolManagementSystem.Models.DTOs.Teacher.TeacherUpsertDto
 @{
-    ViewData["Title"] = "Teacher Profile";
+    ViewData["Title"] = "Teacher Details - " + Model.FullName;
 }
 
-<div class="row g-4 mb-4 align-items-center">
-    <div class="col-auto">
-        <div class="profile-pic-container border rounded-circle overflow-hidden shadow-sm" style="width: 120px; height: 120px; background: #f8f9fa;">
-            @if (!string.IsNullOrEmpty(Model.ProfilePicturePath))
-            {
-                <img src="@Model.ProfilePicturePath" class="w-100 h-100 object-fit-cover" alt="Profile Picture" />
-            }
-            else
-            {
-                <div class="w-100 h-100 d-flex align-items-center justify-content-center text-muted">
-                    <i class="bi bi-person-workspace" style="font-size: 4rem;"></i>
-                </div>
-            }
+<div class="page-header mb-4">
+    <div class="d-flex align-items-center gap-3">
+        <a asp-action="Index" class="btn btn-light btn-sm rounded-circle"><i class="bi bi-arrow-left"></i></a>
+        <div>
+            <h1 class="page-title h3 mb-0">Teacher Profile</h1>
+            <p class="text-muted small mb-0">Detailed view of faculty record and assignments.</p>
         </div>
-    </div>
-    <div class="col">
-        <h1 class="mb-1 fw-bold">@Model.FullName</h1>
-        <p class="text-muted mb-0 lead">@Model.Designation | ID: @Model.TeacherNo</p>
-    </div>
-    <div class="col-auto">
-        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary px-4 rounded-pill">
-            <i class="bi bi-pencil-square me-2"></i>Edit Profile
-        </a>
     </div>
 </div>
 
 <div class="row g-4">
-    <div class="col-md-8">
-        <!-- Professional Info -->
-        <div class="card border-0 shadow-sm rounded-4 mb-4">
-            <div class="card-header bg-white border-0 p-4 pb-0">
-                <h5 class="fw-bold mb-0">Professional Summary</h5>
+    <!-- Left Column: Quick Actions & Profile Summary -->
+    <div class="col-lg-4">
+        <div class="card border-0 shadow-sm text-center mb-4 overflow-hidden">
+            <div class="card-header bg-primary py-5"></div>
+            <div class="card-body pt-0" style="margin-top: -50px;">
+                <div class="avatar-container mb-3">
+                    <img src="@(string.IsNullOrEmpty(Model.ProfilePicturePath) ? "/img/default-avatar.png" : Model.ProfilePicturePath)" 
+                         class="rounded-circle border border-4 border-white shadow-sm bg-white" 
+                         style="width: 120px; height: 120px; object-fit: cover;" alt="Profile Picture" />
+                </div>
+                <h4 class="mb-1 fw-bold text-dark">@Model.FullName</h4>
+                <p class="text-primary fw-bold mb-1">@Model.Designation</p>
+                <p class="text-muted small mb-3">@Model.Department Department</p>
+                
+                <div class="d-flex justify-content-center gap-2 mb-4">
+                    <span class="badge bg-primary-subtle text-primary border-0 rounded-pill px-3">@Model.TeacherNo</span>
+                    <span class="badge bg-success-subtle text-success border-0 rounded-pill px-3">Active</span>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
+                        <i class="bi bi-pencil-square me-2"></i>Edit Profile
+                    </a>
+                    <button class="btn btn-outline-danger btn-sm border-0 mt-2">
+                        <i class="bi bi-person-x me-2"></i>Deactivate Account
+                    </button>
+                </div>
             </div>
-            <div class="card-body p-4">
-                <div class="row g-3">
-                    <div class="col-sm-6">
-                        <label class="text-muted small text-uppercase fw-bold">Department</label>
-                        <p class="mb-0 fw-medium">@(Model.Department ?? "General Academic")</p>
+            <div class="card-footer bg-light border-0 py-3">
+                <div class="row g-0">
+                    <div class="col-6 border-end">
+                        <div class="fw-bold text-dark">2026</div>
+                        <div class="x-small text-muted text-uppercase">Joining Year</div>
                     </div>
-                    <div class="col-sm-6">
-                        <label class="text-muted small text-uppercase fw-bold">Joining Date</label>
-                        <p class="mb-0 fw-medium">@(Model.JoiningDate?.ToString("dd MMM yyyy") ?? "N/A")</p>
-                    </div>
-                    <div class="col-sm-12">
-                        <label class="text-muted small text-uppercase fw-bold">Qualification</label>
-                        <p class="mb-0 fw-medium">@(Model.Qualification ?? "Not specified")</p>
-                    </div>
-                    <div class="col-sm-12">
-                        <label class="text-muted small text-uppercase fw-bold">Specialization</label>
-                        <p class="mb-0 fw-medium">@(Model.Specialization ?? "Not specified")</p>
+                    <div class="col-6">
+                        <div class="fw-bold text-dark">12</div>
+                        <div class="x-small text-muted text-uppercase">Classes/Week</div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Contact & Demographics -->
-        <div class="card border-0 shadow-sm rounded-4">
-            <div class="card-header bg-white border-0 p-4 pb-0">
-                <h5 class="fw-bold mb-0">Contact & Demographics</h5>
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white border-bottom py-3">
+                <h6 class="mb-0 fw-bold"><i class="bi bi-telephone-fill me-2 text-primary"></i>Contact Information</h6>
             </div>
-            <div class="card-body p-4">
-                <div class="row g-3">
-                    <div class="col-sm-6">
-                        <label class="text-muted small text-uppercase fw-bold">Mobile Number</label>
-                        <p class="mb-0 fw-medium">@Model.MobileNumber</p>
-                    </div>
-                    <div class="col-sm-6">
-                        <label class="text-muted small text-uppercase fw-bold">Email Address</label>
-                        <p class="mb-0 fw-medium">@(Model.EmailAddress ?? "N/A")</p>
-                    </div>
-                    <div class="col-sm-6">
-                        <label class="text-muted small text-uppercase fw-bold">Gender</label>
-                        <p class="mb-0 fw-medium">@Model.Gender</p>
-                    </div>
-                    <div class="col-sm-6">
-                        <label class="text-muted small text-uppercase fw-bold">Blood Group</label>
-                        <p class="mb-0 fw-medium text-danger fw-bold">@(Model.BloodGroup ?? "N/A")</p>
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="icon-box-sm bg-light text-primary rounded-circle me-3"><i class="bi bi-phone"></i></div>
+                    <div>
+                        <div class="x-small text-muted">Primary Mobile</div>
+                        <div class="fw-bold">@Model.MobileNumber</div>
                     </div>
                 </div>
+                <div class="d-flex align-items-center mb-3">
+                    <div class="icon-box-sm bg-light text-primary rounded-circle me-3"><i class="bi bi-envelope"></i></div>
+                    <div>
+                        <div class="x-small text-muted">Email Address</div>
+                        <div class="fw-bold">@Model.EmailAddress</div>
+                    </div>
+                </div>
+                 @if (!string.IsNullOrEmpty(Model.AlternativeNumber))
+                 {
+                    <div class="d-flex align-items-center">
+                        <div class="icon-box-sm bg-light text-primary rounded-circle me-3"><i class="bi bi-telephone"></i></div>
+                        <div>
+                            <div class="x-small text-muted">Alternative Contact</div>
+                            <div class="fw-bold">@Model.AlternativeNumber</div>
+                        </div>
+                    </div>
+                 }
             </div>
         </div>
     </div>
 
-    <div class="col-md-4">
-        <!-- Digital Identity QR -->
-        <div class="card border-0 shadow-sm rounded-4 mb-4">
-            <div class="card-body p-4 text-center">
-                <div class="mb-3">
-                    <img src="https://chart.googleapis.com/chart?chs=180x180&cht=qr&chl=@Model.TeacherNo&choe=UTF-8" 
-                         class="img-fluid border p-2 bg-white rounded shadow-sm" 
-                         alt="Teacher QR Code" 
-                         title="@Model.TeacherNo" />
-                </div>
-                <h6 class="fw-bold mb-1">Digital Identity</h6>
-                <p class="text-muted small mb-3">Scan for Attendance</p>
-                <button class="btn btn-success btn-sm w-100 rounded-pill" onclick="window.print()">
-                    <i class="bi bi-printer me-1"></i>Print ID Card
-                </button>
+    <!-- Right Column: Tabs & Main Details -->
+    <div class="col-lg-8">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white p-0 border-bottom">
+                <ul class="nav nav-tabs border-0 px-3" id="profileTabs" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active py-3 border-0" id="info-tab" data-bs-toggle="tab" data-bs-target="#info-pane" type="button" role="tab">Personal Info</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link py-3 border-0" id="assignments-tab" data-bs-toggle="tab" data-bs-target="#assignments-pane" type="button" role="tab">Assignments</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link py-3 border-0" id="docs-tab" data-bs-toggle="tab" data-bs-target="#docs-pane" type="button" role="tab">Documents</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link py-3 border-0" id="activity-tab" data-bs-toggle="tab" data-bs-target="#activity-pane" type="button" role="tab">Account Logs</button>
+                    </li>
+                </ul>
             </div>
-        </div>
-
-        <!-- System Status -->
-        <div class="card border-0 shadow-sm rounded-4 bg-light">
             <div class="card-body p-4">
-                <h6 class="fw-bold mb-3">Account Status</h6>
-                <div class="d-flex align-items-center">
-                    <div class="rounded-circle bg-success me-2" style="width: 10px; height: 10px;"></div>
-                    <span class="fw-medium">@Model.Status</span>
+                <div class="tab-content" id="profileTabsContent">
+                    <!-- Tab: Info -->
+                    <div class="tab-pane fade show active" id="info-pane" role="tabpanel">
+                        <div class="row g-4 mb-5">
+                            <div class="col-12">
+                                <h6 class="fw-bold text-muted text-uppercase x-small mb-3">General Information</h6>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-muted x-small">Date of Birth</div>
+                                <div class="fw-bold">@Model.DateOfBirth.ToString("dd MMM yyyy")</div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-muted x-small">Gender</div>
+                                <div class="fw-bold">@Model.Gender</div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-muted x-small">Blood Group</div>
+                                <div class="fw-bold">@(Model.BloodGroup ?? "N/A")</div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-muted x-small">Nationality</div>
+                                <div class="fw-bold">@Model.Nationality</div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-muted x-small">Religion</div>
+                                <div class="fw-bold">@Model.Religion</div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-muted x-small">Joining Date</div>
+                                <div class="fw-bold">@(Model.JoiningDate?.ToString("dd MMM yyyy") ?? "N/A")</div>
+                            </div>
+                        </div>
+
+                        <div class="row g-4 mb-5">
+                            <div class="col-12">
+                                <h6 class="fw-bold text-muted text-uppercase x-small mb-3">Identity & Family</h6>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-muted x-small">NID Number</div>
+                                <div class="fw-bold">@(Model.NationalIdNo ?? "N/A")</div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-muted x-small">Father's Name</div>
+                                <div class="fw-bold">@(Model.FatherName ?? "N/A")</div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="text-muted x-small">Mother's Name</div>
+                                <div class="fw-bold">@(Model.MotherName ?? "N/A")</div>
+                            </div>
+                        </div>
+
+                        <div class="row g-4">
+                            <div class="col-12">
+                                <h6 class="fw-bold text-muted text-uppercase x-small mb-3">Address Details</h6>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="p-3 bg-light rounded-3">
+                                    <div class="x-small text-muted mb-1 fw-bold">Present Address</div>
+                                    <div class="small">@Model.PresentVillage, @Model.PresentPostOffice, @Model.PresentThana, @Model.PresentDistrict</div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="p-3 bg-light rounded-3">
+                                    <div class="x-small text-muted mb-1 fw-bold">Permanent Address</div>
+                                    <div class="small">@Model.PermanentVillage, @Model.PermanentPostOffice, @Model.PermanentThana, @Model.PermanentDistrict</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Assignments (Placeholder) -->
+                    <div class="tab-pane fade" id="assignments-pane" role="tabpanel">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h6 class="mb-0 fw-bold">Assigned Classes & Subjects</h6>
+                            <button class="btn btn-primary btn-sm rounded-pill px-3"><i class="bi bi-plus-lg me-1"></i>Assign New</button>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle border-top">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th class="small py-3">Class & Section</th>
+                                        <th class="small py-3">Subject</th>
+                                        <th class="small py-3">Type</th>
+                                        <th class="small py-3 text-end">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="border-bottom">
+                                        <td>
+                                            <div class="fw-bold">Class 10</div>
+                                            <div class="x-small text-muted">Section A</div>
+                                        </td>
+                                        <td>Physics</td>
+                                        <td><span class="badge bg-light text-primary border rounded-pill">Subject Teacher</span></td>
+                                        <td class="text-end">
+                                            <button class="btn btn-sm btn-light text-danger"><i class="bi bi-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                    <tr class="border-bottom">
+                                        <td>
+                                            <div class="fw-bold">Class 9</div>
+                                            <div class="x-small text-muted">Section B</div>
+                                        </td>
+                                        <td>General Science</td>
+                                        <td><span class="badge bg-light text-success border rounded-pill">Class Teacher</span></td>
+                                        <td class="text-end">
+                                            <button class="btn btn-sm btn-light text-danger"><i class="bi bi-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Documents (Placeholder) -->
+                    <div class="tab-pane fade" id="docs-pane" role="tabpanel">
+                         <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h6 class="mb-0 fw-bold">Uploaded Documents</h6>
+                            <button class="btn btn-light btn-sm border rounded-pill px-3"><i class="bi bi-upload me-1"></i>Upload New</button>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center p-3 border rounded-3 hover-shadow-sm transition">
+                                    <div class="icon-box bg-danger-subtle text-danger rounded-3 me-3"><i class="bi bi-file-earmark-pdf-fill"></i></div>
+                                    <div class="flex-grow-1 overflow-hidden">
+                                        <div class="fw-bold text-truncate small">CV_JohnSmith.pdf</div>
+                                        <div class="x-small text-muted">Uploaded on 12 Jan 2026</div>
+                                    </div>
+                                    <button class="btn btn-sm btn-light rounded-circle ms-2"><i class="bi bi-download"></i></button>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="d-flex align-items-center p-3 border rounded-3 hover-shadow-sm transition">
+                                    <div class="icon-box bg-primary-subtle text-primary rounded-3 me-3"><i class="bi bi-file-earmark-image-fill"></i></div>
+                                    <div class="flex-grow-1 overflow-hidden">
+                                        <div class="fw-bold text-truncate small">NID_Copy.jpg</div>
+                                        <div class="x-small text-muted">Uploaded on 12 Jan 2026</div>
+                                    </div>
+                                    <button class="btn btn-sm btn-light rounded-circle ms-2"><i class="bi bi-download"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Activity (Placeholder) -->
+                    <div class="tab-pane fade" id="activity-pane" role="tabpanel">
+                        <h6 class="mb-4 fw-bold">Recent System Activity</h6>
+                        <div class="timeline">
+                            <div class="timeline-item d-flex gap-3 mb-4">
+                                <div class="timeline-icon bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; flex-shrink: 0;"><i class="bi bi-check-lg"></i></div>
+                                <div>
+                                    <div class="fw-bold small">Teacher Profile Updated</div>
+                                    <div class="x-small text-muted">by Super Admin | 2 hours ago</div>
+                                </div>
+                            </div>
+                            <div class="timeline-item d-flex gap-3 mb-4">
+                                <div class="timeline-icon bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; flex-shrink: 0;"><i class="bi bi-key-fill"></i></div>
+                                <div>
+                                    <div class="fw-bold small">User Account Generated</div>
+                                    <div class="x-small text-muted">by system | 12 Jan 2026</div>
+                                    <div class="mt-2 p-2 bg-light rounded x-small border">
+                                        <span class="text-muted">Username:</span> john.smith
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <hr />
-                <small class="text-muted">Last updated on @(Model.UpdatedAt?.ToString("dd MMM, yyyy") ?? "Never")</small>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+    .icon-box-sm { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
+    .icon-box { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .fw-600 { font-weight: 600; }
+    .x-small { font-size: 0.75rem; }
+    .hover-shadow-sm:hover { shadow: 0 .125rem .25rem rgba(0,0,0,.075)!important; }
+    .transition { transition: all 0.2s ease; }
+    .nav-tabs .nav-link.active { color: var(--clr-primary); border-bottom: 2px solid var(--clr-primary) !important; font-weight: 700; background: transparent; }
+    .nav-tabs .nav-link { color: var(--clr-text-muted); font-weight: 500; }
+    .timeline { position: relative; }
+    .timeline::before { content: ''; position: absolute; left: 15px; top: 0; bottom: 0; width: 2px; background: #f1f5f9; }
+    .timeline-item { position: relative; z-index: 1; }
+</style>

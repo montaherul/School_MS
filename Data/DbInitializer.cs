@@ -129,18 +129,49 @@ public static class DbInitializer
         var sections = new List<Section>();
         int id = 1;
 
-        for (int cls = 1; cls <= 10; cls++)
+        // Class 1–8: flat A/B sections (IDs 1–16)
+        for (int cls = 1; cls <= 8; cls++)
         {
-            // Default sections
             sections.Add(new Section { Id = id++, SchoolClassId = cls, Name = "A", CreatedAt = createdAt });
             sections.Add(new Section { Id = id++, SchoolClassId = cls, Name = "B", CreatedAt = createdAt });
+        }
 
-            // Special groups for Class 9 & 10
-            if (cls == 9 || cls == 10)
+        // Class 9 & 10: Group containers + 2 leaf sub-sections each
+        // Groups: Science, Business Studies, Humanities
+        // Each group gets sub-sections: "{Group} A", "{Group} B"
+        // Admin can auto-add "{Group} C" once group reaches 100+ students
+        foreach (var cls in new[] { 9, 10 })
+        {
+            var groups = new[] { "Science", "Business Studies", "Humanities" };
+            foreach (var groupName in groups)
             {
-                sections.Add(new Section { Id = id++, SchoolClassId = cls, Name = "Science", CreatedAt = createdAt });
-                sections.Add(new Section { Id = id++, SchoolClassId = cls, Name = "Business Studies", CreatedAt = createdAt });
-                sections.Add(new Section { Id = id++, SchoolClassId = cls, Name = "Humanities", CreatedAt = createdAt });
+                int groupId = id++;
+                // Parent group section (ParentSectionId = null = it IS the group)
+                sections.Add(new Section
+                {
+                    Id = groupId,
+                    SchoolClassId = cls,
+                    Name = groupName,
+                    ParentSectionId = null,
+                    CreatedAt = createdAt
+                });
+                // Leaf sub-sections A and B
+                sections.Add(new Section
+                {
+                    Id = id++,
+                    SchoolClassId = cls,
+                    Name = $"{groupName} A",
+                    ParentSectionId = groupId,
+                    CreatedAt = createdAt
+                });
+                sections.Add(new Section
+                {
+                    Id = id++,
+                    SchoolClassId = cls,
+                    Name = $"{groupName} B",
+                    ParentSectionId = groupId,
+                    CreatedAt = createdAt
+                });
             }
         }
 
@@ -170,7 +201,7 @@ public static class DbInitializer
        new Subject { Id = 10, Code = "BAN2", Name = "বাংলা ২য় পত্র", CreatedAt = createdAt },
        new Subject { Id = 11, Code = "ENG1", Name = "ইংরেজি ১ম পত্র", CreatedAt = createdAt },
        new Subject { Id = 12, Code = "ENG2", Name = "ইংরেজি ২য় পত্র", CreatedAt = createdAt },
-       new Subject { Id = 13, Code = "SCI_GEN", Name = "বিজ্ঞান", CreatedAt = createdAt },
+       new Subject { Id = 13, Code = "SCI", Name = "বিজ্ঞান", CreatedAt = createdAt },
        new Subject { Id = 14, Code = "ICT", Name = "তথ্য ও যোগাযোগ প্রযুক্তি", CreatedAt = createdAt },
        new Subject { Id = 15, Code = "AGR", Name = "কৃষি শিক্ষা", CreatedAt = createdAt },
 
@@ -216,8 +247,8 @@ public static class DbInitializer
 
         modelBuilder.Entity<Exam>().HasData(new Exam { Id = 1, Name = "Midterm", AcademicYearId = 1, StartsOn = new DateOnly(2026, 6, 1), EndsOn = new DateOnly(2026, 6, 12), CreatedAt = createdAt });
         modelBuilder.Entity<MarkEntry>().HasData(
-            new MarkEntry { Id = 1, ExamId = 1, StudentId = 1, SubjectId = 1, MarksObtained = 86, EnteredByTeacherId = 1, Status = PublishStatus.Published, CreatedAt = createdAt },
-            new MarkEntry { Id = 2, ExamId = 1, StudentId = 2, SubjectId = 1, MarksObtained = 78, EnteredByTeacherId = 1, Status = PublishStatus.Published, CreatedAt = createdAt });
+            new MarkEntry { Id = 1, ExamId = 1, StudentId = 1, SubjectId = 1, MarksObtained = 86, EnteredByTeacherId = 1, Status = ResultWorkflowStatus.Published, CreatedAt = createdAt },
+            new MarkEntry { Id = 2, ExamId = 1, StudentId = 2, SubjectId = 1, MarksObtained = 78, EnteredByTeacherId = 1, Status = ResultWorkflowStatus.Published, CreatedAt = createdAt });
 
         modelBuilder.Entity<FeeInvoice>().HasData(
             new FeeInvoice { Id = 1, InvoiceNo = "INV-2026-0001", StudentId = 1, DueDate = new DateOnly(2026, 5, 10), TotalAmount = 2500, PaidAmount = 2500, Status = PaymentStatus.Paid, CreatedAt = createdAt },
@@ -227,5 +258,15 @@ public static class DbInitializer
         modelBuilder.Entity<Notice>().HasData(new Notice { Id = 1, Title = "Welcome to the 2026 academic session", Body = "Classes and office activities are active.", AudienceRole = "All", PublishAt = createdAt, CreatedAt = createdAt });
         modelBuilder.Entity<Book>().HasData(new Book { Id = 1, AccessionNo = "B-0001", Title = "Primary Mathematics", Author = "Academic Board", TotalCopies = 10, AvailableCopies = 8, CreatedAt = createdAt });
         modelBuilder.Entity<SchoolProfile>().HasData(new SchoolProfile { Id = 1, Name = "School Management System", Address = "Dhaka, Bangladesh", Phone = "01000000000", Email = "info@school.local", CreatedAt = createdAt });
+
+        modelBuilder.Entity<GradingRule>().HasData(
+            new GradingRule { Id = 1, Grade = "A+", MinMarks = 80, MaxMarks = 100, GradePoint = 5.0m, CreatedAt = createdAt },
+            new GradingRule { Id = 2, Grade = "A", MinMarks = 70, MaxMarks = 79, GradePoint = 4.0m, CreatedAt = createdAt },
+            new GradingRule { Id = 3, Grade = "A-", MinMarks = 60, MaxMarks = 69, GradePoint = 3.5m, CreatedAt = createdAt },
+            new GradingRule { Id = 4, Grade = "B", MinMarks = 50, MaxMarks = 59, GradePoint = 3.0m, CreatedAt = createdAt },
+            new GradingRule { Id = 5, Grade = "C", MinMarks = 40, MaxMarks = 49, GradePoint = 2.0m, CreatedAt = createdAt },
+            new GradingRule { Id = 6, Grade = "D", MinMarks = 33, MaxMarks = 39, GradePoint = 1.0m, CreatedAt = createdAt },
+            new GradingRule { Id = 7, Grade = "F", MinMarks = 0, MaxMarks = 32, GradePoint = 0.0m, CreatedAt = createdAt }
+        );
     }
 }

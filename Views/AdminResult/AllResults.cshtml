@@ -1,0 +1,307 @@
+@model IEnumerable<SchoolManagementSystem.Models.Entities.Result.StudentExamResult>
+@{
+    ViewData["Title"] = "All Results Overview";
+    var exams = ViewBag.Exams as IEnumerable<dynamic>;
+    var classes = ViewBag.Classes as IEnumerable<dynamic>;
+    var selectedExamId = ViewBag.SelectedExamId as int?;
+    var selectedClassId = ViewBag.SelectedClassId as int?;
+    var selectedStatus = ViewBag.SelectedStatus as string;
+}
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0 bg-gradient-success text-white">
+                <div class="card-body p-4">
+                    <h2 class="mb-1">
+                        <i class="fas fa-chart-bar me-2"></i>All Results Overview
+                    </h2>
+                    <p class="mb-0">Comprehensive view of all student results across all exams</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-filter me-2"></i>Filters
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Exam</label>
+                            <select name="examId" class="form-select">
+                                <option value="">All Exams</option>
+                                @if (exams != null)
+                                {
+                                    foreach (var exam in exams)
+                                    {
+                                        <option value="@exam.Id" selected="@(selectedExamId == exam.Id)">
+                                            @exam.Name
+                                        </option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Class</label>
+                            <select name="classId" class="form-select">
+                                <option value="">All Classes</option>
+                                @if (classes != null)
+                                {
+                                    foreach (var cls in classes)
+                                    {
+                                        <option value="@cls.Id" selected="@(selectedClassId == cls.Id)">
+                                            @cls.Name
+                                        </option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Status</label>
+                            <select name="status" class="form-select">
+                                <option value="">All Status</option>
+                                <option value="published" selected="@(selectedStatus == "published")">Published</option>
+                                <option value="approved" selected="@(selectedStatus == "approved")">Approved</option>
+                                <option value="draft" selected="@(selectedStatus == "draft")">Draft</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary me-2">
+                                <i class="fas fa-search me-1"></i>Filter
+                            </button>
+                            <a href="@Url.Action("AllResults", "AdminResult")" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-1"></i>Clear
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Table -->
+    @if (Model != null && Model.Any())
+    {
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 text-success">
+                            <i class="fas fa-list me-2"></i>Results
+                        </h5>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-sm btn-outline-primary" onclick="exportToExcel()">
+                                <i class="fas fa-download me-1"></i>Export Excel
+                            </button>
+                            <button class="btn btn-sm btn-outline-success" onclick="exportToPDF()">
+                                <i class="fas fa-file-pdf me-1"></i>Export PDF
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0" id="resultsTable">
+                                <thead class="bg-light text-muted small text-uppercase">
+                                    <tr>
+                                        <th class="ps-4">Student</th>
+                                        <th>Class</th>
+                                        <th>Roll No</th>
+                                        <th>Exam</th>
+                                        <th>GPA</th>
+                                        <th>Grade</th>
+                                        <th>Total Marks</th>
+                                        <th>Position</th>
+                                        <th>Status</th>
+                                        <th>Result Date</th>
+                                        <th class="text-end pe-4">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var result in Model)
+                                    {
+                                        <tr>
+                                            <td class="ps-4">
+                                                <div class="d-flex align-items-center">
+                                                    <div class="flex-shrink-0 me-3">
+                                                        <div class="bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                            <i class="fas fa-user text-primary"></i>
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <div class="fw-bold">@result.Student?.FullName</div>
+                                                        <small class="text-muted">@result.Student?.StudentNo</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-info">@result.Student?.Class?.Name</span>
+                                            </td>
+                                            <td class="fw-bold">@result.Student?.RollNumber</td>
+                                            <td>
+                                                <div>
+                                                    <div class="fw-bold">@result.Exam?.Name</div>
+                                                    <small class="text-muted">@result.Exam?.Term</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-primary fs-6">@result.Gpa.ToString("F2")</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-success fs-6">@result.Grade</span>
+                                            </td>
+                                            <td>
+                                                <div>
+                                                    <div class="fw-bold">@result.TotalMarks.ToString("F1")</div>
+                                                    <small class="text-muted">out of @result.TotalFullMarks</small>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                @if (result.Position > 0)
+                                                {
+                                                    <span class="badge bg-warning text-dark">
+                                                        <i class="fas fa-trophy me-1"></i>@result.Position
+                                                        @if (result.ClassPosition > 0 && result.ClassPosition != result.Position)
+                                                        {
+                                                            <small>(Class: @result.ClassPosition)</small>
+                                                        }
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (result.IsPassed)
+                                                {
+                                                    <span class="badge bg-success">Passed</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-danger">Failed</span>
+                                                }
+                                                <br>
+                                                <small class="text-muted">@result.Status</small>
+                                            </td>
+                                            <td>
+                                                <small class="text-muted">
+                                                    @result.PublishedAt?.ToShortDateString() ?? result.CreatedAt.ToShortDateString()
+                                                </small>
+                                            </td>
+                                            <td class="text-end pe-4">
+                                                <div class="btn-group btn-group-sm">
+                                                    <a href="@Url.Action("Details", "Student", new { id = result.StudentId })"
+                                                       class="btn btn-outline-primary btn-sm" title="Student Details">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <button class="btn btn-outline-info btn-sm"
+                                                            onclick="viewDetailedResult(@result.Id)"
+                                                            title="Detailed Result">
+                                                        <i class="fas fa-chart-bar"></i>
+                                                    </button>
+                                                    <button class="btn btn-outline-warning btn-sm"
+                                                            onclick="printResult(@result.Id)"
+                                                            title="Print Result">
+                                                        <i class="fas fa-print"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-light">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <small class="text-muted">
+                                    Showing @Model.Count() results
+                                    @if (selectedExamId.HasValue || selectedClassId.HasValue || !string.IsNullOrEmpty(selectedStatus))
+                                    {
+                                        <span>(filtered)</span>
+                                    }
+                                </small>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <!-- Pagination would go here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-chart-bar fa-4x text-muted mb-3"></i>
+                        <h5 class="text-muted">No Results Found</h5>
+                        <p class="text-muted mb-4">
+                            @if (selectedExamId.HasValue || selectedClassId.HasValue || !string.IsNullOrEmpty(selectedStatus))
+                            {
+                                <span>No results match the selected filters.</span>
+                            }
+                            else
+                            {
+                                <span>No results have been calculated yet.</span>
+                            }
+                        </p>
+                        @if (selectedExamId.HasValue || selectedClassId.HasValue || !string.IsNullOrEmpty(selectedStatus))
+                        {
+                            <a href="@Url.Action("AllResults", "AdminResult")" class="btn btn-outline-secondary me-2">
+                                <i class="fas fa-times me-1"></i>Clear Filters
+                            </a>
+                        }
+                        <a href="@Url.Action("Dashboard", "AdminResult")" class="btn btn-primary">
+                            <i class="fas fa-tachometer-alt me-1"></i>Go to Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#resultsTable').DataTable({
+                "pageLength": 25,
+                "order": [[3, "desc"], [9, "desc"]], // Sort by GPA desc, then date desc
+                "columnDefs": [
+                    { "orderable": false, "targets": [10] } // Disable sorting on actions column
+                ]
+            });
+        });
+
+        function viewDetailedResult(resultId) {
+            // Implement detailed result view
+            alert('Detailed result view for ID: ' + resultId);
+        }
+
+        function printResult(resultId) {
+            // Implement result printing
+            alert('Print result for ID: ' + resultId);
+        }
+
+        function exportToExcel() {
+            alert('Excel export feature coming soon!');
+        }
+
+        function exportToPDF() {
+            alert('PDF export feature coming soon!');
+        }
+    </script>
+}

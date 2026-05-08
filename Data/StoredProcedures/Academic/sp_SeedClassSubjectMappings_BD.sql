@@ -1,0 +1,102 @@
+BEGIN TRANSACTION;
+
+DECLARE @ClassIds TABLE (SortOrder INT PRIMARY KEY, ClassId INT);
+INSERT INTO @ClassIds (SortOrder, ClassId)
+SELECT SortOrder, Id FROM Classes WHERE IsDeleted = 0;
+
+DECLARE @SubjectIds TABLE (Code NVARCHAR(30) PRIMARY KEY, SubjectId INT);
+INSERT INTO @SubjectIds (Code, SubjectId)
+SELECT UPPER(LTRIM(RTRIM(Code))), Id FROM Subjects WHERE IsDeleted = 0;
+
+DECLARE @GroupIds TABLE (Name NVARCHAR(100) PRIMARY KEY, GroupId INT);
+INSERT INTO @GroupIds (Name, GroupId)
+SELECT UPPER(LTRIM(RTRIM(Name))), Id FROM StudentGroups WHERE IsDeleted = 0;
+
+DECLARE @Mappings TABLE (
+	ClassSortOrder INT,
+	SubjectCode NVARCHAR(30),
+	GroupName NVARCHAR(100) NULL,
+	IsOptional BIT,
+	IsReligionSubject BIT,
+	ReligionType NVARCHAR(50) NULL
+);
+
+-- Classes 1–5 compulsory
+INSERT INTO @Mappings VALUES
+(1,'101',NULL,0,0,NULL),(1,'107',NULL,0,0,NULL),(1,'109',NULL,0,0,NULL),(1,'127',NULL,0,0,NULL),(1,'150',NULL,0,0,NULL),(1,'154',NULL,0,0,NULL),(1,'147',NULL,0,0,NULL),(1,'148',NULL,0,0,NULL),
+(2,'101',NULL,0,0,NULL),(2,'107',NULL,0,0,NULL),(2,'109',NULL,0,0,NULL),(2,'127',NULL,0,0,NULL),(2,'150',NULL,0,0,NULL),(2,'154',NULL,0,0,NULL),(2,'147',NULL,0,0,NULL),(2,'148',NULL,0,0,NULL),
+(3,'101',NULL,0,0,NULL),(3,'107',NULL,0,0,NULL),(3,'109',NULL,0,0,NULL),(3,'127',NULL,0,0,NULL),(3,'150',NULL,0,0,NULL),(3,'154',NULL,0,0,NULL),(3,'147',NULL,0,0,NULL),(3,'148',NULL,0,0,NULL),
+(4,'101',NULL,0,0,NULL),(4,'107',NULL,0,0,NULL),(4,'109',NULL,0,0,NULL),(4,'127',NULL,0,0,NULL),(4,'150',NULL,0,0,NULL),(4,'154',NULL,0,0,NULL),(4,'147',NULL,0,0,NULL),(4,'148',NULL,0,0,NULL),
+(5,'101',NULL,0,0,NULL),(5,'107',NULL,0,0,NULL),(5,'109',NULL,0,0,NULL),(5,'127',NULL,0,0,NULL),(5,'150',NULL,0,0,NULL),(5,'154',NULL,0,0,NULL),(5,'147',NULL,0,0,NULL),(5,'148',NULL,0,0,NULL);
+
+-- Religion subjects for classes 1–5
+INSERT INTO @Mappings VALUES
+(1,'111',NULL,0,1,'Islam'),(1,'112',NULL,0,1,'Hindu'),(1,'113',NULL,0,1,'Buddhist'),(1,'114',NULL,0,1,'Christian'),
+(2,'111',NULL,0,1,'Islam'),(2,'112',NULL,0,1,'Hindu'),(2,'113',NULL,0,1,'Buddhist'),(2,'114',NULL,0,1,'Christian'),
+(3,'111',NULL,0,1,'Islam'),(3,'112',NULL,0,1,'Hindu'),(3,'113',NULL,0,1,'Buddhist'),(3,'114',NULL,0,1,'Christian'),
+(4,'111',NULL,0,1,'Islam'),(4,'112',NULL,0,1,'Hindu'),(4,'113',NULL,0,1,'Buddhist'),(4,'114',NULL,0,1,'Christian'),
+(5,'111',NULL,0,1,'Islam'),(5,'112',NULL,0,1,'Hindu'),(5,'113',NULL,0,1,'Buddhist'),(5,'114',NULL,0,1,'Christian');
+
+-- Classes 6–8 compulsory
+INSERT INTO @Mappings VALUES
+(6,'101',NULL,0,0,NULL),(6,'102',NULL,0,0,NULL),(6,'107',NULL,0,0,NULL),(6,'108',NULL,0,0,NULL),(6,'109',NULL,0,0,NULL),(6,'147',NULL,0,0,NULL),(6,'154',NULL,0,0,NULL),(6,'148',NULL,0,0,NULL),(6,'155',NULL,0,0,NULL),(6,'150',NULL,0,0,NULL),
+(7,'101',NULL,0,0,NULL),(7,'102',NULL,0,0,NULL),(7,'107',NULL,0,0,NULL),(7,'108',NULL,0,0,NULL),(7,'109',NULL,0,0,NULL),(7,'147',NULL,0,0,NULL),(7,'154',NULL,0,0,NULL),(7,'148',NULL,0,0,NULL),(7,'155',NULL,0,0,NULL),(7,'150',NULL,0,0,NULL),
+(8,'101',NULL,0,0,NULL),(8,'102',NULL,0,0,NULL),(8,'107',NULL,0,0,NULL),(8,'108',NULL,0,0,NULL),(8,'109',NULL,0,0,NULL),(8,'147',NULL,0,0,NULL),(8,'154',NULL,0,0,NULL),(8,'148',NULL,0,0,NULL),(8,'155',NULL,0,0,NULL),(8,'150',NULL,0,0,NULL);
+
+-- Religion subjects for classes 6–8
+INSERT INTO @Mappings VALUES
+(6,'111',NULL,0,1,'Islam'),(6,'112',NULL,0,1,'Hindu'),(6,'113',NULL,0,1,'Buddhist'),(6,'114',NULL,0,1,'Christian'),
+(7,'111',NULL,0,1,'Islam'),(7,'112',NULL,0,1,'Hindu'),(7,'113',NULL,0,1,'Buddhist'),(7,'114',NULL,0,1,'Christian'),
+(8,'111',NULL,0,1,'Islam'),(8,'112',NULL,0,1,'Hindu'),(8,'113',NULL,0,1,'Buddhist'),(8,'114',NULL,0,1,'Christian');
+
+-- Optional subjects for classes 6–8
+INSERT INTO @Mappings VALUES
+(6,'134',NULL,1,0,NULL),(6,'151',NULL,1,0,NULL),
+(7,'134',NULL,1,0,NULL),(7,'151',NULL,1,0,NULL),
+(8,'134',NULL,1,0,NULL),(8,'151',NULL,1,0,NULL);
+
+-- Science group (classes 9–10)
+INSERT INTO @Mappings VALUES
+(9,'101','SCIENCE',0,0,NULL),(9,'102','SCIENCE',0,0,NULL),(9,'107','SCIENCE',0,0,NULL),(9,'108','SCIENCE',0,0,NULL),(9,'109','SCIENCE',0,0,NULL),(9,'126','SCIENCE',0,0,NULL),(9,'136','SCIENCE',0,0,NULL),(9,'137','SCIENCE',0,0,NULL),(9,'138','SCIENCE',0,0,NULL),(9,'150','SCIENCE',0,0,NULL),(9,'154','SCIENCE',0,0,NULL),
+(10,'101','SCIENCE',0,0,NULL),(10,'102','SCIENCE',0,0,NULL),(10,'107','SCIENCE',0,0,NULL),(10,'108','SCIENCE',0,0,NULL),(10,'109','SCIENCE',0,0,NULL),(10,'126','SCIENCE',0,0,NULL),(10,'136','SCIENCE',0,0,NULL),(10,'137','SCIENCE',0,0,NULL),(10,'138','SCIENCE',0,0,NULL),(10,'150','SCIENCE',0,0,NULL),(10,'154','SCIENCE',0,0,NULL);
+
+-- Business Studies group (classes 9–10)
+INSERT INTO @Mappings VALUES
+(9,'101','BUSINESS STUDIES',0,0,NULL),(9,'102','BUSINESS STUDIES',0,0,NULL),(9,'107','BUSINESS STUDIES',0,0,NULL),(9,'108','BUSINESS STUDIES',0,0,NULL),(9,'109','BUSINESS STUDIES',0,0,NULL),(9,'146','BUSINESS STUDIES',0,0,NULL),(9,'143','BUSINESS STUDIES',0,0,NULL),(9,'141','BUSINESS STUDIES',0,0,NULL),(9,'152','BUSINESS STUDIES',0,0,NULL),(9,'154','BUSINESS STUDIES',0,0,NULL),(9,'156','BUSINESS STUDIES',0,0,NULL),
+(10,'101','BUSINESS STUDIES',0,0,NULL),(10,'102','BUSINESS STUDIES',0,0,NULL),(10,'107','BUSINESS STUDIES',0,0,NULL),(10,'108','BUSINESS STUDIES',0,0,NULL),(10,'109','BUSINESS STUDIES',0,0,NULL),(10,'146','BUSINESS STUDIES',0,0,NULL),(10,'143','BUSINESS STUDIES',0,0,NULL),(10,'141','BUSINESS STUDIES',0,0,NULL),(10,'152','BUSINESS STUDIES',0,0,NULL),(10,'154','BUSINESS STUDIES',0,0,NULL),(10,'156','BUSINESS STUDIES',0,0,NULL);
+
+-- Humanities group (classes 9–10)
+INSERT INTO @Mappings VALUES
+(9,'101','HUMANITIES',0,0,NULL),(9,'102','HUMANITIES',0,0,NULL),(9,'107','HUMANITIES',0,0,NULL),(9,'108','HUMANITIES',0,0,NULL),(9,'109','HUMANITIES',0,0,NULL),(9,'153','HUMANITIES',0,0,NULL),(9,'110','HUMANITIES',0,0,NULL),(9,'140','HUMANITIES',0,0,NULL),(9,'141','HUMANITIES',0,0,NULL),(9,'154','HUMANITIES',0,0,NULL),(9,'156','HUMANITIES',0,0,NULL),(9,'126','HUMANITIES',1,0,NULL),
+(10,'101','HUMANITIES',0,0,NULL),(10,'102','HUMANITIES',0,0,NULL),(10,'107','HUMANITIES',0,0,NULL),(10,'108','HUMANITIES',0,0,NULL),(10,'109','HUMANITIES',0,0,NULL),(10,'153','HUMANITIES',0,0,NULL),(10,'110','HUMANITIES',0,0,NULL),(10,'140','HUMANITIES',0,0,NULL),(10,'141','HUMANITIES',0,0,NULL),(10,'154','HUMANITIES',0,0,NULL),(10,'156','HUMANITIES',0,0,NULL),(10,'126','HUMANITIES',1,0,NULL);
+
+-- Religion subjects for classes 9–10
+INSERT INTO @Mappings VALUES
+(9,'111',NULL,0,1,'Islam'),(9,'112',NULL,0,1,'Hindu'),(9,'113',NULL,0,1,'Buddhist'),(9,'114',NULL,0,1,'Christian'),
+(10,'111',NULL,0,1,'Islam'),(10,'112',NULL,0,1,'Hindu'),(10,'113',NULL,0,1,'Buddhist'),(10,'114',NULL,0,1,'Christian');
+
+INSERT INTO ClassSubjects (SchoolClassId, SubjectId, StudentGroupId, IsOptional, IsReligionSubject, ReligionType, CreatedBy, CreatedAt, IsDeleted)
+SELECT
+	c.ClassId,
+	s.SubjectId,
+	g.GroupId,
+	m.IsOptional,
+	m.IsReligionSubject,
+	m.ReligionType,
+	'system',
+	SYSUTCDATETIME(),
+	0
+FROM @Mappings m
+JOIN @ClassIds c ON c.SortOrder = m.ClassSortOrder
+JOIN @SubjectIds s ON s.Code = m.SubjectCode
+LEFT JOIN @GroupIds g ON g.Name = UPPER(LTRIM(RTRIM(m.GroupName)))
+WHERE NOT EXISTS (
+	SELECT 1
+	FROM ClassSubjects cs
+	WHERE cs.IsDeleted = 0
+	  AND cs.SchoolClassId = c.ClassId
+	  AND cs.SubjectId = s.SubjectId
+	  AND ISNULL(cs.StudentGroupId, 0) = ISNULL(g.GroupId, 0)
+);
+
+COMMIT TRANSACTION;

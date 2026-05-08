@@ -19,12 +19,24 @@ public class StudentController : Controller
     }
 
     [RequirePermission("Student.View")]
-    public IActionResult Index()
+    public async Task<IActionResult> Index(int page = 1, int pageSize = 10, string? search = null, CancellationToken cancellationToken = default)
     {
         if (User.IsInRole("Student"))
         {
             return RedirectToAction(nameof(Details), new { id = GetStudentIdSync() });
         }
+
+        // Detect AJAX/Tabulator requests: check headers OR presence of pagination query params
+        bool isAjax = Request.Headers["Accept"].ToString().Contains("application/json")
+                    || Request.Headers["X-Requested-With"] == "XMLHttpRequest"
+                    || Request.Query.ContainsKey("page");
+
+        if (isAjax)
+        {
+            var result = await _studentService.GetPagedAsync(page, pageSize, search, cancellationToken);
+            return Json(new { data = result.Items, last_page = Math.Ceiling((double)result.TotalItems / result.PageSize), total_records = result.TotalItems });
+        }
+
         return View();
     }
 
@@ -146,21 +158,6 @@ public class StudentController : Controller
         return View(dto);
     }
 
-    [HttpGet]
-    [RequirePermission("Student.View")]
-    public async Task<IActionResult> GetList(int page = 1, int size = 10, string? search = null, CancellationToken cancellationToken = default)
-    {
-        if (User.IsInRole("Student"))
-        {
-            var studentId = await GetStudentIdAsync(cancellationToken);
-            if (studentId == null) return Json(new { data = new List<object>(), last_page = 0 });
-            
-            var single = await _studentService.GetForEditAsync(studentId.Value, cancellationToken);
-            return Json(new { data = new[] { single }, last_page = 1 });
-        }
-        var result = await _studentService.GetPagedAsync(page, size, search, cancellationToken);
-        return Json(new { data = result.Items, last_page = Math.Ceiling((double)result.TotalItems / result.PageSize) });
-    }
 
     private async Task<int?> GetStudentIdAsync(CancellationToken ct)
     {
@@ -191,6 +188,24 @@ public class StudentController : Controller
         var db = HttpContext.RequestServices
             .GetRequiredService<SchoolManagementSystem.Data.SchoolDbContext>();
 
+        var sectionData = await db.Sections
+            .Select(s => new {
+                s.Id,
+                s.Name,
+                s.Capacity,
+                StudentCount = db.Students.Count(st => st.SectionId == s.Id && !st.IsDeleted && st.Status == SchoolManagementSystem.Models.Enums.StudentStatus.Active)
+            })
+            .ToListAsync(cancellationToken);
+
+        var selectList = sectionData
+            .Select(s => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
+            {
+                Value = s.Id.ToString(),
+                Text = $"{s.Name} ({s.StudentCount}/{s.Capacity}){(s.StudentCount >= s.Capacity ? " - FULL" : "")}",
+                Disabled = s.StudentCount >= s.Capacity
+            })
+            .ToList();
+
         if (id.HasValue && id > 0)
         {
             if (!User.HasClaim("Permission", "Student.Edit") && !User.IsInRole("Super Admin"))
@@ -199,15 +214,7 @@ public class StudentController : Controller
             var dto = await _studentService.GetForEditAsync(id.Value, cancellationToken);
             if (dto == null) return NotFound();
 
-            // ✅ ADD THIS (IMPORTANT)
-            dto.Sections = await db.Sections
-                .Select(s => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
-                {
-                    Value = s.Id.ToString(),
-                    Text = s.Name
-                })
-                .ToListAsync(cancellationToken);
-
+            dto.Sections = selectList;
             return View(dto);
         }
 
@@ -216,17 +223,9 @@ public class StudentController : Controller
 
         var model = new StudentUpsertDto
         {
-            DateOfBirth = DateTime.Today.AddYears(-10)
+            DateOfBirth = DateTime.Today.AddYears(-10),
+            Sections = selectList
         };
-
-        // ✅ ADD THIS (IMPORTANT)
-        model.Sections = await db.Sections
-            .Select(s => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
-            {
-                Value = s.Id.ToString(),
-                Text = s.Name
-            })
-            .ToListAsync(cancellationToken);
 
         return View(model);
     }

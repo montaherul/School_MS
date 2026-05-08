@@ -1,0 +1,176 @@
+﻿using Microsoft.EntityFrameworkCore;
+using SchoolManagementSystem.Data;
+using SchoolManagementSystem.Models.Entities.Academic;
+
+namespace SchoolManagementSystem.Services.Implementations.Academic;
+
+public class ClassSubjectMappingSeeder
+{
+    private readonly SchoolDbContext _db;
+
+    public ClassSubjectMappingSeeder(SchoolDbContext db)
+    {
+        _db = db;
+    }
+
+    public async Task SeedAsync(CancellationToken cancellationToken = default)
+    {
+        await using var transaction = await _db.Database.BeginTransactionAsync(cancellationToken);
+
+        var classLookup = await _db.Classes.AsNoTracking()
+            .ToDictionaryAsync(c => c.Name.Trim().ToUpperInvariant(), c => c.Id, cancellationToken);
+
+        var subjectLookup = await _db.Subjects.AsNoTracking()
+            .ToDictionaryAsync(s => s.Code.Trim().ToUpperInvariant(), s => s.Id, cancellationToken);
+
+        var groupLookup = await _db.StudentGroups.AsNoTracking()
+            .ToDictionaryAsync(g => g.Name.Trim().ToUpperInvariant(), g => g.Id, cancellationToken);
+
+        var mappings = BuildMappings(classLookup, subjectLookup, groupLookup);
+
+        foreach (var mapping in mappings)
+        {
+            var exists = await _db.ClassSubjects.AnyAsync(x =>
+                    !x.IsDeleted &&
+                    x.SchoolClassId == mapping.SchoolClassId &&
+                    x.SubjectId == mapping.SubjectId &&
+                    x.StudentGroupId == mapping.StudentGroupId,
+                cancellationToken);
+
+            if (!exists)
+            {
+                _db.ClassSubjects.Add(mapping);
+            }
+        }
+
+        await _db.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
+    }
+
+    private static List<ClassSubject> BuildMappings(
+        IReadOnlyDictionary<string, int> classLookup,
+        IReadOnlyDictionary<string, int> subjectLookup,
+        IReadOnlyDictionary<string, int> groupLookup)
+    {
+        var mappings = new List<ClassSubject>();
+
+        var classIds = new Dictionary<int, int>
+        {
+            { 1, classLookup["CLASS ONE"] },
+            { 2, classLookup["CLASS TWO"] },
+            { 3, classLookup["CLASS THREE"] },
+            { 4, classLookup["CLASS FOUR"] },
+            { 5, classLookup["CLASS FIVE"] },
+            { 6, classLookup["CLASS SIX"] },
+            { 7, classLookup["CLASS SEVEN"] },
+            { 8, classLookup["CLASS EIGHT"] },
+            { 9, classLookup["CLASS NINE"] },
+            { 10, classLookup["CLASS TEN"] }
+        };
+
+        var religionSubjects = new[]
+        {
+            new { Code = "111", ReligionType = "Islam" },
+            new { Code = "112", ReligionType = "Hindu" },
+            new { Code = "113", ReligionType = "Buddhist" },
+            new { Code = "114", ReligionType = "Christian" }
+        };
+
+        var class1To5Compulsory = new[]
+        {
+            "101", "107", "109", "127", "150", "154", "147", "148"
+        };
+
+        foreach (var classId in new[] { 1, 2, 3, 4, 5 })
+        {
+            foreach (var subjectCode in class1To5Compulsory)
+            {
+                mappings.Add(CreateMapping(classIds[classId], subjectLookup[subjectCode]));
+            }
+
+            foreach (var religion in religionSubjects)
+            {
+                mappings.Add(CreateMapping(classIds[classId], subjectLookup[religion.Code], isReligion: true, religionType: religion.ReligionType));
+            }
+        }
+
+        var class6To8Compulsory = new[]
+        {
+            "101", "102", "107", "108", "109", "147", "154", "148", "155", "150"
+        };
+
+        foreach (var classId in new[] { 6, 7, 8 })
+        {
+            foreach (var subjectCode in class6To8Compulsory)
+            {
+                mappings.Add(CreateMapping(classIds[classId], subjectLookup[subjectCode]));
+            }
+
+            foreach (var religion in religionSubjects)
+            {
+                mappings.Add(CreateMapping(classIds[classId], subjectLookup[religion.Code], isReligion: true, religionType: religion.ReligionType));
+            }
+
+            mappings.Add(CreateMapping(classIds[classId], subjectLookup["134"], isOptional: true));
+            mappings.Add(CreateMapping(classIds[classId], subjectLookup["151"], isOptional: true));
+        }
+
+        var scienceGroupId = groupLookup["SCIENCE"];
+        var businessGroupId = groupLookup["BUSINESS STUDIES"];
+        var humanitiesGroupId = groupLookup["HUMANITIES"];
+
+        var scienceSubjects = new[] { "101", "102", "107", "108", "109", "126", "136", "137", "138", "150", "154" };
+        var businessSubjects = new[] { "101", "102", "107", "108", "109", "146", "143", "141", "152", "154", "156" };
+        var humanitiesSubjects = new[] { "101", "102", "107", "108", "109", "153", "110", "140", "141", "154", "156" };
+
+        foreach (var classId in new[] { 9, 10 })
+        {
+            foreach (var subjectCode in scienceSubjects)
+            {
+                mappings.Add(CreateMapping(classIds[classId], subjectLookup[subjectCode], studentGroupId: scienceGroupId, groupName: "Science"));
+            }
+
+            foreach (var subjectCode in businessSubjects)
+            {
+                mappings.Add(CreateMapping(classIds[classId], subjectLookup[subjectCode], studentGroupId: businessGroupId, groupName: "Business Studies"));
+            }
+
+            foreach (var subjectCode in humanitiesSubjects)
+            {
+                var isOptional = subjectCode == "126";
+                mappings.Add(CreateMapping(classIds[classId], subjectLookup[subjectCode], studentGroupId: humanitiesGroupId, groupName: "Humanities", isOptional: isOptional));
+            }
+
+            foreach (var religion in religionSubjects)
+            {
+                mappings.Add(CreateMapping(classIds[classId], subjectLookup[religion.Code], isReligion: true, religionType: religion.ReligionType));
+            }
+        }
+
+        return mappings;
+    }
+
+    private static ClassSubject CreateMapping(
+        int classId,
+        int subjectId,
+        int? studentGroupId = null,
+        string? groupName = null,
+        bool isOptional = false,
+        bool isReligion = false,
+        string? religionType = null)
+    {
+        return new ClassSubject
+        {
+            SchoolClassId = classId,
+            SubjectId = subjectId,
+            StudentGroupId = studentGroupId,
+            GroupName = groupName,
+            IsOptional = isOptional,
+            IsMandatory = !isOptional,
+            IsGroupSubject = studentGroupId.HasValue,
+            IsReligionSubject = isReligion,
+            CreatedBy = "system",
+            CreatedAt = DateTime.UtcNow
+        };
+    }
+}

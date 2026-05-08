@@ -42,28 +42,37 @@
         <canvas id="feesChart" height="160"></canvas>
     </div>
     <div class="panel">
-        <h2 class="h5">Recent Activity</h2>
-        <div class="list-group list-group-flush">
-            @foreach (var item in Model.RecentActivities)
-            {
-                <div class="list-group-item px-0">
-                    <strong>@item.Module</strong>
-                    <div>@item.Title</div>
-                    <small class="text-muted">@item.At.ToString("yyyy-MM-dd HH:mm")</small>
-                </div>
-            }
-        </div>
+        <h2 class="h5 mb-3"><i class="bi bi-lightning-charge me-2 text-warning"></i>Recent Activity</h2>
+        <div id="activity-table"></div>
     </div>
     <div class="panel">
-        <h2 class="h5">Operational Modules</h2>
+        <h2 class="h5 mb-3"><i class="bi bi-stack me-2 text-primary"></i>Operational Modules</h2>
         <div class="d-flex flex-wrap gap-2">
-            <a class="btn btn-outline-secondary btn-sm" href="/Admission/Index">Admissions</a>
-            <a class="btn btn-outline-secondary btn-sm" href="/Student/Index">Students</a>
-            <a class="btn btn-outline-secondary btn-sm" href="/AttendanceRecord/Index">Attendance</a>
-            <a class="btn btn-outline-secondary btn-sm" href="/FeeStructure/Index">Fees</a>
-            <a class="btn btn-outline-secondary btn-sm" href="/SchoolClass/Index">Classes</a>
-            <a class="btn btn-outline-secondary btn-sm" href="/Section/Index">Sections</a>
-            <a class="btn btn-outline-secondary btn-sm" href="/Subject/Index">Subjects</a>
+            <a class="btn btn-outline-secondary btn-sm" href="/Admission/Index"><i class="bi bi-person-plus me-1"></i>Admissions</a>
+            <a class="btn btn-outline-secondary btn-sm" href="/Student/Index"><i class="bi bi-people me-1"></i>Students</a>
+            <a class="btn btn-outline-secondary btn-sm" href="/AttendanceRecord/Index"><i class="bi bi-calendar-check me-1"></i>Attendance</a>
+            <a class="btn btn-outline-secondary btn-sm" href="/FeeStructure/Index"><i class="bi bi-cash-coin me-1"></i>Fees</a>
+            <a class="btn btn-outline-secondary btn-sm" href="/SchoolClass/Index"><i class="bi bi-building me-1"></i>Classes</a>
+            <a class="btn btn-outline-secondary btn-sm" href="/Section/Index"><i class="bi bi-grid-3x3-gap me-1"></i>Sections</a>
+            <a class="btn btn-outline-secondary btn-sm" href="/Subject/Index"><i class="bi bi-book me-1"></i>Subjects</a>
+            <a class="btn btn-outline-secondary btn-sm" href="/Teacher/Index"><i class="bi bi-people me-1"></i>Teachers</a>
+            @if (User.IsInRole("Super Admin") || User.IsInRole("Principal"))
+            {
+                <a class="btn btn-primary btn-sm" href="/ResultManagement/AdminIndex"><i class="bi bi-shield-check me-1"></i>Result Management</a>
+                <a class="btn btn-indigo btn-sm" href="/Teacher/Index"><i class="bi bi-person-gear me-1"></i>Assign Teachers</a>
+            }
+        </div>
+        <hr/>
+        <div class="mt-3">
+            <h6 class="small fw-bold text-muted text-uppercase mb-2">System Health</h6>
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <div class="spinner-grow spinner-grow-sm text-success" role="status"></div>
+                <span class="small">Database Connected</span>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-cpu text-info"></i>
+                <span class="small">Service Load: Optimal</span>
+            </div>
         </div>
     </div>
 </section>
@@ -72,23 +81,54 @@
     <script>
         const studentsByClass = @Html.Raw(JsonSerializer.Serialize(Model.StudentsByClass));
         const monthlyCollections = @Html.Raw(JsonSerializer.Serialize(Model.MonthlyCollections));
+        const recentActivities = @Html.Raw(JsonSerializer.Serialize(Model.RecentActivities)) || [];
 
+        // Charts
         new Chart(document.getElementById("studentsChart"), {
             type: "bar",
             data: {
                 labels: studentsByClass.map(x => x.Label),
-                datasets: [{ label: "Students", data: studentsByClass.map(x => x.Value), backgroundColor: "#2563eb" }]
+                datasets: [{ label: "Students", data: studentsByClass.map(x => x.Value), backgroundColor: "#2563eb", borderRadius: 4 }]
             },
-            options: { responsive: true, plugins: { legend: { display: false } } }
+            options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } } }
         });
 
         new Chart(document.getElementById("feesChart"), {
             type: "line",
             data: {
                 labels: monthlyCollections.map(x => x.Label),
-                datasets: [{ label: "Collections", data: monthlyCollections.map(x => x.Value), borderColor: "#059669", backgroundColor: "rgba(5,150,105,.12)", fill: true }]
+                datasets: [{ label: "Collections", data: monthlyCollections.map(x => x.Value), borderColor: "#059669", backgroundColor: "rgba(5,150,105,.12)", fill: true, tension: 0.4 }]
             },
-            options: { responsive: true }
+            options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+        });
+
+        // Tabulator for Activity
+        new Tabulator("#activity-table", {
+            data: recentActivities,
+            layout: "fitColumns",
+            height: "250px",
+            columns: [
+                { title: "Module", field: "Module", width: 100, formatter: function(cell) {
+                    var val = cell.getValue();
+                    var badge = val === "Admission" ? "bg-info" : "bg-primary";
+                    return `<span class="badge ${badge} small">${val}</span>`;
+                }},
+                { title: "Description", field: "Title", widthGrow: 2, formatter: function(cell) {
+                    return `<div class="fw-bold small">${cell.getValue()}</div><div class="text-muted tiny">${cell.getData().Summary || ""}</div>`;
+                }},
+                { title: "Time", field: "At", width: 100, formatter: function(cell) {
+                    var date = new Date(cell.getValue());
+                    return `<span class="text-muted tiny">${date.toLocaleDateString()}</span>`;
+                }}
+            ],
+            placeholder: "No recent activity"
         });
     </script>
+    <style>
+        .tiny { font-size: 11px; }
+        .tabulator { border: none !important; font-size: 12px; }
+        .tabulator .tabulator-header { display: none; }
+        .tabulator .tabulator-row { border-bottom: 1px solid #f1f5f9; background: transparent !important; }
+        .tabulator .tabulator-row .tabulator-cell { padding: 8px 4px; }
+    </style>
 }

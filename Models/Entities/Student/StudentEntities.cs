@@ -106,8 +106,20 @@ public class Student : BaseEntity
     public int? UserId { get; set; }
     public ApplicationUser? User { get; set; }
 
+    // Religion-based subject assignment
+    // Students automatically get the appropriate religion subject based on Religion field
+    // E.g., Religion="Islam" → ইসলাম ও নৈতিক শিক্ষা
+    //       Religion="Hindu" → হিন্দু ধর্ম ও নৈতিক শিক্ষা
+    public int? AssignedReligionSubjectId { get; set; }
+    public Subject? AssignedReligionSubject { get; set; }
+
+    // Group assignment for Class 9-10 (Science, Humanities, Business)
+    public int? StudentGroupId { get; set; }
+    public StudentGroup? StudentGroup { get; set; }
+
     public ICollection<Guardian> Guardians { get; set; } = new List<Guardian>();
     public ICollection<StudentDocument> Documents { get; set; } = new List<StudentDocument>();
+    public ICollection<StudentGroupAssignment> GroupAssignments { get; set; } = [];
 }
 
 public class Guardian : BaseEntity

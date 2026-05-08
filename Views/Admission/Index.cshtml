@@ -2,20 +2,38 @@
     ViewData["Title"] = "Admissions";
 }
 
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>@ViewData["Title"]</h2>
-    <a href="/Admission/CreateEdit" class="btn btn-primary"><i class="bi bi-plus-circle me-1"></i> Add Admission</a>
-</div>
+<div class="adm-page">
+    <!-- Page Header -->
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c0 2 4 3 6 3s6-1 6-3v-5" /></svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Admissions</h1>
+                <p class="adm-header__sub">Manage applications, review candidates, and convert to enrolled students</p>
+            </div>
+        </div>
+        <a href="/Admission/CreateEdit" class="adm-btn adm-btn--primary">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+            New Admission
+        </a>
+    </div>
 
-<div class="card shadow-sm">
-    <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <div class="d-flex gap-2">
-                <div class="input-group" style="max-width: 300px;">
-                    <input type="text" id="searchInput" class="form-control" placeholder="Search admissions...">
-                    <button class="btn btn-outline-secondary" type="button" id="searchBtn"><i class="bi bi-search"></i></button>
+    <!-- Filters -->
+    <div class="adm-filters">
+        <div class="adm-filters__row">
+            <div class="adm-filters__field adm-filters__field--search">
+                <label class="adm-label">Search</label>
+                <div class="adm-input-wrap">
+                    <svg class="adm-input-wrap__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+                    <input type="text" id="searchInput" class="adm-input" placeholder="Name, App No, or Phone...">
+                    <button class="adm-input-wrap__btn" type="button" id="searchBtn">Go</button>
                 </div>
-                <select id="classFilter" class="form-select" style="max-width: 200px;">
+            </div>
+            <div class="adm-filters__field">
+                <label class="adm-label">Class</label>
+                <select id="classFilter" class="adm-select">
                     <option value="">All Classes</option>
                     @if (ViewBag.Classes != null)
                     {
@@ -26,69 +44,112 @@
                     }
                 </select>
             </div>
-            <div class="d-flex gap-2">
-                <button class="btn btn-outline-success btn-sm" id="exportExcel"><i class="bi bi-file-earmark-excel"></i> Export</button>
-                <button class="btn btn-outline-danger btn-sm" id="exportPdf"><i class="bi bi-file-earmark-pdf"></i> PDF</button>
+            <div class="adm-filters__field">
+                <label class="adm-label">Status</label>
+                <select id="statusFilter" class="adm-select">
+                    <option value="">All Statuses</option>
+                    <option value="Pending">Pending</option>
+                    <option value="Converted">Converted</option>
+                    <option value="Rejected">Rejected</option>
+                </select>
+            </div>
+            <div class="adm-filters__field adm-filters__field--actions">
+                <label class="adm-label">&nbsp;</label>
+                <div class="adm-btn-group">
+                    <button type="button" class="adm-btn adm-btn--ghost" id="exportExcel" title="Export to Excel">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="12" y1="18" x2="12" y2="12" /><polyline points="9 15 12 18 15 15" /></svg>
+                        Excel
+                    </button>
+                    <button type="button" class="adm-btn adm-btn--ghost" id="exportPdf" title="Export to PDF">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><path d="M9 15h6" /><path d="M9 11h6" /></svg>
+                        PDF
+                    </button>
+                    <button type="button" class="adm-btn adm-btn--ghost adm-btn--icon-only" id="refreshBtn" title="Refresh">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" /><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" /></svg>
+                    </button>
+                </div>
             </div>
         </div>
+        <div id="filterBadges" class="adm-filter-badges"></div>
+    </div>
 
-        <div class="table-responsive">
-            <table class="table table-hover table-bordered align-middle">
-                <thead class="table-light">
-                    <tr>
-                        <th style="width:40px;"></th>
-                        <th style="width:80px;">Photo</th>
-                        <th>Application No</th>
-                        <th>Applicant Name</th>
-                        <th>Gender</th>
-                        <th>Contact No</th>
-                        <th>Status</th>
-                        <th class="text-end">Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody">
-                    <tr><td colspan="8" class="text-center py-4">Loading...</td></tr>
-                </tbody>
-            </table>
+    <!-- Status Tabs -->
+    <div class="adm-tabs" id="statusTabs" role="tablist">
+        <button class="adm-tab adm-tab--active" id="tab-all" data-status="" type="button" role="tab">
+            <span class="adm-tab__text">All</span>
+            <span class="adm-tab__count adm-tab__count--neutral" id="count-all">0</span>
+        </button>
+        <button class="adm-tab" id="tab-pending" data-status="Pending" type="button" role="tab">
+            <span class="adm-tab__dot adm-tab__dot--pending"></span>
+            <span class="adm-tab__text">Pending</span>
+            <span class="adm-tab__count adm-tab__count--pending" id="count-pending">0</span>
+        </button>
+        <button class="adm-tab" id="tab-converted" data-status="Converted" type="button" role="tab">
+            <span class="adm-tab__dot adm-tab__dot--converted"></span>
+            <span class="adm-tab__text">Converted</span>
+            <span class="adm-tab__count adm-tab__count--converted" id="count-converted">0</span>
+        </button>
+        <button class="adm-tab" id="tab-rejected" data-status="Rejected" type="button" role="tab">
+            <span class="adm-tab__dot adm-tab__dot--rejected"></span>
+            <span class="adm-tab__text">Rejected</span>
+            <span class="adm-tab__count adm-tab__count--rejected" id="count-rejected">0</span>
+        </button>
+    </div>
+
+    <!-- Table Card — Tabulator handles its own pagination footer -->
+    <div class="adm-table-card">
+        <div class="adm-table-card__body">
+            <div id="loadingOverlay" class="adm-loading adm-loading--hidden">
+                <div class="adm-loading__spinner"></div>
+                <span class="adm-loading__text">Loading admissions...</span>
+            </div>
+            <div id="admissionTable"></div>
         </div>
-
-        <nav aria-label="Page navigation" class="mt-4">
-            <ul class="pagination justify-content-end" id="pagination"></ul>
-        </nav>
     </div>
 </div>
 
-<!-- Approve Modal -->
-<div class="modal fade" id="approveModal" tabindex="-1" aria-labelledby="approveModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="approveModalLabel">Approve Admission</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Please select a section for the student before converting:</p>
-                <input type="hidden" id="approveApplicationId" />
-                <div class="mb-3">
-                    <label for="sectionSelect" class="form-label">Section <span class="text-danger">*</span></label>
-                    <div class="input-group">
-                        <select id="sectionSelect" class="form-select">
-                            <option value="">Select Section</option>
-                        </select>
-                        <button type="button" class="btn btn-outline-secondary" onclick="promptCreateSection()" title="Add New Section">
-                            <i class="bi bi-plus-circle"></i> Add
-                        </button>
-                    </div>
+<!-- Convert-to-Student Modal -->
+<div class="adm-modal-backdrop" id="approveModal" style="display:none;">
+    <div class="adm-modal" role="dialog" aria-labelledby="approveModalLabel">
+        <div class="adm-modal__header">
+            <div class="adm-modal__header-left">
+                <div class="adm-modal__header-icon adm-modal__header-icon--success">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
                 </div>
-                <!-- Error alert shown inline in the modal -->
-                <div id="approveError" class="alert alert-danger d-none"></div>
+                <div>
+                    <h3 class="adm-modal__title" id="approveModalLabel">Convert to Student</h3>
+                    <p class="adm-modal__subtitle">Assign a section to complete enrollment</p>
+                </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-success" id="confirmApproveBtn" onclick="confirmApprove()">
-                    Convert to Student
-                </button>
+            <button type="button" class="adm-modal__close" onclick="closeApproveModal()" aria-label="Close">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+            </button>
+        </div>
+        <div class="adm-modal__body">
+            <input type="hidden" id="approveApplicationId" />
+            <div class="adm-form-group">
+                <label for="sectionSelect" class="adm-form-label">Section <span class="adm-required">*</span></label>
+                <div class="adm-input-wrap">
+                    <select id="sectionSelect" class="adm-select adm-select--full">
+                        <option value="">Loading sections...</option>
+                    </select>
+                    <button type="button" class="adm-input-wrap__addon" onclick="promptCreateSection()" title="Add New Sub-Section" id="addSectionBtn" style="display:none;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                    </button>
+                </div>
+                <div id="sectionCapacityInfo" class="adm-capacity-info" style="display:none;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
+                    <span id="capacityInfoText"></span>
+                </div>
             </div>
+            <div id="approveError" class="adm-alert adm-alert--error" style="display:none;"></div>
+        </div>
+        <div class="adm-modal__footer">
+            <button type="button" class="adm-btn adm-btn--ghost" onclick="closeApproveModal()">Cancel</button>
+            <button type="button" class="adm-btn adm-btn--success" id="confirmApproveBtn" onclick="confirmApprove()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
+                Convert to Student
+            </button>
         </div>
     </div>
 </div>
@@ -96,251 +157,1491 @@
 @Html.AntiForgeryToken()
 
 @section Scripts {
-<script>
-    let currentPage = 1;
-    const pageSize = 10;
-    let searchQuery = '';
-    let classFilter = '';
+    <link href="https://unpkg.com/tabulator-tables@5.7.0/dist/css/tabulator.min.css" rel="stylesheet">
+    <script type="text/javascript" src="https://unpkg.com/tabulator-tables@5.7.0/dist/js/tabulator.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 
-    // ── Configure jQuery AJAX to always send the antiforgery token ──────────
-    // This fixes the most common cause of 400 Bad Request on [ValidateAntiForgeryToken] actions
-    $.ajaxSetup({
+    <script>
+        // ── State ────────────────────────────────────
+        let currentClassId = '';
+        let currentSearchTerm = '';
+        let currentStatus = '';
+        let currentTotalRecords = 0;
+        let table = null;
+        let currentClassIdForSection = 0;
+        let loadedSectionData = [];
+
+        // ── CSRF ─────────────────────────────────────
+        $.ajaxSetup({
         beforeSend: function (xhr) {
-            xhr.setRequestHeader(
-                'RequestVerificationToken',
-                $('input[name="__RequestVerificationToken"]').val()
-            );
+        xhr.setRequestHeader(
+        'RequestVerificationToken',
+        $('input[name="__RequestVerificationToken"]').val()
+        );
         }
-    });
-
-    function loadData() {
-        $.get(`/Admission/GetList?page=${currentPage}&size=${pageSize}&search=${encodeURIComponent(searchQuery)}&classId=${classFilter}`, function (res) {
-            const tbody = $('#tableBody');
-            tbody.empty();
-
-            if (!res.data || res.data.length === 0) {
-                tbody.append('<tr><td colspan="8" class="text-center py-4 text-muted">No records found.</td></tr>');
-                $('#pagination').empty();
-                return;
-            }
-
-            res.data.forEach(item => {
-                let statusBadge =
-                    item.status === 'Pending'   ? '<span class="badge bg-warning text-dark">Pending</span>'   :
-                    item.status === 'Approved'  ? '<span class="badge bg-success">Approved</span>'            :
-                    item.status === 'Converted' ? '<span class="badge bg-info text-dark">Converted</span>'    :
-                                                  '<span class="badge bg-danger">Rejected</span>';
-
-                let actions = item.status === 'Pending'
-                    ? `<div class="btn-group btn-group-sm">
-                           <a href="/Admission/CreateEdit/${item.id}" class="btn btn-outline-primary" title="Edit"><i class="bi bi-pencil"></i></a>
-                           <button type="button" class="btn btn-outline-success" onclick="openApproveModal(${item.id}, ${item.appliedClassId})" title="Approve"><i class="bi bi-check-circle"></i></button>
-                           <button type="button" class="btn btn-outline-danger" onclick="rejectItem(${item.id})" title="Reject"><i class="bi bi-x-circle"></i></button>
-                       </div>`
-                    : `<span class="text-muted small">No actions</span>`;
-
-                tbody.append(`
-                <tr>
-                    <td><button class="btn btn-sm btn-outline-info" onclick="toggleDetails(${item.id})">+</button></td>
-                    <td>
-                        ${item.profilePicturePath
-                            ? `<img src="${item.profilePicturePath}" style="width:40px;height:40px;border-radius:50%;object-fit:cover;" />`
-                            : `<img src="/images/default-user.png" style="width:40px;height:40px;border-radius:50%;" />`}
-                    </td>
-                    <td>${item.applicationNo}</td>
-                    <td class="fw-medium">${item.applicantName}</td>
-                    <td>${item.gender}</td>
-                    <td>${item.fatherOrGuardianMobileNo}</td>
-                    <td>${statusBadge}</td>
-                    <td class="text-end">${actions}</td>
-                </tr>
-                <tr id="details-${item.id}" style="display:none;">
-                    <td colspan="8">
-                        <div class="p-3 bg-light border rounded">
-                            <div class="mb-3 text-center">
-                                ${item.profilePicturePath
-                                    ? `<img src="${item.profilePicturePath}" style="width:100px;height:100px;border-radius:50%;object-fit:cover;" />`
-                                    : `<img src="/images/default-user.png" style="width:100px;height:100px;border-radius:50%;" />`}
-                            </div>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <b>Father:</b> ${item.fatherName ?? ''}<br/>
-                                    <b>Father Occupation:</b> ${item.fatherOccupation ?? ''}<br/>
-                                    <b>Mother:</b> ${item.motherName ?? ''}<br/>
-                                    <b>Mother Occupation:</b> ${item.motherOccupation ?? ''}
-                                </div>
-                                <div class="col-md-6">
-                                    <b>Guardian:</b> ${item.guardianName ?? ''}<br/>
-                                    <b>Guardian Occupation:</b> ${item.guardianOccupation ?? ''}<br/>
-                                    <b>Student Mobile:</b> ${item.applicantMobileNumber ?? ''}<br/>
-                                    <b>Email:</b> ${item.applicantEmail ?? ''}
-                                </div>
-                            </div>
-                            <hr/>
-                            <div class="row">
-                                <div class="col-md-4"><b>Nationality:</b> ${item.nationality ?? ''}</div>
-                                <div class="col-md-4"><b>Religion:</b> ${item.religion ?? ''}</div>
-                                <div class="col-md-4"><b>Blood Group:</b> ${item.bloodGroup ?? ''}</div>
-                            </div>
-                            <hr/>
-                            <div>
-                                <b>NID:</b> ${item.nationalIdNo ?? ''} |
-                                <b>Birth:</b> ${item.birthCertificateNo ?? ''} |
-                                <b>Passport:</b> ${item.passportNo ?? ''}
-                            </div>
-                            <hr/>
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <b>Present Address</b><br/>
-                                    Village: ${item.presentVillage ?? ''}<br/>
-                                    Post Office: ${item.presentPostOffice ?? ''}<br/>
-                                    Thana: ${item.presentThana ?? ''}<br/>
-                                    District: ${item.presentDistrict ?? ''}
-                                </div>
-                                <div class="col-md-6">
-                                    <b>Permanent Address</b><br/>
-                                    Village: ${item.permanentVillage ?? ''}<br/>
-                                    Post Office: ${item.permanentPostOffice ?? ''}<br/>
-                                    Thana: ${item.permanentThana ?? ''}<br/>
-                                    District: ${item.permanentDistrict ?? ''}
-                                </div>
-                            </div>
-                            <div><b>Payment:</b> ${item.paymentMethod ?? ''} | <b>Transaction:</b> ${item.transactionDetails ?? ''}</div>
-                        </div>
-                    </td>
-                </tr>`);
-            });
-
-            renderPagination(res.last_page);
         });
-    }
 
-    function renderPagination(lastPage) {
-        const pagination = $('#pagination');
-        pagination.empty();
-        if (lastPage <= 1) return;
-        pagination.append(`<li class="page-item ${currentPage === 1 ? 'disabled' : ''}"><a class="page-link" href="javascript:void(0)" onclick="loadPage(${currentPage - 1})">Previous</a></li>`);
-        for (let i = 1; i <= lastPage; i++) {
-            pagination.append(`<li class="page-item ${currentPage === i ? 'active' : ''}"><a class="page-link" href="javascript:void(0)" onclick="loadPage(${i})">${i}</a></li>`);
+        // ── Formatters ───────────────────────────────
+        function statusFormatter(cell) {
+        const value = cell.getValue();
+        const map = {
+        'Pending': ['adm-status adm-status--pending', 'Pending'],
+        'Approved': ['adm-status adm-status--approved', 'Approved'],
+        'Converted': ['adm-status adm-status--converted', 'Converted'],
+        'Rejected': ['adm-status adm-status--rejected', 'Rejected']
+        };
+        const [cls, label] = map[value] || ['adm-status adm-status--neutral', value];
+        return '<span class="' + cls + '">' + label + '</span>';
         }
-        pagination.append(`<li class="page-item ${currentPage === lastPage ? 'disabled' : ''}"><a class="page-link" href="javascript:void(0)" onclick="loadPage(${currentPage + 1})">Next</a></li>`);
-    }
 
-    function loadPage(page) { currentPage = page; loadData(); }
+        function photoFormatter(cell) {
+        const src = cell.getValue() || '/images/default-user.png';
+        return '<div class="adm-avatar"><img src="' + src + '" alt="" onerror="this.src=\'/images/default-user.png\'"/></div>';
+        }
 
-    $('#searchBtn').click(function () { searchQuery = $('#searchInput').val(); currentPage = 1; loadData(); });
-    $('#classFilter').change(function () { classFilter = $(this).val(); currentPage = 1; loadData(); });
-    $('#searchInput').keypress(function (e) { if (e.which === 13) $('#searchBtn').click(); });
+        function actionFormatter(cell) {
+        const row = cell.getRow().getData();
+        if (row.status === 'Pending') {
+        return '<div class="adm-actions">' +
+        '<a href="/Admission/CreateEdit/' + row.id + '" class="adm-action adm-action--edit" title="Edit">' +
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>' +
+        '</a>' +
+        '<button type="button" class="adm-action adm-action--convert" onclick="openApproveModal(' + row.id + ', ' + row.appliedClassId + ')" title="Convert">' +
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>' +
+        '</button>' +
+        '<button type="button" class="adm-action adm-action--reject" onclick="rejectItem(' + row.id + ')" title="Reject">' +
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>' +
+        '</button>' +
+        '</div>';
+        }
+        return '<span class="adm-actions--done">Done</span>';
+        }
 
-    let approveModal;
-    let currentClassIdForSection = 0;
+        // ── Column Definitions ───────────────────────
+        const columnDefs = [
+        { title: "", field: "profilePicturePath", width: 56, sorter: false, headerSort: false, formatter: photoFormatter, cssClass: "adm-col-photo" },
+        {
+        title: "App No", field: "applicationNo", widthGrow: 1, sorter: false, headerSort: false,
+        formatter: function (c) { return '<span class="adm-cell-mono">' + c.getValue() + '</span>'; }
+        },
+        {
+        title: "Applicant Name", field: "applicantName", widthGrow: 2.2, sorter: false, headerSort: false,
+        formatter: function (c) { return '<span class="adm-cell-name">' + c.getValue() + '</span>'; }
+        },
+        {
+        title: "Age / DOB", field: "dateOfBirth", widthGrow: 1.2, sorter: false, headerSort: false,
+        formatter: function (c) {
+        const dob = new Date(c.getValue());
+        const age = c.getRow().getData().age;
+        return '<span class="adm-cell-dob"><strong>' + age + '</strong> yrs<br/><span class="adm-cell-dob__date">' + dob.toLocaleDateString('en-BD') + '</span></span>';
+        }
+        },
+        {
+        title: "Gender", field: "gender", widthGrow: 0.8, sorter: false, headerSort: false,
+        formatter: function (c) { return '<span class="adm-cell-gender">' + c.getValue() + '</span>'; }
+        },
+        { title: "Class", field: "className", widthGrow: 1, sorter: false, headerSort: false },
+        {
+        title: "Phone", field: "applicantMobileNumber", widthGrow: 1.3, sorter: false, headerSort: false,
+        formatter: function (c) { return '<span class="adm-cell-phone">' + c.getValue() + '</span>'; }
+        },
+        { title: "Status", field: "status", widthGrow: 1, sorter: false, headerSort: false, formatter: statusFormatter },
+        { title: "", field: "id", width: 120, sorter: false, headerSort: false, formatter: actionFormatter, cssClass: "adm-col-actions" }
+        ];
 
-    $(document).ready(function () {
-        approveModal = new bootstrap.Modal(document.getElementById('approveModal'));
-        loadData();
-    });
+        // ── Init Table ───────────────────────────────
+        function initTable() {
+        table = new Tabulator("#admissionTable", {
+        ajaxURL: "/Admission/Index",
+        ajaxParams: function () {
+        return {
+        pageSize: 10,
+        search: currentSearchTerm,
+        classId: currentClassId,
+        status: currentStatus
+        };
+        },
+        // ← ADD THIS BLOCK
+        paginationDataReceived: {
+        "last_page": "last_page",
+        "last_row": "total_records",
+        "data": "data"
+        },
+        ajaxResponse: function (url, params, response) {
+        var total = response.total_records || 0;
+        var pageSize = params.pageSize || 10;
+        var lastPage = total > 0 ? Math.ceil(total / pageSize) : 1;
 
-    function openApproveModal(applicationId, classId) {
-        $('#approveApplicationId').val(applicationId);
-        $('#approveError').addClass('d-none').text('');
+        currentTotalRecords = total;
+        updateTabCounts(response.counts || {});
+        updateFilterBadges();
+
+        return {
+        data: response.data || [],
+        last_page: lastPage,
+        total_records: total
+        };
+        },
+        columns: columnDefs,
+        layout: "fitColumns",
+        responsiveLayout: "collapse",
+        pagination: true,
+        paginationMode: "remote",
+        paginationSize: 10,
+        paginationDataSent: { "page": "page", "size": "pageSize" },
+        paginationInitialPage: 1,
+        paginationCounter: function (pageSize, currentRow, totalRows) {
+        if (totalRows === 0) return "No records";
+        var start = (currentRow - 1) * pageSize + 1;
+        var end = Math.min(currentRow * pageSize, totalRows);
+        return "Showing <strong>" + start + "&ndash;" + end + "</strong> of <strong>" + totalRows + "</strong>";
+        }
+        });
+        }
+
+        // ── Reload ───────────────────────────────────
+        function reloadTable() {
+        if (!table) return;
+        showLoadingOverlay(true);
+        table.setPage(1).then(function () {
+        table.replaceData().then(function () {
+        showLoadingOverlay(false);
+        }).catch(function () {
+        showLoadingOverlay(false);
+        });
+        });
+        }
+
+        function showLoadingOverlay(show) {
+        var el = document.getElementById('loadingOverlay');
+        if (show) {
+        el.classList.remove('adm-loading--hidden');
+        el.classList.add('adm-loading--visible');
+        } else {
+        el.classList.remove('adm-loading--visible');
+        el.classList.add('adm-loading--hidden');
+        }
+        }
+
+        // ── Tab Counts ───────────────────────────────
+        function updateTabCounts(counts) {
+        var pending = counts.pending || counts.Pending || 0;
+        var converted = counts.converted || counts.Converted || 0;
+        var rejected = counts.rejected || counts.Rejected || 0;
+        var total = pending + converted + rejected;
+
+        document.getElementById('count-all').textContent = total;
+        document.getElementById('count-pending').textContent = pending;
+        document.getElementById('count-converted').textContent = converted;
+        document.getElementById('count-rejected').textContent = rejected;
+        }
+
+        // ── Filter Badges ────────────────────────────
+        function updateFilterBadges() {
+        var badges = [];
+        if (currentStatus) badges.push('<span class="adm-badge adm-badge--primary">Status: ' + currentStatus + '</span>');
+        if (currentClassId) badges.push('<span class="adm-badge adm-badge--neutral">Class: ' + $('#classFilter option:selected').text() + '</span>');
+        if (currentSearchTerm) badges.push('<span class="adm-badge adm-badge--info">Search: "' + currentSearchTerm + '"</span>');
+        document.getElementById('filterBadges').innerHTML = badges.join('');
+        }
+
+        // ── Export Helpers ───────────────────────────
+        function fetchAllFilteredRows() {
+        return $.ajax({
+        url: '/Admission/Index',
+        type: 'GET',
+        data: {
+        page: 1, pageSize: 99999,
+        search: currentSearchTerm,
+        classId: currentClassId,
+        status: currentStatus
+        }
+        }).then(function (res) {
+        return res.data || [];
+        });
+        }
+
+        function buildExportRows(rows) {
+        var headers = ['App No', 'Applicant Name', 'Age', 'DOB', 'Gender', 'Class', 'Phone', 'Status'];
+        var body = rows.map(function (r) {
+        var dob = r.dateOfBirth ? new Date(r.dateOfBirth).toLocaleDateString('en-BD') : '';
+        return [r.applicationNo || '', r.applicantName || '', r.age || '', dob, r.gender || '', r.className || '', r.applicantMobileNumber || '', r.status || ''];
+        });
+        return { headers: headers, body: body };
+        }
+
+        function getExportTitle() {
+        var parts = ['Admissions'];
+        if (currentStatus) parts.push(currentStatus);
+        if (currentClassId) parts.push($('#classFilter option:selected').text());
+        if (currentSearchTerm) parts.push('"' + currentSearchTerm + '"');
+        return parts.join(' - ');
+        }
+
+        function exportToExcel() {
+        $('#exportExcel').prop('disabled', true);
+        fetchAllFilteredRows().then(function (rows) {
+        var result = buildExportRows(rows);
+        var wsData = [result.headers].concat(result.body);
+        var wb = XLSX.utils.book_new();
+        var ws = XLSX.utils.aoa_to_sheet(wsData);
+        ws['!cols'] = [10, 30, 8, 14, 10, 16, 18, 12].map(function (w) { return { wch: w }; });
+        XLSX.utils.book_append_sheet(wb, ws, getExportTitle().substring(0, 31));
+        XLSX.writeFile(wb, 'admissions_' + Date.now() + '.xlsx');
+        }).fail(function () { alert('Failed to fetch data for export.'); })
+        .always(function () { $('#exportExcel').prop('disabled', false); });
+        }
+
+        function exportToPdf() {
+        $('#exportPdf').prop('disabled', true);
+        fetchAllFilteredRows().then(function (rows) {
+        var jsPDF = window.jspdf.jsPDF;
+        var doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+        doc.setFontSize(14); doc.setFont('helvetica', 'bold');
+        doc.text(getExportTitle(), 14, 15);
+        doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+        doc.text('Generated: ' + new Date().toLocaleString('en-BD') + '   Records: ' + rows.length, 14, 22);
+        var result = buildExportRows(rows);
+        doc.autoTable({
+        head: [result.headers], body: result.body, startY: 27, theme: 'grid',
+        styles: { fontSize: 8, cellPadding: 2 },
+        headStyles: { fillColor: [15, 118, 110], textColor: 255, fontStyle: 'bold' },
+        alternateRowStyles: { fillColor: [240, 253, 250] },
+        columnStyles: { 0: { cellWidth: 22 }, 1: { cellWidth: 50 }, 2: { cellWidth: 12 }, 3: { cellWidth: 22 }, 4: { cellWidth: 18 }, 5: { cellWidth: 22 }, 6: { cellWidth: 28 }, 7: { cellWidth: 20 } }
+        });
+        var pc = doc.internal.getNumberOfPages();
+        for (var i = 1; i <= pc; i++) {
+        doc.setPage(i); doc.setFontSize(8);
+        doc.text('Page ' + i + ' of ' + pc, doc.internal.pageSize.getWidth() - 30, doc.internal.pageSize.getHeight() - 5);
+        }
+        doc.save('admissions_' + Date.now() + '.pdf');
+        }).fail(function () { alert('Failed to fetch data for export.'); })
+        .always(function () { $('#exportPdf').prop('disabled', false); });
+        }
+
+        // ── Approve Modal ────────────────────────────
+        function openApproveModal(applicationId, classId) {
+        document.getElementById('approveApplicationId').value = applicationId;
+        var errEl = document.getElementById('approveError');
+        errEl.style.display = 'none'; errEl.textContent = '';
         currentClassIdForSection = classId;
-        $('#sectionSelect').empty().append('<option value="">Loading sections...</option>');
-        approveModal.show();
+        document.getElementById('sectionSelect').innerHTML = '<option value="">Loading sections...</option>';
+        document.getElementById('approveModal').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
         loadSectionsDropdown();
-    }
-
-    function loadSectionsDropdown() {
-        if (!currentClassIdForSection) return;
-        $.get(`/Admission/GetClassSections?classId=${currentClassIdForSection}`, function (data) {
-            const select = $('#sectionSelect');
-            select.empty();
-            if (data && data.length > 0) {
-                select.append('<option value="">-- Select Section --</option>');
-                data.forEach(s => select.append(`<option value="${s.id}">${s.name}</option>`));
-            } else {
-                select.append('<option value="">No sections available. Add one first.</option>');
-            }
-        }).fail(function () {
-            $('#sectionSelect').empty().append('<option value="">Failed to load sections</option>');
-        });
-    }
-
-    function promptCreateSection() {
-        const sectionName = prompt("Enter the name of the new section (e.g. 'A', 'B', 'Science'):");
-        if (!sectionName || sectionName.trim() === '') return;
-
-        $.post('/Admission/CreateSectionAjax',
-            { schoolClassId: currentClassIdForSection, name: sectionName.trim() },
-            function (res) {
-                if (res.success) {
-                    loadSectionsDropdown();
-                } else {
-                    alert(res.message || 'Failed to create section.');
-                }
-            }).fail(function () { alert('An error occurred while creating the section.'); });
-    }
-
-    function confirmApprove() {
-        const id = $('#approveApplicationId').val();
-        const sectionId = $('#sectionSelect').val();
-
-        $('#approveError').addClass('d-none').text('');
-
-        if (!sectionId) {
-            $('#approveError').removeClass('d-none').text('Please select a section before approving.');
-            return;
         }
 
-        const btn = $('#confirmApproveBtn');
-        btn.prop('disabled', true).text('Converting...');
+        function closeApproveModal() {
+        document.getElementById('approveModal').style.display = 'none';
+        document.body.style.overflow = '';
+        }
 
-        // ── Use $.ajax instead of $.post so we get the full status code on failure ──
+        document.addEventListener('click', function (e) {
+        if (e.target.id === 'approveModal') closeApproveModal();
+        });
+
+        function loadSectionsDropdown() {
+        var classId = currentClassIdForSection;
+        var sel = document.getElementById('sectionSelect');
+        sel.innerHTML = '<option value="">Loading sections...</option>';
+        document.getElementById('sectionCapacityInfo').style.display = 'none';
+        document.getElementById('addSectionBtn').style.display = (classId == 9 || classId == 10) ? 'flex' : 'none';
+
+        $.get('/Admission/GetClassSections?classId=' + classId, function (data) {
+        loadedSectionData = data;
+        sel.innerHTML = '';
+        if (!data || data.length === 0) { sel.innerHTML = '<option value="">No sections available</option>'; return; }
+
+        var isGrouped = data.some(function (s) { return s.groupName && s.groupName !== ''; });
+        if (isGrouped) {
+        sel.innerHTML = '<option value="">-- Select Group / Section --</option>';
+        var groups = {};
+        data.forEach(function (s) {
+        if (!groups[s.groupName]) groups[s.groupName] = [];
+        groups[s.groupName].push(s);
+        });
+        Object.keys(groups).forEach(function (gn) {
+        var og = document.createElement('optgroup'); og.label = gn;
+        groups[gn].forEach(function (s) {
+        var o = document.createElement('option'); o.value = s.id; o.textContent = s.displayName;
+        if (s.isFull) { o.disabled = true; o.style.color = '#dc3545'; }
+        og.appendChild(o);
+        });
+        sel.appendChild(og);
+        });
+        } else {
+        sel.innerHTML = '<option value="">-- Select Section --</option>';
+        data.forEach(function (s) {
+        var o = document.createElement('option'); o.value = s.id; o.textContent = s.displayName;
+        if (s.isFull) { o.disabled = true; o.style.color = '#dc3545'; }
+        sel.appendChild(o);
+        });
+        }
+
+        $(sel).off('change.capacity').on('change.capacity', function () {
+        var sec = data.find(function (s) { return s.id == $(this).val(); });
+        if (sec) {
+        var free = sec.capacity - sec.studentCount;
+        document.getElementById('capacityInfoText').textContent =
+        sec.studentCount + ' / ' + sec.capacity + ' students assigned — ' + free + ' spot(s) remaining.';
+        document.getElementById('sectionCapacityInfo').style.display = 'flex';
+        } else {
+        document.getElementById('sectionCapacityInfo').style.display = 'none';
+        }
+        });
+        }).fail(function () { sel.innerHTML = '<option value="">Failed to load sections</option>'; });
+        }
+
+        function confirmApprove() {
+        var sectionId = document.getElementById('sectionSelect').value;
+        if (!sectionId) {
+        var errEl = document.getElementById('approveError');
+        errEl.textContent = 'Please select a section.'; errEl.style.display = 'block'; return;
+        }
+        var applicationId = document.getElementById('approveApplicationId').value;
+        var btn = document.getElementById('confirmApproveBtn');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="adm-btn__spinner"></span> Converting...';
+
         $.ajax({
-            url: '/Admission/Approve',
-            type: 'POST',
-            // Send as JSON — avoids form-encoding issues with some MVC routes
-            contentType: 'application/json',
-            data: JSON.stringify({ id: parseInt(id), sectionId: parseInt(sectionId) }),
-            success: function (res) {
-                btn.prop('disabled', false).text('Convert to Student');
-                if (res.success) {
-                    approveModal.hide();
-                    loadData();
-                    // Show a Bootstrap toast or simple alert
-                    alert(res.message);
-                } else {
-                    $('#approveError').removeClass('d-none').text(res.message || 'Approval failed.');
-                }
-            },
-            error: function (xhr) {
-                btn.prop('disabled', false).text('Convert to Student');
-                // Surface the actual server error message instead of a generic string
-                let msg = 'An error occurred on the server.';
-                try {
-                    const json = JSON.parse(xhr.responseText);
-                    msg = json.message || json.title || msg;
-                } catch (e) {
-                    // Response was HTML (e.g. a 500 page) — show status
-                    msg = `Server error ${xhr.status}: ${xhr.statusText}`;
-                }
-                $('#approveError').removeClass('d-none').text(msg);
-            }
+        url: '/Admission/Approve', type: 'POST', contentType: 'application/json',
+        data: JSON.stringify({ id: parseInt(applicationId), sectionId: parseInt(sectionId) }),
+        success: function (res) {
+        btn.disabled = false;
+        btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Convert to Student';
+        if (res.success) { closeApproveModal(); alert(res.message || 'Student created successfully!'); reloadTable(); }
+        else { var e = document.getElementById('approveError'); e.textContent = res.message || 'Failed to convert.'; e.style.display = 'block'; }
+        },
+        error: function (xhr) {
+        btn.disabled = false;
+        btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Convert to Student';
+        var msg = 'Error: ' + xhr.status;
+        try { msg = JSON.parse(xhr.responseText).message || msg; } catch (e) { }
+        var el = document.getElementById('approveError'); el.textContent = msg; el.style.display = 'block';
+        }
         });
-    }
+        }
 
-    function rejectItem(id) {
+        function rejectItem(id) {
         if (!confirm('Are you sure you want to reject this admission?')) return;
-        $.post(`/Admission/Reject/${id}`, function (res) {
-            if (res.success) { loadData(); }
-            else { alert(res.message); }
-        }).fail(function (xhr) {
-            alert('Rejection failed: ' + xhr.status + ' ' + xhr.statusText);
-        });
-    }
+        $.post('/Admission/Reject/' + id, function (res) {
+        if (res.success) { alert(res.message || 'Admission rejected'); reloadTable(); }
+        else { alert('Error: ' + (res.message || 'Unknown error')); }
+        }).fail(function () { alert('Network error while rejecting admission'); });
+        }
 
-    function toggleDetails(id) {
-        const row = document.getElementById('details-' + id);
-        row.style.display = row.style.display === 'none' ? 'table-row' : 'none';
-    }
-</script>
+        function promptCreateSection() {
+        var groups = {};
+        loadedSectionData.forEach(function (s) { if (s.groupName && !groups[s.groupName]) groups[s.groupName] = s.parentSectionId; });
+        var groupNames = Object.keys(groups);
+        if (groupNames.length === 0) { alert('No groups found. Please create a group in Section Management first.'); return; }
+        var groupList = groupNames.map(function (g, i) { return (i + 1) + '. ' + g; }).join('\n');
+        var pick = prompt('Which group?\n' + groupList + '\n\nEnter group number:');
+        if (!pick || isNaN(pick) || pick < 1 || pick > groupNames.length) return;
+        var chosenGroupName = groupNames[parseInt(pick) - 1];
+        var parentId = groups[chosenGroupName];
+        var subName = prompt('Sub-section name for ' + chosenGroupName + ' (e.g. "C"):');
+        if (!subName || subName.trim() === '') return;
+        $.post('/Admission/CreateSectionAjax',
+        { schoolClassId: currentClassIdForSection, name: chosenGroupName + ' ' + subName.trim(), parentSectionId: parentId },
+        function (res) {
+        if (res.success) { loadSectionsDropdown(); alert('Sub-section created.'); }
+        else { alert(res.message || 'Failed to create section.'); }
+        }
+        ).fail(function () { alert('An error occurred.'); });
+        }
+
+        // ── Event Listeners ──────────────────────────
+        $(document).ready(function () {
+        initTable();
+
+        $('#searchBtn').click(function () {
+        currentSearchTerm = $('#searchInput').val().trim();
+        reloadTable();
+        });
+        $('#searchInput').keypress(function (e) {
+        if (e.which === 13) { e.preventDefault(); $('#searchBtn').click(); }
+        });
+
+        $('#classFilter').change(function () {
+        currentClassId = $(this).val() || '';
+        reloadTable();
+        });
+
+        $('#statusFilter').change(function () {
+        currentStatus = $(this).val() || '';
+        syncTabsToStatus(currentStatus);
+        reloadTable();
+        });
+
+        $('#statusTabs .adm-tab').click(function () {
+        $('#statusTabs .adm-tab').removeClass('adm-tab--active');
+        $(this).addClass('adm-tab--active');
+        currentStatus = $(this).data('status') || '';
+        $('#statusFilter').val(currentStatus);
+        reloadTable();
+        });
+
+        $('#refreshBtn').click(function () { reloadTable(); });
+        $('#exportExcel').click(function () { exportToExcel(); });
+        $('#exportPdf').click(function () { exportToPdf(); });
+        });
+
+        function syncTabsToStatus(status) {
+        $('#statusTabs .adm-tab').removeClass('adm-tab--active');
+        var match = $('#statusTabs .adm-tab[data-status="' + status + '"]');
+        if (match.length) match.addClass('adm-tab--active');
+        else $('#tab-all').addClass('adm-tab--active');
+        }
+    </script>
+
+    <style>
+        /* ═══════════════════════════════════════════════
+        DESIGN SYSTEM
+        ═══════════════════════════════════════════════ */
+        :root {
+        --adm-primary: #0F766E;
+        --adm-primary-h: #0D6B63;
+        --adm-primary-l: #14B8A6;
+        --adm-primary-bg: #F0FDFA;
+        --adm-accent: #E8705A;
+        --adm-bg: #F7F8F6;
+        --adm-surface: #FFFFFF;
+        --adm-surface-2: #F1F3F0;
+        --adm-border: #E2E5E0;
+        --adm-border-h: #CBD1C8;
+        --adm-text: #1A1D1A;
+        --adm-text-2: #5C6358;
+        --adm-text-3: #8A9188;
+        --adm-pending: #D97706;
+        --adm-pending-bg: #FFFBEB;
+        --adm-converted: #0284C7;
+        --adm-converted-bg: #F0F9FF;
+        --adm-rejected: #DC2626;
+        --adm-rejected-bg: #FEF2F2;
+        --adm-success: #059669;
+        --adm-success-bg: #ECFDF5;
+        --adm-radius-sm: 6px;
+        --adm-radius: 10px;
+        --adm-radius-lg: 14px;
+        --adm-shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
+        --adm-shadow: 0 1px 4px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.04);
+        --adm-shadow-lg: 0 4px 8px rgba(0,0,0,0.04), 0 12px 32px rgba(0,0,0,0.06);
+        --adm-transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* ═══════════════════════════════════════════════
+        PAGE LAYOUT
+        ═══════════════════════════════════════════════ */
+        .adm-page {
+        max-width: 1440px;
+        margin: 0 auto;
+        padding: 24px 28px 40px;
+        }
+
+        /* ═══════════════════════════════════════════════
+        HEADER
+        ═══════════════════════════════════════════════ */
+        .adm-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        }
+
+        .adm-header__left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        }
+
+        .adm-header__icon-wrap {
+        width: 52px;
+        height: 52px;
+        border-radius: var(--adm-radius-lg);
+        background: linear-gradient(135deg, var(--adm-primary), var(--adm-primary-l));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        flex-shrink: 0;
+        box-shadow: 0 4px 12px rgba(15,118,110,0.3);
+        }
+
+        .adm-header__title {
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--adm-text);
+        margin: 0;
+        line-height: 1.2;
+        letter-spacing: -0.02em;
+        }
+
+        .adm-header__sub {
+        font-size: 13px;
+        color: var(--adm-text-3);
+        margin: 2px 0 0;
+        }
+
+        /* ═══════════════════════════════════════════════
+        BUTTONS
+        ═══════════════════════════════════════════════ */
+        .adm-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 18px;
+        font-size: 13.5px;
+        font-weight: 600;
+        border: none;
+        border-radius: var(--adm-radius);
+        cursor: pointer;
+        transition: all var(--adm-transition);
+        text-decoration: none;
+        white-space: nowrap;
+        line-height: 1.4;
+        font-family: inherit;
+        }
+
+        .adm-btn--primary {
+        background: linear-gradient(135deg, var(--adm-primary), var(--adm-primary-l));
+        color: #fff;
+        box-shadow: 0 2px 8px rgba(15,118,110,0.25);
+        }
+
+        .adm-btn--primary:hover {
+        box-shadow: 0 4px 16px rgba(15,118,110,0.35);
+        transform: translateY(-1px);
+        }
+
+        .adm-btn--ghost {
+        background: var(--adm-surface);
+        color: var(--adm-text-2);
+        border: 1px solid var(--adm-border);
+        }
+
+        .adm-btn--ghost:hover {
+        background: var(--adm-surface-2);
+        border-color: var(--adm-border-h);
+        color: var(--adm-text);
+        }
+
+        .adm-btn--ghost:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+        }
+
+        .adm-btn--success {
+        background: linear-gradient(135deg, var(--adm-success), #10B981);
+        color: #fff;
+        box-shadow: 0 2px 8px rgba(5,150,105,0.25);
+        }
+
+        .adm-btn--success:hover {
+        box-shadow: 0 4px 16px rgba(5,150,105,0.35);
+        transform: translateY(-1px);
+        }
+
+        .adm-btn--success:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none;
+        }
+
+        .adm-btn--icon-only {
+        padding: 9px 10px;
+        }
+
+        .adm-btn__spinner {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: adm-spin 0.6s linear infinite;
+        }
+        @@keyframes adm-spin {
+        to {
+        transform: rotate(360deg);
+        }
+        }
+
+        /* ═══════════════════════════════════════════════
+        FILTER BAR
+        ═══════════════════════════════════════════════ */
+        .adm-filters {
+        background: var(--adm-surface);
+        border: 1px solid var(--adm-border);
+        border-radius: var(--adm-radius-lg);
+        padding: 16px 20px;
+        box-shadow: var(--adm-shadow-sm);
+        }
+
+        .adm-filters__row {
+        display: flex;
+        gap: 14px;
+        align-items: flex-end;
+        }
+
+        .adm-filters__field {
+        flex: 1;
+        }
+
+        .adm-filters__field--search {
+        flex: 1.6;
+        }
+
+        .adm-filters__field--actions {
+        flex: 0 0 auto;
+        }
+
+        .adm-label {
+        display: block;
+        font-size: 11.5px;
+        font-weight: 600;
+        color: var(--adm-text-3);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 6px;
+        }
+
+        .adm-input-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+        }
+
+        .adm-input-wrap__icon {
+        position: absolute;
+        left: 12px;
+        color: var(--adm-text-3);
+        pointer-events: none;
+        z-index: 1;
+        }
+
+        .adm-input {
+        width: 100%;
+        padding: 8px 12px 8px 38px;
+        font-size: 13.5px;
+        border: 1px solid var(--adm-border);
+        border-radius: var(--adm-radius);
+        background: var(--adm-surface-2);
+        color: var(--adm-text);
+        transition: all var(--adm-transition);
+        outline: none;
+        font-family: inherit;
+        }
+
+        .adm-input:focus {
+        border-color: var(--adm-primary);
+        box-shadow: 0 0 0 3px rgba(15,118,110,0.1);
+        background: #fff;
+        }
+
+        .adm-input::placeholder {
+        color: var(--adm-text-3);
+        }
+
+        .adm-input-wrap__btn {
+        margin-left: 6px;
+        padding: 8px 14px;
+        font-size: 12.5px;
+        font-weight: 600;
+        background: var(--adm-primary);
+        color: #fff;
+        border: none;
+        border-radius: var(--adm-radius);
+        cursor: pointer;
+        transition: all var(--adm-transition);
+        font-family: inherit;
+        }
+
+        .adm-input-wrap__btn:hover {
+        background: var(--adm-primary-h);
+        }
+
+        .adm-input-wrap__addon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        border: 1px solid var(--adm-border);
+        border-left: none;
+        border-radius: 0 var(--adm-radius) var(--adm-radius) 0;
+        background: var(--adm-surface-2);
+        color: var(--adm-text-3);
+        cursor: pointer;
+        transition: all var(--adm-transition);
+        }
+
+        .adm-input-wrap__addon:hover {
+        background: var(--adm-primary-bg);
+        color: var(--adm-primary);
+        }
+
+        .adm-select {
+        width: 100%;
+        padding: 8px 32px 8px 12px;
+        font-size: 13.5px;
+        border: 1px solid var(--adm-border);
+        border-radius: var(--adm-radius);
+        background: var(--adm-surface-2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238A9188' stroke-width='2.5' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 10px center;
+        color: var(--adm-text);
+        appearance: none;
+        cursor: pointer;
+        transition: all var(--adm-transition);
+        outline: none;
+        font-family: inherit;
+        }
+
+        .adm-select:focus {
+        border-color: var(--adm-primary);
+        box-shadow: 0 0 0 3px rgba(15,118,110,0.1);
+        background-color: #fff;
+        }
+
+        .adm-btn-group {
+        display: flex;
+        gap: 6px;
+        }
+
+        .adm-filter-badges {
+        margin-top: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        min-height: 0;
+        }
+
+        .adm-filter-badges:empty {
+        margin-top: 0;
+        }
+
+        .adm-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 3px 10px;
+        font-size: 11px;
+        font-weight: 600;
+        border-radius: 100px;
+        letter-spacing: 0.01em;
+        }
+
+        .adm-badge--primary {
+        background: var(--adm-primary-bg);
+        color: var(--adm-primary);
+        }
+
+        .adm-badge--neutral {
+        background: var(--adm-surface-2);
+        color: var(--adm-text-2);
+        border: 1px solid var(--adm-border);
+        }
+
+        .adm-badge--info {
+        background: var(--adm-converted-bg);
+        color: var(--adm-converted);
+        }
+
+        /* ═══════════════════════════════════════════════
+        TABS
+        ═══════════════════════════════════════════════ */
+        .adm-tabs {
+        display: flex;
+        gap: 4px;
+        padding: 12px 20px 0;
+        background: var(--adm-surface);
+        border: 1px solid var(--adm-border);
+        border-top: none;
+        }
+
+        .adm-tab {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 10px 16px;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--adm-text-3);
+        background: none;
+        border: none;
+        border-bottom: 2.5px solid transparent;
+        cursor: pointer;
+        transition: all var(--adm-transition);
+        font-family: inherit;
+        }
+
+        .adm-tab:hover {
+        color: var(--adm-text);
+        background: var(--adm-surface-2);
+        }
+
+        .adm-tab--active {
+        color: var(--adm-primary);
+        font-weight: 650;
+        border-bottom-color: var(--adm-primary);
+        }
+
+        .adm-tab__dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        }
+
+        .adm-tab__dot--pending {
+        background: var(--adm-pending);
+        }
+
+        .adm-tab__dot--converted {
+        background: var(--adm-converted);
+        }
+
+        .adm-tab__dot--rejected {
+        background: var(--adm-rejected);
+        }
+
+        .adm-tab__count {
+        font-size: 11px;
+        font-weight: 700;
+        padding: 1px 7px;
+        border-radius: 100px;
+        min-width: 22px;
+        text-align: center;
+        line-height: 18px;
+        }
+
+        .adm-tab__count--neutral {
+        background: var(--adm-surface-2);
+        color: var(--adm-text-3);
+        }
+
+        .adm-tab__count--pending {
+        background: var(--adm-pending-bg);
+        color: var(--adm-pending);
+        }
+
+        .adm-tab__count--converted {
+        background: var(--adm-converted-bg);
+        color: var(--adm-converted);
+        }
+
+        .adm-tab__count--rejected {
+        background: var(--adm-rejected-bg);
+        color: var(--adm-rejected);
+        }
+
+        .adm-tab--active .adm-tab__count--neutral {
+        background: var(--adm-primary-bg);
+        color: var(--adm-primary);
+        }
+
+        /* ═══════════════════════════════════════════════
+        TABLE CARD
+        ═══════════════════════════════════════════════ */
+        .adm-table-card {
+        background: var(--adm-surface);
+        border: 1px solid var(--adm-border);
+        border-top: none;
+        border-radius: 0 0 var(--adm-radius-lg) var(--adm-radius-lg);
+        box-shadow: var(--adm-shadow);
+        overflow: hidden;
+        }
+
+        .adm-table-card__body {
+        position: relative;
+        min-height: 200px;
+        }
+
+        /* ═══════════════════════════════════════════════
+        LOADING OVERLAY
+        ═══════════════════════════════════════════════ */
+        .adm-loading {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        background: rgba(255,255,255,0.85);
+        backdrop-filter: blur(2px);
+        z-index: 10;
+        transition: opacity 0.25s ease;
+        }
+
+        .adm-loading--hidden {
+        opacity: 0;
+        pointer-events: none;
+        }
+
+        .adm-loading--visible {
+        opacity: 1;
+        pointer-events: auto;
+        }
+
+        .adm-loading__spinner {
+        width: 32px;
+        height: 32px;
+        border: 3px solid var(--adm-border);
+        border-top-color: var(--adm-primary);
+        border-radius: 50%;
+        animation: adm-spin 0.7s linear infinite;
+        }
+
+        .adm-loading__text {
+        font-size: 13px;
+        color: var(--adm-text-3);
+        font-weight: 500;
+        }
+
+        /* ═══════════════════════════════════════════════
+        TABULATOR OVERRIDES — TABLE BODY
+        ═══════════════════════════════════════════════ */
+        .tabulator {
+        font-family: inherit;
+        border: none !important;
+        background: transparent !important;
+        }
+
+        .tabulator .tabulator-header {
+        background: var(--adm-surface-2) !important;
+        border-bottom: 1px solid var(--adm-border) !important;
+        }
+
+        .tabulator .tabulator-header .tabulator-col {
+        background: transparent !important;
+        border-right: none !important;
+        padding: 11px 12px !important;
+        font-size: 11.5px !important;
+        font-weight: 650 !important;
+        color: var(--adm-text-3) !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.04em;
+        }
+
+        .tabulator .tabulator-header .tabulator-col .tabulator-col-content .tabulator-col-title {
+        white-space: nowrap;
+        }
+
+        .tabulator .tabulator-tableHolder .tabulator-table {
+        background: transparent !important;
+        color: var(--adm-text) !important;
+        }
+
+        .tabulator .tabulator-row {
+        border-bottom: 1px solid var(--adm-border) !important;
+        background: transparent !important;
+        transition: background var(--adm-transition);
+        }
+
+        .tabulator .tabulator-row:hover {
+        background: var(--adm-primary-bg) !important;
+        }
+
+        .tabulator .tabulator-row .tabulator-cell {
+        padding: 10px 12px !important;
+        border-right: none !important;
+        font-size: 13.5px;
+        vertical-align: middle;
+        }
+
+        /* ═══════════════════════════════════════════════
+        TABULATOR OVERRIDES — PAGINATION FOOTER
+        ═══════════════════════════════════════════════ */
+        .tabulator .tabulator-footer {
+        background: var(--adm-surface-2) !important;
+        border-top: 1px solid var(--adm-border) !important;
+        padding: 10px 16px !important;
+        font-family: inherit !important;
+        color: var(--adm-text-3) !important;
+        display: flex !important;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 48px;
+        }
+
+        /* "Showing X–Y of Z" counter text */
+        .tabulator .tabulator-footer .tabulator-page-counter {
+        font-size: 12.5px !important;
+        color: var(--adm-text-3) !important;
+        font-weight: 500;
+        }
+
+        .tabulator .tabulator-footer .tabulator-page-counter strong {
+        color: var(--adm-text-2);
+        font-weight: 700;
+        }
+
+        /* Page button container */
+        .tabulator .tabulator-footer .tabulator-pages {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin: 0 !important;
+        }
+
+        /* Individual page buttons */
+        .tabulator .tabulator-footer .tabulator-page {
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        min-width: 34px;
+        height: 34px;
+        padding: 0 6px !important;
+        font-size: 12.5px !important;
+        font-weight: 600 !important;
+        font-family: inherit !important;
+        color: var(--adm-text-2) !important;
+        background: var(--adm-surface) !important;
+        border: 1px solid var(--adm-border) !important;
+        border-radius: var(--adm-radius-sm) !important;
+        cursor: pointer;
+        transition: all var(--adm-transition);
+        box-shadow: none !important;
+        line-height: 1 !important;
+        }
+
+        /* Hover state */
+        .tabulator .tabulator-footer .tabulator-page:hover {
+        color: var(--adm-primary) !important;
+        border-color: var(--adm-primary) !important;
+        background: var(--adm-primary-bg) !important;
+        }
+
+        /* Active page */
+        .tabulator .tabulator-footer .tabulator-page.active {
+        color: #fff !important;
+        background: var(--adm-primary) !important;
+        border-color: var(--adm-primary) !important;
+        box-shadow: 0 2px 6px rgba(15,118,110,0.25) !important;
+        }
+
+        /* Disabled (first/last when on edge) */
+        .tabulator .tabulator-footer .tabulator-page.disabled {
+        opacity: 0.35 !important;
+        cursor: not-allowed !important;
+        pointer-events: none;
+        }
+
+        /* ═══════════════════════════════════════════════
+        COLUMN-SPECIFIC STYLES
+        ═══════════════════════════════════════════════ */
+        .adm-col-photo {
+        text-align: center !important;
+        }
+
+        .adm-col-actions {
+        text-align: center !important;
+        }
+
+        .adm-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        overflow: hidden;
+        margin: 0 auto;
+        border: 2px solid var(--adm-border);
+        transition: border-color var(--adm-transition);
+        }
+
+        .tabulator-row:hover .adm-avatar {
+        border-color: var(--adm-primary-l);
+        }
+
+        .adm-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        }
+
+        .adm-cell-mono {
+        font-family: 'SF Mono','Cascadia Code','Consolas',monospace;
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--adm-primary);
+        letter-spacing: 0.01em;
+        }
+
+        .adm-cell-name {
+        font-weight: 600;
+        color: var(--adm-text);
+        }
+
+        .adm-cell-dob {
+        font-size: 12px;
+        color: var(--adm-text-2);
+        line-height: 1.4;
+        }
+
+        .adm-cell-dob strong {
+        color: var(--adm-text);
+        font-size: 13px;
+        }
+
+        .adm-cell-dob__date {
+        font-size: 11.5px;
+        color: var(--adm-text-3);
+        }
+
+        .adm-cell-gender {
+        font-size: 12.5px;
+        color: var(--adm-text-2);
+        }
+
+        .adm-cell-phone {
+        font-family: 'SF Mono','Cascadia Code','Consolas',monospace;
+        font-size: 12.5px;
+        color: var(--adm-text-2);
+        }
+
+        /* Status pills */
+        .adm-status {
+        display: inline-flex;
+        align-items: center;
+        padding: 3px 10px;
+        font-size: 11.5px;
+        font-weight: 650;
+        border-radius: 100px;
+        letter-spacing: 0.01em;
+        white-space: nowrap;
+        }
+
+        .adm-status--pending {
+        background: var(--adm-pending-bg);
+        color: var(--adm-pending);
+        }
+
+        .adm-status--converted {
+        background: var(--adm-converted-bg);
+        color: var(--adm-converted);
+        }
+
+        .adm-status--rejected {
+        background: var(--adm-rejected-bg);
+        color: var(--adm-rejected);
+        }
+
+        .adm-status--approved {
+        background: var(--adm-success-bg);
+        color: var(--adm-success);
+        }
+
+        .adm-status--neutral {
+        background: var(--adm-surface-2);
+        color: var(--adm-text-3);
+        }
+
+        /* Action buttons in rows */
+        .adm-actions {
+        display: inline-flex;
+        gap: 4px;
+        }
+
+        .adm-action {
+        width: 30px;
+        height: 30px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--adm-radius-sm);
+        border: 1px solid var(--adm-border);
+        background: var(--adm-surface);
+        color: var(--adm-text-3);
+        cursor: pointer;
+        transition: all var(--adm-transition);
+        text-decoration: none;
+        }
+
+        .adm-action--edit:hover {
+        background: var(--adm-primary-bg);
+        color: var(--adm-primary);
+        border-color: var(--adm-primary);
+        }
+
+        .adm-action--convert:hover {
+        background: var(--adm-success-bg);
+        color: var(--adm-success);
+        border-color: var(--adm-success);
+        }
+
+        .adm-action--reject:hover {
+        background: var(--adm-rejected-bg);
+        color: var(--adm-rejected);
+        border-color: var(--adm-rejected);
+        }
+
+        .adm-actions--done {
+        font-size: 11px;
+        color: var(--adm-text-3);
+        font-style: italic;
+        }
+
+        /* ═══════════════════════════════════════════════
+        MODAL
+        ═══════════════════════════════════════════════ */
+        .adm-modal-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(20,24,20,0.5);
+        backdrop-filter: blur(4px);
+        z-index: 1050;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        animation: adm-fade-in 0.2s ease;
+        }
+        @@keyframes adm-fade-in {
+        from {
+        opacity: 0;
+        }
+
+        to {
+        opacity: 1;
+        }
+        }
+
+        .adm-modal {
+        background: var(--adm-surface);
+        border-radius: var(--adm-radius-lg);
+        box-shadow: var(--adm-shadow-lg);
+        width: 100%;
+        max-width: 460px;
+        border: 1px solid var(--adm-border);
+        animation: adm-slide-up 0.25s cubic-bezier(0.16,1,0.3,1);
+        }
+        @@keyframes adm-slide-up {
+        from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.98);
+        }
+
+        to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        }
+        }
+
+        .adm-modal__header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        padding: 20px 24px 16px;
+        }
+
+        .adm-modal__header-left {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        }
+
+        .adm-modal__header-icon {
+        width: 42px;
+        height: 42px;
+        border-radius: var(--adm-radius);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        }
+
+        .adm-modal__header-icon--success {
+        background: var(--adm-success-bg);
+        color: var(--adm-success);
+        }
+
+        .adm-modal__title {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--adm-text);
+        margin: 0;
+        }
+
+        .adm-modal__subtitle {
+        font-size: 12.5px;
+        color: var(--adm-text-3);
+        margin: 2px 0 0;
+        }
+
+        .adm-modal__close {
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        border-radius: var(--adm-radius-sm);
+        background: transparent;
+        color: var(--adm-text-3);
+        cursor: pointer;
+        transition: all var(--adm-transition);
+        }
+
+        .adm-modal__close:hover {
+        background: var(--adm-surface-2);
+        color: var(--adm-text);
+        }
+
+        .adm-modal__body {
+        padding: 0 24px 20px;
+        }
+
+        .adm-modal__footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        padding: 16px 24px;
+        border-top: 1px solid var(--adm-border);
+        background: var(--adm-surface-2);
+        border-radius: 0 0 var(--adm-radius-lg) var(--adm-radius-lg);
+        }
+
+        .adm-form-group {
+        margin-bottom: 4px;
+        }
+
+        .adm-form-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--adm-text);
+        margin-bottom: 8px;
+        }
+
+        .adm-required {
+        color: var(--adm-rejected);
+        }
+
+        .adm-select--full {
+        border-radius: var(--adm-radius) 0 0 var(--adm-radius);
+        }
+
+        .adm-capacity-info {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 10px;
+        font-size: 12px;
+        color: var(--adm-text-3);
+        }
+
+        .adm-alert {
+        padding: 10px 14px;
+        border-radius: var(--adm-radius);
+        font-size: 13px;
+        margin-top: 12px;
+        }
+
+        .adm-alert--error {
+        background: var(--adm-rejected-bg);
+        color: var(--adm-rejected);
+        border: 1px solid rgba(220,38,38,0.15);
+        }
+
+        /* ═══════════════════════════════════════════════
+        RESPONSIVE
+        ═══════════════════════════════════════════════ */
+        @@media (max-width: 992px) {
+        .adm-filters__row {
+        flex-wrap: wrap;
+        }
+
+        .adm-filters__field--search {
+        flex: 1 1 100%;
+        }
+
+        .adm-filters__field {
+        flex: 1 1 calc(33% - 10px);
+        }
+
+        .adm-filters__field--actions {
+        flex: 1 1 100%;
+        }
+
+        .adm-btn-group {
+        width: 100%;
+        }
+
+        .adm-btn-group .adm-btn {
+        flex: 1;
+        justify-content: center;
+        }
+        }
+        @@media (max-width: 768px) {
+        .adm-page {
+        padding: 16px 12px 32px;
+        }
+
+        .adm-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+        }
+
+        .adm-header__icon-wrap {
+        width: 44px;
+        height: 44px;
+        }
+
+        .adm-header__icon-wrap svg {
+        width: 22px;
+        height: 22px;
+        }
+
+        .adm-header__title {
+        font-size: 18px;
+        }
+
+        .adm-filters__field {
+        flex: 1 1 calc(50% - 8px);
+        }
+
+        .adm-tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        }
+
+        .adm-tab {
+        font-size: 12px;
+        padding: 9px 12px;
+        }
+        /* Stack pagination footer on mobile */
+        .tabulator .tabulator-footer {
+        flex-direction: column !important;
+        gap: 10px !important;
+        text-align: center !important;
+        }
+        }
+        @@media (max-width: 480px) {
+        .adm-filters__field {
+        flex: 1 1 100%;
+        }
+        }
+
+        /* ═══════════════════════════════════════════════
+        ACCESSIBILITY
+        ═══════════════════════════════════════════════ */
+        @@media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+        }
+        }
+
+        .adm-tab:focus-visible,
+        .adm-btn:focus-visible,
+        .adm-select:focus-visible,
+        .adm-input:focus-visible,
+        .adm-action:focus-visible,
+        .tabulator .tabulator-footer .tabulator-page:focus-visible {
+        outline: 2px solid var(--adm-primary);
+        outline-offset: 2px;
+        }
+    </style>
 }

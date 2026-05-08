@@ -1,3 +1,7 @@
+@inject SchoolManagementSystem.Data.SchoolDbContext _db
+@using System.Security.Claims
+@using Microsoft.EntityFrameworkCore
+@using System.Security.Claims
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,10 +13,12 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/SchoolManagementSystem.styles.css" asp-append-version="true" />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
-            /* ── Reset & Base ─────────────────────────────────────── */
+            /* ═══════════════════════════════════════════
+                       DESIGN TOKENS
+                       ═══════════════════════════════════════════ */
             *, *::before, *::after {
                 box-sizing: border-box;
                 margin: 0;
@@ -20,41 +26,63 @@
             }
 
             :root {
-                --sidebar-w: 240px;
-                --topbar-h: 60px;
-                --brand-h: 64px;
-                --clr-primary: #1a56db;
-                --clr-primary-soft: #e8f0fd;
-                --clr-primary-hover: #1648c0;
-                --clr-accent: #f97316;
+                /* Sidebar */
+                --sidebar-w: 260px;
+                --sidebar-collapsed-w: 72px;
+                --sidebar-mobile-w: 284px;
                 --clr-sidebar: #0f172a;
-                --clr-sidebar-item: rgba(255,255,255,.06);
-                --clr-sidebar-hover: rgba(255,255,255,.10);
-                --clr-sidebar-active: #1a56db;
+                --clr-sidebar-surface: rgba(255,255,255,0.04);
+                --clr-sidebar-hover: rgba(255,255,255,0.07);
+                --clr-sidebar-active-bg: rgba(30,64,175,0.35);
+                --clr-sidebar-active-border: #60a5fa;
+                --clr-sidebar-text: #94a3b8;
+                --clr-sidebar-heading: #cbd5e1;
+                /* Brand */
+                --clr-accent: #f97316;
+                /* Primary */
+                --clr-primary: #1e40af;
+                --clr-primary-hover: #1e3a8a;
+                --clr-primary-soft: #eff6ff;
+                /* Surfaces */
                 --clr-topbar: #ffffff;
                 --clr-canvas: #f1f5f9;
                 --clr-card: #ffffff;
+                --clr-border: #e2e8f0;
+                /* Text */
                 --clr-text: #0f172a;
                 --clr-text-muted: #64748b;
-                --clr-sidebar-text: #94a3b8;
-                --clr-sidebar-head: #cbd5e1;
-                --clr-white: #ffffff;
-                --clr-border: #e2e8f0;
-                --role-admin: #7c3aed;
-                --role-teacher: #0891b2;
-                --role-student: #059669;
-                --role-staff: #d97706;
+                /* Roles */
+                --role-admin: #a78bfa;
+                --role-admin-bg: rgba(124,58,237,0.15);
+                --role-teacher: #67e8f9;
+                --role-teacher-bg: rgba(8,145,178,0.15);
+                --role-student: #6ee7b7;
+                --role-student-bg: rgba(5,150,105,0.15);
+                --role-staff: #fcd34d;
+                --role-staff-bg: rgba(217,119,6,0.15);
+                /* Shape */
                 --radius-sm: 6px;
                 --radius-md: 10px;
                 --radius-lg: 14px;
-                --shadow-sm: 0 1px 3px rgba(0,0,0,.08);
-                --shadow-md: 0 4px 16px rgba(0,0,0,.12);
-                --transition: .18s ease;
-                --font: 'Plus Jakarta Sans', sans-serif;
+                /* Elevation */
+                --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+                --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+                --shadow-lg: 0 12px 32px rgba(0,0,0,0.12);
+                /* Motion */
+                --ease: cubic-bezier(0.4, 0, 0.2, 1);
+                --duration: 0.22s;
+                --sidebar-transition: width 0.28s var(--ease), margin-left 0.28s var(--ease);
+                /* Typography */
+                --font: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+                --topbar-h: 60px;
             }
 
+            /* ═══════════════════════════════════════════
+                       BASE
+                       ═══════════════════════════════════════════ */
             html {
                 font-size: 14px;
+                scroll-behavior: smooth;
             }
 
             body {
@@ -63,30 +91,67 @@
                 color: var(--clr-text);
                 background: var(--clr-canvas);
                 -webkit-font-smoothing: antialiased;
+                -moz-osx-font-smoothing: grayscale;
                 overflow-x: hidden;
+                text-rendering: optimizeLegibility;
             }
 
-            /* ── App Shell ────────────────────────────────────────── */
+            /* Global scrollbar */
+            ::-webkit-scrollbar {
+                width: 6px;
+                height: 6px;
+            }
+
+            ::-webkit-scrollbar-track {
+                background: transparent;
+            }
+
+            ::-webkit-scrollbar-thumb {
+                background: #cbd5e1;
+                border-radius: 6px;
+            }
+
+                ::-webkit-scrollbar-thumb:hover {
+                    background: #94a3b8;
+                }
+
+            * {
+                scrollbar-width: thin;
+                scrollbar-color: #cbd5e1 transparent;
+            }
+
+            /* ═══════════════════════════════════════════
+                       APP SHELL
+                       ═══════════════════════════════════════════ */
             .app-shell {
                 display: flex;
                 min-height: 100vh;
+                min-height: 100dvh;
             }
 
-            /* ── Sidebar Overlay ──────────────────────────────────── */
+            /* ═══════════════════════════════════════════
+                       SIDEBAR OVERLAY (mobile)
+                       ═══════════════════════════════════════════ */
             .sidebar-overlay {
                 display: none;
                 position: fixed;
                 inset: 0;
-                background: rgba(0,0,0,.45);
+                background: rgba(15,23,42,0.5);
+                backdrop-filter: blur(4px);
+                -webkit-backdrop-filter: blur(4px);
                 z-index: 199;
-                -webkit-tap-highlight-color: transparent;
+                opacity: 0;
+                transition: opacity var(--duration) var(--ease);
             }
 
                 .sidebar-overlay.visible {
                     display: block;
+                    opacity: 1;
                 }
 
-            /* ── Sidebar ──────────────────────────────────────────── */
+            /* ═══════════════════════════════════════════
+                       SIDEBAR
+                       ═══════════════════════════════════════════ */
             .sidebar {
                 position: fixed;
                 top: 0;
@@ -94,44 +159,60 @@
                 width: var(--sidebar-w);
                 height: 100vh;
                 height: 100dvh;
-                background: var(--clr-sidebar);
+                background: linear-gradient(180deg, #131c31 0%, var(--clr-sidebar) 40%);
                 display: flex;
                 flex-direction: column;
                 overflow: hidden;
                 z-index: 200;
-                transition: transform var(--transition);
-                will-change: transform;
+                transition: width var(--sidebar-transition), transform var(--duration) var(--ease);
+                will-change: transform, width;
             }
 
-            /* Hidden off-canvas on mobile/tablet by default */
+                /* Accent stripe */
+                .sidebar::before {
+                    content: '';
+                    position: absolute;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    height: 3px;
+                    background: linear-gradient(90deg, var(--clr-primary), #3b82f6, var(--clr-accent));
+                    z-index: 2;
+                }
+
+            /* ── Mobile / Tablet ──────────────────── */
             @@media (max-width: 1023px) {
                 .sidebar {
+                    width: var(--sidebar-mobile-w);
                     transform: translateX(-100%);
                     box-shadow: none;
                 }
 
                     .sidebar.open {
                         transform: translateX(0);
-                        box-shadow: var(--shadow-md);
+                        box-shadow: var(--shadow-lg);
                     }
             }
 
-            /* Brand */
+            /* ── Brand ─────────────────────────────── */
             .sidebar-brand {
                 display: flex;
                 align-items: center;
-                gap: 10px;
-                padding: 0 18px;
-                height: var(--brand-h);
+                gap: 12px;
+                padding: 18px;
+                height: 68px;
                 text-decoration: none;
-                border-bottom: 1px solid rgba(255,255,255,.07);
+                border-bottom: 1px solid rgba(255,255,255,0.06);
                 flex-shrink: 0;
+                position: relative;
+                z-index: 1;
+                transition: padding var(--duration) var(--ease);
             }
 
                 .sidebar-brand .brand-icon {
-                    width: 32px;
-                    height: 32px;
-                    background: var(--clr-primary);
+                    width: 34px;
+                    height: 34px;
+                    background: linear-gradient(135deg, var(--clr-primary), #3b82f6);
                     border-radius: var(--radius-sm);
                     display: flex;
                     align-items: center;
@@ -139,24 +220,34 @@
                     color: #fff;
                     font-size: 15px;
                     flex-shrink: 0;
+                    box-shadow: 0 2px 8px rgba(30,64,175,0.4);
                 }
 
-                .sidebar-brand .brand-text {
-                    font-size: 16px;
-                    font-weight: 700;
-                    color: var(--clr-white);
-                    letter-spacing: -.2px;
-                }
+            .brand-text-wrap {
+                overflow: hidden;
+                white-space: nowrap;
+                max-width: 180px;
+                transition: max-width 0.18s var(--ease), opacity 0.14s var(--ease);
+            }
 
-                .sidebar-brand .brand-sub {
-                    font-size: 10px;
-                    color: var(--clr-sidebar-text);
-                    line-height: 1;
-                }
+            .sidebar-brand .brand-text {
+                font-size: 16px;
+                font-weight: 800;
+                color: #fff;
+                letter-spacing: -0.3px;
+                line-height: 1.2;
+            }
 
-            /* Role badge */
+            .sidebar-brand .brand-sub {
+                font-size: 10.5px;
+                color: var(--clr-sidebar-text);
+                line-height: 1;
+                margin-top: 1px;
+            }
+
+            /* ── Role Badge ────────────────────────── */
             .sidebar-role {
-                padding: 10px 18px 6px;
+                padding: 12px 18px 4px;
                 flex-shrink: 0;
             }
 
@@ -164,116 +255,193 @@
                 display: inline-flex;
                 align-items: center;
                 gap: 6px;
-                font-size: 11px;
-                font-weight: 600;
+                font-size: 10.5px;
+                font-weight: 700;
                 padding: 4px 10px;
                 border-radius: 100px;
-                letter-spacing: .3px;
+                letter-spacing: 0.4px;
                 text-transform: uppercase;
             }
 
                 .role-badge.admin {
-                    background: rgba(124,58,237,.18);
-                    color: #a78bfa;
+                    background: var(--role-admin-bg);
+                    color: var(--role-admin);
                 }
 
                 .role-badge.teacher {
-                    background: rgba(8,145,178,.18);
-                    color: #67e8f9;
+                    background: var(--role-teacher-bg);
+                    color: var(--role-teacher);
                 }
 
                 .role-badge.student {
-                    background: rgba(5,150,105,.18);
-                    color: #6ee7b7;
+                    background: var(--role-student-bg);
+                    color: var(--role-student);
                 }
 
                 .role-badge.staff {
-                    background: rgba(217,119,6,.18);
-                    color: #fcd34d;
+                    background: var(--role-staff-bg);
+                    color: var(--role-staff);
                 }
 
-            /* Nav scroll area */
+                .role-badge .role-label {
+                    overflow: hidden;
+                    white-space: nowrap;
+                    max-width: 120px;
+                    transition: max-width 0.18s var(--ease), opacity 0.14s var(--ease);
+                }
+
+            /* ── Nav Scroll Area ───────────────────── */
             .sidebar-nav {
                 flex: 1;
                 overflow-y: auto;
                 overflow-x: hidden;
-                padding: 8px 0 16px;
-                scrollbar-width: thin;
-                scrollbar-color: rgba(255,255,255,.1) transparent;
+                padding: 6px 0 8px;
                 -webkit-overflow-scrolling: touch;
             }
 
                 .sidebar-nav::-webkit-scrollbar {
-                    width: 4px;
+                    width: 3px;
                 }
 
                 .sidebar-nav::-webkit-scrollbar-thumb {
-                    background: rgba(255,255,255,.1);
-                    border-radius: 4px;
+                    background: rgba(255,255,255,0.08);
+                    border-radius: 3px;
                 }
 
-            /* Nav section labels */
+                    .sidebar-nav::-webkit-scrollbar-thumb:hover {
+                        background: rgba(255,255,255,0.15);
+                    }
+
+            /* ── Section Labels ────────────────────── */
             .nav-section-label {
+                display: block;
                 font-size: 10px;
                 font-weight: 700;
                 letter-spacing: 1px;
                 text-transform: uppercase;
                 color: var(--clr-sidebar-text);
-                padding: 16px 18px 6px;
-                opacity: .55;
-                display: block;
+                padding: 18px 18px 6px;
+                opacity: 0.5;
             }
 
-            /* Nav links */
+                .nav-section-label .nav-text {
+                    overflow: hidden;
+                    white-space: nowrap;
+                    max-width: 200px;
+                    display: inline;
+                    transition: max-width 0.18s var(--ease), opacity 0.14s var(--ease);
+                }
+
+            /* ── Nav Links ─────────────────────────── */
             .sidebar-nav a {
                 display: flex;
                 align-items: center;
-                gap: 10px;
-                padding: 9px 18px;
+                gap: 11px;
+                padding: 0 18px;
+                height: 42px;
                 color: var(--clr-sidebar-text);
                 text-decoration: none;
                 font-size: 13.5px;
                 font-weight: 500;
-                transition: background var(--transition), color var(--transition);
+                transition: background var(--duration) var(--ease), color var(--duration) var(--ease);
                 position: relative;
-                min-height: 42px; /* larger touch target */
+                margin: 1px 8px;
+                border-radius: var(--radius-sm);
             }
 
                 .sidebar-nav a i {
-                    font-size: 15px;
-                    width: 18px;
+                    font-size: 16px;
+                    width: 20px;
                     text-align: center;
                     flex-shrink: 0;
+                    transition: color var(--duration) var(--ease);
+                }
+
+                .sidebar-nav a .nav-text {
+                    overflow: hidden;
+                    white-space: nowrap;
+                    max-width: 190px;
+                    transition: max-width 0.2s var(--ease), opacity 0.16s var(--ease);
+                    line-height: 1.3;
                 }
 
                 .sidebar-nav a:hover {
                     background: var(--clr-sidebar-hover);
-                    color: var(--clr-white);
+                    color: #e2e8f0;
                 }
 
                 .sidebar-nav a.active,
                 .sidebar-nav a[aria-current="page"] {
-                    background: var(--clr-sidebar-active);
-                    color: var(--clr-white);
+                    background: var(--clr-sidebar-active-bg);
+                    color: #fff;
                     font-weight: 600;
                 }
 
-                    .sidebar-nav a.active::before,
-                    .sidebar-nav a[aria-current="page"]::before {
+                    .sidebar-nav a.active i,
+                    .sidebar-nav a[aria-current="page"] i {
+                        color: var(--clr-sidebar-active-border);
+                    }
+
+                    .sidebar-nav a.active::after,
+                    .sidebar-nav a[aria-current="page"]::after {
                         content: '';
                         position: absolute;
-                        left: 0;
-                        top: 0;
-                        bottom: 0;
+                        left: -8px;
+                        top: 6px;
+                        bottom: 6px;
                         width: 3px;
-                        background: #93c5fd;
+                        background: var(--clr-sidebar-active-border);
                         border-radius: 0 3px 3px 0;
                     }
 
-            /* User footer */
+            /* ── Collapse Button ───────────────────── */
+            .sidebar-collapse-wrap {
+                padding: 8px 8px 4px;
+                flex-shrink: 0;
+            }
+
+            .sidebar-collapse-btn {
+                display: flex;
+                align-items: center;
+                gap: 11px;
+                width: 100%;
+                padding: 0 18px;
+                height: 40px;
+                background: none;
+                border: 1px solid rgba(255,255,255,0.06);
+                border-radius: var(--radius-sm);
+                color: var(--clr-sidebar-text);
+                font-size: 13px;
+                font-weight: 500;
+                font-family: var(--font);
+                cursor: pointer;
+                transition: background var(--duration) var(--ease), color var(--duration) var(--ease);
+            }
+
+                .sidebar-collapse-btn:hover {
+                    background: var(--clr-sidebar-hover);
+                    color: #e2e8f0;
+                }
+
+                .sidebar-collapse-btn i {
+                    font-size: 15px;
+                    width: 20px;
+                    text-align: center;
+                    flex-shrink: 0;
+                    transition: transform 0.28s var(--ease);
+                }
+
+                .sidebar-collapse-btn .nav-text {
+                    overflow: hidden;
+                    white-space: nowrap;
+                    max-width: 190px;
+                    transition: max-width 0.2s var(--ease), opacity 0.16s var(--ease);
+                }
+
+            /* ── User Footer ───────────────────────── */
             .sidebar-footer {
-                padding: 14px 18px;
-                border-top: 1px solid rgba(255,255,255,.07);
+                padding: 12px 14px;
+                border-top: 1px solid rgba(255,255,255,0.06);
                 flex-shrink: 0;
             }
 
@@ -284,10 +452,10 @@
                 }
 
             .user-avatar {
-                width: 34px;
-                height: 34px;
+                width: 36px;
+                height: 36px;
                 border-radius: 50%;
-                background: var(--clr-primary);
+                background: linear-gradient(135deg, var(--clr-primary), #3b82f6);
                 color: #fff;
                 display: flex;
                 align-items: center;
@@ -295,17 +463,28 @@
                 font-size: 12px;
                 font-weight: 700;
                 flex-shrink: 0;
+                box-shadow: 0 2px 6px rgba(30,64,175,0.3);
+                overflow: hidden;
             }
+
+                .user-avatar img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                }
 
             .user-info {
                 flex: 1;
                 min-width: 0;
+                overflow: hidden;
+                transition: max-width 0.2s var(--ease), opacity 0.16s var(--ease);
+                max-width: 180px;
             }
 
             .user-name {
                 font-size: 13px;
                 font-weight: 600;
-                color: var(--clr-white);
+                color: #fff;
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
@@ -317,27 +496,141 @@
             }
 
             .btn-logout {
-                background: none;
-                border: 1px solid rgba(255,255,255,.12);
+                width: 34px;
+                height: 34px;
                 border-radius: var(--radius-sm);
+                border: 1px solid rgba(255,255,255,0.08);
+                background: transparent;
                 color: var(--clr-sidebar-text);
-                padding: 5px 8px;
-                font-size: 13px;
-                cursor: pointer;
-                transition: border-color var(--transition), color var(--transition);
-                min-width: 32px;
-                min-height: 32px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
+                font-size: 14px;
+                cursor: pointer;
+                flex-shrink: 0;
+                transition: border-color var(--duration) var(--ease), color var(--duration) var(--ease), background var(--duration) var(--ease);
             }
 
                 .btn-logout:hover {
-                    border-color: rgba(255,255,255,.3);
-                    color: var(--clr-white);
+                    border-color: rgba(239,68,68,0.4);
+                    color: #f87171;
+                    background: rgba(239,68,68,0.08);
                 }
 
-            /* ── Main Panel ───────────────────────────────────────── */
+            /* ═══════════════════════════════════════════
+                       SIDEBAR COLLAPSED STATE (desktop only)
+                       ═══════════════════════════════════════════ */
+            @@media (min-width: 1024px) {
+                .app-shell.sidebar-collapsed .sidebar {
+                    width: var(--sidebar-collapsed-w);
+                }
+
+                .app-shell.sidebar-collapsed .main-panel {
+                    margin-left: var(--sidebar-collapsed-w) !important;
+                }
+                /* Hide all text content */
+                .app-shell.sidebar-collapsed .nav-text,
+                .app-shell.sidebar-collapsed .brand-text-wrap,
+                .app-shell.sidebar-collapsed .role-label,
+                .app-shell.sidebar-collapsed .user-info,
+                .app-shell.sidebar-collapsed .sidebar-collapse-btn .nav-text {
+                    max-width: 0 !important;
+                    opacity: 0 !important;
+                    overflow: hidden;
+                }
+                /* Center brand */
+                .app-shell.sidebar-collapsed .sidebar-brand {
+                    justify-content: center;
+                    padding: 18px 0;
+                }
+                /* Center nav links */
+                .app-shell.sidebar-collapsed .sidebar-nav a {
+                    justify-content: center;
+                    padding: 0;
+                    margin: 1px 8px;
+                }
+                /* Center collapse button */
+                .app-shell.sidebar-collapsed .sidebar-collapse-btn {
+                    justify-content: center;
+                    padding: 0;
+                }
+
+                    .app-shell.sidebar-collapsed .sidebar-collapse-btn i {
+                        transform: rotate(180deg);
+                    }
+                /* Center footer */
+                .app-shell.sidebar-collapsed .sidebar-footer form {
+                    justify-content: center;
+                }
+                /* Hide section labels */
+                .app-shell.sidebar-collapsed .nav-section-label {
+                    text-align: center;
+                    padding: 14px 8px 4px;
+                }
+
+                    .app-shell.sidebar-collapsed .nav-section-label::after {
+                        content: '···';
+                        color: var(--clr-sidebar-text);
+                        font-size: 10px;
+                        letter-spacing: 2px;
+                    }
+                /* Role badge: just show dot */
+                .app-shell.sidebar-collapsed .sidebar-role {
+                    text-align: center;
+                }
+
+                .app-shell.sidebar-collapsed .role-badge {
+                    padding: 4px 0;
+                }
+                /* CSS-only tooltips */
+                .app-shell.sidebar-collapsed .sidebar-nav a {
+                    position: relative;
+                }
+
+                    .app-shell.sidebar-collapsed .sidebar-nav a::before {
+                        content: attr(data-title);
+                        position: absolute;
+                        left: calc(100% + 14px);
+                        top: 50%;
+                        transform: translateY(-50%);
+                        padding: 6px 12px;
+                        background: var(--clr-text);
+                        color: #fff;
+                        font-size: 12px;
+                        font-weight: 600;
+                        font-family: var(--font);
+                        border-radius: var(--radius-sm);
+                        white-space: nowrap;
+                        opacity: 0;
+                        pointer-events: none;
+                        transition: opacity 0.12s var(--ease);
+                        z-index: 1000;
+                        box-shadow: var(--shadow-md);
+                    }
+
+                    .app-shell.sidebar-collapsed .sidebar-nav a:hover::before {
+                        opacity: 1;
+                    }
+                    /* Override active indicator */
+                    .app-shell.sidebar-collapsed .sidebar-nav a.active::after,
+                    .app-shell.sidebar-collapsed .sidebar-nav a[aria-current="page"]::after {
+                        left: 0;
+                        top: 6px;
+                        bottom: 6px;
+                        width: 3px;
+                    }
+            }
+
+            /* Hide collapse button on mobile */
+            @@media (max-width: 1023px) {
+                .sidebar-collapse-wrap {
+                    display: none;
+                }
+            }
+
+            /* ═══════════════════════════════════════════
+                       MAIN PANEL
+                       ═══════════════════════════════════════════ */
             .main-panel {
                 display: flex;
                 flex-direction: column;
@@ -345,9 +638,8 @@
                 min-height: 100dvh;
                 flex: 1;
                 min-width: 0;
-                /* Offset for fixed sidebar on desktop */
                 margin-left: 0;
-                transition: margin-left var(--transition);
+                transition: margin-left var(--sidebar-transition);
             }
 
             @@media (min-width: 1024px) {
@@ -356,7 +648,9 @@
                 }
             }
 
-            /* ── Topbar ───────────────────────────────────────────── */
+            /* ═══════════════════════════════════════════
+                       TOPBAR
+                       ═══════════════════════════════════════════ */
             .topbar {
                 position: sticky;
                 top: 0;
@@ -367,7 +661,7 @@
                 display: flex;
                 align-items: center;
                 justify-content: space-between;
-                padding: 0 16px;
+                padding: 0 20px;
                 gap: 12px;
                 box-shadow: var(--shadow-sm);
             }
@@ -375,25 +669,35 @@
             .topbar-left {
                 display: flex;
                 align-items: center;
-                gap: 10px;
+                gap: 12px;
                 min-width: 0;
                 flex: 1;
             }
 
+            .topbar-right {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                flex-shrink: 0;
+            }
+
+            /* Page title */
             .page-title {
                 font-size: 15px;
-                font-weight: 600;
+                font-weight: 700;
                 color: var(--clr-text);
                 white-space: nowrap;
                 overflow: hidden;
                 text-overflow: ellipsis;
+                letter-spacing: -0.2px;
             }
 
+            /* Session pill */
             .session-pill {
                 display: inline-flex;
                 align-items: center;
                 gap: 5px;
-                font-size: 11.5px;
+                font-size: 11px;
                 font-weight: 600;
                 padding: 3px 10px;
                 background: var(--clr-primary-soft);
@@ -403,49 +707,118 @@
                 flex-shrink: 0;
             }
 
-            .topbar-right {
-                display: flex;
-                align-items: center;
-                gap: 6px;
+            /* Search */
+            .topbar-search {
+                position: relative;
+                width: 220px;
                 flex-shrink: 0;
             }
 
+                .topbar-search i {
+                    position: absolute;
+                    left: 11px;
+                    top: 50%;
+                    transform: translateY(-50%);
+                    font-size: 13px;
+                    color: var(--clr-text-muted);
+                    pointer-events: none;
+                }
+
             .topbar-icon-btn {
-                width: 36px;
-                height: 36px;
-                border-radius: var(--radius-sm);
+                width: 40px;
+                height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 50%;
+                color: var(--clr-text-muted);
+                text-decoration: none;
+                transition: background var(--duration) var(--ease), color var(--duration) var(--ease);
+                font-size: 19px;
+                position: relative;
+                overflow: hidden;
+            }
+
+                .topbar-icon-btn img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: cover;
+                }
+
+                .topbar-search input {
+                    width: 100%;
+                    padding: 7px 12px 7px 34px;
+                    font-size: 13px;
+                    font-family: var(--font);
+                    border: 1px solid var(--clr-border);
+                    border-radius: var(--radius-md);
+                    background: var(--clr-canvas);
+                    color: var(--clr-text);
+                    outline: none;
+                    transition: border-color var(--duration) var(--ease), box-shadow var(--duration) var(--ease), background var(--duration) var(--ease);
+                }
+
+                    .topbar-search input::placeholder {
+                        color: var(--clr-text-muted);
+                    }
+
+                    .topbar-search input:focus {
+                        border-color: var(--clr-primary);
+                        box-shadow: 0 0 0 3px rgba(30,64,175,0.1);
+                        background: #fff;
+                    }
+
+            /* Icon buttons */
+            .topbar-icon-btn {
+                position: relative;
+                width: 38px;
+                height: 38px;
+                border-radius: var(--radius-md);
                 border: 1px solid var(--clr-border);
                 background: transparent;
                 color: var(--clr-text-muted);
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 16px;
+                font-size: 17px;
                 cursor: pointer;
                 text-decoration: none;
-                transition: background var(--transition), color var(--transition);
+                transition: background var(--duration) var(--ease), color var(--duration) var(--ease), border-color var(--duration) var(--ease);
             }
 
                 .topbar-icon-btn:hover {
                     background: var(--clr-canvas);
                     color: var(--clr-text);
+                    border-color: #cbd5e1;
                 }
 
-            /* Sidebar toggle button (hamburger) */
+            /* Notification dot */
+            .notif-dot {
+                position: absolute;
+                top: 7px;
+                right: 8px;
+                width: 8px;
+                height: 8px;
+                background: #ef4444;
+                border-radius: 50%;
+                border: 2px solid var(--clr-topbar);
+            }
+
+            /* Hamburger */
             .sidebar-toggle {
-                width: 36px;
-                height: 36px;
-                border-radius: var(--radius-sm);
+                width: 38px;
+                height: 38px;
+                border-radius: var(--radius-md);
                 border: 1px solid var(--clr-border);
                 background: transparent;
                 color: var(--clr-text-muted);
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                font-size: 18px;
+                font-size: 19px;
                 cursor: pointer;
                 flex-shrink: 0;
-                transition: background var(--transition), color var(--transition);
+                transition: background var(--duration) var(--ease), color var(--duration) var(--ease);
             }
 
                 .sidebar-toggle:hover {
@@ -453,7 +826,6 @@
                     color: var(--clr-text);
                 }
 
-            /* Hide hamburger on desktop */
             @@media (min-width: 1024px) {
                 .sidebar-toggle {
                     display: none;
@@ -464,94 +836,172 @@
             .btn-login {
                 display: inline-flex;
                 align-items: center;
-                gap: 6px;
-                padding: 7px 16px;
+                gap: 7px;
+                padding: 8px 18px;
                 background: var(--clr-primary);
                 color: #fff;
                 text-decoration: none;
-                font-weight: 600;
+                font-weight: 700;
                 font-size: 13px;
-                border-radius: var(--radius-sm);
-                transition: background var(--transition);
+                font-family: var(--font);
+                border-radius: var(--radius-md);
+                transition: background var(--duration) var(--ease), box-shadow var(--duration) var(--ease);
                 white-space: nowrap;
             }
 
                 .btn-login:hover {
                     background: var(--clr-primary-hover);
                     color: #fff;
+                    box-shadow: 0 4px 12px rgba(30,64,175,0.25);
                 }
 
-            /* ── Content Area ─────────────────────────────────────── */
+            /* ═══════════════════════════════════════════
+                       CONTENT AREA
+                       ═══════════════════════════════════════════ */
             .content {
                 flex: 1;
-                padding: 20px 16px;
+                padding: 24px 24px 32px;
                 min-width: 0;
                 width: 100%;
-                overflow-x: auto;
             }
 
-            /* ── No-sidebar (unauthenticated) ─────────────────────── */
+            /* No-sidebar (unauthenticated) */
             .app-shell.no-sidebar .topbar {
-                padding: 0 24px;
+                padding: 0 28px;
             }
 
             .app-shell.no-sidebar .content {
                 max-width: 1100px;
                 margin: 0 auto;
-                width: 100%;
             }
 
-            /* ── Responsive Breakpoints ───────────────────────────── */
+            /* ═══════════════════════════════════════════
+                       FOCUS VISIBLE (Accessibility)
+                       ═══════════════════════════════════════════ */
+            .sidebar-nav a:focus-visible,
+            .sidebar-collapse-btn:focus-visible,
+            .btn-logout:focus-visible,
+            .topbar-icon-btn:focus-visible,
+            .sidebar-toggle:focus-visible,
+            .btn-login:focus-visible,
+            .topbar-search input:focus-visible {
+                outline: 2px solid var(--clr-sidebar-active-border);
+                outline-offset: 2px;
+            }
 
-            /* Large desktop: wider padding */
+            /* ═══════════════════════════════════════════
+                       TABULATOR BASE OVERRIDES
+                       ═══════════════════════════════════════════ */
+            .tabulator {
+                font-family: var(--font);
+            }
+
+            /* ═══════════════════════════════════════════
+                       RESPONSIVE — 1280px+
+                       ═══════════════════════════════════════════ */
             @@media (min-width: 1280px) {
                 .topbar {
                     padding: 0 28px;
                 }
 
                 .content {
-                    padding: 24px 28px;
+                    padding: 28px 32px 40px;
+                }
+
+                .topbar-search {
+                    width: 260px;
                 }
             }
 
-            /* Small tablet / large phone landscape */
+            /* ═══════════════════════════════════════════
+                       RESPONSIVE — Tablet (768–1023)
+                       ═══════════════════════════════════════════ */
+            @@media (max-width: 1023px) {
+                .topbar-search {
+                    width: 180px;
+                }
+            }
+
+            /* ═══════════════════════════════════════════
+                       RESPONSIVE — Phone (<768)
+        ═══════════════════════════════════════════ */
             @@media (max-width: 767px) {
-                :root {
-                    --topbar-h: 54px;
-                }
+        :root {
+        --topbar-h: 56px;
+        }
 
-                .page-title {
-                    font-size: 14px;
-                }
+        .topbar {
+        padding: 0 14px;
+        gap: 8px;
+        }
 
-                .session-pill {
-                    display: none;
-                }
-                /* hide on very small screens */
-            }
+        .page-title {
+        font-size: 14px;
+        }
 
-            /* Extra small phones */
-            @@media (max-width: 400px) {
-                .topbar {
-                    padding: 0 10px;
-                    gap: 6px;
-                }
+        .session-pill {
+        display: none;
+        }
 
-                .content {
-                    padding: 12px 10px;
-                }
+        .topbar-search {
+        display: none;
+        }
 
-                .sidebar-brand .brand-sub {
-                    display: none;
-                }
-            }
+        .content {
+        padding: 16px 14px 24px;
+        }
+        }
 
-            /* Ensure tables / wide content scroll horizontally */
-            .table-responsive-wrap {
-                width: 100%;
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-            }
+            /* ═══════════════════════════════════════════
+        RESPONSIVE — Small phone (<420)
+        ═══════════════════════════════════════════ */
+            @@media (max-width: 420px) {
+        .topbar {
+        padding: 0 10px;
+        gap: 6px;
+        }
+
+        .content {
+        padding: 12px 10px 20px;
+        }
+
+        .sidebar-brand .brand-sub {
+        display: none;
+        }
+
+        .topbar-icon-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+        }
+
+        .sidebar-toggle {
+        width: 36px;
+        height: 36px;
+        font-size: 17px;
+        }
+        }
+
+            /* ═══════════════════════════════════════════
+        REDUCED MOTION
+        ═══════════════════════════════════════════ */
+            @@media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+        }
+
+        html {
+        scroll-behavior: auto;
+        }
+        }
+
+            /* Ensure wide content scrolls horizontally */
+        .table-responsive-wrap {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        }
     </style>
 </head>
 
@@ -560,7 +1010,7 @@
     bool isStudent = User.IsInRole("Student");
     bool isTeacherLike = User.IsInRole("Teacher") || User.IsInRole("Senior Lecturer") ||
                            User.IsInRole("Lecturer") || User.IsInRole("Assistant Head") ||
-                           User.IsInRole("Principal") || User.IsInRole("principle") || User.IsInRole("Office Staff");
+                           User.IsInRole("Principal") || User.IsInRole("Office Staff");
     bool IsAdmin() => User.IsInRole("Super Admin");
     bool Can(string c) => IsAdmin() || User.HasClaim("Permission", c);
 
@@ -569,186 +1019,237 @@
                           : isStudent ? "student"
                           : "staff";
 
-    string roleLabel = IsAdmin() ? "Super Admin"
-                     : isStudent ? "Student"
-                     : isTeacherLike ? "Staff"
-                     : "User";
+    string roleLabel =
+     IsAdmin() ? "Super Admin" :
+     isStudent ? "Student" :
+     User.IsInRole("Principal") ? "Principal" :
+     User.IsInRole("Teacher") ? "Teacher" :
+     User.IsInRole("Senior Lecturer") ? "Senior Lecturer" :
+     User.IsInRole("Lecturer") ? "Lecturer" :
+     User.IsInRole("Assistant Head") ? "Assistant Head" :
+     User.IsInRole("Office Staff") ? "Office Staff" :
+     "User";
 
     string userName = User.Identity?.Name ?? "";
     string initials = string.Join("", userName.Split(' ', System.StringSplitOptions.RemoveEmptyEntries)
                                               .Take(2)
                                               .Select(w => w[0].ToString().ToUpper()));
     if (string.IsNullOrEmpty(initials) && userName.Length > 0) initials = userName[..1].ToUpper();
+
+    string? profilePicture = null;
+    var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    if (int.TryParse(userIdStr, out var userId))
+    {
+        if (isStudent)
+        {
+            profilePicture = _db.Students.AsNoTracking()
+                .Where(s => s.UserId == userId && !s.IsDeleted)
+                .Select(s => s.ProfilePicturePath)
+                .FirstOrDefault();
+        }
+        else
+        {
+            // For Teacher, Staff, and potentially Admin if they are linked to a Teacher/Staff record
+            profilePicture = _db.Teachers.AsNoTracking()
+                .Where(t => t.UserId == userId && !t.IsDeleted)
+                .Select(t => t.ProfilePicturePath)
+                .FirstOrDefault();
+        }
+    }
 }
 
 <body>
-    <div class="app-shell @(isAuthenticated ? "" : "no-sidebar")">
+    <div class="app-shell @(isAuthenticated ? "" : "no-sidebar")" id="appShell">
 
         @if (isAuthenticated)
         {
-            <!-- Mobile overlay -->
-            <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+            <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
             <aside class="sidebar" id="mainSidebar" aria-label="Main navigation">
-                <!-- Brand -->
                 <a class="sidebar-brand" asp-controller="Dashboard" asp-action="Index">
                     <div class="brand-icon"><i class="bi bi-mortarboard-fill"></i></div>
-                    <div>
+                    <div class="brand-text-wrap">
                         <div class="brand-text">SchoolMS</div>
                         <div class="brand-sub">Management System</div>
                     </div>
                 </a>
 
-                <!-- Role badge -->
                 <div class="sidebar-role">
                     <span class="role-badge @roleBadgeClass">
-                        <i class="bi bi-circle-fill" style="font-size:7px"></i>
-                        @roleLabel
+                        <i class="bi bi-circle-fill" style="font-size:6px"></i>
+                        <span class="role-label">@roleLabel</span>
                     </span>
                 </div>
 
-                <nav class="sidebar-nav">
+                <nav class="sidebar-nav" id="sidebarNav">
                     @if (isStudent)
                     {
-                        <span class="nav-section-label">Main</span>
-                        <a asp-controller="Dashboard" asp-action="Index"><i class="bi bi-grid-1x2"></i> My Dashboard</a>
-                        <a href="/Details"><i class="bi bi-person-circle"></i> My Profile</a>
+                        <span class="nav-section-label"><span class="nav-text">Main</span></span>
+                        <a href="/Details" data-title="My Profile"><i class="bi bi-person-circle"></i><span class="nav-text">My Profile</span></a>
+                        <a asp-controller="Dashboard" asp-action="Index" data-title="Dashboard"><i class="bi bi-grid-1x2"></i><span class="nav-text">My Dashboard</span></a>
 
-                        <span class="nav-section-label">Academics</span>
-                        <a href="/Result"><i class="bi bi-bar-chart-line"></i> My Results</a>
-                        <a href="/AttendanceRecord"><i class="bi bi-calendar-check"></i> Attendance</a>
-                        <a href="/Assignment"><i class="bi bi-journal-text"></i> Assignments</a>
+                        <span class="nav-section-label"><span class="nav-text">Academics</span></span>
+                        <a href="/ResultManagement/StudentIndex" data-title="Results"><i class="bi bi-bar-chart-line"></i><span class="nav-text">My Results</span></a>
+                        <a href="/AttendanceRecord" data-title="Attendance"><i class="bi bi-calendar-check"></i><span class="nav-text">Attendance</span></a>
+                        <a asp-controller="StudentClassAssignment" asp-action="Index" data-title="Assignments"><i class="bi bi-journal-text"></i><span class="nav-text">Assignments</span></a>
 
-                        <span class="nav-section-label">Admin</span>
-                        <a href="/FeeStructure"><i class="bi bi-cash-coin"></i> My Fees</a>
-                        <a href="/Communication"><i class="bi bi-megaphone"></i> Notices</a>
+                        <span class="nav-section-label"><span class="nav-text">Admin</span></span>
+                        <a href="/FeeStructure" data-title="My Fees"><i class="bi bi-cash-coin"></i><span class="nav-text">My Fees</span></a>
+                        <a href="/Communication" data-title="Notices"><i class="bi bi-megaphone"></i><span class="nav-text">Notices</span></a>
                     }
                     else
                     {
                         @if (isTeacherLike)
                         {
-                            <span class="nav-section-label">Account</span>
-                            <a href="/Details"><i class="bi bi-person-circle"></i> My Profile</a>
+                            <span class="nav-section-label"><span class="nav-text">Account</span></span>
+                            <a href="/Details" data-title="My Profile"><i class="bi bi-person-circle"></i><span class="nav-text">My Profile</span></a>
                         }
 
                         @if (Can("Dashboard.View"))
                         {
-                            <span class="nav-section-label">Overview</span>
-                            <a asp-controller="Dashboard" asp-action="Index"><i class="bi bi-grid-1x2"></i> Dashboard</a>
+                            <span class="nav-section-label"><span class="nav-text">Overview</span></span>
+                            <a asp-controller="Dashboard" asp-action="Index" data-title="Dashboard"><i class="bi bi-grid-1x2"></i><span class="nav-text">Dashboard</span></a>
                         }
 
                         @if (Can("Admissions.View") || Can("Admission.View") || Can("Students.View") || Can("Student.View") || Can("Teachers.View"))
                         {
-                            <span class="nav-section-label">People</span>
+                            <span class="nav-section-label"><span class="nav-text">People</span></span>
                             @if (Can("Admissions.View") || Can("Admission.View"))
                             {
-                                <a href="/Admission/Index"><i class="bi bi-person-plus"></i> Admissions</a>
+                                <a href="/Admission/Index" data-title="Admissions"><i class="bi bi-person-plus"></i><span class="nav-text">Admissions</span></a>
                             }
                             @if (Can("Students.View") || Can("Student.View"))
                             {
-                                <a asp-controller="Student" asp-action="Index"><i class="bi bi-people"></i> Students</a>
+                                <a asp-controller="Student" asp-action="Index" data-title="Students"><i class="bi bi-people"></i><span class="nav-text">Students</span></a>
                             }
                             @if (Can("Teachers.View"))
                             {
-                                <a asp-controller="Teacher" asp-action="Index"><i class="bi bi-person-badge"></i> Teachers</a>
+                                <a asp-controller="Teacher" asp-action="Index" data-title="Teachers"><i class="bi bi-person-badge"></i><span class="nav-text">Teachers</span></a>
                             }
                         }
 
                         @if (Can("Academic.View") || Can("Classes.View") || Can("Subjects.View") || Can("Attendance.View") || Can("Exams.View") || Can("Exam.View") || Can("Marks.View") || Can("Result.View") || Can("Assignments.View"))
                         {
-                            <span class="nav-section-label">Academics</span>
+                            <span class="nav-section-label"><span class="nav-text">Academics</span></span>
                             @if (Can("Academic.View") || Can("Classes.View") || Can("Subjects.View"))
                             {
-                                <a asp-controller="SchoolClass" asp-action="Index"><i class="bi bi-building"></i> Classes</a>
+                                <a asp-controller="SchoolClass" asp-action="Index" data-title="Classes"><i class="bi bi-building"></i><span class="nav-text">Classes</span></a>
                             }
                             @if (Can("Attendance.View"))
                             {
-                                <a asp-controller="AttendanceRecord" asp-action="Index"><i class="bi bi-calendar-check"></i> Attendance</a>
+                                <a asp-controller="AttendanceRecord" asp-action="Index" data-title="Attendance"><i class="bi bi-calendar-check"></i><span class="nav-text">Attendance</span></a>
                             }
                             @if (Can("Exams.View") || Can("Exam.View"))
                             {
-                                <a asp-controller="Exam" asp-action="Index"><i class="bi bi-pencil-square"></i> Exams</a>
+                                <a asp-controller="Exam" asp-action="Index" data-title="Exams"><i class="bi bi-pencil-square"></i><span class="nav-text">Exams</span></a>
                             }
-                            @if (Can("Marks.View") || Can("Result.View"))
+                            @if (IsAdmin())
                             {
-                                <a asp-controller="Result" asp-action="Index"><i class="bi bi-bar-chart-line"></i> Results</a>
+                                <a href="/ResultManagement/AdminIndex" data-title="Manage Results"><i class="bi bi-shield-check"></i><span class="nav-text">Manage Results</span></a>
+                                <a asp-controller="AdminResult" asp-action="Dashboard" data-title="Result Dashboard"><i class="bi bi-graph-up"></i><span class="nav-text">Result Dashboard</span></a>
+                                <a asp-controller="AdminResult" asp-action="AllResults" data-title="All Results"><i class="bi bi-list-check"></i><span class="nav-text">All Results</span></a>
+                                <a asp-controller="AdminResult" asp-action="AllSubjects" data-title="All Subjects"><i class="bi bi-book"></i><span class="nav-text">All Subjects</span></a>
+                                <a href="/ResultManagement/ReEvaluationDashboard" data-title="Re-evaluations"><i class="bi bi-search"></i><span class="nav-text">Re-evaluations</span></a>
+                            }
+                            else if (isTeacherLike)
+                            {
+                                <a href="/ResultManagement/TeacherEntry" data-title="Mark Entry"><i class="bi bi-pencil-square"></i><span class="nav-text">Mark Entry</span></a>
+                            }
+                            else if (Can("Marks.View") || Can("Result.View"))
+                            {
+                                <a asp-controller="Result" asp-action="Index" data-title="Results"><i class="bi bi-bar-chart-line"></i><span class="nav-text">Results</span></a>
                             }
                             @if (Can("Assignments.View"))
                             {
-                                <a asp-controller="Assignment" asp-action="Index"><i class="bi bi-journal-text"></i> Assignments</a>
+                                <a asp-controller="StudentClassAssignment" asp-action="Index" data-title="Assignments"><i class="bi bi-journal-text"></i><span class="nav-text">Assignments</span></a>
                             }
                         }
 
                         @if (Can("Fees.View") || Can("Payments.View") || Can("Library.View") || Can("Transport.View") || Can("Health.View"))
                         {
-                            <span class="nav-section-label">Services</span>
+                            <span class="nav-section-label"><span class="nav-text">Services</span></span>
                             @if (Can("Fees.View"))
                             {
-                                <a asp-controller="FeeStructure" asp-action="Index"><i class="bi bi-cash-coin"></i> Fees</a>
+                                <a asp-controller="FeeStructure" asp-action="Index" data-title="Fees"><i class="bi bi-cash-coin"></i><span class="nav-text">Fees</span></a>
                             }
                             @if (Can("Payments.View"))
                             {
-                                <a asp-controller="Payment" asp-action="Index"><i class="bi bi-credit-card"></i> Payments</a>
+                                <a asp-controller="Payment" asp-action="Index" data-title="Payments"><i class="bi bi-credit-card"></i><span class="nav-text">Payments</span></a>
                             }
                             @if (Can("Library.View"))
                             {
-                                <a asp-controller="Library" asp-action="Index"><i class="bi bi-book"></i> Library</a>
+                                <a asp-controller="Library" asp-action="Index" data-title="Library"><i class="bi bi-book"></i><span class="nav-text">Library</span></a>
                             }
                             @if (Can("Transport.View"))
                             {
-                                <a asp-controller="Transport" asp-action="Index"><i class="bi bi-bus-front"></i> Transport</a>
+                                <a asp-controller="Transport" asp-action="Index" data-title="Transport"><i class="bi bi-bus-front"></i><span class="nav-text">Transport</span></a>
                             }
                             @if (Can("Health.View"))
                             {
-                                <a asp-controller="Health" asp-action="Index"><i class="bi bi-heart-pulse"></i> Health</a>
+                                <a asp-controller="Health" asp-action="Index" data-title="Health"><i class="bi bi-heart-pulse"></i><span class="nav-text">Health</span></a>
                             }
                         }
 
                         @if (Can("Communication.View") || Can("Reports.View"))
                         {
-                            <span class="nav-section-label">Communicate</span>
+                            <span class="nav-section-label"><span class="nav-text">Communicate</span></span>
                             @if (Can("Communication.View"))
                             {
-                                <a asp-controller="Communication" asp-action="Index"><i class="bi bi-megaphone"></i> Communication</a>
+                                <a asp-controller="Communication" asp-action="Index" data-title="Communication"><i class="bi bi-megaphone"></i><span class="nav-text">Communication</span></a>
                             }
                             @if (Can("Reports.View"))
                             {
-                                <a asp-controller="Report" asp-action="Index"><i class="bi bi-file-earmark-bar-graph"></i> Reports</a>
+                                <a asp-controller="Report" asp-action="Index" data-title="Reports"><i class="bi bi-file-earmark-bar-graph"></i><span class="nav-text">Reports</span></a>
                             }
                         }
 
                         @if (Can("Users.View") || Can("Roles.View") || Can("Permissions.View") || Can("Notifications.View") || Can("Settings.View") || Can("System.View"))
                         {
-                            <span class="nav-section-label">System</span>
+                            <span class="nav-section-label"><span class="nav-text">System</span></span>
                             @if (Can("Users.View"))
                             {
-                                <a asp-controller="User" asp-action="Index"><i class="bi bi-person-gear"></i> Users</a>
+                                <a asp-controller="User" asp-action="Index" data-title="Users"><i class="bi bi-person-gear"></i><span class="nav-text">Users</span></a>
                             }
                             @if (Can("Roles.View"))
                             {
-                                <a asp-controller="Role" asp-action="Index"><i class="bi bi-shield-lock"></i> Roles</a>
+                                <a asp-controller="Role" asp-action="Index" data-title="Roles"><i class="bi bi-shield-lock"></i><span class="nav-text">Roles</span></a>
                             }
                             @if (Can("Permissions.View"))
                             {
-                                <a asp-controller="Permission" asp-action="Index"><i class="bi bi-key"></i> Permissions</a>
+                                <a asp-controller="Permission" asp-action="Index" data-title="Permissions"><i class="bi bi-key"></i><span class="nav-text">Permissions</span></a>
                             }
                             @if (Can("Notifications.View"))
                             {
-                                <a asp-controller="Notification" asp-action="Index"><i class="bi bi-bell"></i> Notifications</a>
+                                <a asp-controller="Notification" asp-action="Index" data-title="Notifications"><i class="bi bi-bell"></i><span class="nav-text">Notifications</span></a>
                             }
                             @if (Can("Settings.View") || Can("System.View"))
                             {
-                                <a asp-controller="SystemSettings" asp-action="Index"><i class="bi bi-gear"></i> System</a>
+                                <a asp-controller="SystemSettings" asp-action="Index" data-title="System Settings"><i class="bi bi-gear"></i><span class="nav-text">System</span></a>
                             }
                         }
                     }
                 </nav>
 
-                <!-- User footer -->
+                <div class="sidebar-collapse-wrap">
+                    <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" title="Collapse sidebar">
+                        <i class="bi bi-chevron-left"></i>
+                        <span class="nav-text">Collapse</span>
+                    </button>
+                </div>
+
                 <div class="sidebar-footer">
                     <form asp-controller="Auth" asp-action="Logout" method="post">
                         @Html.AntiForgeryToken()
-                        <div class="user-avatar">@initials</div>
+                        <div class="user-avatar">
+                            @if (!string.IsNullOrEmpty(profilePicture))
+                            {
+                                <img src="@profilePicture" alt="@userName" />
+                            }
+                            else
+                            {
+                                @initials
+                            }
+                        </div>
                         <div class="user-info">
                             <div class="user-name">@userName</div>
                             <div class="user-role-text">@roleLabel</div>
@@ -761,19 +1262,12 @@
             </aside>
         }
 
-        <!-- Main panel — offset on desktop when sidebar is present -->
         <div class="main-panel @(isAuthenticated ? "has-sidebar" : "")" id="mainPanel">
-
             <header class="topbar">
                 <div class="topbar-left">
                     @if (isAuthenticated)
                     {
-                        <button class="sidebar-toggle"
-                                id="sidebarToggleBtn"
-                                onclick="toggleSidebar()"
-                                aria-label="Toggle navigation"
-                                aria-expanded="false"
-                                aria-controls="mainSidebar">
+                        <button class="sidebar-toggle" id="sidebarToggleBtn" aria-label="Toggle navigation" aria-expanded="false" aria-controls="mainSidebar">
                             <i class="bi bi-list" id="toggleIcon"></i>
                         </button>
                     }
@@ -787,14 +1281,26 @@
                 <div class="topbar-right">
                     @if (isAuthenticated)
                     {
+                        <div class="topbar-search">
+                            <i class="bi bi-search"></i>
+                            <input type="text" placeholder="Search anything..." aria-label="Search">
+                        </div>
                         @if (Can("Notifications.View") || isStudent || isTeacherLike)
                         {
                             <a class="topbar-icon-btn" asp-controller="Notification" asp-action="Index" title="Notifications">
                                 <i class="bi bi-bell"></i>
+                                <span class="notif-dot"></span>
                             </a>
                         }
                         <a class="topbar-icon-btn" href="/Details" title="My Profile">
-                            <i class="bi bi-person-circle"></i>
+                            @if (!string.IsNullOrEmpty(profilePicture))
+                            {
+                                <img src="@profilePicture" alt="@userName" />
+                            }
+                            else
+                            {
+                                <i class="bi bi-person-circle"></i>
+                            }
                         </a>
                     }
                     else
@@ -820,90 +1326,128 @@
     <script src="~/js/site.js" asp-append-version="true"></script>
 
     <script>
-        var _sidebarOpen = false;
+        (function () {
+        'use strict';
+
+        // ── Elements ──────────────────────────────
+        var appShell = document.getElementById('appShell');
         var sidebar = document.getElementById('mainSidebar');
         var overlay = document.getElementById('sidebarOverlay');
         var toggleBtn = document.getElementById('sidebarToggleBtn');
         var toggleIcon = document.getElementById('toggleIcon');
+        var collapseBtn = document.getElementById('sidebarCollapseBtn');
+        var sidebarNav = document.getElementById('sidebarNav');
 
-        function openSidebar() {
+        var _mobileOpen = false;
+        var _collapsed = false;
+        var STORAGE_KEY = 'sms_sidebar_collapsed';
+
+        // Restore collapsed state
+        try {
+        _collapsed = localStorage.getItem(STORAGE_KEY) === 'true';
+        if (_collapsed && window.innerWidth >= 1024) {
+        appShell.classList.add('sidebar-collapsed');
+        }
+        } catch (e) { }
+
+        // ── Mobile open/close ─────────────────────
+        function openMobile() {
         if (!sidebar) return;
-        _sidebarOpen = true;
+        _mobileOpen = true;
         sidebar.classList.add('open');
-        overlay && overlay.classList.add('visible');
-        if (toggleBtn) {
-        toggleBtn.setAttribute('aria-expanded', 'true');
-        }
-        if (toggleIcon) {
-        toggleIcon.className = 'bi bi-x-lg';
-        }
-        document.body.style.overflow = 'hidden'; // prevent body scroll on mobile
+        overlay.classList.add('visible');
+        if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'true');
+        if (toggleIcon) toggleIcon.className = 'bi bi-x-lg';
+        document.body.style.overflow = 'hidden';
         }
 
-        function closeSidebar() {
+        function closeMobile() {
         if (!sidebar) return;
-        _sidebarOpen = false;
+        _mobileOpen = false;
         sidebar.classList.remove('open');
-        overlay && overlay.classList.remove('visible');
-        if (toggleBtn) {
-        toggleBtn.setAttribute('aria-expanded', 'false');
-        }
-        if (toggleIcon) {
-        toggleIcon.className = 'bi bi-list';
-        }
+        overlay.classList.remove('visible');
+        if (toggleBtn) toggleBtn.setAttribute('aria-expanded', 'false');
+        if (toggleIcon) toggleIcon.className = 'bi bi-list';
         document.body.style.overflow = '';
         }
 
-        function toggleSidebar() {
-        _sidebarOpen ? closeSidebar() : openSidebar();
-        }
+        if (toggleBtn) toggleBtn.addEventListener('click', function () {
+        _mobileOpen ? closeMobile() : openMobile();
+        });
+        if (overlay) overlay.addEventListener('click', closeMobile);
 
-        // Close sidebar when viewport goes above 1024px (e.g. rotate to landscape)
-        var mq = window.matchMedia('(min-width: 1024px)');
-        function onBreakpoint(e) {
-        if (e.matches) closeSidebar();
-        }
-        if (mq.addEventListener) {
-        mq.addEventListener('change', onBreakpoint);
-        } else {
-        mq.addListener(onBreakpoint); // Safari <14 fallback
-        }
-
-        // Close sidebar on Escape key
-        document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape' && _sidebarOpen) closeSidebar();
+        // ── Desktop collapse/expand ───────────────
+        if (collapseBtn) collapseBtn.addEventListener('click', function () {
+        _collapsed = !_collapsed;
+        appShell.classList.toggle('sidebar-collapsed', _collapsed);
+        try { localStorage.setItem(STORAGE_KEY, _collapsed); } catch (e) { }
+        // Fire resize so Tabulator / Chart.js can reflow
+        setTimeout(function () { window.dispatchEvent(new Event('resize')); }, 320);
         });
 
-        // Swipe-to-close on touch devices
-        (function () {
-        if (!sidebar) return;
+        // ── Breakpoint listener ───────────────────
+        function onBreakpoint(e) {
+        if (e.matches) {
+        closeMobile();
+        } else {
+        // Going to mobile — remove collapsed class so overlay works cleanly
+        appShell.classList.remove('sidebar-collapsed');
+        }
+        }
+        var mq = window.matchMedia('(min-width: 1024px)');
+        if (mq.addEventListener) mq.addEventListener('change', onBreakpoint);
+        else mq.addListener(onBreakpoint);
+
+        // ── Keyboard ──────────────────────────────
+        document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && _mobileOpen) closeMobile();
+        });
+
+        // ── Touch: swipe left to close ────────────
+        if (sidebar && 'ontouchstart' in window) {
         var startX = 0;
         sidebar.addEventListener('touchstart', function (e) {
         startX = e.touches[0].clientX;
         }, { passive: true });
         sidebar.addEventListener('touchend', function (e) {
-        var dx = e.changedTouches[0].clientX - startX;
-        if (dx < -60) closeSidebar(); // swipe left to close
+        if (e.changedTouches[0].clientX - startX < -50) closeMobile();
         }, { passive: true });
-        })();
+        }
 
-        // Mark active nav link
-        (function () {
+        // ── Active nav link ───────────────────────
+        if (sidebarNav) {
         var path = location.pathname.toLowerCase();
-        document.querySelectorAll('.sidebar-nav a').forEach(function (a) {
+        var links = sidebarNav.querySelectorAll('a');
+        var bestMatch = null;
+        var bestLen = 0;
+
+        links.forEach(function (a) {
         var href = (a.getAttribute('href') || '').toLowerCase();
         if (href && href !== '/' && path.startsWith(href)) {
-        a.classList.add('active');
-        a.setAttribute('aria-current', 'page');
+        if (href.length > bestLen) {
+        bestLen = href.length;
+        bestMatch = a;
+        }
         }
         });
 
-        // Close sidebar when a nav link is clicked on mobile
-        document.querySelectorAll('.sidebar-nav a').forEach(function (a) {
+        if (bestMatch) {
+        bestMatch.classList.add('active');
+        bestMatch.setAttribute('aria-current', 'page');
+        }
+
+        // Close mobile sidebar on nav click
+        links.forEach(function (a) {
         a.addEventListener('click', function () {
-        if (window.innerWidth < 1024) closeSidebar();
+        if (window.innerWidth < 1024) closeMobile();
         });
         });
+        }
+
+        // ── Expose for inline handlers if needed ──
+        window.closeSidebar = closeMobile;
+        window.toggleSidebar = function () { _mobileOpen ? closeMobile() : openMobile(); };
+
         })();
     </script>
 

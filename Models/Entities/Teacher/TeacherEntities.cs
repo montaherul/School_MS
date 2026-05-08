@@ -117,20 +117,10 @@ public class Teacher : BaseEntity
 
     // ── Navigation ────────────────────────────────────────────────────────────
     public ICollection<TeacherDocument> Documents { get; set; } = new List<TeacherDocument>();
+    public ICollection<TeacherClassAssignment> ClassAssignments { get; set; } = new List<TeacherClassAssignment>();
+    public ICollection<TeacherSubjectAssignment> SubjectAssignments { get; set; } = new List<TeacherSubjectAssignment>();
 }
 
-//public class TeacherDocument : BaseEntity
-//{
-//    public int TeacherId { get; set; }
-//    public Teacher? Teacher { get; set; }
-
-//    [MaxLength(80)]
-//    public string DocumentType { get; set; } = string.Empty;
-
-//    [MaxLength(260)]
-//    public string FilePath { get; set; } = string.Empty;
-
-//}
 public class TeacherAttendance : BaseEntity
 {
     public int TeacherId { get; set; }
@@ -163,7 +153,11 @@ public class TeacherLeave : BaseEntity
     public string Status { get; set; } = "Pending"; // Pending, Approved, Rejected
 
     [MaxLength(255)]
-    public string ApproverRemarks { get; set; } = string.Empty;
+    public string? ApproverRemarks { get; set; }
+
+    public int? ApprovedByUserId { get; set; }
+    public ApplicationUser? ApprovedByUser { get; set; }
+    public DateTime? ApprovedDate { get; set; }
 }
 
 public class TeacherDocument : BaseEntity
@@ -190,7 +184,6 @@ public class TeacherSalary : BaseEntity
     public decimal BasicSalary { get; set; }
     public decimal Allowances { get; set; }
     public decimal Deductions { get; set; }
-
     public decimal NetSalary { get; set; }
 
     [MaxLength(20)]
@@ -207,8 +200,8 @@ public class TeacherPerformance : BaseEntity
 
     public DateTime EvaluationDate { get; set; }
 
-    [MaxLength(100)]
-    public string Evaluator { get; set; } = string.Empty;
+    public int? EvaluatorUserId { get; set; }
+    public ApplicationUser? EvaluatorUser { get; set; }
 
     public int Rating { get; set; } // 1 to 5
 

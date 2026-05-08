@@ -26,6 +26,18 @@ public class DashboardController : Controller
                 return View("StudentIndex", studentData);
             }
         }
+
+        if (User.IsInRole("Teacher") || User.IsInRole("Senior Lecturer") || User.IsInRole("Lecturer") || 
+            User.IsInRole("Assistant Head") || User.IsInRole("Principal") || User.IsInRole("Office Staff"))
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (int.TryParse(userIdStr, out var userId))
+            {
+                var teacherData = await _service.GetTeacherDashboardAsync(userId);
+                return View("TeacherIndex", teacherData);
+            }
+        }
+
         var data = await _service.GetDashboardAsync();
         return View(data);
     }

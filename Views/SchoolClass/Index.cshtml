@@ -1,23 +1,28 @@
-@{ 
-    ViewData["Title"] = "Classes"; 
+@{
+    ViewData["Title"] = "Classes";
 }
 
-@if (TempData["SuccessMessage"] != null) 
-{ 
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div> 
-}
-
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="mb-0"><i class="bi bi-grid me-2"></i> Classes</h2>
-    <a href="/SchoolClass/CreateEdit" class="btn btn-primary"><i class="bi bi-plus-circle me-1"></i> Add Class</a>
+<div class="page-title d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="mb-1"><i class="bi bi-building me-2"></i>Classes</h1>
+        <p class="text-muted mb-0">Manage school classes, sections, and student capacity</p>
+    </div>
+    <a href="/SchoolClass/CreateEdit" class="btn btn-primary shadow-sm">
+        <i class="bi bi-plus-circle me-1"></i> Add Class
+    </a>
 </div>
 
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
 <div class="card shadow-sm">
-    <div class="card-body">
-        <div id="data-table"></div>
+    <div class="card-body p-0">
+        <div id="class-table"></div>
     </div>
 </div>
 
@@ -41,68 +46,83 @@
 </div>
 
 @section Scripts {
-    <link href="https://unpkg.com/tabulator-tables@6.2.5/dist/css/tabulator_bootstrap5.min.css" rel="stylesheet">
-    <script src="https://unpkg.com/tabulator-tables@6.2.5/dist/js/tabulator.min.js"></script>
     <script>
-        var pendingDeleteId = null; 
-        var deleteModalElement = document.getElementById('deleteModal');
-        var deleteModal = new bootstrap.Modal(deleteModalElement);
+        var pendingDeleteId = null;
+        var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
 
-        var columns = [
-            { title: "ID", field: "id", visible: false },
-            { title: "Class Name", field: "name", minWidth: 150 },
-            { title: "Sort Order", field: "sortOrder", minWidth: 150 },
-            { 
-                title: "Actions", 
-                field: "id", 
-                hozAlign: "center", 
-                headerSort: false, 
-                width: 120, 
-                formatter: function() { 
-                    return `<button class="btn btn-sm btn-outline-primary btn-action edit-btn me-1"><i class="bi bi-pencil-fill"></i></button>
-                            <button class="btn btn-sm btn-outline-danger btn-action delete-btn"><i class="bi bi-trash-fill"></i></button>`; 
-                }, 
-                cellClick: function(e, cell) { 
-                    var data = cell.getRow().getData(); 
-                    if (e.target.closest('.edit-btn')) {
-                        window.location.href = `/SchoolClass/CreateEdit/${data.id}`;
+        var table = new Tabulator("#class-table", {
+            height: "calc(100vh - 250px)",
+            layout: "fitColumns",
+            pagination: true,
+            paginationMode: "remote",
+            ajaxURL: '@Url.Action("GetList", "SchoolClass")',
+            paginationSize: 10,
+            paginationDataSent: {
+                "page": "page",
+                "size": "pageSize"
+            },
+            ajaxResponse: function(url, params, response) {
+                return { data: response.data, last_page: response.last_page };
+            },
+            columns: [
+                { title: "Sort", field: "sortOrder", width: 80, hozAlign: "center" },
+                { title: "Class Name", field: "name", widthGrow: 2, formatter: function(cell) {
+                    return `<div class="fw-bold text-primary">${cell.getValue()}</div>`;
+                }},
+                { title: "Sections", field: "sectionCount", width: 120, hozAlign: "center", formatter: function(cell) {
+                    return `<span class="badge bg-info-soft text-info border border-info-subtle rounded-pill px-3">${cell.getValue()} Sections</span>`;
+                }},
+                { title: "Students", field: "studentCount", width: 120, hozAlign: "center", formatter: function(cell) {
+                    return `<span class="badge bg-success-soft text-success border border-success-subtle rounded-pill px-3">${cell.getValue()} Students</span>`;
+                }},
+                {
+                    title: "Actions",
+                    field: "id",
+                    hozAlign: "right",
+                    headerSort: false,
+                    width: 140,
+                    formatter: function(cell) {
+                        return `
+                            <div class="btn-group btn-group-sm">
+                                <a href="/SchoolClass/CreateEdit/${cell.getValue()}" class="btn btn-outline-primary" title="Edit"><i class="bi bi-pencil"></i></a>
+                                <button class="btn btn-outline-danger delete-btn" title="Delete"><i class="bi bi-trash"></i></button>
+                            </div>
+                        `;
+                    },
+                    cellClick: function(e, cell) {
+                        if (e.target.closest('.delete-btn')) {
+                            pendingDeleteId = cell.getValue();
+                            document.getElementById('deleteName').textContent = cell.getRow().getData().name;
+                            deleteModal.show();
+                        }
                     }
-                    if (e.target.closest('.delete-btn')) { 
-                        pendingDeleteId = data.id; 
-                        document.getElementById('deleteName').textContent = data.name; 
-                        deleteModal.show(); 
-                    } 
-                } 
-            }
-        ];
-
-        var table = new Tabulator("#data-table", { 
-            height: "400px", 
-            layout: "fitColumns", 
-            pagination: true, 
-            paginationMode: "remote", 
-            filterMode: "remote", 
-            paginationSize: 10, 
-            ajaxURL: '@Url.Action("GetList", "SchoolClass")', 
-            ajaxResponse: function(url, params, response) { 
-                return { data: response.data, last_page: response.last_page }; 
-            }, 
-            columns: columns, 
-            placeholder: "<div class='p-4 text-center text-muted'>No records found</div>" 
+                }
+            ],
+            placeholder: "<div class='p-4 text-center text-muted'>No classes found</div>"
         });
 
-        document.getElementById('confirmDeleteBtn').addEventListener('click', function() { 
-            if (!pendingDeleteId) return; 
-            fetch(`/SchoolClass/Delete/${pendingDeleteId}`)
-                .then(res => res.json())
-                .then(data => { 
-                    deleteModal.hide(); 
-                    if (data.success) { 
-                        table.replaceData(); 
-                    } else {
-                        alert(data.message || 'Failed to delete.');
-                    }
-                }); 
+        document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+            if (!pendingDeleteId) return;
+            fetch(`/SchoolClass/DeleteConfirmed/${pendingDeleteId}`, {
+                method: 'POST',
+                headers: {
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                }
+            }).then(res => {
+                deleteModal.hide();
+                table.setData();
+            });
         });
     </script>
+
+    <style>
+        .bg-info-soft { background-color: rgba(13, 202, 240, 0.1); }
+        .bg-success-soft { background-color: rgba(25, 135, 84, 0.1); }
+        .tabulator { border: none !important; }
+        .tabulator .tabulator-header { background-color: #f8f9fa; border-bottom: 1px solid #e2e8f0; }
+        .tabulator .tabulator-header .tabulator-col { background-color: #f8f9fa; font-weight: 700; color: #475569; padding: 12px 8px; }
+        .tabulator .tabulator-row { border-bottom: 1px solid #f1f5f9; }
+        .tabulator .tabulator-row:hover { background-color: #f8fafc !important; }
+        .tabulator .tabulator-row .tabulator-cell { padding: 12px 8px; vertical-align: middle; }
+    </style>
 }

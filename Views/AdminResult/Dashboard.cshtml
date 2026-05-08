@@ -1,0 +1,312 @@
+@model dynamic
+@{
+    ViewData["Title"] = "Admin Result Dashboard";
+    var activeYear = ViewBag.ActiveYear;
+    var exams = ViewBag.Exams as List<SchoolManagementSystem.Models.Entities.Exam.Exam>;
+    var resultStats = ViewBag.ResultStats as SchoolManagementSystem.Controllers.ResultStatisticsDto;
+}
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0 bg-gradient-primary text-white">
+                <div class="card-body p-4">
+                    <h2 class="mb-1">
+                        <i class="fas fa-chart-line me-2"></i>Result Management Dashboard
+                    </h2>
+                    <p class="mb-0">
+                        @if (activeYear != null)
+                        {
+                            <span>Academic Year: @activeYear.Name (@activeYear.StartsOn.Year - @activeYear.EndsOn.Year)</span>
+                        }
+                        else
+                        {
+                            <span class="text-warning">No active academic year configured</span>
+                        }
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    @if (resultStats != null)
+    {
+        <div class="row mb-4">
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <div class="bg-primary bg-opacity-10 p-3 rounded-circle">
+                                    <i class="fas fa-book-open text-primary fa-2x"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="text-muted mb-1">Total Exams</h6>
+                                <h4 class="mb-0">@resultStats.TotalExams</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <div class="bg-success bg-opacity-10 p-3 rounded-circle">
+                                    <i class="fas fa-check-circle text-success fa-2x"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="text-muted mb-1">Published Results</h6>
+                                <h4 class="mb-0">@resultStats.PublishedResults</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <div class="bg-info bg-opacity-10 p-3 rounded-circle">
+                                    <i class="fas fa-graduation-cap text-info fa-2x"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="text-muted mb-1">Average GPA</h6>
+                                <h4 class="mb-0">@resultStats.AverageGPA.ToString("F2")</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0">
+                                <div class="bg-warning bg-opacity-10 p-3 rounded-circle">
+                                    <i class="fas fa-percentage text-warning fa-2x"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="text-muted mb-1">Pass Rate</h6>
+                                <h4 class="mb-0">@resultStats.PassPercentage.ToString("F1")%</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <a href="@Url.Action("AllSubjects", "AdminResult")" class="btn btn-outline-primary w-100">
+                                <i class="fas fa-book me-2"></i>
+                                <span>All Subjects</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="@Url.Action("AllResults", "AdminResult")" class="btn btn-outline-success w-100">
+                                <i class="fas fa-chart-bar me-2"></i>
+                                <span>All Results</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="@Url.Action("ResultPublishing", "AdminResult")" class="btn btn-outline-warning w-100">
+                                <i class="fas fa-upload me-2"></i>
+                                <span>Result Publishing</span>
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-outline-info w-100" data-bs-toggle="modal" data-bs-target="#bulkOperationsModal">
+                                <i class="fas fa-cogs me-2"></i>
+                                <span>Bulk Operations</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Exams -->
+    @if (exams != null && exams.Any())
+    {
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 text-primary">Recent Exams</h5>
+                        <span class="badge bg-primary">@exams.Count Total</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th class="ps-4">Exam Name</th>
+                                        <th>Term</th>
+                                        <th>Duration</th>
+                                        <th>Status</th>
+                                        <th>Subjects</th>
+                                        <th class="text-end pe-4">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var exam in exams.OrderByDescending(e => e.CreatedAt).Take(10))
+                                    {
+                                        <tr>
+                                            <td class="ps-4 fw-bold">@exam.Name</td>
+                                            <td>
+                                                <span class="badge bg-secondary">@exam.Term</span>
+                                            </td>
+                                            <td>
+                                                <small class="text-muted">
+                                                    @exam.StartsOn.ToShortDateString() - @exam.EndsOn.ToShortDateString()
+                                                </small>
+                                            </td>
+                                            <td>
+                                                @if (exam.Status == SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Published)
+                                                {
+                                                    <span class="badge bg-success">Published</span>
+                                                }
+                                                else if (exam.Status == SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Approved)
+                                                {
+                                                    <span class="badge bg-info">Approved</span>
+                                                }
+                                                else if (exam.Status == SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Submitted)
+                                                {
+                                                    <span class="badge bg-warning">Submitted</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-secondary">Draft</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-light text-dark">@exam.ExamSubjects.Count</span>
+                                            </td>
+                                            <td class="text-end pe-4">
+                                                <div class="btn-group btn-group-sm">
+                                                    <a href="@Url.Action("TabulationSheet", "AdminResult", new { examId = exam.Id })"
+                                                       class="btn btn-outline-primary btn-sm" title="View Tabulation">
+                                                        <i class="fas fa-table"></i>
+                                                    </a>
+                                                    <a href="@Url.Action("MeritLists", "AdminResult", new { examId = exam.Id })"
+                                                       class="btn btn-outline-success btn-sm" title="Merit Lists">
+                                                        <i class="fas fa-trophy"></i>
+                                                    </a>
+                                                    <a href="@Url.Action("SubjectAnalysis", "AdminResult", new { examId = exam.Id })"
+                                                       class="btn btn-outline-info btn-sm" title="Subject Analysis">
+                                                        <i class="fas fa-chart-pie"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-book-open fa-4x text-muted mb-3"></i>
+                        <h5 class="text-muted">No Exams Found</h5>
+                        <p class="text-muted mb-4">No exams have been created for the active academic year.</p>
+                        <a href="#" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Create First Exam
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<!-- Bulk Operations Modal -->
+<div class="modal fade" id="bulkOperationsModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Bulk Operations</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="list-group list-group-flush">
+                    <button class="list-group-item list-group-item-action d-flex align-items-center"
+                            onclick="recalculateAllResults()">
+                        <i class="fas fa-calculator text-primary me-3"></i>
+                        <div>
+                            <div class="fw-bold">Recalculate All Results</div>
+                            <small class="text-muted">Recalculate GPA and grades for all exams</small>
+                        </div>
+                    </button>
+                    <button class="list-group-item list-group-item-action d-flex align-items-center"
+                            onclick="recalculateMeritPositions()">
+                        <i class="fas fa-trophy text-success me-3"></i>
+                        <div>
+                            <div class="fw-bold">Recalculate Merit Positions</div>
+                            <small class="text-muted">Update ranking positions for all students</small>
+                        </div>
+                    </button>
+                    <button class="list-group-item list-group-item-action d-flex align-items-center"
+                            onclick="bulkPublishResults()">
+                        <i class="fas fa-upload text-warning me-3"></i>
+                        <div>
+                            <div class="fw-bold">Bulk Publish Results</div>
+                            <small class="text-muted">Publish results for multiple exams at once</small>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function recalculateAllResults() {
+            if (confirm('This will recalculate results for all exams. Continue?')) {
+                // Implement AJAX call to recalculate results
+                alert('Feature coming soon!');
+            }
+        }
+
+        function recalculateMeritPositions() {
+            if (confirm('This will recalculate merit positions for all exams. Continue?')) {
+                // Implement AJAX call to recalculate merit positions
+                alert('Feature coming soon!');
+            }
+        }
+
+        function bulkPublishResults() {
+            alert('Bulk publish feature coming soon!');
+        }
+    </script>
+}

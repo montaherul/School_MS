@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SchoolManagementSystem.Models.DTOs.Admission.StoredProcedures;
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Models.Entities.Admission;
 using SchoolManagementSystem.Models.Entities.Assignment;
@@ -32,6 +33,7 @@ public class SchoolDbContext : DbContext
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<AdmissionApplication> Admissions => Set<AdmissionApplication>();
     public DbSet<AdmissionDocument> AdmissionDocuments => Set<AdmissionDocument>();
+    public DbSet<AdmissionListResultDto> AdmissionListResults => Set<AdmissionListResultDto>();
     public DbSet<Student> Students => Set<Student>();
     public DbSet<Guardian> Guardians => Set<Guardian>();
     public DbSet<StudentDocument> StudentDocuments => Set<StudentDocument>();
@@ -62,6 +64,11 @@ public class SchoolDbContext : DbContext
     public DbSet<GradingRule> GradingRules => Set<GradingRule>();
     public DbSet<ResultPublication> ResultPublications => Set<ResultPublication>();
     public DbSet<ReportCard> ReportCards => Set<ReportCard>();
+    public DbSet<StudentSubjectResult> StudentSubjectResults => Set<StudentSubjectResult>();
+    public DbSet<StudentExamResult> StudentExamResults => Set<StudentExamResult>();
+    public DbSet<FinalResult> FinalResults => Set<FinalResult>();
+    public DbSet<ResultAuditLog> ResultAuditLogs => Set<ResultAuditLog>();
+    public DbSet<ReEvaluationRequest> ReEvaluationRequests => Set<ReEvaluationRequest>();
     public DbSet<AssignmentTask> Assignments => Set<AssignmentTask>();
     public DbSet<AssignmentSubmission> AssignmentSubmissions => Set<AssignmentSubmission>();
     public DbSet<FeeStructure> FeeStructures => Set<FeeStructure>();
@@ -85,9 +92,30 @@ public class SchoolDbContext : DbContext
     public DbSet<SchoolProfile> SchoolProfiles => Set<SchoolProfile>();
     public DbSet<SystemLog> SystemLogs => Set<SystemLog>();
     public DbSet<BackupRecord> BackupRecords => Set<BackupRecord>();
+    public DbSet<ActivityLog> ActivityLogs => Set<ActivityLog>();
     public DbSet<StudentGroup> StudentGroups => Set<StudentGroup>();
 
+    public DbSet<TeacherClassAssignment> TeacherClassAssignments => Set<TeacherClassAssignment>();
+    public DbSet<TeacherSubjectAssignment> TeacherSubjectAssignments => Set<TeacherSubjectAssignment>();
+    public DbSet<TeacherTimetable> TeacherTimetables => Set<TeacherTimetable>();
+
     public DbSet<ClassSubject> ClassSubjects => Set<ClassSubject>();
+
+    // Exam Configuration DbSets
+    public DbSet<ExamType> ExamTypes => Set<ExamType>();
+    public DbSet<ExamConfiguration> ExamConfigurations => Set<ExamConfiguration>();
+    public DbSet<SubjectComponent> SubjectComponents => Set<SubjectComponent>();
+    public DbSet<GpaConfiguration> GpaConfigurations => Set<GpaConfiguration>();
+
+    // Result DbSets
+    public DbSet<MarkAuditLog> MarkAuditLogs => Set<MarkAuditLog>();
+    public DbSet<MarkEntryDraft> MarkEntryDrafts => Set<MarkEntryDraft>();
+    public DbSet<ResultLock> ResultLocks => Set<ResultLock>();
+    public DbSet<PromotionHistory> PromotionHistories => Set<PromotionHistory>();
+    public DbSet<MeritResult> MeritResults => Set<MeritResult>();
+
+    // Student Group DbSet
+    public DbSet<StudentGroupAssignment> StudentGroupAssignments => Set<StudentGroupAssignment>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -95,12 +123,18 @@ public class SchoolDbContext : DbContext
 
         modelBuilder.Entity<UserRole>().HasKey(x => new { x.UserId, x.RoleId });
         modelBuilder.Entity<RolePermission>().HasKey(x => new { x.RoleId, x.PermissionId });
+        modelBuilder.Entity<AdmissionListResultDto>().HasNoKey();
 
         modelBuilder.Entity<ApplicationUser>().HasIndex(x => x.UserName).IsUnique();
         modelBuilder.Entity<ApplicationUser>().HasIndex(x => x.Email).IsUnique();
         modelBuilder.Entity<AdmissionApplication>().HasIndex(x => x.ApplicationNo).IsUnique();
         modelBuilder.Entity<Student>().HasIndex(x => x.StudentNo).IsUnique();
         modelBuilder.Entity<Student>().HasIndex(x => new { x.ClassId, x.SectionId, x.RollNumber }).IsUnique();
+        modelBuilder.Entity<MarkEntry>().HasIndex(x => new { x.ExamId, x.StudentId, x.SubjectId }).IsUnique();
+        modelBuilder.Entity<StudentSubjectResult>().HasIndex(x => new { x.ExamId, x.StudentId, x.SubjectId }).IsUnique();
+        modelBuilder.Entity<StudentExamResult>().HasIndex(x => new { x.ExamId, x.StudentId }).IsUnique();
+        modelBuilder.Entity<FinalResult>().HasIndex(x => new { x.AcademicYearId, x.StudentId }).IsUnique();
+        modelBuilder.Entity<ReEvaluationRequest>().HasIndex(x => new { x.ExamId, x.StudentId, x.SubjectId }).IsUnique();
         modelBuilder.Entity<Subject>().HasIndex(x => x.Code).IsUnique();
         modelBuilder.Entity<Teacher>().HasIndex(x => x.TeacherNo).IsUnique();
         modelBuilder.Entity<FeeInvoice>().HasIndex(x => x.InvoiceNo).IsUnique();
@@ -119,6 +153,89 @@ public class SchoolDbContext : DbContext
         {
             relationship.DeleteBehavior = DeleteBehavior.Restrict;
         }
+
+        modelBuilder.Entity<Section>()
+            .HasOne(s => s.ParentSection)
+            .WithMany(s => s.SubSections)
+            .HasForeignKey(s => s.ParentSectionId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<TeacherClassAssignment>().HasIndex(x => new { x.TeacherId, x.ClassId, x.SectionId, x.AcademicYearId }).IsUnique();
+        modelBuilder.Entity<TeacherSubjectAssignment>().HasIndex(x => new { x.TeacherId, x.SubjectId, x.ClassId, x.SectionId, x.AcademicYearId }).IsUnique();
+        modelBuilder.Entity<TeacherTimetable>().HasIndex(x => new { x.TeacherId, x.DayOfWeek, x.StartTime }).IsUnique();
+
+        // Exam Configuration Indexes
+        modelBuilder.Entity<ExamType>().HasIndex(x => x.Code).IsUnique();
+        modelBuilder.Entity<ExamConfiguration>().HasIndex(x => new { x.ExamTypeId, x.ClassId }).IsUnique();
+        modelBuilder.Entity<SubjectComponent>().HasIndex(x => new { x.ClassSubjectId, x.ComponentName }).IsUnique();
+        modelBuilder.Entity<GpaConfiguration>().HasIndex(x => x.Grade).IsUnique();
+        modelBuilder.Entity<GpaConfiguration>().HasIndex(x => new { x.MinMarks, x.MaxMarks }).IsUnique();
+
+        // Result Indexes
+        modelBuilder.Entity<MarkAuditLog>().HasIndex(x => x.MarkEntryId);
+        modelBuilder.Entity<MarkEntryDraft>().HasIndex(x => new { x.ExamId, x.StudentId, x.SubjectId });
+        modelBuilder.Entity<ResultLock>().HasIndex(x => x.ExamId);
+        modelBuilder.Entity<PromotionHistory>().HasIndex(x => new { x.StudentId, x.AcademicYearId }).IsUnique();
+        modelBuilder.Entity<MeritResult>().HasIndex(x => new { x.ExamId, x.StudentId }).IsUnique();
+        modelBuilder.Entity<MeritResult>().HasIndex(x => new { x.ExamId, x.SectionId, x.Position });
+
+        // Student Group Indexes
+        modelBuilder.Entity<StudentGroupAssignment>().HasIndex(x => new { x.StudentId, x.SchoolClassId, x.AcademicYearId }).IsUnique();
+        modelBuilder.Entity<StudentGroup>().HasIndex(x => x.Code).IsUnique();
+
+        // Configure MarkEntry relationship with MarkAuditLog
+        modelBuilder.Entity<MarkEntry>()
+            .HasMany(m => m.AuditLogs)
+            .WithOne(a => a.MarkEntry)
+            .HasForeignKey(a => a.MarkEntryId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        // Configure Student relationship with religion subject
+        modelBuilder.Entity<Student>()
+            .HasOne(s => s.AssignedReligionSubject)
+            .WithMany()
+            .HasForeignKey(s => s.AssignedReligionSubjectId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Configure Student relationship with StudentGroup
+        modelBuilder.Entity<Student>()
+            .HasOne(s => s.StudentGroup)
+            .WithMany()
+            .HasForeignKey(s => s.StudentGroupId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Configure StudentGroupAssignment
+        modelBuilder.Entity<StudentGroupAssignment>()
+            .HasOne(a => a.Student)
+            .WithMany(s => s.GroupAssignments)
+            .HasForeignKey(a => a.StudentId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<StudentGroupAssignment>()
+            .HasOne(a => a.StudentGroup)
+            .WithMany(g => g.StudentAssignments)
+            .HasForeignKey(a => a.StudentGroupId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Configure PromotionHistory
+        modelBuilder.Entity<PromotionHistory>()
+            .HasOne(p => p.FromClass)
+            .WithMany()
+            .HasForeignKey(p => p.FromClassId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<PromotionHistory>()
+            .HasOne(p => p.ToClass)
+            .WithMany()
+            .HasForeignKey(p => p.ToClassId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        // Configure ClassSubject relationship with SubjectComponent
+        modelBuilder.Entity<SubjectComponent>()
+            .HasOne(s => s.ClassSubject)
+            .WithMany(c => c.SubjectComponents)
+            .HasForeignKey(s => s.ClassSubjectId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         DbInitializer.Seed(modelBuilder);
     }

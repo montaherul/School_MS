@@ -3,6 +3,7 @@ using SchoolManagementSystem.Data;
 using SchoolManagementSystem.Models.DTOs.Common;
 using SchoolManagementSystem.Models.DTOs.Student;
 using SchoolManagementSystem.Models.Entities.Student;
+using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Services.Interfaces.Students;
 
 namespace SchoolManagementSystem.Services.Implementations.Students;
@@ -19,6 +20,15 @@ public class StudentService : IStudentService
     // ✅ CREATE
     public async Task<int> CreateAsync(StudentUpsertDto dto, string createdBy, CancellationToken cancellationToken = default)
     {
+        // 🔥 CAPACITY VALIDATION
+        var section = await _db.Sections.FirstOrDefaultAsync(s => s.Id == dto.SectionId, cancellationToken);
+        if (section != null)
+        {
+            var currentCount = await _db.Students.CountAsync(s => s.SectionId == dto.SectionId && !s.IsDeleted && s.Status == StudentStatus.Active, cancellationToken);
+            if (currentCount >= section.Capacity)
+                throw new InvalidOperationException($"Cannot assign student. Section '{section.Name}' capacity ({section.Capacity}) reached.");
+        }
+
         // 🔥 FIRST: upload image
         if (dto.ProfilePicture != null && dto.ProfilePicture.Length > 0)
         {
@@ -42,7 +52,7 @@ public class StudentService : IStudentService
       
         var student = new Student
         {
-            StudentNo = GenerateStudentNo(),
+            StudentNo = await GenerateStudentNoAsync(cancellationToken),
 
             FullName = dto.FullName,
             FullNameBangla = dto.FullNameBangla,
@@ -124,6 +134,18 @@ public class StudentService : IStudentService
             .Include(s => s.Section)
             .FirstOrDefaultAsync(s => s.Id == dto.Id && !s.IsDeleted, cancellationToken)
             ?? throw new Exception("Student not found");
+
+        // 🔥 CAPACITY VALIDATION (Only if changing sections)
+        if (student.SectionId != dto.SectionId)
+        {
+            var section = await _db.Sections.FirstOrDefaultAsync(s => s.Id == dto.SectionId, cancellationToken);
+            if (section != null)
+            {
+                var currentCount = await _db.Students.CountAsync(s => s.SectionId == dto.SectionId && !s.IsDeleted && s.Status == StudentStatus.Active, cancellationToken);
+                if (currentCount >= section.Capacity)
+                    throw new InvalidOperationException($"Cannot assign student. Section '{section.Name}' capacity ({section.Capacity}) reached.");
+            }
+        }
 
         student.FullName = dto.FullName;
         student.FullNameBangla = dto.FullNameBangla;
@@ -359,78 +381,68 @@ public class StudentService : IStudentService
         };
     }
 
-    // ✅ PAGINATION
     public async Task<PagedResult<StudentListItemDto>> GetPagedAsync(
         int page,
         int pageSize,
         string? search,
         CancellationToken cancellationToken = default)
     {
-        var query = _db.Students.Where(s => !s.IsDeleted);
+        var items = new List<StudentListItemDto>();
+        int totalCount = 0;
 
-        if (!string.IsNullOrWhiteSpace(search))
+        using (var command = _db.Database.GetDbConnection().CreateCommand())
         {
-            query = query.Where(s =>
-                s.FullName.Contains(search) ||
-                s.StudentNo.Contains(search));
+            command.CommandText = "sp_GetStudentList";
+            command.CommandType = System.Data.CommandType.StoredProcedure;
+            command.Parameters.Add(new Microsoft.Data.SqlClient.SqlParameter("@PageNumber", page));
+            command.Parameters.Add(new Microsoft.Data.SqlClient.SqlParameter("@PageSize", pageSize));
+            command.Parameters.Add(new Microsoft.Data.SqlClient.SqlParameter("@SearchTerm", (object?)search ?? DBNull.Value));
+
+            await _db.Database.OpenConnectionAsync(cancellationToken);
+            using (var reader = await command.ExecuteReaderAsync(cancellationToken))
+            {
+                while (await reader.ReadAsync(cancellationToken))
+                {
+                    items.Add(new StudentListItemDto
+                    {
+                        Id = reader.GetInt32(0),
+                        StudentNo = reader.GetString(1),
+                        FullName = reader.GetString(2),
+                        ClassName = reader.IsDBNull(3) ? "" : reader.GetString(3),
+                        SectionName = reader.IsDBNull(4) ? "" : reader.GetString(4),
+                        RollNumber = reader.GetInt32(5),
+                        Status = reader.IsDBNull(6) ? "" : reader.GetString(6),
+                        FatherName = reader.IsDBNull(7) ? "" : reader.GetString(7),
+                        FatherOccupation = reader.IsDBNull(8) ? "" : reader.GetString(8),
+                        MotherName = reader.IsDBNull(9) ? "" : reader.GetString(9),
+                        MotherOccupation = reader.IsDBNull(10) ? "" : reader.GetString(10),
+                        MobileNumber = reader.IsDBNull(11) ? "" : reader.GetString(11),
+                        EmailAddress = reader.IsDBNull(12) ? "" : reader.GetString(12),
+                        PresentVillage = reader.IsDBNull(13) ? "" : reader.GetString(13),
+                        PresentPostOffice = reader.IsDBNull(14) ? "" : reader.GetString(14),
+                        PresentThana = reader.IsDBNull(15) ? "" : reader.GetString(15),
+                        PresentDistrict = reader.IsDBNull(16) ? "" : reader.GetString(16),
+                        PermanentVillage = reader.IsDBNull(17) ? "" : reader.GetString(17),
+                        PermanentPostOffice = reader.IsDBNull(18) ? "" : reader.GetString(18),
+                        PermanentThana = reader.IsDBNull(19) ? "" : reader.GetString(19),
+                        PermanentDistrict = reader.IsDBNull(20) ? "" : reader.GetString(20),
+                        BloodGroup = reader.IsDBNull(21) ? "" : reader.GetString(21),
+                        Religion = reader.IsDBNull(22) ? "" : reader.GetString(22),
+                        Nationality = reader.IsDBNull(23) ? "" : reader.GetString(23),
+                        NationalIdNo = reader.IsDBNull(24) ? "" : reader.GetString(24),
+                        BirthCertificateNo = reader.IsDBNull(25) ? "" : reader.GetString(25),
+                        PassportNo = reader.IsDBNull(26) ? "" : reader.GetString(26),
+                        ProfilePicturePath = reader.IsDBNull(27) ? "" : reader.GetString(27),
+                        FatherOrGuardianMobileNo = reader.IsDBNull(28) ? "" : reader.GetString(28),
+                        TotalRecords = reader.IsDBNull(29) ? 0 : reader.GetInt32(29)
+                    });
+                }
+            }
+            await _db.Database.CloseConnectionAsync();
         }
 
-        var totalCount = await query.CountAsync(cancellationToken);
+        totalCount = items.FirstOrDefault()?.TotalRecords ?? 0;
 
-        var items = await (
-            from s in query
-            join c in _db.Classes on s.ClassId equals c.Id
-            join sec in _db.Sections on s.SectionId equals sec.Id
-            orderby s.Id descending
-            select new StudentListItemDto
-            {
-                Id = s.Id,
-                StudentNo = s.StudentNo,
-                FullName = s.FullName,
-
-                ClassName = c.Name,
-                SectionName = sec.Name,
-
-
-                RollNumber = s.RollNumber,
-                Status = s.Status.ToString(),
-
-                FatherName = s.FatherName,
-                FatherOccupation = s.FatherOccupation,
-                MotherName = s.MotherName,
-                MotherOccupation = s.MotherOccupation,
-
-                MobileNumber = s.MobileNumber,
-                EmailAddress = s.EmailAddress,
-
-                PresentVillage = s.PresentVillage,
-                PresentPostOffice = s.PresentPostOffice,
-                PresentThana = s.PresentThana,
-                PresentDistrict = s.PresentDistrict,
-
-                PermanentVillage = s.PermanentVillage,
-                PermanentPostOffice = s.PermanentPostOffice,
-                PermanentThana = s.PermanentThana,
-                PermanentDistrict = s.PermanentDistrict,
-
-                BloodGroup = s.BloodGroup,
-                Religion = s.Religion,
-                Nationality = s.Nationality,
-
-                NationalIdNo = s.NationalIdNo,
-                BirthCertificateNo = s.BirthCertificateNo,
-                PassportNo = s.PassportNo,
-
-                ProfilePicturePath = s.ProfilePicturePath,
-
-                FatherOrGuardianMobileNo = s.Guardians
-                    .Select(g => g.Phone)
-                    .FirstOrDefault()
-            }
-        )
-        .Skip((page - 1) * pageSize)
-        .Take(pageSize)
-        .ToListAsync(cancellationToken);
         return new PagedResult<StudentListItemDto>
         {
             Items = items,
@@ -455,10 +467,11 @@ public class StudentService : IStudentService
     }
 
     // 🔧 Helper
-    private string GenerateStudentNo()
-    {
-        var year = DateTime.UtcNow.Year.ToString().Substring(2);
-        var count = _db.Students.Count(s => !s.IsDeleted) + 1;
-        return $"STU-{year}{count:D3}";
-    }
+ private async Task<string> GenerateStudentNoAsync(CancellationToken cancellationToken)
+{
+    var year = DateTime.UtcNow.Year;
+    var count = await _db.Students
+        .CountAsync(s => !s.IsDeleted && s.CreatedAt.Year == year, cancellationToken) + 1;
+    return $"STU-{year}{count:D3}";
+}
 }

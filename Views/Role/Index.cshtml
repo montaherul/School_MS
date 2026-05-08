@@ -1,2 +1,124 @@
-@model SchoolManagementSystem.Models.ViewModels.Shared.CrudListViewModel
-@await Html.PartialAsync("~/Views/Shared/Crud/Index.cshtml", Model)
+@{
+    ViewData["Title"] = "Roles & Permissions";
+}
+
+<div class="page-title d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="mb-1"><i class="bi bi-shield-lock me-2"></i>Roles</h1>
+        <p class="text-muted mb-0">Define system roles and their respective permissions</p>
+    </div>
+    <a href="/Role/Create" class="btn btn-primary shadow-sm">
+        <i class="bi bi-plus-circle me-1"></i> Create Role
+    </a>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+        <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card shadow-sm mb-4">
+    <div class="card-body p-3">
+        <div class="row align-items-center">
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" id="table-search" class="form-control border-start-0" placeholder="Search roles or descriptions...">
+                </div>
+            </div>
+            <div class="col-md-8 text-md-end mt-3 mt-md-0">
+                <button id="clear-search" class="btn btn-light"><i class="bi bi-x-circle me-1"></i> Clear</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div id="role-table"></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var table = new Tabulator("#role-table", {
+            height: "calc(100vh - 250px)",
+            layout: "fitColumns",
+            pagination: true,
+            paginationMode: "remote",
+            ajaxURL: "/Role/Index",
+            paginationSize: 10,
+            paginationDataSent: {
+                "page": "page",
+                "size": "pageSize"
+            },
+            ajaxResponse: function(url, params, response) {
+                return { data: response.data, last_page: response.last_page };
+            },
+            columns: [
+                { title: "Role Name", field: "name", widthGrow: 1.5, formatter: function(cell) {
+                    return `<div class="fw-bold text-primary">${cell.getValue()}</div>`;
+                }},
+                { title: "Description", field: "description", widthGrow: 3, formatter: function(cell) {
+                    return cell.getValue() || '<span class="text-muted small italic">No description</span>';
+                }},
+                { title: "Permissions", field: "permissionCount", width: 140, hozAlign: "center", formatter: function(cell) {
+                    return `<span class="badge bg-purple-soft text-purple border border-purple-subtle px-3">${cell.getValue()} Rules</span>`;
+                }},
+                { title: "Users", field: "userCount", width: 140, hozAlign: "center", formatter: function(cell) {
+                    return `<span class="badge bg-blue-soft text-blue border border-blue-subtle px-3">${cell.getValue()} Users</span>`;
+                }},
+                {
+                    title: "Actions",
+                    field: "id",
+                    hozAlign: "right",
+                    headerSort: false,
+                    width: 140,
+                    formatter: function(cell) {
+                        var id = cell.getValue();
+                        return `
+                            <div class="btn-group btn-group-sm">
+                                <a href="/Role/Details/${id}" class="btn btn-outline-secondary" title="View"><i class="bi bi-eye"></i></a>
+                                <a href="/Role/Edit/${id}" class="btn btn-outline-primary" title="Edit"><i class="bi bi-pencil"></i></a>
+                                <a href="/Role/Delete/${id}" class="btn btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></a>
+                            </div>
+                        `;
+                    }
+                }
+            ],
+            placeholder: "<div class='p-4 text-center text-muted'>No roles found</div>"
+        });
+
+        // Search functionality
+        var searchInput = document.getElementById("table-search");
+        var clearBtn = document.getElementById("clear-search");
+
+        searchInput.addEventListener("keyup", function() {
+            table.setFilter("search", "=", searchInput.value);
+        });
+
+        clearBtn.addEventListener("click", function() {
+            searchInput.value = "";
+            table.setFilter("search", "=", "");
+        });
+    </script>
+
+    <style>
+        .bg-purple-soft { background-color: rgba(167, 139, 250, 0.1); }
+        .text-purple { color: #7c3aed; }
+        .border-purple-subtle { border-color: rgba(167, 139, 250, 0.3) !important; }
+        .bg-blue-soft { background-color: rgba(59, 130, 246, 0.1); }
+        .text-blue { color: #2563eb; }
+        .border-blue-subtle { border-color: rgba(59, 130, 246, 0.3) !important; }
+        
+        .tabulator { border: none !important; }
+        .tabulator .tabulator-header { background-color: #f8f9fa; border-bottom: 1px solid #e2e8f0; }
+        .tabulator .tabulator-header .tabulator-col { background-color: #f8f9fa; font-weight: 700; color: #475569; padding: 12px 8px; }
+        .tabulator .tabulator-row { border-bottom: 1px solid #f1f5f9; }
+        .tabulator .tabulator-row:hover { background-color: #f8fafc !important; }
+        .tabulator .tabulator-row .tabulator-cell { padding: 12px 8px; vertical-align: middle; }
+    </style>
+}

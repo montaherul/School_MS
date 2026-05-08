@@ -1,0 +1,33 @@
+ALTER PROCEDURE sp_GetMarkEntrySheet
+    @ExamId INT,
+    @ClassId INT,
+    @SectionId INT,
+    @SubjectId INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 
+        s.Id as StudentId,
+        s.FullName as StudentName,
+        s.StudentNo,
+        s.RollNumber,
+        m.MarksObtained,
+        m.Grade,
+        m.IsLocked
+    FROM Students s
+    LEFT JOIN Marks m 
+        ON s.Id = m.StudentId 
+        AND m.ExamId = @ExamId 
+        AND m.SubjectId = @SubjectId
+        AND m.IsDeleted = 0
+
+    WHERE 
+        s.ClassId = @ClassId
+        AND s.SectionId = @SectionId
+        AND s.Status = 1
+        AND s.IsDeleted = 0
+
+    ORDER BY s.RollNumber;
+END;
+GO

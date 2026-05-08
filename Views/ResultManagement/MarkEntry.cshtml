@@ -1,0 +1,132 @@
+@model SchoolManagementSystem.Models.ViewModels.Result.MarkEntryViewModel
+@using System.Text.Json
+@{
+    ViewData["Title"] = $"Entry: {Model.SubjectName} - {Model.ClassName}";
+}
+
+<div class="container-fluid py-4">
+    <div class="row mb-4 align-items-center">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1">
+                    <li class="breadcrumb-item"><a asp-action="TeacherEntry" class="text-decoration-none">Selection</a></li>
+                    <li class="breadcrumb-item active">Mark Entry</li>
+                </ol>
+            </nav>
+            <h3 class="fw-bold mb-0 text-primary"><i class="bi bi-pencil-square me-2"></i>@Model.SubjectName <span class="text-muted fw-normal">(@Model.ClassName)</span></h3>
+            <p class="text-muted mb-0"><i class="bi bi-calendar-event me-1"></i>Exam: @Model.ExamName</p>
+        </div>
+        <div class="col-auto">
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-secondary px-3" onclick="location.reload()">
+                    <i class="bi bi-arrow-clockwise me-1"></i> Reset
+                </button>
+                <button class="btn btn-success px-4 shadow-sm" id="saveBtn">
+                    <i class="bi bi-save me-1"></i> Save All Marks
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 overflow-hidden">
+        <div id="mark-grid"></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const studentData = @Html.Raw(JsonSerializer.Serialize(Model.Students));
+        
+        var table = new Tabulator("#mark-grid", {
+            data: studentData,
+            layout: "fitColumns",
+            height: "calc(100vh - 250px)",
+            selectable: false,
+            history: true,
+            columns: [
+                { title: "Roll", field: "RollNumber", width: 80, hozAlign: "center", headerSort: true },
+                { title: "Student Name", field: "StudentName", widthGrow: 2 },
+                { title: "Student ID", field: "StudentNo", width: 120, cssClass: "text-muted small" },
+                { 
+                    title: "Marks Obtained", 
+                    field: "MarksObtained", 
+                    width: 180, 
+                    editor: "number", 
+                    editorParams: { min: 0, max: 100, step: 0.5 },
+                    editable: function(cell) { return !cell.getData().IsLocked; },
+                    cssClass: "fw-bold text-primary",
+                    formatter: function(cell) {
+                        var val = cell.getValue();
+                        var isLocked = cell.getData().IsLocked;
+                        if (isLocked) return `<div class="d-flex justify-content-between align-items-center w-100">${val} <i class="bi bi-lock-fill text-warning small"></i></div>`;
+                        return val || "0";
+                    }
+                },
+                { title: "Grade", field: "Grade", width: 100, hozAlign: "center", formatter: function(cell) {
+                    var grade = cell.getValue();
+                    var color = "bg-secondary";
+                    if (grade === "A+") color = "bg-success";
+                    else if (grade === "F") color = "bg-danger";
+                    return `<span class="badge ${color}">${grade}</span>`;
+                }},
+                { title: "Status", field: "IsLocked", width: 120, hozAlign: "center", formatter: function(cell) {
+                    return cell.getValue() 
+                        ? `<span class="text-warning small"><i class="bi bi-lock-fill me-1"></i>Locked</span>` 
+                        : `<span class="text-success small"><i class="bi bi-unlock-fill me-1"></i>Open</span>`;
+                }}
+            ],
+            placeholder: "No students assigned to this section"
+        });
+
+        document.getElementById("saveBtn").addEventListener("click", function() {
+            const btn = this;
+            const marks = table.getData().filter(r => !r.IsLocked).map(r => ({
+                studentId: r.StudentId,
+                marksObtained: parseFloat(r.MarksObtained) || 0
+            }));
+
+            if (marks.length === 0) {
+                alert("No changes to save or all marks are locked.");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Saving...';
+
+            fetch('/ResultManagement/SaveMarks', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    examId: @Model.ExamId,
+                    subjectId: @Model.SubjectId,
+                    marks: marks
+                })
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.success) {
+                    alert('Marks saved successfully!');
+                    location.reload();
+                } else {
+                    alert('Error: ' + (res.message || 'Failed to save marks.'));
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-save me-1"></i> Save All Marks';
+                }
+            })
+            .catch(err => {
+                alert('Connection error.');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-save me-1"></i> Save All Marks';
+            });
+        });
+    </script>
+    <style>
+        .tabulator { border: none !important; }
+        .tabulator .tabulator-header { background-color: #f8f9fa; border-bottom: 2px solid #e2e8f0; }
+        .tabulator .tabulator-header .tabulator-col { background-color: #f8f9fa; font-weight: 700; color: #475569; padding: 15px 10px; }
+        .tabulator .tabulator-row { border-bottom: 1px solid #f1f5f9; }
+        .tabulator .tabulator-row:hover { background-color: #f8fafc !important; }
+        .tabulator .tabulator-row .tabulator-cell { padding: 12px 10px; vertical-align: middle; }
+        .tabulator .tabulator-cell.tabulator-editing { background: #fff !important; outline: 2px solid #2563eb !important; }
+    </style>
+}

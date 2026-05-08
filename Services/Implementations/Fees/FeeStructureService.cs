@@ -15,12 +15,49 @@ public class FeeStructureService : IFeeStructureService
 
     public async Task<PagedResult<FeeStructureListItemDto>> GetPagedAsync(int page, int pageSize, string? search, CancellationToken cancellationToken = default)
     {
-        page = Math.Max(page, 1); pageSize = Math.Clamp(pageSize, 5, 100); var term = search?.Trim();
-        var query = _db.FeeStructures.Where(x => !x.IsDeleted);
-        var total = await query.CountAsync(cancellationToken);
-        var items = await query.OrderByDescending(x => x.Id).Skip((page - 1) * pageSize).Take(pageSize).Select(x => new FeeStructureListItemDto {
-            Id = x.Id,SchoolClassId = x.SchoolClassId,FeeName = x.FeeName,Amount = x.Amount,IsRecurring = x.IsRecurring,        }).ToListAsync(cancellationToken);
-        return new PagedResult<FeeStructureListItemDto> { Items = items, Page = page, PageSize = pageSize, TotalItems = total };
+        page = Math.Max(page, 1);
+        pageSize = Math.Clamp(pageSize, 5, 100);
+
+        var items = new List<FeeStructureListItemDto>();
+        int totalCount = 0;
+
+        using (var command = _db.Database.GetDbConnection().CreateCommand())
+        {
+            command.CommandText = "sp_GetFeeStructureList";
+            command.CommandType = System.Data.CommandType.StoredProcedure;
+            command.Parameters.Add(new Microsoft.Data.SqlClient.SqlParameter("@PageNumber", page));
+            command.Parameters.Add(new Microsoft.Data.SqlClient.SqlParameter("@PageSize", pageSize));
+            command.Parameters.Add(new Microsoft.Data.SqlClient.SqlParameter("@SearchTerm", (object?)search ?? DBNull.Value));
+
+            await _db.Database.OpenConnectionAsync(cancellationToken);
+            using (var reader = await command.ExecuteReaderAsync(cancellationToken))
+            {
+                while (await reader.ReadAsync(cancellationToken))
+                {
+                    items.Add(new FeeStructureListItemDto
+                    {
+                        Id = reader.GetInt32(0),
+                        SchoolClassId = reader.GetInt32(1),
+                        ClassName = reader.GetString(2),
+                        FeeName = reader.GetString(3),
+                        Amount = reader.GetDecimal(4),
+                        IsRecurring = reader.GetBoolean(5),
+                        TotalRecords = reader.IsDBNull(6) ? 0 : reader.GetInt32(6)
+                    });
+                }
+            }
+            await _db.Database.CloseConnectionAsync();
+        }
+
+        totalCount = items.FirstOrDefault()?.TotalRecords ?? 0;
+
+        return new PagedResult<FeeStructureListItemDto>
+        {
+            Items = items,
+            Page = page,
+            PageSize = pageSize,
+            TotalItems = totalCount
+        };
     }
 
     public async Task<FeeStructureUpsertDto?> GetForEditAsync(int id, CancellationToken cancellationToken = default)

@@ -1,0 +1,238 @@
+@model IEnumerable<SchoolManagementSystem.Models.Entities.Academic.Subject>
+@{
+    ViewData["Title"] = "All Subjects Overview";
+    var groupedSubjects = ViewBag.GroupedSubjects as Dictionary<string, List<SchoolManagementSystem.Models.Entities.Academic.Subject>>;
+}
+
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0 bg-gradient-info text-white">
+                <div class="card-body p-4">
+                    <h2 class="mb-1">
+                        <i class="fas fa-book me-2"></i>All Subjects Overview
+                    </h2>
+                    <p class="mb-0">Comprehensive view of all subjects with their configurations and mappings</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subject Groups Tabs -->
+    @if (groupedSubjects != null && groupedSubjects.Any())
+    {
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-sm border-0">
+                    <div class="card-header bg-white">
+                        <ul class="nav nav-tabs card-header-tabs" id="subjectTabs" role="tablist">
+                            @foreach (var group in groupedSubjects.Keys.OrderBy(k => k))
+                            {
+                                var tabId = $"tab-{group.Replace(" ", "").Replace("-", "")}";
+                                var isActive = group == groupedSubjects.Keys.First();
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link @(isActive ? "active" : "")"
+                                            id="@tabId-tab"
+                                            data-bs-toggle="tab"
+                                            data-bs-target="#@tabId"
+                                            type="button"
+                                            role="tab">
+                                        @group
+                                        <span class="badge bg-secondary ms-2">@groupedSubjects[group].Count</span>
+                                    </button>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="tab-content" id="subjectTabsContent">
+                            @foreach (var group in groupedSubjects.Keys.OrderBy(k => k))
+                            {
+                                var tabId = $"tab-{group.Replace(" ", "").Replace("-", "")}";
+                                var isActive = group == groupedSubjects.Keys.First();
+                                var subjects = groupedSubjects[group];
+
+                                <div class="tab-pane fade @(isActive ? "show active" : "")"
+                                     id="@tabId"
+                                     role="tabpanel">
+                                    <div class="table-responsive">
+                                        <table class="table table-hover">
+                                            <thead class="bg-light">
+                                                <tr>
+                                                    <th>Code</th>
+                                                    <th>Subject Name</th>
+                                                    <th>Bangla Name</th>
+                                                    <th>Type</th>
+                                                    <th>Marks</th>
+                                                    <th>Components</th>
+                                                    <th>Religion</th>
+                                                    <th>Class Mapping</th>
+                                                    <th>Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var subject in subjects.OrderBy(s => s.DisplayOrder).ThenBy(s => s.Name))
+                                                {
+                                                    <tr>
+                                                        <td>
+                                                            <span class="badge bg-primary">@subject.Code</span>
+                                                        </td>
+                                                        <td class="fw-bold">@subject.Name</td>
+                                                        <td>@subject.NameBn</td>
+                                                        <td>
+                                                            @if (subject.IsMandatory)
+                                                            {
+                                                                <span class="badge bg-success">Mandatory</span>
+                                                            }
+                                                            else if (subject.IsOptional)
+                                                            {
+                                                                <span class="badge bg-warning">Optional</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="badge bg-secondary">General</span>
+                                                            }
+                                                        </td>
+                                                        <td>
+                                                            <small class="text-muted">
+                                                                Full: @subject.DefaultFullMarks<br>
+                                                                Pass: @subject.DefaultPassMarks
+                                                            </small>
+                                                        </td>
+                                                        <td>
+                                                            <div class="btn-group btn-group-sm">
+                                                                @if (subject.HasWritten)
+                                                                {
+                                                                    <span class="badge bg-light text-dark">Written</span>
+                                                                }
+                                                                @if (subject.HasMCQ)
+                                                                {
+                                                                    <span class="badge bg-light text-dark">MCQ</span>
+                                                                }
+                                                                @if (subject.HasPractical)
+                                                                {
+                                                                    <span class="badge bg-info">Practical</span>
+                                                                }
+                                                                @if (subject.HasViva)
+                                                                {
+                                                                    <span class="badge bg-info">Viva</span>
+                                                                }
+                                                                @if (subject.HasLab)
+                                                                {
+                                                                    <span class="badge bg-info">Lab</span>
+                                                                }
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            @if (subject.IsReligionSubject)
+                                                            {
+                                                                <span class="badge bg-primary">@subject.ReligionType</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="text-muted">-</span>
+                                                            }
+                                                        </td>
+                                                        <td>
+                                                            <small class="text-muted">
+                                                                @if (subject.ClassSubjects != null && subject.ClassSubjects.Any())
+                                                                {
+                                                                    var classNames = subject.ClassSubjects
+                                                                        .Select(cs => cs.SchoolClass?.Name)
+                                                                        .Where(name => !string.IsNullOrEmpty(name))
+                                                                        .Distinct()
+                                                                        .Take(3);
+                                                                    @string.Join(", ", classNames)
+                                                                    @if (subject.ClassSubjects.Count > 3)
+                                                                    {
+                                                                        <span>... +@(subject.ClassSubjects.Count - 3) more</span>
+                                                                    }
+                                                                }
+                                                                else
+                                                                {
+                                                                    <span class="text-warning">Not mapped</span>
+                                                                }
+                                                            </small>
+                                                        </td>
+                                                        <td>
+                                                            @if (subject.IsActive)
+                                                            {
+                                                                <span class="badge bg-success">Active</span>
+                                                            }
+                                                            else
+                                                            {
+                                                                <span class="badge bg-secondary">Inactive</span>
+                                                            }
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-book fa-4x text-muted mb-3"></i>
+                        <h5 class="text-muted">No Subjects Found</h5>
+                        <p class="text-muted mb-4">No subjects have been configured in the system.</p>
+                        <a href="@Url.Action("CreateEdit", "Subject")" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Add First Subject
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Summary Cards -->
+    @if (Model != null && Model.Any())
+    {
+        <div class="row mt-4">
+            <div class="col-md-3 mb-3">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body text-center">
+                        <div class="display-4 text-primary mb-2">@Model.Count()</div>
+                        <h6 class="text-muted">Total Subjects</h6>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body text-center">
+                        <div class="display-4 text-success mb-2">@Model.Count(s => s.IsMandatory)</div>
+                        <h6 class="text-muted">Mandatory Subjects</h6>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body text-center">
+                        <div class="display-4 text-warning mb-2">@Model.Count(s => s.IsOptional)</div>
+                        <h6 class="text-muted">Optional Subjects</h6>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body text-center">
+                        <div class="display-4 text-info mb-2">@Model.Count(s => s.IsReligionSubject)</div>
+                        <h6 class="text-muted">Religion Subjects</h6>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>

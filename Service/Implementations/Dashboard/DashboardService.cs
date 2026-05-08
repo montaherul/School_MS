@@ -1,3 +1,4 @@
+using System;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Data;
 using SchoolManagementSystem.Models.Enums;
@@ -40,23 +41,36 @@ public class DashboardService : IDashboardService
             .Select(x => new ChartPoint($"{x.Year}-{x.Month:00}", x.Amount))
             .ToList();
 
-        //var recentActivities = await _db.Notices
-        //    .OrderByDescending(x => x.PublishAt)
-        //    .Take(5)
-        //    .Select(x => new RecentActivityItem("Communication", x.Title, x.PublishAt))
+        var recentActivities = new List<RecentActivityItem>();
+        
+        var notices = await _db.Notices
+            .Where(x => !x.IsDeleted)
+            .OrderByDescending(x => x.PublishAt)
+            .Take(5)
+            .Select(x => new RecentActivityItem("Notice", x.Title, x.PublishAt, ""))
+            .ToListAsync(cancellationToken);
+            
+        var admissions = await _db.Admissions
+            .Where(x => !x.IsDeleted)
+            .OrderByDescending(x => x.CreatedAt)
+            .Take(5)
+            .Select(x => new RecentActivityItem("Admission", x.ApplicantName, x.CreatedAt, "New application received"))
+            .ToListAsync(cancellationToken);
 
-        //    .ToListAsync(cancellationToken);
+        recentActivities.AddRange(notices);
+        recentActivities.AddRange(admissions);
+        recentActivities = recentActivities.OrderByDescending(x => x.At).Take(8).ToList();
 
         return new DashboardViewModel
         {
             TotalStudents = await _db.Students.CountAsync(x => !x.IsDeleted, cancellationToken),
-            PendingAdmissions = await _db.Admissions.CountAsync(x => x.Status == AdmissionStatus.Pending, cancellationToken),
+            PendingAdmissions = await _db.Admissions.CountAsync(x => x.Status == AdmissionStatus.Pending && !x.IsDeleted, cancellationToken),
             FeesCollected = feesCollected,
             FeesDue = feesTotal - feesCollected,
             AttendancePercentage = totalAttendance == 0 ? 0 : Math.Round((decimal)presentAttendance / totalAttendance * 100, 2),
             StudentsByClass = studentsByClass,
             MonthlyCollections = monthlyCollections,
-           // RecentActivities = recentActivities
+            RecentActivities = recentActivities
         };
     }
 
@@ -74,16 +88,15 @@ public class DashboardService : IDashboardService
         var totalInvoiced = await _db.FeeInvoices.Where(x => x.StudentId == student.Id && !x.IsDeleted).SumAsync(x => x.TotalAmount, cancellationToken);
         var totalPaid = await _db.FeeInvoices.Where(x => x.StudentId == student.Id && !x.IsDeleted).SumAsync(x => x.PaidAmount, cancellationToken);
 
-        //var recentNotices = await _db.Notices
-        //    .Where(x => x.AudienceRole == "All" || x.AudienceRole == "Student")
-        //    .OrderByDescending(x => x.PublishAt)
-        //    .Take(5)
-        //    .Select(x => new RecentActivityItem("Notice", x.Title, x.PublishAt, x.Description ?? ""))
-        //    .ToListAsync(cancellationToken);
-
+        var recentNotices = await _db.Notices
+            .Where(x => (x.AudienceRole == "All" || x.AudienceRole == "Student") && !x.IsDeleted)
+            .OrderByDescending(x => x.PublishAt)
+            .Take(5)
+            .Select(x => new RecentActivityItem("Notice", x.Title, x.PublishAt, x.Body ?? ""))
+            .ToListAsync(cancellationToken);
 
         var upcomingAssignments = await _db.Assignments
-            .Where(x => x.SchoolClassId == student.ClassId && x.SectionId == student.SectionId && x.Deadline >= DateTime.UtcNow)
+            .Where(x => x.SchoolClassId == student.ClassId && x.SectionId == student.SectionId && x.Deadline >= DateTime.UtcNow && !x.IsDeleted)
             .OrderBy(x => x.Deadline)
             .Take(5)
             .Select(x => new AssignmentDashboardItem(
@@ -103,8 +116,58 @@ public class DashboardService : IDashboardService
             AttendancePercentage = totalAttendance == 0 ? 0 : Math.Round((decimal)presentAttendance / totalAttendance * 100, 2),
             TotalDue = totalInvoiced - totalPaid,
             StudentStatus = student.Status.ToString(),
-         //   RecentNotices = recentNotices,
+            RecentNotices = recentNotices,
             UpcomingAssignments = upcomingAssignments
         };
+    }
+
+    public async Task<TeacherDashboardViewModel> GetTeacherDashboardAsync(int userId, CancellationToken cancellationToken = default)
+    {
+        var teacher = await _db.Teachers
+            .AsNoTracking()
+            .FirstOrDefaultAsync(t => t.UserId == userId && !t.IsDeleted, cancellationToken)
+            ?? throw new InvalidOperationException("Teacher profile not found.");
+
+        var userRoles = await _db.UserRoles
+            .AsNoTracking()
+            .Include(ur => ur.Role)
+            .Where(ur => ur.UserId == userId)
+            .Select(ur => ur.Role.Name)
+            .ToListAsync(cancellationToken);
+
+        var model = new TeacherDashboardViewModel
+        {
+            TeacherId = teacher.Id,
+            FullName = teacher.FullName,
+            Designation = teacher.Designation,
+            TeacherNo = teacher.TeacherNo,
+            IsPrincipal = userRoles.Contains("Principal") || userRoles.Contains("Assistant Head"),
+            IsSeniorLecturer = userRoles.Contains("Senior Lecturer"),
+            MyClassesCount = await _db.TeacherClassAssignments.CountAsync(a => a.TeacherId == teacher.Id && !a.IsDeleted, cancellationToken),
+            MySubjectsCount = await _db.TeacherSubjectAssignments.CountAsync(a => a.TeacherId == teacher.Id && !a.IsDeleted, cancellationToken),
+            AttendanceRate = 95.5m // Placeholder or real logic
+        };
+
+        // Common Data
+        model.RecentNotices = await _db.Notices
+            .Where(n => !n.IsDeleted && (n.AudienceRole == "All" || n.AudienceRole == "Teacher"))
+            .OrderByDescending(n => n.PublishAt)
+            .Take(5)
+            .Select(n => new RecentActivityItem("Notice", n.Title, n.PublishAt, n.Body ?? ""))
+            .ToListAsync(cancellationToken);
+
+        // Principal Specific
+        if (model.IsPrincipal)
+        {
+            model.PrincipalStats = new PrincipalStats
+            {
+                TotalStaff = await _db.Teachers.CountAsync(t => !t.IsDeleted, cancellationToken),
+                TotalStudents = await _db.Students.CountAsync(s => !s.IsDeleted, cancellationToken),
+                MonthlyRevenue = await _db.Payments.Where(p => p.PaidAt.Month == DateTime.Today.Month).SumAsync(p => p.Amount, cancellationToken),
+                ExpensePercentage = 45.2m // Placeholder
+            };
+        }
+
+        return model;
     }
 }

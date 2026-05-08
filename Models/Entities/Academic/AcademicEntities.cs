@@ -34,6 +34,16 @@ public class Section : BaseEntity
 
     [MaxLength(20)]
     public string Name { get; set; } = string.Empty;
+
+    public int Capacity { get; set; } = 50;
+
+    // Hierarchy support (null = top-level group)
+    public int? ParentSectionId { get; set; }
+    public Section? ParentSection { get; set; }
+    public ICollection<Section> SubSections { get; set; } = new List<Section>();
+
+    // True if this is a group container (has children)
+    public bool IsGroup => ParentSectionId == null && SubSections.Any();
 }
 
 public class Subject : BaseEntity
@@ -43,6 +53,47 @@ public class Subject : BaseEntity
 
     [MaxLength(100)]
     public string Name { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Bangla subject name for Bangladesh curriculum
+    /// </summary>
+    [MaxLength(100)]
+    public string NameBn { get; set; } = string.Empty;
+
+    [MaxLength(50)]
+    public string SubjectGroup { get; set; } = string.Empty; // Common, Science, Humanities, Business, Religion
+
+    public bool IsMandatory { get; set; } = true;
+    public bool IsOptional { get; set; } = false;
+    public bool IsReligionSubject { get; set; } = false;
+    public bool IsPractical { get; set; } = false;
+
+    // Component flags for flexible mark distribution
+    public bool HasWritten { get; set; } = true;
+    public bool HasMCQ { get; set; } = false;
+    public bool HasCQ { get; set; } = false;
+    public bool HasPractical { get; set; } = false;
+    public bool HasLab { get; set; } = false;
+    public bool HasViva { get; set; } = false;
+    public bool HasOral { get; set; } = false;
+    public bool HasAssignment { get; set; } = false;
+    public bool HasContinuousAssessment { get; set; } = false;
+
+    /// <summary>
+    /// Religion type for multi-religion support:
+    /// Islam, Hindu, Buddhist, Christian
+    /// </summary>
+    [MaxLength(50)]
+    public string? ReligionType { get; set; }
+
+    public decimal DefaultFullMarks { get; set; } = 100;
+    public decimal DefaultPassMarks { get; set; } = 33;
+
+    public int DisplayOrder { get; set; } = 0;
+    public bool IsActive { get; set; } = true;
+
+    // Navigation
+    public virtual ICollection<ClassSubject> ClassSubjects { get; set; } = [];
 }
 
 //public class TeacherProfile : BaseEntity
@@ -138,8 +189,52 @@ public class StudyMaterial : BaseEntity
 }
 public class StudentGroup : BaseEntity
 {
-    [MaxLength(50)]
+    /// <summary>
+    /// Group name: Science, Humanities, Business Studies
+    /// </summary>
+    [MaxLength(100)]
     public string Name { get; set; } = string.Empty;
 
-    public ICollection<ClassSubject> ClassSubjects { get; set; } = new List<ClassSubject>();
+    [MaxLength(50)]
+    public string Code { get; set; } = string.Empty;
+
+    [MaxLength(500)]
+    public string Description { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Minimum class for this group (usually 9)
+    /// </summary>
+    public int MinClass { get; set; } = 9;
+
+    /// <summary>
+    /// Maximum class for this group (usually 10)
+    /// </summary>
+    public int MaxClass { get; set; } = 10;
+
+    public int DisplayOrder { get; set; } = 0;
+    public bool IsActive { get; set; } = true;
+
+    // Navigation
+    public virtual ICollection<ClassSubject> ClassSubjects { get; set; } = [];
+    public virtual ICollection<StudentGroupAssignment> StudentAssignments { get; set; } = [];
+}
+
+/// <summary>
+/// Student assignment to groups for class 9-10 streams
+/// Tracks which student belongs to which group (Science, Humanities, Business)
+/// </summary>
+public class StudentGroupAssignment : BaseEntity
+{
+    public int StudentId { get; set; }
+    public int StudentGroupId { get; set; }
+    public int SchoolClassId { get; set; }
+    public int AcademicYearId { get; set; }
+
+    public DateTime AssignedDate { get; set; } = DateTime.Now;
+
+    // Navigation
+    public virtual Student.Student Student { get; set; } = null!;
+    public virtual StudentGroup StudentGroup { get; set; } = null!;
+    public virtual SchoolClass Class { get; set; } = null!;
+    public virtual AcademicYear AcademicYear { get; set; } = null!;
 }

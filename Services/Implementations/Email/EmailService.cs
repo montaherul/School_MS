@@ -68,5 +68,43 @@ public class EmailService : IEmailService
             htmlBody: htmlBody,
             cancellationToken: cancellationToken);
     }
+
+    public async Task SendTeacherAccountAsync(
+    string toEmail,
+    string teacherName,
+    string userName,
+    string password,
+    CancellationToken cancellationToken = default)
+{
+    var baseUrl = _options.BaseUrl?.TrimEnd('/');
+
+    var loginUrl = $"{baseUrl}/Auth/Login";
+
+    var htmlBody = $@"
+<p>Dear <strong>{teacherName}</strong>,</p>
+
+<p>Your teacher account has been created successfully.</p>
+
+<p>
+    <strong>Username:</strong> {userName}<br/>
+    <strong>Password:</strong> {password}
+</p>
+
+<p>
+    <a href=""{loginUrl}"" style=""color:#1a56db;font-weight:bold;"">
+        Login Here
+    </a>
+</p>
+
+<p>Please change your password after first login.</p>
+
+<p>Regards,<br/>School Administration</p>";
+
+    await _emailSender.SendAsync(
+        to: toEmail,
+        subject: "Teacher Account Created",
+        htmlBody: htmlBody,
+        cancellationToken: cancellationToken);
+}
 }
 

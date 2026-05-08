@@ -302,9 +302,6 @@
                                 <label class="form-label fw-bold">Select Section / Group</label>
                                 <select name="SectionId" class="form-select form-select-lg">
                                     <option value="">Select Group</option>
-                                    <option value="1">Science</option>
-                                    <option value="2">Commerce</option>
-                                    <option value="3">Arts</option>
                                 </select>
                             </div>
 
@@ -369,21 +366,35 @@
     }
 
     document.addEventListener("DOMContentLoaded", function () {
-
         const classDropdown = document.getElementById("AppliedClassId");
         const sectionContainer = document.getElementById("sectionContainer");
+        const groupSelect = sectionContainer.querySelector('select');
 
-        classDropdown.addEventListener("change", function () {
-
-            const selectedClass = parseInt(this.value);
-
-            if (selectedClass === 9 || selectedClass === 10) {
+        function updateGroups(classId) {
+            if (classId === 9 || classId === 10) {
                 sectionContainer.style.display = "block";
+                groupSelect.innerHTML = '<option value="">Loading...</option>';
+                fetch(`/Section/GetGroupsForClass?classId=${classId}`)
+                    .then(res => res.json())
+                    .then(groups => {
+                        groupSelect.innerHTML = '<option value="">Select Group</option>';
+                        groups.forEach(g => {
+                            const opt = document.createElement('option');
+                            opt.value = g.id;
+                            opt.textContent = g.name;
+                            groupSelect.appendChild(opt);
+                        });
+                    });
             } else {
                 sectionContainer.style.display = "none";
             }
+        }
+
+        classDropdown.addEventListener("change", function () {
+            updateGroups(parseInt(this.value));
         });
 
+        if (classDropdown.value) updateGroups(parseInt(classDropdown.value));
     });
 </script>
 @section Scripts { @{await Html.RenderPartialAsync("_ValidationScriptsPartial");} }

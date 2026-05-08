@@ -28,58 +28,51 @@ public class UserController : Controller
         page = Math.Max(page, 1);
         pageSize = Math.Clamp(pageSize, 5, 100);
 
-        var query = _db.Users
-            .AsNoTracking();
+        var items = new List<UserListItemVm>();
+        int totalCount = 0;
 
-        if (!string.IsNullOrWhiteSpace(search))
+        using (var command = _db.Database.GetDbConnection().CreateCommand())
         {
-            query = query.Where(u => u.UserName.Contains(search) || u.Email.Contains(search));
+            command.CommandText = "sp_GetUserList";
+            command.CommandType = System.Data.CommandType.StoredProcedure;
+            command.Parameters.Add(new Microsoft.Data.SqlClient.SqlParameter("@PageNumber", page));
+            command.Parameters.Add(new Microsoft.Data.SqlClient.SqlParameter("@PageSize", pageSize));
+            command.Parameters.Add(new Microsoft.Data.SqlClient.SqlParameter("@SearchTerm", (object?)search ?? DBNull.Value));
+
+            await _db.Database.OpenConnectionAsync(cancellationToken);
+            using (var reader = await command.ExecuteReaderAsync(cancellationToken))
+            {
+                while (await reader.ReadAsync(cancellationToken))
+                {
+                    items.Add(new UserListItemVm
+                    {
+                        Id = reader.GetInt32(0),
+                        UserName = reader.GetString(1),
+                        Email = reader.GetString(2),
+                        PhoneNumber = reader.IsDBNull(3) ? null : reader.GetString(3),
+                        Status = (AccountStatus)reader.GetInt32(4),
+                        IsDeleted = reader.GetBoolean(5),
+                        RolesText = reader.IsDBNull(6) ? string.Empty : reader.GetString(6),
+                        TotalRecords = reader.IsDBNull(7) ? 0 : reader.GetInt32(7)
+                    });
+                }
+            }
+            await _db.Database.CloseConnectionAsync();
         }
 
-        var total = await query.CountAsync(cancellationToken);
+        totalCount = items.FirstOrDefault()?.TotalRecords ?? 0;
 
-        var users = await query
-            .OrderByDescending(u => u.Id)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync(cancellationToken);
-
-        var userIds = users.Select(u => u.Id).ToArray();
-
-        var dict = new Dictionary<int, List<string>>();
-        if (userIds.Length > 0)
+        if (Request.Headers["Accept"].ToString().Contains("application/json") || Request.Headers["X-Requested-With"] == "XMLHttpRequest" || Request.Query.ContainsKey("page"))
         {
-            var roleRows = await _db.UserRoles
-                .Where(ur => userIds.Contains(ur.UserId) && ur.Role != null)
-                .Select(ur => new { ur.UserId, RoleName = ur.Role!.Name })
-                .ToListAsync(cancellationToken);
-
-            foreach (var item in roleRows)
-            {
-                if (!dict.TryGetValue(item.UserId, out var list))
-                {
-                    list = [];
-                    dict[item.UserId] = list;
-                }
-                list.Add(item.RoleName);
-            }
+            return Json(new { data = items, last_page = Math.Ceiling((double)totalCount / pageSize), total_records = totalCount });
         }
 
         var model = new UserIndexViewModel
         {
-            Items = users.Select(u => new UserListItemVm
-            {
-                Id = u.Id,
-                UserName = u.UserName,
-                Email = u.Email,
-                PhoneNumber = u.PhoneNumber,
-                Status = u.Status,
-                IsDeleted = u.IsDeleted,
-                RolesText = dict.TryGetValue(u.Id, out var roles) ? string.Join(", ", roles) : string.Empty
-            }).ToList(),
+            Items = items,
             Page = page,
             PageSize = pageSize,
-            TotalItems = total,
+            TotalItems = totalCount,
             Search = search
         };
 

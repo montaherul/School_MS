@@ -1,4 +1,5 @@
 @model SchoolManagementSystem.Models.ViewModels.Dashboard.StudentDashboardViewModel
+@using System.Text.Json
 @{
     ViewData["Title"] = "Student Portal";
 }
@@ -73,38 +74,11 @@
     <div class="col-md-6">
         <div class="card border-0 shadow-sm rounded-4 h-100">
             <div class="card-header bg-white border-0 p-4 pb-0 d-flex justify-content-between align-items-center">
-                <h5 class="mb-0 fw-bold">Upcoming Assignments</h5>
-                <a href="/Assignment" class="small text-decoration-none">View All</a>
+                <h5 class="mb-0 fw-bold"><i class="bi bi-journal-check me-2 text-primary"></i>Assignments</h5>
+                <a href="/Assignment" class="btn btn-link btn-sm text-decoration-none">View All</a>
             </div>
             <div class="card-body p-4">
-                @if (Model.UpcomingAssignments != null && Model.UpcomingAssignments.Any())
-                {
-                    <div class="list-group list-group-flush">
-                        @foreach (var assignment in Model.UpcomingAssignments)
-                        {
-                            <div class="list-group-item px-0 py-3 border-0 border-bottom">
-                                <div class="d-flex justify-content-between">
-                                    <h6 class="mb-1 fw-bold">@assignment.Title</h6>
-                                    <span class="badge bg-light text-primary rounded-pill small">@assignment.Subject</span>
-                                </div>
-                                <div class="d-flex justify-content-between align-items-center mt-2">
-                                    <small class="text-muted"><i class="bi bi-clock me-1"></i>Due: @assignment.Deadline.ToString("dd MMM, hh:mm tt")</small>
-                                    @if ((assignment.Deadline - DateTime.Now).TotalDays < 2)
-                                    {
-                                        <span class="text-danger tiny fw-bold"><i class="bi bi-exclamation-triangle me-1"></i>Urgent</span>
-                                    }
-                                </div>
-                            </div>
-                        }
-                    </div>
-                }
-                else
-                {
-                    <div class="text-center py-4">
-                        <i class="bi bi-journal-check text-muted" style="font-size: 2rem;"></i>
-                        <p class="text-muted mt-2">No pending assignments!</p>
-                    </div>
-                }
+                <div id="assignment-grid"></div>
             </div>
         </div>
     </div>
@@ -113,33 +87,61 @@
     <div class="col-md-6">
         <div class="card border-0 shadow-sm rounded-4 h-100">
             <div class="card-header bg-white border-0 p-4 pb-0 d-flex justify-content-between align-items-center">
-                <h5 class="mb-0 fw-bold">Recent Notices</h5>
-                <a href="/Communication" class="small text-decoration-none">View All</a>
+                <h5 class="mb-0 fw-bold"><i class="bi bi-megaphone me-2 text-warning"></i>Recent Notices</h5>
+                <a href="/Communication" class="btn btn-link btn-sm text-decoration-none">View All</a>
             </div>
             <div class="card-body p-4">
-                @if (Model.RecentNotices != null && Model.RecentNotices.Any())
-                {
-                    <div class="list-group list-group-flush">
-                        @foreach (var notice in Model.RecentNotices)
-                        {
-                            <div class="list-group-item px-0 py-3 border-0 border-bottom">
-                                <div class="d-flex justify-content-between">
-                                    <h6 class="mb-1 fw-bold">@notice.Title</h6>
-                                    <small class="text-muted">@notice.At.ToString("dd MMM")</small>
-                                </div>
-                                <p class="mb-0 text-muted small">@notice.Summary</p>
-                            </div>
-                        }
-                    </div>
-                }
-                else
-                {
-                    <p class="text-muted text-center py-4">No recent notices available.</p>
-                }
+                <div id="notice-grid"></div>
             </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        const assignments = @Html.Raw(JsonSerializer.Serialize(Model.UpcomingAssignments));
+        const notices = @Html.Raw(JsonSerializer.Serialize(Model.RecentNotices));
+
+        new Tabulator("#assignment-grid", {
+            data: assignments,
+            layout: "fitColumns",
+            height: "280px",
+            columns: [
+                { title: "Subject", field: "Subject", width: 100, formatter: function(cell) {
+                    return `<span class="badge bg-primary-soft text-primary tiny fw-bold">${cell.getValue()}</span>`;
+                }},
+                { title: "Task", field: "Title", widthGrow: 2, formatter: function(cell) {
+                    var deadline = new Date(cell.getData().Deadline);
+                    var isUrgent = (deadline - new Date()) / (1000 * 60 * 60 * 24) < 2;
+                    var urgentHtml = isUrgent ? `<span class="text-danger ms-1"><i class="bi bi-exclamation-circle-fill"></i></span>` : "";
+                    return `<div class="fw-bold small">${cell.getValue()}${urgentHtml}</div><div class="text-muted tiny">Due: ${deadline.toLocaleDateString()}</div>`;
+                }}
+            ],
+            placeholder: "No pending assignments"
+        });
+
+        new Tabulator("#notice-grid", {
+            data: notices,
+            layout: "fitColumns",
+            height: "280px",
+            columns: [
+                { title: "Title", field: "Title", widthGrow: 2, formatter: function(cell) {
+                    var date = new Date(cell.getData().At);
+                    return `<div class="fw-bold small">${cell.getValue()}</div><div class="text-muted tiny">${date.toLocaleDateString()} • ${cell.getData().Summary || ""}</div>`;
+                }}
+            ],
+            placeholder: "No recent notices"
+        });
+    </script>
+    <style>
+        .bg-primary-soft { background-color: rgba(26, 86, 219, 0.1); }
+        .tabulator { border: none !important; font-size: 13px; }
+        .tabulator .tabulator-header { display: none; }
+        .tabulator .tabulator-row { border-bottom: 1px solid #f1f5f9; background: transparent !important; }
+        .tabulator .tabulator-row .tabulator-cell { padding: 12px 4px; }
+        .tiny { font-size: 11px; }
+    </style>
+}
 
 <div class="row g-4 mt-1">
     <!-- Quick Links -->

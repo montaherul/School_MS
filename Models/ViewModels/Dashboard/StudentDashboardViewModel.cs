@@ -16,6 +16,7 @@ public class StudentDashboardViewModel
     public List<RecentActivityItem> RecentNotices { get; set; } = new();
     public List<AssignmentDashboardItem> UpcomingAssignments { get; set; } = new();
     public List<AssignmentDashboardItem> Assignments { get; set; } = new();
+    public List<StudentResultViewModel> Results { get; set; } = new();
 }
 
 public record AssignmentDashboardItem(string Subject, string Title, DateTime Deadline);

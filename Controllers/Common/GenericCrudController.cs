@@ -98,7 +98,7 @@ public abstract class GenericCrudController<TEntity> : Controller where TEntity 
             return NotFound();
         }
 
-        return View(ToForm(entity));
+        return View("CreateEdit", ToForm(entity));
     }
 
     [HttpPost]

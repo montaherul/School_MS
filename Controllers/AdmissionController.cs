@@ -3,8 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Data;
 using SchoolManagementSystem.Models.DTOs.Admission;
+using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Models.Entities.Admission;
+using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Services.Interfaces.Admissions;
+using System;
 using System.Security.Claims;
 
 namespace SchoolManagementSystem.Controllers;
@@ -70,8 +73,59 @@ public class AdmissionController : Controller
 
     [HttpGet]
     [Authorize(Roles = "Admin,Super Admin")]
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(int page = 1, int pageSize = 10, string? search = null, int? classId = null, string? status = null)
     {
+        // Detect AJAX/Tabulator requests: check headers OR presence of pagination query params
+        bool isAjax = Request.Headers["Accept"].ToString().Contains("application/json")
+                    || Request.Headers["X-Requested-With"] == "XMLHttpRequest"
+                    || Request.Query.ContainsKey("page");
+
+        if (isAjax)
+        {
+            // ✅ ADD THIS BLOCK HERE
+            int? statusValue = null;
+
+            if (!string.IsNullOrEmpty(status))
+            {
+                statusValue = (int)Enum.Parse(typeof(AdmissionStatus), status);
+            }
+
+            var (items, totalRecords, counts) = await _admissionService.GetListByStoredProcedureAsync(
+                pageNumber: Math.Max(page, 1),
+                pageSize: Math.Clamp(pageSize, 5, 100),
+                searchTerm: search,
+                classId: classId ?? 0,
+                cancellationToken: HttpContext.RequestAborted,
+                status: statusValue   // ✅ PASS HERE
+            );
+
+            return Json(new 
+            { 
+                data = items.Select(a => new
+                {
+                    a.Id,
+                    a.ApplicationNo,
+                    a.ApplicantName,
+                    age = a.Age,
+                    a.DateOfBirth,
+                    a.Gender,
+                    a.AppliedClassId,
+                    a.ApplicantMobileNumber,
+                    a.ApplicantEmail,
+                    a.ClassName,
+                    a.Status,
+                    statusBadgeClass = a.StatusBadgeClass,
+                    a.CreatedBy,
+                    createdAtFormatted = a.CreatedAtFormatted,
+                    a.DaysApplied,
+                    a.ProfilePicturePath
+                }),
+                last_page = Math.Ceiling((double)totalRecords / Math.Max(pageSize, 1)),
+                total_records = totalRecords,
+                counts = counts
+            });
+        }
+
         ViewBag.Classes = await _db.Classes
             .Where(c => c.Name != "Class Ten")
             .Select(c => new { c.Id, c.Name })
@@ -87,67 +141,6 @@ public class AdmissionController : Controller
     [Authorize(Roles = "Admin,Super Admin")]
     public IActionResult Edit(int id) => RedirectToAction(nameof(CreateEdit), new { id });
 
-    [HttpGet]
-    [Authorize(Roles = "Admin,Super Admin")]
-    public async Task<IActionResult> GetList(int page = 1, int size = 10, string? search = null, int? classId = null)
-    {
-        var query = _db.Admissions.Where(a => !a.IsDeleted);
-
-        if (classId.HasValue && classId.Value > 0)
-            query = query.Where(a => a.AppliedClassId == classId.Value);
-
-        if (!string.IsNullOrWhiteSpace(search))
-            query = query.Where(a =>
-                a.ApplicantName.Contains(search) ||
-                a.ApplicationNo.Contains(search) ||
-                a.FatherOrGuardianMobileNo.Contains(search));
-
-        var totalItems = await query.CountAsync();
-        var items = await query
-            .OrderByDescending(a => a.Id)
-            .Skip((page - 1) * size)
-            .Take(size)
-            .Select(a => new
-            {
-                a.Id,
-                a.ApplicationNo,
-                a.ApplicantName,
-                a.DateOfBirth,
-                a.Gender,
-                a.FatherOrGuardianMobileNo,
-                a.AppliedClassId,
-                Status = a.Status.ToString(),
-                a.FatherName,
-                a.FatherOccupation,
-                a.MotherName,
-                a.MotherOccupation,
-                a.GuardianName,
-                a.GuardianOccupation,
-                a.ApplicantMobileNumber,
-                a.AlternativeNumber,
-                a.ApplicantEmail,
-                a.Nationality,
-                a.Religion,
-                a.BloodGroup,
-                a.NationalIdNo,
-                a.BirthCertificateNo,
-                a.PassportNo,
-                a.PaymentMethod,
-                a.TransactionDetails,
-                a.PresentVillage,
-                a.PresentPostOffice,
-                a.PresentThana,
-                a.PresentDistrict,
-                a.PermanentVillage,
-                a.PermanentPostOffice,
-                a.PermanentThana,
-                a.PermanentDistrict,
-                a.ProfilePicturePath
-            })
-            .ToListAsync();
-
-        return Json(new { data = items, last_page = Math.Ceiling((double)totalItems / size) });
-    }
 
     [HttpGet]
     [Authorize(Roles = "Admin,Super Admin")]
@@ -297,29 +290,112 @@ public class AdmissionController : Controller
     [Authorize(Roles = "Admin,Super Admin")]
     public async Task<IActionResult> GetClassSections(int classId)
     {
-        var sections = await _db.Sections
-            .Where(s => s.SchoolClassId == classId)
-            .Select(s => new { s.Id, s.Name })
+        // Load all sections for this class, including parent info
+        var allSections = await _db.Sections
+            .Where(s => s.SchoolClassId == classId && !s.IsDeleted)
+            .Select(s => new
+            {
+                s.Id,
+                s.Name,
+                s.Capacity,
+                s.ParentSectionId,
+                ParentName = _db.Sections
+                    .Where(p => p.Id == s.ParentSectionId)
+                    .Select(p => p.Name)
+                    .FirstOrDefault(),
+                StudentCount = _db.Students.Count(st =>
+                    st.SectionId == s.Id && !st.IsDeleted &&
+                    st.Status == SchoolManagementSystem.Models.Enums.StudentStatus.Active)
+            })
             .ToListAsync();
-        return Json(sections);
+
+        // Leaf sections = those WITH a parent (sub-sections), OR those with no children (flat sections like Class 1-8)
+        var parentIds = allSections.Where(s => s.ParentSectionId == null)
+                                   .Select(s => s.Id)
+                                   .ToHashSet();
+        var hasChildren = allSections.Any(s => s.ParentSectionId != null);
+
+        List<object> result;
+        if (hasChildren)
+        {
+            // Class 9/10 style: return only leaf sub-sections with groupName
+            result = allSections
+                .Where(s => s.ParentSectionId != null)
+                .Select(s => (object)new
+                {
+                    id = s.Id,
+                    name = s.Name,
+                    displayName = $"{s.Name} ({s.StudentCount}/{s.Capacity}){(s.StudentCount >= s.Capacity ? " - FULL" : "")}",
+                    groupName = s.ParentName ?? "",
+                    parentSectionId = s.ParentSectionId,
+                    studentCount = s.StudentCount,
+                    capacity = s.Capacity,
+                    isFull = s.StudentCount >= s.Capacity
+                })
+                .ToList();
+        }
+        else
+        {
+            // Class 1-8 style: return flat sections
+            result = allSections
+                .Select(s => (object)new
+                {
+                    id = s.Id,
+                    name = s.Name,
+                    displayName = $"{s.Name} ({s.StudentCount}/{s.Capacity}){(s.StudentCount >= s.Capacity ? " - FULL" : "")}",
+                    groupName = "",
+                    studentCount = s.StudentCount,
+                    capacity = s.Capacity,
+                    isFull = s.StudentCount >= s.Capacity
+                })
+                .ToList();
+        }
+
+        return Json(result);
     }
 
     [HttpPost]
     [Authorize(Roles = "Admin,Super Admin")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> CreateSectionAjax(int schoolClassId, string name)
+    public async Task<IActionResult> CreateSectionAjax(int schoolClassId, string name, int? parentSectionId = null)
     {
         try
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
             var section = new SchoolManagementSystem.Models.Entities.Academic.Section
             {
                 SchoolClassId = schoolClassId,
                 Name = name.Trim(),
+                ParentSectionId = parentSectionId,
                 CreatedAt = DateTime.UtcNow,
-                CreatedBy = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System"
+                CreatedBy = userId
             };
             _db.Sections.Add(section);
             await _db.SaveChangesAsync();
+
+            // If this is a sub-section, copy subjects from the parent group (if any)
+            if (parentSectionId.HasValue)
+            {
+                var parentSubjects = await _db.ClassSubjects
+                    .Where(cs => cs.SectionId == parentSectionId.Value && !cs.IsDeleted)
+                    .ToListAsync();
+
+                if (parentSubjects.Any())
+                {
+                    var newSubjects = parentSubjects.Select(ps => new ClassSubject
+                    {
+                        SchoolClassId = ps.SchoolClassId,
+                        SubjectId = ps.SubjectId,
+                        SectionId = section.Id, // Link to new section
+                        CreatedAt = DateTime.UtcNow,
+                        CreatedBy = userId
+                    }).ToList();
+
+                    _db.ClassSubjects.AddRange(newSubjects);
+                    await _db.SaveChangesAsync();
+                }
+            }
+
             return Json(new { success = true, id = section.Id, name = section.Name });
         }
         catch (Exception ex)

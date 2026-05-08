@@ -44,6 +44,7 @@ public class StudentListItemDto
     public string? FatherOrGuardianMobileNo { get; set; }
     public IFormFile? ProfilePicture { get; set; }
     public string? ProfilePicturePath { get; set; }
+    public int TotalRecords { get; set; }
 }
 
 public class StudentUpsertDto

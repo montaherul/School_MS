@@ -7,6 +7,9 @@ public class SchoolClassListItemDto
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public int SortOrder { get; set; }
+    public int SectionCount { get; set; }
+    public int StudentCount { get; set; }
+    public int TotalRecords { get; set; }
 }
 
 public class SchoolClassUpsertDto

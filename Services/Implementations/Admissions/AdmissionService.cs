@@ -1,6 +1,9 @@
+using System;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Data.SqlClient;
 using SchoolManagementSystem.Data;
 using SchoolManagementSystem.Models.DTOs.Admission;
+using SchoolManagementSystem.Models.DTOs.Admission.StoredProcedures;
 using SchoolManagementSystem.Models.DTOs.Student;
 using SchoolManagementSystem.Models.Entities.Admission;
 using SchoolManagementSystem.Models.Entities.Auth;
@@ -8,6 +11,7 @@ using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Services.Interfaces.Email;
 using SchoolManagementSystem.Services.Interfaces.Admissions;
 using SchoolManagementSystem.Services.Interfaces.Students;
+using System.Linq;
 
 namespace SchoolManagementSystem.Services.Implementations.Admissions;
 
@@ -153,14 +157,16 @@ public class AdmissionService : IAdmissionService
 
                 // ── Build a collision-safe UserName ──────────────────────────────────
                 // Pattern: name.id
-                var candidateUserName = application.ApplicantName.Replace(" ", ".").ToLower();
-                if (candidateUserName.Length > 20) candidateUserName = candidateUserName[..20];
-                candidateUserName = $"{candidateUserName}.{application.Id}";
+              var year = DateTime.UtcNow.Year;
+                var count = await _db.Students.CountAsync(x => x.CreatedAt.Year == year, cancellationToken) + 1;
+                var candidateUserName = $"STU-{year}{count:D3}";
 
-                var userNameExists = await _db.Users
-                    .AnyAsync(u => u.UserName == candidateUserName, cancellationToken);
-                if (userNameExists)
-                    candidateUserName = $"{candidateUserName}.{Guid.NewGuid():N[..4]}";
+
+               while (await _db.Users.AnyAsync(u => u.UserName == candidateUserName, cancellationToken))
+                {
+                    count++;
+                    candidateUserName = $"STU-{year}{count:D3}";
+                }
 
                 // ── Activation token ─────────────────────────────────────────────────
                 var activationToken = Guid.NewGuid().ToString("N");
@@ -192,6 +198,7 @@ public class AdmissionService : IAdmissionService
                 // ── Create student profile ───────────────────────────────────────────
                 var studentId = await _studentService.CreateAsync(new StudentUpsertDto
                 {
+                    StudentNo = candidateUserName,   
                     FullName = application.ApplicantName,
                     FullNameBangla = application.ApplicantNameBangla,
                     DateOfBirth = application.DateOfBirth,
@@ -364,5 +371,119 @@ public class AdmissionService : IAdmissionService
             .Select(x => (int?)x.RollNumber)
             .MaxAsync(cancellationToken);
         return (maxRoll ?? 0) + 1;
+    }
+
+    /// <summary>
+    /// Get admission list using stored procedure with pagination, search, and filtering
+    /// </summary>
+    public async Task<(List<AdmissionListResultDto> items, int totalRecords, object counts)> GetListByStoredProcedureAsync(
+        int pageNumber = 1,
+        int pageSize = 10,
+        string? searchTerm = null,
+        int classId = 0,
+        CancellationToken cancellationToken = default,
+        int? status= null
+       )
+    {
+        using var command = _db.Database.GetDbConnection().CreateCommand();
+        command.CommandText = "sp_GetAdmissionList";
+        command.CommandType = System.Data.CommandType.StoredProcedure;
+
+        command.Parameters.Add(new SqlParameter("@PageNumber", pageNumber));
+        command.Parameters.Add(new SqlParameter("@PageSize", pageSize));
+        command.Parameters.Add(new SqlParameter("@SearchTerm", (object?)searchTerm ?? DBNull.Value));
+        command.Parameters.Add(new SqlParameter("@ClassId", classId));
+        command.Parameters.Add(new SqlParameter("@Status", status ?? (object)DBNull.Value));
+
+        await _db.Database.OpenConnectionAsync(cancellationToken);
+        try
+        {
+            using var reader = await command.ExecuteReaderAsync(cancellationToken);
+            var items = new List<AdmissionListResultDto>();
+
+            while (await reader.ReadAsync(cancellationToken))
+            {
+                items.Add(new AdmissionListResultDto
+                {
+                    Id = reader.GetInt32(0),
+                    ApplicationNo = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
+                    ApplicantName = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
+                    DateOfBirth = reader.IsDBNull(3) ? DateTime.MinValue : reader.GetDateTime(3),
+                    Gender = reader.IsDBNull(4) ? string.Empty : reader.GetString(4),
+                    AppliedClassId = reader.IsDBNull(5) ? 0 : reader.GetInt32(5),
+                    ClassName = reader.IsDBNull(6) ? string.Empty : reader.GetString(6),
+                    Status = reader.IsDBNull(7) ? string.Empty : reader.GetString(7),
+                    FatherName = reader.IsDBNull(8) ? string.Empty : reader.GetString(8),
+                    FatherOccupation = reader.IsDBNull(9) ? string.Empty : reader.GetString(9),
+                    MotherName = reader.IsDBNull(10) ? string.Empty : reader.GetString(10),
+                    MotherOccupation = reader.IsDBNull(11) ? string.Empty : reader.GetString(11),
+                    GuardianName = reader.IsDBNull(12) ? string.Empty : reader.GetString(12),
+                    GuardianOccupation = reader.IsDBNull(13) ? string.Empty : reader.GetString(13),
+                    FatherOrGuardianMobileNo = reader.IsDBNull(14) ? string.Empty : reader.GetString(14),
+                    ApplicantMobileNumber = reader.IsDBNull(15) ? string.Empty : reader.GetString(15),
+                    AlternativeNumber = reader.IsDBNull(16) ? string.Empty : reader.GetString(16),
+                    ApplicantEmail = reader.IsDBNull(17) ? string.Empty : reader.GetString(17),
+                    Nationality = reader.IsDBNull(18) ? string.Empty : reader.GetString(18),
+                    Religion = reader.IsDBNull(19) ? string.Empty : reader.GetString(19),
+                    BloodGroup = reader.IsDBNull(20) ? string.Empty : reader.GetString(20),
+                    NationalIdNo = reader.IsDBNull(21) ? string.Empty : reader.GetString(21),
+                    BirthCertificateNo = reader.IsDBNull(22) ? string.Empty : reader.GetString(22),
+                    PassportNo = reader.IsDBNull(23) ? string.Empty : reader.GetString(23),
+                    PaymentMethod = reader.IsDBNull(24) ? string.Empty : reader.GetString(24),
+                    TransactionDetails = reader.IsDBNull(25) ? string.Empty : reader.GetString(25),
+                    PresentVillage = reader.IsDBNull(26) ? string.Empty : reader.GetString(26),
+                    PresentPostOffice = reader.IsDBNull(27) ? string.Empty : reader.GetString(27),
+                    PresentThana = reader.IsDBNull(28) ? string.Empty : reader.GetString(28),
+                    PresentDistrict = reader.IsDBNull(29) ? string.Empty : reader.GetString(29),
+                    PermanentVillage = reader.IsDBNull(30) ? string.Empty : reader.GetString(30),
+                    PermanentPostOffice = reader.IsDBNull(31) ? string.Empty : reader.GetString(31),
+                    PermanentThana = reader.IsDBNull(32) ? string.Empty : reader.GetString(32),
+                    PermanentDistrict = reader.IsDBNull(33) ? string.Empty : reader.GetString(33),
+                    ProfilePicturePath = reader.IsDBNull(34) ? string.Empty : reader.GetString(34),
+                    CreatedBy = reader.IsDBNull(35) ? string.Empty : reader.GetString(35),
+                    CreatedAt = reader.IsDBNull(36) ? DateTime.MinValue : reader.GetDateTime(36),
+                    TotalRecords = reader.IsDBNull(37) ? 0 : reader.GetInt32(37)
+                });
+            }
+
+            // Calculate total records for the current filter (including status)
+            int totalRecords = await _db.Admissions
+                .Where(a => !a.IsDeleted)
+                .Where(a => classId == 0 || a.AppliedClassId == classId)
+                .Where(a => status == null || (int)a.Status == status)
+                .Where(a => string.IsNullOrEmpty(searchTerm) ||
+                    a.ApplicantName.Contains(searchTerm) ||
+                    a.ApplicationNo.Contains(searchTerm) ||
+                    a.FatherOrGuardianMobileNo.Contains(searchTerm) ||
+                    a.ApplicantMobileNumber.Contains(searchTerm))
+                .CountAsync(cancellationToken);
+
+            // Calculate status counts (tabs) - ignore the status filter for these
+            var counts = await _db.Admissions
+                .Where(a => !a.IsDeleted)
+                .Where(a => classId == 0 || a.AppliedClassId == classId)
+                .Where(a => string.IsNullOrEmpty(searchTerm) ||
+                    a.ApplicantName.Contains(searchTerm) ||
+                    a.ApplicationNo.Contains(searchTerm) ||
+                    a.FatherOrGuardianMobileNo.Contains(searchTerm) ||
+                    a.ApplicantMobileNumber.Contains(searchTerm))
+                .GroupBy(a => a.Status)
+                .Select(g => new { Status = g.Key, Count = g.Count() })
+                .ToListAsync(cancellationToken);
+
+            // Convert to UI format
+            var countsObj = new
+            {
+                Pending = counts.FirstOrDefault(x => x.Status == AdmissionStatus.Pending)?.Count ?? 0,
+                Approved = counts.FirstOrDefault(x => x.Status == AdmissionStatus.Approved)?.Count ?? 0,
+                Rejected = counts.FirstOrDefault(x => x.Status == AdmissionStatus.Rejected)?.Count ?? 0,
+                Converted = counts.FirstOrDefault(x => x.Status == AdmissionStatus.Converted)?.Count ?? 0
+            };
+            return (items, totalRecords, countsObj);
+        }
+        finally
+        {
+            await _db.Database.CloseConnectionAsync();
+        }
     }
 }

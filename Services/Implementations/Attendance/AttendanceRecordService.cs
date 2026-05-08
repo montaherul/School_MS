@@ -13,14 +13,55 @@ public class AttendanceRecordService : IAttendanceRecordService
 
     public AttendanceRecordService(SchoolDbContext db) { _db = db; }
 
-    public async Task<PagedResult<AttendanceRecordListItemDto>> GetPagedAsync(int page, int pageSize, string? search, CancellationToken cancellationToken = default)
+    public async Task<PagedResult<AttendanceRecordListItemDto>> GetPagedAsync(int page, int pageSize, string? search, int? studentId = null, CancellationToken cancellationToken = default)
     {
-        page = Math.Max(page, 1); pageSize = Math.Clamp(pageSize, 5, 100); var term = search?.Trim();
-        var query = _db.Attendance.Where(x => !x.IsDeleted);
-        var total = await query.CountAsync(cancellationToken);
-        var items = await query.OrderByDescending(x => x.Id).Skip((page - 1) * pageSize).Take(pageSize).Select(x => new AttendanceRecordListItemDto {
-            Id = x.Id,StudentId = x.StudentId,SchoolClassId = x.SchoolClassId,SectionId = x.SectionId,Status = x.Status,Remarks = x.Remarks ?? string.Empty,        }).ToListAsync(cancellationToken);
-        return new PagedResult<AttendanceRecordListItemDto> { Items = items, Page = page, PageSize = pageSize, TotalItems = total };
+        page = Math.Max(page, 1);
+        pageSize = Math.Clamp(pageSize, 5, 100);
+
+        var items = new List<AttendanceRecordListItemDto>();
+        int totalCount = 0;
+
+        using (var command = _db.Database.GetDbConnection().CreateCommand())
+        {
+            command.CommandText = "sp_GetAttendanceList";
+            command.CommandType = System.Data.CommandType.StoredProcedure;
+            command.Parameters.Add(new Microsoft.Data.SqlClient.SqlParameter("@PageNumber", page));
+            command.Parameters.Add(new Microsoft.Data.SqlClient.SqlParameter("@PageSize", pageSize));
+            command.Parameters.Add(new Microsoft.Data.SqlClient.SqlParameter("@SearchTerm", (object?)search ?? DBNull.Value));
+            command.Parameters.Add(new Microsoft.Data.SqlClient.SqlParameter("@StudentId", (object?)studentId ?? 0));
+
+            await _db.Database.OpenConnectionAsync(cancellationToken);
+            using (var reader = await command.ExecuteReaderAsync(cancellationToken))
+            {
+                while (await reader.ReadAsync(cancellationToken))
+                {
+                    items.Add(new AttendanceRecordListItemDto
+                    {
+                        Id = reader.GetInt32(0),
+                        StudentId = reader.GetInt32(1),
+                        StudentName = reader.IsDBNull(2) ? "" : reader.GetString(2),
+                        SchoolClassId = reader.GetInt32(3),
+                        ClassName = reader.IsDBNull(4) ? "" : reader.GetString(4),
+                        SectionId = reader.GetInt32(5),
+                        SectionName = reader.IsDBNull(6) ? "" : reader.GetString(6),
+                        Status = (SchoolManagementSystem.Models.Enums.AttendanceStatus)reader.GetInt32(7),
+                        Remarks = reader.IsDBNull(8) ? "" : reader.GetString(8),
+                        TotalRecords = reader.IsDBNull(10) ? 0 : reader.GetInt32(10)
+                    });
+                }
+            }
+            await _db.Database.CloseConnectionAsync();
+        }
+
+        totalCount = items.FirstOrDefault()?.TotalRecords ?? 0;
+
+        return new PagedResult<AttendanceRecordListItemDto>
+        {
+            Items = items,
+            Page = page,
+            PageSize = pageSize,
+            TotalItems = totalCount
+        };
     }
 
     public async Task<AttendanceRecordUpsertDto?> GetForEditAsync(int id, CancellationToken cancellationToken = default)

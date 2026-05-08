@@ -1998,7 +1998,7 @@ namespace SchoolManagementSystem.Migrations
                     { 10, "BAN2", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "system", false, "বাংলা ২য় পত্র", null, null },
                     { 11, "ENG1", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "system", false, "ইংরেজি ১ম পত্র", null, null },
                     { 12, "ENG2", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "system", false, "ইংরেজি ২য় পত্র", null, null },
-                    { 13, "SCI_GEN", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "system", false, "বিজ্ঞান", null, null },
+                    { 13, "SCI", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "system", false, "বিজ্ঞান", null, null },
                     { 14, "ICT", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "system", false, "তথ্য ও যোগাযোগ প্রযুক্তি", null, null },
                     { 15, "AGR", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "system", false, "কৃষি শিক্ষা", null, null },
                     { 16, "PHY", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "system", false, "পদার্থবিজ্ঞান", null, null },

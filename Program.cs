@@ -11,6 +11,10 @@ using SchoolManagementSystem.Repositories.Implementations;
 using SchoolManagementSystem.Repositories.Interfaces;
 using SchoolManagementSystem.Service.Implementations.Dashboard;
 using SchoolManagementSystem.Service.Interfaces.Dashboard;
+using SchoolManagementSystem.Services.Interfaces.Result;
+using SchoolManagementSystem.Services.Implementations.Result;
+using SchoolManagementSystem.Repositories.Interfaces.Result;
+using SchoolManagementSystem.Repositories.Implementations.Result;
 using SchoolManagementSystem.Services.Implementations.Admissions;
 using SchoolManagementSystem.Services.Implementations.Email;
 using SchoolManagementSystem.Services.Implementations.Students;
@@ -19,6 +23,8 @@ using SchoolManagementSystem.Services.Interfaces.Email;
 using SchoolManagementSystem.Services.Interfaces.Students;
 using SchoolManagementSystem.UnitOfWork.Implementations;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
+using SchoolManagementSystem.Extensions;
+using SchoolManagementSystem.Services.Implementations.Academic;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -84,12 +90,27 @@ builder.Services.AddScoped<SchoolManagementSystem.Services.Interfaces.Academic.I
 builder.Services.AddScoped<SchoolManagementSystem.Services.Interfaces.Academic.ISectionService, SchoolManagementSystem.Services.Implementations.Academic.SectionService>();
 builder.Services.AddScoped<SchoolManagementSystem.Services.Interfaces.Academic.ISubjectService, SchoolManagementSystem.Services.Implementations.Academic.SubjectService>();
 builder.Services.AddScoped<SchoolManagementSystem.Services.Interfaces.Fees.IFeeStructureService, SchoolManagementSystem.Services.Implementations.Fees.FeeStructureService>();
+builder.Services.AddScoped<SchoolManagementSystem.Services.Interfaces.Fees.IFeeInvoiceService, SchoolManagementSystem.Services.Implementations.Fees.FeeInvoiceService>();
 builder.Services.AddScoped<SchoolManagementSystem.Services.Interfaces.Attendance.IAttendanceRecordService, SchoolManagementSystem.Services.Implementations.Attendance.AttendanceRecordService>();
 builder.Services.AddScoped<IPasswordHashService, Pbkdf2PasswordHashService>();
 builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
 builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IPdfGenerator, PlainPdfGenerator>();
+builder.Services.AddScoped<IResultService, ResultService>();
+builder.Services.AddScoped<IExamRepository, ExamRepository>();
+builder.Services.AddScoped<IMarkEntryRepository, MarkEntryRepository>();
+builder.Services.AddScoped<IGradingRuleRepository, GradingRuleRepository>();
+builder.Services.AddScoped<IResultPublicationRepository, ResultPublicationRepository>();
+builder.Services.AddScoped<IStudentSubjectResultRepository, StudentSubjectResultRepository>();
+builder.Services.AddScoped<IStudentExamResultRepository, StudentExamResultRepository>();
+builder.Services.AddScoped<IFinalResultRepository, FinalResultRepository>();
+builder.Services.AddScoped<IResultAuditLogRepository, ResultAuditLogRepository>();
+builder.Services.AddScoped<IReEvaluationRequestRepository, ReEvaluationRequestRepository>();
+builder.Services.AddScoped<SchoolManagementSystem.Services.Interfaces.Teachers.ITeacherScopeService, SchoolManagementSystem.Services.Implementations.Teachers.TeacherScopeService>();
+builder.Services.AddScoped<SchoolManagementSystem.Services.Interfaces.Teachers.ITeacherService, SchoolManagementSystem.Services.Implementations.Teachers.TeacherService>();
+builder.Services.AddSchoolApplicationServices();
+builder.Services.AddScoped<ClassSubjectMappingSeeder>();
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
     serverOptions.ListenAnyIP(5000); // 🔥 important
@@ -118,5 +139,11 @@ app.UseMiddleware<AuditLoggingMiddleware>();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
+
+await using (var scope = app.Services.CreateAsyncScope())
+{
+    var seeder = scope.ServiceProvider.GetRequiredService<ClassSubjectMappingSeeder>();
+    await seeder.SeedAsync();
+}
 
 app.Run();
