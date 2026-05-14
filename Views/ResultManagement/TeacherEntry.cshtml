@@ -35,7 +35,7 @@
                                 <option value="">-- Select Class --</option>
                                 @{
                                     var classes = ((IEnumerable<dynamic>)ViewBag.Assignments)
-                                        .Select(a => new { a.ClassId, ClassName = a.Class.Name })
+                                        .Select(a => new { a.ClassId, a.ClassName })
                                         .DistinctBy(c => c.ClassId);
                                 }
                                 @foreach (var cls in classes)

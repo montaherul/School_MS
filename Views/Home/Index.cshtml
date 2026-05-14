@@ -1,8 +1,587 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@{
+    Layout = "_PublicLayout";
+    ViewData["Title"] = "Welcome to SchoolMS";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<!-- 2. Hero Section -->
+<section id="home" class="lp-hero">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-5 mb-lg-0">
+                <div class="lp-badge"><i class="bi bi-star-fill"></i> Trusted by 10,000+ Students</div>
+                <h1 class="lp-hero-title">Empowering the <span class="text-gradient">Next Generation</span> of Leaders.</h1>
+                <p class="lp-hero-subtitle">A modern, secure, and fully integrated educational platform designed to streamline administration and enhance learning experiences for students, teachers, and parents.</p>
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="/Admission/Apply" class="lp-btn-primary">Get Started</a>
+                    <a href="#features" class="lp-btn-outline">Book Demo</a>
+                    <a href="/Auth/Login" class="lp-btn-outline border-0 bg-light"><i class="bi bi-person-circle me-2"></i>Student Portal</a>
+                </div>
+                <div class="mt-5 pt-3">
+                    <div class="text-muted small fw-bold text-uppercase mb-3">Recognized & Accredited By</div>
+                    <div class="d-flex gap-4 opacity-50 grayscale-filter">
+                        <i class="bi bi-patch-check-fill fs-2" title="National Board"></i>
+                        <i class="bi bi-shield-check fs-2" title="ISO Certified"></i>
+                        <i class="bi bi-award fs-2" title="Academic Excellence"></i>
+                        <i class="bi bi-globe fs-2" title="Global Education Network"></i>
+                    </div>
+                </div>
+                <div class="d-flex gap-4 mt-5 align-items-center">
+                    <div>
+                        <div class="fw-bold fs-4 text-dark">25+</div>
+                        <div class="text-muted small fw-semibold">Years of Excellence</div>
+                    </div>
+                    <div class="border-end" style="height:40px; border-color:var(--clr-border)!important;"></div>
+                    <div>
+                        <div class="fw-bold fs-4 text-dark">99%</div>
+                        <div class="text-muted small fw-semibold">Success Rate</div>
+                    </div>
+                    <div class="border-end" style="height:40px; border-color:var(--clr-border)!important;"></div>
+                    <div>
+                        <div class="fw-bold fs-4 text-dark">50+</div>
+                        <div class="text-muted small fw-semibold">Smart Courses</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="position-relative">
+                    <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop" alt="Students learning" class="img-fluid rounded-4 shadow-lg" style="border: 4px solid var(--clr-topbar);" />
+                    <div class="position-absolute bg-white rounded-3 p-3 shadow-md d-flex align-items-center gap-3" style="bottom: -20px; left: -30px; border: 1px solid var(--clr-border);">
+                        <div style="width:40px;height:40px;background:var(--role-teacher-bg);color:var(--role-teacher);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;">
+                            <i class="bi bi-person-check-fill"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold text-dark mb-0">150+</div>
+                            <div class="small text-muted fw-semibold">Expert Teachers</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 3. About Institution -->
+<section id="about" class="lp-section-alt">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-4 mb-lg-0 pe-lg-5">
+                <div class="row g-3">
+                    <div class="col-6 mt-4">
+                        <img src="https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=2071&auto=format&fit=crop" class="img-fluid rounded-4 shadow-sm" alt="School building">
+                    </div>
+                    <div class="col-6">
+                        <img src="https://images.unsplash.com/photo-1577896851231-70ef18881754?q=80&w=2070&auto=format&fit=crop" class="img-fluid rounded-4 shadow-sm" alt="Students in class">
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <h2 class="lp-section-title">A Legacy of Academic Excellence</h2>
+                <p class="fs-5 text-muted mb-4">Our institution is dedicated to providing an enriching and innovative educational environment where every student can discover their full potential.</p>
+                
+                <div class="p-4 bg-light rounded-4 border-start border-4 border-primary mb-4">
+                    <p class="fst-italic text-dark mb-3">"Education is not just about learning facts, but training the mind to think. We are committed to nurturing the leaders of tomorrow."</p>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="fw-bold text-dark">Dr. Robert Wilson</div>
+                        <div class="text-muted small">— Principal's Message</div>
+                    </div>
+                </div>
+
+                <div class="row g-4 mb-4">
+                    <div class="col-sm-6">
+                        <h5 class="fw-bold text-dark mb-2">Our Mission</h5>
+                        <p class="text-muted small mb-0">To provide holistic education that empowers students to excel globally.</p>
+                    </div>
+                    <div class="col-sm-6">
+                        <h5 class="fw-bold text-dark mb-2">Our Vision</h5>
+                        <p class="text-muted small mb-0">Becoming a world-class institution recognized for innovation and integrity.</p>
+                    </div>
+                </div>
+
+                <ul class="list-unstyled mb-4">
+                    <li class="d-flex align-items-center gap-3 mb-3">
+                        <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                        <span class="fw-semibold text-dark">State-of-the-art campus and facilities</span>
+                    </li>
+                    <li class="d-flex align-items-center gap-3 mb-3">
+                        <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                        <span class="fw-semibold text-dark">Globally recognized curriculum</span>
+                    </li>
+                </ul>
+                <a href="#academics" class="lp-btn-outline">View Achievements</a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 4. Academic Programs -->
+<section id="academics" class="lp-section">
+    <div class="container text-center">
+        <h2 class="lp-section-title">Comprehensive Academic Programs</h2>
+        <p class="lp-section-subtitle">From early childhood education to advanced placement courses, we offer dynamic learning paths tailored for every stage.</p>
+        
+        <div class="row g-4 text-start">
+            <div class="col-md-4">
+                <div class="lp-card">
+                    <div class="lp-card-icon"><i class="bi bi-journal-richtext"></i></div>
+                    <h3 class="lp-card-title">Primary School</h3>
+                    <p class="text-muted">Building a strong foundation with interactive, engaging core subjects focusing on literacy, numeracy, and creativity.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="lp-card">
+                    <div class="lp-card-icon"><i class="bi bi-book-half"></i></div>
+                    <h3 class="lp-card-title">Secondary School</h3>
+                    <p class="text-muted">Fostering critical thinking and independence with a diverse curriculum designed for comprehensive academic growth.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="lp-card">
+                    <div class="lp-card-icon"><i class="bi bi-laptop"></i></div>
+                    <h3 class="lp-card-title">STEM & Smart Classes</h3>
+                    <p class="text-muted">Advanced technology-integrated learning focusing on Science, Technology, Engineering, and Mathematics.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 5. Features Section & 6. Dashboard Preview -->
+<section id="features" class="lp-section-alt">
+    <div class="container text-center">
+        <h2 class="lp-section-title">Powered by Modern Management System</h2>
+        <p class="lp-section-subtitle">Our integrated SaaS platform connects administrators, teachers, parents, and students seamlessly in real-time.</p>
+        
+        <div class="row g-4 mb-5 text-start">
+            <div class="col-lg-4 col-md-6">
+                <div class="d-flex gap-3 mb-4">
+                    <div class="lp-card-icon" style="width:48px;height:48px;font-size:20px;flex-shrink:0;"><i class="bi bi-person-badge"></i></div>
+                    <div>
+                        <h4 class="fw-bold fs-5 text-dark mb-1">Student Management</h4>
+                        <p class="text-muted small">Real-time attendance tracking, automated performance reports, and dynamic student profiles.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="d-flex gap-3 mb-4">
+                    <div class="lp-card-icon" style="width:48px;height:48px;font-size:20px;flex-shrink:0;"><i class="bi bi-pencil-square"></i></div>
+                    <div>
+                        <h4 class="fw-bold fs-5 text-dark mb-1">Teacher Portal</h4>
+                        <p class="text-muted small">Effortless mark entry, assignment creation, scheduling, and direct student communication.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="d-flex gap-3 mb-4">
+                    <div class="lp-card-icon" style="width:48px;height:48px;font-size:20px;flex-shrink:0;"><i class="bi bi-people-fill"></i></div>
+                    <div>
+                        <h4 class="fw-bold fs-5 text-dark mb-1">Parent Portal</h4>
+                        <p class="text-muted small">Instant access to child's progress, transparent fee payment systems, and direct messaging.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="d-flex gap-3 mb-4">
+                    <div class="lp-card-icon" style="width:48px;height:48px;font-size:20px;flex-shrink:0;"><i class="bi bi-pie-chart-fill"></i></div>
+                    <div>
+                        <h4 class="fw-bold fs-5 text-dark mb-1">Admin Dashboard</h4>
+                        <p class="text-muted small">Comprehensive analytics, centralized user management, and detailed institutional reporting.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="d-flex gap-3 mb-4">
+                    <div class="lp-card-icon" style="width:48px;height:48px;font-size:20px;flex-shrink:0;"><i class="bi bi-shield-lock-fill"></i></div>
+                    <div>
+                        <h4 class="fw-bold fs-5 text-dark mb-1">Enterprise Security</h4>
+                        <p class="text-muted small">Role-based access control, secure authentication, and robust data protection protocols.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="d-flex gap-3 mb-4">
+                    <div class="lp-card-icon" style="width:48px;height:48px;font-size:20px;flex-shrink:0;"><i class="bi bi-camera-video-fill"></i></div>
+                    <div>
+                        <h4 class="fw-bold fs-5 text-dark mb-1">Online Learning</h4>
+                        <p class="text-muted small">Integrated virtual classrooms, centralized study materials, and secure online examinations.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-5">
+            <ul class="nav nav-pills justify-content-center mb-4 gap-2" id="dashboardTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active px-4 py-2 fw-bold" id="student-tab" data-bs-toggle="pill" data-bs-target="#student-preview" type="button" role="tab">Student</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link px-4 py-2 fw-bold" id="teacher-tab" data-bs-toggle="pill" data-bs-target="#teacher-preview" type="button" role="tab">Teacher</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link px-4 py-2 fw-bold" id="parent-tab" data-bs-toggle="pill" data-bs-target="#parent-preview" type="button" role="tab">Parent</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link px-4 py-2 fw-bold" id="admin-tab" data-bs-toggle="pill" data-bs-target="#admin-preview" type="button" role="tab">Admin</button>
+                </li>
+            </ul>
+            <div class="tab-content mt-4" id="dashboardTabsContent">
+                <div class="tab-pane fade show active" id="student-preview" role="tabpanel">
+                    <div class="p-3 bg-white rounded-4 shadow-lg border">
+                        <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop" class="img-fluid rounded-3 lp-dashboard-preview" alt="Student Dashboard">
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="teacher-preview" role="tabpanel">
+                    <div class="p-3 bg-white rounded-4 shadow-lg border">
+                        <img src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2015&auto=format&fit=crop" class="img-fluid rounded-3 lp-dashboard-preview" alt="Teacher Dashboard">
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="parent-preview" role="tabpanel">
+                    <div class="p-3 bg-white rounded-4 shadow-lg border">
+                        <img src="https://images.unsplash.com/photo-1543269865-cbf427effbad?q=80&w=2070&auto=format&fit=crop" class="img-fluid rounded-3 lp-dashboard-preview" alt="Parent Dashboard">
+                    </div>
+                </div>
+                <div class="tab-pane fade" id="admin-preview" role="tabpanel">
+                    <div class="p-3 bg-white rounded-4 shadow-lg border">
+                        <img src="https://images.unsplash.com/photo-1551434678-e076c223a692?q=80&w=2070&auto=format&fit=crop" class="img-fluid rounded-3 lp-dashboard-preview" alt="Admin Analytics">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 7. Why Choose Us -->
+<section class="lp-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 mb-5 mb-lg-0">
+                <h2 class="lp-section-title">Why Choose SchoolMS?</h2>
+                <p class="text-muted mb-4 fs-5">We bridge the gap between traditional educational values and modern technological innovation.</p>
+                
+                <div class="row g-4 mt-2">
+                    <div class="col-sm-6">
+                        <div class="d-flex align-items-start gap-3">
+                            <i class="bi bi-award-fill fs-3 text-warning"></i>
+                            <div>
+                                <h5 class="fw-bold text-dark mb-1">Trusted Institution</h5>
+                                <p class="text-muted small mb-0">Government recognized and widely accredited.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="d-flex align-items-start gap-3">
+                            <i class="bi bi-person-video3 fs-3 text-info"></i>
+                            <div>
+                                <h5 class="fw-bold text-dark mb-1">Expert Faculty</h5>
+                                <p class="text-muted small mb-0">Highly qualified and experienced teachers.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="d-flex align-items-start gap-3">
+                            <i class="bi bi-hdd-network-fill fs-3 text-success"></i>
+                            <div>
+                                <h5 class="fw-bold text-dark mb-1">Smart Classrooms</h5>
+                                <p class="text-muted small mb-0">Interactive boards and digital learning tools.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="d-flex align-items-start gap-3">
+                            <i class="bi bi-chat-dots-fill fs-3 text-primary"></i>
+                            <div>
+                                <h5 class="fw-bold text-dark mb-1">Real-time Comms</h5>
+                                <p class="text-muted small mb-0">Instant notifications for parents and students.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 px-lg-5">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <div class="lp-stat-card mb-3">
+                            <div class="lp-stat-number">10K+</div>
+                            <div class="lp-stat-label">Active Students</div>
+                        </div>
+                        <div class="lp-stat-card" style="background:var(--clr-accent);">
+                            <div class="lp-stat-number">50+</div>
+                            <div class="lp-stat-label">Awards Won</div>
+                        </div>
+                    </div>
+                    <div class="col-6 mt-4">
+                        <div class="lp-stat-card mb-3" style="background:#059669;">
+                            <div class="lp-stat-number">250+</div>
+                            <div class="lp-stat-label">Teachers</div>
+                        </div>
+                        <div class="lp-stat-card" style="background:#7c3aed;">
+                            <div class="lp-stat-number">25</div>
+                            <div class="lp-stat-label">Years of Excellence</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 9. Testimonials -->
+<section class="lp-section-alt">
+    <div class="container text-center">
+        <h2 class="lp-section-title">What Our Community Says</h2>
+        <p class="lp-section-subtitle">Hear from parents, students, and educators who have experienced the SchoolMS difference.</p>
+        
+        <div class="row g-4 text-start">
+            <div class="col-md-4">
+                <div class="lp-card testimonial-card">
+                    <div class="d-flex gap-1 text-warning mb-3">
+                        <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                    </div>
+                    <p class="testimonial-quote">"The Parent Portal is incredible. I can track my daughter's attendance, grades, and pay fees all from my smartphone. It has made communication so much easier."</p>
+                    <div class="d-flex align-items-center gap-3 mt-auto">
+                        <div style="width:40px;height:40px;border-radius:50%;background:#cbd5e1;display:flex;align-items:center;justify-content:center;font-weight:bold;">SA</div>
+                        <div>
+                            <h6 class="fw-bold mb-0">Sarah Ahmed</h6>
+                            <span class="small text-muted">Parent</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="lp-card testimonial-card">
+                    <div class="d-flex gap-1 text-warning mb-3">
+                        <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i>
+                    </div>
+                    <p class="testimonial-quote">"As a teacher, the automated result calculation and assignment management features save me hours every week. I can focus more on actual teaching."</p>
+                    <div class="d-flex align-items-center gap-3 mt-auto">
+                        <div style="width:40px;height:40px;border-radius:50%;background:#cbd5e1;display:flex;align-items:center;justify-content:center;font-weight:bold;">MR</div>
+                        <div>
+                            <h6 class="fw-bold mb-0">Michael Rahman</h6>
+                            <span class="small text-muted">Senior Science Teacher</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="lp-card testimonial-card">
+                    <div class="d-flex gap-1 text-warning mb-3">
+                        <i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-fill"></i><i class="bi bi-star-half"></i>
+                    </div>
+                    <p class="testimonial-quote">"The student dashboard is very user-friendly. I can easily see my class schedule, download study materials, and submit assignments online."</p>
+                    <div class="d-flex align-items-center gap-3 mt-auto">
+                        <div style="width:40px;height:40px;border-radius:50%;background:#cbd5e1;display:flex;align-items:center;justify-content:center;font-weight:bold;">FK</div>
+                        <div>
+                            <h6 class="fw-bold mb-0">Fahim Khan</h6>
+                            <span class="small text-muted">Grade 10 Student</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 10. Admissions CTA Section -->
+<section id="admissions" class="lp-section">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="lp-section-title">Admission Process</h2>
+            <p class="lp-section-subtitle">Follow these simple steps to become a part of our prestigious institution.</p>
+        </div>
+        
+        <div class="row g-4 mb-5">
+            <div class="col-lg-3 col-md-6">
+                <div class="text-center">
+                    <div class="mb-3 mx-auto d-flex align-items-center justify-content-center bg-primary text-white fw-bold rounded-circle" style="width:50px;height:50px;font-size:20px;">1</div>
+                    <h5 class="fw-bold">Online Application</h5>
+                    <p class="text-muted small">Fill out the digital application form with student details and academic history.</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="text-center">
+                    <div class="mb-3 mx-auto d-flex align-items-center justify-content-center bg-primary text-white fw-bold rounded-circle" style="width:50px;height:50px;font-size:20px;">2</div>
+                    <h5 class="fw-bold">Document Upload</h5>
+                    <p class="text-muted small">Securely upload previous transcripts, ID proof, and required certifications.</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="text-center">
+                    <div class="mb-3 mx-auto d-flex align-items-center justify-content-center bg-primary text-white fw-bold rounded-circle" style="width:50px;height:50px;font-size:20px;">3</div>
+                    <h5 class="fw-bold">Entrance Assessment</h5>
+                    <p class="text-muted small">Participate in our comprehensive evaluation and personal interview session.</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="text-center">
+                    <div class="mb-3 mx-auto d-flex align-items-center justify-content-center bg-primary text-white fw-bold rounded-circle" style="width:50px;height:50px;font-size:20px;">4</div>
+                    <h5 class="fw-bold">Final Enrollment</h5>
+                    <p class="text-muted small">Confirm your admission by paying the enrollment fees through our secure portal.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="p-5 rounded-4 shadow-lg text-center" style="background:var(--clr-primary);color:#fff;">
+            <h3 class="fw-bold mb-3">Ready to Join Our Community?</h3>
+            <p class="fs-5 mb-5 opacity-75 max-w-2xl mx-auto">Admissions for the upcoming academic session are now open. Begin your journey with an institution committed to excellence.</p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="/Admission/Apply" class="btn btn-light fw-bold px-4 py-3 rounded-3 text-primary shadow-sm">Apply Online Now</a>
+                <a href="#" class="btn btn-outline-light fw-bold px-4 py-3 rounded-3 border-2">View Scholarship Info</a>
+            </div>
+            <p class="mt-4 small opacity-75">Need help? Contact our admission office at admissions@schoolms.edu</p>
+        </div>
+    </div>
+</section>
+
+<!-- 11. Events & News -->
+<section class="lp-section">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-end mb-5">
+            <div>
+                <h2 class="lp-section-title mb-0">Latest News & Events</h2>
+                <p class="text-muted mt-2 mb-0">Stay updated with the latest happenings at SchoolMS.</p>
+            </div>
+            <a href="#" class="lp-btn-outline d-none d-md-inline-block">View All</a>
+        </div
+        
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="d-flex flex-column flex-sm-row gap-4 align-items-center bg-white p-3 rounded-4 shadow-sm border">
+                    <div class="bg-light rounded-3 text-center p-3" style="min-width: 100px;">
+                        <div class="fw-bold text-primary fs-3 line-height-1">15</div>
+                        <div class="text-uppercase fw-bold text-muted small">Aug</div>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold text-dark mb-2">Annual Science Fair 2026</h5>
+                        <p class="text-muted small mb-0">Join us for a spectacular display of innovation and scientific inquiry by our secondary students.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="d-flex flex-column flex-sm-row gap-4 align-items-center bg-white p-3 rounded-4 shadow-sm border">
+                    <div class="bg-light rounded-3 text-center p-3" style="min-width: 100px;">
+                        <div class="fw-bold text-primary fs-3 line-height-1">01</div>
+                        <div class="text-uppercase fw-bold text-muted small">Sep</div>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold text-dark mb-2">Fall Semester Commences</h5>
+                        <p class="text-muted small mb-0">Welcome back! The new academic term begins with full campus orientation and regular class schedules.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 7. FAQ Section -->
+<section class="lp-section-alt">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="text-center mb-5">
+                    <h2 class="lp-section-title">Frequently Asked Questions</h2>
+                    <p class="text-muted">Find quick answers about admissions, portals, and academic life.</p>
+                </div>
+                
+                <div class="lp-faq-item">
+                    <button class="lp-faq-btn" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'">
+                        How do I apply for admission? <i class="bi bi-chevron-down"></i>
+                    </button>
+                    <div class="lp-faq-body">
+                        The admission process is entirely online. Click on the "Apply Online Now" button, fill out the application form, upload the required documents, and pay the application fee through our secure gateway.
+                    </div>
+                </div>
+                
+                <div class="lp-faq-item">
+                    <button class="lp-faq-btn" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'">
+                        How can parents track student progress? <i class="bi bi-chevron-down"></i>
+                    </button>
+                    <div class="lp-faq-body">
+                        Parents are provided with distinct Parent Portal credentials. Once logged in, you can view real-time attendance, test results, teacher feedback, and fee payment histories.
+                    </div>
+                </div>
+
+                <div class="lp-faq-item">
+                    <button class="lp-faq-btn" onclick="this.nextElementSibling.style.display = this.nextElementSibling.style.display === 'block' ? 'none' : 'block'">
+                        Is there a dedicated app for technical support? <i class="bi bi-chevron-down"></i>
+                    </button>
+                    <div class="lp-faq-body">
+                        Yes, our IT support desk is integrated within the dashboard. Students and teachers can raise technical tickets directly from their respective portals.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- 8. Contact Section -->
+<section id="contact-form" class="lp-section">
+    <div class="container">
+        <div class="row g-5">
+            <div class="col-lg-5">
+                <h2 class="lp-section-title">Get in Touch</h2>
+                <p class="text-muted mb-5">Have questions about admissions or our management system? Our team is here to help you.</p>
+                
+                <div class="d-flex gap-4 mb-4">
+                    <div class="lp-card-icon" style="width:50px;height:50px;flex-shrink:0;"><i class="bi bi-geo-alt"></i></div>
+                    <div>
+                        <h5 class="fw-bold text-dark mb-1">Our Location</h5>
+                        <p class="text-muted small">123 Education Boulevard, Innovation District, ED 10010</p>
+                    </div>
+                </div>
+                <div class="d-flex gap-4 mb-4">
+                    <div class="lp-card-icon" style="width:50px;height:50px;flex-shrink:0;"><i class="bi bi-envelope"></i></div>
+                    <div>
+                        <h5 class="fw-bold text-dark mb-1">Email Us</h5>
+                        <p class="text-muted small">info@schoolms.edu<br>admissions@schoolms.edu</p>
+                    </div>
+                </div>
+                <div class="d-flex gap-4 mb-5">
+                    <div class="lp-card-icon" style="width:50px;height:50px;flex-shrink:0;"><i class="bi bi-telephone"></i></div>
+                    <div>
+                        <h5 class="fw-bold text-dark mb-1">Call Us</h5>
+                        <p class="text-muted small">+1 (800) 123-4567<br>Mon-Fri: 9am - 5pm</p>
+                    </div>
+                </div>
+
+                <div class="rounded-4 overflow-hidden shadow-sm border" style="height: 250px;">
+                    <!-- Google Maps Placeholder -->
+                    <div class="w-100 h-100 bg-light d-flex align-items-center justify-content-center flex-column text-muted">
+                        <i class="bi bi-map fs-1 mb-2"></i>
+                        <span class="small fw-bold">Interactive Campus Map</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-7">
+                <div class="lp-card p-5">
+                    <h4 class="fw-bold text-dark mb-4">Send us a Message</h4>
+                    <form action="#" class="row g-4">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted">Full Name</label>
+                            <input type="text" class="form-control form-control-lg border-2" placeholder="Enter your name" style="border-radius:var(--radius-md);">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small text-muted">Email Address</label>
+                            <input type="email" class="form-control form-control-lg border-2" placeholder="Enter your email" style="border-radius:var(--radius-md);">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold small text-muted">Subject</label>
+                            <select class="form-select form-select-lg border-2" style="border-radius:var(--radius-md);">
+                                <option selected>General Inquiry</option>
+                                <option>Admission Support</option>
+                                <option>Technical Issue</option>
+                                <option>Others</option>
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label fw-bold small text-muted">Message</label>
+                            <textarea class="form-control border-2" rows="5" placeholder="How can we help you?" style="border-radius:var(--radius-md);"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="lp-btn-primary w-100 py-3">Send Message <i class="bi bi-send-fill ms-2"></i></button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

@@ -70,7 +70,7 @@ public static class DbInitializer
             "Dashboard", "Users", "Roles", "Permissions", "Admissions", "Students", "Teachers", "Classes",
             "Sections", "Subjects", "Attendance", "Exams", "Marks", "Assignments", "Fees", "Payments",
             "Library", "Transport", "Health", "Notifications", "Reports", "Settings", "Academic",
-            "Admission", "Student", "Exam", "Result", "Communication", "System"
+            "Admission", "Student", "Exam", "Result", "Communication", "System", "AuditLogs"
         };
         var actions = new[] { "View", "Create", "Edit", "Delete", "Approve", "Assign", "Publish", "Export", "Manage" };
         var permissions = modules.SelectMany(module => actions
@@ -89,6 +89,11 @@ public static class DbInitializer
             })).ToArray();
         modelBuilder.Entity<Permission>().HasData(permissions);
         var adminRolePermissions = permissions.Select(p => new RolePermission { RoleId = 1, PermissionId = p.Id });
+        var principalRolePermissions = permissions.Select(p => new RolePermission { RoleId = 2, PermissionId = p.Id });
+        var assistantHeadRolePermissions = permissions
+            .Where(p =>
+                p.ModuleName is "Dashboard" or "Academic" or "Classes" or "Sections" or "Subjects" or "Admissions" or "Admission" or "Students" or "Student" or "Attendance" or "Exams" or "Exam" or "Marks" or "Result" or "Communication" or "Reports")
+            .Select(p => new RolePermission { RoleId = 3, PermissionId = p.Id });
         var teacherRolePermissions = permissions
             .Where(p =>
                 p.Code is "Dashboard.View" or "Classes.View" or "Students.View" or "Attendance.View" or "Attendance.Create" or "Marks.View" or "Marks.Create" or "Assignments.View" or "Assignments.Create" ||
@@ -103,7 +108,13 @@ public static class DbInitializer
             .Where(p =>
                 p.Code is "Dashboard.View" or "Students.View" or "Student.View" or "Attendance.View" or "Marks.View" or "Assignments.View" or "Assignments.Create" or "Notifications.View" or "Fees.View")
             .Select(p => new RolePermission { RoleId = 7, PermissionId = p.Id });
-        modelBuilder.Entity<RolePermission>().HasData(adminRolePermissions.Concat(teacherRolePermissions).Concat(officeRolePermissions).Concat(studentRolePermissions));
+        modelBuilder.Entity<RolePermission>().HasData(
+            adminRolePermissions
+            .Concat(principalRolePermissions)
+            .Concat(assistantHeadRolePermissions)
+            .Concat(teacherRolePermissions)
+            .Concat(officeRolePermissions)
+            .Concat(studentRolePermissions));
 
         modelBuilder.Entity<AcademicYear>().HasData(new AcademicYear { Id = 1, Name = "2026", StartsOn = new DateTime(2026, 1, 1), EndsOn = new DateTime(2026, 12, 31), IsActive = true, CreatedAt = createdAt });
         //modelBuilder.Entity<SchoolClass>().HasData(
@@ -196,7 +207,7 @@ public static class DbInitializer
        new Subject { Id = 7, Code = "ART", Name = "চারুকলা", CreatedAt = createdAt },
        new Subject { Id = 8, Code = "PE", Name = "শারীরিক শিক্ষা", CreatedAt = createdAt },
 
-       // Class 1–5 Books
+       
        new Subject { Id = 9, Code = "BAN1", Name = "বাংলা ১ম পত্র", CreatedAt = createdAt },
        new Subject { Id = 10, Code = "BAN2", Name = "বাংলা ২য় পত্র", CreatedAt = createdAt },
        new Subject { Id = 11, Code = "ENG1", Name = "ইংরেজি ১ম পত্র", CreatedAt = createdAt },

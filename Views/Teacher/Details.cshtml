@@ -101,6 +101,15 @@
                         <button class="nav-link py-3 border-0" id="assignments-tab" data-bs-toggle="tab" data-bs-target="#assignments-pane" type="button" role="tab">Assignments</button>
                     </li>
                     <li class="nav-item">
+                        <button class="nav-link py-3 border-0" id="attendance-tab" data-bs-toggle="tab" data-bs-target="#attendance-pane" type="button" role="tab">Attendance</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link py-3 border-0" id="leaves-tab" data-bs-toggle="tab" data-bs-target="#leaves-pane" type="button" role="tab">Leaves</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link py-3 border-0" id="payroll-tab" data-bs-toggle="tab" data-bs-target="#payroll-pane" type="button" role="tab">Payroll</button>
+                    </li>
+                    <li class="nav-item">
                         <button class="nav-link py-3 border-0" id="docs-tab" data-bs-toggle="tab" data-bs-target="#docs-pane" type="button" role="tab">Documents</button>
                     </li>
                     <li class="nav-item">
@@ -218,6 +227,91 @@
                                         <td class="text-end">
                                             <button class="btn btn-sm btn-light text-danger"><i class="bi bi-trash"></i></button>
                                         </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Attendance (Placeholder) -->
+                    <div class="tab-pane fade" id="attendance-pane" role="tabpanel">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h6 class="mb-0 fw-bold">Recent Attendance History</h6>
+                            <a href="/TeacherHR/Attendance" class="btn btn-light btn-sm rounded-pill px-3">Mark Today's Attendance</a>
+                        </div>
+                        <div class="alert alert-info py-2 small">
+                            <i class="bi bi-info-circle me-2"></i>Showing last 5 attendance records.
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th class="x-small fw-bold">Date</th>
+                                        <th class="x-small fw-bold">Status</th>
+                                        <th class="x-small fw-bold">Remarks</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>@DateTime.Today.ToString("dd MMM yyyy")</td>
+                                        <td><span class="badge bg-success-subtle text-success">Present</span></td>
+                                        <td class="text-muted small">On time</td>
+                                    </tr>
+                                    <tr>
+                                        <td>@DateTime.Today.AddDays(-1).ToString("dd MMM yyyy")</td>
+                                        <td><span class="badge bg-success-subtle text-success">Present</span></td>
+                                        <td class="text-muted small">-</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Leaves (Placeholder) -->
+                    <div class="tab-pane fade" id="leaves-pane" role="tabpanel">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h6 class="mb-0 fw-bold">Leave History</h6>
+                            <button class="btn btn-primary btn-sm rounded-pill px-3"><i class="bi bi-plus-lg me-1"></i>Request Leave</button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th class="x-small fw-bold">Type</th>
+                                        <th class="x-small fw-bold">Duration</th>
+                                        <th class="x-small fw-bold">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>Casual Leave</td>
+                                        <td>15 May - 16 May (2 Days)</td>
+                                        <td><span class="badge bg-warning-subtle text-warning">Pending</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Tab: Payroll (Placeholder) -->
+                    <div class="tab-pane fade" id="payroll-pane" role="tabpanel">
+                        <h6 class="mb-4 fw-bold">Salary Slips</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th class="x-small fw-bold">Month</th>
+                                        <th class="x-small fw-bold">Net Salary</th>
+                                        <th class="x-small fw-bold">Status</th>
+                                        <th class="x-small fw-bold text-end">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>April 2026</td>
+                                        <td class="fw-bold">35,000</td>
+                                        <td><span class="badge bg-success-subtle text-success">Paid</span></td>
+                                        <td class="text-end"><button class="btn btn-sm btn-light rounded-circle"><i class="bi bi-download"></i></button></td>
                                     </tr>
                                 </tbody>
                             </table>

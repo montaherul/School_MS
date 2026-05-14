@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Models.DTOs.Academic;
 using SchoolManagementSystem.Models.ViewModels.Academic;
 using SchoolManagementSystem.Services.Interfaces.Academic;
@@ -17,6 +18,7 @@ public class AcademicYearController : Controller
         _service = service;
     }
 
+    [RequirePermission("Academic.View")]
     public IActionResult Index()
     {
         return View();
@@ -26,6 +28,7 @@ public class AcademicYearController : Controller
 
     public IActionResult Edit(int id) => RedirectToAction(nameof(CreateEdit), new { id });
 
+    [RequirePermission("Academic.View")]
     public async Task<IActionResult> Details(int id, CancellationToken cancellationToken)
     {
         var dto = await _service.GetForEditAsync(id, cancellationToken);
@@ -33,6 +36,7 @@ public class AcademicYearController : Controller
     }
 
     [HttpGet]
+    [RequirePermission("Academic.View")]
     public async Task<IActionResult> GetList(int page = 1, int size = 10, string? search = null)
     {
         var result = await _service.GetPagedAsync(page, size, search);
@@ -40,6 +44,7 @@ public class AcademicYearController : Controller
     }
 
     [HttpGet]
+    [RequirePermission("Academic.Create")]
     public async Task<IActionResult> CreateEdit(int? id)
     {
         if (id.HasValue && id > 0)
@@ -63,6 +68,7 @@ public class AcademicYearController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [RequirePermission("Academic.Create")]
     public async Task<IActionResult> CreateEdit(AcademicYearViewModel vm)
     {
         if (!ModelState.IsValid)
@@ -86,9 +92,11 @@ public class AcademicYearController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [RequirePermission("Academic.Create")]
     public Task<IActionResult> Save(AcademicYearViewModel vm) => CreateEdit(vm);
 
     [HttpGet]
+    [RequirePermission("Academic.Delete")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
         var dto = await _service.GetForEditAsync(id, cancellationToken);
@@ -97,6 +105,7 @@ public class AcademicYearController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [RequirePermission("Academic.Delete")]
     public async Task<IActionResult> DeleteConfirmed(int id, CancellationToken cancellationToken)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";

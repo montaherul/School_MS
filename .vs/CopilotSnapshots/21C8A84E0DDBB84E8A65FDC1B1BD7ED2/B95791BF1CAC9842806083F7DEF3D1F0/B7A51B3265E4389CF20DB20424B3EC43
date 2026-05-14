@@ -1,0 +1,84 @@
+﻿using System.Data;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+using SchoolManagementSystem.Data;
+using SchoolManagementSystem.Models.Entities.Result;
+using SchoolManagementSystem.Models.Entities.Teachers;
+using SchoolManagementSystem.Models.ViewModels.Result;
+using SchoolManagementSystem.Repositories.Implementations;
+using SchoolManagementSystem.Repositories.Interfaces;
+using SchoolManagementSystem.Repositories.StoredProcedures.Interfaces;
+
+namespace SchoolManagementSystem.Repositories.StoredProcedures.Implementations;
+
+public class MarkEntrySpRepository : BaseRepository<MarkEntry>, IMarkEntrySpRepository
+{
+    public MarkEntrySpRepository(SchoolDbContext db) : base(db)
+    {
+    }
+
+    public async Task<List<StudentMarkViewModel>> GetMarkEntrySheetAsync(int examId, int classId, int sectionId, int subjectId, CancellationToken ct)
+    {
+        var students = new List<StudentMarkViewModel>();
+        using var command = _db.Database.GetDbConnection().CreateCommand();
+        command.CommandText = "sp_GetMarkEntrySheet";
+        command.CommandType = CommandType.StoredProcedure;
+        command.Parameters.Add(new SqlParameter("@ExamId", examId));
+        command.Parameters.Add(new SqlParameter("@ClassId", classId));
+        command.Parameters.Add(new SqlParameter("@SectionId", sectionId));
+        command.Parameters.Add(new SqlParameter("@SubjectId", subjectId));
+
+        await _db.Database.OpenConnectionAsync(ct);
+        try
+        {
+            using var reader = await command.ExecuteReaderAsync(ct);
+            while (await reader.ReadAsync(ct))
+            {
+                students.Add(new StudentMarkViewModel
+                {
+                    StudentId = reader.GetInt32(0),
+                    StudentName = reader.GetString(1),
+                    StudentNo = reader.GetString(2),
+                    RollNumber = reader.GetInt32(3),
+                    MarksObtained = reader.IsDBNull(4) ? null : reader.GetDecimal(4),
+                    Grade = reader.IsDBNull(5) ? null : reader.GetString(5),
+                    IsLocked = reader.IsDBNull(6) ? false : reader.GetBoolean(6)
+                });
+            }
+
+            // Augment with component-wise marks and teacher info from MarkEntry table
+            var studentIds = students.Select(s => s.StudentId).ToList();
+            if (studentIds.Any())
+            {
+                var marks = await _db.Marks.Where(m => m.ExamId == examId && m.SubjectId == subjectId && studentIds.Contains(m.StudentId)).ToListAsync(ct);
+                var teacherIds = marks.Select(m => m.EnteredByTeacherId).Distinct().ToList();
+                var teachers = await _db.Teachers.Where(t => teacherIds.Contains(t.Id)).ToDictionaryAsync(t => t.Id, t => t.FullName, ct);
+
+                var markMap = marks.ToDictionary(m => m.StudentId, m => m);
+                foreach (var s in students)
+                {
+                    if (markMap.TryGetValue(s.StudentId, out var me))
+                    {
+                        s.WrittenMarks = me.WrittenMarks;
+                        s.MCQMarks = me.MCQMarks;
+                        s.CQMarks = me.CQMarks;
+                        s.PracticalMarks = me.PracticalMarks;
+                        s.VivaMarks = me.VivaMarks;
+                        s.LabMarks = me.LabMarks;
+                        s.OralMarks = me.OralMarks;
+                        s.AssignmentMarks = me.AssignmentMarks;
+                        s.ContinuousAssessmentMarks = me.ContinuousAssessmentMarks;
+                        s.CompetencyMarks = me.CompetencyMarks;
+                        s.BehaviourMarks = me.BehaviourMarks;
+                        s.ParticipationMarks = me.ParticipationMarks;
+                        s.EnteredByTeacherId = me.EnteredByTeacherId;
+                        s.EnteredByTeacherName = teachers.ContainsKey(me.EnteredByTeacherId) ? teachers[me.EnteredByTeacherId] : null;
+                    }
+                }
+            }
+
+            return students;
+        }
+        finally { await _db.Database.CloseConnectionAsync(); }
+    }
+}

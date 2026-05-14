@@ -1,0 +1,141 @@
+@model SchoolManagementSystem.Models.DTOs.Employee.EmployeeLeaveDto
+@{
+    ViewData["Title"] = "Apply for Leave";
+    var summary = (SchoolManagementSystem.Models.DTOs.Employee.EmployeeLeaveSummaryDto)ViewBag.Summary;
+}
+
+<div class="adm-page">
+    <div class="adm-header mb-4">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-file-earmark-plus"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Apply for Leave</h1>
+                <p class="adm-header__sub">Submit a new leave application for approval</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <form asp-action="Create" method="post" id="leaveForm">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <input type="hidden" asp-for="EmployeeId" />
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-12">
+                                <label class="form-label fw-bold">Leave Type <span class="text-danger">*</span></label>
+                                <select asp-for="LeaveTypeId" class="form-select" asp-items="ViewBag.LeaveTypes">
+                                    <option value="">-- Select Leave Type --</option>
+                                </select>
+                                <span asp-validation-for="LeaveTypeId" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Start Date <span class="text-danger">*</span></label>
+                                <input asp-for="StartDate" type="date" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" id="startDate" />
+                                <span asp-validation-for="StartDate" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">End Date <span class="text-danger">*</span></label>
+                                <input asp-for="EndDate" type="date" class="form-control" id="endDate" />
+                                <span asp-validation-for="EndDate" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="p-2 border rounded bg-light d-flex justify-content-between align-items-center">
+                                <span class="small text-muted">Total Days Calculated:</span>
+                                <span class="fw-bold fs-5" id="totalDays">0</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Reason for Leave <span class="text-danger">*</span></label>
+                            <textarea asp-for="Reason" class="form-control" rows="4" placeholder="Please provide a valid reason..."></textarea>
+                            <span asp-validation-for="Reason" class="text-danger"></span>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="adm-btn adm-btn--primary">
+                                <i class="bi bi-send me-1"></i> Submit Application
+                            </button>
+                            <a asp-action="MyLeaves" class="adm-btn adm-btn--ghost">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            @* Leave Balance Info *@
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success bg-opacity-10 py-3">
+                    <h6 class="mb-0 fw-bold"><i class="bi bi-graph-up-arrow me-2"></i>Current Leave Balances</h6>
+                </div>
+                <div class="card-body">
+                    <div class="list-group list-group-flush">
+                        @foreach (var balance in summary.Balances)
+                        {
+                            <div class="list-group-item px-0 border-0 mb-2">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <span class="small fw-bold">@balance.LeaveTypeName</span>
+                                    <span class="badge @(balance.Remaining > 0 ? "bg-success" : "bg-danger")">@balance.Remaining / @balance.Allowed Left</span>
+                                </div>
+                                <div class="progress" style="height: 5px;">
+                                    @{
+                                        var percent = balance.Allowed > 0 ? (double)balance.Taken / balance.Allowed * 100 : 0;
+                                    }
+                                    <div class="progress-bar @(percent > 80 ? "bg-warning" : "bg-success")" style="width: @percent%"></div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            @* Quick Tips *@
+            <div class="alert alert-info small border-0 shadow-sm">
+                <h6 class="fw-bold"><i class="bi bi-lightbulb me-2"></i>Quick Tips</h6>
+                <ul class="mb-0 ps-3">
+                    <li>Submit applications at least 3 days in advance.</li>
+                    <li>Ensure you have sufficient balance for paid leaves.</li>
+                    <li>Avoid overlapping with existing applications.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const startDateInput = document.getElementById('startDate');
+        const endDateInput = document.getElementById('endDate');
+        const totalDaysSpan = document.getElementById('totalDays');
+
+        function calculateDays() {
+            const start = new Date(startDateInput.value);
+            const end = new Date(endDateInput.value);
+            
+            if (startDateInput.value && endDateInput.value) {
+                if (end >= start) {
+                    const diffTime = Math.abs(end - start);
+                    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                    totalDaysSpan.innerText = diffDays;
+                    totalDaysSpan.className = "fw-bold fs-5 text-dark";
+                } else {
+                    totalDaysSpan.innerText = "Error: Invalid Range";
+                    totalDaysSpan.className = "fw-bold fs-5 text-danger";
+                }
+            }
+        }
+
+        startDateInput.addEventListener('change', calculateDays);
+        endDateInput.addEventListener('change', calculateDays);
+    </script>
+}

@@ -15,7 +15,12 @@ BEGIN
         m.MarksObtained,
         m.Grade,
         m.IsLocked
+
     FROM Students s
+
+    INNER JOIN Subjects sub
+        ON sub.Id = @SubjectId
+
     LEFT JOIN Marks m 
         ON s.Id = m.StudentId 
         AND m.ExamId = @ExamId 
@@ -27,6 +32,12 @@ BEGIN
         AND s.SectionId = @SectionId
         AND s.Status = 1
         AND s.IsDeleted = 0
+
+        AND
+        (
+            sub.ReligionType IS NULL
+            OR s.Religion = sub.ReligionType
+        )
 
     ORDER BY s.RollNumber;
 END;

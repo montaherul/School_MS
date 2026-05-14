@@ -1,0 +1,327 @@
+﻿using Microsoft.EntityFrameworkCore;
+using SchoolManagementSystem.Data;
+using SchoolManagementSystem.Models.Entities.Academic;
+using SchoolManagementSystem.Models.Entities.Result;
+using SchoolManagementSystem.Models.Entities.Student;
+using SchoolManagementSystem.Models.Enums;
+using SchoolManagementSystem.Services.Interfaces.Result;
+using SchoolManagementSystem.UnitOfWork.Interfaces;
+using SchoolManagementSystem.Repositories.Interfaces;
+
+namespace SchoolManagementSystem.Services.Implementations.Result;
+
+/// <summary>
+/// Promotion service implementing Bangladesh education system rules
+/// Handles student promotion, repetition, and conditional promotion
+/// </summary>
+public class PromotionService : IPromotionService
+{
+    private readonly IUnitOfWork _uow;
+
+    public PromotionService(IUnitOfWork uow)
+    {
+        _uow = uow;
+    }
+
+    private IFinalResultRepo FinalResultRepo => (IFinalResultRepo)_uow.Repository<FinalResult>();
+    private IPromotionHistoryRepo HistoryRepo => (IPromotionHistoryRepo)_uow.Repository<PromotionHistory>();
+    private IStudentRepo StudentRepo => (IStudentRepo)_uow.Repository<Student>();
+
+    public async Task<PromotionEligibility> CalculatePromotionEligibilityAsync(int studentId, int academicYearId)
+    {
+        var student = await StudentRepo.GetByIdAsync(studentId);
+        if (student == null) throw new ArgumentException("Student not found");
+
+        var finalResult = await FinalResultRepo.FirstOrDefaultAsync(fr => fr.StudentId == studentId && fr.AcademicYearId == academicYearId);
+        var rules = await GetPromotionRulesAsync(student.ClassId);
+
+        return CalculatePromotionEligibilityInternal(studentId, finalResult, rules);
+    }
+
+    private PromotionEligibility CalculatePromotionEligibilityInternal(int studentId, FinalResult? finalResult, PromotionRules rules)
+    {
+        if (finalResult == null)
+        {
+            return new PromotionEligibility
+            {
+                StudentId = studentId,
+                IsEligible = false,
+                Reason = "No final result found for the academic year",
+                RecommendedAction = "Review Required"
+            };
+        }
+
+        var eligibility = new PromotionEligibility
+        {
+            StudentId = studentId,
+            GPA = finalResult.FinalGpa,
+            FailedSubjects = finalResult.TotalFailedSubjects,
+            TotalSubjects = 0,
+            IsEligible = false,
+            Reason = "",
+            RecommendedAction = ""
+        };
+
+        if (rules.RequireAllSubjectsPass && finalResult.TotalFailedSubjects > 0)
+        {
+            eligibility.Reason = $"Failed {finalResult.TotalFailedSubjects} subject(s). All subjects must be passed.";
+            eligibility.RecommendedAction = "Repeat";
+        }
+        else if (finalResult.TotalFailedSubjects > rules.MaximumFailedSubjects)
+        {
+            eligibility.Reason = $"Failed {finalResult.TotalFailedSubjects} subject(s). Maximum allowed failed subjects: {rules.MaximumFailedSubjects}";
+            eligibility.RecommendedAction = "Repeat";
+        }
+        else if (finalResult.FinalGpa < rules.MinimumGPA)
+        {
+            eligibility.Reason = $"GPA {finalResult.FinalGpa:F2} below minimum required GPA {rules.MinimumGPA:F2}";
+            eligibility.RecommendedAction = "Repeat";
+        }
+        else if (rules.AllowConditionalPromotion &&
+                 finalResult.FinalGpa >= rules.ConditionalPromotionGPA &&
+                 finalResult.TotalFailedSubjects <= rules.MaximumFailedSubjects)
+        {
+            eligibility.IsEligible = true;
+            eligibility.Reason = $"Eligible for conditional promotion (GPA: {finalResult.FinalGpa:F2}, Failed subjects: {finalResult.TotalFailedSubjects})";
+            eligibility.RecommendedAction = "Conditional Promotion";
+        }
+        else if (finalResult.TotalFailedSubjects == 0 || finalResult.FinalGpa >= rules.MinimumGPA)
+        {
+            eligibility.IsEligible = true;
+            eligibility.Reason = $"Eligible for promotion (GPA: {finalResult.FinalGpa:F2}, Failed subjects: {finalResult.TotalFailedSubjects})";
+            eligibility.RecommendedAction = "Promote";
+        }
+        else
+        {
+            eligibility.Reason = "Does not meet promotion criteria";
+            eligibility.RecommendedAction = "Repeat";
+        }
+
+        return eligibility;
+    }
+
+    public async Task<PromotionResult> ProcessClassPromotionAsync(int classId, int academicYearId, int processedByUserId)
+    {
+        var students = await StudentRepo.ListAsync(s => s.ClassId == classId);
+
+        var studentIds = students.Select(s => s.Id).ToList();
+        var finalResults = (await FinalResultRepo.ListAsync(fr => fr.AcademicYearId == academicYearId && studentIds.Contains(fr.StudentId)))
+            .ToDictionary(fr => fr.StudentId);
+
+        var rules = await GetPromotionRulesAsync(classId);
+
+        var result = new PromotionResult
+        {
+            ClassId = classId,
+            AcademicYearId = academicYearId,
+            TotalStudents = students.Count
+        };
+
+        foreach (var student in students)
+        {
+            finalResults.TryGetValue(student.Id, out var finalResult);
+            var eligibility = CalculatePromotionEligibilityInternal(student.Id, finalResult, rules);
+
+            var status = eligibility.RecommendedAction switch
+            {
+                "Promote" => PromotionStatus.Promoted,
+                "Conditional Promotion" => PromotionStatus.Promoted,
+                "Repeat" => PromotionStatus.Repeat,
+                _ => PromotionStatus.Pending
+            };
+
+            var nextClassId = classId + 1;
+
+            var promotionHistory = new PromotionHistory
+            {
+                StudentId = student.Id,
+                FromClassId = classId,
+                ToClassId = nextClassId,
+                AcademicYearId = academicYearId,
+                Status = status,
+                PromotedAt = DateTime.Now,
+                PromotedByUserId = processedByUserId,
+                Remarks = eligibility.Reason
+            };
+
+            await HistoryRepo.AddAsync(promotionHistory);
+
+            var record = new PromotionRecord
+            {
+                StudentId = student.Id,
+                StudentName = student.FullName,
+                FromClassId = classId,
+                ToClassId = nextClassId,
+                Status = status,
+                Reason = eligibility.Reason,
+                ProcessedAt = DateTime.Now,
+                ProcessedByUserId = processedByUserId
+            };
+
+            result.Records.Add(record);
+
+            switch (status)
+            {
+                case PromotionStatus.Promoted:
+                    result.PromotedCount++;
+                    break;
+                case PromotionStatus.Repeat:
+                    result.RepeatCount++;
+                    break;
+                default:
+                    result.ConditionalCount++;
+                    break;
+            }
+        }
+
+        await _uow.SaveChangesAsync();
+        return result;
+    }
+
+    public async Task<BulkPromotionResult> BulkPromotionAsync(BulkPromotionRequest request)
+    {
+        var result = new BulkPromotionResult();
+
+        var students = await StudentRepo.ListAsync(s => s.ClassId == request.FromClassId);
+
+        var studentIds = students.Select(s => s.Id).ToList();
+        var finalResults = (await FinalResultRepo.ListAsync(fr => fr.AcademicYearId == request.AcademicYearId && studentIds.Contains(fr.StudentId)))
+            .ToDictionary(fr => fr.StudentId);
+
+        var rules = await GetPromotionRulesAsync(request.FromClassId);
+
+        foreach (var student in students)
+        {
+            try
+            {
+                finalResults.TryGetValue(student.Id, out var finalResult);
+                var eligibility = CalculatePromotionEligibilityInternal(student.Id, finalResult, rules);
+
+                if (!eligibility.IsEligible && !request.OverrideEligibility)
+                {
+                    result.FailureCount++;
+                    result.Errors.Add($"Student {student.FullName}: {eligibility.Reason}");
+                    continue;
+                }
+
+                var promotionHistory = new PromotionHistory
+                {
+                    StudentId = student.Id,
+                    FromClassId = request.FromClassId,
+                    ToClassId = request.ToClassId,
+                    AcademicYearId = request.AcademicYearId,
+                    Status = PromotionStatus.Promoted,
+                    PromotedAt = DateTime.Now,
+                    PromotedByUserId = request.ProcessedByUserId,
+                    Remarks = request.Comments
+                };
+
+                await HistoryRepo.AddAsync(promotionHistory);
+
+                var record = new PromotionRecord
+                {
+                    StudentId = student.Id,
+                    StudentName = student.FullName,
+                    FromClassId = request.FromClassId,
+                    ToClassId = request.ToClassId,
+                    Status = PromotionStatus.Promoted,
+                    Reason = request.Comments,
+                    ProcessedAt = DateTime.Now,
+                    ProcessedByUserId = request.ProcessedByUserId
+                };
+
+                result.SuccessfulPromotions.Add(record);
+                result.SuccessCount++;
+            }
+            catch (Exception ex)
+            {
+                result.FailureCount++;
+                result.Errors.Add($"Student {student.FullName}: {ex.Message}");
+            }
+        }
+
+        await _uow.SaveChangesAsync();
+        return result;
+    }
+
+    public async Task<PromotionRules> GetPromotionRulesAsync(int classId)
+    {
+        var rules = new PromotionRules
+        {
+            ClassId = classId,
+            MinimumGPA = 1.0m,
+            MaximumFailedSubjects = 2,
+            AllowConditionalPromotion = true,
+            ConditionalPromotionGPA = 0.8m,
+            RequireAllSubjectsPass = classId >= 9,
+            CriticalSubjects = ["Bangla", "English", "Mathematics"]
+        };
+
+        if (classId <= 5)
+        {
+            rules.MaximumFailedSubjects = 3;
+            rules.MinimumGPA = 0.5m;
+        }
+        else if (classId <= 8)
+        {
+            rules.MaximumFailedSubjects = 2;
+            rules.MinimumGPA = 1.0m;
+        }
+        else
+        {
+            rules.MaximumFailedSubjects = 1;
+            rules.MinimumGPA = 1.5m;
+            rules.RequireAllSubjectsPass = true;
+        }
+
+        return rules;
+    }
+
+    public async Task UpdatePromotionRulesAsync(int classId, PromotionRules rules)
+    {
+        throw new NotImplementedException("Promotion rules storage not implemented");
+    }
+
+    public async Task<IEnumerable<PromotionRecord>> GetStudentPromotionHistoryAsync(int studentId)
+    {
+        return await HistoryRepo.Query()
+            .Include(p => p.FromClass)
+            .Include(p => p.ToClass)
+            .Include(p => p.AcademicYear)
+            .Where(p => p.StudentId == studentId)
+            .OrderByDescending(p => p.PromotedAt)
+            .Select(p => new PromotionRecord
+            {
+                StudentId = p.StudentId,
+                StudentName = "",
+                FromClassId = p.FromClassId,
+                ToClassId = p.ToClassId,
+                Status = p.Status,
+                Reason = p.Remarks ?? "",
+                ProcessedAt = p.PromotedAt,
+                ProcessedByUserId = p.PromotedByUserId ?? 0
+            })
+            .ToListAsync();
+    }
+
+    public async Task ReversePromotionAsync(int promotionHistoryId, int reversedByUserId, string reason)
+    {
+        var promotion = await HistoryRepo.GetByIdAsync(promotionHistoryId);
+        if (promotion == null) throw new ArgumentException("Promotion history not found");
+
+        var reversal = new PromotionHistory
+        {
+            StudentId = promotion.StudentId,
+            FromClassId = promotion.ToClassId,
+            ToClassId = promotion.FromClassId,
+            AcademicYearId = promotion.AcademicYearId,
+            Status = PromotionStatus.Repeat,
+            PromotedAt = DateTime.Now,
+            PromotedByUserId = reversedByUserId,
+            Remarks = $"Reversal: {reason}"
+        };
+
+        await HistoryRepo.AddAsync(reversal);
+        await _uow.SaveChangesAsync();
+    }
+}

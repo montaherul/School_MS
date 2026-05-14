@@ -247,17 +247,9 @@
                 </div>
                 <div class="card-body p-4">
                     <div class="row g-3">
-                        <div class="col-md-4">
+                        <div class="col-md-12">
                             <label asp-for="BirthCertificateNo" class="form-label">Birth Certificate No.</label>
                             <input asp-for="BirthCertificateNo" class="form-control" />
-                        </div>
-                        <div class="col-md-4">
-                            <label asp-for="NationalIdNo" class="form-label">National ID No.</label>
-                            <input asp-for="NationalIdNo" class="form-control" />
-                        </div>
-                        <div class="col-md-4">
-                            <label asp-for="PassportNo" class="form-label">Passport No. (if any)</label>
-                            <input asp-for="PassportNo" class="form-control" />
                         </div>
                     </div>
                 </div>
@@ -276,15 +268,22 @@
                             <span asp-validation-for="ClassId" class="text-danger small"></span>
                         </div>
                         <div class="col-md-4">
+
                             <label asp-for="SectionId" class="form-label">
                                 Section <span class="text-danger">*</span>
                             </label>
 
-                            <select asp-for="SectionId" class="form-select" asp-items="Model.Sections">
-                                <option value="">-- Select Section --</option>
+                            <select asp-for="SectionId"
+                                    asp-items="Model.Sections"
+                                    class="form-select">
+
+                                <option value="">Select Section</option>
+
                             </select>
 
-                            <span asp-validation-for="SectionId" class="text-danger small"></span>
+                            <span asp-validation-for="SectionId"
+                                  class="text-danger"></span>
+
                         </div>
                         <div class="col-md-4">
                             <label asp-for="RollNumber" class="form-label">Roll Number <span class="text-danger">*</span></label>

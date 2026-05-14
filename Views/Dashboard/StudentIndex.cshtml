@@ -1,190 +1,516 @@
 @model SchoolManagementSystem.Models.ViewModels.Dashboard.StudentDashboardViewModel
 @using System.Text.Json
+
 @{
     ViewData["Title"] = "Student Portal";
 }
 
-<div class="row g-4 mb-4">
-    <div class="col-12">
-        <div class="card border-0 bg-primary text-white p-4 rounded-4 shadow-sm">
-            <div class="d-flex align-items-center">
-                <div class="me-4">
-                    <i class="bi bi-person-badge" style="font-size: 3rem;"></i>
+<div class="adm-page">
+
+    <!-- HERO -->
+    <div class="adm-table-card mb-4"
+         style="border-top:1px solid var(--adm-border); border-radius:var(--adm-radius-lg); overflow:hidden;">
+
+        <div style="
+            background:linear-gradient(135deg,var(--clr-primary),#3b82f6);
+            color:#fff;
+            padding:32px;">
+
+            <div style="
+                display:flex;
+                align-items:center;
+                gap:24px;
+                flex-wrap:wrap;">
+
+                <div style="
+                    width:72px;
+                    height:72px;
+                    border-radius:50%;
+                    background:rgba(255,255,255,0.15);
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    font-size:32px;
+                    flex-shrink:0;">
+
+                    <i class="bi bi-person-badge"></i>
+
                 </div>
+
                 <div>
-                    <h2 class="mb-0">Welcome, @Model.FullName</h2>
-                    <p class="mb-0 opacity-75">ID: @Model.StudentNo | @Model.ClassName - @Model.SectionName (Roll: @Model.RollNumber)</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
-<div class="row g-4">
-    <!-- Attendance Card -->
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm rounded-4 h-100">
-            <div class="card-body text-center p-4">
-                <div class="rounded-circle bg-success bg-opacity-10 text-success d-inline-flex align-items-center justify-content-center mb-3" style="width:60px;height:60px;">
-                    <i class="bi bi-calendar-check" style="font-size: 1.5rem;"></i>
-                </div>
-                <h5 class="text-muted small text-uppercase fw-bold">Attendance</h5>
-                <h2 class="display-6 fw-bold mb-0">@Model.AttendancePercentage%</h2>
-                <p class="text-muted small">Total Attendance</p>
-                <div class="progress mt-3" style="height: 8px;">
-                    <div class="progress-bar bg-success" role="progressbar" style="width: @Model.AttendancePercentage%"></div>
-                </div>
-            </div>
-        </div>
-    </div>
+                    <h2 style="
+                        margin:0 0 8px;
+                        font-size:28px;
+                        font-weight:800;">
 
-    <!-- Fees Card -->
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm rounded-4 h-100">
-            <div class="card-body text-center p-4">
-                <div class="rounded-circle bg-danger bg-opacity-10 text-danger d-inline-flex align-items-center justify-content-center mb-3" style="width:60px;height:60px;">
-                    <i class="bi bi-currency-dollar" style="font-size: 1.5rem;"></i>
-                </div>
-                <h5 class="text-muted small text-uppercase fw-bold">Outstanding Fees</h5>
-                <h2 class="display-6 fw-bold mb-0">৳@Model.TotalDue</h2>
-                <p class="text-muted small">Total Due Amount</p>
-                <a href="/Payment" class="btn btn-outline-danger btn-sm mt-2 rounded-pill">Pay Now</a>
-            </div>
-        </div>
-    </div>
+                        Welcome, @Model.FullName
 
-    <!-- Status Card -->
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm rounded-4 h-100">
-            <div class="card-body text-center p-4">
-                <div class="rounded-circle bg-info bg-opacity-10 text-info d-inline-flex align-items-center justify-content-center mb-3" style="width:60px;height:60px;">
-                    <i class="bi bi-check-circle" style="font-size: 1.5rem;"></i>
-                </div>
-                <h5 class="text-muted small text-uppercase fw-bold">Academic Status</h5>
-                <h2 class="display-6 fw-bold mb-0">@Model.StudentStatus</h2>
-                <p class="text-muted small">Current Enrollment Status</p>
-                <span class="badge bg-info text-dark rounded-pill">Session 2026</span>
-            </div>
-        </div>
-    </div>
-</div>
+                    </h2>
 
-<div class="row g-4 mt-1">
-    <!-- Upcoming Assignments -->
-    <div class="col-md-6">
-        <div class="card border-0 shadow-sm rounded-4 h-100">
-            <div class="card-header bg-white border-0 p-4 pb-0 d-flex justify-content-between align-items-center">
-                <h5 class="mb-0 fw-bold"><i class="bi bi-journal-check me-2 text-primary"></i>Assignments</h5>
-                <a href="/Assignment" class="btn btn-link btn-sm text-decoration-none">View All</a>
+                    <div style="
+                        display:flex;
+                        flex-wrap:wrap;
+                        gap:10px;
+                        color:rgba(255,255,255,0.8);
+                        font-size:13px;">
+
+                        <span>ID: @Model.StudentNo</span>
+
+                        <span>•</span>
+
+                        <span>
+                            @Model.ClassName - @Model.SectionName
+                        </span>
+
+                        <span>•</span>
+
+                        <span>
+                            Roll: @Model.RollNumber
+                        </span>
+
+                    </div>
+
+                </div>
+
             </div>
-            <div class="card-body p-4">
-                <div id="assignment-grid"></div>
-            </div>
+
         </div>
+
     </div>
 
-    <!-- Notice Board -->
-    <div class="col-md-6">
-        <div class="card border-0 shadow-sm rounded-4 h-100">
-            <div class="card-header bg-white border-0 p-4 pb-0 d-flex justify-content-between align-items-center">
-                <h5 class="mb-0 fw-bold"><i class="bi bi-megaphone me-2 text-warning"></i>Recent Notices</h5>
-                <a href="/Communication" class="btn btn-link btn-sm text-decoration-none">View All</a>
+    <!-- STATS -->
+    <div class="dash-stats">
+
+        <!-- Attendance -->
+        <div class="dash-stat-card">
+
+            <div class="dash-stat-card__icon dash-stat-card__icon--success">
+                <i class="bi bi-calendar-check"></i>
             </div>
-            <div class="card-body p-4">
-                <div id="notice-grid"></div>
+
+            <div class="dash-stat-card__body">
+
+                <div class="dash-stat-card__label">
+                    Attendance
+                </div>
+
+                <div class="dash-stat-card__value">
+                    @Model.AttendancePercentage%
+                </div>
+
+                <div style="font-size:12px;color:var(--adm-text-3);">
+                    Total Attendance
+                </div>
+
             </div>
+
         </div>
+
+        <!-- Fees -->
+        <div class="dash-stat-card">
+
+            <div class="dash-stat-card__icon dash-stat-card__icon--warning">
+                <i class="bi bi-currency-dollar"></i>
+            </div>
+
+            <div class="dash-stat-card__body">
+
+                <div class="dash-stat-card__label">
+                    Outstanding Fees
+                </div>
+
+                <div class="dash-stat-card__value">
+                    ৳@Model.TotalDue
+                </div>
+
+                <div style="font-size:12px;color:var(--adm-text-3);">
+                    Due Amount
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Status -->
+        <div class="dash-stat-card">
+
+            <div class="dash-stat-card__icon dash-stat-card__icon--info">
+                <i class="bi bi-check-circle"></i>
+            </div>
+
+            <div class="dash-stat-card__body">
+
+                <div class="dash-stat-card__label">
+                    Academic Status
+                </div>
+
+                <div class="dash-stat-card__value">
+                    @Model.StudentStatus
+                </div>
+
+                <div style="font-size:12px;color:var(--adm-text-3);">
+                    Current Session
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Assignments -->
+        <div class="dash-stat-card">
+
+            <div class="dash-stat-card__icon dash-stat-card__icon--primary">
+                <i class="bi bi-journal-check"></i>
+            </div>
+
+            <div class="dash-stat-card__body">
+
+                <div class="dash-stat-card__label">
+                    Assignments
+                </div>
+
+                <div class="dash-stat-card__value">
+                    @Model.UpcomingAssignments.Count
+                </div>
+
+                <div style="font-size:12px;color:var(--adm-text-3);">
+                    Pending Tasks
+                </div>
+
+            </div>
+
+        </div>
+
     </div>
+
+    <!-- TABLE SECTION -->
+    <div class="row g-4">
+
+        <!-- ASSIGNMENTS -->
+        <div class="col-lg-6">
+
+            <div class="adm-table-card">
+
+                <div style="
+                    padding:20px 24px;
+                    display:flex;
+                    align-items:center;
+                    justify-content:space-between;
+                    border-bottom:1px solid var(--adm-border);">
+
+                    <h5 class="dash-section__title"
+                        style="margin:0;">
+
+                        <i class="bi bi-journal-check me-2"></i>
+                        Assignments
+
+                    </h5>
+
+                    <a href="/Assignment"
+                       class="adm-btn adm-btn--ghost">
+
+                        View All
+
+                    </a>
+
+                </div>
+
+                <div class="p-3">
+
+                    <div id="assignment-grid"></div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- NOTICES -->
+        <div class="col-lg-6">
+
+            <div class="adm-table-card">
+
+                <div style="
+                    padding:20px 24px;
+                    display:flex;
+                    align-items:center;
+                    justify-content:space-between;
+                    border-bottom:1px solid var(--adm-border);">
+
+                    <h5 class="dash-section__title"
+                        style="margin:0;">
+
+                        <i class="bi bi-megaphone me-2"></i>
+                        Recent Notices
+
+                    </h5>
+
+                    <a href="/Communication"
+                       class="adm-btn adm-btn--ghost">
+
+                        View All
+
+                    </a>
+
+                </div>
+
+                <div class="p-3">
+
+                    <div id="notice-grid"></div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- QUICK LINKS -->
+    <div class="dash-section mt-4">
+
+        <div class="dash-section__header">
+
+            <h5 class="dash-section__title">
+                Quick Portal Access
+            </h5>
+
+        </div>
+
+        <div class="dash-actions">
+
+            <!-- PROFILE -->
+            <a href="/Details"
+               class="dash-action-card">
+
+                <div class="dash-action-card__icon"
+                     style="
+                    background:var(--adm-primary-bg);
+                    color:var(--adm-primary);">
+
+                    <i class="bi bi-person-circle"></i>
+
+                </div>
+
+                <div class="dash-action-card__body">
+
+                    <div class="dash-action-card__title">
+                        My Profile
+                    </div>
+
+                    <div class="dash-action-card__sub">
+                        Student information
+                    </div>
+
+                </div>
+
+            </a>
+
+            <!-- RESULT -->
+            <a href="/Result"
+               class="dash-action-card">
+
+                <div class="dash-action-card__icon"
+                     style="
+                    background:var(--adm-success-bg);
+                    color:var(--adm-success);">
+
+                    <i class="bi bi-journal-text"></i>
+
+                </div>
+
+                <div class="dash-action-card__body">
+
+                    <div class="dash-action-card__title">
+                        My Results
+                    </div>
+
+                    <div class="dash-action-card__sub">
+                        Exam reports
+                    </div>
+
+                </div>
+
+            </a>
+
+            <!-- ATTENDANCE -->
+            <a href="/AttendanceRecord"
+               class="dash-action-card">
+
+                <div class="dash-action-card__icon"
+                     style="
+                    background:var(--adm-pending-bg);
+                    color:var(--adm-pending);">
+
+                    <i class="bi bi-calendar3"></i>
+
+                </div>
+
+                <div class="dash-action-card__body">
+
+                    <div class="dash-action-card__title">
+                        Attendance
+                    </div>
+
+                    <div class="dash-action-card__sub">
+                        Daily attendance
+                    </div>
+
+                </div>
+
+            </a>
+
+            <!-- FEES -->
+            <a href="/FeeStructure"
+               class="dash-action-card">
+
+                <div class="dash-action-card__icon"
+                     style="
+                    background:var(--adm-converted-bg);
+                    color:var(--adm-converted);">
+
+                    <i class="bi bi-wallet2"></i>
+
+                </div>
+
+                <div class="dash-action-card__body">
+
+                    <div class="dash-action-card__title">
+                        Fee Structure
+                    </div>
+
+                    <div class="dash-action-card__sub">
+                        Payment details
+                    </div>
+
+                </div>
+
+            </a>
+
+        </div>
+
+    </div>
+
 </div>
 
 @section Scripts {
+
     <script>
-        const assignments = @Html.Raw(JsonSerializer.Serialize(Model.UpcomingAssignments));
-        const notices = @Html.Raw(JsonSerializer.Serialize(Model.RecentNotices));
+
+        const assignments =
+                    @Html.Raw(JsonSerializer.Serialize(Model.UpcomingAssignments));
+
+        const notices =
+                    @Html.Raw(JsonSerializer.Serialize(Model.RecentNotices));
 
         new Tabulator("#assignment-grid", {
+
             data: assignments,
+
             layout: "fitColumns",
-            height: "280px",
+
+            responsiveLayout: "collapse",
+
+            height: "300px",
+
+            placeholder: "No pending assignments",
+
             columns: [
-                { title: "Subject", field: "Subject", width: 100, formatter: function(cell) {
-                    return `<span class="badge bg-primary-soft text-primary tiny fw-bold">${cell.getValue()}</span>`;
-                }},
-                { title: "Task", field: "Title", widthGrow: 2, formatter: function(cell) {
-                    var deadline = new Date(cell.getData().Deadline);
-                    var isUrgent = (deadline - new Date()) / (1000 * 60 * 60 * 24) < 2;
-                    var urgentHtml = isUrgent ? `<span class="text-danger ms-1"><i class="bi bi-exclamation-circle-fill"></i></span>` : "";
-                    return `<div class="fw-bold small">${cell.getValue()}${urgentHtml}</div><div class="text-muted tiny">Due: ${deadline.toLocaleDateString()}</div>`;
-                }}
-            ],
-            placeholder: "No pending assignments"
+
+                {
+                    title: "Subject",
+                    field: "Subject",
+                    width: 120,
+                    formatter: function (cell) {
+
+                        return `
+                                    <span class="adm-badge adm-badge--primary">
+                                        ${cell.getValue()}
+                                    </span>
+                                `;
+                    }
+                },
+
+                {
+                    title: "Assignment",
+                    field: "Title",
+                    widthGrow: 2,
+                    formatter: function (cell) {
+
+                        const row = cell.getData();
+
+                        const deadline =
+                            new Date(row.Deadline);
+
+                        return `
+                                    <div style="font-weight:700;">
+                                        ${cell.getValue()}
+                                    </div>
+
+                                    <div style="
+                                        font-size:11px;
+                                        color:var(--adm-text-3);">
+
+                                        Due:
+                                        ${deadline.toLocaleDateString()}
+
+                                    </div>
+                                `;
+                    }
+                }
+
+            ]
+
         });
 
         new Tabulator("#notice-grid", {
+
             data: notices,
+
             layout: "fitColumns",
-            height: "280px",
+
+            responsiveLayout: "collapse",
+
+            height: "300px",
+
+            placeholder: "No recent notices",
+
             columns: [
-                { title: "Title", field: "Title", widthGrow: 2, formatter: function(cell) {
-                    var date = new Date(cell.getData().At);
-                    return `<div class="fw-bold small">${cell.getValue()}</div><div class="text-muted tiny">${date.toLocaleDateString()} • ${cell.getData().Summary || ""}</div>`;
-                }}
-            ],
-            placeholder: "No recent notices"
+
+                {
+                    title: "Notice",
+                    field: "Title",
+                    widthGrow: 2,
+                    formatter: function (cell) {
+
+                        const row = cell.getData();
+
+                        const date =
+                            new Date(row.At);
+
+                        return `
+                                    <div style="font-weight:700;">
+                                        ${cell.getValue()}
+                                    </div>
+
+                                    <div style="
+                                        font-size:11px;
+                                        color:var(--adm-text-3);">
+
+                                        ${date.toLocaleDateString()}
+                                        •
+                                        ${row.Summary || ""}
+
+                                    </div>
+                                `;
+                    }
+                }
+
+            ]
+
         });
+
     </script>
-    <style>
-        .bg-primary-soft { background-color: rgba(26, 86, 219, 0.1); }
-        .tabulator { border: none !important; font-size: 13px; }
-        .tabulator .tabulator-header { display: none; }
-        .tabulator .tabulator-row { border-bottom: 1px solid #f1f5f9; background: transparent !important; }
-        .tabulator .tabulator-row .tabulator-cell { padding: 12px 4px; }
-        .tiny { font-size: 11px; }
-    </style>
+
 }
-
-<div class="row g-4 mt-1">
-    <!-- Quick Links -->
-    <div class="col-12">
-        <div class="card border-0 shadow-sm rounded-4 bg-light">
-            <div class="card-body p-4">
-                <h5 class="fw-bold mb-4 text-center">Quick Portal Access</h5>
-                <div class="row g-3">
-                    <div class="col-md-3">
-                        <a href="/Details" class="btn btn-white w-100 text-start shadow-sm rounded-3 p-3">
-                            <i class="bi bi-person-circle me-2 text-primary"></i> My Profile
-                        </a>
-                    </div>
-                    <div class="col-md-3">
-                        <a href="/Result" class="btn btn-white w-100 text-start shadow-sm rounded-3 p-3">
-                            <i class="bi bi-journal-text me-2 text-success"></i> My Results
-                        </a>
-                    </div>
-                    <div class="col-md-3">
-                        <a href="/AttendanceRecord" class="btn btn-white w-100 text-start shadow-sm rounded-3 p-3">
-                            <i class="bi bi-calendar3 me-2 text-warning"></i> My Attendance
-                        </a>
-                    </div>
-                    <div class="col-md-3">
-                        <a href="/FeeStructure" class="btn btn-white w-100 text-start shadow-sm rounded-3 p-3">
-                            <i class="bi bi-wallet2 me-2 text-info"></i> Fee Structure
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<style>
-    .tiny { font-size: 0.75rem; }
-    .btn-white {
-        background: #fff;
-        border: 1px solid transparent;
-        transition: all 0.2s;
-    }
-    .btn-white:hover {
-        border-color: var(--bs-primary);
-        transform: translateY(-2px);
-    }
-</style>

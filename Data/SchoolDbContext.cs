@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using SchoolManagementSystem.Models.DTOs.Admission.StoredProcedures;
+using SchoolManagementSystem.Models.DTOs.Admission;
+using SchoolManagementSystem.Models.DTOs.Student;
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Models.Entities.Admission;
 using SchoolManagementSystem.Models.Entities.Assignment;
@@ -16,6 +17,9 @@ using SchoolManagementSystem.Models.Entities.Student;
 using SchoolManagementSystem.Models.Entities.System;
 using SchoolManagementSystem.Models.Entities.Teachers;
 using SchoolManagementSystem.Models.Entities.Transport;
+using SchoolManagementSystem.Models.Entities.Employee;
+
+
 
 
 namespace SchoolManagementSystem.Data;
@@ -31,6 +35,7 @@ public class SchoolDbContext : DbContext
     public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
     public DbSet<PasswordResetToken> PasswordResetTokens => Set<PasswordResetToken>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<UserSession> UserSessions => Set<UserSession>();
     public DbSet<AdmissionApplication> Admissions => Set<AdmissionApplication>();
     public DbSet<AdmissionDocument> AdmissionDocuments => Set<AdmissionDocument>();
     public DbSet<AdmissionListResultDto> AdmissionListResults => Set<AdmissionListResultDto>();
@@ -42,6 +47,7 @@ public class SchoolDbContext : DbContext
     public DbSet<AcademicYear> AcademicYears => Set<AcademicYear>();
     public DbSet<SchoolClass> Classes => Set<SchoolClass>();
     public DbSet<Section> Sections => Set<Section>();
+    public DbSet<StudentListItemDto> StudentListItemResults => Set<StudentListItemDto>();
     public DbSet<Subject> Subjects => Set<Subject>();
     public DbSet<Teacher> Teachers => Set<Teacher>();
     public DbSet<TeacherAttendance> TeacherAttendances => Set<TeacherAttendance>();
@@ -113,9 +119,28 @@ public class SchoolDbContext : DbContext
     public DbSet<ResultLock> ResultLocks => Set<ResultLock>();
     public DbSet<PromotionHistory> PromotionHistories => Set<PromotionHistory>();
     public DbSet<MeritResult> MeritResults => Set<MeritResult>();
+    public DbSet<RollNumberAssignment> RollNumberAssignments => Set<RollNumberAssignment>();
 
     // Student Group DbSet
     public DbSet<StudentGroupAssignment> StudentGroupAssignments => Set<StudentGroupAssignment>();
+
+    // Employee Module DbSets
+    public DbSet<Employee> Employees => Set<Employee>();
+    public DbSet<Department> Departments => Set<Department>();
+    public DbSet<Designation> Designations => Set<Designation>();
+    public DbSet<EmployeeAttendance> EmployeeAttendances => Set<EmployeeAttendance>();
+    public DbSet<LeaveType> LeaveTypes => Set<LeaveType>();
+    public DbSet<EmployeeLeave> EmployeeLeaves => Set<EmployeeLeave>();
+    public DbSet<EmployeeSalaryStructure> EmployeeSalaryStructures => Set<EmployeeSalaryStructure>();
+    public DbSet<EmployeePayroll> EmployeePayrolls => Set<EmployeePayroll>();
+    public DbSet<Holiday> Holidays => Set<Holiday>();
+    public DbSet<EmployeeDocument> EmployeeDocuments => Set<EmployeeDocument>();
+    public DbSet<SchoolManagementSystem.Models.Entities.Auth.Notification> AppNotifications => Set<SchoolManagementSystem.Models.Entities.Auth.Notification>();
+    public DbSet<EmployeeSubjectAssignment> EmployeeSubjectAssignments => Set<EmployeeSubjectAssignment>();
+    public DbSet<ClassRoutine> ClassRoutines => Set<ClassRoutine>();
+    public DbSet<ExamDutyAssignment> ExamDutyAssignments => Set<ExamDutyAssignment>();
+    public DbSet<AcademicDocument> AcademicDocuments => Set<AcademicDocument>();
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -124,9 +149,11 @@ public class SchoolDbContext : DbContext
         modelBuilder.Entity<UserRole>().HasKey(x => new { x.UserId, x.RoleId });
         modelBuilder.Entity<RolePermission>().HasKey(x => new { x.RoleId, x.PermissionId });
         modelBuilder.Entity<AdmissionListResultDto>().HasNoKey();
+        modelBuilder.Entity<StudentListItemDto>().HasNoKey();
 
         modelBuilder.Entity<ApplicationUser>().HasIndex(x => x.UserName).IsUnique();
         modelBuilder.Entity<ApplicationUser>().HasIndex(x => x.Email).IsUnique();
+        modelBuilder.Entity<UserSession>().HasIndex(x => x.SessionId).IsUnique();
         modelBuilder.Entity<AdmissionApplication>().HasIndex(x => x.ApplicationNo).IsUnique();
         modelBuilder.Entity<Student>().HasIndex(x => x.StudentNo).IsUnique();
         modelBuilder.Entity<Student>().HasIndex(x => new { x.ClassId, x.SectionId, x.RollNumber }).IsUnique();
@@ -135,6 +162,7 @@ public class SchoolDbContext : DbContext
         modelBuilder.Entity<StudentExamResult>().HasIndex(x => new { x.ExamId, x.StudentId }).IsUnique();
         modelBuilder.Entity<FinalResult>().HasIndex(x => new { x.AcademicYearId, x.StudentId }).IsUnique();
         modelBuilder.Entity<ReEvaluationRequest>().HasIndex(x => new { x.ExamId, x.StudentId, x.SubjectId }).IsUnique();
+        modelBuilder.Entity<RollNumberAssignment>().HasIndex(x => new { x.AcademicYearId, x.StudentId, x.ToClassId }).IsUnique();
         modelBuilder.Entity<Subject>().HasIndex(x => x.Code).IsUnique();
         modelBuilder.Entity<Teacher>().HasIndex(x => x.TeacherNo).IsUnique();
         modelBuilder.Entity<FeeInvoice>().HasIndex(x => x.InvoiceNo).IsUnique();
@@ -182,6 +210,8 @@ public class SchoolDbContext : DbContext
         // Student Group Indexes
         modelBuilder.Entity<StudentGroupAssignment>().HasIndex(x => new { x.StudentId, x.SchoolClassId, x.AcademicYearId }).IsUnique();
         modelBuilder.Entity<StudentGroup>().HasIndex(x => x.Code).IsUnique();
+
+        modelBuilder.Entity<EmployeeAttendance>().HasIndex(x => new { x.EmployeeId, x.AttendanceDate }).IsUnique();
 
         // Configure MarkEntry relationship with MarkAuditLog
         modelBuilder.Entity<MarkEntry>()
@@ -236,6 +266,13 @@ public class SchoolDbContext : DbContext
             .WithMany(c => c.SubjectComponents)
             .HasForeignKey(s => s.ClassSubjectId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // Employee - User Relationship
+        modelBuilder.Entity<ApplicationUser>()
+            .HasOne(u => u.Employee)
+            .WithOne(e => e.User)
+            .HasForeignKey<ApplicationUser>(u => u.EmployeeId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         DbInitializer.Seed(modelBuilder);
     }

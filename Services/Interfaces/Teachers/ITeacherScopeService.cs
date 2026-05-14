@@ -10,3 +10,4 @@ public interface ITeacherScopeService
     Task<IEnumerable<int>> GetAssignedSectionIdsAsync(int userId, int classId, CancellationToken ct = default);
     Task<IEnumerable<int>> GetAssignedSubjectIdsAsync(int userId, int classId, int sectionId, CancellationToken ct = default);
 }
+

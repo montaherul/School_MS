@@ -1,0 +1,42 @@
+﻿using Microsoft.EntityFrameworkCore;
+using SchoolManagementSystem.Helpers.Pdf;
+using SchoolManagementSystem.Models.Entities.Result;
+using SchoolManagementSystem.Repositories.Interfaces;
+using SchoolManagementSystem.Repositories.Interfaces;
+using SchoolManagementSystem.Services.Interfaces.Result;
+using SchoolManagementSystem.UnitOfWork.Interfaces;
+
+namespace SchoolManagementSystem.Services.Implementations.Result;
+
+public class ReportCardService : IReportCardService
+{
+    private readonly IUnitOfWork _uow;
+    private readonly IPdfGenerator _pdfGenerator;
+
+    public ReportCardService(IUnitOfWork uow, IPdfGenerator pdfGenerator)
+    {
+        _uow = uow;
+        _pdfGenerator = pdfGenerator;
+    }
+
+    private IStudentExamResultRepo ExamResultRepo => (IStudentExamResultRepo)_uow.Repository<StudentExamResult>();
+    private IMarkEntrySpRepository MarkRepo => (IMarkEntrySpRepository)_uow.Repository<MarkEntry>();
+
+    public async Task<byte[]?> GenerateReportCardPdfAsync(int examId, int studentId, CancellationToken ct = default)
+    {
+        var result = await ExamResultRepo.Query()
+            .Include(r => r.Student)
+            .Include(r => r.Exam)
+            .FirstOrDefaultAsync(r => r.ExamId == examId && r.StudentId == studentId && !r.IsDeleted, ct);
+
+        if (result == null) return null;
+
+        var marks = await MarkRepo.Query()
+            .Include(m => m.Subject)
+            .Where(m => m.ExamId == examId && m.StudentId == studentId && !m.IsDeleted)
+            .ToListAsync(ct);
+
+        return _pdfGenerator.GenerateSchoolReportCard(result, marks);
+    }
+}
+

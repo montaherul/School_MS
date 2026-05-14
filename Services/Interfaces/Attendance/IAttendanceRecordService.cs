@@ -12,3 +12,4 @@ public interface IAttendanceRecordService
     Task DeleteAsync(int id, string updatedBy, CancellationToken cancellationToken = default);
 }
 
+

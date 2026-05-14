@@ -4,78 +4,247 @@
     ViewData["Title"] = "Dashboard";
 }
 
-<div class="page-title">
-    <h1>Dashboard</h1>
-    <a class="btn btn-primary" href="/Admission/Index">Review Admissions</a>
+<div class="adm-page">
+
+    <!-- ── Header ── -->
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Dashboard</h1>
+                <p class="adm-header__sub">School overview, metrics and recent activity</p>
+            </div>
+        </div>
+        <a href="/Admission/Index" class="adm-btn adm-btn--primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><line x1="23" y1="11" x2="17" y2="11" /><line x1="20" y1="8" x2="20" y2="14" /></svg>
+            Review Admissions
+        </a>
+    </div>
+
+    <!-- ── Metric Cards ── -->
+    <div class="dash-stats" style="grid-template-columns: repeat(5,1fr);">
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--primary">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Students</span>
+                <span class="dash-stat-card__value">@Model.TotalStudents</span>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--warning">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c0 2 4 3 6 3s6-1 6-3v-5" /></svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Pending Admissions</span>
+                <span class="dash-stat-card__value">@Model.PendingAdmissions</span>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--success">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Fees Collected</span>
+                <span class="dash-stat-card__value">@Model.FeesCollected.ToString("N0")</span>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--info">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Fees Due</span>
+                <span class="dash-stat-card__value">@Model.FeesDue.ToString("N0")</span>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--primary">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Attendance</span>
+                <span class="dash-stat-card__value">@Model.AttendancePercentage<span class="dash-stat-card__unit">%</span></span>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ── Staff Attendance Metrics ── -->
+    <div class="dash-stats mt-4" style="grid-template-columns: repeat(4,1fr);">
+        <div class="dash-stat-card border-start border-4 border-success">
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label text-success fw-bold">Staff Present Today</span>
+                <span class="dash-stat-card__value">@Model.EmployeeAttendance?.TotalPresent</span>
+            </div>
+        </div>
+        <div class="dash-stat-card border-start border-4 border-danger">
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label text-danger fw-bold">Staff Absent Today</span>
+                <span class="dash-stat-card__value">@Model.EmployeeAttendance?.TotalAbsent</span>
+            </div>
+        </div>
+        <div class="dash-stat-card border-start border-4 border-warning">
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label text-warning fw-bold">Late Arrivals</span>
+                <span class="dash-stat-card__value">@Model.EmployeeAttendance?.TotalLate</span>
+            </div>
+        </div>
+        <div class="dash-stat-card border-start border-4 border-info">
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label text-info fw-bold">Staff Attendance %</span>
+                <span class="dash-stat-card__value">@Model.EmployeeAttendance?.AttendancePercentage<span class="dash-stat-card__unit">%</span></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Leave Management Metrics ── -->
+    <div class="dash-stats mt-4" style="grid-template-columns: repeat(4,1fr);">
+        <div class="dash-stat-card border-top border-4 border-warning shadow-sm">
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label fw-bold small text-muted">Pending Leaves</span>
+                <div class="d-flex align-items-center justify-content-between mt-1">
+                    <span class="dash-stat-card__value text-warning" style="font-size: 1.5rem;">@Model.PendingLeaveRequests</span>
+                    <a href="/EmployeeLeave/Index?status=1" class="btn btn-xs btn-outline-warning py-0 px-2" style="font-size: 10px;">Review</a>
+                </div>
+            </div>
+        </div>
+        <div class="dash-stat-card border-top border-4 border-primary shadow-sm">
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label fw-bold small text-muted">On Leave Today</span>
+                <span class="dash-stat-card__value text-primary" style="font-size: 1.5rem;">@Model.EmployeesOnLeaveToday</span>
+            </div>
+        </div>
+        <div class="dash-stat-card bg-light border-0">
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label small text-muted">Approval Queue</span>
+                <div class="small fw-bold mt-1">@Model.PendingLeaveRequests Requests</div>
+                <div class="progress mt-1" style="height: 4px;">
+                    <div class="progress-bar bg-warning" style="width: @(Model.PendingLeaveRequests > 0 ? 50 : 0)%"></div>
+                </div>
+            </div>
+        </div>
+        <div class="dash-stat-card bg-primary bg-opacity-10 border-0">
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label small text-primary fw-bold">Leave Actions</span>
+                <div class="d-flex gap-2 mt-2">
+                    <a href="/EmployeeLeave/Create" class="btn btn-xs btn-primary py-1 px-2 small w-100" style="font-size: 11px;">Apply for Leave</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Payroll Management Metrics ── -->
+    <div class="dash-stats mt-4" style="grid-template-columns: repeat(4,1fr);">
+        <div class="dash-stat-card border-top border-4 border-success shadow-sm">
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label fw-bold small text-muted">Total Payroll (@DateTime.Today.ToString("MMM"))</span>
+                <div class="h4 fw-bold text-success mt-1">@Model.TotalPayrollExpense.ToString("C0")</div>
+            </div>
+        </div>
+        <div class="dash-stat-card border-top border-4 border-danger shadow-sm">
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label fw-bold small text-muted">Pending Approvals</span>
+                <div class="d-flex align-items-center justify-content-between mt-1">
+                    <span class="dash-stat-card__value text-danger" style="font-size: 1.5rem;">@Model.PayrollPendingApproval</span>
+                    <a href="/EmployeePayroll/Index" class="btn btn-xs btn-outline-danger py-0 px-2" style="font-size: 10px;">Review</a>
+                </div>
+            </div>
+        </div>
+        <div class="dash-stat-card bg-white border-0">
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label small text-muted">Finance Quick View</span>
+                <div class="d-flex align-items-center mt-2">
+                    <div class="me-3">
+                        <div class="small text-muted">Monthly Collection</div>
+                        <div class="fw-bold text-dark">@Model.TotalCollections.ToString("C0")</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="dash-stat-card bg-success bg-opacity-10 border-0">
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label small text-success fw-bold">Payroll Actions</span>
+                <div class="d-flex gap-2 mt-2">
+                    <a href="/EmployeePayroll/Index" class="btn btn-xs btn-success py-1 px-2 small w-100" style="font-size: 11px;">Generate Monthly Payroll</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Charts + Activity + Modules ── -->
+    <div class="dash-main-grid">
+
+        <!-- Students Chart -->
+        <div class="dash-panel">
+            <div class="dash-panel__header">
+                <h2 class="dash-panel__title">Students by Class</h2>
+            </div>
+            <canvas id="studentsChart" height="160"></canvas>
+        </div>
+
+        <!-- Fees Chart -->
+        <div class="dash-panel">
+            <div class="dash-panel__header">
+                <h2 class="dash-panel__title">Monthly Collections</h2>
+            </div>
+            <canvas id="feesChart" height="160"></canvas>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="dash-panel">
+            <div class="dash-panel__header">
+                <h2 class="dash-panel__title">
+                    <i class="bi bi-lightning-charge" style="color:var(--adm-pending);"></i>
+                    Recent Activity
+                </h2>
+            </div>
+            <div id="activity-table"></div>
+        </div>
+
+        <!-- Operational Modules -->
+        <div class="dash-panel">
+            <div class="dash-panel__header">
+                <h2 class="dash-panel__title">
+                    <i class="bi bi-stack dash-icon-primary"></i>
+                    Operational Modules
+                </h2>
+            </div>
+            <div class="dash-modules">
+                <a class="dash-module-btn" href="/Admission/Index"><i class="bi bi-person-plus"></i> Admissions</a>
+                <a class="dash-module-btn" href="/Student/Index"><i class="bi bi-people"></i> Students</a>
+                <a class="dash-module-btn" href="/AttendanceRecord/Index"><i class="bi bi-calendar-check"></i> Attendance</a>
+                <a class="dash-module-btn" href="/FeeStructure/Index"><i class="bi bi-cash-coin"></i> Fees</a>
+                <a class="dash-module-btn" href="/SchoolClass/Index"><i class="bi bi-building"></i> Classes</a>
+                <a class="dash-module-btn" href="/Section/Index"><i class="bi bi-grid-3x3-gap"></i> Sections</a>
+                <a class="dash-module-btn" href="/Subject/Index"><i class="bi bi-book"></i> Subjects</a>
+                <a class="dash-module-btn" href="/Teacher/Index"><i class="bi bi-person-badge"></i> Teachers</a>
+                @if (User.IsInRole("Super Admin") || User.IsInRole("Principal"))
+                {
+                    <a class="dash-module-btn dash-module-btn--primary" href="/ResultManagement/AdminIndex"><i class="bi bi-shield-check"></i> Result Management</a>
+                    <a class="dash-module-btn dash-module-btn--primary" href="/Teacher/Index"><i class="bi bi-person-gear"></i> Assign Teachers</a>
+                }
+            </div>
+
+            <div class="dash-divider"></div>
+
+            <div class="dash-health">
+                <span class="dash-health__label">System Health</span>
+                <div class="dash-health__item">
+                    <span class="dash-health__dot dash-health__dot--online"></span>
+                    <span>Database Connected</span>
+                </div>
+                <div class="dash-health__item">
+                    <i class="bi bi-cpu" style="color:var(--adm-converted);font-size:13px;"></i>
+                    <span>Service Load: Optimal</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </div>
-
-<section class="metric-grid">
-    <div class="metric-card">
-        <div class="metric-label">Students</div>
-        <div class="metric-value">@Model.TotalStudents</div>
-    </div>
-    <div class="metric-card">
-        <div class="metric-label">Pending Admissions</div>
-        <div class="metric-value">@Model.PendingAdmissions</div>
-    </div>
-    <div class="metric-card">
-        <div class="metric-label">Fees Collected</div>
-        <div class="metric-value">@Model.FeesCollected.ToString("N0")</div>
-    </div>
-    <div class="metric-card">
-        <div class="metric-label">Fees Due</div>
-        <div class="metric-value">@Model.FeesDue.ToString("N0")</div>
-    </div>
-    <div class="metric-card">
-        <div class="metric-label">Attendance</div>
-        <div class="metric-value">@Model.AttendancePercentage%</div>
-    </div>
-</section>
-
-<section class="dashboard-grid">
-    <div class="panel">
-        <h2 class="h5">Students by Class</h2>
-        <canvas id="studentsChart" height="160"></canvas>
-    </div>
-    <div class="panel">
-        <h2 class="h5">Monthly Collections</h2>
-        <canvas id="feesChart" height="160"></canvas>
-    </div>
-    <div class="panel">
-        <h2 class="h5 mb-3"><i class="bi bi-lightning-charge me-2 text-warning"></i>Recent Activity</h2>
-        <div id="activity-table"></div>
-    </div>
-    <div class="panel">
-        <h2 class="h5 mb-3"><i class="bi bi-stack me-2 text-primary"></i>Operational Modules</h2>
-        <div class="d-flex flex-wrap gap-2">
-            <a class="btn btn-outline-secondary btn-sm" href="/Admission/Index"><i class="bi bi-person-plus me-1"></i>Admissions</a>
-            <a class="btn btn-outline-secondary btn-sm" href="/Student/Index"><i class="bi bi-people me-1"></i>Students</a>
-            <a class="btn btn-outline-secondary btn-sm" href="/AttendanceRecord/Index"><i class="bi bi-calendar-check me-1"></i>Attendance</a>
-            <a class="btn btn-outline-secondary btn-sm" href="/FeeStructure/Index"><i class="bi bi-cash-coin me-1"></i>Fees</a>
-            <a class="btn btn-outline-secondary btn-sm" href="/SchoolClass/Index"><i class="bi bi-building me-1"></i>Classes</a>
-            <a class="btn btn-outline-secondary btn-sm" href="/Section/Index"><i class="bi bi-grid-3x3-gap me-1"></i>Sections</a>
-            <a class="btn btn-outline-secondary btn-sm" href="/Subject/Index"><i class="bi bi-book me-1"></i>Subjects</a>
-            <a class="btn btn-outline-secondary btn-sm" href="/Teacher/Index"><i class="bi bi-people me-1"></i>Teachers</a>
-            @if (User.IsInRole("Super Admin") || User.IsInRole("Principal"))
-            {
-                <a class="btn btn-primary btn-sm" href="/ResultManagement/AdminIndex"><i class="bi bi-shield-check me-1"></i>Result Management</a>
-                <a class="btn btn-indigo btn-sm" href="/Teacher/Index"><i class="bi bi-person-gear me-1"></i>Assign Teachers</a>
-            }
-        </div>
-        <hr/>
-        <div class="mt-3">
-            <h6 class="small fw-bold text-muted text-uppercase mb-2">System Health</h6>
-            <div class="d-flex align-items-center gap-2 mb-2">
-                <div class="spinner-grow spinner-grow-sm text-success" role="status"></div>
-                <span class="small">Database Connected</span>
-            </div>
-            <div class="d-flex align-items-center gap-2">
-                <i class="bi bi-cpu text-info"></i>
-                <span class="small">Service Load: Optimal</span>
-            </div>
-        </div>
-    </div>
-</section>
 
 @section Scripts {
     <script>
@@ -83,52 +252,48 @@
         const monthlyCollections = @Html.Raw(JsonSerializer.Serialize(Model.MonthlyCollections));
         const recentActivities = @Html.Raw(JsonSerializer.Serialize(Model.RecentActivities)) || [];
 
-        // Charts
         new Chart(document.getElementById("studentsChart"), {
             type: "bar",
             data: {
                 labels: studentsByClass.map(x => x.Label),
-                datasets: [{ label: "Students", data: studentsByClass.map(x => x.Value), backgroundColor: "#2563eb", borderRadius: 4 }]
+                datasets: [{ label: "Students", data: studentsByClass.map(x => x.Value), backgroundColor: "#0F766E", borderRadius: 6 }]
             },
-            options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { display: false } }, x: { grid: { display: false } } } }
+            options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: "#f1f5f9" } }, x: { grid: { display: false } } } }
         });
 
         new Chart(document.getElementById("feesChart"), {
             type: "line",
             data: {
                 labels: monthlyCollections.map(x => x.Label),
-                datasets: [{ label: "Collections", data: monthlyCollections.map(x => x.Value), borderColor: "#059669", backgroundColor: "rgba(5,150,105,.12)", fill: true, tension: 0.4 }]
+                datasets: [{ label: "Collections", data: monthlyCollections.map(x => x.Value), borderColor: "#059669", backgroundColor: "rgba(5,150,105,.1)", fill: true, tension: 0.4, pointBackgroundColor: "#059669" }]
             },
-            options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+            options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: "#f1f5f9" } }, x: { grid: { display: false } } } }
         });
 
-        // Tabulator for Activity
         new Tabulator("#activity-table", {
             data: recentActivities,
             layout: "fitColumns",
             height: "250px",
             columns: [
-                { title: "Module", field: "Module", width: 100, formatter: function(cell) {
-                    var val = cell.getValue();
-                    var badge = val === "Admission" ? "bg-info" : "bg-primary";
-                    return `<span class="badge ${badge} small">${val}</span>`;
-                }},
-                { title: "Description", field: "Title", widthGrow: 2, formatter: function(cell) {
-                    return `<div class="fw-bold small">${cell.getValue()}</div><div class="text-muted tiny">${cell.getData().Summary || ""}</div>`;
-                }},
-                { title: "Time", field: "At", width: 100, formatter: function(cell) {
-                    var date = new Date(cell.getValue());
-                    return `<span class="text-muted tiny">${date.toLocaleDateString()}</span>`;
-                }}
+                {
+                    title: "Module", field: "Module", width: 100, formatter: function (cell) {
+                        var val = cell.getValue();
+                        var cls = val === "Admission" ? "adm-status--converted" : "adm-status--pending";
+                        return `<span class="adm-status ${cls}">${val}</span>`;
+                    }
+                },
+                {
+                    title: "Description", field: "Title", widthGrow: 2, formatter: function (cell) {
+                        return `<div class="adm-cell-name">${cell.getValue()}</div><div class="adm-cell-dob__date">${cell.getData().Summary || ""}</div>`;
+                    }
+                },
+                {
+                    title: "Time", field: "At", width: 100, formatter: function (cell) {
+                        return `<span class="adm-cell-dob__date">${new Date(cell.getValue()).toLocaleDateString()}</span>`;
+                    }
+                }
             ],
             placeholder: "No recent activity"
         });
     </script>
-    <style>
-        .tiny { font-size: 11px; }
-        .tabulator { border: none !important; font-size: 12px; }
-        .tabulator .tabulator-header { display: none; }
-        .tabulator .tabulator-row { border-bottom: 1px solid #f1f5f9; background: transparent !important; }
-        .tabulator .tabulator-row .tabulator-cell { padding: 8px 4px; }
-    </style>
 }

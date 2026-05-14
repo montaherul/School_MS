@@ -1,21 +1,39 @@
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Data;
 using SchoolManagementSystem.Services.Interfaces.Teachers;
+using SchoolManagementSystem.UnitOfWork.Interfaces;
+using SchoolManagementSystem.Repositories.Interfaces.Teachers;
+using SchoolManagementSystem.Repositories.Interfaces.Students;
+using SchoolManagementSystem.Models.Entities.Teachers;
+using SchoolManagementSystem.Models.Entities.Student;
 
 namespace SchoolManagementSystem.Services.Implementations.Teachers;
 
 public class TeacherScopeService : ITeacherScopeService
 {
-    private readonly SchoolDbContext _db;
+    private readonly IUnitOfWork _uow;
+    private readonly ITeacherRepository _teacherRepository;
+    private readonly ITeacherClassAssignmentRepository _classAssignmentRepository;
+    private readonly ITeacherSubjectAssignmentRepository _subjectAssignmentRepository;
+    private readonly IStudentRepository _studentRepository;
 
-    public TeacherScopeService(SchoolDbContext db)
+    public TeacherScopeService(
+        IUnitOfWork uow,
+        ITeacherRepository teacherRepository,
+        ITeacherClassAssignmentRepository classAssignmentRepository,
+        ITeacherSubjectAssignmentRepository subjectAssignmentRepository,
+        IStudentRepository studentRepository)
     {
-        _db = db;
+        _uow = uow;
+        _teacherRepository = teacherRepository;
+        _classAssignmentRepository = classAssignmentRepository;
+        _subjectAssignmentRepository = subjectAssignmentRepository;
+        _studentRepository = studentRepository;
     }
 
     private async Task<int?> GetTeacherIdByUserIdAsync(int userId, CancellationToken ct)
     {
-        return await _db.Teachers
+        return await _teacherRepository.Query()
             .AsNoTracking()
             .Where(t => t.UserId == userId && !t.IsDeleted)
             .Select(t => (int?)t.Id)
@@ -27,7 +45,7 @@ public class TeacherScopeService : ITeacherScopeService
         var teacherId = await GetTeacherIdByUserIdAsync(userId, ct);
         if (teacherId == null) return false;
 
-        return await _db.TeacherClassAssignments
+        return await _classAssignmentRepository.Query()
             .AnyAsync(a => a.TeacherId == teacherId && a.ClassId == classId && a.SectionId == sectionId && !a.IsDeleted, ct);
     }
 
@@ -36,7 +54,7 @@ public class TeacherScopeService : ITeacherScopeService
         var teacherId = await GetTeacherIdByUserIdAsync(userId, ct);
         if (teacherId == null) return false;
 
-        return await _db.TeacherSubjectAssignments
+        return await _subjectAssignmentRepository.Query()
             .AnyAsync(a => a.TeacherId == teacherId && a.SubjectId == subjectId && a.ClassId == classId && a.SectionId == sectionId && !a.IsDeleted, ct);
     }
 
@@ -45,8 +63,7 @@ public class TeacherScopeService : ITeacherScopeService
         var teacherId = await GetTeacherIdByUserIdAsync(userId, ct);
         if (teacherId == null) return false;
 
-        // A teacher has access to a student if they are assigned to the student's class/section
-        var student = await _db.Students
+        var student = await _studentRepository.Query()
             .AsNoTracking()
             .Where(s => s.Id == studentId && !s.IsDeleted)
             .Select(s => new { s.ClassId, s.SectionId })
@@ -62,7 +79,7 @@ public class TeacherScopeService : ITeacherScopeService
         var teacherId = await GetTeacherIdByUserIdAsync(userId, ct);
         if (teacherId == null) return Enumerable.Empty<int>();
 
-        return await _db.TeacherClassAssignments
+        return await _classAssignmentRepository.Query()
             .Where(a => a.TeacherId == teacherId && !a.IsDeleted)
             .Select(a => a.ClassId)
             .Distinct()
@@ -74,7 +91,7 @@ public class TeacherScopeService : ITeacherScopeService
         var teacherId = await GetTeacherIdByUserIdAsync(userId, ct);
         if (teacherId == null) return Enumerable.Empty<int>();
 
-        return await _db.TeacherClassAssignments
+        return await _classAssignmentRepository.Query()
             .Where(a => a.TeacherId == teacherId && a.ClassId == classId && !a.IsDeleted)
             .Select(a => a.SectionId)
             .Distinct()
@@ -86,10 +103,11 @@ public class TeacherScopeService : ITeacherScopeService
         var teacherId = await GetTeacherIdByUserIdAsync(userId, ct);
         if (teacherId == null) return Enumerable.Empty<int>();
 
-        return await _db.TeacherSubjectAssignments
+        return await _subjectAssignmentRepository.Query()
             .Where(a => a.TeacherId == teacherId && a.ClassId == classId && a.SectionId == sectionId && !a.IsDeleted)
             .Select(a => a.SubjectId)
             .Distinct()
             .ToListAsync(ct);
     }
 }
+

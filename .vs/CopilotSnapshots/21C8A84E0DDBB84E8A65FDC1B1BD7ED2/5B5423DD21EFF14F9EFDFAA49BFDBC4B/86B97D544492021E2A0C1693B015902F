@@ -1,0 +1,190 @@
+﻿using Microsoft.EntityFrameworkCore;
+using SchoolManagementSystem.Models.DTOs.Result;
+using SchoolManagementSystem.Models.Entities.Academic;
+using SchoolManagementSystem.Models.Entities.Student;
+using SchoolManagementSystem.Models.Entities.Exam;
+using SchoolManagementSystem.Models.Entities.Result;
+using SchoolManagementSystem.Models.Enums;
+using SchoolManagementSystem.Models.ViewModels.Result;
+using SchoolManagementSystem.Repositories.Interfaces.Result;
+using SchoolManagementSystem.Services.Interfaces.Result;
+using SchoolManagementSystem.UnitOfWork.Interfaces;
+using System.Security.Claims;
+
+namespace SchoolManagementSystem.Services.Implementations.Result;
+
+public class MarkEntryService : IMarkEntryService
+{
+    private readonly IUnitOfWork _uow;
+    private readonly IExamRepository _examRepository;
+    private readonly IMarkEntryRepository _markRepository;
+    private readonly IGradingRuleRepository _gradingRepository;
+
+    public MarkEntryService(IUnitOfWork uow, IExamRepository examRepository, IMarkEntryRepository markRepository, IGradingRuleRepository gradingRepository)
+    {
+        _uow = uow;
+        _examRepository = examRepository;
+        _markRepository = markRepository;
+        _gradingRepository = gradingRepository;
+    }
+
+    public async Task<MarkEntryViewModel> GetMarkEntryDataAsync(int examId, int subjectId, int classId, int sectionId)
+    {
+        var exam = await _examRepository.GetByIdAsync(examId);
+        var subject = await _uow.Repository<Subject>().GetByIdAsync(subjectId);
+        var schoolClass = await _uow.Repository<SchoolClass>().GetByIdAsync(classId);
+        var section = await _uow.Repository<Section>().GetByIdAsync(sectionId);
+
+        var students = await _markRepository.GetMarkEntrySheetAsync(examId, classId, sectionId, subjectId, default);
+
+        return new MarkEntryViewModel
+        {
+            ExamId = examId,
+            ExamName = exam?.Name ?? "",
+            SubjectId = subjectId,
+            SubjectName = subject?.Name ?? "",
+            ClassId = classId,
+            ClassName = section != null
+                ? $"{schoolClass?.Name} - {section.Name}"
+                : (schoolClass?.Name ?? ""),
+            Students = students
+        };
+    }
+
+    public async Task SubmitMarksBatchAsync(MarkBatchDto dto)
+    {
+        var gradingRules = await _gradingRepository.ListAsync();
+
+        foreach (var markDto in dto.Marks)
+        {
+            var existingMark = (await _markRepository
+                .ListAsync(x => x.ExamId == dto.ExamId && x.StudentId == markDto.StudentId && x.SubjectId == dto.SubjectId))
+                .FirstOrDefault();
+
+            if (existingMark != null && existingMark.IsLocked) continue;
+
+            // Calculate total marks from component fields if provided; otherwise use provided MarksObtained
+            var totalMarks = ComputeTotalFromComponents(markDto);
+            if (totalMarks == null)
+            {
+                totalMarks = markDto.MarksObtained;
+            }
+
+            var (grade, gp) = CalculateGrade(totalMarks ?? 0, gradingRules);
+
+            if (existingMark == null)
+            {
+                var newMark = new MarkEntry
+                {
+                    ExamId = dto.ExamId,
+                    StudentId = markDto.StudentId,
+                    SubjectId = dto.SubjectId,
+                    // store component-wise marks
+                    WrittenMarks = markDto.WrittenMarks,
+                    MCQMarks = markDto.MCQMarks,
+                    CQMarks = markDto.CQMarks,
+                    PracticalMarks = markDto.PracticalMarks,
+                    VivaMarks = markDto.VivaMarks,
+                    LabMarks = markDto.LabMarks,
+                    OralMarks = markDto.OralMarks,
+                    AssignmentMarks = markDto.AssignmentMarks,
+                    ContinuousAssessmentMarks = markDto.ContinuousAssessmentMarks,
+                    CompetencyMarks = markDto.CompetencyMarks,
+                    BehaviourMarks = markDto.BehaviourMarks,
+                    ParticipationMarks = markDto.ParticipationMarks,
+                    MarksObtained = totalMarks ?? 0,
+                    Grade = grade,
+                    GradePoint = gp,
+                    EnteredByTeacherId = dto.TeacherId,
+                    Status = ResultWorkflowStatus.Submitted
+                };
+                await _markRepository.AddAsync(newMark);
+            }
+            else
+            {
+                // Audit Log
+                if (existingMark.MarksObtained != (totalMarks ?? 0))
+                {
+                    var audit = new ResultAuditLog
+                    {
+                        ExamId = dto.ExamId,
+                        StudentId = markDto.StudentId,
+                        SubjectId = dto.SubjectId,
+                        OldMarks = existingMark.MarksObtained,
+                        NewMarks = totalMarks ?? 0,
+                        ChangedByUserId = dto.TeacherId,
+                        Reason = "Teacher update"
+                    };
+                    await _uow.Repository<ResultAuditLog>().AddAsync(audit);
+                }
+
+                // update components and totals
+                existingMark.WrittenMarks = markDto.WrittenMarks;
+                existingMark.MCQMarks = markDto.MCQMarks;
+                existingMark.CQMarks = markDto.CQMarks;
+                existingMark.PracticalMarks = markDto.PracticalMarks;
+                existingMark.VivaMarks = markDto.VivaMarks;
+                existingMark.LabMarks = markDto.LabMarks;
+                existingMark.OralMarks = markDto.OralMarks;
+                existingMark.AssignmentMarks = markDto.AssignmentMarks;
+                existingMark.ContinuousAssessmentMarks = markDto.ContinuousAssessmentMarks;
+                existingMark.CompetencyMarks = markDto.CompetencyMarks;
+                existingMark.BehaviourMarks = markDto.BehaviourMarks;
+                existingMark.ParticipationMarks = markDto.ParticipationMarks;
+                existingMark.MarksObtained = totalMarks ?? existingMark.MarksObtained;
+                existingMark.Grade = grade;
+                existingMark.GradePoint = gp;
+                existingMark.EnteredByTeacherId = dto.TeacherId;
+                existingMark.Status = ResultWorkflowStatus.Submitted;
+                _markRepository.Update(existingMark);
+            }
+        }
+
+        await _uow.SaveChangesAsync();
+    }
+
+    private decimal? ComputeTotalFromComponents(MarkEntryDto dto)
+    {
+        // Sum up all non-null component marks where applicable
+        decimal sum = 0;
+        var any = false;
+        if (dto.WrittenMarks.HasValue) { sum += dto.WrittenMarks.Value; any = true; }
+        if (dto.MCQMarks.HasValue) { sum += dto.MCQMarks.Value; any = true; }
+        if (dto.CQMarks.HasValue) { sum += dto.CQMarks.Value; any = true; }
+        if (dto.PracticalMarks.HasValue) { sum += dto.PracticalMarks.Value; any = true; }
+        if (dto.VivaMarks.HasValue) { sum += dto.VivaMarks.Value; any = true; }
+        if (dto.LabMarks.HasValue) { sum += dto.LabMarks.Value; any = true; }
+        if (dto.OralMarks.HasValue) { sum += dto.OralMarks.Value; any = true; }
+        if (dto.AssignmentMarks.HasValue) { sum += dto.AssignmentMarks.Value; any = true; }
+        if (dto.ContinuousAssessmentMarks.HasValue) { sum += dto.ContinuousAssessmentMarks.Value; any = true; }
+        if (dto.CompetencyMarks.HasValue) { sum += dto.CompetencyMarks.Value; any = true; }
+        if (dto.BehaviourMarks.HasValue) { sum += dto.BehaviourMarks.Value; any = true; }
+        if (dto.ParticipationMarks.HasValue) { sum += dto.ParticipationMarks.Value; any = true; }
+
+        return any ? sum : (decimal?)null;
+    }
+
+    public IQueryable<MarkEntry> GetMarkEntriesForUser(IQueryable<MarkEntry> query, ClaimsPrincipal user)
+    {
+        if (user.IsInRole("Student"))
+        {
+            var userIdClaim = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (int.TryParse(userIdClaim, out var userId))
+            {
+                var studentIds = _uow.Repository<Student>().Query()
+                    .Where(s => s.UserId == userId && !s.IsDeleted)
+                    .Select(s => s.Id);
+
+                return query.Where(m => studentIds.Contains(m.StudentId));
+            }
+        }
+
+        return query;
+    }
+
+    private (string Grade, decimal GP) CalculateGrade(decimal marks, IEnumerable<GradingRule> rules)
+    {
+        var rule = rules.FirstOrDefault(x => marks >= x.MinMarks && marks <= x.MaxMarks);
+        return rule != null ? (rule.Grade, rule.GradePoint) : ("F", 0);
+    }
+}

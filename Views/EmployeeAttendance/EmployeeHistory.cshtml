@@ -1,0 +1,101 @@
+@model SchoolManagementSystem.Models.DTOs.Common.PagedResult<SchoolManagementSystem.Models.DTOs.Employee.EmployeeAttendanceDto>
+@{
+    ViewData["Title"] = "Attendance History";
+}
+
+<div class="adm-page">
+    <div class="adm-header mb-4">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-clock-history"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Attendance History</h1>
+                <p class="adm-header__sub">Historical records for employee</p>
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-controller="Employee" asp-action="Details" asp-route-id="@ViewBag.EmployeeId" class="adm-btn adm-btn--ghost">
+                <i class="bi bi-arrow-left"></i> Back to Profile
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <input type="hidden" name="id" value="@ViewBag.EmployeeId" />
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold">Start Date</label>
+                    <input type="date" name="startDate" class="form-control" value="@ViewBag.StartDate?.ToString("yyyy-MM-dd")" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold">End Date</label>
+                    <input type="date" name="endDate" class="form-control" value="@ViewBag.EndDate?.ToString("yyyy-MM-dd")" />
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="adm-btn adm-btn--primary w-100">
+                        <i class="bi bi-filter me-1"></i> Filter
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="adm-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Status</th>
+                            <th>Check-In</th>
+                            <th>Check-Out</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Items)
+                        {
+                            <tr>
+                                <td><span class="fw-bold">@item.AttendanceDate.ToString("dd MMM yyyy")</span></td>
+                                <td>
+                                    @{
+                                        var badgeClass = item.Status switch
+                                        {
+                                            SchoolManagementSystem.Models.Enums.AttendanceStatus.Present => "bg-success",
+                                            SchoolManagementSystem.Models.Enums.AttendanceStatus.Absent => "bg-danger",
+                                            SchoolManagementSystem.Models.Enums.AttendanceStatus.Late => "bg-warning text-dark",
+                                            SchoolManagementSystem.Models.Enums.AttendanceStatus.Leave => "bg-info text-dark",
+                                            _ => "bg-secondary"
+                                        };
+                                    }
+                                    <span class="badge @badgeClass">@item.Status</span>
+                                </td>
+                                <td>@(item.CheckInTime?.ToString(@"hh\:mm") ?? "--:--")</td>
+                                <td>@(item.CheckOutTime?.ToString(@"hh\:mm") ?? "--:--")</td>
+                                <td>@item.Remarks</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            
+            @if (Model.TotalItems > Model.PageSize)
+            {
+                <div class="p-3 border-top">
+                    @* Simple pagination logic *@
+                    <nav>
+                        <ul class="pagination pagination-sm mb-0">
+                            @for (int i = 1; i <= Math.Ceiling((double)Model.TotalItems / Model.PageSize); i++)
+                            {
+                                <li class="page-item @(i == Model.Page) "><a class="page-link" href="?id=@ViewBag.EmployeeId&page=@i&startDate=@ViewBag.StartDate?.ToString("yyyy-MM-dd")&endDate=@ViewBag.EndDate?.ToString("yyyy-MM-dd")">@i</a></li>
+                            }
+                        </ul>
+                    </nav>
+                </div>
+            }
+        </div>
+    </div>
+</div>

@@ -1,0 +1,80 @@
+﻿using Microsoft.EntityFrameworkCore;
+using SchoolManagementSystem.Data;
+using SchoolManagementSystem.Models.Enums;
+using SchoolManagementSystem.Models.ViewModels.Dashboard;
+using SchoolManagementSystem.Repositories.Interfaces;
+
+namespace SchoolManagementSystem.Repositories.Implementations;
+
+public class DashboardQueryRepository : IDashboardQueryRepository
+{
+    private readonly SchoolDbContext _db;
+
+    public DashboardQueryRepository(SchoolDbContext db)
+    {
+        _db = db;
+    }
+
+    public async Task<(int totalAttendance, int presentAttendance, decimal feesCollected, decimal feesTotal, List<ChartPoint> studentsByClass, List<ChartPoint> monthlyCollections, List<RecentActivityItem> recentActivities, int totalStudents, int pendingAdmissions)> GetAdminDashboardDataAsync(CancellationToken ct)
+    {
+        var totalAttendance = await _db.Attendance.CountAsync(ct);
+        var presentAttendance = await _db.Attendance.CountAsync(x => x.Status == SchoolManagementSystem.Models.Enums.AttendanceStatus.Present, ct);
+        var feesCollected = await _db.FeeInvoices.SumAsync(x => x.PaidAmount, ct);
+        var feesTotal = await _db.FeeInvoices.SumAsync(x => x.TotalAmount, ct);
+
+        var studentsByClass = await _db.Classes
+            .Where(c => !c.IsDeleted)
+            .Select(c => new ChartPoint(c.Name, _db.Students.Count(s => s.ClassId == c.Id && !s.IsDeleted)))
+            .ToListAsync(ct);
+
+        var monthlyCollectionRows = await _db.Payments
+            .GroupBy(p => new { p.PaidAt.Year, p.PaidAt.Month })
+            .Select(g => new { g.Key.Year, g.Key.Month, Amount = g.Sum(p => p.Amount) })
+            .OrderBy(x => x.Year).ThenBy(x => x.Month)
+            .ToListAsync(ct);
+
+        var monthlyCollections = monthlyCollectionRows
+            .Select(x => new ChartPoint($"{x.Year}-{x.Month:00}", x.Amount))
+            .ToList();
+
+        var recentActivities = new List<RecentActivityItem>();
+        var notices = await _db.Notices.Where(x => !x.IsDeleted).OrderByDescending(x => x.PublishAt).Take(5)
+            .Select(x => new RecentActivityItem("Notice", x.Title, x.PublishAt, ""))
+            .ToListAsync(ct);
+        var admissions = await _db.Admissions.Where(x => !x.IsDeleted).OrderByDescending(x => x.CreatedAt).Take(5)
+            .Select(x => new RecentActivityItem("Admission", x.ApplicantName, x.CreatedAt, "New application received"))
+            .ToListAsync(ct);
+
+        recentActivities.AddRange(notices);
+        recentActivities.AddRange(admissions);
+        recentActivities = recentActivities.OrderByDescending(x => x.At).Take(8).ToList();
+
+        var totalStudents = await _db.Students.CountAsync(x => !x.IsDeleted, ct);
+        var pendingAdmissions = await _db.Admissions.CountAsync(x => x.Status == SchoolManagementSystem.Models.Enums.AdmissionStatus.Pending && !x.IsDeleted, ct);
+
+        return (totalAttendance, presentAttendance, feesCollected, feesTotal, studentsByClass, monthlyCollections, recentActivities, totalStudents, pendingAdmissions);
+    }
+
+    public async Task<(int totalAttendance, int presentAttendance, decimal totalInvoiced, decimal totalPaid, List<RecentActivityItem> recentNotices, List<AssignmentDashboardItem> upcomingAssignments)> GetStudentDashboardDataAsync(int studentId, int classId, int sectionId, CancellationToken ct)
+    {
+        var totalAttendance = await _db.Attendance.CountAsync(x => x.StudentId == studentId, ct);
+        var presentAttendance = await _db.Attendance.CountAsync(x => x.StudentId == studentId && x.Status == SchoolManagementSystem.Models.Enums.AttendanceStatus.Present, ct);
+
+        var totalInvoiced = await _db.FeeInvoices.Where(x => x.StudentId == studentId && !x.IsDeleted).SumAsync(x => x.TotalAmount, ct);
+        var totalPaid = await _db.FeeInvoices.Where(x => x.StudentId == studentId && !x.IsDeleted).SumAsync(x => x.PaidAmount, ct);
+
+        var recentNotices = await _db.Notices
+            .Where(x => (x.AudienceRole == "All" || x.AudienceRole == "Student") && !x.IsDeleted)
+            .OrderByDescending(x => x.PublishAt).Take(5)
+            .Select(x => new RecentActivityItem("Notice", x.Title, x.PublishAt, x.Body ?? ""))
+            .ToListAsync(ct);
+
+        var upcomingAssignments = await _db.Assignments
+            .Where(x => x.SchoolClassId == classId && x.SectionId == sectionId && x.Deadline >= DateTime.UtcNow && !x.IsDeleted)
+            .OrderBy(x => x.Deadline).Take(5)
+            .Select(x => new AssignmentDashboardItem(_db.Subjects.Where(s => s.Id == x.SubjectId).Select(s => s.Name).FirstOrDefault() ?? "Unknown", x.Title, x.Deadline))
+            .ToListAsync(ct);
+
+        return (totalAttendance, presentAttendance, totalInvoiced, totalPaid, recentNotices, upcomingAssignments);
+    }
+}

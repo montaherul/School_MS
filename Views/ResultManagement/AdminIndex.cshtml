@@ -1,197 +1,293 @@
 @model IEnumerable<SchoolManagementSystem.Models.DTOs.Result.ExamUpsertDto>
+
 @{
     ViewData["Title"] = "Exam Results Management";
 }
 
 <div class="container-fluid py-4">
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card shadow-sm border-0 bg-gradient-primary text-white">
-                <div class="card-body p-4">
-                    <h2 class="mb-1">Result Management Dashboard</h2>
-                    <p class="mb-0">Manage exams, review results, and publish performance reports.</p>
-                </div>
-            </div>
+
+    <div class="lp-page-header mb-4">
+        <div>
+            <h2 class="lp-page-title">Result Management</h2>
+            <p class="lp-page-subtitle mb-0">Manage exams, publish results and monitor academic performance.</p>
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap">
+            <a href="/AdminResult/Dashboard" class="btn btn-outline-primary">
+                <i class="bi bi-bar-chart-line me-2"></i>Dashboard
+            </a>
+
+            <a href="/Exam/Create" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-2"></i>Create Exam
+            </a>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-md-8">
-            <div class="card shadow-sm border-0 mb-4">
-                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0 text-primary fw-bold">Active Exams</h5>
-                    <div class="d-flex gap-2">
-                        <a href="/AdminResult/Dashboard" class="btn btn-sm btn-outline-primary">
-                            <i class="fas fa-chart-line me-1"></i> Result Dashboard
-                        </a>
-                        <a href="/Exam/Create" class="btn btn-sm btn-primary">
-                            <i class="fas fa-plus me-1"></i> New Exam
-                        </button>
-                    </div>
+    <div class="row g-4">
+
+        <div class="col-lg-8">
+
+            <div class="card lp-card border-0">
+
+                <div class="card-header lp-card-header">
+                    <h5 class="mb-0 fw-bold">Active Exams</h5>
                 </div>
+
                 <div class="card-body p-0">
+
                     @Html.AntiForgeryToken()
+
                     <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="bg-light text-muted small text-uppercase">
+
+                        <table class="table lp-table align-middle mb-0">
+
+                            <thead>
                                 <tr>
-                                    <th class="ps-4">Exam Name</th>
+                                    <th>Exam</th>
                                     <th>Term</th>
-                                    <th>Dates</th>
+                                    <th>Date</th>
                                     <th>Status</th>
-                                    <th class="text-end pe-4">Actions</th>
+                                    <th class="text-end">Actions</th>
                                 </tr>
                             </thead>
+
                             <tbody>
+
                                 @foreach (var exam in Model)
                                 {
                                     <tr>
-                                        <td class="ps-4 fw-bold">@exam.Name</td>
+
+                                        <td class="fw-semibold">@exam.Name</td>
+
                                         <td>@exam.Term</td>
-                                        <td>
-                                            <span class="small text-muted">@exam.StartsOn.ToShortDateString() - @exam.EndsOn.ToShortDateString()</span>
+
+                                        <td class="small text-muted">
+                                            @exam.StartsOn.ToShortDateString() -
+                                            @exam.EndsOn.ToShortDateString()
                                         </td>
+
                                         <td>
+
                                             @if (exam.Status == SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Published)
                                             {
-                                                <span class="badge rounded-pill bg-success">Published</span>
+                                                <span class="badge bg-success-subtle text-success">Published</span>
                                             }
                                             else if (exam.Status == SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Submitted)
                                             {
-                                                <span class="badge rounded-pill bg-warning text-dark">Submitted</span>
+                                                <span class="badge bg-warning-subtle text-warning">Submitted</span>
                                             }
                                             else
                                             {
-                                                <span class="badge rounded-pill bg-info text-dark">Draft</span>
+                                                <span class="badge bg-info-subtle text-info">Draft</span>
                                             }
+
                                         </td>
-                                        <td class="text-end pe-4">
-                                            <div class="btn-group">
-                                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+
+                                        <td class="text-end">
+
+                                            <div class="dropdown">
+
+                                                <button class="btn btn-sm btn-light border dropdown-toggle"
+                                                        data-bs-toggle="dropdown">
                                                     Manage
                                                 </button>
-                                                <ul class="dropdown-menu">
+
+                                                <ul class="dropdown-menu dropdown-menu-end">
+
                                                     @if (exam.Status != SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Published)
                                                     {
-                                                        <li><a class="dropdown-item fw-bold text-primary" href="#" onclick="publishResult(@exam.Id)">
-                                                            <i class="fas fa-bullhorn me-2"></i>Publish Results
-                                                        </a></li>
+                                                        <li>
+                                                            <a class="dropdown-item"
+                                                               href="#"
+                                                               onclick="publishResult(@exam.Id)">
+                                                                <i class="bi bi-megaphone me-2"></i>
+                                                                Publish Results
+                                                            </a>
+                                                        </li>
                                                     }
-                                                    <li><a class="dropdown-item" href="/AdminResult/AllResults?examId=@exam.Id">
-                                                        <i class="fas fa-eye me-2"></i>View Results
-                                                    </a></li>
-                                                    <li><a class="dropdown-item" href="#" onclick="recalculateRanking(@exam.Id)">
-                                                        <i class="fas fa-sync me-2"></i>Recalculate Rank
-                                                    </a></li>
-                                                    <li><hr class="dropdown-divider"></li>
-                                                    <li><a class="dropdown-item text-danger" href="#">
-                                                        <i class="fas fa-trash me-2"></i>Delete Exam
-                                                    </a></li>
+
+                                                    <li>
+                                                        <a class="dropdown-item"
+                                                           href="/AdminResult/AllResults?examId=@exam.Id">
+                                                            <i class="bi bi-eye me-2"></i>
+                                                            View Results
+                                                        </a>
+                                                    </li>
+
+                                                    <li>
+                                                        <a class="dropdown-item"
+                                                           href="#"
+                                                           onclick="recalculateRanking(@exam.Id)">
+                                                            <i class="bi bi-arrow-repeat me-2"></i>
+                                                            Recalculate Rank
+                                                        </a>
+                                                    </li>
+
                                                 </ul>
+
                                             </div>
+
                                         </td>
+
                                     </tr>
                                 }
+
                             </tbody>
+
                         </table>
+
                     </div>
+
                 </div>
+
             </div>
+
         </div>
 
-        <div class="col-md-4">
-            <div class="card shadow-sm border-0 mb-4">
-                <div class="card-header bg-white py-3">
-                    <h5 class="mb-0 text-primary fw-bold">Admin Actions</h5>
+        <div class="col-lg-4">
+
+            <div class="card lp-card border-0 mb-4">
+
+                <div class="card-header lp-card-header">
+                    <h5 class="mb-0 fw-bold">Quick Actions</h5>
                 </div>
+
                 <div class="card-body">
+
                     <div class="d-grid gap-3">
-                        <a href="/AdminResult/AllResults" class="btn btn-outline-success d-flex align-items-center justify-content-between p-3">
-                            <span><i class="fas fa-list-check me-2"></i> All Student Results</span>
-                            <i class="fas fa-chevron-right small opacity-50"></i>
+
+                        <a href="/AdminResult/AllResults"
+                           class="btn btn-light border text-start p-3">
+                            <i class="bi bi-list-check me-2 text-success"></i>
+                            All Student Results
                         </a>
-                        <a asp-action="ReEvaluationDashboard" class="btn btn-outline-primary d-flex align-items-center justify-content-between p-3">
-                            <span><i class="fas fa-search-plus me-2"></i> Re-evaluation Requests</span>
-                            <span class="badge bg-danger rounded-pill">View</span>
+
+                        <a asp-action="ReEvaluationDashboard"
+                           class="btn btn-light border text-start p-3">
+                            <i class="bi bi-search me-2 text-primary"></i>
+                            Re-evaluation Requests
                         </a>
-                        <a href="/AdminResult/AllSubjects" class="btn btn-outline-info d-flex align-items-center justify-content-between p-3">
-                            <span><i class="fas fa-book me-2"></i> Subject Wise Stats</span>
-                            <i class="fas fa-chevron-right small opacity-50"></i>
+
+                        <a href="/AdminResult/AllSubjects"
+                           class="btn btn-light border text-start p-3">
+                            <i class="bi bi-book me-2 text-info"></i>
+                            Subject Statistics
                         </a>
+
                     </div>
+
                 </div>
+
             </div>
 
-            <div class="card shadow-sm border-0 bg-dark text-white overflow-hidden" style="min-height: 200px;">
-                <div class="card-body p-4 position-relative">
-                    <h5 class="fw-bold mb-3">Overall Pass Rate</h5>
-                    <div class="display-4 fw-bold">87.5%</div>
-                    <p class="small text-white-50">Combined stats for Midterm 2026</p>
-                    <div class="progress mt-3 bg-white-25" style="height: 8px;">
-                        <div class="progress-bar bg-success" style="width: 87.5%"></div>
+            <div class="card lp-stat-card border-0 text-white">
+
+                <div class="card-body p-4">
+
+                    <div class="d-flex justify-content-between align-items-start">
+
+                        <div>
+                            <div class="small text-white-50 mb-2">Overall Pass Rate</div>
+                            <div class="display-5 fw-bold">87.5%</div>
+                            <div class="small text-white-50 mt-2">Midterm 2026 Performance</div>
+                        </div>
+
+                        <div class="lp-stat-icon">
+                            <i class="bi bi-pie-chart-fill"></i>
+                        </div>
+
                     </div>
-                    <i class="fas fa-chart-pie position-absolute end-0 bottom-0 m-4 opacity-25" style="font-size: 5rem;"></i>
+
+                    <div class="progress mt-4" style="height:10px;">
+                        <div class="progress-bar bg-success" style="width:87.5%"></div>
+                    </div>
+
                 </div>
+
             </div>
+
         </div>
+
     </div>
+
 </div>
 
-<style>
-    .bg-gradient-primary {
-        background: linear-gradient(45deg, #4e73df 0%, #224abe 100%);
-    }
-    .bg-white-25 {
-        background-color: rgba(255, 255, 255, 0.1);
-    }
-</style>
+@section Scripts {
 
-<script>
-    function publishResult(examId) {
-        if (confirm('Are you sure you want to publish results for this exam? This will lock current marks and notify students.')) {
-            fetch('/ResultManagement/PublishResults', {
-                method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json',
-                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
-                },
-                body: JSON.stringify({ examId: examId, lockResults: true })
-            })
-            .then(async r => {
-                const data = await r.json();
-                if (r.ok && data.success) {
-                    alert('Results published successfully!');
-                    window.location.reload();
-                } else {
-                    alert('Error: ' + (data.message || 'Unknown error occurred'));
-                }
-            })
-            .catch(err => {
-                console.error('Publish error:', err);
-                alert('Network error or server unavailable');
-            });
-        }
-    }
+    <script>
 
-    function recalculateRanking(examId) {
-        if (confirm('Recalculate merit positions and ranks?')) {
-            const formData = new FormData();
-            formData.append('examId', examId);
-            
-            fetch('/AdminResult/RecalculateResults', {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
-                }
-            }).then(r => {
-                if(r.ok) {
-                    alert('Ranking updated!');
-                    location.reload();
-                } else {
-                    alert('Failed to update ranking');
-                }
-            });
+        function publishResult(examId) {
+
+            if (confirm('Publish exam results?')) {
+
+                fetch('/ResultManagement/PublishResults', {
+
+                    method: 'POST',
+
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken':
+                            document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+
+                    body: JSON.stringify({
+                        examId: examId,
+                        lockResults: true
+                    })
+
+                })
+                    .then(async r => {
+
+                        const data = await r.json();
+
+                        if (r.ok && data.success) {
+                            alert('Results published successfully');
+                            location.reload();
+                        }
+                        else {
+                            alert(data.message || 'Publish failed');
+                        }
+
+                    });
+
+            }
+
         }
-    }
-</script>
+
+        function recalculateRanking(examId) {
+
+            if (confirm('Recalculate rankings?')) {
+
+                const formData = new FormData();
+                formData.append('examId', examId);
+
+                fetch('/AdminResult/RecalculateResults', {
+
+                    method: 'POST',
+                    body: formData,
+
+                    headers: {
+                        'RequestVerificationToken':
+                            document.querySelector('input[name="__RequestVerificationToken"]').value
+                    }
+
+                })
+                    .then(r => {
+
+                        if (r.ok) {
+                            alert('Rankings updated');
+                            location.reload();
+                        }
+                        else {
+                            alert('Failed to update');
+                        }
+
+                    });
+
+            }
+
+        }
+
+    </script>
+
+}

@@ -1,0 +1,26 @@
+﻿using SchoolManagementSystem.Models.Entities.Exam;
+using SchoolManagementSystem.Models.Entities.Result;
+using SchoolManagementSystem.Models.DTOs.Result;
+using SchoolManagementSystem.Models.ViewModels.Result;
+
+namespace SchoolManagementSystem.Repositories.Interfaces.Result;
+
+public interface IExamRepository : IBaseRepository<Exam>
+{
+    Task<IEnumerable<ExamUpsertDto>> GetExamsForAdminAsync(int academicYearId, CancellationToken ct);
+}
+
+public interface IMarkEntryRepository : IBaseRepository<MarkEntry>
+{
+    Task<List<StudentMarkViewModel>> GetMarkEntrySheetAsync(int examId, int classId, int sectionId, int subjectId, CancellationToken ct);
+}
+
+public interface IGradingRuleRepository : IBaseRepository<GradingRule> { }
+public interface IResultPublicationRepository : IBaseRepository<ResultPublication> { }
+public interface IStudentSubjectResultRepository : IBaseRepository<StudentSubjectResult> { }
+public interface IStudentExamResultRepository : IBaseRepository<StudentExamResult> { }
+public interface IReEvaluationRequestRepository : IBaseRepository<ReEvaluationRequest> { }
+public interface IResultAuditLogRepository : IBaseRepository<ResultAuditLog> { }
+public interface IMeritResultRepository : IBaseRepository<MeritResult> { }
+public interface IFinalResultRepository : IBaseRepository<FinalResult> { }
+public interface IPromotionHistoryRepository : IBaseRepository<PromotionHistory> { }

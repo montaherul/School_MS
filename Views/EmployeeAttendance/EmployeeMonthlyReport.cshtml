@@ -1,0 +1,73 @@
+@model SchoolManagementSystem.Models.DTOs.Employee.EmployeeAttendanceSummaryDto
+@{
+    ViewData["Title"] = "Monthly Attendance Report";
+}
+
+<div class="adm-page">
+    <div class="adm-header mb-4">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-file-earmark-bar-graph"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Monthly Attendance Report</h1>
+                <p class="adm-header__sub">Summary for the current month</p>
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <button onclick="window.print()" class="adm-btn adm-btn--ghost">
+                <i class="bi bi-printer"></i> Print Report
+            </button>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow-sm text-center p-4 mb-4">
+                <div class="display-4 fw-bold text-success mb-2">@Model.AttendancePercentage%</div>
+                <div class="text-muted text-uppercase small letter-spacing-1">Overall Attendance Rate</div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <h6 class="fw-bold mb-4">Attendance Breakdown</h6>
+                    <div class="row text-center g-3">
+                        <div class="col-3">
+                            <div class="p-3 border rounded">
+                                <div class="fs-3 fw-bold text-success">@Model.TotalPresent</div>
+                                <div class="small text-muted">Present</div>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="p-3 border rounded">
+                                <div class="fs-3 fw-bold text-danger">@Model.TotalAbsent</div>
+                                <div class="small text-muted">Absent</div>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="p-3 border rounded">
+                                <div class="fs-3 fw-bold text-warning">@Model.TotalLate</div>
+                                <div class="small text-muted">Late</div>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="p-3 border rounded">
+                                <div class="fs-3 fw-bold text-info">@Model.TotalLeave</div>
+                                <div class="small text-muted">Leave</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i>
+            This report summarizes the attendance activity for the selected employee within the specified calendar month. 
+            Late arrivals and partial days are factored into the overall percentage.
+        </div>
+    </div>
+</div>

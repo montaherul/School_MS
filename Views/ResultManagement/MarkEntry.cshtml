@@ -17,15 +17,36 @@
             <p class="text-muted mb-0"><i class="bi bi-calendar-event me-1"></i>Exam: @Model.ExamName</p>
         </div>
         <div class="col-auto">
-            <div class="d-flex gap-2">
+            <div class="d-flex gap-2 align-items-center">
+                <span id="missingMarksIndicator" class="badge bg-warning text-dark me-2" style="display:none;">
+                    <i class="bi bi-exclamation-triangle"></i> <span id="missingMarksCount">0</span> Missing
+                </span>
+                <span id="autoSaveStatus" class="text-muted small me-3" style="display:none;">
+                    <i class="bi bi-check-circle text-success"></i> Saved
+                </span>
+                <div class="dropdown">
+                    <button class="btn btn-outline-primary px-3 dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-upload me-1"></i> Bulk Upload
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item" href="#" onclick="document.getElementById('csvUpload').click()"><i class="bi bi-filetype-csv me-2"></i>Upload CSV</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" onclick="downloadTemplate()"><i class="bi bi-download me-2"></i>Download Template</a></li>
+                    </ul>
+                    <input type="file" id="csvUpload" accept=".csv" style="display:none;" onchange="handleBulkUpload(event)">
+                </div>
                 <button class="btn btn-outline-secondary px-3" onclick="location.reload()">
                     <i class="bi bi-arrow-clockwise me-1"></i> Reset
                 </button>
                 <button class="btn btn-success px-4 shadow-sm" id="saveBtn">
-                    <i class="bi bi-save me-1"></i> Save All Marks
+                    <i class="bi bi-save me-1"></i> Finalize Marks
                 </button>
             </div>
         </div>
+    </div>
+
+    <div class="alert alert-info border-0 shadow-sm mb-3">
+        <i class="bi bi-info-circle me-2"></i> <strong>Intelligence Tip:</strong> Your entries are automatically saved as drafts. Click "Finalize Marks" only when all entries are complete.
     </div>
 
     <div class="card shadow-sm border-0 overflow-hidden">
@@ -37,10 +58,12 @@
     <script>
         const studentData = @Html.Raw(JsonSerializer.Serialize(Model.Students));
         
+        let autoSaveTimer;
+
         var table = new Tabulator("#mark-grid", {
             data: studentData,
             layout: "fitColumns",
-            height: "calc(100vh - 250px)",
+            height: "calc(100vh - 300px)",
             selectable: false,
             history: true,
             columns: [
@@ -59,28 +82,147 @@
                         var val = cell.getValue();
                         var isLocked = cell.getData().IsLocked;
                         if (isLocked) return `<div class="d-flex justify-content-between align-items-center w-100">${val} <i class="bi bi-lock-fill text-warning small"></i></div>`;
-                        return val || "0";
+                        if (val === null || val === undefined || val === "") return `<span class="text-danger"><i class="bi bi-exclamation-circle"></i> Missing</span>`;
+                        return val;
                     }
                 },
                 { title: "Grade", field: "Grade", width: 100, hozAlign: "center", formatter: function(cell) {
                     var grade = cell.getValue();
+                    if (!grade) return "-";
                     var color = "bg-secondary";
                     if (grade === "A+") color = "bg-success";
                     else if (grade === "F") color = "bg-danger";
                     return `<span class="badge ${color}">${grade}</span>`;
                 }},
+                { title: "Entered By", field: "EnteredByTeacherName", width: 180, hozAlign: "left", cssClass: "small text-muted" },
                 { title: "Status", field: "IsLocked", width: 120, hozAlign: "center", formatter: function(cell) {
                     return cell.getValue() 
                         ? `<span class="text-warning small"><i class="bi bi-lock-fill me-1"></i>Locked</span>` 
                         : `<span class="text-success small"><i class="bi bi-unlock-fill me-1"></i>Open</span>`;
                 }}
             ],
-            placeholder: "No students assigned to this section"
+            placeholder: "No students assigned to this section",
+            dataLoaded: function(data){
+                checkMissingMarks();
+            }
         });
 
+        table.on("cellEdited", function(cell) {
+            checkMissingMarks();
+            triggerAutoSave(cell.getRow().getData());
+        });
+
+        function checkMissingMarks() {
+            var data = table.getData();
+            var missing = data.filter(d => !d.IsLocked && (d.MarksObtained === null || d.MarksObtained === undefined || d.MarksObtained === ""));
+            var indicator = document.getElementById("missingMarksIndicator");
+            if (missing.length > 0) {
+                document.getElementById("missingMarksCount").innerText = missing.length;
+                indicator.style.display = "inline-block";
+            } else {
+                indicator.style.display = "none";
+            }
+        }
+
+        function triggerAutoSave(rowData) {
+            if (rowData.IsLocked) return;
+            
+            const statusIndicator = document.getElementById("autoSaveStatus");
+            statusIndicator.style.display = "inline-block";
+            statusIndicator.innerHTML = '<span class="spinner-border spinner-border-sm text-primary" role="status" aria-hidden="true"></span> Saving...';
+
+            clearTimeout(autoSaveTimer);
+            autoSaveTimer = setTimeout(() => {
+                const mark = {
+                    studentId: rowData.StudentId,
+                    marksObtained: parseFloat(rowData.MarksObtained) || 0
+                };
+
+                fetch('/ResultManagement/SaveMarks', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        examId: @Model.ExamId,
+                        subjectId: @Model.SubjectId,
+                        marks: [mark] // Save just this one mark
+                    })
+                })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success) {
+                        statusIndicator.innerHTML = '<i class="bi bi-check-circle text-success"></i> Saved';
+                        setTimeout(() => { statusIndicator.style.display = "none"; }, 3000);
+                    } else {
+                        statusIndicator.innerHTML = '<i class="bi bi-x-circle text-danger"></i> Failed';
+                    }
+                }).catch(() => {
+                    statusIndicator.innerHTML = '<i class="bi bi-wifi-off text-danger"></i> Offline';
+                });
+            }, 1000); // 1s debounce
+        }
+
+        function downloadTemplate() {
+            let csvContent = "data:text/csv;charset=utf-8,RollNumber,MarksObtained\n";
+            studentData.forEach(row => {
+                csvContent += `${row.RollNumber},${row.MarksObtained || ""}\n`;
+            });
+            var encodedUri = encodeURI(csvContent);
+            var link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `Marks_Template_@(Model.ClassName.Replace(" ", "_")).csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function handleBulkUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const text = e.target.result;
+                const rows = text.split('\n');
+                let updatedCount = 0;
+
+                rows.forEach((row, index) => {
+                    if (index === 0) return; // Skip header
+                    const cols = row.split(',');
+                    if (cols.length >= 2) {
+                        const roll = cols[0].trim();
+                        const marks = parseFloat(cols[1].trim());
+
+                        if (roll && !isNaN(marks)) {
+                            // Find row in table
+                            var tableRows = table.getRows();
+                            var targetRow = tableRows.find(r => r.getData().RollNumber == roll);
+                            if (targetRow && !targetRow.getData().IsLocked) {
+                                targetRow.update({ MarksObtained: marks });
+                                updatedCount++;
+                            }
+                        }
+                    }
+                });
+
+                alert(`Bulk upload complete. ${updatedCount} records updated. Please click 'Finalize Marks' to save all.`);
+                checkMissingMarks();
+                event.target.value = ''; // Reset file input
+            };
+            reader.readAsText(file);
+        }
+
         document.getElementById("saveBtn").addEventListener("click", function() {
+            var data = table.getData();
+            var missing = data.filter(d => !d.IsLocked && (d.MarksObtained === null || d.MarksObtained === undefined || d.MarksObtained === ""));
+            
+            if (missing.length > 0) {
+                if (!confirm(`Warning: You have ${missing.length} missing marks. Are you sure you want to finalize?`)) {
+                    return;
+                }
+            }
+
             const btn = this;
-            const marks = table.getData().filter(r => !r.IsLocked).map(r => ({
+            const marks = data.filter(r => !r.IsLocked).map(r => ({
                 studentId: r.StudentId,
                 marksObtained: parseFloat(r.MarksObtained) || 0
             }));
@@ -91,7 +233,7 @@
             }
 
             btn.disabled = true;
-            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Saving...';
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Finalizing...';
 
             fetch('/ResultManagement/SaveMarks', {
                 method: 'POST',
@@ -105,18 +247,18 @@
             .then(r => r.json())
             .then(res => {
                 if (res.success) {
-                    alert('Marks saved successfully!');
+                    alert('Marks finalized successfully!');
                     location.reload();
                 } else {
                     alert('Error: ' + (res.message || 'Failed to save marks.'));
                     btn.disabled = false;
-                    btn.innerHTML = '<i class="bi bi-save me-1"></i> Save All Marks';
+                    btn.innerHTML = '<i class="bi bi-save me-1"></i> Finalize Marks';
                 }
             })
             .catch(err => {
                 alert('Connection error.');
                 btn.disabled = false;
-                btn.innerHTML = '<i class="bi bi-save me-1"></i> Save All Marks';
+                btn.innerHTML = '<i class="bi bi-save me-1"></i> Finalize Marks';
             });
         });
     </script>

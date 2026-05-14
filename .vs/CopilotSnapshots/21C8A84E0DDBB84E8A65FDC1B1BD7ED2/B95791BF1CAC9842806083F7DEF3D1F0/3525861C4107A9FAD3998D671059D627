@@ -1,0 +1,22 @@
+﻿using SchoolManagementSystem.Models.Entities.Result;
+using SchoolManagementSystem.Models.ViewModels.Result;
+using SchoolManagementSystem.Repositories.Interfaces;
+
+namespace SchoolManagementSystem.Repositories.StoredProcedures.Interfaces;
+
+/// <summary>
+/// Stored Procedure repository for Mark Entry module operations.
+/// Handles mark entry data retrieval via sp_GetMarkEntrySheet.
+/// </summary>
+public interface IMarkEntrySpRepository : IGenericRepository<MarkEntry>
+{
+    /// <summary>
+    /// Get mark entry sheet data from stored procedure with student marks.
+    /// </summary>
+    Task<List<StudentMarkViewModel>> GetMarkEntrySheetAsync(
+        int examId,
+        int classId,
+        int sectionId,
+        int subjectId,
+        CancellationToken ct = default);
+}

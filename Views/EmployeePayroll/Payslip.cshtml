@@ -1,0 +1,146 @@
+@model SchoolManagementSystem.Models.DTOs.Employee.EmployeePayrollDto
+@{
+    ViewData["Title"] = "Salary Payslip";
+    Layout = "_Layout"; // Or a minimal layout for printing
+}
+
+<div class="adm-page d-print-block">
+    <div class="d-flex justify-content-between align-items-center mb-4 d-print-none">
+        <a asp-action="Index" class="adm-btn adm-btn--ghost">
+            <i class="bi bi-arrow-left me-1"></i> Back to Payroll
+        </a>
+        <button onclick="window.print()" class="adm-btn adm-btn--primary">
+            <i class="bi bi-printer me-1"></i> Print Payslip
+        </button>
+    </div>
+
+    <div class="card shadow-sm border-0 payslip-container p-4 mx-auto" style="max-width: 800px; background: white;">
+        @* Header *@
+        <div class="text-center mb-5 border-bottom pb-4">
+            <h2 class="fw-bold text-primary mb-1">School Management System</h2>
+            <p class="text-muted small mb-0">Monthly Salary Payslip</p>
+            <div class="mt-2 fw-bold">For the month of @System.Globalization.DateTimeFormatInfo.CurrentInfo.GetMonthName(Model.PayrollMonth), @Model.PayrollYear</div>
+        </div>
+
+        @* Employee Info *@
+        <div class="row mb-5">
+            <div class="col-6">
+                <div class="small text-muted text-uppercase mb-1">Employee Details</div>
+                <div class="fw-bold fs-5">@Model.EmployeeName</div>
+                <div class="text-muted">ID: @Model.EmployeeCode</div>
+                <div class="text-muted">Dept: @Model.DepartmentName</div>
+                <div class="text-muted">Designation: @Model.DesignationName</div>
+            </div>
+            <div class="col-6 text-end">
+                <div class="small text-muted text-uppercase mb-1">Payment Info</div>
+                <div class="fw-bold">Status: @Model.PaymentStatus</div>
+                @if (Model.PaymentDate.HasValue)
+                {
+                    <div class="text-muted">Date: @Model.PaymentDate.Value.ToString("dd MMM yyyy")</div>
+                }
+                <div class="text-muted">Payslip ID: #PYR-@Model.Id.ToString("D5")</div>
+            </div>
+        </div>
+
+        @* Attendance Summary *@
+        <div class="mb-4">
+            <h6 class="fw-bold border-bottom pb-2 mb-3">Attendance Summary</h6>
+            <div class="row text-center g-3">
+                <div class="col-3">
+                    <div class="border rounded p-2">
+                        <div class="small text-muted">Working Days</div>
+                        <div class="fw-bold">@Model.WorkingDays</div>
+                    </div>
+                </div>
+                <div class="col-3">
+                    <div class="border rounded p-2">
+                        <div class="small text-muted">Present</div>
+                        <div class="fw-bold text-success">@Model.PresentDays</div>
+                    </div>
+                </div>
+                <div class="col-3">
+                    <div class="border rounded p-2">
+                        <div class="small text-muted">Absent</div>
+                        <div class="fw-bold text-danger">@Model.AbsentDays</div>
+                    </div>
+                </div>
+                <div class="col-3">
+                    <div class="border rounded p-2">
+                        <div class="small text-muted">Leaves</div>
+                        <div class="fw-bold text-warning">@Model.LeaveDays</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @* Salary Breakdown *@
+        <div class="row mb-5">
+            <div class="col-md-6 pe-md-4">
+                <h6 class="fw-bold border-bottom pb-2 mb-3 text-success">Earnings</h6>
+                <table class="table table-sm table-borderless">
+                    <tr>
+                        <td>Gross Salary</td>
+                        <td class="text-end fw-bold">@Model.GrossSalary.ToString("N2")</td>
+                    </tr>
+                    @if (Model.BonusAmount > 0)
+                    {
+                        <tr>
+                            <td>Bonus / Incentives</td>
+                            <td class="text-end fw-bold">@Model.BonusAmount.ToString("N2")</td>
+                        </tr>
+                    }
+                    <tr class="border-top">
+                        <td class="fw-bold">Total Earnings</td>
+                        <td class="text-end fw-bold text-success">@( (Model.GrossSalary + Model.BonusAmount).ToString("N2") )</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="col-md-6 ps-md-4">
+                <h6 class="fw-bold border-bottom pb-2 mb-3 text-danger">Deductions</h6>
+                <table class="table table-sm table-borderless">
+                    <tr>
+                        <td>Absence / Unpaid Leave</td>
+                        <td class="text-end fw-bold">@Model.DeductionAmount.ToString("N2")</td>
+                    </tr>
+                    @* Tax and PF could be broken down if we stored them separately in DTO *@
+                    <tr class="border-top">
+                        <td class="fw-bold">Total Deductions</td>
+                        <td class="text-end fw-bold text-danger">@Model.DeductionAmount.ToString("N2")</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        @* Net Salary *@
+        <div class="bg-light p-4 rounded text-center mb-5">
+            <div class="small text-muted text-uppercase mb-1">Net Payable Salary</div>
+            <div class="display-5 fw-bold text-primary">@Model.NetSalary.ToString("C")</div>
+            <div class="small text-muted mt-2">Salary for the month of @System.Globalization.DateTimeFormatInfo.CurrentInfo.GetMonthName(Model.PayrollMonth)</div>
+        </div>
+
+        @* Footer *@
+        <div class="row mt-5 pt-5 text-center">
+            <div class="col-4">
+                <div class="border-top pt-2 small">Employee Signature</div>
+            </div>
+            <div class="col-4 offset-4">
+                <div class="border-top pt-2 small">Authorized Signature</div>
+            </div>
+        </div>
+
+        <div class="mt-5 text-center small text-muted d-none d-print-block">
+            <p>This is a computer generated document and does not require a physical signature.</p>
+            <p>Generated on @DateTime.Now.ToString("f")</p>
+        </div>
+    </div>
+</div>
+
+<style>
+    @@media print {
+        body * { visibility: hidden; }
+        .d-print-block, .d-print-block * { visibility: visible; }
+        .d-print-block { position: absolute; left: 0; top: 0; width: 100%; }
+        .card { box-shadow: none !important; border: none !important; }
+        .payslip-container { padding: 0 !important; }
+    }
+</style>

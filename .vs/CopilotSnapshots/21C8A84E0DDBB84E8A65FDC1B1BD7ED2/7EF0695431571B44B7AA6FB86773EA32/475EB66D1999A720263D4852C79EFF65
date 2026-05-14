@@ -1,0 +1,178 @@
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.EntityFrameworkCore;
+using SchoolManagementSystem.Data;
+using SchoolManagementSystem.Extensions;
+using SchoolManagementSystem.Helpers.Email;
+using SchoolManagementSystem.Helpers.Files;
+using SchoolManagementSystem.Helpers.Pdf;
+using SchoolManagementSystem.Helpers.Security;
+using SchoolManagementSystem.Middleware;
+using SchoolManagementSystem.Repositories.Implementations;
+using SchoolManagementSystem.Repositories.Interfaces;
+using SchoolManagementSystem.Service.Implementations.Dashboard;
+using SchoolManagementSystem.Service.Interfaces.Dashboard;
+using SchoolManagementSystem.Services.Implementations.Academic;
+using SchoolManagementSystem.Services.Implementations.Admissions;
+using SchoolManagementSystem.Services.Implementations.Email;
+using SchoolManagementSystem.Services.Implementations.Result;
+using SchoolManagementSystem.Services.Implementations.Students;
+using SchoolManagementSystem.Services.Implementations.Teachers;
+using SchoolManagementSystem.Services.Interfaces.Admissions;
+using SchoolManagementSystem.Services.Interfaces.Email;
+using SchoolManagementSystem.Services.Interfaces.Result;
+using SchoolManagementSystem.Services.Interfaces.Students;
+using SchoolManagementSystem.Services.Interfaces.Teachers;
+using SchoolManagementSystem.Services.Implementations.Admin;
+using SchoolManagementSystem.Services.Implementations.Assignment;
+using SchoolManagementSystem.Services.Implementations.Auth;
+using SchoolManagementSystem.Services.Interfaces.Admin;
+using SchoolManagementSystem.Services.Interfaces.Assignment;
+using SchoolManagementSystem.Services.Interfaces.Auth;
+using SchoolManagementSystem.UnitOfWork.Implementations;
+using SchoolManagementSystem.UnitOfWork.Interfaces;
+
+var builder = WebApplication.CreateBuilder(args);
+
+// Ensure app_data directory for data protection keys
+var dataProtectionKeysPath = Path.Combine(builder.Environment.ContentRootPath, "App_Data", "DataProtectionKeys");
+if (!Directory.Exists(dataProtectionKeysPath))
+{
+    Directory.CreateDirectory(dataProtectionKeysPath);
+}
+
+// Clear providers and add better logging for debugging
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+
+// Add services to the container.
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add(new Microsoft.AspNetCore.Mvc.AutoValidateAntiforgeryTokenAttribute());
+});
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo(dataProtectionKeysPath));
+builder.Services.AddDbContext<SchoolDbContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("SchoolDb"),
+        sql => sql.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null)));
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/Auth/Login";
+        options.LogoutPath = "/Auth/Logout";
+        options.AccessDeniedPath = "/Home/Privacy";
+        options.SlidingExpiration = true;
+        options.ExpireTimeSpan = TimeSpan.FromHours(2);
+        options.Cookie.HttpOnly = true;
+        //options.Cookie.SameSite = SameSiteMode.Strict;// by localhostlogin
+        options.Cookie.SameSite = SameSiteMode.Lax;//by ip login
+        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+    });
+builder.Services.AddAuthorization();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection("Email"));
+builder.Services.AddScoped(typeof(IBaseRepository<>), typeof(BaseRepository<>));
+builder.Services.AddScoped<IStudentRepo, StudentRepo>();
+builder.Services.AddScoped<IAdmissionRepo, AdmissionRepo>();
+builder.Services.AddScoped<IAcademicYearRepo, AcademicYearRepo>();
+builder.Services.AddScoped<ISchoolClassRepo, SchoolClassRepo>();
+builder.Services.AddScoped<ISectionRepo, SectionRepo>();
+builder.Services.AddScoped<ISubjectRepo, SubjectRepo>();
+builder.Services.AddScoped<IAttendanceRepo, AttendanceRepo>();
+builder.Services.AddScoped<IFeeStructureRepo, FeeStructureRepo>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IDashboardRepo, DashboardRepo>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<IStudentService, StudentService>();
+builder.Services.AddScoped<IAdmissionService, AdmissionService>();
+builder.Services.AddScoped<SchoolManagementSystem.Services.Interfaces.Academic.IAcademicYearService, SchoolManagementSystem.Services.Implementations.Academic.AcademicYearService>();
+builder.Services.AddScoped<SchoolManagementSystem.Services.Interfaces.Academic.ISchoolClassService, SchoolManagementSystem.Services.Implementations.Academic.SchoolClassService>();
+builder.Services.AddScoped<SchoolManagementSystem.Services.Interfaces.Academic.ISectionService, SchoolManagementSystem.Services.Implementations.Academic.SectionService>();
+builder.Services.AddScoped<SchoolManagementSystem.Services.Interfaces.Academic.ISubjectService, SchoolManagementSystem.Services.Implementations.Academic.SubjectService>();
+builder.Services.AddScoped<SchoolManagementSystem.Services.Interfaces.Fees.IFeeStructureService, SchoolManagementSystem.Services.Implementations.Fees.FeeStructureService>();
+builder.Services.AddScoped<SchoolManagementSystem.Services.Interfaces.Fees.IFeeInvoiceService, SchoolManagementSystem.Services.Implementations.Fees.FeeInvoiceService>();
+builder.Services.AddScoped<SchoolManagementSystem.Services.Interfaces.Fees.IPaymentService, SchoolManagementSystem.Services.Implementations.Fees.PaymentService>();
+builder.Services.AddScoped<SchoolManagementSystem.Services.Interfaces.Attendance.IAttendanceRecordService, SchoolManagementSystem.Services.Implementations.Attendance.AttendanceRecordService>();
+builder.Services.AddScoped(typeof(SchoolManagementSystem.Services.Interfaces.Base.IBaseService<>), typeof(SchoolManagementSystem.Services.Implementations.Base.BaseService<>));
+builder.Services.AddScoped<IPasswordHashService, Pbkdf2PasswordHashService>();
+builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
+builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IPdfGenerator, PlainPdfGenerator>();
+builder.Services.AddScoped<IExamService, ExamService>();
+builder.Services.AddScoped<IMarkEntryService, MarkEntryService>();
+builder.Services.AddScoped<IResultPublicationService, ResultPublicationService>();
+builder.Services.AddScoped<IResultAnalyticsService, ResultAnalyticsService>();
+builder.Services.AddScoped<IReEvaluationService, ReEvaluationService>();
+builder.Services.AddScoped<IReportCardService, ReportCardService>();
+builder.Services.AddScoped<IMeritCalculationService, MeritCalculationService>();
+builder.Services.AddScoped<IResultCalculationService, ResultCalculationService>();
+
+builder.Services.AddScoped<IExamRepo, ExamRepo>();
+builder.Services.AddScoped<IMarkEntryRepo, MarkEntryRepo>();
+builder.Services.AddScoped<IGradingRuleRepo, GradingRuleRepo>();
+builder.Services.AddScoped<IResultPublicationRepo, ResultPublicationRepo>();
+builder.Services.AddScoped<IStudentSubjectResultRepo, StudentSubjectResultRepo>();
+builder.Services.AddScoped<IStudentExamResultRepo, StudentExamResultRepo>();
+builder.Services.AddScoped<IFinalResultRepo, FinalResultRepo>();
+builder.Services.AddScoped<IResultAuditLogRepo, ResultAuditLogRepo>();
+builder.Services.AddScoped<IReEvaluationRequestRepo, ReEvaluationRequestRepo>();
+builder.Services.AddScoped<SchoolManagementSystem.Services.Interfaces.Teachers.ITeacherScopeService, SchoolManagementSystem.Services.Implementations.Teachers.TeacherScopeService>();
+builder.Services.AddScoped<SchoolManagementSystem.Services.Interfaces.Teachers.ITeacherService, SchoolManagementSystem.Services.Implementations.Teachers.TeacherService>();
+builder.Services.AddScoped<IFeeInvoiceRepo, FeeInvoiceRepo>();
+builder.Services.AddScoped<IMeritResultRepo, MeritResultRepo>();
+builder.Services.AddScoped<IPromotionHistoryRepo, PromotionHistoryRepo>();
+builder.Services.AddScoped<ITeacherRepo, TeacherRepo>();
+builder.Services.AddScoped<ITeacherClassAssignmentRepo, TeacherClassAssignmentRepo>();
+builder.Services.AddScoped<ITeacherSubjectAssignmentRepo, TeacherSubjectAssignmentRepo>();
+builder.Services.AddScoped<ITeacherAssignmentService, TeacherAssignmentService>();
+builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IRoleService, RoleService>();
+builder.Services.AddScoped<IAssignmentService, AssignmentService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddSchoolApplicationServices();
+builder.Services.AddScoped<ClassSubjectMappingSeeder>();
+
+builder.WebHost.ConfigureKestrel(serverOptions =>
+{
+    serverOptions.ListenAnyIP(5000); // 🔥 important
+});
+builder.Services.AddHttpContextAccessor();
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Home/Error");
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
+}
+
+//app.UseHttpsRedirection();commnnt out for ip run
+app.UseStaticFiles();
+
+app.UseRouting();
+
+app.UseSession();
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseMiddleware<AuditLoggingMiddleware>();
+
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Home}/{action=Index}/{id?}");
+
+await using (var scope = app.Services.CreateAsyncScope())
+{
+    var seeder = scope.ServiceProvider.GetRequiredService<ClassSubjectMappingSeeder>();
+    await seeder.SeedAsync();
+}
+
+app.Run();

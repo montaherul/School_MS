@@ -1,0 +1,23 @@
+﻿using SchoolManagementSystem.Models.DTOs.Admission;
+using SchoolManagementSystem.Models.Entities.Admission;
+using SchoolManagementSystem.Repositories.Interfaces;
+
+namespace SchoolManagementSystem.Repositories.StoredProcedures.Interfaces;
+
+/// <summary>
+/// Stored Procedure repository for Admission module operations.
+/// Handles complex admission data retrieval via sp_GetAdmissionList.
+/// </summary>
+public interface IAdmissionSpRepository : IBaseRepository<AdmissionApplication>
+{
+    /// <summary>
+    /// Get paginated admission list from stored procedure with filtering.
+    /// </summary>
+    Task<(List<AdmissionListResultDto> items, int totalRecords)> GetListByStoredProcedureAsync(
+        int pageNumber, 
+        int pageSize, 
+        string? searchTerm, 
+        int classId, 
+        int? status, 
+        CancellationToken ct = default);
+}

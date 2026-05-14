@@ -1,0 +1,83 @@
+﻿using SchoolManagementSystem.Models.Entities.Academic;
+using SchoolManagementSystem.Models.Entities.Admission;
+using SchoolManagementSystem.Models.Entities.Attendance;
+using SchoolManagementSystem.Models.Entities.Fees;
+using SchoolManagementSystem.Models.Entities.Student;
+using SchoolManagementSystem.Models.Entities.Teachers;
+using SchoolManagementSystem.Models.Entities.Exam;
+using SchoolManagementSystem.Models.Entities.Result;
+using SchoolManagementSystem.Models.DTOs.Admission;
+using SchoolManagementSystem.Models.DTOs.Attendance;
+using SchoolManagementSystem.Models.DTOs.Fees;
+using SchoolManagementSystem.Models.DTOs.Result;
+using SchoolManagementSystem.Models.ViewModels.Result;
+using SchoolManagementSystem.Models.ViewModels.Dashboard;
+using SchoolManagementSystem.Models.DTOs.Teacher;
+using SchoolManagementSystem.Services.Interfaces.Fees;
+using SchoolManagementSystem.Models.DTOs.Student;
+
+
+namespace SchoolManagementSystem.Repositories.Interfaces;
+
+public interface IStudentRepo : IBaseRepository<Student>
+{
+    Task<(List<StudentListItemDto> items, int totalRecords)> GetPagedAsync(int page, int pageSize, string? search, CancellationToken ct);
+    Task<StudentUpsertDto?> GetForEditAsync(int id, CancellationToken ct);
+    Task<StudentUpsertDto?> GetByStudentNoAsync(string studentNo, CancellationToken ct);
+}
+public interface IAdmissionRepo : IBaseRepository<AdmissionApplication>
+{
+    Task<(List<AdmissionListResultDto> items, int totalRecords)> GetListByStoredProcedureAsync(
+        int pageNumber, int pageSize, string? searchTerm, int classId, int? status, CancellationToken ct);
+}
+public interface IAcademicYearRepo : IBaseRepository<AcademicYear> { }
+public interface ISchoolClassRepo : IBaseRepository<SchoolClass> { }
+public interface ISectionRepo : IBaseRepository<Section> { }
+public interface ISubjectRepo : IBaseRepository<Subject> { }
+public interface IAttendanceRepo : IBaseRepository<AttendanceRecord>
+{
+    Task<(List<AttendanceRecordListItemDto> items, int totalRecords)> GetListByStoredProcedureAsync(
+        int pageNumber, int pageSize, string? searchTerm, int studentId, CancellationToken ct);
+}
+public interface IFeeStructureRepo : IBaseRepository<FeeStructure>
+{
+    Task<(List<FeeStructureListItemDto> items, int totalRecords)> GetListByStoredProcedureAsync(
+        int pageNumber, int pageSize, string? searchTerm, CancellationToken ct);
+}
+public interface IFeeInvoiceRepo : IBaseRepository<FeeInvoice>
+{
+    Task<(List<FeeInvoiceListItemDto> items, int totalRecords)> GetListByStoredProcedureAsync(
+        int pageNumber, int pageSize, string? searchTerm, int? studentId, CancellationToken ct);
+}
+public interface ITeacherRepo : IBaseRepository<Teacher>
+{
+    Task<(List<TeacherListItemDto> items, int totalRecords)> GetPagedAsync(int page, int pageSize, string? search, string? department, string? status, CancellationToken ct);
+    Task<TeacherUpsertDto?> GetForEditAsync(int id, CancellationToken ct);
+    Task<TeacherUpsertDto?> GetByUserIdAsync(int userId, CancellationToken ct);
+}
+public interface ITeacherClassAssignmentRepo : IBaseRepository<TeacherClassAssignment> { }
+public interface ITeacherSubjectAssignmentRepo : IBaseRepository<TeacherSubjectAssignment> { }
+
+// Result Module
+public interface IExamRepo : IBaseRepository<Exam>
+{
+    Task<IEnumerable<ExamUpsertDto>> GetExamsForAdminAsync(int academicYearId, CancellationToken ct);
+}
+public interface IMarkEntryRepo : IBaseRepository<MarkEntry>
+{
+    Task<List<StudentMarkViewModel>> GetMarkEntrySheetAsync(int examId, int classId, int sectionId, int subjectId, CancellationToken ct);
+}
+public interface IGradingRuleRepo : IBaseRepository<GradingRule> { }
+public interface IResultPublicationRepo : IBaseRepository<ResultPublication> { }
+public interface IStudentSubjectResultRepo : IBaseRepository<StudentSubjectResult> { }
+public interface IStudentExamResultRepo : IBaseRepository<StudentExamResult> { }
+public interface IReEvaluationRequestRepo : IBaseRepository<ReEvaluationRequest> { }
+public interface IResultAuditLogRepo : IBaseRepository<ResultAuditLog> { }
+public interface IMeritResultRepo : IBaseRepository<MeritResult> { }
+public interface IFinalResultRepo : IBaseRepository<FinalResult> { }
+public interface IPromotionHistoryRepo : IBaseRepository<PromotionHistory> { }
+public interface IDashboardRepo
+{
+    Task<(int totalAttendance, int presentAttendance, decimal feesCollected, decimal feesTotal, List<ChartPoint> studentsByClass, List<ChartPoint> monthlyCollections, List<RecentActivityItem> recentActivities, int totalStudents, int pendingAdmissions)> GetAdminDashboardDataAsync(CancellationToken ct);
+    Task<(int totalAttendance, int presentAttendance, decimal totalInvoiced, decimal totalPaid, List<RecentActivityItem> recentNotices, List<AssignmentDashboardItem> upcomingAssignments)> GetStudentDashboardDataAsync(int studentId, int classId, int sectionId, CancellationToken ct);
+}

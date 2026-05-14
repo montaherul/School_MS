@@ -6,3 +6,4 @@ public interface IEmailService
     Task SendAdmissionReceivedAsync(string toEmail, string applicantName, string applicationNo, CancellationToken cancellationToken = default);
     Task SendTeacherAccountAsync(string toEmail, string teacherName, string userName, string password, CancellationToken cancellationToken = default);
 }
+

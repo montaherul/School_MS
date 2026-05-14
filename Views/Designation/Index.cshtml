@@ -1,0 +1,67 @@
+@model IEnumerable<SchoolManagementSystem.Models.DTOs.Employee.DesignationDto>
+@{
+    ViewData["Title"] = "Designations";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-briefcase"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Designations</h1>
+                <p class="adm-header__sub">Manage staff designations</p>
+            </div>
+        </div>
+        <a href="/Designation/Create" class="adm-btn adm-btn--primary">
+            <i class="bi bi-plus-lg"></i>
+            <span>Add Designation</span>
+        </a>
+    </div>
+
+    <div class="adm-table-card mt-3">
+        <div class="adm-table-card__body">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td><span class="adm-cell-name">@item.Name</span></td>
+                            <td class="text-end">
+                                <a href="/Designation/Edit/@item.Id" class="adm-action adm-action--edit"><i class="bi bi-pencil"></i></a>
+                                <button class="adm-action adm-action--reject delete-btn" data-id="@item.Id" data-name="@item.Name"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@Html.AntiForgeryToken()
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', async function() {
+                if(confirm(`Are you sure you want to delete ${this.dataset.name}?`)) {
+                    const res = await fetch(`/Designation/Delete/${this.dataset.id}`, {
+                        method: "POST",
+                        headers: { "RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]').value }
+                    });
+                    const data = await res.json();
+                    if(data.success) location.reload();
+                    else alert(data.message);
+                }
+            });
+        });
+    </script>
+}

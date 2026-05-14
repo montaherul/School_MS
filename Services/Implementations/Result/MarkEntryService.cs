@@ -1,342 +1,207 @@
 using Microsoft.EntityFrameworkCore;
-using SchoolManagementSystem.Data;
+using SchoolManagementSystem.Models.DTOs.Result;
 using SchoolManagementSystem.Models.Entities.Academic;
+using SchoolManagementSystem.Models.Entities.Student;
 using SchoolManagementSystem.Models.Entities.Exam;
 using SchoolManagementSystem.Models.Entities.Result;
-using SchoolManagementSystem.Models.Entities.Student;
-using SchoolManagementSystem.Models.Entities.Teachers;
 using SchoolManagementSystem.Models.Enums;
-using SchoolManagementSystem.Services.Interfaces.Result;
+using SchoolManagementSystem.Models.ViewModels.Result;
+using SchoolManagementSystem.Repositories.Interfaces.Academic;
+using SchoolManagementSystem.Repositories.Interfaces.Students;
+using SchoolManagementSystem.Services.Implementations.Base;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
+using System.Security.Claims;
+using SchoolManagementSystem.Services.Interfaces.Result;
+using SchoolManagementSystem.Repositories.Interfaces.Result;
 
 namespace SchoolManagementSystem.Services.Implementations.Result;
 
-/// <summary>
-/// Mark entry service with draft/submit workflow and teacher validation
-/// </summary>
-public class MarkEntryService : IMarkEntryService
+public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
 {
-    private readonly IUnitOfWork _uow;
-    private readonly SchoolDbContext _db;
+    private readonly IExamRepository _examRepository;
+    private readonly IMarkEntryRepository _markRepository;
+    private readonly IGradingRuleRepository _gradingRepository;
+    private readonly ISubjectRepository _subjectRepository;
+    private readonly ISchoolClassRepository _classRepository;
+    private readonly ISectionRepository _sectionRepository;
+    private readonly IStudentRepository _studentRepository;
 
-    public MarkEntryService(IUnitOfWork uow, SchoolDbContext db)
+    public MarkEntryService(
+        IUnitOfWork uow, 
+        IExamRepository examRepository, 
+        IMarkEntryRepository markRepository, 
+        IGradingRuleRepository gradingRepository,
+        ISubjectRepository subjectRepository,
+        ISchoolClassRepository classRepository,
+        ISectionRepository sectionRepository,
+        IStudentRepository studentRepository) : base(uow)
     {
-        _uow = uow;
-        _db = db;
+        _examRepository = examRepository;
+        _markRepository = markRepository;
+        _gradingRepository = gradingRepository;
+        _subjectRepository = subjectRepository;
+        _classRepository = classRepository;
+        _sectionRepository = sectionRepository;
+        _studentRepository = studentRepository;
     }
 
-    public async Task<MarkEntrySheet> GetMarkEntrySheetAsync(int examId, int subjectId, int teacherId)
+    public async Task<MarkEntryViewModel> GetMarkEntryDataAsync(int examId, int subjectId, int classId, int sectionId)
     {
-        // Validate teacher permission
-        if (!await ValidateTeacherPermissionAsync(examId, subjectId, teacherId))
-            throw new UnauthorizedAccessException("Teacher does not have permission to enter marks for this subject");
+        var exam = await _examRepository.GetByIdAsync(examId);
+        var subject = await _subjectRepository.GetByIdAsync(subjectId);
+        var schoolClass = await _classRepository.GetByIdAsync(classId);
+        var section = await _sectionRepository.GetByIdAsync(sectionId);
 
-        // Get exam and subject details
-        var exam = await _db.Exams.FindAsync(examId);
-        var subject = await _db.Subjects.FindAsync(subjectId);
-        var classSubject = await _db.ClassSubjects
-            .Include(cs => cs.SchoolClass)
-            .FirstOrDefaultAsync(cs => cs.SubjectId == subjectId);
+        var students = await _markRepository.GetMarkEntrySheetAsync(examId, classId, sectionId, subjectId, default);
 
-        if (exam == null || subject == null || classSubject == null)
-            throw new ArgumentException("Invalid exam, subject, or class configuration");
-
-        // Get students for the class
-        var students = await _db.Students
-            .Where(s => s.ClassId == classSubject.SchoolClassId)
-            .OrderBy(s => s.RollNumber)
-            .ToListAsync();
-
-        // Get existing marks if any
-        var existingMarks = await _db.Marks
-            .Where(m => m.ExamId == examId && m.SubjectId == subjectId)
-            .ToDictionaryAsync(m => m.StudentId);
-
-        // Check if marks are locked
-        var isLocked = await _db.Marks
-            .AnyAsync(m => m.ExamId == examId && m.SubjectId == subjectId && m.IsLocked);
-
-        var isSubmitted = await _db.Marks
-            .AnyAsync(m => m.ExamId == examId && m.SubjectId == subjectId && m.Status == ResultWorkflowStatus.Submitted);
-
-        var sheet = new MarkEntrySheet
+        return new MarkEntryViewModel
         {
             ExamId = examId,
+            ExamName = exam?.Name ?? "",
             SubjectId = subjectId,
-            ExamName = exam.Name,
-            SubjectName = subject.Name,
-            ClassName = classSubject.SchoolClass.Name,
-            IsLocked = isLocked,
-            IsSubmitted = isSubmitted,
-            Config = new MarkEntryConfig
-            {
-                FullMarks = classSubject.FullMarks,
-                PassMarks = classSubject.PassMarks,
-                HasWritten = subject.HasWritten || classSubject.WrittenMarks.HasValue,
-                HasMCQ = subject.HasMCQ || classSubject.MCQMarks.HasValue,
-                HasCQ = subject.HasCQ || classSubject.CQMarks.HasValue,
-                HasPractical = subject.HasPractical || classSubject.PracticalMarks.HasValue,
-                HasViva = subject.HasViva || classSubject.VivaMarks.HasValue,
-                HasLab = subject.HasLab || classSubject.LabMarks.HasValue,
-                HasOral = subject.HasOral || classSubject.OralMarks.HasValue,
-                HasAssignment = subject.HasAssignment || classSubject.AssignmentMarks.HasValue,
-                HasContinuousAssessment = subject.HasContinuousAssessment || classSubject.ContinuousAssessmentMarks.HasValue,
-                HasCompetency = classSubject.CompetencyMarks.HasValue,
-                HasBehaviour = classSubject.BehaviourMarks.HasValue,
-                HasParticipation = classSubject.ParticipationMarks.HasValue
-            }
+            SubjectName = subject?.Name ?? "",
+            ClassId = classId,
+            ClassName = section != null
+                ? $"{schoolClass?.Name} - {section.Name}"
+                : (schoolClass?.Name ?? ""),
+            Students = students
         };
-
-        // Build student marks
-        foreach (var student in students)
-        {
-            var studentMark = new StudentMarkEntry
-            {
-                StudentId = student.Id,
-                StudentName = student.FullName,
-                RollNumber = student.RollNumber
-            };
-
-            if (existingMarks.TryGetValue(student.Id, out var mark))
-            {
-                studentMark.WrittenMarks = mark.WrittenMarks;
-                studentMark.MCQMarks = mark.MCQMarks;
-                studentMark.CQMarks = mark.CQMarks;
-                studentMark.PracticalMarks = mark.PracticalMarks;
-                studentMark.VivaMarks = mark.VivaMarks;
-                studentMark.LabMarks = mark.LabMarks;
-                studentMark.OralMarks = mark.OralMarks;
-                studentMark.AssignmentMarks = mark.AssignmentMarks;
-                studentMark.ContinuousAssessmentMarks = mark.ContinuousAssessmentMarks;
-                studentMark.CompetencyMarks = mark.CompetencyMarks;
-                studentMark.BehaviourMarks = mark.BehaviourMarks;
-                studentMark.ParticipationMarks = mark.ParticipationMarks;
-                studentMark.TotalMarks = mark.MarksObtained;
-            }
-
-            sheet.StudentMarks.Add(studentMark);
-        }
-
-        return sheet;
     }
 
-    public async Task SaveDraftMarksAsync(MarkEntrySheet sheet, int teacherId)
+    public async Task SubmitMarksBatchAsync(MarkBatchDto dto)
     {
-        // Fetch all existing marks for this exam and subject to avoid N+1 queries
-        var existingMarks = await _db.Marks
-            .Where(m => m.ExamId == sheet.ExamId && m.SubjectId == sheet.SubjectId)
-            .ToDictionaryAsync(m => m.StudentId);
+        var gradingRules = await _gradingRepository.ListAsync();
 
-        foreach (var studentMark in sheet.StudentMarks)
+        foreach (var markDto in dto.Marks)
         {
-            existingMarks.TryGetValue(studentMark.StudentId, out var existingMark);
+            var existingMark = (await _markRepository
+                .ListAsync(x => x.ExamId == dto.ExamId && x.StudentId == markDto.StudentId && x.SubjectId == dto.SubjectId))
+                .FirstOrDefault();
 
             if (existingMark != null && existingMark.IsLocked) continue;
 
+            // Calculate total marks from component fields if provided; otherwise use provided MarksObtained
+            var totalMarks = ComputeTotalFromComponents(markDto);
+            if (totalMarks == null)
+            {
+                totalMarks = markDto.MarksObtained;
+            }
+
+            var (grade, gp) = CalculateGrade(totalMarks ?? 0, gradingRules);
+
             if (existingMark == null)
             {
-                existingMark = new MarkEntry
+                var newMark = new MarkEntry
                 {
-                    ExamId = sheet.ExamId,
-                    StudentId = studentMark.StudentId,
-                    SubjectId = sheet.SubjectId,
-                    EnteredByTeacherId = teacherId,
-                    Status = ResultWorkflowStatus.Draft,
-                    CreatedByUserId = teacherId,
-                    UpdatedByUserId = teacherId
+                    ExamId = dto.ExamId,
+                    StudentId = markDto.StudentId,
+                    SubjectId = dto.SubjectId,
+                    // store component-wise marks
+                    WrittenMarks = markDto.WrittenMarks,
+                    MCQMarks = markDto.MCQMarks,
+                    CQMarks = markDto.CQMarks,
+                    PracticalMarks = markDto.PracticalMarks,
+                    VivaMarks = markDto.VivaMarks,
+                    LabMarks = markDto.LabMarks,
+                    OralMarks = markDto.OralMarks,
+                    AssignmentMarks = markDto.AssignmentMarks,
+                    ContinuousAssessmentMarks = markDto.ContinuousAssessmentMarks,
+                    CompetencyMarks = markDto.CompetencyMarks,
+                    BehaviourMarks = markDto.BehaviourMarks,
+                    ParticipationMarks = markDto.ParticipationMarks,
+                    MarksObtained = totalMarks ?? 0,
+                    Grade = grade,
+                    GradePoint = gp,
+                    EnteredByTeacherId = dto.TeacherId,
+                    Status = ResultWorkflowStatus.Submitted
                 };
-                _db.Marks.Add(existingMark);
+                await _markRepository.AddAsync(newMark);
             }
             else
             {
-                // Audit old marks - add to context without saving yet
-                CreateMarkAuditLog(existingMark, teacherId, "Draft Update");
-                existingMark.UpdatedByUserId = teacherId;
-            }
+                // Audit Log
+                if (existingMark.MarksObtained != (totalMarks ?? 0))
+                {
+                    var audit = new ResultAuditLog
+                    {
+                        ExamId = dto.ExamId,
+                        StudentId = markDto.StudentId,
+                        SubjectId = dto.SubjectId,
+                        OldMarks = existingMark.MarksObtained,
+                        NewMarks = totalMarks ?? 0,
+                        ChangedByUserId = dto.TeacherId,
+                        Reason = "Teacher update"
+                    };
+                    await _unitOfWork.Repository<ResultAuditLog>().AddAsync(audit);
+                }
 
-            // Update marks
-            existingMark.WrittenMarks = studentMark.WrittenMarks;
-            existingMark.MCQMarks = studentMark.MCQMarks;
-            existingMark.CQMarks = studentMark.CQMarks;
-            existingMark.PracticalMarks = studentMark.PracticalMarks;
-            existingMark.VivaMarks = studentMark.VivaMarks;
-            existingMark.LabMarks = studentMark.LabMarks;
-            existingMark.OralMarks = studentMark.OralMarks;
-            existingMark.AssignmentMarks = studentMark.AssignmentMarks;
-            existingMark.ContinuousAssessmentMarks = studentMark.ContinuousAssessmentMarks;
-            existingMark.CompetencyMarks = studentMark.CompetencyMarks;
-            existingMark.BehaviourMarks = studentMark.BehaviourMarks;
-            existingMark.ParticipationMarks = studentMark.ParticipationMarks;
-
-            // Recalculate total
-            existingMark.MarksObtained = AggregateTotalMarks(existingMark);
-            existingMark.SubmittedAt = null;
-        }
-
-        await _db.SaveChangesAsync();
-    }
-
-    public async Task SubmitMarksAsync(int examId, int subjectId, int teacherId)
-    {
-        var marks = await _db.Marks
-            .Where(m => m.ExamId == examId && m.SubjectId == subjectId)
-            .ToListAsync();
-
-        foreach (var mark in marks)
-        {
-            if (!mark.IsLocked)
-            {
-                mark.Status = ResultWorkflowStatus.Submitted;
-                mark.SubmittedAt = DateTime.Now;
-                mark.UpdatedByUserId = teacherId;
-
-                // Create audit log - add to context without saving yet
-                CreateMarkAuditLog(mark, teacherId, "Submitted for approval");
+                // update components and totals
+                existingMark.WrittenMarks = markDto.WrittenMarks;
+                existingMark.MCQMarks = markDto.MCQMarks;
+                existingMark.CQMarks = markDto.CQMarks;
+                existingMark.PracticalMarks = markDto.PracticalMarks;
+                existingMark.VivaMarks = markDto.VivaMarks;
+                existingMark.LabMarks = markDto.LabMarks;
+                existingMark.OralMarks = markDto.OralMarks;
+                existingMark.AssignmentMarks = markDto.AssignmentMarks;
+                existingMark.ContinuousAssessmentMarks = markDto.ContinuousAssessmentMarks;
+                existingMark.CompetencyMarks = markDto.CompetencyMarks;
+                existingMark.BehaviourMarks = markDto.BehaviourMarks;
+                existingMark.ParticipationMarks = markDto.ParticipationMarks;
+                existingMark.MarksObtained = totalMarks ?? existingMark.MarksObtained;
+                existingMark.Grade = grade;
+                existingMark.GradePoint = gp;
+                existingMark.EnteredByTeacherId = dto.TeacherId;
+                existingMark.Status = ResultWorkflowStatus.Submitted;
+                _markRepository.Update(existingMark);
             }
         }
 
-        await _db.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync();
     }
 
-    public async Task<bool> ValidateTeacherPermissionAsync(int examId, int subjectId, int teacherId)
+    private decimal? ComputeTotalFromComponents(MarkEntryDto dto)
     {
-        // Check if teacher is assigned to this subject
-        var assignment = await _db.ClassSubjectTeachers
-            .Include(cst => cst.ClassSubject)
-            .AnyAsync(cst => cst.ClassSubject.SubjectId == subjectId && cst.TeacherId == teacherId);
+        // Sum up all non-null component marks where applicable
+        decimal sum = 0;
+        var any = false;
+        if (dto.WrittenMarks.HasValue) { sum += dto.WrittenMarks.Value; any = true; }
+        if (dto.MCQMarks.HasValue) { sum += dto.MCQMarks.Value; any = true; }
+        if (dto.CQMarks.HasValue) { sum += dto.CQMarks.Value; any = true; }
+        if (dto.PracticalMarks.HasValue) { sum += dto.PracticalMarks.Value; any = true; }
+        if (dto.VivaMarks.HasValue) { sum += dto.VivaMarks.Value; any = true; }
+        if (dto.LabMarks.HasValue) { sum += dto.LabMarks.Value; any = true; }
+        if (dto.OralMarks.HasValue) { sum += dto.OralMarks.Value; any = true; }
+        if (dto.AssignmentMarks.HasValue) { sum += dto.AssignmentMarks.Value; any = true; }
+        if (dto.ContinuousAssessmentMarks.HasValue) { sum += dto.ContinuousAssessmentMarks.Value; any = true; }
+        if (dto.CompetencyMarks.HasValue) { sum += dto.CompetencyMarks.Value; any = true; }
+        if (dto.BehaviourMarks.HasValue) { sum += dto.BehaviourMarks.Value; any = true; }
+        if (dto.ParticipationMarks.HasValue) { sum += dto.ParticipationMarks.Value; any = true; }
 
-        return assignment;
+        return any ? sum : (decimal?)null;
     }
 
-    public async Task LockMarksAsync(int examId, int subjectId, int adminId)
+    protected override IQueryable<MarkEntry> ApplySecurityFilters(IQueryable<MarkEntry> query, System.Security.Claims.ClaimsPrincipal user)
     {
-        var marks = await _db.Marks
-            .Where(m => m.ExamId == examId && m.SubjectId == subjectId)
-            .ToListAsync();
-
-        foreach (var mark in marks)
+        if (user.IsInRole("Student"))
         {
-            mark.IsLocked = true;
-            mark.LockedAt = DateTime.Now;
-            mark.UpdatedByUserId = adminId;
-        }
-
-        // Create result lock record
-        var resultLock = new ResultLock
-        {
-            ExamId = examId,
-            LockedByUserId = adminId,
-            LockedAt = DateTime.Now,
-            Reason = $"Marks locked for subject {subjectId}"
-        };
-        _db.ResultLocks.Add(resultLock);
-
-        await _db.SaveChangesAsync();
-    }
-
-    public async Task UnlockMarksAsync(int examId, int subjectId, int adminId, string reason)
-    {
-        var marks = await _db.Marks
-            .Where(m => m.ExamId == examId && m.SubjectId == subjectId)
-            .ToListAsync();
-
-        foreach (var mark in marks)
-        {
-            mark.IsLocked = false;
-            mark.LockedAt = null;
-            mark.UpdatedByUserId = adminId;
-        }
-
-        // Update result lock record
-        var resultLock = await _db.ResultLocks
-            .FirstOrDefaultAsync(rl => rl.ExamId == examId);
-
-        if (resultLock != null)
-        {
-            resultLock.CanUnlock = false; // Mark as unlocked
-        }
-
-        await _db.SaveChangesAsync();
-    }
-
-    public async Task<BulkImportResult> BulkImportMarksAsync(Stream fileStream, int examId, int subjectId, int teacherId)
-    {
-        // Implementation for Excel/CSV import would go here
-        // For now, return empty result
-        return new BulkImportResult
-        {
-            SuccessCount = 0,
-            ErrorCount = 0,
-            Errors = ["Bulk import not implemented yet"],
-            Warnings = []
-        };
-    }
-
-    public async Task<IEnumerable<MarkAuditEntry>> GetMarkAuditTrailAsync(int examId, int subjectId)
-    {
-        var auditLogs = await _db.MarkAuditLogs
-            .Include(a => a.MarkEntry)
-            .Where(a => a.MarkEntry.ExamId == examId && a.MarkEntry.SubjectId == subjectId)
-            .OrderByDescending(a => a.CreatedAt)
-            .Select(a => new MarkAuditEntry
+            var userIdClaim = user.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (int.TryParse(userIdClaim, out var userId))
             {
-                ChangedAt = a.CreatedAt,
-                ChangedBy = $"User {a.ChangedByUserId}",
-                ChangeType = "Mark Change",
-                OldMarks = a.OldMarks,
-                NewMarks = a.NewMarks,
-                Reason = a.Reason ?? ""
-            })
-            .ToListAsync();
+                var studentIds = _studentRepository.Query()
+                    .Where(s => s.UserId == userId && !s.IsDeleted)
+                    .Select(s => s.Id);
 
-        return auditLogs;
-    }
-
-    public async Task RecalculateMarksAsync(int examId, int subjectId)
-    {
-        var marks = await _db.Marks
-            .Where(m => m.ExamId == examId && m.SubjectId == subjectId)
-            .ToListAsync();
-
-        foreach (var mark in marks)
-        {
-            mark.MarksObtained = AggregateTotalMarks(mark);
+                return query.Where(m => studentIds.Contains(m.StudentId));
+            }
         }
 
-        await _db.SaveChangesAsync();
+        return query;
     }
 
-    private void CreateMarkAuditLog(MarkEntry markEntry, int changedByUserId, string reason)
+    private (string Grade, decimal GP) CalculateGrade(decimal marks, IEnumerable<GradingRule> rules)
     {
-        var auditLog = new MarkAuditLog
-        {
-            MarkEntryId = markEntry.Id,
-            OldMarks = markEntry.MarksObtained,
-            NewMarks = markEntry.MarksObtained, // Will be updated with new value
-            ChangedByUserId = changedByUserId,
-            Reason = reason
-        };
-
-        _db.MarkAuditLogs.Add(auditLog);
-    }
-
-    private decimal AggregateTotalMarks(MarkEntry markEntry)
-    {
-        decimal total = 0;
-
-        total += markEntry.WrittenMarks ?? 0;
-        total += markEntry.MCQMarks ?? 0;
-        total += markEntry.CQMarks ?? 0;
-        total += markEntry.PracticalMarks ?? 0;
-        total += markEntry.VivaMarks ?? 0;
-        total += markEntry.LabMarks ?? 0;
-        total += markEntry.OralMarks ?? 0;
-        total += markEntry.AssignmentMarks ?? 0;
-        total += markEntry.ContinuousAssessmentMarks ?? 0;
-        total += markEntry.CompetencyMarks ?? 0;
-        total += markEntry.BehaviourMarks ?? 0;
-        total += markEntry.ParticipationMarks ?? 0;
-
-        return total;
+        var rule = rules.FirstOrDefault(x => marks >= x.MinMarks && marks <= x.MaxMarks);
+        return rule != null ? (rule.Grade, rule.GradePoint) : ("F", 0);
     }
 }

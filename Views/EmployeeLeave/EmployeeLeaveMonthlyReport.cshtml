@@ -1,0 +1,98 @@
+@model SchoolManagementSystem.Models.DTOs.Employee.EmployeeLeaveSummaryDto
+@{
+    ViewData["Title"] = "Monthly Leave Report";
+}
+
+<div class="adm-page">
+    <div class="adm-header mb-4">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-file-earmark-medical"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Monthly Leave Report</h1>
+                <p class="adm-header__sub">Employee leave distribution and balances</p>
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <button onclick="window.print()" class="adm-btn adm-btn--ghost">
+                <i class="bi bi-printer"></i> Print PDF
+            </button>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100 border-0">
+                <div class="card-body text-center d-flex flex-column justify-content-center">
+                    <div class="text-muted small text-uppercase fw-bold mb-2">Total Leave Taken</div>
+                    <div class="display-5 fw-bold text-primary">@Model.TotalLeaveTaken</div>
+                    <div class="small text-muted mt-2">Days this year</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="card shadow-sm h-100 border-0">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-bold">Leave Type Distribution</h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-borderless align-middle mb-0">
+                            <thead>
+                                <tr class="text-muted small">
+                                    <th>Leave Type</th>
+                                    <th>Allowed</th>
+                                    <th>Taken</th>
+                                    <th>Remaining</th>
+                                    <th style="width: 100px;">Usage</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var balance in Model.Balances)
+                                {
+                                    <tr>
+                                        <td><span class="fw-bold">@balance.LeaveTypeName</span></td>
+                                        <td>@balance.Allowed</td>
+                                        <td><span class="text-primary fw-bold">@balance.Taken</span></td>
+                                        <td><span class="@(balance.Remaining > 0 ? "text-success" : "text-danger") fw-bold">@balance.Remaining</span></td>
+                                        <td>
+                                            <div class="progress" style="height: 4px;">
+                                                @{
+                                                    var p = balance.Allowed > 0 ? (double)balance.Taken / balance.Allowed * 100 : 0;
+                                                }
+                                                <div class="progress-bar bg-primary" style="width: @p%"></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mt-4 border-0">
+        <div class="card-header bg-white py-3">
+            <h6 class="mb-0 fw-bold">Workflow Summary</h6>
+        </div>
+        <div class="card-body">
+            <div class="row text-center">
+                <div class="col-4 border-end">
+                    <div class="fs-4 fw-bold text-warning">@Model.PendingRequests</div>
+                    <div class="small text-muted">Pending Applications</div>
+                </div>
+                <div class="col-4 border-end">
+                    <div class="fs-4 fw-bold text-success">@Model.ApprovedLeaves</div>
+                    <div class="small text-muted">Approved Requests</div>
+                </div>
+                <div class="col-4">
+                    <div class="fs-4 fw-bold text-danger">@Model.RejectedLeaves</div>
+                    <div class="small text-muted">Rejected Requests</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

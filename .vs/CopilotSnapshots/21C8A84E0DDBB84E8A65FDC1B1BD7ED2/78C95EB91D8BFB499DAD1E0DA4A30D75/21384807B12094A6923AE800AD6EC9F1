@@ -1,0 +1,134 @@
+﻿using Microsoft.EntityFrameworkCore;
+using SchoolManagementSystem.Models.DTOs.Result;
+using SchoolManagementSystem.Models.Entities.Result;
+using SchoolManagementSystem.Models.Enums;
+using SchoolManagementSystem.Models.ViewModels.Result;
+using SchoolManagementSystem.Repositories.Interfaces;
+using SchoolManagementSystem.Repositories.Interfaces;
+using SchoolManagementSystem.Services.Interfaces.Result;
+using SchoolManagementSystem.UnitOfWork.Interfaces;
+
+namespace SchoolManagementSystem.Services.Implementations.Result;
+
+public class ReEvaluationService : IReEvaluationService
+{
+    private readonly IUnitOfWork _uow;
+
+    public ReEvaluationService(IUnitOfWork uow)
+    {
+        _uow = uow;
+    }
+
+    private IReEvaluationRequestRepo ReqRepo => (IReEvaluationRequestRepo)_uow.Repository<ReEvaluationRequest>();
+    private IMarkEntrySpRepository MarkRepo => (IMarkEntrySpRepository)_uow.Repository<MarkEntry>();
+    private IStudentSubjectResultRepo SubResultRepo => (IStudentSubjectResultRepo)_uow.Repository<StudentSubjectResult>();
+
+    public async Task RequestReEvaluationAsync(ReEvaluationRequestDto dto, int requestedByUserId)
+    {
+        var mark = await MarkRepo.Query()
+            .FirstOrDefaultAsync(m => m.ExamId == dto.ExamId && m.StudentId == dto.StudentId && m.SubjectId == dto.SubjectId);
+
+        if (mark == null) throw new InvalidOperationException("Marks not found");
+
+        var existingReq = await ReqRepo.Query()
+            .FirstOrDefaultAsync(r => r.ExamId == dto.ExamId && r.StudentId == dto.StudentId && r.SubjectId == dto.SubjectId && r.Status == ReEvaluationStatus.Requested);
+
+        if (existingReq != null) throw new InvalidOperationException("A pending re-evaluation request already exists.");
+
+        var req = new ReEvaluationRequest
+        {
+            ExamId = dto.ExamId,
+            StudentId = dto.StudentId,
+            SubjectId = dto.SubjectId,
+            RequestedByUserId = requestedByUserId,
+            RequestReason = dto.Reason,
+            Notes = dto.Notes,
+            Status = ReEvaluationStatus.Requested,
+            OldMarks = mark.MarksObtained,
+            CreatedAt = DateTime.UtcNow,
+            CreatedBy = requestedByUserId.ToString()
+        };
+        await ReqRepo.AddAsync(req);
+        await _uow.SaveChangesAsync();
+    }
+
+    public async Task ProcessReEvaluationAsync(ReEvaluationProcessDto dto, int adminId)
+    {
+        var req = await ReqRepo.GetByIdAsync(dto.RequestId);
+        if (req == null || req.Status != ReEvaluationStatus.Requested) return;
+
+        req.Status = dto.Approved ? ReEvaluationStatus.Revised : ReEvaluationStatus.Rejected;
+        req.ApprovedByUserId = adminId;
+        req.ApprovedAt = DateTime.UtcNow;
+        req.Notes = dto.AdminNotes;
+
+        if (dto.Approved && dto.NewMarks.HasValue)
+        {
+            req.NewMarks = dto.NewMarks.Value;
+
+            var mark = await MarkRepo.Query().FirstOrDefaultAsync(m => m.ExamId == req.ExamId && m.StudentId == req.StudentId && m.SubjectId == req.SubjectId);
+            if (mark != null)
+            {
+                mark.MarksObtained = dto.NewMarks.Value;
+                MarkRepo.Update(mark);
+            }
+
+            var subResult = await SubResultRepo.Query().FirstOrDefaultAsync(sr => sr.ExamId == req.ExamId && sr.StudentId == req.StudentId && sr.SubjectId == req.SubjectId);
+            if (subResult != null)
+            {
+                subResult.MarksObtained = dto.NewMarks.Value;
+                subResult.IsPassed = dto.NewMarks.Value >= subResult.PassMarks;
+                SubResultRepo.Update(subResult);
+            }
+        }
+
+        ReqRepo.Update(req);
+        await _uow.SaveChangesAsync();
+    }
+
+    public async Task<ReEvaluationDashboardViewModel> GetReEvaluationDashboardAsync()
+    {
+        var requests = await ReqRepo.Query()
+            .Include(r => r.Exam)
+            .Include(r => r.Student)
+            .Include(r => r.Subject)
+            .Where(r => !r.IsDeleted)
+            .OrderByDescending(r => r.CreatedAt)
+            .ToListAsync();
+
+        return new ReEvaluationDashboardViewModel
+        {
+            PendingRequests = requests.Where(r => r.Status == ReEvaluationStatus.Requested).Select(r => new ReEvaluationRequestViewModel
+            {
+                Id = r.Id,
+                StudentId = r.StudentId,
+                SubjectId = r.SubjectId,
+                ExamId = r.ExamId,
+                ExamName = r.Exam.Name,
+                StudentName = r.Student.FullName,
+                SubjectName = r.Subject.Name,
+                OldMarks = r.OldMarks,
+                NewMarks = r.NewMarks,
+                Status = r.Status,
+                Notes = r.Notes,
+                CreatedAt = r.CreatedAt
+            }).ToList(),
+            CompletedRequests = requests.Where(r => r.Status != ReEvaluationStatus.Requested).Select(r => new ReEvaluationRequestViewModel
+            {
+                Id = r.Id,
+                StudentId = r.StudentId,
+                SubjectId = r.SubjectId,
+                ExamId = r.ExamId,
+                ExamName = r.Exam.Name,
+                StudentName = r.Student.FullName,
+                SubjectName = r.Subject.Name,
+                OldMarks = r.OldMarks,
+                NewMarks = r.NewMarks,
+                Status = r.Status,
+                Notes = r.Notes,
+                CreatedAt = r.CreatedAt
+            }).ToList()
+        };
+    }
+}
+

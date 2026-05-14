@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Repository\Application\" />
     <Folder Include="wwwroot\uploads\admissions\" />
   </ItemGroup>
 

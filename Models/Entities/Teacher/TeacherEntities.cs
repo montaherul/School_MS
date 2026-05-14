@@ -8,54 +8,74 @@ namespace SchoolManagementSystem.Models.Entities.Teachers;
 
 public class Teacher : BaseEntity
 {
+    [Required]
     [MaxLength(30)]
     public string TeacherNo { get; set; } = string.Empty;
 
+    [Required]
     [MaxLength(120)]
     public string FullName { get; set; } = string.Empty;
 
     [MaxLength(120)]
     public string? FullNameBangla { get; set; }
 
+    [Required]
     public DateTime DateOfBirth { get; set; }
 
+    [Required]
     [MaxLength(20)]
     public string Gender { get; set; } = string.Empty;
 
     // ── Contact ──────────────────────────────────────────────────────────────
+    [Required]
+    [Phone]
     [MaxLength(30)]
     public string MobileNumber { get; set; } = string.Empty;
 
+    [Phone]
     [MaxLength(30)]
     public string? AlternativeNumber { get; set; }
 
+    [EmailAddress]
     [MaxLength(160)]
     public string? EmailAddress { get; set; }
 
     // ── Demographics ──────────────────────────────────────────────────────────
+    [Required]
     [MaxLength(50)]
     public string Nationality { get; set; } = "Bangladeshi";
 
+    [Required]
     [MaxLength(50)]
     public string Country { get; set; } = "Bangladesh";
 
+    [Required]
     [MaxLength(30)]
     public string MaritalStatus { get; set; } = string.Empty;
 
+    [Required]
     [MaxLength(30)]
     public string Religion { get; set; } = string.Empty;
 
     [MaxLength(10)]
+    [Display(Name = "Blood Group")]
     public string? BloodGroup { get; set; }
 
     // ── Identity ─────────────────────────────────────────────────────────────
     [MaxLength(50)]
     public string? PassportNo { get; set; }
 
+    [MaxLength(260)]
+    public string? PassportPath { get; set; }
+
     [MaxLength(50)]
     public string? NationalIdNo { get; set; }
 
+    [MaxLength(260)]
+    public string? NationalIdPath { get; set; }
+
     // ── Professional ─────────────────────────────────────────────────────────
+    [Required]
     [MaxLength(100)]
     public string Designation { get; set; } = string.Empty;
 
@@ -110,6 +130,7 @@ public class Teacher : BaseEntity
     public string? ProfilePicturePath { get; set; }
 
     // ── Status & Auth link ────────────────────────────────────────────────────
+    [Required]
     public TeacherStatus Status { get; set; } = TeacherStatus.Active;
 
     public int? UserId { get; set; }
@@ -117,7 +138,9 @@ public class Teacher : BaseEntity
 
     // ── Navigation ────────────────────────────────────────────────────────────
     public ICollection<TeacherDocument> Documents { get; set; } = new List<TeacherDocument>();
-    public ICollection<TeacherClassAssignment> ClassAssignments { get; set; } = new List<TeacherClassAssignment>();
+
+    public ICollection<TeacherClassAssignment> ClassAssignments { get; set; }= new List<TeacherClassAssignment>();
+
     public ICollection<TeacherSubjectAssignment> SubjectAssignments { get; set; } = new List<TeacherSubjectAssignment>();
 }
 

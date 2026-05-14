@@ -7,6 +7,7 @@ using SchoolManagementSystem.Models.Entities.Student;
 using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
+using SchoolManagementSystem.Repositories.Interfaces.Result;
 
 namespace SchoolManagementSystem.Services.Implementations.Result;
 
@@ -17,12 +18,26 @@ namespace SchoolManagementSystem.Services.Implementations.Result;
 public class ResultCalculationService : IResultCalculationService
 {
     private readonly IUnitOfWork _uow;
-    private readonly SchoolDbContext _db;
+    private readonly IExamRepository _examRepository;
+    private readonly IMarkEntryRepository _markEntryRepository;
+    private readonly IGradingRuleRepository _gradingRuleRepository;
+    private readonly IStudentSubjectResultRepository _subjectResultRepository;
+    private readonly IStudentExamResultRepository _examResultRepository;
 
-    public ResultCalculationService(IUnitOfWork uow, SchoolDbContext db)
+    public ResultCalculationService(
+        IUnitOfWork uow,
+        IExamRepository examRepository,
+        IMarkEntryRepository markEntryRepository,
+        IGradingRuleRepository gradingRuleRepository,
+        IStudentSubjectResultRepository subjectResultRepository,
+        IStudentExamResultRepository examResultRepository)
     {
         _uow = uow;
-        _db = db;
+        _examRepository = examRepository;
+        _markEntryRepository = markEntryRepository;
+        _gradingRuleRepository = gradingRuleRepository;
+        _subjectResultRepository = subjectResultRepository;
+        _examResultRepository = examResultRepository;
     }
 
     /// <summary>
@@ -43,33 +58,29 @@ public class ResultCalculationService : IResultCalculationService
 
     public async Task CalculateExamResultsAsync(int examId)
     {
-        // Validate calculation can proceed
         if (!await CanCalculateResultsAsync(examId))
             throw new InvalidOperationException("Cannot calculate results - exam may be locked or published");
 
-        // Calculate subject results first
         await CalculateSubjectResultsAsync(examId);
 
-        // Get all students for this exam
-        var exam = await _db.Exams
+        var exam = await _examRepository.Query()
             .Include(e => e.ExamSubjects)
             .ThenInclude(es => es.Subject)
             .FirstOrDefaultAsync(e => e.Id == examId);
 
         if (exam == null) throw new ArgumentException("Exam not found");
 
-        var classId = await _db.StudentExamResults
+        var classId = await _examResultRepository.Query()
             .Include(r => r.Student)
             .Where(r => r.ExamId == examId)
             .Select(r => r.Student.ClassId)
             .FirstOrDefaultAsync();
 
-        var students = await _db.Students
+        var students = await _uow.Repository<Student>().Query()
             .Where(s => s.ClassId == classId)
             .ToListAsync();
 
-        // Fetch all subject results for all students in this exam to avoid N+1 in DeterminePassFailStatus
-        var allSubjectResults = await _db.StudentSubjectResults
+        var allSubjectResults = await _subjectResultRepository.Query()
             .Include(r => r.Subject)
             .Where(r => r.ExamId == examId && students.Select(s => s.Id).Contains(r.StudentId))
             .ToListAsync();
@@ -84,51 +95,43 @@ public class ResultCalculationService : IResultCalculationService
             if (subjectResultsByStudent.TryGetValue(student.Id, out var studentSubjectResults))
             {
                 var examResult = await CalculateStudentExamResultInternalAsync(examId, student.Id, studentSubjectResults);
-                if (examResult != null)
-                {
-                    newExamResults.Add(examResult);
-                }
+                if (examResult != null) newExamResults.Add(examResult);
             }
         }
 
         if (newExamResults.Any())
         {
-            // Remove existing results first to avoid duplicates
-            var existingResults = await _db.StudentExamResults
+            var existingResults = await _examResultRepository.Query()
                 .Where(r => r.ExamId == examId && students.Select(s => s.Id).Contains(r.StudentId))
                 .ToListAsync();
-            _db.StudentExamResults.RemoveRange(existingResults);
+            _examResultRepository.RemoveRange(existingResults);
 
-            await _db.StudentExamResults.AddRangeAsync(newExamResults);
-            await _db.SaveChangesAsync();
+            await _examResultRepository.AddRangeAsync(newExamResults);
+            await _uow.SaveChangesAsync();
         }
 
-        // Calculate merit positions
         await CalculateMeritPositionsAsync(examId);
     }
 
     public async Task CalculateSubjectResultsAsync(int examId)
     {
-        var markEntries = await _db.Marks
+        var markEntries = await _markEntryRepository.Query()
             .Include(m => m.Student)
             .Include(m => m.Subject)
             .Where(m => m.ExamId == examId)
             .ToListAsync();
 
-        // Pre-fetch grading rules and exam subjects
-        var gradingRules = await _db.GradingRules.ToListAsync();
-        var examSubjects = await _db.ExamSubjects
+        var gradingRules = await _gradingRuleRepository.ListAsync();
+        var examSubjects = await _uow.Repository<ExamSubject>().Query()
             .Where(es => es.ExamId == examId)
             .ToDictionaryAsync(es => es.SubjectId);
 
-        // Remove existing results for this exam
-        var existingResults = await _db.StudentSubjectResults
+        var existingResults = await _subjectResultRepository.Query()
             .Where(r => r.ExamId == examId)
             .ToListAsync();
-        _db.StudentSubjectResults.RemoveRange(existingResults);
+        _subjectResultRepository.RemoveRange(existingResults);
 
         var newSubjectResults = new List<StudentSubjectResult>();
-
         foreach (var markEntry in markEntries)
         {
             examSubjects.TryGetValue(markEntry.SubjectId, out var examSubject);
@@ -138,15 +141,14 @@ public class ResultCalculationService : IResultCalculationService
 
         if (newSubjectResults.Any())
         {
-            await _db.StudentSubjectResults.AddRangeAsync(newSubjectResults);
-            await _db.SaveChangesAsync();
+            await _subjectResultRepository.AddRangeAsync(newSubjectResults);
+            await _uow.SaveChangesAsync();
         }
     }
 
     public async Task CalculateMeritPositionsAsync(int examId)
     {
-        // Calculate class positions
-        var classResults = await _db.StudentExamResults
+        var classResults = await _examResultRepository.Query()
             .Include(r => r.Student)
             .Where(r => r.ExamId == examId)
             .OrderByDescending(r => r.Gpa)
@@ -160,26 +162,23 @@ public class ResultCalculationService : IResultCalculationService
             result.ClassPosition = result.Position;
         }
 
-        // Calculate section positions
         var sectionGroups = classResults.GroupBy(r => r.Student.SectionId);
         foreach (var sectionGroup in sectionGroups)
         {
             int sectionPosition = 1;
             foreach (var result in sectionGroup.OrderByDescending(r => r.Gpa).ThenByDescending(r => r.TotalMarks))
             {
-                result.Position = sectionPosition++; // Override with section position
+                result.Position = sectionPosition++;
             }
         }
 
-        // Calculate group positions for Class 9-10
-        var groupResults = await _db.StudentExamResults
+        var groupResults = await _examResultRepository.Query()
             .Include(r => r.Student)
             .ThenInclude(s => s.StudentGroup)
             .Where(r => r.ExamId == examId && r.Student.StudentGroupId != null)
-            .GroupBy(r => r.Student.StudentGroupId)
             .ToListAsync();
 
-        foreach (var group in groupResults)
+        foreach (var group in groupResults.GroupBy(r => r.Student.StudentGroupId))
         {
             int groupPosition = 1;
             foreach (var result in group.OrderByDescending(r => r.Gpa).ThenByDescending(r => r.TotalMarks))
@@ -188,7 +187,7 @@ public class ResultCalculationService : IResultCalculationService
             }
         }
 
-        await _db.SaveChangesAsync();
+        await _uow.SaveChangesAsync();
     }
 
     public async Task<decimal> CalculateGpaAsync(IEnumerable<StudentSubjectResult> subjectResults)
@@ -206,8 +205,7 @@ public class ResultCalculationService : IResultCalculationService
 
     public async Task<decimal> CalculateFinalGpaAsync(int studentId, int academicYearId)
     {
-        // Get all exam results for the year
-        var examResults = await _db.StudentExamResults
+        var examResults = await _examResultRepository.Query()
             .Include(r => r.Exam)
             .Where(r => r.StudentId == studentId && r.Exam.AcademicYearId == academicYearId)
             .ToListAsync();
@@ -220,7 +218,7 @@ public class ResultCalculationService : IResultCalculationService
 
     public async Task<(bool IsPassed, int FailedSubjectCount)> DeterminePassFailStatusAsync(int studentId, int examId)
     {
-        var subjectResults = await _db.StudentSubjectResults
+        var subjectResults = await _subjectResultRepository.Query()
             .Include(r => r.Subject)
             .Where(r => r.StudentId == studentId && r.ExamId == examId)
             .ToListAsync();
@@ -231,30 +229,26 @@ public class ResultCalculationService : IResultCalculationService
     private (bool IsPassed, int FailedSubjectCount) DeterminePassFailStatus(IEnumerable<StudentSubjectResult> subjectResults)
     {
         int failedSubjects = subjectResults.Count(r => !r.IsPassed);
-        
-        // For Bangladesh system, mandatory subjects must be passed
         var failedMandatory = subjectResults.Count(r => !r.IsPassed && r.Subject != null && r.Subject.IsMandatory);
         bool isPassed = failedMandatory == 0;
-
         return (isPassed, failedSubjects);
     }
 
     public async Task RecalculateResultsAsync(int examId, int studentId)
     {
-        // Recalculate subject results
-        var subjectResults = await _db.StudentSubjectResults
+        var subjectResults = await _subjectResultRepository.Query()
             .Include(r => r.Subject)
             .Where(r => r.ExamId == examId && r.StudentId == studentId)
             .ToListAsync();
 
-        _db.StudentSubjectResults.RemoveRange(subjectResults);
+        _subjectResultRepository.RemoveRange(subjectResults);
 
-        var markEntries = await _db.Marks
+        var markEntries = await _markEntryRepository.Query()
             .Where(m => m.ExamId == examId && m.StudentId == studentId)
             .ToListAsync();
 
-        var gradingRules = await _db.GradingRules.ToListAsync();
-        var examSubjects = await _db.ExamSubjects
+        var gradingRules = await _gradingRuleRepository.ListAsync();
+        var examSubjects = await _uow.Repository<ExamSubject>().Query()
             .Where(es => es.ExamId == examId)
             .ToDictionaryAsync(es => es.SubjectId);
 
@@ -265,29 +259,23 @@ public class ResultCalculationService : IResultCalculationService
             newSubjectResults.Add(CalculateSubjectResultInternal(markEntry, gradingRules, examSubject));
         }
 
-        await _db.StudentSubjectResults.AddRangeAsync(newSubjectResults);
-        await _db.SaveChangesAsync();
+        await _subjectResultRepository.AddRangeAsync(newSubjectResults);
+        await _uow.SaveChangesAsync();
 
-        // Recalculate exam result
-        var existingExamResult = await _db.StudentExamResults
-            .FirstOrDefaultAsync(r => r.ExamId == examId && r.StudentId == studentId);
-        
-        if (existingExamResult != null)
-            _db.StudentExamResults.Remove(existingExamResult);
+        var existingExamResult = await _examResultRepository.FirstOrDefaultAsync(r => r.ExamId == examId && r.StudentId == studentId);
+        if (existingExamResult != null) _examResultRepository.Remove(existingExamResult);
 
         var newExamResult = await CalculateStudentExamResultInternalAsync(examId, studentId, newSubjectResults);
         if (newExamResult != null)
         {
-            await _db.StudentExamResults.AddAsync(newExamResult);
-            await _db.SaveChangesAsync();
+            await _examResultRepository.AddAsync(newExamResult);
+            await _uow.SaveChangesAsync();
         }
     }
 
     public async Task<decimal> AggregateComponentMarksAsync(MarkEntry markEntry)
     {
-        // Sum all component marks for total
         decimal total = 0;
-
         total += markEntry.WrittenMarks ?? 0;
         total += markEntry.MCQMarks ?? 0;
         total += markEntry.CQMarks ?? 0;
@@ -300,26 +288,21 @@ public class ResultCalculationService : IResultCalculationService
         total += markEntry.CompetencyMarks ?? 0;
         total += markEntry.BehaviourMarks ?? 0;
         total += markEntry.ParticipationMarks ?? 0;
-
         return total;
     }
 
     public async Task<bool> CanCalculateResultsAsync(int examId)
     {
-        var exam = await _db.Exams.FindAsync(examId);
+        var exam = await _examRepository.GetByIdAsync(examId);
         if (exam == null) return false;
 
-        // Check if exam is locked or published
-        var publication = await _db.ResultPublications
-            .FirstOrDefaultAsync(p => p.ExamId == examId);
-
-        return exam.Status != ResultWorkflowStatus.Published &&
-               (publication == null || !publication.IsLocked);
+        var publication = await _uow.Repository<ResultPublication>().FirstOrDefaultAsync(p => p.ExamId == examId);
+        return exam.Status != ResultWorkflowStatus.Published && (publication == null || !publication.IsLocked);
     }
 
     public async Task<IDictionary<int, (int Passed, int Failed)>> GetSubjectPassFailStatsAsync(int examId)
     {
-        var stats = await _db.StudentSubjectResults
+        var stats = await _subjectResultRepository.Query()
             .Where(r => r.ExamId == examId)
             .GroupBy(r => r.SubjectId)
             .Select(g => new
@@ -335,12 +318,9 @@ public class ResultCalculationService : IResultCalculationService
 
     private StudentSubjectResult CalculateSubjectResultInternal(MarkEntry markEntry, IEnumerable<GradingRule> gradingRules, ExamSubject? examSubject)
     {
-        // Aggregate component marks (synchronous version of summation)
         decimal totalMarks = AggregateComponentMarksInternal(markEntry);
-
         var (grade, gradePoint) = CalculateGrade(totalMarks, gradingRules);
         var resolvedGradePoint = gradePoint ?? 0;
-
         bool isPassed = totalMarks >= (examSubject?.PassMarks ?? 33);
 
         return new StudentSubjectResult
@@ -351,7 +331,7 @@ public class ResultCalculationService : IResultCalculationService
             MarksObtained = totalMarks,
             FullMarks = examSubject?.FullMarks ?? 100,
             PassMarks = examSubject?.PassMarks ?? 33,
-            Grade = grade,
+            Grade = grade ?? "F",
             GradePoint = resolvedGradePoint,
             IsPassed = isPassed,
             CalculatedAt = DateTime.Now
@@ -365,7 +345,6 @@ public class ResultCalculationService : IResultCalculationService
         decimal totalMarks = subjectResults.Sum(r => r.MarksObtained);
         decimal totalFullMarks = subjectResults.Sum(r => r.FullMarks);
         decimal gpa = await CalculateGpaAsync(subjectResults);
-
         var (isPassed, failedCount) = DeterminePassFailStatus(subjectResults);
 
         return new StudentExamResult
@@ -404,19 +383,16 @@ public class ResultCalculationService : IResultCalculationService
 
     public async Task CalculateSubjectResultAsync(MarkEntry markEntry)
     {
-        var gradingRules = await _db.GradingRules.ToListAsync();
-        var examSubject = await _db.ExamSubjects
-            .FirstOrDefaultAsync(es => es.ExamId == markEntry.ExamId && es.SubjectId == markEntry.SubjectId);
-
+        var gradingRules = await _gradingRuleRepository.ListAsync();
+        var examSubject = await _uow.Repository<ExamSubject>().FirstOrDefaultAsync(es => es.ExamId == markEntry.ExamId && es.SubjectId == markEntry.SubjectId);
         var result = CalculateSubjectResultInternal(markEntry, gradingRules, examSubject);
-
-        await _db.StudentSubjectResults.AddAsync(result);
-        await _db.SaveChangesAsync();
+        await _subjectResultRepository.AddAsync(result);
+        await _uow.SaveChangesAsync();
     }
 
     public async Task CalculateStudentExamResultAsync(int examId, int studentId)
     {
-        var subjectResults = await _db.StudentSubjectResults
+        var subjectResults = await _subjectResultRepository.Query()
             .Include(r => r.Subject)
             .Where(r => r.ExamId == examId && r.StudentId == studentId)
             .ToListAsync();
@@ -424,8 +400,8 @@ public class ResultCalculationService : IResultCalculationService
         var result = await CalculateStudentExamResultInternalAsync(examId, studentId, subjectResults);
         if (result != null)
         {
-            await _db.StudentExamResults.AddAsync(result);
-            await _db.SaveChangesAsync();
+            await _examResultRepository.AddAsync(result);
+            await _uow.SaveChangesAsync();
         }
     }
 

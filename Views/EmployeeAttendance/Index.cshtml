@@ -1,0 +1,111 @@
+@model IEnumerable<SchoolManagementSystem.Models.DTOs.Employee.EmployeeAttendanceDto>
+@{
+    ViewData["Title"] = "Employee Attendance";
+    var targetDate = (DateTime)ViewBag.TargetDate;
+}
+
+<div class="adm-page">
+    <div class="adm-header mb-4">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-calendar-check"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Employee Attendance</h1>
+                <p class="adm-header__sub">View and manage daily attendance records</p>
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="MarkDailyAttendance" asp-route-date="@targetDate.ToString("yyyy-MM-dd")" class="adm-btn adm-btn--primary">
+                <i class="bi bi-plus-lg"></i> Mark Attendance
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold">Date</label>
+                    <input type="date" name="date" class="form-control" value="@targetDate.ToString("yyyy-MM-dd")" onchange="this.form.submit()" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold">Department</label>
+                    <select name="departmentId" class="form-select" asp-items="ViewBag.Departments" onchange="this.form.submit()">
+                        <option value="">All Departments</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="adm-btn adm-btn--ghost w-100">
+                        <i class="bi bi-search me-1"></i> Filter
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="adm-table">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>ID</th>
+                            <th>Department</th>
+                            <th>Status</th>
+                            <th>Check-In</th>
+                            <th>Check-Out</th>
+                            <th>Remarks</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="fw-bold text-dark">@item.EmployeeName</div>
+                                </td>
+                                <td><span class="text-muted">@item.EmployeeCode</span></td>
+                                <td>@item.DepartmentName</td>
+                                <td>
+                                    @{
+                                        var badgeClass = item.Status switch
+                                        {
+                                            SchoolManagementSystem.Models.Enums.AttendanceStatus.Present => "bg-success",
+                                            SchoolManagementSystem.Models.Enums.AttendanceStatus.Absent => "bg-danger",
+                                            SchoolManagementSystem.Models.Enums.AttendanceStatus.Late => "bg-warning text-dark",
+                                            SchoolManagementSystem.Models.Enums.AttendanceStatus.Leave => "bg-info text-dark",
+                                            SchoolManagementSystem.Models.Enums.AttendanceStatus.HalfDay => "bg-secondary",
+                                            SchoolManagementSystem.Models.Enums.AttendanceStatus.Holiday => "bg-dark",
+                                            _ => "bg-light text-dark"
+                                        };
+                                    }
+                                    <span class="badge @badgeClass">@item.Status</span>
+                                </td>
+                                <td>@(item.CheckInTime?.ToString(@"hh\:mm") ?? "--:--")</td>
+                                <td>@(item.CheckOutTime?.ToString(@"hh\:mm") ?? "--:--")</td>
+                                <td class="small text-muted">@item.Remarks</td>
+                                <td class="text-end">
+                                    <a asp-action="EmployeeHistory" asp-route-id="@item.EmployeeId" class="btn btn-sm btn-light border" title="History">
+                                        <i class="bi bi-clock-history"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="8" class="text-center py-5 text-muted">
+                                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                                    No attendance records found for this date.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

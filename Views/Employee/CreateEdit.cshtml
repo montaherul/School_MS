@@ -1,0 +1,321 @@
+@model SchoolManagementSystem.Models.ViewModels.Employee.EmployeeViewModel
+@{
+    ViewData["Title"] = Model.Id == 0 ? "Create Employee" : "Edit Employee";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="d-flex align-items-center mb-4">
+            <a asp-action="Index" class="adm-btn adm-btn--ghost btn-sm me-3"><i class="bi bi-arrow-left"></i> Back</a>
+            <h2 class="mb-0">@ViewData["Title"]</h2>
+        </div>
+
+        <form asp-action="@(Model.Id == 0 ? "Create" : "Edit")" method="post" enctype="multipart/form-data">
+            @Html.AntiForgeryToken()
+            <input asp-for="Id" type="hidden" />
+            @if (Model.Id > 0)
+            {
+                <input asp-for="EmployeeCode" type="hidden" />
+            }
+
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-3"></div>
+
+            @* ── Section 1: Employment Details ── *@
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary bg-opacity-10">
+                    <h5 class="mb-0"><i class="bi bi-briefcase-fill me-2"></i>Employment Information</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label asp-for="EmployeeCode" class="form-label">Employee Code <span class="text-danger">*</span></label>
+                            @if (Model.Id > 0)
+                            {
+                                <input asp-for="EmployeeCode" class="form-control" disabled />
+                            }
+                            else
+                            {
+                                <input asp-for="EmployeeCode" class="form-control" placeholder="e.g. EMP001" />
+                            }
+                            <span asp-validation-for="EmployeeCode" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="DepartmentId" class="form-label">Department <span class="text-danger">*</span></label>
+                            <select asp-for="DepartmentId" class="form-select" asp-items="Model.Departments">
+                                <option value="">-- Select Department --</option>
+                            </select>
+                            <span asp-validation-for="DepartmentId" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="DesignationId" class="form-label">Designation <span class="text-danger">*</span></label>
+                            <select asp-for="DesignationId" class="form-select" asp-items="Model.Designations">
+                                <option value="">-- Select Designation --</option>
+                            </select>
+                            <span asp-validation-for="DesignationId" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="JoiningDate" class="form-label">Joining Date <span class="text-danger">*</span></label>
+                            <input asp-for="JoiningDate" class="form-control" type="date" />
+                            <span asp-validation-for="JoiningDate" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Salary" class="form-label">Monthly Salary <span class="text-danger">*</span></label>
+                            <input asp-for="Salary" class="form-control" type="number" step="0.01" />
+                            <span asp-validation-for="Salary" class="text-danger small"></span>
+                        </div>
+                        @if (Model.Id > 0)
+                        {
+                            <div class="col-md-4">
+                                <label asp-for="IsActive" class="form-label">Status</label>
+                                <select asp-for="IsActive" class="form-select">
+                                    <option value="true">Active</option>
+                                    <option value="false">Inactive</option>
+                                </select>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            @* ── Section 2: Personal Information ── *@
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-success bg-opacity-10">
+                    <h5 class="mb-0"><i class="bi bi-person-fill me-2"></i>Personal Information</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label asp-for="FullName" class="form-label">Full Name <span class="text-danger">*</span></label>
+                            <input asp-for="FullName" class="form-control" placeholder="Employee's full name" />
+                            <span asp-validation-for="FullName" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Gender" class="form-label">Gender <span class="text-danger">*</span></label>
+                            <select asp-for="Gender" class="form-select">
+                                <option value="">Select</option>
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <span asp-validation-for="Gender" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="DateOfBirth" class="form-label">Date of Birth <span class="text-danger">*</span></label>
+                            <input asp-for="DateOfBirth" type="date" class="form-control" />
+                            <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Phone" class="form-label">Phone Number <span class="text-danger">*</span></label>
+                            <input asp-for="Phone" class="form-control" placeholder="01XXXXXXXXX" />
+                            <span asp-validation-for="Phone" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Email" class="form-label">Email Address</label>
+                            <input asp-for="Email" type="email" class="form-control" placeholder="example@mail.com" />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="BloodGroup" class="form-label">Blood Group</label>
+                            <select asp-for="BloodGroup" class="form-select">
+                                <option value="">Select</option>
+                                <option value="A+">A+</option>
+                                <option value="A-">A-</option>
+                                <option value="B+">B+</option>
+                                <option value="B-">B-</option>
+                                <option value="AB+">AB+</option>
+                                <option value="AB-">AB-</option>
+                                <option value="O+">O+</option>
+                                <option value="O-">O-</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Nationality" class="form-label">Nationality</label>
+                            <input asp-for="Nationality" class="form-control" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* ── Section 3: Address Information ── *@
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-dark bg-opacity-10">
+                    <h5 class="mb-0"><i class="bi bi-geo-alt-fill me-2"></i>Address Information</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <h6 class="fw-bold mb-3 text-primary">Present Address</h6>
+                            <div class="mb-2">
+                                <label class="form-label">Village</label>
+                                <input asp-for="PresentVillage" class="form-control" />
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Post Office</label>
+                                <input asp-for="PresentPostOffice" class="form-control" />
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Thana</label>
+                                <input asp-for="PresentThana" class="form-control" />
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">District</label>
+                                <input asp-for="PresentDistrict" class="form-control" />
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="fw-bold mb-3 text-success">
+                                Permanent Address
+                                @if (Model.Id == 0)
+                                {
+                                    <input type="checkbox" id="sameAddress" class="ms-2" />
+                                    <small>Same as Present</small>
+                                }
+                            </h6>
+                            <div class="mb-2">
+                                <label class="form-label">Village</label>
+                                <input asp-for="PermanentVillage" class="form-control" />
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Post Office</label>
+                                <input asp-for="PermanentPostOffice" class="form-control" />
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">Thana</label>
+                                <input asp-for="PermanentThana" class="form-control" />
+                            </div>
+                            <div class="mb-2">
+                                <label class="form-label">District</label>
+                                <input asp-for="PermanentDistrict" class="form-control" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* ── Section 4: System Access ── *@
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-warning bg-opacity-10">
+                    <h5 class="mb-0"><i class="bi bi-shield-lock-fill me-2"></i>System Access</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="form-check form-switch mb-3">
+                        <input class="form-check-input" type="checkbox" asp-for="CreateLoginAccount" id="enableLogin">
+                        <label class="form-check-label fw-bold" for="enableLogin">Enable Login Access</label>
+                    </div>
+
+                    <div id="loginFields" style="@(Model.CreateLoginAccount ? "" : "display:none")">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label asp-for="Username" class="form-label">Username <span class="text-danger">*</span></label>
+                                @if (Model.Id > 0 && Model.HasLoginAccount)
+                                {
+                                    <input asp-for="Username" class="form-control" readonly />
+                                }
+                                else
+                                {
+                                    <input asp-for="Username" class="form-control" placeholder="Auto-generated" />
+                                }
+                                <span asp-validation-for="Username" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="RoleId" class="form-label">Assign Role <span class="text-danger">*</span></label>
+                                <select asp-for="RoleId" class="form-select" asp-items="Model.Roles">
+                                    <option value="">-- Select Role --</option>
+                                </select>
+                                <span asp-validation-for="RoleId" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="alert alert-info py-2 mb-0 small">
+                                    <i class="bi bi-info-circle me-1"></i> Default username is generated from Employee Code.
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Password" class="form-label">Password @(Model.Id == 0 ? "*" : "(Leave blank to keep current)")</label>
+                                <input asp-for="Password" class="form-control" type="password" />
+                                <span asp-validation-for="Password" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="ConfirmPassword" class="form-label">Confirm Password</label>
+                                <input asp-for="ConfirmPassword" class="form-control" type="password" />
+                                <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-flex gap-2 mb-5">
+                <button type="submit" class="adm-btn adm-btn--primary px-4">
+                    <i class="bi bi-save me-1"></i> 
+                    @(Model.Id == 0 ? "Create Employee" : "Update Employee")
+                </button>
+                <a asp-action="Index" class="adm-btn adm-btn--ghost px-4">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        const sameAddress = document.getElementById("sameAddress");
+        if (sameAddress) {
+            sameAddress.addEventListener("change", function () {
+                if (this.checked) {
+                    document.getElementById("PermanentVillage").value = document.getElementById("PresentVillage").value;
+                    document.getElementById("PermanentPostOffice").value = document.getElementById("PresentPostOffice").value;
+                    document.getElementById("PermanentThana").value = document.getElementById("PresentThana").value;
+                    document.getElementById("PermanentDistrict").value = document.getElementById("PresentDistrict").value;
+                }
+            });
+        }
+
+        const enableLogin = document.getElementById("enableLogin");
+        const loginFields = document.getElementById("loginFields");
+        const usernameInput = document.querySelector('input[name="Username"]');
+        const employeeCodeInput = document.querySelector('input[name="EmployeeCode"]');
+
+        if (enableLogin) {
+            enableLogin.addEventListener("change", function () {
+                loginFields.style.display = this.checked ? "block" : "none";
+                if (this.checked && !usernameInput.value && employeeCodeInput) {
+                    usernameInput.value = employeeCodeInput.value;
+                }
+            });
+        }
+
+        if (employeeCodeInput && usernameInput && !usernameInput.readOnly) {
+            employeeCodeInput.addEventListener("keyup", function() {
+                if (enableLogin && enableLogin.checked) {
+                    usernameInput.value = this.value;
+                }
+            });
+        }
+
+        const designationSelect = document.querySelector('select[name="DesignationId"]');
+        const roleSelect = document.querySelector('select[name="RoleId"]');
+
+        if (designationSelect && roleSelect) {
+            designationSelect.addEventListener("change", function() {
+                if (!enableLogin.checked) return;
+                
+                const designationText = this.options[this.selectedIndex].text.toLowerCase();
+                let roleToSelect = "";
+
+                if (designationText.includes("principal")) roleToSelect = "2"; // Principal
+                else if (designationText.includes("lecturer") || designationText.includes("teacher")) roleToSelect = "5"; // Lecturer
+                else if (designationText.includes("accountant") || designationText.includes("office") || designationText.includes("clerk")) roleToSelect = "6"; // Office Staff
+                else if (designationText.includes("librarian")) roleToSelect = "6"; // Office Staff (Default)
+                else if (designationText.includes("driver") || designationText.includes("staff")) roleToSelect = "6"; // Office Staff (Default)
+
+                if (roleToSelect) {
+                    Array.from(roleSelect.options).forEach(opt => {
+                        if (opt.value === roleToSelect) {
+                            roleSelect.value = roleToSelect;
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}

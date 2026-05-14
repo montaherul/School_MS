@@ -1,0 +1,19 @@
+﻿using SchoolManagementSystem.Models.DTOs.Result;
+using SchoolManagementSystem.Models.Entities.Exam;
+using SchoolManagementSystem.Repositories.Interfaces;
+
+namespace SchoolManagementSystem.Repositories.StoredProcedures.Interfaces;
+
+/// <summary>
+/// Stored Procedure repository for Exam module operations.
+/// Handles exam data retrieval via sp_GetExamsForAdmin.
+/// </summary>
+public interface IExamSpRepository : IBaseRepository<Exam>
+{
+    /// <summary>
+    /// Get exams for admin with detailed information from stored procedure.
+    /// </summary>
+    Task<IEnumerable<ExamUpsertDto>> GetExamsForAdminAsync(
+        int academicYearId,
+        CancellationToken ct = default);
+}

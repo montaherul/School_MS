@@ -1,0 +1,15 @@
+﻿namespace SchoolManagementSystem.Models.DTOs.Common;
+
+public class ChartPoint
+{
+    public string Label { get; set; }
+    public decimal Value { get; set; }
+
+    public ChartPoint() { }
+
+    public ChartPoint(string label, decimal value)
+    {
+        Label = label;
+        Value = value;
+    }
+}

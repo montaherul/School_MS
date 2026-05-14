@@ -4,9 +4,9 @@ using System.Reflection;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SchoolManagementSystem.Data;
 using SchoolManagementSystem.Models.Entities.Base;
 using SchoolManagementSystem.Models.ViewModels.Shared;
+using SchoolManagementSystem.Services.Interfaces.Base;
 using System.Security.Claims;
 
 namespace SchoolManagementSystem.Controllers.Common;
@@ -14,65 +14,38 @@ namespace SchoolManagementSystem.Controllers.Common;
 [Authorize]
 public abstract class GenericCrudController<TEntity> : Controller where TEntity : BaseEntity, new()
 {
-    private readonly SchoolDbContext _db;
-    private readonly string _moduleName;
+    protected readonly IBaseService<TEntity> _service;
+    protected readonly string _moduleName;
 
-    protected GenericCrudController(SchoolDbContext db, string moduleName)
+    protected GenericCrudController(IBaseService<TEntity> service, string moduleName)
     {
-        _db = db;
+        _service = service;
         _moduleName = moduleName;
     }
     
+    protected string ControllerName => GetType().Name.Replace("Controller", string.Empty);
+
     protected virtual IQueryable<TEntity> ApplySecurityFilters(IQueryable<TEntity> query)
     {
         return query;
     }
 
-    protected async Task<int?> GetCurrentStudentIdAsync()
-    {
-        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (!int.TryParse(userIdStr, out var userId)) return null;
-
-        var student = await _db.Students.AsNoTracking()
-            .FirstOrDefaultAsync(s => s.UserId == userId && !s.IsDeleted);
-        return student?.Id;
-    }
-
-    protected string ControllerName => GetType().Name.Replace("Controller", string.Empty);
-
     public virtual async Task<IActionResult> Index(int page = 1, int pageSize = 10, string? search = null, CancellationToken cancellationToken = default)
     {
         page = Math.Max(page, 1);
         pageSize = Math.Clamp(pageSize, 5, 100);
-        var query = _db.Set<TEntity>().AsNoTracking().Where(x => !x.IsDeleted);
-        query = ApplySecurityFilters(query);
-        var searchableProperties = EditableProperties().Where(p => p.PropertyType == typeof(string)).ToList();
-        if (!string.IsNullOrWhiteSpace(search) && searchableProperties.Count > 0)
-        {
-            var items = await query.ToListAsync(cancellationToken);
-            query = items
-                .Where(x => searchableProperties.Any(p => (p.GetValue(x) as string)?.Contains(search, StringComparison.OrdinalIgnoreCase) == true))
-                .AsQueryable();
-        }
-
-        var total = query.Count();
-        var rows = query
-            .OrderByDescending(x => x.Id)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToList()
-            .Select(ToRow)
-            .ToList();
+        
+        var result = await _service.GetPagedAsync(page, pageSize, search, User, cancellationToken);
 
         var model = new CrudListViewModel
         {
             ModuleName = _moduleName,
             ControllerName = ControllerName,
             Columns = EditableProperties().Take(8).Select(p => p.Name).ToList(),
-            Rows = rows,
+            Rows = result.Items.Select(ToRow).ToList(),
             Page = page,
             PageSize = pageSize,
-            TotalItems = total,
+            TotalItems = result.TotalItems,
             Search = search
         };
         return View(model);
@@ -91,14 +64,15 @@ public abstract class GenericCrudController<TEntity> : Controller where TEntity 
     public virtual async Task<IActionResult> CreateEdit(int? id = null, CancellationToken cancellationToken = default)
     {
         var entity = id is > 0
-            ? await _db.Set<TEntity>().AsNoTracking().FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted, cancellationToken)
+            ? await _service.GetByIdAsync(id.Value, cancellationToken)
             : new TEntity();
-        if (entity is null)
+            
+        if (entity is null && id > 0)
         {
             return NotFound();
         }
 
-        return View("CreateEdit", ToForm(entity));
+        return View("CreateEdit", ToForm(entity ?? new TEntity()));
     }
 
     [HttpPost]
@@ -107,9 +81,10 @@ public abstract class GenericCrudController<TEntity> : Controller where TEntity 
     {
         var id = int.TryParse(form["Id"], out var parsedId) ? parsedId : 0;
         var entity = id > 0
-            ? await _db.Set<TEntity>().FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted, cancellationToken)
+            ? await _service.GetByIdAsync(id, cancellationToken)
             : new TEntity();
-        if (entity is null)
+            
+        if (entity is null && id > 0)
         {
             return NotFound();
         }
@@ -124,18 +99,16 @@ public abstract class GenericCrudController<TEntity> : Controller where TEntity 
             property.SetValue(entity, ConvertValue(raw.ToString(), property.PropertyType));
         }
 
+        var user = User.Identity?.Name ?? "system";
         if (id == 0)
         {
-            entity.CreatedBy = User.Identity?.Name ?? "system";
-            _db.Set<TEntity>().Add(entity);
+            await _service.CreateAsync(entity!, user, cancellationToken);
         }
         else
         {
-            entity.UpdatedBy = User.Identity?.Name ?? "system";
-            entity.UpdatedAt = DateTime.UtcNow;
+            await _service.UpdateAsync(entity!, user, cancellationToken);
         }
 
-        await _db.SaveChangesAsync(cancellationToken);
         TempData["SuccessMessage"] = $"{_moduleName} saved successfully.";
         return RedirectToAction(nameof(Index));
     }
@@ -149,7 +122,7 @@ public abstract class GenericCrudController<TEntity> : Controller where TEntity 
 
     public virtual async Task<IActionResult> Details(int id, CancellationToken cancellationToken = default)
     {
-        var query = _db.Set<TEntity>().AsNoTracking().Where(x => x.Id == id && !x.IsDeleted);
+        var query = _service.Query().Where(x => x.Id == id);
         query = ApplySecurityFilters(query);
         var entity = await query.FirstOrDefaultAsync(cancellationToken);
         return entity is null ? NotFound() : View(ToDetails(entity));
@@ -157,7 +130,7 @@ public abstract class GenericCrudController<TEntity> : Controller where TEntity 
 
     public virtual async Task<IActionResult> Delete(int id, CancellationToken cancellationToken = default)
     {
-        var entity = await _db.Set<TEntity>().AsNoTracking().FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted, cancellationToken);
+        var entity = await _service.GetByIdAsync(id, cancellationToken);
         return entity is null ? NotFound() : View(ToDetails(entity));
     }
 
@@ -165,16 +138,15 @@ public abstract class GenericCrudController<TEntity> : Controller where TEntity 
     [ValidateAntiForgeryToken]
     public virtual async Task<IActionResult> DeleteConfirmed(int id, CancellationToken cancellationToken = default)
     {
-        var entity = await _db.Set<TEntity>().FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted, cancellationToken);
-        if (entity is null)
+        var exists = await _service.ExistsAsync(id, cancellationToken);
+        if (!exists)
         {
             return NotFound();
         }
 
-        entity.IsDeleted = true;
-        entity.UpdatedBy = User.Identity?.Name ?? "system";
-        entity.UpdatedAt = DateTime.UtcNow;
-        await _db.SaveChangesAsync(cancellationToken);
+        var user = User.Identity?.Name ?? "system";
+        await _service.DeleteAsync(id, user, cancellationToken);
+        
         TempData["SuccessMessage"] = $"{_moduleName} deleted successfully.";
         return RedirectToAction(nameof(Index));
     }

@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - SchoolMS</title>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <!-- App styles -->
+    <link rel="stylesheet" href="~/css/schoolms-universal.css" asp-append-version="true" />
+
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body data-bs-spy="scroll" data-bs-target="#lp-navbar" data-bs-offset="80" tabindex="0">
+
+    <!-- 1. Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light lp-navbar sticky-top" id="lp-navbar">
+        <div class="container">
+
+            <!-- Logo -->
+            <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" href="/">
+                <div style="
+                    width:36px;
+                    height:36px;
+                    background:linear-gradient(135deg, #2563eb, #3b82f6);
+                    border-radius:10px;
+                    color:#fff;
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    font-size:18px;">
+                    <i class="bi bi-mortarboard-fill"></i>
+                </div>
+
+                <span>SchoolMS</span>
+            </a>
+
+            <!-- Mobile Toggle -->
+            <button class="navbar-toggler"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#navbarNav"
+                    aria-controls="navbarNav"
+                    aria-expanded="false"
+                    aria-label="Toggle navigation">
+
+                <span class="navbar-toggler-icon"></span>
+            </button>
+
+            <!-- Menu -->
+            <div class="collapse navbar-collapse" id="navbarNav">
+
+                <!-- Center Nav -->
+                <ul class="navbar-nav mx-auto text-center">
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="/#home">Home</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="/#about">About</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="/#academics">Academics</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="/#features">Features</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="/#admissions">Admissions</a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="/#contact-form">Contact</a>
+                    </li>
+
+                </ul>
+
+                <!-- Right Button -->
+                <div class="d-flex justify-content-center mt-3 mt-lg-0">
+                    <a href="/Auth/Login" class="btn btn-primary px-4 rounded-pill">
+                        Login
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </nav>
+
+    <main role="main">
+        @RenderBody()
+    </main>
+
+    <!-- Footer -->
+    <footer class="lp-footer">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-12">
+                    <div class="lp-navbar-brand mb-4" style="color:#fff">
+                        <div style="width:36px;height:36px;background:rgba(255,255,255,0.1);border-radius:var(--radius-sm);display:flex;align-items:center;justify-content:center;font-size:18px;">
+                            <i class="bi bi-mortarboard-fill"></i>
+                        </div>
+                        SchoolMS
+                    </div>
+                    <p class="text-muted mb-4" style="max-width:320px">A comprehensive school management solution designed to enhance the educational journey for everyone involved.</p>
+                    <div class="d-flex gap-3">
+                        <a href="#" style="width:40px;height:40px;background:rgba(255,255,255,0.1);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background 0.2s;"><i class="bi bi-facebook"></i></a>
+                        <a href="#" style="width:40px;height:40px;background:rgba(255,255,255,0.1);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background 0.2s;"><i class="bi bi-twitter-x"></i></a>
+                        <a href="#" style="width:40px;height:40px;background:rgba(255,255,255,0.1);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background 0.2s;"><i class="bi bi-instagram"></i></a>
+                        <a href="#" style="width:40px;height:40px;background:rgba(255,255,255,0.1);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background 0.2s;"><i class="bi bi-linkedin"></i></a>
+                    </div>
+                </div>
+
+                <div class="col-lg-2 col-md-4">
+                    <h5 class="lp-footer-title">Quick Links</h5>
+                    <a href="/#about" class="lp-footer-link">About Us</a>
+                    <a href="/#academics" class="lp-footer-link">Academics</a>
+                    <a href="/Admission/Apply" class="lp-footer-link">Admissions</a>
+                    <a href="#" class="lp-footer-link">Careers</a>
+                    <a href="#" class="lp-footer-link">News & Events</a>
+                </div>
+
+                <div class="col-lg-2 col-md-4">
+                    <h5 class="lp-footer-title">Portals</h5>
+                    <a href="/Auth/Login" class="lp-footer-link">Login Portal</a>
+                   
+                    <a href="#" class="lp-footer-link">Help Desk</a>
+                </div>
+
+                <div class="col-lg-4 col-md-4">
+                    <h5 class="lp-footer-title">Contact Us</h5>
+                    <div class="d-flex align-items-start gap-3 mb-3 text-muted">
+                        <i class="bi bi-geo-alt-fill text-white mt-1"></i>
+                        <span>123 Education Boulevard,<br>Innovation District, ED 10010</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-3 mb-3 text-muted">
+                        <i class="bi bi-telephone-fill text-white"></i>
+                        <span>+1 (800) 123-4567</span>
+                    </div>
+                    <div class="d-flex align-items-center gap-3 mb-3 text-muted">
+                        <i class="bi bi-envelope-fill text-white"></i>
+                        <span>contact@schoolms.edu</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lp-footer-bottom">
+                <div>&copy; 2026 SchoolMS Institution. All rights reserved.</div>
+                <div class="d-flex gap-4">
+                    <a href="#" class="text-muted text-decoration-none hover-white">Privacy Policy</a>
+                    <a href="#" class="text-muted text-decoration-none hover-white">Terms & Conditions</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Navbar transparency on scroll
+        window.addEventListener('scroll', function() {
+            var navbar = document.querySelector('.lp-navbar');
+            if (navbar) {
+                if (window.scrollY > 50) {
+                    navbar.style.background = 'rgba(255, 255, 255, 0.95)';
+                    navbar.style.backdropFilter = 'blur(10px)';
+                } else {
+                    navbar.style.background = 'var(--clr-topbar)';
+                    navbar.style.backdropFilter = 'none';
+                }
+            }
+        });
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

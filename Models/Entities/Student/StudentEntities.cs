@@ -59,12 +59,6 @@ public class Student : BaseEntity
     public string? BloodGroup { get; set; }
 
     [MaxLength(50)]
-    public string? PassportNo { get; set; }
-
-    [MaxLength(50)]
-    public string? NationalIdNo { get; set; }
-
-    [MaxLength(50)]
     public string? BirthCertificateNo { get; set; }
 
     [MaxLength(260)]

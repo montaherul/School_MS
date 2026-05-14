@@ -7,10 +7,11 @@ using iText.Layout.Borders;
 using iText.Layout.Element;
 using iText.Layout.Properties;
 using SchoolManagementSystem.Helpers;
-using SchoolManagementSystem.Helpers.Common;
+
 using SchoolManagementSystem.Models.Entities.Exam;
 using SchoolManagementSystem.Models.Entities.Result;
 using System.IO;
+using SchoolManagementSystem.Models.DTOs.Student;
 namespace SchoolManagementSystem.Helpers.Pdf;
 
 public class PlainPdfGenerator : IPdfGenerator
@@ -88,11 +89,7 @@ public class PlainPdfGenerator : IPdfGenerator
 
         foreach (var mark in marks)
         {
-            var subjectName = mark.Subject.IsReligionSubject &&
-                              !string.IsNullOrEmpty(mark.Subject.ReligionType)
-                ? ReligionHelper.GetReligionSubjectName(
-                    mark.Subject.ReligionType)
-                : mark.Subject.Name;
+            var subjectName = mark.Subject.Name;
 
             table.AddCell(GetBodyCell(subjectName));
 
@@ -170,6 +167,56 @@ public class PlainPdfGenerator : IPdfGenerator
 
         document.Close();
 
+        return stream.ToArray();
+    }
+
+    public byte[] GenerateStudentIdCard(StudentUpsertDto student)
+    {
+        using var stream = new MemoryStream();
+        using var writer = new PdfWriter(stream);
+        using var pdf = new PdfDocument(writer);
+        
+        // Custom ID Card Size (CR80 equivalent in points: ~243 x 153)
+        var pageSize = new PageSize(243, 153);
+        var document = new Document(pdf, pageSize);
+        document.SetMargins(10, 10, 10, 10);
+
+        PdfFont bold = PdfFontFactory.CreateFont(iText.IO.Font.Constants.StandardFonts.HELVETICA_BOLD);
+        PdfFont normal = PdfFontFactory.CreateFont(iText.IO.Font.Constants.StandardFonts.HELVETICA);
+
+        // Background Color / Border
+        var borderTable = new Table(1).SetWidth(UnitValue.CreatePercentValue(100));
+        borderTable.SetBorder(new SolidBorder(ColorConstants.BLUE, 2));
+        
+        // Header
+        var header = new Cell().Add(new Paragraph("SCHOOL MS")
+            .SetFont(bold).SetFontSize(10).SetFontColor(ColorConstants.BLUE)
+            .SetTextAlignment(TextAlignment.CENTER))
+            .SetBorder(Border.NO_BORDER).SetPadding(2);
+        borderTable.AddCell(header);
+
+        // Content Table (Photo | Info)
+        var contentTable = new Table(UnitValue.CreatePercentArray(new float[] { 3, 7 })).UseAllAvailableWidth();
+        
+        // Photo Placeholder
+        var photoCell = new Cell().Add(new Paragraph("PHOTO")
+            .SetFontSize(8).SetTextAlignment(TextAlignment.CENTER))
+            .SetHeight(50).SetVerticalAlignment(VerticalAlignment.MIDDLE)
+            .SetBorder(new SolidBorder(ColorConstants.GRAY, 1));
+        contentTable.AddCell(photoCell);
+
+        // Info
+        var infoCell = new Cell().SetPaddingLeft(5).SetBorder(Border.NO_BORDER);
+        infoCell.Add(new Paragraph(student.FullName).SetFont(bold).SetFontSize(10));
+        infoCell.Add(new Paragraph($"ID: {student.StudentNo}").SetFontSize(8));
+        infoCell.Add(new Paragraph($"Class: {student.ClassId}").SetFontSize(7));
+        infoCell.Add(new Paragraph($"Roll: {student.RollNumber}").SetFontSize(7));
+        contentTable.AddCell(infoCell);
+
+        borderTable.AddCell(new Cell().Add(contentTable).SetBorder(Border.NO_BORDER));
+
+        document.Add(borderTable);
+        document.Close();
         return stream.ToArray();
     }
 

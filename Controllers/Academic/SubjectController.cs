@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Models.DTOs.Academic;
 using SchoolManagementSystem.Models.ViewModels.Academic;
 using SchoolManagementSystem.Services.Interfaces.Academic;
@@ -7,15 +8,17 @@ using System.Security.Claims;
 
 namespace SchoolManagementSystem.Controllers.Academic;
 
-[Authorize(Roles = "Super Admin,Principal,Assistant Head")]
+[Authorize]
 public class SubjectController : Controller
 {
     private readonly ISubjectService _service;
     public SubjectController(ISubjectService service) { _service = service; }
 
+    [RequirePermission("Subjects.View")]
     public IActionResult Index() { return View(); }
     public IActionResult Create() => RedirectToAction(nameof(CreateEdit));
     public IActionResult Edit(int id) => RedirectToAction(nameof(CreateEdit), new { id });
+    [RequirePermission("Subjects.View")]
     public async Task<IActionResult> Details(int id, CancellationToken cancellationToken)
     {
         var dto = await _service.GetForEditAsync(id, cancellationToken);
@@ -23,6 +26,7 @@ public class SubjectController : Controller
     }
 
     [HttpGet]
+    [RequirePermission("Subjects.View")]
     public async Task<IActionResult> GetList(int page = 1, int size = 10, string? search = null)
     {
         var result = await _service.GetPagedAsync(page, size, search);
@@ -30,6 +34,7 @@ public class SubjectController : Controller
     }
 
     [HttpGet]
+    [RequirePermission("Subjects.Create")]
     public async Task<IActionResult> CreateEdit(int? id)
     {
         if (id.HasValue && id > 0)
@@ -44,6 +49,7 @@ public class SubjectController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [RequirePermission("Subjects.Create")]
     public async Task<IActionResult> CreateEdit(SubjectViewModel vm)
     {
         if (!ModelState.IsValid)
@@ -74,9 +80,11 @@ public class SubjectController : Controller
     }
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [RequirePermission("Subjects.Create")]
     public Task<IActionResult> Save(SubjectViewModel vm) => CreateEdit(vm);
 
     [HttpGet]
+    [RequirePermission("Subjects.Delete")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
         var dto = await _service.GetForEditAsync(id, cancellationToken);
@@ -84,6 +92,7 @@ public class SubjectController : Controller
     }
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [RequirePermission("Subjects.Delete")]
     public async Task<IActionResult> DeleteConfirmed(int id, CancellationToken cancellationToken)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
@@ -93,6 +102,7 @@ public class SubjectController : Controller
     }
 
     [HttpPost]
+    [RequirePermission("Subjects.Delete")]
     public async Task<IActionResult> DeleteAjax(int id, CancellationToken cancellationToken)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";

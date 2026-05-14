@@ -29,7 +29,14 @@ public class ApplicationUser : BaseEntity
     public DateTime? ActivationTokenExpiry { get; set; }
 
     public DateTime? LastLoginAt { get; set; }
+    public int FailedLoginAttempts { get; set; }
+    public DateTime? LockoutUntil { get; set; }
+    
+    public long? EmployeeId { get; set; }
+    public virtual SchoolManagementSystem.Models.Entities.Employee.Employee? Employee { get; set; }
+
     public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
+
 }
 
 public class Role : BaseEntity
@@ -108,4 +115,43 @@ public class AuditLog : BaseEntity
 
     [MaxLength(1000)]
     public string? Details { get; set; }
+}
+
+public class UserSession : BaseEntity
+{
+    public int UserId { get; set; }
+    public ApplicationUser? User { get; set; }
+
+    [MaxLength(64)]
+    public string SessionId { get; set; } = string.Empty;
+
+    public DateTime LoginAt { get; set; } = DateTime.UtcNow;
+    public DateTime? LogoutAt { get; set; }
+
+    [MaxLength(64)]
+    public string? IpAddress { get; set; }
+
+    [MaxLength(512)]
+    public string? UserAgent { get; set; }
+
+    public bool IsActive { get; set; } = true;
+}
+
+public class Notification : BaseEntity
+{
+    public int UserId { get; set; }
+    public virtual ApplicationUser? User { get; set; }
+
+    [MaxLength(200)]
+    public string Title { get; set; } = string.Empty;
+
+    [MaxLength(1000)]
+    public string Message { get; set; } = string.Empty;
+
+    public NotificationType Type { get; set; }
+    
+    public bool IsRead { get; set; }
+    
+    [MaxLength(500)]
+    public string? RedirectUrl { get; set; }
 }

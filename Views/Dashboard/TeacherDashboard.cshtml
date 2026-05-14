@@ -1,0 +1,107 @@
+@model SchoolManagementSystem.Models.ViewModels.Dashboard.TeacherDashboardViewModel
+@{
+    ViewData["Title"] = "Teacher Dashboard";
+}
+
+<div class="adm-page">
+    <div class="adm-header mb-4">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-person-workspace"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Welcome, @Model.FullName</h1>
+                <p class="adm-header__sub">@Model.Designation | @DateTime.Today.ToString("D")</p>
+            </div>
+        </div>
+    </div>
+
+    @* Teacher Academic Metrics *@
+    <div class="dash-stats" style="grid-template-columns: repeat(4,1fr);">
+        <div class="dash-stat-card border-top border-4 border-primary">
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Classes Today</span>
+                <span class="dash-stat-card__value">@Model.TodayClasses</span>
+            </div>
+        </div>
+        <div class="dash-stat-card border-top border-4 border-info">
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Weekly Periods</span>
+                <span class="dash-stat-card__value">@Model.WeeklyPeriods</span>
+            </div>
+        </div>
+        <div class="dash-stat-card border-top border-4 border-warning">
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Pending Marks</span>
+                <span class="dash-stat-card__value">@Model.PendingMarks</span>
+            </div>
+        </div>
+        <div class="dash-stat-card border-top border-4 border-success">
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Attendance %</span>
+                <span class="dash-stat-card__value">@Model.AttendancePercentage%</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="dash-main-grid mt-4">
+        @* Today's Schedule *@
+        <div class="dash-panel">
+            <div class="dash-panel__header">
+                <h2 class="dash-panel__title">Today's Schedule</h2>
+            </div>
+            <div class="p-0">
+                <div class="list-group list-group-flush">
+                    @foreach (var slot in Model.TodaysSchedule)
+                    {
+                        <div class="list-group-item d-flex justify-content-between align-items-center p-3">
+                            <div>
+                                <h6 class="mb-0 fw-bold">@slot.SubjectName</h6>
+                                <small class="text-muted">@slot.ClassName</small>
+                            </div>
+                            <span class="badge bg-light text-dark rounded-pill border">@slot.TimeSlot</span>
+                        </div>
+                    }
+                    @if (!Model.TodaysSchedule.Any())
+                    {
+                        <div class="p-4 text-center text-muted">
+                            <i class="bi bi-calendar-x d-block mb-2 fs-4"></i>
+                            No classes scheduled for today.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        @* Quick Actions *@
+        <div class="dash-panel">
+            <div class="dash-panel__header">
+                <h2 class="dash-panel__title">Quick Actions</h2>
+            </div>
+            <div class="dash-modules">
+                <a class="dash-module-btn" href="/AttendanceRecord/Index"><i class="bi bi-calendar-check"></i> Mark Attendance</a>
+                <a class="dash-module-btn" href="/ResultManagement/TeacherEntry"><i class="bi bi-pencil-square"></i> Enter Marks</a>
+                <a class="dash-module-btn" href="/AcademicDocument/Index"><i class="bi bi-file-earmark-arrow-up"></i> Upload Materials</a>
+                <a class="dash-module-btn" href="/ClassRoutine/TeacherTimetable"><i class="bi bi-clock-history"></i> My Timetable</a>
+            </div>
+        </div>
+
+        @* Upcoming Holidays *@
+        <div class="dash-panel">
+            <div class="dash-panel__header">
+                <h2 class="dash-panel__title">Upcoming Holidays</h2>
+            </div>
+            <div class="p-0">
+                <div class="list-group list-group-flush">
+                    @foreach (var h in Model.UpcomingHolidays)
+                    {
+                        <div class="list-group-item p-3">
+                            <h6 class="mb-0">@h.Name</h6>
+                            <small class="text-muted">@h.StartDate.ToString("MMM dd") (@h.Days days)</small>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

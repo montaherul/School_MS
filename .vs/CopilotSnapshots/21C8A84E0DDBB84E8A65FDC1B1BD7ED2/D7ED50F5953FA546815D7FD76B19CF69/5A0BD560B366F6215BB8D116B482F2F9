@@ -1,0 +1,10 @@
+﻿namespace SchoolManagementSystem.Models.DTOs.Common;
+
+public class AssignmentDashboardItem
+{
+    public int AssignmentId { get; set; }
+    public string Title { get; set; }
+    public string Subject { get; set; }
+    public DateTime DueDate { get; set; }
+    public string Status { get; set; }
+}

@@ -1,4 +1,4 @@
-@model IEnumerable<SchoolManagementSystem.Models.Entities.Result.StudentExamResult>
+@model IEnumerable<SchoolManagementSystem.Models.DTOs.Result.StudentExamResultDto>
 @{
     ViewData["Title"] = "All Results Overview";
     var exams = ViewBag.Exams as IEnumerable<dynamic>;
@@ -136,48 +136,32 @@
                                                         </div>
                                                     </div>
                                                     <div>
-                                                        <div class="fw-bold">@result.Student?.FullName</div>
-                                                        <small class="text-muted">@result.Student?.StudentNo</small>
+                                                        <div class="fw-bold">@result.ExamName</div>
+                                                        <small class="text-muted">@result.Term</small>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td>
-                                                <span class="badge bg-info">@result.Student?.Class?.Name</span>
+                                                <span class="badge bg-info">@result.Status</span>
                                             </td>
-                                            <td class="fw-bold">@result.Student?.RollNumber</td>
+                                            <td class="fw-bold">@result.Position</td>
                                             <td>
                                                 <div>
-                                                    <div class="fw-bold">@result.Exam?.Name</div>
-                                                    <small class="text-muted">@result.Exam?.Term</small>
+                                                    <div class="fw-bold">@result.Gpa.ToString("F2")</div>
+                                                    <small class="text-muted">@result.PublishedAt?.ToShortDateString()</small>
                                                 </div>
                                             </td>
                                             <td>
-                                                <span class="badge bg-primary fs-6">@result.Gpa.ToString("F2")</span>
+                                                <span class="badge bg-primary fs-6">@result.Grade</span>
                                             </td>
                                             <td>
-                                                <span class="badge bg-success fs-6">@result.Grade</span>
+                                                <span class="badge bg-success fs-6">@result.TotalMarks.ToString("F1")</span>
                                             </td>
                                             <td>
                                                 <div>
-                                                    <div class="fw-bold">@result.TotalMarks.ToString("F1")</div>
-                                                    <small class="text-muted">out of @result.TotalFullMarks</small>
+                                                    <div class="fw-bold">@result.ClassPosition</div>
+                                                    <small class="text-muted">Group: @(result.GroupPosition?.ToString() ?? "-")</small>
                                                 </div>
-                                            </td>
-                                            <td>
-                                                @if (result.Position > 0)
-                                                {
-                                                    <span class="badge bg-warning text-dark">
-                                                        <i class="fas fa-trophy me-1"></i>@result.Position
-                                                        @if (result.ClassPosition > 0 && result.ClassPosition != result.Position)
-                                                        {
-                                                            <small>(Class: @result.ClassPosition)</small>
-                                                        }
-                                                    </span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="text-muted">-</span>
-                                                }
                                             </td>
                                             <td>
                                                 @if (result.IsPassed)
@@ -188,27 +172,28 @@
                                                 {
                                                     <span class="badge bg-danger">Failed</span>
                                                 }
-                                                <br>
-                                                <small class="text-muted">@result.Status</small>
+                                            </td>
+                                            <td>
+                                                <small class="text-muted">@result.FailedSubjectCount failed / @result.PassedSubjectCount passed</small>
                                             </td>
                                             <td>
                                                 <small class="text-muted">
-                                                    @result.PublishedAt?.ToShortDateString() ?? result.CreatedAt.ToShortDateString()
+                                                    @result.PublishedAt?.ToShortDateString() ?? "-"
                                                 </small>
                                             </td>
                                             <td class="text-end pe-4">
                                                 <div class="btn-group btn-group-sm">
-                                                    <a href="@Url.Action("Details", "Student", new { id = result.StudentId })"
+                                                    <a href="@Url.Action("TabulationSheet", "AdminResult", new { examId = result.ExamId })"
                                                        class="btn btn-outline-primary btn-sm" title="Student Details">
                                                         <i class="fas fa-eye"></i>
                                                     </a>
                                                     <button class="btn btn-outline-info btn-sm"
-                                                            onclick="viewDetailedResult(@result.Id)"
+                                                            onclick="viewDetailedResult(@result.ExamId)"
                                                             title="Detailed Result">
                                                         <i class="fas fa-chart-bar"></i>
                                                     </button>
                                                     <button class="btn btn-outline-warning btn-sm"
-                                                            onclick="printResult(@result.Id)"
+                                                            onclick="printResult(@result.ExamId)"
                                                             title="Print Result">
                                                         <i class="fas fa-print"></i>
                                                     </button>

@@ -1,0 +1,72 @@
+@model IEnumerable<SchoolManagementSystem.Models.DTOs.Employee.EmployeePayrollDto>
+@{
+    ViewData["Title"] = "My Payslips";
+}
+
+<div class="adm-page">
+    <div class="adm-header mb-4">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-wallet2"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">My Payslips</h1>
+                <p class="adm-header__sub">View and download your monthly salary statements</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="adm-table">
+                    <thead>
+                        <tr>
+                            <th>Month / Year</th>
+                            <th>Net Salary</th>
+                            <th>Status</th>
+                            <th>Payment Date</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td class="fw-bold">@System.Globalization.DateTimeFormatInfo.CurrentInfo.GetMonthName(item.PayrollMonth) @item.PayrollYear</td>
+                                <td class="text-primary fw-bold">@item.NetSalary.ToString("C")</td>
+                                <td>
+                                    @{
+                                        var badgeClass = item.PaymentStatus switch
+                                        {
+                                            SchoolManagementSystem.Models.Enums.PayrollPaymentStatus.Pending => "bg-warning text-dark",
+                                            SchoolManagementSystem.Models.Enums.PayrollPaymentStatus.Approved => "bg-info",
+                                            SchoolManagementSystem.Models.Enums.PayrollPaymentStatus.Paid => "bg-success",
+                                            SchoolManagementSystem.Models.Enums.PayrollPaymentStatus.Cancelled => "bg-danger",
+                                            _ => "bg-light text-dark"
+                                        };
+                                    }
+                                    <span class="badge @badgeClass">@item.PaymentStatus</span>
+                                </td>
+                                <td class="small text-muted">@(item.PaymentDate?.ToString("dd MMM yyyy") ?? "--")</td>
+                                <td class="text-end">
+                                    <a asp-action="Payslip" asp-route-id="@item.Id" class="adm-btn adm-btn--ghost btn-sm">
+                                        <i class="bi bi-eye me-1"></i> View
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="5" class="text-center py-5 text-muted">
+                                    No payroll records found.
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

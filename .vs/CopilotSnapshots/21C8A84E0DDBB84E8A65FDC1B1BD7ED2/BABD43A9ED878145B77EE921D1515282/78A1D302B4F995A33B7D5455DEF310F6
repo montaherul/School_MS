@@ -1,0 +1,694 @@
+﻿using System.Data;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+using SchoolManagementSystem.Data;
+using SchoolManagementSystem.Models.Entities.Academic;
+using SchoolManagementSystem.Models.Entities.Admission;
+using SchoolManagementSystem.Models.Entities.Attendance;
+using SchoolManagementSystem.Models.Entities.Fees;
+using SchoolManagementSystem.Models.Entities.Student;
+using SchoolManagementSystem.Repositories.Interfaces;
+using SchoolManagementSystem.Models.Entities.Teachers;
+using SchoolManagementSystem.Models.Entities.Exam;
+using SchoolManagementSystem.Models.Entities.Result;
+using SchoolManagementSystem.Models.DTOs.Result;
+using SchoolManagementSystem.Models.DTOs.Admission;
+using SchoolManagementSystem.Models.DTOs.Attendance;
+using SchoolManagementSystem.Models.DTOs.Fees;
+using SchoolManagementSystem.Models.ViewModels.Result;
+using SchoolManagementSystem.Models.ViewModels.Dashboard;
+using SchoolManagementSystem.Models.DTOs.Teacher;
+using SchoolManagementSystem.Models.Enums;
+using SchoolManagementSystem.Models.DTOs.Student;
+using SchoolManagementSystem.Services.Interfaces.Fees;
+
+namespace SchoolManagementSystem.Repositories.Implementations;
+
+public class StudentRepo : BaseRepository<Student>, IStudentRepo
+{
+    public StudentRepo(SchoolDbContext db) : base(db) { }
+
+    public async Task<(List<StudentListItemDto> items, int totalRecords)> GetPagedAsync(int page, int pageSize, string? search, CancellationToken ct)
+    {
+        var query = _db.Students.AsNoTracking().Include(s => s.Section).Include(s => s.Class).Where(s => !s.IsDeleted);
+        if (!string.IsNullOrEmpty(search))
+        {
+            query = query.Where(s => s.FullName.Contains(search) || s.StudentNo.Contains(search));
+        }
+
+        var totalCount = await query.CountAsync(ct);
+        var items = await query.OrderByDescending(s => s.CreatedAt)
+            .Skip((page - 1) * pageSize).Take(pageSize)
+            .Select(s => new StudentListItemDto
+            {
+                Id = s.Id,
+
+                StudentNo = s.StudentNo,
+
+                FullName = s.FullName,
+
+                ProfilePicturePath = s.ProfilePicturePath,
+
+                ClassName = s.Class.Name,
+
+                SectionName = s.Section.Name,
+
+                RollNumber = s.RollNumber,
+
+                Status = s.Status.ToString(),
+
+                // FAMILY
+                FatherName = s.FatherName,
+
+                FatherOccupation = s.FatherOccupation,
+
+                MotherName = s.MotherName,
+
+                MotherOccupation = s.MotherOccupation,
+
+                // CONTACT
+                MobileNumber = s.MobileNumber,
+
+                EmailAddress = s.EmailAddress,
+
+                // GUARDIAN
+                FatherOrGuardianMobileNo =s.Guardians.Select(g => g.Phone).FirstOrDefault(),
+
+                // PERSONAL
+                BloodGroup = s.BloodGroup,
+
+                Religion = s.Religion,
+
+                Nationality = s.Nationality,
+
+                NationalIdNo = s.NationalIdNo,
+
+                BirthCertificateNo =
+        s.BirthCertificateNo
+            }).ToListAsync(ct);
+
+        return (items, totalCount);
+    }
+
+    public async Task<StudentUpsertDto?> GetForEditAsync(int id, CancellationToken ct)
+    {
+        var student = await _db.Students.AsNoTracking()
+            .Include(s => s.Guardians)
+            .Include(s => s.Section)
+            .FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted, ct);
+
+        if (student == null) return null;
+
+        var guardian = student.Guardians.FirstOrDefault();
+        return new StudentUpsertDto
+        {
+            Id = student.Id,
+            StudentNo = student.StudentNo,
+            FullName = student.FullName,
+            FullNameBangla = student.FullNameBangla,
+            DateOfBirth = student.DateOfBirth,
+            Gender = student.Gender,
+            FatherName = student.FatherName,
+            FatherOccupation = student.FatherOccupation,
+            MotherName = student.MotherName,
+            MotherOccupation = student.MotherOccupation,
+            MobileNumber = student.MobileNumber,
+            AlternativeNumber = student.AlternativeNumber,
+            EmailAddress = student.EmailAddress,
+            Nationality = student.Nationality,
+            Country = student.Country,
+            MaritalStatus = student.MaritalStatus,
+            Religion = student.Religion,
+            BloodGroup = student.BloodGroup,
+            PresentVillage = student.PresentVillage,
+            PresentPostOffice = student.PresentPostOffice,
+            PresentThana = student.PresentThana,
+            PresentDistrict = student.PresentDistrict,
+            PermanentVillage = student.PermanentVillage,
+            PermanentPostOffice = student.PermanentPostOffice,
+            PermanentThana = student.PermanentThana,
+            PermanentDistrict = student.PermanentDistrict,
+            PassportNo = student.PassportNo,
+            NationalIdNo = student.NationalIdNo,
+            BirthCertificateNo = student.BirthCertificateNo,
+            ProfilePicturePath = student.ProfilePicturePath,
+            ClassId = student.ClassId,
+            SectionId = student.SectionId,
+            RollNumber = student.RollNumber,
+            SectionName = student.Section?.Name ?? "N/A",
+            GuardianName = guardian?.Relation == "Guardian" ? guardian.Name : null,
+            GuardianOccupation = guardian?.Occupation,
+            FatherOrGuardianMobileNo = guardian?.Phone ?? string.Empty
+        };
+    }
+
+    public async Task<StudentUpsertDto?> GetByStudentNoAsync(string studentNo, CancellationToken ct)
+    {
+        var student = await _db.Students.AsNoTracking()
+            .Include(s => s.Guardians)
+            .Include(s => s.Section)
+            .FirstOrDefaultAsync(s => s.StudentNo == studentNo && !s.IsDeleted, ct);
+
+        if (student == null) return null;
+
+        var guardian = student.Guardians.FirstOrDefault();
+        return new StudentUpsertDto
+        {
+            Id = student.Id,
+            StudentNo = student.StudentNo,
+            FullName = student.FullName,
+            FullNameBangla = student.FullNameBangla,
+            DateOfBirth = student.DateOfBirth,
+            Gender = student.Gender,
+            FatherName = student.FatherName,
+            FatherOccupation = student.FatherOccupation,
+            MotherName = student.MotherName,
+            MotherOccupation = student.MotherOccupation,
+            MobileNumber = student.MobileNumber,
+            AlternativeNumber = student.AlternativeNumber,
+            EmailAddress = student.EmailAddress,
+            Nationality = student.Nationality,
+            Country = student.Country,
+            MaritalStatus = student.MaritalStatus,
+            Religion = student.Religion,
+            BloodGroup = student.BloodGroup,
+            PresentVillage = student.PresentVillage,
+            PresentPostOffice = student.PresentPostOffice,
+            PresentThana = student.PresentThana,
+            PresentDistrict = student.PresentDistrict,
+            PermanentVillage = student.PermanentVillage,
+            PermanentPostOffice = student.PermanentPostOffice,
+            PermanentThana = student.PermanentThana,
+            PermanentDistrict = student.PermanentDistrict,
+            PassportNo = student.PassportNo,
+            NationalIdNo = student.NationalIdNo,
+            BirthCertificateNo = student.BirthCertificateNo,
+            ProfilePicturePath = student.ProfilePicturePath,
+            ClassId = student.ClassId,
+            SectionId = student.SectionId,
+            RollNumber = student.RollNumber,
+            SectionName = student.Section?.Name ?? "N/A",
+            GuardianName = guardian?.Relation == "Guardian" ? guardian.Name : null,
+            GuardianOccupation = guardian?.Occupation,
+            FatherOrGuardianMobileNo = guardian?.Phone ?? string.Empty
+        };
+    }
+}
+public class AdmissionRepo : BaseRepository<AdmissionApplication>, IAdmissionRepo
+{
+    public AdmissionRepo(SchoolDbContext db) : base(db) { }
+
+    public async Task<(List<AdmissionListResultDto> items, int totalRecords)> GetListByStoredProcedureAsync(
+        int pageNumber, int pageSize, string? searchTerm, int classId, int? status, CancellationToken ct)
+    {
+        using var command = _db.Database.GetDbConnection().CreateCommand();
+        command.CommandText = "sp_GetAdmissionList";
+        command.CommandType = CommandType.StoredProcedure;
+
+        command.Parameters.Add(new SqlParameter("@PageNumber", pageNumber));
+        command.Parameters.Add(new SqlParameter("@PageSize", pageSize));
+        command.Parameters.Add(new SqlParameter("@SearchTerm", (object?)searchTerm ?? DBNull.Value));
+        command.Parameters.Add(new SqlParameter("@ClassId", classId));
+        command.Parameters.Add(new SqlParameter("@Status", status ?? (object)DBNull.Value));
+
+        await _db.Database.OpenConnectionAsync(ct);
+        try
+        {
+            using var reader = await command.ExecuteReaderAsync(ct);
+            var items = new List<AdmissionListResultDto>();
+
+            while (await reader.ReadAsync(ct))
+            {
+                items.Add(new AdmissionListResultDto
+                {
+                    Id = reader.GetInt32(0),
+                    ApplicationNo = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
+                    ApplicantName = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
+                    DateOfBirth = reader.IsDBNull(3) ? DateTime.MinValue : reader.GetDateTime(3),
+                    Gender = reader.IsDBNull(4) ? string.Empty : reader.GetString(4),
+                    AppliedClassId = reader.IsDBNull(5) ? 0 : reader.GetInt32(5),
+                    ClassName = reader.IsDBNull(6) ? string.Empty : reader.GetString(6),
+                    Status = reader.IsDBNull(7) ? string.Empty : reader.GetString(7),
+                    FatherName = reader.IsDBNull(8) ? string.Empty : reader.GetString(8),
+                    FatherOccupation = reader.IsDBNull(9) ? string.Empty : reader.GetString(9),
+                    MotherName = reader.IsDBNull(10) ? string.Empty : reader.GetString(10),
+                    MotherOccupation = reader.IsDBNull(11) ? string.Empty : reader.GetString(11),
+                    GuardianName = reader.IsDBNull(12) ? string.Empty : reader.GetString(12),
+                    GuardianOccupation = reader.IsDBNull(13) ? string.Empty : reader.GetString(13),
+                    FatherOrGuardianMobileNo = reader.IsDBNull(14) ? string.Empty : reader.GetString(14),
+                    ApplicantMobileNumber = reader.IsDBNull(15) ? string.Empty : reader.GetString(15),
+                    AlternativeNumber = reader.IsDBNull(16) ? string.Empty : reader.GetString(16),
+                    ApplicantEmail = reader.IsDBNull(17) ? string.Empty : reader.GetString(17),
+                    Nationality = reader.IsDBNull(18) ? string.Empty : reader.GetString(18),
+                    Religion = reader.IsDBNull(19) ? string.Empty : reader.GetString(19),
+                    BloodGroup = reader.IsDBNull(20) ? string.Empty : reader.GetString(20),
+                    NationalIdNo = reader.IsDBNull(21) ? string.Empty : reader.GetString(21),
+                    BirthCertificateNo = reader.IsDBNull(22) ? string.Empty : reader.GetString(22),
+                    PassportNo = reader.IsDBNull(23) ? string.Empty : reader.GetString(23),
+                    PaymentMethod = reader.IsDBNull(24) ? string.Empty : reader.GetString(24),
+                    TransactionDetails = reader.IsDBNull(25) ? string.Empty : reader.GetString(25),
+                    PresentVillage = reader.IsDBNull(26) ? string.Empty : reader.GetString(26),
+                    PresentPostOffice = reader.IsDBNull(27) ? string.Empty : reader.GetString(27),
+                    PresentThana = reader.IsDBNull(28) ? string.Empty : reader.GetString(28),
+                    PresentDistrict = reader.IsDBNull(29) ? string.Empty : reader.GetString(29),
+                    PermanentVillage = reader.IsDBNull(30) ? string.Empty : reader.GetString(30),
+                    PermanentPostOffice = reader.IsDBNull(31) ? string.Empty : reader.GetString(31),
+                    PermanentThana = reader.IsDBNull(32) ? string.Empty : reader.GetString(32),
+                    PermanentDistrict = reader.IsDBNull(33) ? string.Empty : reader.GetString(33),
+                    ProfilePicturePath = reader.IsDBNull(34) ? string.Empty : reader.GetString(34),
+                    CreatedBy = reader.IsDBNull(35) ? string.Empty : reader.GetString(35),
+                    CreatedAt = reader.IsDBNull(36) ? DateTime.MinValue : reader.GetDateTime(36),
+                    TotalRecords = reader.IsDBNull(37) ? 0 : reader.GetInt32(37)
+                });
+            }
+            return (items, items.FirstOrDefault()?.TotalRecords ?? 0);
+        }
+        finally
+        {
+            await _db.Database.CloseConnectionAsync();
+        }
+    }
+}
+public class AcademicYearRepo : BaseRepository<AcademicYear>, IAcademicYearRepo { public AcademicYearRepo(SchoolDbContext db) : base(db) { } }
+public class SchoolClassRepo : BaseRepository<SchoolClass>, ISchoolClassRepo { public SchoolClassRepo(SchoolDbContext db) : base(db) { } }
+public class SectionRepo : BaseRepository<Section>, ISectionRepo { public SectionRepo(SchoolDbContext db) : base(db) { } }
+public class SubjectRepo : BaseRepository<Subject>, ISubjectRepo { public SubjectRepo(SchoolDbContext db) : base(db) { } }
+public class AttendanceRepo : BaseRepository<AttendanceRecord>, IAttendanceRepo
+{
+    public AttendanceRepo(SchoolDbContext db) : base(db) { }
+
+    public async Task<(List<AttendanceRecordListItemDto> items, int totalRecords)> GetListByStoredProcedureAsync(
+        int pageNumber, int pageSize, string? searchTerm, int studentId, CancellationToken ct)
+    {
+        using var command = _db.Database.GetDbConnection().CreateCommand();
+        command.CommandText = "sp_GetAttendanceList";
+        command.CommandType = CommandType.StoredProcedure;
+        command.Parameters.Add(new SqlParameter("@PageNumber", pageNumber));
+        command.Parameters.Add(new SqlParameter("@PageSize", pageSize));
+        command.Parameters.Add(new SqlParameter("@SearchTerm", (object?)searchTerm ?? DBNull.Value));
+        command.Parameters.Add(new SqlParameter("@StudentId", studentId));
+
+        await _db.Database.OpenConnectionAsync(ct);
+        try
+        {
+            using var reader = await command.ExecuteReaderAsync(ct);
+            var items = new List<AttendanceRecordListItemDto>();
+            while (await reader.ReadAsync(ct))
+            {
+                items.Add(new AttendanceRecordListItemDto
+                {
+                    Id = reader.GetInt32(0),
+                    StudentId = reader.GetInt32(1),
+                    StudentName = reader.IsDBNull(2) ? "" : reader.GetString(2),
+                    SchoolClassId = reader.GetInt32(3),
+                    ClassName = reader.IsDBNull(4) ? "" : reader.GetString(4),
+                    SectionId = reader.GetInt32(5),
+                    SectionName = reader.IsDBNull(6) ? "" : reader.GetString(6),
+                    Status = (SchoolManagementSystem.Models.Enums.AttendanceStatus)reader.GetInt32(7),
+                    Remarks = reader.IsDBNull(8) ? "" : reader.GetString(8),
+                    TotalRecords = reader.IsDBNull(10) ? 0 : reader.GetInt32(10)
+                });
+            }
+            return (items, items.FirstOrDefault()?.TotalRecords ?? 0);
+        }
+        finally { await _db.Database.CloseConnectionAsync(); }
+    }
+}
+public class FeeStructureRepo : BaseRepository<FeeStructure>, IFeeStructureRepo
+{
+    public FeeStructureRepo(SchoolDbContext db) : base(db) { }
+
+    public async Task<(List<FeeStructureListItemDto> items, int totalRecords)> GetListByStoredProcedureAsync(
+        int pageNumber, int pageSize, string? searchTerm, CancellationToken ct)
+    {
+        using var command = _db.Database.GetDbConnection().CreateCommand();
+        command.CommandText = "sp_GetFeeStructureList";
+        command.CommandType = CommandType.StoredProcedure;
+        command.Parameters.Add(new SqlParameter("@PageNumber", pageNumber));
+        command.Parameters.Add(new SqlParameter("@PageSize", pageSize));
+        command.Parameters.Add(new SqlParameter("@SearchTerm", (object?)searchTerm ?? DBNull.Value));
+
+        await _db.Database.OpenConnectionAsync(ct);
+        try
+        {
+            using var reader = await command.ExecuteReaderAsync(ct);
+            var items = new List<FeeStructureListItemDto>();
+            while (await reader.ReadAsync(ct))
+            {
+                items.Add(new FeeStructureListItemDto
+                {
+                    Id = reader.GetInt32(0),
+                    SchoolClassId = reader.GetInt32(1),
+                    ClassName = reader.GetString(2),
+                    FeeName = reader.GetString(3),
+                    Amount = reader.GetDecimal(4),
+                    IsRecurring = reader.GetBoolean(5),
+                    TotalRecords = reader.IsDBNull(6) ? 0 : reader.GetInt32(6)
+                });
+            }
+            return (items, items.FirstOrDefault()?.TotalRecords ?? 0);
+        }
+        finally { await _db.Database.CloseConnectionAsync(); }
+    }
+}
+public class ExamRepo : BaseRepository<Exam>, IExamRepo
+{
+    public ExamRepo(SchoolDbContext db) : base(db) { }
+
+    public async Task<IEnumerable<ExamUpsertDto>> GetExamsForAdminAsync(int academicYearId, CancellationToken ct)
+    {
+        var exams = new List<ExamUpsertDto>();
+        using var command = _db.Database.GetDbConnection().CreateCommand();
+        command.CommandText = "sp_GetExamsForAdmin";
+        command.CommandType = CommandType.StoredProcedure;
+        command.Parameters.Add(new SqlParameter("@AcademicYearId", academicYearId));
+
+        await _db.Database.OpenConnectionAsync(ct);
+        try
+        {
+            using var reader = await command.ExecuteReaderAsync(ct);
+            while (await reader.ReadAsync(ct))
+            {
+                exams.Add(new ExamUpsertDto
+                {
+                    Id = reader.GetInt32(0),
+                    Name = reader.GetString(1),
+                    Term = (SchoolManagementSystem.Models.Enums.ExamTerm)reader.GetInt32(2),
+                    StartsOn = DateOnly.FromDateTime(reader.GetDateTime(3)),
+                    EndsOn = DateOnly.FromDateTime(reader.GetDateTime(4)),
+                    Status = (SchoolManagementSystem.Models.Enums.ResultWorkflowStatus)reader.GetInt32(5)
+                });
+            }
+            return exams;
+        }
+        finally { await _db.Database.CloseConnectionAsync(); }
+    }
+}
+public class MarkEntryRepo : BaseRepository<MarkEntry>, IMarkEntryRepo
+{
+    public MarkEntryRepo(SchoolDbContext db) : base(db) { }
+
+    public async Task<List<StudentMarkViewModel>> GetMarkEntrySheetAsync(int examId, int classId, int sectionId, int subjectId, CancellationToken ct)
+    {
+        var students = new List<StudentMarkViewModel>();
+        using var command = _db.Database.GetDbConnection().CreateCommand();
+        command.CommandText = "sp_GetMarkEntrySheet";
+        command.CommandType = CommandType.StoredProcedure;
+        command.Parameters.Add(new SqlParameter("@ExamId", examId));
+        command.Parameters.Add(new SqlParameter("@ClassId", classId));
+        command.Parameters.Add(new SqlParameter("@SectionId", sectionId));
+        command.Parameters.Add(new SqlParameter("@SubjectId", subjectId));
+
+        await _db.Database.OpenConnectionAsync(ct);
+        try
+        {
+            using var reader = await command.ExecuteReaderAsync(ct);
+            while (await reader.ReadAsync(ct))
+            {
+                students.Add(new StudentMarkViewModel
+                {
+                    StudentId = reader.GetInt32(0),
+                    StudentName = reader.GetString(1),
+                    StudentNo = reader.GetString(2),
+                    RollNumber = reader.GetInt32(3),
+                    MarksObtained = reader.IsDBNull(4) ? null : reader.GetDecimal(4),
+                    Grade = reader.IsDBNull(5) ? null : reader.GetString(5),
+                    IsLocked = reader.IsDBNull(6) ? false : reader.GetBoolean(6)
+                });
+            }
+
+            // Augment with component-wise marks and teacher info from MarkEntry table
+            var studentIds = students.Select(s => s.StudentId).ToList();
+            if (studentIds.Any())
+            {
+                var marks = await _db.Marks.Where(m => m.ExamId == examId && m.SubjectId == subjectId && studentIds.Contains(m.StudentId)).ToListAsync(ct);
+                var teacherIds = marks.Select(m => m.EnteredByTeacherId).Distinct().ToList();
+                var teachers = await _db.Teachers.Where(t => teacherIds.Contains(t.Id)).ToDictionaryAsync(t => t.Id, t => t.FullName, ct);
+
+                var markMap = marks.ToDictionary(m => m.StudentId, m => m);
+                foreach (var s in students)
+                {
+                    if (markMap.TryGetValue(s.StudentId, out var me))
+                    {
+                        s.WrittenMarks = me.WrittenMarks;
+                        s.MCQMarks = me.MCQMarks;
+                        s.CQMarks = me.CQMarks;
+                        s.PracticalMarks = me.PracticalMarks;
+                        s.VivaMarks = me.VivaMarks;
+                        s.LabMarks = me.LabMarks;
+                        s.OralMarks = me.OralMarks;
+                        s.AssignmentMarks = me.AssignmentMarks;
+                        s.ContinuousAssessmentMarks = me.ContinuousAssessmentMarks;
+                        s.CompetencyMarks = me.CompetencyMarks;
+                        s.BehaviourMarks = me.BehaviourMarks;
+                        s.ParticipationMarks = me.ParticipationMarks;
+                        s.EnteredByTeacherId = me.EnteredByTeacherId;
+                        s.EnteredByTeacherName = teachers.ContainsKey(me.EnteredByTeacherId) ? teachers[me.EnteredByTeacherId] : null;
+                    }
+                }
+            }
+
+            return students;
+        }
+        finally { await _db.Database.CloseConnectionAsync(); }
+    }
+}
+public class GradingRuleRepo : BaseRepository<GradingRule>, IGradingRuleRepo { public GradingRuleRepo(SchoolDbContext db) : base(db) { } }
+public class ResultPublicationRepo : BaseRepository<ResultPublication>, IResultPublicationRepo { public ResultPublicationRepo(SchoolDbContext db) : base(db) { } }
+public class StudentSubjectResultRepo : BaseRepository<StudentSubjectResult>, IStudentSubjectResultRepo { public StudentSubjectResultRepo(SchoolDbContext db) : base(db) { } }
+public class StudentExamResultRepo : BaseRepository<StudentExamResult>, IStudentExamResultRepo { public StudentExamResultRepo(SchoolDbContext db) : base(db) { } }
+public class ReEvaluationRequestRepo : BaseRepository<ReEvaluationRequest>, IReEvaluationRequestRepo { public ReEvaluationRequestRepo(SchoolDbContext db) : base(db) { } }
+public class ResultAuditLogRepo : BaseRepository<ResultAuditLog>, IResultAuditLogRepo { public ResultAuditLogRepo(SchoolDbContext db) : base(db) { } }
+public class MeritResultRepo : BaseRepository<MeritResult>, IMeritResultRepo { public MeritResultRepo(SchoolDbContext db) : base(db) { } }
+public class FinalResultRepo : BaseRepository<FinalResult>, IFinalResultRepo { public FinalResultRepo(SchoolDbContext db) : base(db) { } }
+public class PromotionHistoryRepo : BaseRepository<PromotionHistory>, IPromotionHistoryRepo { public PromotionHistoryRepo(SchoolDbContext db) : base(db) { } }
+public class TeacherRepo : BaseRepository<Teacher>, ITeacherRepo
+{
+    public TeacherRepo(SchoolDbContext db) : base(db) { }
+
+    public async Task<(List<TeacherListItemDto> items, int totalRecords)> GetPagedAsync(int page, int pageSize, string? search, string? department, string? status, CancellationToken ct)
+    {
+        var query = _db.Teachers.AsNoTracking().Where(t => !t.IsDeleted);
+        if (!string.IsNullOrEmpty(search)) query = query.Where(t => t.FullName.Contains(search) || t.TeacherNo.Contains(search));
+        if (!string.IsNullOrEmpty(department)) query = query.Where(t => t.Department == department);
+        if (!string.IsNullOrEmpty(status))
+        {
+            if (Enum.TryParse<TeacherStatus>(status, out var s)) query = query.Where(t => t.Status == s);
+        }
+
+        var totalCount = await query.CountAsync(ct);
+        var items = await query.OrderBy(t => t.FullName)
+            .Skip((page - 1) * pageSize).Take(pageSize)
+            .Select(t => new TeacherListItemDto
+            {
+                Id = t.Id,
+                TeacherNo = t.TeacherNo,
+                FullName = t.FullName,
+                Designation = t.Designation,
+                Department = t.Department,
+                MobileNumber = t.MobileNumber,
+                Status = t.Status.ToString(),
+                ProfilePicturePath = t.ProfilePicturePath
+            }).ToListAsync(ct);
+
+        return (items, totalCount);
+    }
+
+    public async Task<TeacherUpsertDto?> GetForEditAsync(int id, CancellationToken ct)
+    {
+        return await _db.Teachers.AsNoTracking()
+            .Where(t => t.Id == id && !t.IsDeleted)
+            .Select(t => new TeacherUpsertDto
+            {
+                Id = t.Id,
+                TeacherNo = t.TeacherNo,
+                FullName = t.FullName,
+                FullNameBangla = t.FullNameBangla,
+                DateOfBirth = t.DateOfBirth,
+                Gender = t.Gender,
+                MobileNumber = t.MobileNumber,
+                AlternativeNumber = t.AlternativeNumber,
+                EmailAddress = t.EmailAddress,
+                Nationality = t.Nationality,
+                Country = t.Country,
+                MaritalStatus = t.MaritalStatus,
+                Religion = t.Religion,
+                BloodGroup = t.BloodGroup,
+                PassportNo = t.PassportNo,
+                NationalIdNo = t.NationalIdNo,
+                Designation = t.Designation,
+                Department = t.Department,
+                Qualification = t.Qualification,
+                Specialization = t.Specialization,
+                JoiningDate = t.JoiningDate,
+                FatherName = t.FatherName,
+                MotherName = t.MotherName,
+                SpouseName = t.SpouseName,
+                PresentVillage = t.PresentVillage,
+                PresentPostOffice = t.PresentPostOffice,
+                PresentThana = t.PresentThana,
+                PresentDistrict = t.PresentDistrict,
+                PermanentVillage = t.PermanentVillage,
+                PermanentPostOffice = t.PermanentPostOffice,
+                PermanentThana = t.PermanentThana,
+                PermanentDistrict = t.PermanentDistrict,
+                ProfilePicturePath = t.ProfilePicturePath
+            })
+            .FirstOrDefaultAsync(ct);
+    }
+
+    public async Task<TeacherUpsertDto?> GetByUserIdAsync(int userId, CancellationToken ct)
+    {
+        return await _db.Teachers.AsNoTracking()
+            .Where(t => t.UserId == userId && !t.IsDeleted)
+            .Select(t => new TeacherUpsertDto
+            {
+                Id = t.Id,
+                TeacherNo = t.TeacherNo,
+                FullName = t.FullName,
+                FullNameBangla = t.FullNameBangla,
+                DateOfBirth = t.DateOfBirth,
+                Gender = t.Gender,
+                MobileNumber = t.MobileNumber,
+                AlternativeNumber = t.AlternativeNumber,
+                EmailAddress = t.EmailAddress,
+                Nationality = t.Nationality,
+                Country = t.Country,
+                MaritalStatus = t.MaritalStatus,
+                Religion = t.Religion,
+                BloodGroup = t.BloodGroup,
+                PassportNo = t.PassportNo,
+                NationalIdNo = t.NationalIdNo,
+                Designation = t.Designation,
+                Department = t.Department,
+                Qualification = t.Qualification,
+                Specialization = t.Specialization,
+                JoiningDate = t.JoiningDate,
+                FatherName = t.FatherName,
+                MotherName = t.MotherName,
+                SpouseName = t.SpouseName,
+                PresentVillage = t.PresentVillage,
+                PresentPostOffice = t.PresentPostOffice,
+                PresentThana = t.PresentThana,
+                PresentDistrict = t.PresentDistrict,
+                PermanentVillage = t.PermanentVillage,
+                PermanentPostOffice = t.PermanentPostOffice,
+                PermanentThana = t.PermanentThana,
+                PermanentDistrict = t.PermanentDistrict,
+                ProfilePicturePath = t.ProfilePicturePath
+            })
+            .FirstOrDefaultAsync(ct);
+    }
+}
+public class TeacherClassAssignmentRepo : BaseRepository<TeacherClassAssignment>, ITeacherClassAssignmentRepo { public TeacherClassAssignmentRepo(SchoolDbContext db) : base(db) { } }
+public class TeacherSubjectAssignmentRepo : BaseRepository<TeacherSubjectAssignment>, ITeacherSubjectAssignmentRepo { public TeacherSubjectAssignmentRepo(SchoolDbContext db) : base(db) { } }
+
+public class FeeInvoiceRepo : BaseRepository<FeeInvoice>, IFeeInvoiceRepo
+{
+    public FeeInvoiceRepo(SchoolDbContext db) : base(db) { }
+
+    public async Task<(List<FeeInvoiceListItemDto> items, int totalRecords)> GetListByStoredProcedureAsync(
+        int pageNumber, int pageSize, string? searchTerm, int? studentId, CancellationToken ct)
+    {
+        var items = new List<FeeInvoiceListItemDto>();
+        using var command = _db.Database.GetDbConnection().CreateCommand();
+        command.CommandText = "sp_GetFeeInvoiceList";
+        command.CommandType = CommandType.StoredProcedure;
+        command.Parameters.Add(new SqlParameter("@PageNumber", pageNumber));
+        command.Parameters.Add(new SqlParameter("@PageSize", pageSize));
+        command.Parameters.Add(new SqlParameter("@SearchTerm", (object?)searchTerm ?? DBNull.Value));
+        command.Parameters.Add(new SqlParameter("@StudentId", studentId ?? 0));
+
+        await _db.Database.OpenConnectionAsync(ct);
+        try
+        {
+            using var reader = await command.ExecuteReaderAsync(ct);
+            while (await reader.ReadAsync(ct))
+            {
+                items.Add(new FeeInvoiceListItemDto
+                {
+                    Id = reader.GetInt32(0),
+                    InvoiceNo = reader.GetString(1),
+                    StudentId = reader.GetInt32(2),
+                    StudentName = reader.IsDBNull(3) ? "" : reader.GetString(3),
+                    DueDate = DateOnly.FromDateTime(reader.GetDateTime(4)),
+                    TotalAmount = reader.GetDecimal(5),
+                    PaidAmount = reader.GetDecimal(6),
+                    Status = (SchoolManagementSystem.Models.Enums.PaymentStatus)reader.GetInt32(7),
+                    TotalRecords = reader.IsDBNull(8) ? 0 : reader.GetInt32(8)
+                });
+            }
+            return (items, items.FirstOrDefault()?.TotalRecords ?? 0);
+        }
+        finally { await _db.Database.CloseConnectionAsync(); }
+    }
+}
+
+public class DashboardRepo : IDashboardRepo
+{
+    private readonly SchoolDbContext _db;
+    public DashboardRepo(SchoolDbContext db) { _db = db; }
+
+    public async Task<(int totalAttendance, int presentAttendance, decimal feesCollected, decimal feesTotal, List<ChartPoint> studentsByClass, List<ChartPoint> monthlyCollections, List<RecentActivityItem> recentActivities, int totalStudents, int pendingAdmissions)> GetAdminDashboardDataAsync(CancellationToken ct)
+    {
+        var totalAttendance = await _db.Attendance.CountAsync(ct);
+        var presentAttendance = await _db.Attendance.CountAsync(x => x.Status == SchoolManagementSystem.Models.Enums.AttendanceStatus.Present, ct);
+        var feesCollected = await _db.FeeInvoices.SumAsync(x => x.PaidAmount, ct);
+        var feesTotal = await _db.FeeInvoices.SumAsync(x => x.TotalAmount, ct);
+
+        var studentsByClass = await _db.Classes
+            .Where(c => !c.IsDeleted)
+            .Select(c => new ChartPoint(c.Name, _db.Students.Count(s => s.ClassId == c.Id && !s.IsDeleted)))
+            .ToListAsync(ct);
+
+        var monthlyCollectionRows = await _db.Payments
+            .GroupBy(p => new { p.PaidAt.Year, p.PaidAt.Month })
+            .Select(g => new { g.Key.Year, g.Key.Month, Amount = g.Sum(p => p.Amount) })
+            .OrderBy(x => x.Year).ThenBy(x => x.Month)
+            .ToListAsync(ct);
+            
+        var monthlyCollections = monthlyCollectionRows
+            .Select(x => new ChartPoint($"{x.Year}-{x.Month:00}", x.Amount))
+            .ToList();
+
+        var recentActivities = new List<RecentActivityItem>();
+        var notices = await _db.Notices.Where(x => !x.IsDeleted).OrderByDescending(x => x.PublishAt).Take(5)
+            .Select(x => new RecentActivityItem("Notice", x.Title, x.PublishAt, ""))
+            .ToListAsync(ct);
+        var admissions = await _db.Admissions.Where(x => !x.IsDeleted).OrderByDescending(x => x.CreatedAt).Take(5)
+            .Select(x => new RecentActivityItem("Admission", x.ApplicantName, x.CreatedAt, "New application received"))
+            .ToListAsync(ct);
+
+        recentActivities.AddRange(notices);
+        recentActivities.AddRange(admissions);
+        recentActivities = recentActivities.OrderByDescending(x => x.At).Take(8).ToList();
+
+        var totalStudents = await _db.Students.CountAsync(x => !x.IsDeleted, ct);
+        var pendingAdmissions = await _db.Admissions.CountAsync(x => x.Status == SchoolManagementSystem.Models.Enums.AdmissionStatus.Pending && !x.IsDeleted, ct);
+
+        return (totalAttendance, presentAttendance, feesCollected, feesTotal, studentsByClass, monthlyCollections, recentActivities, totalStudents, pendingAdmissions);
+    }
+
+    public async Task<(int totalAttendance, int presentAttendance, decimal totalInvoiced, decimal totalPaid, List<RecentActivityItem> recentNotices, List<AssignmentDashboardItem> upcomingAssignments)> GetStudentDashboardDataAsync(int studentId, int classId, int sectionId, CancellationToken ct)
+    {
+        var totalAttendance = await _db.Attendance.CountAsync(x => x.StudentId == studentId, ct);
+        var presentAttendance = await _db.Attendance.CountAsync(x => x.StudentId == studentId && x.Status == SchoolManagementSystem.Models.Enums.AttendanceStatus.Present, ct);
+
+        var totalInvoiced = await _db.FeeInvoices.Where(x => x.StudentId == studentId && !x.IsDeleted).SumAsync(x => x.TotalAmount, ct);
+        var totalPaid = await _db.FeeInvoices.Where(x => x.StudentId == studentId && !x.IsDeleted).SumAsync(x => x.PaidAmount, ct);
+
+        var recentNotices = await _db.Notices
+            .Where(x => (x.AudienceRole == "All" || x.AudienceRole == "Student") && !x.IsDeleted)
+            .OrderByDescending(x => x.PublishAt).Take(5)
+            .Select(x => new RecentActivityItem("Notice", x.Title, x.PublishAt, x.Body ?? ""))
+            .ToListAsync(ct);
+
+        var upcomingAssignments = await _db.Assignments
+            .Where(x => x.SchoolClassId == classId && x.SectionId == sectionId && x.Deadline >= DateTime.UtcNow && !x.IsDeleted)
+            .OrderBy(x => x.Deadline).Take(5)
+            .Select(x => new AssignmentDashboardItem(_db.Subjects.Where(s => s.Id == x.SubjectId).Select(s => s.Name).FirstOrDefault() ?? "Unknown", x.Title, x.Deadline))
+            .ToListAsync(ct);
+
+        return (totalAttendance, presentAttendance, totalInvoiced, totalPaid, recentNotices, upcomingAssignments);
+    }
+}

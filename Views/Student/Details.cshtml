@@ -125,13 +125,11 @@
                          alt="Student QR Code"
                          title="@Model.StudentNo" />
                 </div>
-                <h6 class="fw-bold mb-1">Digital Identity</h6>
-                <p class="text-muted small mb-3">Scan for Attendance</p>
                 <div class="d-grid gap-2">
-                    <a href="/Student/PrintIdCard/@Model.Id" class="btn btn-primary btn-sm rounded-pill">
-                        <i class="bi bi-download me-1"></i> Download / Print ID Card
-                    </a>
-                    <small class="text-muted tiny"><i class="bi bi-info-circle me-1"></i> Open in new tab to save as PDF</small>
+                    <button onclick="window.print()" class="btn btn-primary btn-sm rounded-pill">
+                        <i class="bi bi-printer me-1"></i> Print ID Card
+                    </button>
+                    <small class="text-muted tiny"><i class="bi bi-info-circle me-1"></i> Open print dialog to save as PDF if needed</small>
                 </div>
             </div>
         </div>
@@ -161,7 +159,7 @@
                     <div class="detail-row"><span>ID No</span><strong>@Model.StudentNo</strong></div>
                     <div class="detail-row"><span>Class</span><strong>Class @Model.ClassId</strong></div>
                     <div class="detail-row"><span>Roll</span><strong>@Model.RollNumber.ToString("D4")</strong></div>
-                    <div class="detail-row"><span>Father</span><strong>@Model.FatherName</strong></div>
+                    <div class="detail-row"><span>Blood Group </span><strong>@Model.BloodGroup</strong></div>
                 </div>
             </div>
             <div class="card-footer-accent"></div>
@@ -178,7 +176,9 @@
                 <div class="emergency-contact fw-bold mb-3">+880 1875989022</div>
                 
                 <div class="qr-container my-3 p-2 bg-white rounded-3 shadow-sm mx-auto" style="width: 100px;">
-                    <img src="https://chart.googleapis.com/chart?chs=100x100&cht=qr&chl=@Model.StudentNo&choe=UTF-8" />
+                     <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=@Model.StudentNo"
+                         style="width:100%; display:block;"
+                         alt="QR Code" />
                     <div class="small fw-bold text-muted mt-1" style="font-size: 0.5rem;">Scan for Attendance</div>
                 </div>
 

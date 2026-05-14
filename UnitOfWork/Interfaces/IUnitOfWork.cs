@@ -4,6 +4,7 @@ namespace SchoolManagementSystem.UnitOfWork.Interfaces;
 
 public interface IUnitOfWork
 {
-    IGenericRepository<T> Repository<T>() where T : class;
+    IBaseRepository<T> Repository<T>() where T : class;
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
+    Task<int> ExecuteSqlRawAsync(string sql, params object[] parameters);
 }

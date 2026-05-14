@@ -2,7 +2,7 @@ using SchoolManagementSystem.Models.ViewModels.Dashboard;
 
 namespace SchoolManagementSystem.Models.ViewModels.Dashboard;
 
-public class TeacherDashboardViewModel
+public class TeacherDashboardViewModel : EmployeeDashboardViewModel
 {
     public int TeacherId { get; set; }
     public string FullName { get; set; } = string.Empty;
@@ -22,6 +22,13 @@ public class TeacherDashboardViewModel
     // Lists
     public List<AssignmentDashboardItem> UpcomingAssignments { get; set; } = new();
     public List<RecentActivityItem> RecentNotices { get; set; } = new();
+    public List<ScheduleItemDto> TodaysSchedule { get; set; } = new();
+
+    // Added from Employee Dashboard integration
+    public int TodayClasses { get; set; }
+    public int WeeklyPeriods { get; set; }
+    public int PendingMarks { get; set; }
+    public int TotalClassesToday { get; set; }
     
     // Principal/Admin Specific
     public PrincipalStats? PrincipalStats { get; set; }

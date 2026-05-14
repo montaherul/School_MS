@@ -1,0 +1,69 @@
+@model IEnumerable<SchoolManagementSystem.Models.DTOs.Employee.DepartmentDto>
+@{
+    ViewData["Title"] = "Departments";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-building"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Departments</h1>
+                <p class="adm-header__sub">Manage school departments</p>
+            </div>
+        </div>
+        <a href="/Department/Create" class="adm-btn adm-btn--primary">
+            <i class="bi bi-plus-lg"></i>
+            <span>Add Department</span>
+        </a>
+    </div>
+
+    <div class="adm-table-card mt-3">
+        <div class="adm-table-card__body">
+            <table class="table align-middle">
+                <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Name</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td><span class="adm-cell-mono">@item.Code</span></td>
+                            <td><span class="adm-cell-name">@item.Name</span></td>
+                            <td class="text-end">
+                                <a href="/Department/Edit/@item.Id" class="adm-action adm-action--edit"><i class="bi bi-pencil"></i></a>
+                                <button class="adm-action adm-action--reject delete-btn" data-id="@item.Id" data-name="@item.Name"><i class="bi bi-trash"></i></button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@Html.AntiForgeryToken()
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('.delete-btn').forEach(btn => {
+            btn.addEventListener('click', async function() {
+                if(confirm(`Are you sure you want to delete ${this.dataset.name}?`)) {
+                    const res = await fetch(`/Department/Delete/${this.dataset.id}`, {
+                        method: "POST",
+                        headers: { "RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]').value }
+                    });
+                    const data = await res.json();
+                    if(data.success) location.reload();
+                    else alert(data.message);
+                }
+            });
+        });
+    </script>
+}

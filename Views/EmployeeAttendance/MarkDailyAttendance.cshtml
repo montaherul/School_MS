@@ -1,0 +1,127 @@
+@model IEnumerable<SchoolManagementSystem.Models.DTOs.Employee.EmployeeAttendanceDto>
+@{
+    ViewData["Title"] = "Mark Daily Attendance";
+    var targetDate = (DateTime)ViewBag.TargetDate;
+}
+
+<div class="adm-page">
+    <div class="adm-header mb-4">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-pencil-square"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Mark Daily Attendance</h1>
+                <p class="adm-header__sub">Recording attendance for @targetDate.ToString("dd MMMM, yyyy")</p>
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="button" id="markAllPresent" class="adm-btn adm-btn--ghost">
+                <i class="bi bi-check2-all"></i> Mark All Present
+            </button>
+            <a asp-action="Index" asp-route-date="@targetDate.ToString("yyyy-MM-dd")" class="adm-btn adm-btn--ghost">
+                <i class="bi bi-x-lg"></i> Cancel
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold">Select Date</label>
+                    <input type="date" name="date" class="form-control" value="@targetDate.ToString("yyyy-MM-dd")" onchange="this.form.submit()" />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold">Department Filter</label>
+                    <select name="departmentId" class="form-select" asp-items="ViewBag.Departments" onchange="this.form.submit()">
+                        <option value="">All Departments</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <form asp-action="SaveAttendance" method="post">
+        @Html.AntiForgeryToken()
+        <div class="card shadow-sm mb-5">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="adm-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 25%;">Employee</th>
+                                <th style="width: 20%;">Status</th>
+                                <th style="width: 15%;">Check-In</th>
+                                <th style="width: 15%;">Check-Out</th>
+                                <th style="width: 25%;">Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                var list = Model.ToList();
+                                for (int i = 0; i < list.Count; i++)
+                                {
+                                    <tr>
+                                        <td>
+                                            <input type="hidden" name="attendanceList[@i].EmployeeId" value="@list[i].EmployeeId" />
+                                            <input type="hidden" name="attendanceList[@i].AttendanceDate" value="@targetDate.ToString("yyyy-MM-dd")" />
+                                            <div class="fw-bold">@list[i].EmployeeName</div>
+                                            <div class="small text-muted">@list[i].EmployeeCode • @list[i].DepartmentName</div>
+                                        </td>
+                                        <td>
+                                            <select name="attendanceList[@i].Status" class="form-select form-select-sm status-select" asp-items="Html.GetEnumSelectList<SchoolManagementSystem.Models.Enums.AttendanceStatus>()" asp-for="@list[i].Status"></select>
+                                        </td>
+                                        <td>
+                                            <input type="time" name="attendanceList[@i].CheckInTime" class="form-control form-control-sm" value="@(list[i].CheckInTime?.ToString(@"hh\:mm"))" />
+                                        </td>
+                                        <td>
+                                            <input type="time" name="attendanceList[@i].CheckOutTime" class="form-control form-control-sm" value="@(list[i].CheckOutTime?.ToString(@"hh\:mm"))" />
+                                        </td>
+                                        <td>
+                                            <input type="text" name="attendanceList[@i].Remarks" class="form-control form-control-sm" value="@list[i].Remarks" placeholder="Optional notes..." />
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="adm-sticky-bar bg-white border-top shadow p-3 d-flex justify-content-between align-items-center">
+            <div class="text-muted small">
+                <i class="bi bi-info-circle me-1"></i> Marking attendance for <strong>@Model.Count()</strong> employees
+            </div>
+            <div>
+                <button type="submit" class="adm-btn adm-btn--primary">
+                    <i class="bi bi-save me-2"></i> Save Daily Attendance
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('markAllPresent').addEventListener('click', function() {
+            document.querySelectorAll('.status-select').forEach(select => {
+                select.value = '1'; // Present
+            });
+        });
+    </script>
+    <style>
+        .adm-sticky-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 1030;
+            margin-left: 260px; /* Width of the sidebar if present, adjust as needed */
+        }
+        @@media (max-width: 991.98px) {
+            .adm-sticky-bar { margin-left: 0; }
+        }
+    </style>
+}

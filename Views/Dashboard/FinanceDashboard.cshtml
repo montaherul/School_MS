@@ -1,0 +1,73 @@
+@model SchoolManagementSystem.Models.ViewModels.Dashboard.FinanceDashboardViewModel
+@{
+    ViewData["Title"] = "Finance Dashboard";
+}
+
+<div class="adm-page">
+    <div class="adm-header mb-4">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-bank"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Finance Dashboard</h1>
+                <p class="adm-header__sub">Financial overview and payroll management</p>
+            </div>
+        </div>
+    </div>
+
+    @* Finance Metrics *@
+    <div class="dash-stats" style="grid-template-columns: repeat(4,1fr);">
+        <div class="dash-stat-card border-top border-4 border-success">
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Monthly Collections</span>
+                <span class="dash-stat-card__value text-success">@Model.TotalMonthlyRevenue.ToString("C0")</span>
+            </div>
+        </div>
+        <div class="dash-stat-card border-top border-4 border-danger">
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Payroll Expense</span>
+                <span class="dash-stat-card__value text-danger">@Model.TotalPayrollExpense.ToString("C0")</span>
+            </div>
+        </div>
+        <div class="dash-stat-card border-top border-4 border-warning">
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Pending Approvals</span>
+                <span class="dash-stat-card__value text-warning">@Model.PayrollPendingApproval</span>
+            </div>
+        </div>
+        <div class="dash-stat-card border-top border-4 border-info">
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Collection Rate</span>
+                <span class="dash-stat-card__value">@Model.FeeCollectionRate%</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="dash-main-grid mt-4">
+        <div class="dash-panel">
+            <div class="dash-panel__header">
+                <h2 class="dash-panel__title">Financial Operations</h2>
+            </div>
+            <div class="dash-modules">
+                <a class="dash-module-btn" href="/FeeCollection/Index"><i class="bi bi-cash-coin"></i> Collect Fees</a>
+                <a class="dash-module-btn" href="/EmployeePayroll/Index"><i class="bi bi-wallet2"></i> Process Payroll</a>
+                <a class="dash-module-btn" href="/Reports/Financial"><i class="bi bi-file-earmark-bar-graph"></i> Financial Reports</a>
+                <a class="dash-module-btn" href="/Accounting/Ledger"><i class="bi bi-journal-text"></i> General Ledger</a>
+            </div>
+        </div>
+
+        <div class="dash-panel">
+            <div class="dash-panel__header">
+                <h2 class="dash-panel__title">Monthly Trend</h2>
+            </div>
+            <div class="p-3">
+                @* Placeholder for Chart *@
+                <div class="text-center text-muted py-5">
+                    <i class="bi bi-graph-up fs-1 mb-2"></i>
+                    <p>Financial trends will appear here.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

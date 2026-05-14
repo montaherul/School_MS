@@ -78,6 +78,30 @@
                             <label asp-for="Religion" class="form-label fw-600 small text-muted text-uppercase"></label>
                             <input asp-for="Religion" class="form-control" />
                         </div>
+                        <div class="col-md-6">
+                            <label asp-for="NationalIdNo" class="form-label fw-600 small text-muted text-uppercase"></label>
+                            <input asp-for="NationalIdNo" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="NationalIdFile" class="form-label fw-600 small text-muted text-uppercase">National ID (Document)</label>
+                            <input asp-for="NationalIdFile" type="file" class="form-control" accept=".pdf,.jpg,.jpeg,.png" />
+                            @if (!string.IsNullOrEmpty(Model.NationalIdPath))
+                            {
+                                <div class="mt-1"><a href="@Model.NationalIdPath" target="_blank" class="text-info small"><i class="bi bi-file-earmark-pdf"></i> View NID</a></div>
+                            }
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="PassportNo" class="form-label fw-600 small text-muted text-uppercase"></label>
+                            <input asp-for="PassportNo" class="form-control" />
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="PassportFile" class="form-label fw-600 small text-muted text-uppercase">Passport (Document)</label>
+                            <input asp-for="PassportFile" type="file" class="form-control" accept=".pdf,.jpg,.jpeg,.png" />
+                            @if (!string.IsNullOrEmpty(Model.PassportPath))
+                            {
+                                <div class="mt-1"><a href="@Model.PassportPath" target="_blank" class="text-info small"><i class="bi bi-file-earmark-pdf"></i> View Passport</a></div>
+                            }
+                        </div>
                     </div>
                 </div>
             </div>

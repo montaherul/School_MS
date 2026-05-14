@@ -9,6 +9,9 @@ public class StudentListItemDto
     public int Id { get; set; }
     public string StudentNo { get; set; } = string.Empty;
     public string FullName { get; set; } = string.Empty;
+    public string? FullNameBangla { get; set; }
+    public DateTime DateOfBirth { get; set; }
+    public string Gender { get; set; } = string.Empty;
     public int ClassId { get; set; }
     public int SectionId { get; set; }
     public string ClassName { get; set; } = string.Empty;
@@ -37,13 +40,11 @@ public class StudentListItemDto
     public string? Religion { get; set; }
     public string? Nationality { get; set; }
 
-    public string? NationalIdNo { get; set; }
     public string? BirthCertificateNo { get; set; }
-    public string? PassportNo { get; set; }
 
     public string? FatherOrGuardianMobileNo { get; set; }
-    public IFormFile? ProfilePicture { get; set; }
     public string? ProfilePicturePath { get; set; }
+    public DateTime CreatedAt { get; set; }
     public int TotalRecords { get; set; }
 }
 
@@ -109,11 +110,6 @@ public class StudentUpsertDto
     [MaxLength(10), Display(Name="Blood Group")]
     public string? BloodGroup { get; set; }
 
-    [MaxLength(50), Display(Name="Passport No (if any)")]
-    public string? PassportNo { get; set; }
-
-    [MaxLength(50), Display(Name="National ID No.")]
-    public string? NationalIdNo { get; set; }
 
     [MaxLength(50), Display(Name="Birth Certificate No.")]
     public string? BirthCertificateNo { get; set; }

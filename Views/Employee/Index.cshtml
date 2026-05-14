@@ -1,0 +1,223 @@
+@{
+    ViewData["Title"] = "Employee Management";
+}
+
+@Html.AntiForgeryToken()
+
+<div class="adm-page">
+
+    <!-- HEADER -->
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-people-fill"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Employee Management</h1>
+                <p class="adm-header__sub">Manage staff, teachers, and other employees</p>
+            </div>
+        </div>
+        <div class="adm-header__actions">
+            <a href="/Department" class="adm-btn adm-btn--ghost me-2">
+                <i class="bi bi-building"></i>
+                <span>Departments</span>
+            </a>
+            <a href="/Designation" class="adm-btn adm-btn--ghost me-2">
+                <i class="bi bi-briefcase"></i>
+                <span>Designations</span>
+            </a>
+            <a href="/Employee/Create" class="adm-btn adm-btn--primary">
+                <i class="bi bi-person-plus-fill"></i>
+                <span>Add Employee</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="adm-filters mb-3">
+        <div class="adm-filters__row">
+            <!-- SEARCH -->
+            <div class="adm-filters__field adm-filters__field--search">
+                <label class="adm-label">Search</label>
+                <div class="adm-input-wrap">
+                    <i class="bi bi-search adm-input-wrap__icon"></i>
+                    <input type="text" id="table-search" class="adm-input" placeholder="Name, code or phone..." />
+                </div>
+            </div>
+
+            <!-- DEPARTMENT -->
+            <div class="adm-filters__field">
+                <label class="adm-label">Department</label>
+                <select id="departmentFilter" class="adm-select">
+                    <option value="">All Departments</option>
+                    @foreach (var d in (IEnumerable<SchoolManagementSystem.Models.DTOs.Employee.DepartmentDto>)ViewBag.Departments)
+                    {
+                        <option value="@d.Id">@d.Name</option>
+                    }
+                </select>
+            </div>
+
+            <!-- DESIGNATION -->
+            <div class="adm-filters__field">
+                <label class="adm-label">Designation</label>
+                <select id="designationFilter" class="adm-select">
+                    <option value="">All Designations</option>
+                    @foreach (var d in (IEnumerable<SchoolManagementSystem.Models.DTOs.Employee.DesignationDto>)ViewBag.Designations)
+                    {
+                        <option value="@d.Id">@d.Name</option>
+                    }
+                </select>
+            </div>
+
+            <!-- RESET -->
+            <div class="adm-filters__field adm-filters__field--actions">
+                <label class="adm-label">Action</label>
+                <button id="btn-reset" class="adm-btn adm-btn--ghost">Reset</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="adm-table-card">
+        <div class="adm-table-card__body">
+            <div id="data-table"></div>
+        </div>
+    </div>
+
+</div>
+
+<!-- DELETE MODAL -->
+<div class="adm-modal-backdrop d-none" id="deleteModalBackdrop">
+    <div class="adm-modal">
+        <div class="adm-modal__header">
+            <div class="adm-modal__header-left">
+                <div class="adm-modal__header-icon adm-modal__header-icon--danger">
+                    <i class="bi bi-trash"></i>
+                </div>
+                <div>
+                    <h5 class="adm-modal__title">Confirm Delete</h5>
+                    <p class="adm-modal__subtitle">This action cannot be undone</p>
+                </div>
+            </div>
+            <button type="button" class="adm-modal__close" id="closeDeleteModal">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <div class="adm-modal__body">
+            Are you sure you want to delete <strong id="deleteName"></strong>?
+        </div>
+        <div class="adm-modal__footer">
+            <button class="adm-btn adm-btn--ghost" id="cancelDeleteBtn">Cancel</button>
+            <button class="adm-btn adm-btn--danger" id="confirmDeleteBtn">Delete</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let pendingDeleteId = null;
+        const deleteModal = document.getElementById('deleteModalBackdrop');
+        const searchInput = document.getElementById('table-search');
+        const deptFilter = document.getElementById('departmentFilter');
+        const desigFilter = document.getElementById('designationFilter');
+
+        function openDeleteModal(name, id) {
+            pendingDeleteId = id;
+            document.getElementById('deleteName').textContent = name;
+            deleteModal.classList.remove('d-none');
+        }
+
+        function closeDeleteModal() {
+            deleteModal.classList.add('d-none');
+            pendingDeleteId = null;
+        }
+
+        document.getElementById('closeDeleteModal').addEventListener('click', closeDeleteModal);
+        document.getElementById('cancelDeleteBtn').addEventListener('click', closeDeleteModal);
+
+        const table = new Tabulator("#data-table", {
+            height: "calc(100vh - 250px)",
+            layout: "fitColumns",
+            responsiveLayout: "collapse",
+            pagination: true,
+            paginationMode: "remote",
+            ajaxURL: "/Employee/Index",
+            paginationSize: 10,
+            ajaxParams: function() { return getFilters(); },
+            ajaxResponse: function (url, params, response) {
+                return {
+                    data: response.data || [],
+                    last_page = response.last_page || 1
+                };
+            },
+            columns: [
+                {
+                    title: "Photo", field: "photoPath", width: 70, hozAlign: "center",
+                    formatter: function (cell) {
+                        return `<div class="adm-avatar"><img src="${cell.getValue() || '/images/default-user.png'}" /></div>`;
+                    }
+                },
+                { title: "Code", field: "employeeCode", formatter: (cell) => `<span class="adm-cell-mono">${cell.getValue()}</span>` },
+                { title: "Name", field: "fullName", formatter: (cell) => `<span class="adm-cell-name">${cell.getValue()}</span>` },
+                { title: "Department", field: "departmentName" },
+                { title: "Designation", field: "designationName" },
+                { title: "Phone", field: "phone" },
+                {
+                    title: "Status", field: "isActive", hozAlign: "center",
+                    formatter: (cell) => cell.getValue() ? '<span class="adm-status adm-status--approved">Active</span>' : '<span class="adm-status adm-status--neutral">Inactive</span>'
+                },
+                {
+                    title: "Actions", width: 150, hozAlign: "center", headerSort: false,
+                    formatter: function (cell) {
+                        const d = cell.getRow().getData();
+                        return `
+                            <div class="actions-cell">
+                                <a href="/Employee/Details/${d.id}" class="adm-action"><i class="bi bi-eye"></i></a>
+                                <a href="/Employee/Edit/${d.id}" class="adm-action adm-action--edit"><i class="bi bi-pencil"></i></a>
+                                <button class="adm-action adm-action--reject delete-btn" data-id="${d.id}" data-name="${d.fullName}">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>`;
+                    }
+                }
+            ]
+        });
+
+        function getFilters() {
+            return {
+                search: searchInput.value,
+                departmentId: deptFilter.value,
+                designationId: desigFilter.value
+            };
+        }
+
+        function reloadTable() { table.setData(); }
+
+        searchInput.addEventListener('keyup', (e) => { if (e.key === "Enter") reloadTable(); });
+        deptFilter.addEventListener('change', reloadTable);
+        desigFilter.addEventListener('change', reloadTable);
+        document.getElementById('btn-reset').addEventListener('click', () => {
+            searchInput.value = "";
+            deptFilter.value = "";
+            desigFilter.value = "";
+            reloadTable();
+        });
+
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('.delete-btn');
+            if (btn) openDeleteModal(btn.dataset.name, btn.dataset.id);
+        });
+
+        document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
+            if (!pendingDeleteId) return;
+            const res = await fetch(`/Employee/Delete/${pendingDeleteId}`, {
+                method: "POST",
+                headers: { "RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]').value }
+            });
+            const data = await res.json();
+            closeDeleteModal();
+            if (data.success) reloadTable();
+            else alert(data.message);
+        });
+    </script>
+}

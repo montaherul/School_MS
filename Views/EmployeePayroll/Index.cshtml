@@ -1,0 +1,273 @@
+@model SchoolManagementSystem.Models.DTOs.Common.PagedResult<SchoolManagementSystem.Models.DTOs.Employee.EmployeePayrollDto>
+@{
+    ViewData["Title"] = "Payroll Management";
+    var summary = (SchoolManagementSystem.Models.DTOs.Employee.PayrollSummaryDto)ViewBag.Summary;
+}
+
+<div class="adm-page">
+    <div class="adm-header mb-4">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-cash-stack"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Payroll Management</h1>
+                <p class="adm-header__sub">Generate and manage employee salaries</p>
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="button" class="adm-btn adm-btn--primary" data-bs-toggle="modal" data-bs-target="#generateModal">
+                <i class="bi bi-gear-wide-connected me-1"></i> Generate Payroll
+            </button>
+        </div>
+    </div>
+
+    @* Summary Cards *@
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 bg-primary bg-opacity-10 h-100">
+                <div class="card-body">
+                    <div class="small text-muted text-uppercase fw-bold mb-1">Total Expense</div>
+                    <div class="h4 fw-bold mb-0">@summary.TotalExpense.ToString("C")</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 bg-success bg-opacity-10 h-100">
+                <div class="card-body">
+                    <div class="small text-muted text-uppercase fw-bold mb-1">Salaries Paid</div>
+                    <div class="h4 fw-bold mb-0">@summary.TotalPaid</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 bg-warning bg-opacity-10 h-100">
+                <div class="card-body">
+                    <div class="small text-muted text-uppercase fw-bold mb-1">Pending Payment</div>
+                    <div class="h4 fw-bold mb-0">@summary.TotalPending</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 bg-info bg-opacity-10 h-100">
+                <div class="card-body">
+                    <div class="small text-muted text-uppercase fw-bold mb-1">Average Salary</div>
+                    <div class="h4 fw-bold mb-0">@summary.AverageSalary.ToString("C")</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* Filters *@
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-end">
+                <div class="col-md-2">
+                    <label class="form-label small fw-bold">Month</label>
+                    <select name="month" class="form-select">
+                        @for (int m = 1; m <= 12; m++)
+                        {
+                            <option value="@m" selected="@(m == ViewBag.Month)">@System.Globalization.DateTimeFormatInfo.CurrentInfo.GetMonthName(m)</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-bold">Year</label>
+                    <select name="year" class="form-select">
+                        @for (int y = DateTime.Today.Year - 1; y <= DateTime.Today.Year + 1; y++)
+                        {
+                            <option value="@y" selected="@(y == ViewBag.Year)">@y</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label small fw-bold">Department</label>
+                    <select name="departmentId" class="form-select" asp-items="ViewBag.Departments">
+                        <option value="">All Departments</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small fw-bold">Status</label>
+                    <select name="status" class="form-select" asp-items="Html.GetEnumSelectList<SchoolManagementSystem.Models.Enums.PayrollPaymentStatus>()">
+                        <option value="">All Status</option>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex gap-2">
+                    <button type="submit" class="adm-btn adm-btn--primary flex-grow-1">Filter</button>
+                    <a asp-action="Index" class="adm-btn adm-btn--ghost">Reset</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @* Payroll Table *@
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="adm-table">
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Working Stats</th>
+                            <th>Gross</th>
+                            <th>Deductions</th>
+                            <th>Net Salary</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Items)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="fw-bold">@item.EmployeeName</div>
+                                    <div class="small text-muted">@item.EmployeeCode | @item.DesignationName</div>
+                                </td>
+                                <td>
+                                    <div class="small">
+                                        <span class="text-success">P:@item.PresentDays</span> | 
+                                        <span class="text-danger">A:@item.AbsentDays</span> | 
+                                        <span class="text-warning">L:@item.LeaveDays</span>
+                                    </div>
+                                    <div class="progress mt-1" style="height: 3px; width: 80px;">
+                                        @{ var p = (double)item.PresentDays / (item.WorkingDays > 0 ? item.WorkingDays : 1) * 100; }
+                                        <div class="progress-bar bg-success" style="width: @p%"></div>
+                                    </div>
+                                </td>
+                                <td>@item.GrossSalary.ToString("N0")</td>
+                                <td class="text-danger">-@item.DeductionAmount.ToString("N0")</td>
+                                <td class="fw-bold text-primary">@item.NetSalary.ToString("N0")</td>
+                                <td>
+                                    @{
+                                        var badgeClass = item.PaymentStatus switch
+                                        {
+                                            SchoolManagementSystem.Models.Enums.PayrollPaymentStatus.Pending => "bg-warning text-dark",
+                                            SchoolManagementSystem.Models.Enums.PayrollPaymentStatus.Approved => "bg-info",
+                                            SchoolManagementSystem.Models.Enums.PayrollPaymentStatus.Paid => "bg-success",
+                                            SchoolManagementSystem.Models.Enums.PayrollPaymentStatus.Cancelled => "bg-danger",
+                                            _ => "bg-light text-dark"
+                                        };
+                                    }
+                                    <span class="badge @badgeClass">@item.PaymentStatus</span>
+                                </td>
+                                <td class="text-end">
+                                    <div class="dropdown">
+                                        <button class="btn btn-sm btn-light border dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                            Actions
+                                        </button>
+                                        <ul class="dropdown-menu dropdown-menu-end shadow">
+                                            @if (item.PaymentStatus == SchoolManagementSystem.Models.Enums.PayrollPaymentStatus.Pending)
+                                            {
+                                                <li>
+                                                    <form asp-action="Approve" asp-route-id="@item.Id" method="post">
+                                                        <button type="submit" class="dropdown-item text-info"><i class="bi bi-check-all me-2"></i> Approve</button>
+                                                    </form>
+                                                </li>
+                                            }
+                                            @if (item.PaymentStatus == SchoolManagementSystem.Models.Enums.PayrollPaymentStatus.Approved)
+                                            {
+                                                <li>
+                                                    <button class="dropdown-item text-success" onclick="openPayModal(@item.Id, @item.NetSalary)">
+                                                        <i class="bi bi-cash me-2"></i> Mark Paid
+                                                    </button>
+                                                </li>
+                                            }
+                                            <li><a class="dropdown-item" asp-action="Payslip" asp-route-id="@item.Id"><i class="bi bi-file-earmark-text me-2"></i> View Payslip</a></li>
+                                        </ul>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* Generate Modal *@
+<div class="modal fade" id="generateModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form asp-action="Generate" method="post" class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Generate Monthly Payroll</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p class="small text-muted mb-4">This will automatically calculate salaries based on attendance and leave data for the selected period.</p>
+                <div class="row g-3">
+                    <div class="col-6">
+                        <label class="form-label small fw-bold">Month</label>
+                        <select name="month" class="form-select">
+                            @for (int m = 1; m <= 12; m++)
+                            {
+                                <option value="@m" selected="@(m == DateTime.Today.Month)">@System.Globalization.DateTimeFormatInfo.CurrentInfo.GetMonthName(m)</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label small fw-bold">Year</label>
+                        <select name="year" class="form-select">
+                            @for (int y = DateTime.Today.Year - 1; y <= DateTime.Today.Year + 1; y++)
+                            {
+                                <option value="@y" selected="@(y == DateTime.Today.Year)">@y</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-bold">Department (Optional)</label>
+                        <select name="departmentId" class="form-select" asp-items="ViewBag.Departments">
+                            <option value="">All Departments</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="adm-btn adm-btn--ghost" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="adm-btn adm-btn--primary">Start Generation</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@* Payment Modal *@
+<div class="modal fade" id="payModal" tabindex="-1">
+    <div class="modal-dialog">
+        <form asp-action="MarkPaid" method="post" class="modal-content">
+            <input type="hidden" name="id" id="payPayrollId" />
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Payment</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-4">
+                    <div class="small text-muted">Amount to Pay</div>
+                    <div class="h3 fw-bold text-success" id="payAmountDisplay">0.00</div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Payment Date</label>
+                    <input type="date" name="paymentDate" class="form-control" value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Remarks / Transaction Ref</label>
+                    <input type="text" name="remarks" class="form-control" placeholder="Optional..." />
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="adm-btn adm-btn--ghost" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="adm-btn adm-btn--success">Confirm Payment</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function openPayModal(id, amount) {
+            document.getElementById('payPayrollId').value = id;
+            document.getElementById('payAmountDisplay').innerText = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+            new bootstrap.Modal(document.getElementById('payModal')).show();
+        }
+    </script>
+}

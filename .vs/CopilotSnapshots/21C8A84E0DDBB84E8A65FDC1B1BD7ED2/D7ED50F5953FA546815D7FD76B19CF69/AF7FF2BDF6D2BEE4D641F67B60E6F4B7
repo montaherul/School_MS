@@ -1,0 +1,115 @@
+﻿using Microsoft.EntityFrameworkCore;
+using SchoolManagementSystem.Data;
+using SchoolManagementSystem.Models.ViewModels.Dashboard;
+using SchoolManagementSystem.Repositories.Interfaces.Dashboard;
+
+namespace SchoolManagementSystem.Repositories.Implementations.Dashboard;
+
+public class DashboardRepository : IDashboardRepository
+{
+    private readonly SchoolDbContext _db;
+
+    public DashboardRepository(SchoolDbContext db)
+    {
+        _db = db;
+    }
+
+    public async Task<(int totalAttendance, int presentAttendance, decimal feesCollected, decimal feesTotal, List<ChartPoint> studentsByClass, List<ChartPoint> monthlyCollections, List<RecentActivityItem> recentActivities, int totalStudents, int pendingAdmissions)> GetAdminDashboardDataAsync(CancellationToken ct)
+    {
+        var totalStudents = await _db.Students.Where(s => !s.IsDeleted).CountAsync(ct);
+        var pendingAdmissions = await _db.Admissions.Where(a => a.Status.ToString() == "Pending").CountAsync(ct);
+        var totalAttendance = await _db.Attendance.CountAsync(ct);
+        var presentAttendance = await _db.Attendance.Where(a => (int)a.Status == 0).CountAsync(ct);
+        var feesCollected = await _db.FeeInvoices.Where(f => (int)f.Status == 1).SumAsync(f => f.PaidAmount, ct);
+        var feesTotal = await _db.FeeInvoices.SumAsync(f => f.TotalAmount, ct);
+
+        var studentsByClass = await _db.Classes.AsNoTracking()
+            .Select(c => new ChartPoint
+            {
+                Label = c.Name,
+                Value = c.Students.Where(s => !s.IsDeleted).Count()
+            })
+            .ToListAsync(ct);
+
+        var monthlyCollections = await _db.FeeInvoices.Where(f => (int)f.Status == 1)
+            .Where(f => f.UpdatedAt.HasValue).GroupBy(f => f.UpdatedAt.Value.Month)
+            .Select(g => new ChartPoint
+            {
+                Label = g.Key.ToString(),
+                Value = (int)g.Sum(f => f.PaidAmount)
+            })
+            .ToListAsync(ct);
+
+        var recentActivities = new List<RecentActivityItem>();
+
+        return (totalAttendance, presentAttendance, feesCollected, feesTotal, studentsByClass, monthlyCollections, recentActivities, totalStudents, pendingAdmissions);
+    }
+
+    public async Task<(int totalAttendance, int presentAttendance, decimal totalInvoiced, decimal totalPaid, List<RecentActivityItem> recentNotices, List<AssignmentDashboardItem> upcomingAssignments)> GetStudentDashboardDataAsync(int studentId, int classId, int sectionId, CancellationToken ct)
+    {
+        var totalAttendance = await _db.Attendance.Where(a => a.StudentId == studentId).CountAsync(ct);
+        var presentAttendance = await _db.Attendance.Where(a => a.StudentId == studentId && (int)a.Status == 0).CountAsync(ct);
+        var totalInvoiced = await _db.FeeInvoices.Where(f => f.StudentId == studentId).SumAsync(f => f.TotalAmount, ct);
+        var totalPaid = await _db.FeeInvoices.Where(f => f.StudentId == studentId && (int)f.Status == 1).SumAsync(f => f.PaidAmount, ct);
+
+        var recentNotices = new List<RecentActivityItem>();
+        var upcomingAssignments = new List<AssignmentDashboardItem>();
+
+        return (totalAttendance, presentAttendance, totalInvoiced, totalPaid, recentNotices, upcomingAssignments);
+    }
+}
+
+public class DashboardQueryRepository : IDashboardQueryRepository
+{
+    private readonly SchoolDbContext _db;
+
+    public DashboardQueryRepository(SchoolDbContext db)
+    {
+        _db = db;
+    }
+
+    public async Task<(int totalAttendance, int presentAttendance, decimal feesCollected, decimal feesTotal, List<ChartPoint> studentsByClass, List<ChartPoint> monthlyCollections, List<RecentActivityItem> recentActivities, int totalStudents, int pendingAdmissions)> GetAdminDashboardDataAsync(CancellationToken ct)
+    {
+        var totalStudents = await _db.Students.Where(s => !s.IsDeleted).CountAsync(ct);
+        var pendingAdmissions = await _db.Admissions.Where(a => a.Status.ToString() == "Pending").CountAsync(ct);
+        var totalAttendance = await _db.Attendance.CountAsync(ct);
+        var presentAttendance = await _db.Attendance.Where(a => (int)a.Status == 0).CountAsync(ct);
+        var feesCollected = await _db.FeeInvoices.Where(f => (int)f.Status == 1).SumAsync(f => f.PaidAmount, ct);
+        var feesTotal = await _db.FeeInvoices.SumAsync(f => f.TotalAmount, ct);
+
+        var studentsByClass = await _db.Classes.AsNoTracking()
+            .Select(c => new ChartPoint
+            {
+                Label = c.Name,
+                Value = c.Students.Where(s => !s.IsDeleted).Count()
+            })
+            .ToListAsync(ct);
+
+        var monthlyCollections = await _db.FeeInvoices.Where(f => (int)f.Status == 1)
+            .Where(f => f.UpdatedAt.HasValue).GroupBy(f => f.UpdatedAt.Value.Month)
+            .Select(g => new ChartPoint
+            {
+                Label = g.Key.ToString(),
+                Value = (int)g.Sum(f => f.PaidAmount)
+            })
+            .ToListAsync(ct);
+
+        var recentActivities = new List<RecentActivityItem>();
+
+        return (totalAttendance, presentAttendance, feesCollected, feesTotal, studentsByClass, monthlyCollections, recentActivities, totalStudents, pendingAdmissions);
+    }
+
+    public async Task<(int totalAttendance, int presentAttendance, decimal totalInvoiced, decimal totalPaid, List<RecentActivityItem> recentNotices, List<AssignmentDashboardItem> upcomingAssignments)> GetStudentDashboardDataAsync(int studentId, int classId, int sectionId, CancellationToken ct)
+    {
+        var totalAttendance = await _db.Attendance.Where(a => a.StudentId == studentId).CountAsync(ct);
+        var presentAttendance = await _db.Attendance.Where(a => a.StudentId == studentId && (int)a.Status == 0).CountAsync(ct);
+        var totalInvoiced = await _db.FeeInvoices.Where(f => f.StudentId == studentId).SumAsync(f => f.TotalAmount, ct);
+        var totalPaid = await _db.FeeInvoices.Where(f => f.StudentId == studentId && (int)f.Status == 1).SumAsync(f => f.PaidAmount, ct);
+
+        var recentNotices = new List<RecentActivityItem>();
+        var upcomingAssignments = new List<AssignmentDashboardItem>();
+
+        return (totalAttendance, presentAttendance, totalInvoiced, totalPaid, recentNotices, upcomingAssignments);
+    }
+}
+
