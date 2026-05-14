@@ -6,6 +6,7 @@ using SchoolManagementSystem.Models.DTOs.Employee;
 using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Services.Interfaces.Employee;
 using System.Security.Claims;
+using SchoolManagementSystem.Constants;
 
 namespace SchoolManagementSystem.Controllers.Employee;
 
@@ -29,7 +30,7 @@ public class EmployeeLeaveController : Controller
         _departmentService = departmentService;
     }
 
-    [RequirePermission("Leave.View")]
+    [RequirePermission(Permissions.Leave.View)]
     public async Task<IActionResult> Index(int page = 1, string? search = null, long? departmentId = null, long? leaveTypeId = null, LeaveStatus? status = null)
     {
         var model = await _leaveService.GetPagedAsync(page, 15, search, departmentId, leaveTypeId, status);
@@ -44,7 +45,7 @@ public class EmployeeLeaveController : Controller
         return View(model);
     }
 
-    [RequirePermission("Leave.Apply")]
+    [RequirePermission(Permissions.Leave.Apply)]
     public async Task<IActionResult> Create()
     {
         ViewBag.LeaveTypes = await GetLeaveTypeListAsync();
@@ -61,7 +62,7 @@ public class EmployeeLeaveController : Controller
     }
 
     [HttpPost]
-    [RequirePermission("Leave.Apply")]
+    [RequirePermission(Permissions.Leave.Apply)]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(EmployeeLeaveDto model)
     {
@@ -88,7 +89,7 @@ public class EmployeeLeaveController : Controller
         return View(model);
     }
 
-    [RequirePermission("Leave.ViewSelf")]
+    [RequirePermission(Permissions.Leave.ViewSelf)]
     public async Task<IActionResult> MyLeaves()
     {
         var employeeId = await GetCurrentEmployeeIdAsync();
@@ -104,7 +105,7 @@ public class EmployeeLeaveController : Controller
     }
 
     [HttpPost]
-    [RequirePermission("Leave.Approve")]
+    [RequirePermission(Permissions.Leave.Approve)]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Approve(long id, string remarks)
     {
@@ -122,7 +123,7 @@ public class EmployeeLeaveController : Controller
     }
 
     [HttpPost]
-    [RequirePermission("Leave.Reject")]
+    [RequirePermission(Permissions.Leave.Reject)]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Reject(long id, string reason)
     {
@@ -140,7 +141,7 @@ public class EmployeeLeaveController : Controller
     }
 
     [HttpPost]
-    [RequirePermission("Leave.Cancel")]
+    [RequirePermission(Permissions.Leave.Apply)]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Cancel(long id)
     {

@@ -123,7 +123,7 @@ public class EmployeeService : IEmployeeService
             PermanentDistrict = model.PermanentDistrict,
             JoiningDate = model.JoiningDate,
             Salary = model.Salary,
-            PhotoPath = model.PhotoPath,
+            PhotoPath = model.PhotoPath,   // will be overwritten below if a new file was uploaded
             IsActive = model.IsActive,
             DepartmentId = model.DepartmentId,
             DesignationId = model.DesignationId
@@ -131,6 +131,14 @@ public class EmployeeService : IEmployeeService
 
         await _employeeRepository.AddAsync(employee, ct);
         await _unitOfWork.SaveChangesAsync(ct);
+
+        // Save uploaded photo now that we have an Id
+        if (model.PhotoFile != null && model.PhotoFile.Length > 0)
+        {
+            employee.PhotoPath = await SaveFileAsync(model.PhotoFile, "employees/photos", ct);
+            _employeeRepository.Update(employee);
+            await _unitOfWork.SaveChangesAsync(ct);
+        }
 
         if (model.CreateLoginAccount && !string.IsNullOrWhiteSpace(model.Username) && !string.IsNullOrWhiteSpace(model.Password))
         {
@@ -189,7 +197,19 @@ public class EmployeeService : IEmployeeService
         employee.PermanentDistrict = model.PermanentDistrict;
         employee.JoiningDate = model.JoiningDate;
         employee.Salary = model.Salary;
-        employee.PhotoPath = model.PhotoPath;
+
+        // Update photo: replace the file if a new one was uploaded
+        if (model.PhotoFile != null && model.PhotoFile.Length > 0)
+        {
+            DeleteFile(employee.PhotoPath);
+            employee.PhotoPath = await SaveFileAsync(model.PhotoFile, "employees/photos", ct);
+        }
+        else
+        {
+            // Keep existing path if no new file uploaded (form might reset the field)
+            // PhotoPath stays unchanged
+        }
+
         employee.IsActive = model.IsActive;
         employee.DepartmentId = model.DepartmentId;
         employee.DesignationId = model.DesignationId;
@@ -387,6 +407,25 @@ public class EmployeeService : IEmployeeService
     {
         var employee = await _employeeRepository.GetByUserIdAsync(userId, ct);
         return employee?.Id;
+    }
+
+    // ── File helpers (mirrors TeacherService pattern) ─────────────────────────
+    private async Task<string> SaveFileAsync(IFormFile file, string subFolder, CancellationToken ct)
+    {
+        var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", subFolder);
+        if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
+        var fileName = Guid.NewGuid() + Path.GetExtension(file.FileName);
+        var filePath = Path.Combine(folderPath, fileName);
+        await using var stream = new FileStream(filePath, FileMode.Create);
+        await file.CopyToAsync(stream, ct);
+        return $"/uploads/{subFolder}/{fileName}";
+    }
+
+    private void DeleteFile(string? relativePath)
+    {
+        if (string.IsNullOrWhiteSpace(relativePath)) return;
+        var fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", relativePath.TrimStart('/'));
+        if (File.Exists(fullPath)) File.Delete(fullPath);
     }
 }
 

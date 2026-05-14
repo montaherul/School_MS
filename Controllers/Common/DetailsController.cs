@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using SchoolManagementSystem.Constants;
 
 namespace SchoolManagementSystem.Controllers.Common;
 
@@ -10,16 +11,12 @@ public class DetailsController : Controller
     [HttpGet]
     public IActionResult Index()
     {
-        if (User.IsInRole("Student"))
+        if (User.IsInRole(Roles.Student))
         {
             return RedirectToAction("Details", "Student");
         }
         
-        if (User.IsInRole("Teacher") || 
-            User.IsInRole("Senior Lecturer") || 
-            User.IsInRole("Lecturer") || 
-            User.IsInRole("Assistant Head") || 
-            User.IsInRole("Principal"))
+        if (User.IsInRole(Roles.Teacher) || User.IsInRole(Roles.Principal))
         {
             return RedirectToAction("Details", "Teacher");
         }

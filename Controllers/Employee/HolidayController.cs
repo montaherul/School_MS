@@ -5,6 +5,7 @@ using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Models.Entities.Employee;
 using SchoolManagementSystem.Repositories.Interfaces.Employee;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
+using SchoolManagementSystem.Constants;
 
 namespace SchoolManagementSystem.Controllers.Employee;
 
@@ -20,7 +21,7 @@ public class HolidayController : Controller
         _uow = uow;
     }
 
-    [RequirePermission("Settings.View")]
+    [RequirePermission(Permissions.Settings.View)]
     public async Task<IActionResult> Index()
     {
         var holidays = await _holidayRepo.Query().OrderByDescending(h => h.StartDate).ToListAsync();
@@ -28,7 +29,7 @@ public class HolidayController : Controller
     }
 
     [HttpPost]
-    [RequirePermission("Settings.Update")]
+    [RequirePermission(Permissions.Settings.Update)]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(Holiday model)
     {
@@ -42,7 +43,7 @@ public class HolidayController : Controller
     }
 
     [HttpPost]
-    [RequirePermission("Settings.Update")]
+    [RequirePermission(Permissions.Settings.Update)]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(long id)
     {

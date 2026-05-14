@@ -1,6 +1,8 @@
 @inject SchoolManagementSystem.Data.SchoolDbContext _db
+@inject SchoolManagementSystem.Services.Interfaces.Dashboard.IDashboardResolverService _dashboardResolver
 @using System.Security.Claims
 @using Microsoft.EntityFrameworkCore
+@using SchoolManagementSystem.Constants
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -33,38 +35,39 @@
 
 @{
     bool isAuthenticated = User.Identity?.IsAuthenticated == true;
-    bool isStudent = User.IsInRole("Student");
-    bool isTeacherLike = User.IsInRole("Teacher") || User.IsInRole("Senior Lecturer") ||
-                           User.IsInRole("Lecturer") || User.IsInRole("Assistant Head") ||
-                           User.IsInRole("Principal") || User.IsInRole("Office Staff");
-    bool IsAdmin() => User.IsInRole("Super Admin");
-    bool Can(string c) => IsAdmin() || User.HasClaim("Permission", c);
+    bool isStudent = User.IsInRole(Roles.Student);
+    bool isTeacherLike = User.IsInRole(Roles.Teacher) || User.IsInRole(Roles.Principal);
+    
+    bool IsAdmin() => User.IsInRole(Roles.SuperAdmin) || User.IsInRole(Roles.Admin);
+    bool Can(string c) => User.HasClaim("Permission", c);
 
-    string roleBadgeClass = IsAdmin() ? "admin"
-                          : isTeacherLike ? "teacher"
-                          : isStudent ? "student"
-                          : "staff";
+    string roleLabel = "User";
+    string roleBadgeClass = "staff";
+    string? userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+    int userId = 0;
 
-    string roleLabel =
-     IsAdmin() ? "Super Admin" :
-     isStudent ? "Student" :
-     User.IsInRole("Principal") ? "Principal" :
-     User.IsInRole("Teacher") ? "Teacher" :
-     User.IsInRole("Senior Lecturer") ? "Senior Lecturer" :
-     User.IsInRole("Lecturer") ? "Lecturer" :
-     User.IsInRole("Assistant Head") ? "Assistant Head" :
-     User.IsInRole("Office Staff") ? "Office Staff" :
-     "User";
+    if (isAuthenticated && int.TryParse(userIdStr, out userId))
+    {
+        var roles = User.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value).ToArray();
+        
+        roleLabel = roles.OrderByDescending(r => r == Roles.SuperAdmin).ThenByDescending(r => r == Roles.Principal).FirstOrDefault() ?? "User";
+        
+        roleBadgeClass = roleLabel switch {
+            Roles.SuperAdmin or Roles.Admin => "admin",
+            Roles.Teacher or Roles.Principal => "teacher",
+            Roles.Student => "student",
+            _ => "staff"
+        };
+    }
 
     string userName = User.Identity?.Name ?? "";
     string initials = string.Join("", userName.Split(' ', System.StringSplitOptions.RemoveEmptyEntries)
-                                              .Take(2)
-                                              .Select(w => w[0].ToString().ToUpper()));
+                                               .Take(2)
+                                               .Select(w => w[0].ToString().ToUpper()));
     if (string.IsNullOrEmpty(initials) && userName.Length > 0) initials = userName[..1].ToUpper();
 
     string? profilePicture = null;
-    var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-    if (int.TryParse(userIdStr, out var userId))
+    if (isAuthenticated && userId > 0)
     {
         if (isStudent)
         {
@@ -73,10 +76,8 @@
                 .Select(s => s.ProfilePicturePath)
                 .FirstOrDefault();
         }
-     
         else
         {
-            // For Teacher, Staff, and potentially Admin if they are linked to a Teacher/Staff record
             profilePicture = _db.Teachers.AsNoTracking()
                 .Where(t => t.UserId == userId && !t.IsDeleted)
                 .Select(t => t.ProfilePicturePath)
@@ -126,52 +127,44 @@
                     }
                     else
                     {
-                        @if (isTeacherLike)
-                        {
-                            <span class="nav-section-label"><span class="nav-text">Account</span></span>
-                            <a href="/Details" data-title="My Profile"><i class="bi bi-person-circle"></i><span class="nav-text">My Profile</span></a>
-                        }
-
-                        @if (Can("Dashboard.View"))
+                        @if (Can(Permissions.Dashboard.View))
                         {
                             <span class="nav-section-label"><span class="nav-text">Overview</span></span>
                             <a asp-controller="Dashboard" asp-action="Index" data-title="Dashboard"><i class="bi bi-grid-1x2"></i><span class="nav-text">Dashboard</span></a>
                         }
 
-                        @if (Can("Admissions.View") || Can("Admission.View") || Can("Students.View") || Can("Student.View") || Can("Teachers.View"))
+                        @if (Can(Permissions.Admission.View) || Can(Permissions.Student.View) || Can(Permissions.Employee.View))
                         {
                             <span class="nav-section-label"><span class="nav-text">People</span></span>
-                            @if (Can("Admissions.View") || Can("Admission.View"))
+                            @if (Can(Permissions.Admission.View))
                             {
-                                <a asp-controller="Admission" asp-action="Index" data-title="Students"><i class="bi bi-people"></i><span class="nav-text">Admissions</span></a>
-                                @* <a href="/Admission/Index" data-title="Admissions"><i class="bi bi-person-plus"></i><span class="nav-text">Admissions</span></a>
-                            *@
+                                <a asp-controller="Admission" asp-action="Index" data-title="Admissions"><i class="bi bi-person-plus"></i><span class="nav-text">Admissions</span></a>
                             }
 
-                            @if (Can("Students.View") || Can("Student.View"))
+                            @if (Can(Permissions.Student.View))
                             {
                                 <a asp-controller="Student" asp-action="Index" data-title="Students"><i class="bi bi-people"></i><span class="nav-text">Students</span></a>
                             }
-                            @if (Can("Teachers.View"))
+                            @if (Can(Permissions.Employee.View))
                             {
-                                <a asp-controller="Teacher" asp-action="Index" data-title="Teachers"><i class="bi bi-person-badge"></i><span class="nav-text">Teachers</span></a>
+                                <a asp-controller="Teacher" asp-action="Index" data-title="Staff"><i class="bi bi-person-badge"></i><span class="nav-text">Staff</span></a>
                             }
                         }
 
-                        @if (Can("Teachers.Attendance") || Can("Teachers.Leaves.View") || Can("Teachers.Payroll.View"))
+                        @if (Can(Permissions.Attendance.Mark) || Can(Permissions.Leave.View) || Can(Permissions.Payroll.View))
                         {
                             <span class="nav-section-label"><span class="nav-text">Human Resources</span></span>
-                            @if (Can("Teachers.Attendance"))
+                            @if (Can(Permissions.Attendance.Mark))
                             {
-                                <a asp-controller="TeacherHR" asp-action="Attendance" data-title="Attendance"><i class="bi bi-calendar-check"></i><span class="nav-text">Teacher Attendance</span></a>
+                                <a asp-controller="TeacherHR" asp-action="Attendance" data-title="Attendance"><i class="bi bi-calendar-check"></i><span class="nav-text">Attendance</span></a>
                             }
-                            @if (Can("Teachers.Leaves.View"))
+                            @if (Can(Permissions.Leave.View))
                             {
                                 <a asp-controller="TeacherHR" asp-action="Leaves" data-title="Leaves"><i class="bi bi-calendar-event"></i><span class="nav-text">Leave Requests</span></a>
                             }
-                            @if (Can("Teachers.Payroll.View"))
+                            @if (Can(Permissions.Payroll.View))
                             {
-                                <a asp-controller="TeacherHR" asp-action="Payroll" data-title="Payroll"><i class="bi bi-cash-stack"></i><span class="nav-text">Teacher Payroll</span></a>
+                                <a asp-controller="TeacherHR" asp-action="Payroll" data-title="Payroll"><i class="bi bi-cash-stack"></i><span class="nav-text">Payroll</span></a>
                             }
                         }
 

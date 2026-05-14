@@ -12,6 +12,7 @@ using SchoolManagementSystem.UnitOfWork.Interfaces;
 using SchoolManagementSystem.Repositories.Interfaces.Auth;
 using System.Data;
 using SchoolManagementSystem.Repositories.Interfaces.Teachers;
+using SchoolManagementSystem.Constants;
 
 namespace SchoolManagementSystem.Services.Implementations.Teachers;
 
@@ -71,10 +72,10 @@ public class TeacherService : ITeacherService
         await _userRepository.AddAsync(user, ct);
         await _unitOfWork.SaveChangesAsync(ct);
 
-        var lecturerRole = await _roleRepository.FirstOrDefaultAsync(r => r.Name == "Lecturer", ct);
-        if (lecturerRole != null)
+        var teacherRole = await _roleRepository.FirstOrDefaultAsync(r => r.Name == Roles.Teacher, ct);
+        if (teacherRole != null)
         {
-            await _userRoleRepository.AddAsync(new UserRole { UserId = user.Id, RoleId = lecturerRole.Id }, ct);
+            await _userRoleRepository.AddAsync(new UserRole { UserId = user.Id, RoleId = teacherRole.Id }, ct);
         }
 
         if (dto.ProfilePicture != null && dto.ProfilePicture.Length > 0)

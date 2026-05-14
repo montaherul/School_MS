@@ -5,10 +5,15 @@ using SchoolManagementSystem.Data;
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 
+using SchoolManagementSystem.Data.Seeders;
+
 namespace SchoolManagementSystem.Services.Implementations.Academic;
 
-public class ClassSubjectMappingSeeder
+public class ClassSubjectMappingSeeder : IDataSeeder
 {
+    public int Order => 3;
+    public string Name => "ClassSubjectMappingSeeder";
+
     private readonly SchoolDbContext _db;
     private readonly IUnitOfWork _uow;
     private readonly ILogger<ClassSubjectMappingSeeder> _logger;

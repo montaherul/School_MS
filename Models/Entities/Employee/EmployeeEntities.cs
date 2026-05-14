@@ -203,7 +203,7 @@ public class EmployeeLeave
     [Required]
     public SchoolManagementSystem.Models.Enums.LeaveStatus Status { get; set; } = SchoolManagementSystem.Models.Enums.LeaveStatus.Pending;
 
-    public long? ApprovedById { get; set; }
+    public int? ApprovedById { get; set; }
 
     [ForeignKey("ApprovedById")]
     public virtual SchoolManagementSystem.Models.Entities.Auth.ApplicationUser? ApprovedBy { get; set; }
@@ -298,12 +298,12 @@ public class EmployeePayroll
     [MaxLength(500)]
     public string? Remarks { get; set; }
 
-    public long? GeneratedById { get; set; }
+    public int? GeneratedById { get; set; }
     [ForeignKey("GeneratedById")]
     public virtual SchoolManagementSystem.Models.Entities.Auth.ApplicationUser? GeneratedBy { get; set; }
     public DateTime GeneratedAt { get; set; } = DateTime.UtcNow;
 
-    public long? ApprovedById { get; set; }
+    public int? ApprovedById { get; set; }
     [ForeignKey("ApprovedById")]
     public virtual SchoolManagementSystem.Models.Entities.Auth.ApplicationUser? ApprovedBy { get; set; }
     public DateTime? ApprovedAt { get; set; }
@@ -353,7 +353,7 @@ public class EmployeeDocument
     public string? OriginalFileName { get; set; }
 
     [Required]
-    public long UploadedById { get; set; }
+    public int UploadedById { get; set; }
     
     [ForeignKey("UploadedById")]
     public virtual SchoolManagementSystem.Models.Entities.Auth.ApplicationUser UploadedBy { get; set; } = null!;

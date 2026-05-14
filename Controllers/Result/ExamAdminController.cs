@@ -5,6 +5,7 @@ using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.Services.Interfaces.Academic;
 using System.Security.Claims;
+using SchoolManagementSystem.Constants;
 
 namespace SchoolManagementSystem.Controllers.Result;
 
@@ -12,7 +13,7 @@ namespace SchoolManagementSystem.Controllers.Result;
 /// ExamAdminController: Admin-only exam management
 /// Controls exam creation, editing, grading rules, and exam configuration
 /// </summary>
-[Authorize(Roles = "Admin,Super Admin,Principal")]
+[Authorize(Roles = Roles.Admin + "," + Roles.SuperAdmin + "," + Roles.Principal)]
 [Route("api/[controller]")]
 [ApiController]
 public class ExamAdminController : ControllerBase
@@ -41,7 +42,7 @@ public class ExamAdminController : ControllerBase
     /// Get all exams with optional filtering by academic year
     /// </summary>
     [HttpGet("exams")]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    [Authorize(Roles = Roles.Admin + "," + Roles.SuperAdmin + "," + Roles.Principal)]
     public async Task<IActionResult> GetAllExams(int academicYearId = 0, CancellationToken ct = default)
     {
         try
@@ -123,7 +124,7 @@ public class ExamAdminController : ControllerBase
     /// Get all grading rules
     /// </summary>
     [HttpGet("grading-rules")]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    [Authorize(Roles = Roles.Admin + "," + Roles.SuperAdmin + "," + Roles.Principal)]
     public async Task<IActionResult> GetGradingRules(CancellationToken ct = default)
     {
         try
@@ -222,7 +223,7 @@ public class ExamAdminController : ControllerBase
     /// Get exam status including result publication status
     /// </summary>
     [HttpGet("exam-status/{examId}")]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    [Authorize(Roles = Roles.Admin + "," + Roles.SuperAdmin + "," + Roles.Principal)]
     public async Task<IActionResult> GetExamStatus(int examId, CancellationToken ct = default)
     {
         try
@@ -282,7 +283,7 @@ public class ExamAdminController : ControllerBase
     /// Get subjects for exam configuration
     /// </summary>
     [HttpGet("subjects")]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    [Authorize(Roles = Roles.Admin + "," + Roles.SuperAdmin + "," + Roles.Principal)]
     public async Task<IActionResult> GetSubjects(CancellationToken ct = default)
     {
         try
@@ -301,7 +302,7 @@ public class ExamAdminController : ControllerBase
     /// Get classes for exam setup
     /// </summary>
     [HttpGet("classes")]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    [Authorize(Roles = Roles.Admin + "," + Roles.SuperAdmin + "," + Roles.Principal)]
     public async Task<IActionResult> GetClasses(CancellationToken ct = default)
     {
         try
@@ -320,7 +321,7 @@ public class ExamAdminController : ControllerBase
     /// Get sections for a class
     /// </summary>
     [HttpGet("sections/{classId}")]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    [Authorize(Roles = Roles.Admin + "," + Roles.SuperAdmin + "," + Roles.Principal)]
     public async Task<IActionResult> GetSections(int classId, CancellationToken ct = default)
     {
         try
@@ -339,7 +340,7 @@ public class ExamAdminController : ControllerBase
     /// Get academic years for exam filtering
     /// </summary>
     [HttpGet("academic-years")]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    [Authorize(Roles = Roles.Admin + "," + Roles.SuperAdmin + "," + Roles.Principal)]
     public async Task<IActionResult> GetAcademicYears(CancellationToken ct = default)
     {
         try

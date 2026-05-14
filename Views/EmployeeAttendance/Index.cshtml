@@ -1,8 +1,11 @@
-@model IEnumerable<SchoolManagementSystem.Models.DTOs.Employee.EmployeeAttendanceDto>
+@using SchoolManagementSystem.Models.DTOs.Employee
+@model IEnumerable<EmployeeAttendanceDto>
 @{
     ViewData["Title"] = "Employee Attendance";
     var targetDate = (DateTime)ViewBag.TargetDate;
 }
+
+@Html.AntiForgeryToken()
 
 <div class="adm-page">
     <div class="adm-header mb-4">
@@ -11,101 +14,133 @@
                 <i class="bi bi-calendar-check"></i>
             </div>
             <div>
-                <h1 class="adm-header__title">Employee Attendance</h1>
-                <p class="adm-header__sub">View and manage daily attendance records</p>
+                <h1 class="adm-header__title">Employee Attendance Logs</h1>
+                <p class="adm-header__sub">Enterprise-grade attendance history and reporting</p>
             </div>
         </div>
-        <div class="d-flex gap-2">
+        <div class="adm-header__actions">
             <a asp-action="MarkDailyAttendance" asp-route-date="@targetDate.ToString("yyyy-MM-dd")" class="adm-btn adm-btn--primary">
-                <i class="bi bi-plus-lg"></i> Mark Attendance
+                <i class="bi bi-plus-lg"></i> Mark Daily Attendance
             </a>
         </div>
     </div>
 
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-            <form method="get" class="row g-3 align-items-end">
-                <div class="col-md-3">
-                    <label class="form-label small fw-bold">Date</label>
-                    <input type="date" name="date" class="form-control" value="@targetDate.ToString("yyyy-MM-dd")" onchange="this.form.submit()" />
-                </div>
-                <div class="col-md-3">
-                    <label class="form-label small fw-bold">Department</label>
-                    <select name="departmentId" class="form-select" asp-items="ViewBag.Departments" onchange="this.form.submit()">
-                        <option value="">All Departments</option>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <button type="submit" class="adm-btn adm-btn--ghost w-100">
-                        <i class="bi bi-search me-1"></i> Filter
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <div class="card shadow-sm">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="adm-table">
-                    <thead>
-                        <tr>
-                            <th>Employee</th>
-                            <th>ID</th>
-                            <th>Department</th>
-                            <th>Status</th>
-                            <th>Check-In</th>
-                            <th>Check-Out</th>
-                            <th>Remarks</th>
-                            <th class="text-end">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in Model)
-                        {
-                            <tr>
-                                <td>
-                                    <div class="fw-bold text-dark">@item.EmployeeName</div>
-                                </td>
-                                <td><span class="text-muted">@item.EmployeeCode</span></td>
-                                <td>@item.DepartmentName</td>
-                                <td>
-                                    @{
-                                        var badgeClass = item.Status switch
-                                        {
-                                            SchoolManagementSystem.Models.Enums.AttendanceStatus.Present => "bg-success",
-                                            SchoolManagementSystem.Models.Enums.AttendanceStatus.Absent => "bg-danger",
-                                            SchoolManagementSystem.Models.Enums.AttendanceStatus.Late => "bg-warning text-dark",
-                                            SchoolManagementSystem.Models.Enums.AttendanceStatus.Leave => "bg-info text-dark",
-                                            SchoolManagementSystem.Models.Enums.AttendanceStatus.HalfDay => "bg-secondary",
-                                            SchoolManagementSystem.Models.Enums.AttendanceStatus.Holiday => "bg-dark",
-                                            _ => "bg-light text-dark"
-                                        };
-                                    }
-                                    <span class="badge @badgeClass">@item.Status</span>
-                                </td>
-                                <td>@(item.CheckInTime?.ToString(@"hh\:mm") ?? "--:--")</td>
-                                <td>@(item.CheckOutTime?.ToString(@"hh\:mm") ?? "--:--")</td>
-                                <td class="small text-muted">@item.Remarks</td>
-                                <td class="text-end">
-                                    <a asp-action="EmployeeHistory" asp-route-id="@item.EmployeeId" class="btn btn-sm btn-light border" title="History">
-                                        <i class="bi bi-clock-history"></i>
-                                    </a>
-                                </td>
-                            </tr>
-                        }
-                        @if (!Model.Any())
-                        {
-                            <tr>
-                                <td colspan="8" class="text-center py-5 text-muted">
-                                    <i class="bi bi-inbox fs-1 d-block mb-2"></i>
-                                    No attendance records found for this date.
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+    <!-- ENTERPRISE FILTERS -->
+    <div class="adm-filters mb-3">
+        <div class="adm-filters__row">
+            <div class="adm-filters__field">
+                <label class="adm-label">Search</label>
+                <input type="text" id="table-search" class="adm-input" placeholder="Name or Code..." />
+            </div>
+            <div class="adm-filters__field">
+                <label class="adm-label">Department</label>
+                <select id="departmentFilter" class="adm-select" asp-items="ViewBag.Departments">
+                    <option value="">All Departments</option>
+                </select>
+            </div>
+            <div class="adm-filters__field">
+                <label class="adm-label">Status</label>
+                <select id="statusFilter" class="adm-select">
+                    <option value="">All Statuses</option>
+                    <option value="1">Present</option>
+                    <option value="2">Absent</option>
+                    <option value="3">Late</option>
+                    <option value="4">Leave</option>
+                </select>
+            </div>
+            <div class="adm-filters__field adm-filters__field--actions">
+                <label class="adm-label">&nbsp;</label>
+                <button id="btn-reset" class="adm-btn adm-btn--ghost">Reset</button>
             </div>
         </div>
     </div>
+
+    <!-- GRID -->
+    <div class="adm-table-card">
+        <div class="adm-table-card__body">
+            <div id="attendance-table"></div>
+        </div>
+    </div>
 </div>
+
+@section Scripts {
+    <script>
+        const searchInput = document.getElementById('table-search');
+        const deptFilter = document.getElementById('departmentFilter');
+        const statusFilter = document.getElementById('statusFilter');
+
+        const table = new Tabulator("#attendance-table", {
+            height: "calc(100vh - 280px)",
+            layout: "fitColumns",
+            responsiveLayout: "collapse",
+            pagination: true,
+            paginationMode: "remote",
+            ajaxURL: "/EmployeeAttendance/GetPaged",
+            ajaxConfig: {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]').value
+                }
+            },
+            ajaxParams: function(url, config, params) {
+                return {
+                    page: params.page,
+                    size: params.size,
+                    search: searchInput.value,
+                    sortField: params.sorters ? params.sorters[0]?.field : "AttendanceDate",
+                    sortDir: params.sorters ? params.sorters[0]?.dir : "desc"
+                };
+            },
+            ajaxContentType: "json",
+            paginationSize: 20,
+            ajaxResponse: function (url, params, response) {
+                return {
+                    data: response.data || [],
+                    last_page: response.last_page || 1
+                };
+            },
+            columns: [
+                { title: "Date", field: "attendanceDate", formatter: (cell) => new Date(cell.getValue()).toLocaleDateString() },
+                { title: "Code", field: "employeeCode", width: 100, formatter: (cell) => `<span class="adm-cell-mono">${cell.getValue()}</span>` },
+                { title: "Employee", field: "employeeName", formatter: (cell) => `<span class="adm-cell-name">${cell.getValue()}</span>` },
+                { title: "Department", field: "departmentName" },
+                {
+                    title: "Status", field: "status", hozAlign: "center",
+                    formatter: function(cell) {
+                        const val = cell.getValue();
+                        const statusMap = {
+                            1: { text: "Present", class: "adm-status--approved" },
+                            2: { text: "Absent", class: "adm-status--reject" },
+                            3: { text: "Late", class: "adm-status--warning" },
+                            4: { text: "Leave", class: "adm-status--info" }
+                        };
+                        const s = statusMap[val] || { text: "Unknown", class: "adm-status--neutral" };
+                        return `<span class="adm-status ${s.class}">${s.text}</span>`;
+                    }
+                },
+                { title: "Check-In", field: "checkInTime", formatter: (cell) => cell.getValue()?.substring(0, 5) || "--:--" },
+                { title: "Check-Out", field: "checkOutTime", formatter: (cell) => cell.getValue()?.substring(0, 5) || "--:--" },
+                {
+                    title: "Actions", width: 100, hozAlign: "center", headerSort: false,
+                    formatter: function (cell) {
+                        const d = cell.getRow().getData();
+                        return `<a href="/EmployeeAttendance/EmployeeHistory/${d.employeeId}" class="adm-action"><i class="bi bi-clock-history"></i></a>`;
+                    }
+                }
+            ]
+        });
+
+        function reloadTable() { table.setData(); }
+
+        searchInput.addEventListener('keyup', (e) => { if (e.key === "Enter") reloadTable(); });
+        deptFilter.addEventListener('change', reloadTable);
+        statusFilter.addEventListener('change', reloadTable);
+        document.getElementById('btn-reset').addEventListener('click', () => {
+            searchInput.value = "";
+            deptFilter.value = "";
+            statusFilter.value = "";
+            reloadTable();
+        });
+    </script>
+}

@@ -2,10 +2,11 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Filters;
-using SchoolManagementSystem.Helpers.Files;
+using SchoolManagementSystem.Services.Interfaces.Infrastructure;
 using SchoolManagementSystem.Models.DTOs.Teacher;
 using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Services.Interfaces.Teachers;
+using SchoolManagementSystem.Constants;
 using System.Security.Claims;
 
 namespace SchoolManagementSystem.Controllers.Teacher;
@@ -22,26 +23,48 @@ public class TeacherController : Controller
         _fileStorage = fileStorage;
     }
 
-    [RequirePermission("Teachers.View")]
+    [RequirePermission(Permissions.Employee.View)]
     public async Task<IActionResult> Index(int page = 1, int size = 10, string? search = null, string? department = null, string? status = null, CancellationToken ct = default)
     {
-        var result = await _service.GetPagedAsync(page, size, search, department, status, ct);
-        
-        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+        try
         {
-            return Json(new { data = result.Items, last_page = result.TotalPages, total_records = result.TotalItems });
-        }
+            var result = await _service.GetPagedAsync(page, size, search, department, status, ct);
+            
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return Json(new SchoolManagementSystem.Models.DTOs.Common.PagedApiResponse<SchoolManagementSystem.Models.DTOs.Teacher.TeacherListItemDto> 
+                { 
+                    data = result.Items, 
+                    last_page = result.TotalPages, 
+                    total = result.TotalItems 
+                });
+            }
 
-        return View(result);
+            return View(result);
+        }
+        catch (Exception ex)
+        {
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return Json(new SchoolManagementSystem.Models.DTOs.Common.PagedApiResponse<object>
+                {
+                    data = new List<object>(),
+                    last_page = 1,
+                    total = 0,
+                    error = ex.Message
+                });
+            }
+            throw; // Let global error handler catch it if it's not AJAX
+        }
     }
 
-    [RequirePermission("Teachers.Create")]
+    [RequirePermission(Permissions.Employee.Create)]
     public IActionResult Create()
     {
         return View("CreateEdit", new TeacherUpsertDto());
     }
 
-    [RequirePermission("Teachers.Edit")]
+    [RequirePermission(Permissions.Employee.Update)]
     public async Task<IActionResult> Edit(int id, CancellationToken ct = default)
     {
         var dto = await _service.GetForEditAsync(id, ct);
@@ -112,7 +135,7 @@ public class TeacherController : Controller
         }
 
         // Security Check
-        if (!isOwnProfile && !User.HasClaim("Permission", "Teachers.View") && !User.IsInRole("Super Admin"))
+        if (!isOwnProfile && !User.HasClaim("Permission", Permissions.Employee.View) && !User.IsInRole(Roles.SuperAdmin))
         {
             return Forbid();
         }
@@ -123,7 +146,7 @@ public class TeacherController : Controller
     }
 
     [HttpPost]
-    [RequirePermission("Teachers.Delete")]
+    [RequirePermission(Permissions.Employee.Delete)]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int id, CancellationToken ct = default)
     {
@@ -134,7 +157,7 @@ public class TeacherController : Controller
     }
 
     [HttpPost]
-    [RequirePermission("Teachers.Edit")]
+    [RequirePermission(Permissions.Employee.Update)]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Deactivate(int id, CancellationToken ct = default)
     {
@@ -145,7 +168,7 @@ public class TeacherController : Controller
     }
 
     [HttpPost]
-    [RequirePermission("Teachers.Edit")]
+    [RequirePermission(Permissions.Employee.Update)]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Activate(int id, CancellationToken ct = default)
     {

@@ -3,6 +3,10 @@ using SchoolManagementSystem.Data;
 using SchoolManagementSystem.Models.Entities.Employee;
 using SchoolManagementSystem.Models.DTOs.Employee;
 using SchoolManagementSystem.Repositories.Interfaces.Employee;
+using Dapper;
+using Microsoft.Data.SqlClient;
+using System.Data;
+using SchoolManagementSystem.Models.DTOs.Common;
 
 namespace SchoolManagementSystem.Repositories.Implementations.Employee;
 
@@ -22,38 +26,39 @@ public class EmployeeRepository : BaseRepository<SchoolManagementSystem.Models.E
     public async Task<(List<EmployeeListItemDto> items, int totalRecords)> GetPagedAsync(
         int page, int pageSize, string? search, long? departmentId, long? designationId, bool? isActive, CancellationToken ct)
     {
-        var query = _db.Employees
-            .Include(e => e.Department)
-            .Include(e => e.Designation)
-            .AsQueryable();
+        var connection = _db.Database.GetDbConnection();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@PageNumber", page);
+        parameters.Add("@PageSize", pageSize);
+        parameters.Add("@Search", search);
+        parameters.Add("@DepartmentId", departmentId);
+        parameters.Add("@DesignationId", designationId);
+        parameters.Add("@Status", isActive.HasValue ? (isActive.Value ? 1 : 0) : null);
+        parameters.Add("@SortField", "Id"); 
+        parameters.Add("@SortDirection", "DESC");
 
-        if (!string.IsNullOrWhiteSpace(search))
+        var result = (await connection.QueryAsync<dynamic>(
+            "sp_Employee_GetPaged",
+            parameters,
+            commandType: CommandType.StoredProcedure
+        )).ToList();
+
+        var data = result.Select(x => new EmployeeListItemDto
         {
-            query = query.Where(e => e.FullName.Contains(search) || e.EmployeeCode.Contains(search) || e.Phone.Contains(search));
-        }
+            Id = Convert.ToInt64(x.Id),
+            EmployeeCode = x.EmployeeCode,
+            FullName = x.FullName,
+            Phone = x.Phone,
+            DepartmentName = x.DepartmentName,
+            DesignationName = x.DesignationName,
+            IsActive = (bool)x.Status,
+            PhotoPath = null 
+        }).ToList();
 
-        if (departmentId.HasValue) query = query.Where(e => e.DepartmentId == departmentId);
-        if (designationId.HasValue) query = query.Where(e => e.DesignationId == designationId);
-        if (isActive.HasValue) query = query.Where(e => e.IsActive == isActive);
+        int totalRecords = data.Any() ? (int)result.First().TotalCount : 0;
 
-        int totalRecords = await query.CountAsync(ct);
-        var items = await query.OrderByDescending(e => e.Id)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .Select(e => new EmployeeListItemDto
-            {
-                Id = e.Id,
-                EmployeeCode = e.EmployeeCode,
-                FullName = e.FullName,
-                Phone = e.Phone,
-                DepartmentName = e.Department.Name,
-                DesignationName = e.Designation.Name,
-                IsActive = e.IsActive,
-                PhotoPath = e.PhotoPath
-            })
-            .ToListAsync(ct);
-
-        return (items, totalRecords);
+        return (data, totalRecords);
     }
     public async Task<SchoolManagementSystem.Models.Entities.Employee.Employee?> GetByUserIdAsync(long userId, CancellationToken ct = default)
     {

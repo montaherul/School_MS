@@ -5,9 +5,11 @@ using SchoolManagementSystem.Models.ViewModels.Fees;
 using SchoolManagementSystem.Services.Interfaces.Fees;
 using System.Security.Claims;
 
+using SchoolManagementSystem.Constants;
+
 namespace SchoolManagementSystem.Controllers.Fees;
 
-[Authorize(Roles = "Super Admin,Principal,Assistant Head,Office Staff")]
+[Authorize(Roles = Roles.SuperAdmin + "," + Roles.Admin + "," + Roles.Principal + "," + Roles.Accountant + "," + Roles.Staff)]
 public class FeeStructureController : Controller
 {
     private readonly IFeeStructureService _service;

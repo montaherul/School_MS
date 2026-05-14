@@ -153,6 +153,11 @@
 
         <div class="adm-table-card__body">
 
+            <div id="loadingOverlay" class="adm-loading adm-loading--hidden">
+                <div class="adm-loading__spinner"></div>
+                <span class="adm-loading__text">Loading students...</span>
+            </div>
+
             <div id="data-table"></div>
 
         </div>
@@ -251,6 +256,17 @@
             pendingDeleteId = null;
         }
 
+        function showLoadingOverlay(show) {
+            const el = document.getElementById('loadingOverlay');
+            if (show) {
+                el.classList.remove('adm-loading--hidden');
+                el.classList.add('adm-loading--visible');
+            } else {
+                el.classList.remove('adm-loading--visible');
+                el.classList.add('adm-loading--hidden');
+            }
+        }
+
         document.getElementById('closeDeleteModal').addEventListener('click', closeDeleteModal);
         document.getElementById('cancelDeleteBtn').addEventListener('click', closeDeleteModal);
 
@@ -261,9 +277,35 @@
             responsiveLayout: "collapse",
             pagination: true,
             paginationMode: "remote",
-            ajaxURL: "/Student/Index",
+            ajaxURL: "/Student/GetPaged",
+            ajaxConfig: {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]').value
+                }
+            },
+            ajaxParams: function(url, config, params) {
+                return {
+                    page: params.page,
+                    size: params.size,
+                    search: searchInput.value,
+                    sortField: params.sorters ? params.sorters[0]?.field : "StudentNo",
+                    sortDir: params.sorters ? params.sorters[0]?.dir : "asc",
+                    filters: JSON.stringify({
+                        classId: classFilter.value || null,
+                        sectionId: sectionFilter.value || null
+                    })
+                };
+            },
+            ajaxContentType: "json",
             paginationSize: 10,
-            ajaxParams: function() { return getFilters(); },
+            dataLoading: function() {
+                showLoadingOverlay(true);
+            },
+            dataLoaded: function() {
+                showLoadingOverlay(false);
+            },
             ajaxResponse: function (url, params, response) {
                 return {
                     data: response.data || [],

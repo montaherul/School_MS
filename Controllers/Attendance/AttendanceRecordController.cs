@@ -6,6 +6,7 @@ using SchoolManagementSystem.Services.Interfaces.Attendance;
 using SchoolManagementSystem.Services.Interfaces.Students;
 using SchoolManagementSystem.Services.Interfaces.Teachers;
 using System.Security.Claims;
+using SchoolManagementSystem.Constants;
 
 namespace SchoolManagementSystem.Controllers.Attendance;
 
@@ -45,7 +46,7 @@ public class AttendanceRecordController : Controller
     public async Task<IActionResult> GetList(int page = 1, int size = 10, string? search = null, CancellationToken ct = default)
     {
         int? studentId = null;
-        if (User.IsInRole("Student"))
+        if (User.IsInRole(Roles.Student))
         {
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (int.TryParse(userIdStr, out var userId))
@@ -66,7 +67,7 @@ public class AttendanceRecordController : Controller
         var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (!int.TryParse(userIdStr, out var userId)) return RedirectToAction("Index", "Home");
 
-        bool isStaff = User.IsInRole("Super Admin") || User.IsInRole("Principal") || User.IsInRole("Assistant Head");
+        bool isStaff = User.IsInRole(Roles.SuperAdmin) || User.IsInRole(Roles.Admin) || User.IsInRole(Roles.Principal);
 
         if (!isStaff)
         {
@@ -111,7 +112,7 @@ public class AttendanceRecordController : Controller
         var dto = await _service.GetForEditAsync(id, ct);
         if (dto == null) return NotFound();
 
-        if (User.IsInRole("Student"))
+        if (User.IsInRole(Roles.Student))
         {
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (int.TryParse(userIdStr, out var userId))

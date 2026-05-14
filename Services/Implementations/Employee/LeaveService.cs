@@ -83,7 +83,7 @@ public class EmployeeLeaveService : IEmployeeLeaveService
             throw new InvalidOperationException("Only pending leave requests can be approved.");
 
         leave.Status = LeaveStatus.Approved;
-        leave.ApprovedById = approvedByUserId;
+        leave.ApprovedById = (int)approvedByUserId;
         leave.ApprovedAt = DateTime.UtcNow;
         leave.Remarks = remarks;
         leave.UpdatedAt = DateTime.UtcNow;

@@ -290,6 +290,72 @@ namespace SchoolManagementSystem.Migrations
                     b.ToTable("StudentListItemResults");
                 });
 
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Academic.AcademicDocument", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ClassId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("DocumentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("SectionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SubjectId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<long>("UploadedByEmployeeId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClassId");
+
+                    b.HasIndex("SectionId");
+
+                    b.HasIndex("SubjectId");
+
+                    b.HasIndex("UploadedByEmployeeId");
+
+                    b.ToTable("AcademicDocuments");
+                });
+
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Academic.AcademicYear", b =>
                 {
                     b.Property<int>("Id")
@@ -346,6 +412,70 @@ namespace SchoolManagementSystem.Migrations
                             Name = "2026",
                             StartsOn = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified)
                         });
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Academic.ClassRoutine", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ClassId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<int>("DayOfWeek")
+                        .HasColumnType("int");
+
+                    b.Property<long>("EmployeeId")
+                        .HasColumnType("bigint");
+
+                    b.Property<TimeSpan>("EndTime")
+                        .HasColumnType("time");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("RoomNo")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("SectionId")
+                        .HasColumnType("int");
+
+                    b.Property<TimeSpan>("StartTime")
+                        .HasColumnType("time");
+
+                    b.Property<int>("SubjectId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClassId");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.HasIndex("SectionId");
+
+                    b.HasIndex("SubjectId");
+
+                    b.ToTable("ClassRoutines");
                 });
 
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Academic.ClassSubject", b =>
@@ -523,6 +653,117 @@ namespace SchoolManagementSystem.Migrations
                     b.HasIndex("TeacherId");
 
                     b.ToTable("ClassSubjectTeachers");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Academic.EmployeeSubjectAssignment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AcademicYearId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ClassId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<long>("EmployeeId")
+                        .HasColumnType("bigint");
+
+                    b.Property<bool>("IsClassTeacher")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("SectionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SubjectId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AcademicYearId");
+
+                    b.HasIndex("ClassId");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.HasIndex("SectionId");
+
+                    b.HasIndex("SubjectId");
+
+                    b.ToTable("EmployeeSubjectAssignments");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Academic.ExamDutyAssignment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTime>("DutyDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("EmployeeId")
+                        .HasColumnType("bigint");
+
+                    b.Property<TimeSpan>("EndTime")
+                        .HasColumnType("time");
+
+                    b.Property<int>("ExamId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("RoomNo")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<TimeSpan>("StartTime")
+                        .HasColumnType("time");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.ToTable("ExamDutyAssignments");
                 });
 
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Academic.LessonPlan", b =>
@@ -2924,6 +3165,62 @@ namespace SchoolManagementSystem.Migrations
                     b.ToTable("AuditLogs");
                 });
 
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Auth.Notification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("RedirectUrl")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AppNotifications");
+                });
+
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Auth.PasswordResetToken", b =>
                 {
                     b.Property<int>("Id")
@@ -2996,6 +3293,11 @@ namespace SchoolManagementSystem.Migrations
                     b.Property<bool>("CanUpdate")
                         .HasColumnType("bit");
 
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
                     b.Property<string>("Code")
                         .IsRequired()
                         .HasMaxLength(160)
@@ -3008,6 +3310,9 @@ namespace SchoolManagementSystem.Migrations
                         .IsRequired()
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
+
+                    b.Property<bool>("IsCritical")
+                        .HasColumnType("bit");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
@@ -3042,9 +3347,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Dashboard.View",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Dashboard",
                             ModuleName = "Dashboard"
@@ -3057,9 +3364,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Dashboard.Create",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Dashboard",
                             ModuleName = "Dashboard"
@@ -3072,9 +3381,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Dashboard.Edit",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Dashboard",
                             ModuleName = "Dashboard"
@@ -3087,9 +3398,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Dashboard.Delete",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Dashboard",
                             ModuleName = "Dashboard"
@@ -3102,9 +3415,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Dashboard.Approve",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Dashboard",
                             ModuleName = "Dashboard"
@@ -3117,9 +3432,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Dashboard.Assign",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Dashboard",
                             ModuleName = "Dashboard"
@@ -3132,9 +3449,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Dashboard.Publish",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Dashboard",
                             ModuleName = "Dashboard"
@@ -3147,9 +3466,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Dashboard.Export",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Dashboard",
                             ModuleName = "Dashboard"
@@ -3162,9 +3483,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = true,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Dashboard.Manage",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Dashboard",
                             ModuleName = "Dashboard"
@@ -3177,9 +3500,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Users.View",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Users",
                             ModuleName = "Users"
@@ -3192,9 +3517,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Users.Create",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Users",
                             ModuleName = "Users"
@@ -3207,9 +3534,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Users.Edit",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Users",
                             ModuleName = "Users"
@@ -3222,9 +3551,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Users.Delete",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Users",
                             ModuleName = "Users"
@@ -3237,9 +3568,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Users.Approve",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Users",
                             ModuleName = "Users"
@@ -3252,9 +3585,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Users.Assign",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Users",
                             ModuleName = "Users"
@@ -3267,9 +3602,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Users.Publish",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Users",
                             ModuleName = "Users"
@@ -3282,9 +3619,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Users.Export",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Users",
                             ModuleName = "Users"
@@ -3297,9 +3636,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = true,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Users.Manage",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Users",
                             ModuleName = "Users"
@@ -3312,9 +3653,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Roles.View",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Roles",
                             ModuleName = "Roles"
@@ -3327,9 +3670,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Roles.Create",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Roles",
                             ModuleName = "Roles"
@@ -3342,9 +3687,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Roles.Edit",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Roles",
                             ModuleName = "Roles"
@@ -3357,9 +3704,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Roles.Delete",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Roles",
                             ModuleName = "Roles"
@@ -3372,9 +3721,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Roles.Approve",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Roles",
                             ModuleName = "Roles"
@@ -3387,9 +3738,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Roles.Assign",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Roles",
                             ModuleName = "Roles"
@@ -3402,9 +3755,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Roles.Publish",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Roles",
                             ModuleName = "Roles"
@@ -3417,9 +3772,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Roles.Export",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Roles",
                             ModuleName = "Roles"
@@ -3432,9 +3789,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = true,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Roles.Manage",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Roles",
                             ModuleName = "Roles"
@@ -3447,9 +3806,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Permissions.View",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Permissions",
                             ModuleName = "Permissions"
@@ -3462,9 +3823,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Permissions.Create",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Permissions",
                             ModuleName = "Permissions"
@@ -3477,9 +3840,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Permissions.Edit",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Permissions",
                             ModuleName = "Permissions"
@@ -3492,9 +3857,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Permissions.Delete",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Permissions",
                             ModuleName = "Permissions"
@@ -3507,9 +3874,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Permissions.Approve",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Permissions",
                             ModuleName = "Permissions"
@@ -3522,9 +3891,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Permissions.Assign",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Permissions",
                             ModuleName = "Permissions"
@@ -3537,9 +3908,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Permissions.Publish",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Permissions",
                             ModuleName = "Permissions"
@@ -3552,9 +3925,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Permissions.Export",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Permissions",
                             ModuleName = "Permissions"
@@ -3567,9 +3942,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = true,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Permissions.Manage",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Permissions",
                             ModuleName = "Permissions"
@@ -3582,9 +3959,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Admissions.View",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Admissions",
                             ModuleName = "Admissions"
@@ -3597,9 +3976,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Admissions.Create",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Admissions",
                             ModuleName = "Admissions"
@@ -3612,9 +3993,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Admissions.Edit",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Admissions",
                             ModuleName = "Admissions"
@@ -3627,9 +4010,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Admissions.Delete",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Admissions",
                             ModuleName = "Admissions"
@@ -3642,9 +4027,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Admissions.Approve",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Admissions",
                             ModuleName = "Admissions"
@@ -3657,9 +4044,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Admissions.Assign",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Admissions",
                             ModuleName = "Admissions"
@@ -3672,9 +4061,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Admissions.Publish",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Admissions",
                             ModuleName = "Admissions"
@@ -3687,9 +4078,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Admissions.Export",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Admissions",
                             ModuleName = "Admissions"
@@ -3702,9 +4095,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = true,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Admissions.Manage",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Admissions",
                             ModuleName = "Admissions"
@@ -3717,9 +4112,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Students.View",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Students",
                             ModuleName = "Students"
@@ -3732,9 +4129,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Students.Create",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Students",
                             ModuleName = "Students"
@@ -3747,9 +4146,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Students.Edit",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Students",
                             ModuleName = "Students"
@@ -3762,9 +4163,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Students.Delete",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Students",
                             ModuleName = "Students"
@@ -3777,9 +4180,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Students.Approve",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Students",
                             ModuleName = "Students"
@@ -3792,9 +4197,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Students.Assign",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Students",
                             ModuleName = "Students"
@@ -3807,9 +4214,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Students.Publish",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Students",
                             ModuleName = "Students"
@@ -3822,9 +4231,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Students.Export",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Students",
                             ModuleName = "Students"
@@ -3837,9 +4248,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = true,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Students.Manage",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Students",
                             ModuleName = "Students"
@@ -3852,9 +4265,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Teachers.View",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Teachers",
                             ModuleName = "Teachers"
@@ -3867,9 +4282,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Teachers.Create",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Teachers",
                             ModuleName = "Teachers"
@@ -3882,9 +4299,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Teachers.Edit",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Teachers",
                             ModuleName = "Teachers"
@@ -3897,9 +4316,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Teachers.Delete",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Teachers",
                             ModuleName = "Teachers"
@@ -3912,9 +4333,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Teachers.Approve",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Teachers",
                             ModuleName = "Teachers"
@@ -3927,9 +4350,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Teachers.Assign",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Teachers",
                             ModuleName = "Teachers"
@@ -3942,9 +4367,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Teachers.Publish",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Teachers",
                             ModuleName = "Teachers"
@@ -3957,9 +4384,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Teachers.Export",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Teachers",
                             ModuleName = "Teachers"
@@ -3972,9 +4401,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = true,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Teachers.Manage",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Teachers",
                             ModuleName = "Teachers"
@@ -3987,9 +4418,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Classes.View",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Classes",
                             ModuleName = "Classes"
@@ -4002,9 +4435,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Classes.Create",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Classes",
                             ModuleName = "Classes"
@@ -4017,9 +4452,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Classes.Edit",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Classes",
                             ModuleName = "Classes"
@@ -4032,9 +4469,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Classes.Delete",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Classes",
                             ModuleName = "Classes"
@@ -4047,9 +4486,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Classes.Approve",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Classes",
                             ModuleName = "Classes"
@@ -4062,9 +4503,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Classes.Assign",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Classes",
                             ModuleName = "Classes"
@@ -4077,9 +4520,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Classes.Publish",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Classes",
                             ModuleName = "Classes"
@@ -4092,9 +4537,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Classes.Export",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Classes",
                             ModuleName = "Classes"
@@ -4107,9 +4554,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = true,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Classes.Manage",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Classes",
                             ModuleName = "Classes"
@@ -4122,9 +4571,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Sections.View",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Sections",
                             ModuleName = "Sections"
@@ -4137,9 +4588,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Sections.Create",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Sections",
                             ModuleName = "Sections"
@@ -4152,9 +4605,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Sections.Edit",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Sections",
                             ModuleName = "Sections"
@@ -4167,9 +4622,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Sections.Delete",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Sections",
                             ModuleName = "Sections"
@@ -4182,9 +4639,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Sections.Approve",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Sections",
                             ModuleName = "Sections"
@@ -4197,9 +4656,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Sections.Assign",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Sections",
                             ModuleName = "Sections"
@@ -4212,9 +4673,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Sections.Publish",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Sections",
                             ModuleName = "Sections"
@@ -4227,9 +4690,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Sections.Export",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Sections",
                             ModuleName = "Sections"
@@ -4242,9 +4707,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = true,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Sections.Manage",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Sections",
                             ModuleName = "Sections"
@@ -4257,9 +4724,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Subjects.View",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Subjects",
                             ModuleName = "Subjects"
@@ -4272,9 +4741,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Subjects.Create",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Subjects",
                             ModuleName = "Subjects"
@@ -4287,9 +4758,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Subjects.Edit",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Subjects",
                             ModuleName = "Subjects"
@@ -4302,9 +4775,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Subjects.Delete",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Subjects",
                             ModuleName = "Subjects"
@@ -4317,9 +4792,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Subjects.Approve",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Subjects",
                             ModuleName = "Subjects"
@@ -4332,9 +4809,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Subjects.Assign",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Subjects",
                             ModuleName = "Subjects"
@@ -4347,9 +4826,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Subjects.Publish",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Subjects",
                             ModuleName = "Subjects"
@@ -4362,9 +4843,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Subjects.Export",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Subjects",
                             ModuleName = "Subjects"
@@ -4377,9 +4860,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = true,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Subjects.Manage",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Subjects",
                             ModuleName = "Subjects"
@@ -4392,9 +4877,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Attendance.View",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Attendance",
                             ModuleName = "Attendance"
@@ -4407,9 +4894,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Attendance.Create",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Attendance",
                             ModuleName = "Attendance"
@@ -4422,9 +4911,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Attendance.Edit",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Attendance",
                             ModuleName = "Attendance"
@@ -4437,9 +4928,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Attendance.Delete",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Attendance",
                             ModuleName = "Attendance"
@@ -4452,9 +4945,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Attendance.Approve",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Attendance",
                             ModuleName = "Attendance"
@@ -4467,9 +4962,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Attendance.Assign",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Attendance",
                             ModuleName = "Attendance"
@@ -4482,9 +4979,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Attendance.Publish",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Attendance",
                             ModuleName = "Attendance"
@@ -4497,9 +4996,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Attendance.Export",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Attendance",
                             ModuleName = "Attendance"
@@ -4512,9 +5013,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = true,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Attendance.Manage",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Attendance",
                             ModuleName = "Attendance"
@@ -4527,9 +5030,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Exams.View",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Exams",
                             ModuleName = "Exams"
@@ -4542,9 +5047,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Exams.Create",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Exams",
                             ModuleName = "Exams"
@@ -4557,9 +5064,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Exams.Edit",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Exams",
                             ModuleName = "Exams"
@@ -4572,9 +5081,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Exams.Delete",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Exams",
                             ModuleName = "Exams"
@@ -4587,9 +5098,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Exams.Approve",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Exams",
                             ModuleName = "Exams"
@@ -4602,9 +5115,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Exams.Assign",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Exams",
                             ModuleName = "Exams"
@@ -4617,9 +5132,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Exams.Publish",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Exams",
                             ModuleName = "Exams"
@@ -4632,9 +5149,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Exams.Export",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Exams",
                             ModuleName = "Exams"
@@ -4647,9 +5166,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = true,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Exams.Manage",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Exams",
                             ModuleName = "Exams"
@@ -4662,9 +5183,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Marks.View",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Marks",
                             ModuleName = "Marks"
@@ -4677,9 +5200,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Marks.Create",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Marks",
                             ModuleName = "Marks"
@@ -4692,9 +5217,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Marks.Edit",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Marks",
                             ModuleName = "Marks"
@@ -4707,9 +5234,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Marks.Delete",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Marks",
                             ModuleName = "Marks"
@@ -4722,9 +5251,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Marks.Approve",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Marks",
                             ModuleName = "Marks"
@@ -4737,9 +5268,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Marks.Assign",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Marks",
                             ModuleName = "Marks"
@@ -4752,9 +5285,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Marks.Publish",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Marks",
                             ModuleName = "Marks"
@@ -4767,9 +5302,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Marks.Export",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Marks",
                             ModuleName = "Marks"
@@ -4782,9 +5319,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = true,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Marks.Manage",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Marks",
                             ModuleName = "Marks"
@@ -4797,9 +5336,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Assignments.View",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Assignments",
                             ModuleName = "Assignments"
@@ -4812,9 +5353,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Assignments.Create",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Assignments",
                             ModuleName = "Assignments"
@@ -4827,9 +5370,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Assignments.Edit",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Assignments",
                             ModuleName = "Assignments"
@@ -4842,9 +5387,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Assignments.Delete",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Assignments",
                             ModuleName = "Assignments"
@@ -4857,9 +5404,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Assignments.Approve",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Assignments",
                             ModuleName = "Assignments"
@@ -4872,9 +5421,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Assignments.Assign",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Assignments",
                             ModuleName = "Assignments"
@@ -4887,9 +5438,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Assignments.Publish",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Assignments",
                             ModuleName = "Assignments"
@@ -4902,9 +5455,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Assignments.Export",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Assignments",
                             ModuleName = "Assignments"
@@ -4917,9 +5472,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = true,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Assignments.Manage",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Assignments",
                             ModuleName = "Assignments"
@@ -4932,9 +5489,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Fees.View",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Fees",
                             ModuleName = "Fees"
@@ -4947,9 +5506,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Fees.Create",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Fees",
                             ModuleName = "Fees"
@@ -4962,9 +5523,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Fees.Edit",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Fees",
                             ModuleName = "Fees"
@@ -4977,9 +5540,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Fees.Delete",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Fees",
                             ModuleName = "Fees"
@@ -4992,9 +5557,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Fees.Approve",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Fees",
                             ModuleName = "Fees"
@@ -5007,9 +5574,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Fees.Assign",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Fees",
                             ModuleName = "Fees"
@@ -5022,9 +5591,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Fees.Publish",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Fees",
                             ModuleName = "Fees"
@@ -5037,9 +5608,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Fees.Export",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Fees",
                             ModuleName = "Fees"
@@ -5052,9 +5625,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = true,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Fees.Manage",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Fees",
                             ModuleName = "Fees"
@@ -5067,9 +5642,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Payments.View",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Payments",
                             ModuleName = "Payments"
@@ -5082,9 +5659,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Payments.Create",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Payments",
                             ModuleName = "Payments"
@@ -5097,9 +5676,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Payments.Edit",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Payments",
                             ModuleName = "Payments"
@@ -5112,9 +5693,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Payments.Delete",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Payments",
                             ModuleName = "Payments"
@@ -5127,9 +5710,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Payments.Approve",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Payments",
                             ModuleName = "Payments"
@@ -5142,9 +5727,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Payments.Assign",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Payments",
                             ModuleName = "Payments"
@@ -5157,9 +5744,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Payments.Publish",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Payments",
                             ModuleName = "Payments"
@@ -5172,9 +5761,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Payments.Export",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Payments",
                             ModuleName = "Payments"
@@ -5187,9 +5778,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = true,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Payments.Manage",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Payments",
                             ModuleName = "Payments"
@@ -5202,9 +5795,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Library.View",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Library",
                             ModuleName = "Library"
@@ -5217,9 +5812,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Library.Create",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Library",
                             ModuleName = "Library"
@@ -5232,9 +5829,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Library.Edit",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Library",
                             ModuleName = "Library"
@@ -5247,9 +5846,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Library.Delete",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Library",
                             ModuleName = "Library"
@@ -5262,9 +5863,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Library.Approve",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Library",
                             ModuleName = "Library"
@@ -5277,9 +5880,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Library.Assign",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Library",
                             ModuleName = "Library"
@@ -5292,9 +5897,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Library.Publish",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Library",
                             ModuleName = "Library"
@@ -5307,9 +5914,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Library.Export",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Library",
                             ModuleName = "Library"
@@ -5322,9 +5931,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = true,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Library.Manage",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Library",
                             ModuleName = "Library"
@@ -5337,9 +5948,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Transport.View",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Transport",
                             ModuleName = "Transport"
@@ -5352,9 +5965,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Transport.Create",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Transport",
                             ModuleName = "Transport"
@@ -5367,9 +5982,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Transport.Edit",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Transport",
                             ModuleName = "Transport"
@@ -5382,9 +5999,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Transport.Delete",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Transport",
                             ModuleName = "Transport"
@@ -5397,9 +6016,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Transport.Approve",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Transport",
                             ModuleName = "Transport"
@@ -5412,9 +6033,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Transport.Assign",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Transport",
                             ModuleName = "Transport"
@@ -5427,9 +6050,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Transport.Publish",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Transport",
                             ModuleName = "Transport"
@@ -5442,9 +6067,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Transport.Export",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Transport",
                             ModuleName = "Transport"
@@ -5457,9 +6084,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = true,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Transport.Manage",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Transport",
                             ModuleName = "Transport"
@@ -5472,9 +6101,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Health.View",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Health",
                             ModuleName = "Health"
@@ -5487,9 +6118,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Health.Create",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Health",
                             ModuleName = "Health"
@@ -5502,9 +6135,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Health.Edit",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Health",
                             ModuleName = "Health"
@@ -5517,9 +6152,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Health.Delete",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Health",
                             ModuleName = "Health"
@@ -5532,9 +6169,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Health.Approve",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Health",
                             ModuleName = "Health"
@@ -5547,9 +6186,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Health.Assign",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Health",
                             ModuleName = "Health"
@@ -5562,9 +6203,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Health.Publish",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Health",
                             ModuleName = "Health"
@@ -5577,9 +6220,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Health.Export",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Health",
                             ModuleName = "Health"
@@ -5592,9 +6237,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = true,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Health.Manage",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Health",
                             ModuleName = "Health"
@@ -5607,9 +6254,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Notifications.View",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Notifications",
                             ModuleName = "Notifications"
@@ -5622,9 +6271,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Notifications.Create",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Notifications",
                             ModuleName = "Notifications"
@@ -5637,9 +6288,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Notifications.Edit",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Notifications",
                             ModuleName = "Notifications"
@@ -5652,9 +6305,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Notifications.Delete",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Notifications",
                             ModuleName = "Notifications"
@@ -5667,9 +6322,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Notifications.Approve",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Notifications",
                             ModuleName = "Notifications"
@@ -5682,9 +6339,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Notifications.Assign",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Notifications",
                             ModuleName = "Notifications"
@@ -5697,9 +6356,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Notifications.Publish",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Notifications",
                             ModuleName = "Notifications"
@@ -5712,9 +6373,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Notifications.Export",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Notifications",
                             ModuleName = "Notifications"
@@ -5727,9 +6390,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = true,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Notifications.Manage",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Notifications",
                             ModuleName = "Notifications"
@@ -5742,9 +6407,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Reports.View",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Reports",
                             ModuleName = "Reports"
@@ -5757,9 +6424,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Reports.Create",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Reports",
                             ModuleName = "Reports"
@@ -5772,9 +6441,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Reports.Edit",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Reports",
                             ModuleName = "Reports"
@@ -5787,9 +6458,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Reports.Delete",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Reports",
                             ModuleName = "Reports"
@@ -5802,9 +6475,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Reports.Approve",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Reports",
                             ModuleName = "Reports"
@@ -5817,9 +6492,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Reports.Assign",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Reports",
                             ModuleName = "Reports"
@@ -5832,9 +6509,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Reports.Publish",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Reports",
                             ModuleName = "Reports"
@@ -5847,9 +6526,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Reports.Export",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Reports",
                             ModuleName = "Reports"
@@ -5862,9 +6543,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = true,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Reports.Manage",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Reports",
                             ModuleName = "Reports"
@@ -5877,9 +6560,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Settings.View",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Settings",
                             ModuleName = "Settings"
@@ -5892,9 +6577,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Settings.Create",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Settings",
                             ModuleName = "Settings"
@@ -5907,9 +6594,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Settings.Edit",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Settings",
                             ModuleName = "Settings"
@@ -5922,9 +6611,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Settings.Delete",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Settings",
                             ModuleName = "Settings"
@@ -5937,9 +6628,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Settings.Approve",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Settings",
                             ModuleName = "Settings"
@@ -5952,9 +6645,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Settings.Assign",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Settings",
                             ModuleName = "Settings"
@@ -5967,9 +6662,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Settings.Publish",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Settings",
                             ModuleName = "Settings"
@@ -5982,9 +6679,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Settings.Export",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Settings",
                             ModuleName = "Settings"
@@ -5997,9 +6696,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = true,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Settings.Manage",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Settings",
                             ModuleName = "Settings"
@@ -6012,9 +6713,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Academic.View",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Academic",
                             ModuleName = "Academic"
@@ -6027,9 +6730,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Academic.Create",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Academic",
                             ModuleName = "Academic"
@@ -6042,9 +6747,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Academic.Edit",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Academic",
                             ModuleName = "Academic"
@@ -6057,9 +6764,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Academic.Delete",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Academic",
                             ModuleName = "Academic"
@@ -6072,9 +6781,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Academic.Approve",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Academic",
                             ModuleName = "Academic"
@@ -6087,9 +6798,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Academic.Assign",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Academic",
                             ModuleName = "Academic"
@@ -6102,9 +6815,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Academic.Publish",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Academic",
                             ModuleName = "Academic"
@@ -6117,9 +6832,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Academic.Export",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Academic",
                             ModuleName = "Academic"
@@ -6132,9 +6849,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = true,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Academic.Manage",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Academic",
                             ModuleName = "Academic"
@@ -6147,9 +6866,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Admission.View",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Admission",
                             ModuleName = "Admission"
@@ -6162,9 +6883,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Admission.Create",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Admission",
                             ModuleName = "Admission"
@@ -6177,9 +6900,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Admission.Edit",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Admission",
                             ModuleName = "Admission"
@@ -6192,9 +6917,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Admission.Delete",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Admission",
                             ModuleName = "Admission"
@@ -6207,9 +6934,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Admission.Approve",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Admission",
                             ModuleName = "Admission"
@@ -6222,9 +6951,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Admission.Assign",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Admission",
                             ModuleName = "Admission"
@@ -6237,9 +6968,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Admission.Publish",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Admission",
                             ModuleName = "Admission"
@@ -6252,9 +6985,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Admission.Export",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Admission",
                             ModuleName = "Admission"
@@ -6267,9 +7002,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = true,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Admission.Manage",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Admission",
                             ModuleName = "Admission"
@@ -6282,9 +7019,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Student.View",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Student",
                             ModuleName = "Student"
@@ -6297,9 +7036,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Student.Create",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Student",
                             ModuleName = "Student"
@@ -6312,9 +7053,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Student.Edit",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Student",
                             ModuleName = "Student"
@@ -6327,9 +7070,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Student.Delete",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Student",
                             ModuleName = "Student"
@@ -6342,9 +7087,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Student.Approve",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Student",
                             ModuleName = "Student"
@@ -6357,9 +7104,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Student.Assign",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Student",
                             ModuleName = "Student"
@@ -6372,9 +7121,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Student.Publish",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Student",
                             ModuleName = "Student"
@@ -6387,9 +7138,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Student.Export",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Student",
                             ModuleName = "Student"
@@ -6402,9 +7155,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = true,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Student.Manage",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Student",
                             ModuleName = "Student"
@@ -6417,9 +7172,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Exam.View",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Exam",
                             ModuleName = "Exam"
@@ -6432,9 +7189,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Exam.Create",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Exam",
                             ModuleName = "Exam"
@@ -6447,9 +7206,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Exam.Edit",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Exam",
                             ModuleName = "Exam"
@@ -6462,9 +7223,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Exam.Delete",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Exam",
                             ModuleName = "Exam"
@@ -6477,9 +7240,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Exam.Approve",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Exam",
                             ModuleName = "Exam"
@@ -6492,9 +7257,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Exam.Assign",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Exam",
                             ModuleName = "Exam"
@@ -6507,9 +7274,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Exam.Publish",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Exam",
                             ModuleName = "Exam"
@@ -6522,9 +7291,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Exam.Export",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Exam",
                             ModuleName = "Exam"
@@ -6537,9 +7308,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = true,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Exam.Manage",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Exam",
                             ModuleName = "Exam"
@@ -6552,9 +7325,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Result.View",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Result",
                             ModuleName = "Result"
@@ -6567,9 +7342,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Result.Create",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Result",
                             ModuleName = "Result"
@@ -6582,9 +7359,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Result.Edit",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Result",
                             ModuleName = "Result"
@@ -6597,9 +7376,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Result.Delete",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Result",
                             ModuleName = "Result"
@@ -6612,9 +7393,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Result.Approve",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Result",
                             ModuleName = "Result"
@@ -6627,9 +7410,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Result.Assign",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Result",
                             ModuleName = "Result"
@@ -6642,9 +7427,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Result.Publish",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Result",
                             ModuleName = "Result"
@@ -6657,9 +7444,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Result.Export",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Result",
                             ModuleName = "Result"
@@ -6672,9 +7461,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = true,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Result.Manage",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Result",
                             ModuleName = "Result"
@@ -6687,9 +7478,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Communication.View",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Communication",
                             ModuleName = "Communication"
@@ -6702,9 +7495,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Communication.Create",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Communication",
                             ModuleName = "Communication"
@@ -6717,9 +7512,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Communication.Edit",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Communication",
                             ModuleName = "Communication"
@@ -6732,9 +7529,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Communication.Delete",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Communication",
                             ModuleName = "Communication"
@@ -6747,9 +7546,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Communication.Approve",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Communication",
                             ModuleName = "Communication"
@@ -6762,9 +7563,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Communication.Assign",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Communication",
                             ModuleName = "Communication"
@@ -6777,9 +7580,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Communication.Publish",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Communication",
                             ModuleName = "Communication"
@@ -6792,9 +7597,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "Communication.Export",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Communication",
                             ModuleName = "Communication"
@@ -6807,9 +7614,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = true,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "Communication.Manage",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "Communication",
                             ModuleName = "Communication"
@@ -6822,9 +7631,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "System.View",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "System",
                             ModuleName = "System"
@@ -6837,9 +7648,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "System.Create",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "System",
                             ModuleName = "System"
@@ -6852,9 +7665,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "System.Edit",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "System",
                             ModuleName = "System"
@@ -6867,9 +7682,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "System.Delete",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "System",
                             ModuleName = "System"
@@ -6882,9 +7699,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "System.Approve",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "System",
                             ModuleName = "System"
@@ -6897,9 +7716,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "System.Assign",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "System",
                             ModuleName = "System"
@@ -6912,9 +7733,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "System.Publish",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "System",
                             ModuleName = "System"
@@ -6927,9 +7750,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "System.Export",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "System",
                             ModuleName = "System"
@@ -6942,9 +7767,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = true,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "System.Manage",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "System",
                             ModuleName = "System"
@@ -6957,9 +7784,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "AuditLogs.View",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "AuditLogs",
                             ModuleName = "AuditLogs"
@@ -6972,9 +7801,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "AuditLogs.Create",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "AuditLogs",
                             ModuleName = "AuditLogs"
@@ -6987,9 +7818,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "AuditLogs.Edit",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "AuditLogs",
                             ModuleName = "AuditLogs"
@@ -7002,9 +7835,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = false,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "AuditLogs.Delete",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "AuditLogs",
                             ModuleName = "AuditLogs"
@@ -7017,9 +7852,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "AuditLogs.Approve",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "AuditLogs",
                             ModuleName = "AuditLogs"
@@ -7032,9 +7869,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "AuditLogs.Assign",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "AuditLogs",
                             ModuleName = "AuditLogs"
@@ -7047,9 +7886,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "AuditLogs.Publish",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "AuditLogs",
                             ModuleName = "AuditLogs"
@@ -7062,9 +7903,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
+                            Category = "General",
                             Code = "AuditLogs.Export",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "AuditLogs",
                             ModuleName = "AuditLogs"
@@ -7077,9 +7920,11 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = true,
                             CanUpdate = true,
+                            Category = "General",
                             Code = "AuditLogs.Manage",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            IsCritical = false,
                             IsDeleted = false,
                             Module = "AuditLogs",
                             ModuleName = "AuditLogs"
@@ -7106,13 +7951,22 @@ namespace SchoolManagementSystem.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsSystemRole")
                         .HasColumnType("bit");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(80)
                         .HasColumnType("nvarchar(80)");
+
+                    b.Property<int>("Priority")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -7131,63 +7985,120 @@ namespace SchoolManagementSystem.Migrations
                             Id = 1,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
-                            Description = "System owner with all permissions",
+                            Description = "Full system owner with all permissions",
+                            IsActive = true,
                             IsDeleted = false,
-                            Name = "Super Admin"
+                            IsSystemRole = true,
+                            Name = "SuperAdmin",
+                            Priority = 100
                         },
                         new
                         {
                             Id = 2,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
-                            Description = "Final approval and all modules",
+                            Description = "Administrative operations",
+                            IsActive = true,
                             IsDeleted = false,
-                            Name = "Principal"
+                            IsSystemRole = true,
+                            Name = "Admin",
+                            Priority = 95
                         },
                         new
                         {
                             Id = 3,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
-                            Description = "Academic operations",
+                            Description = "Academic + operational authority",
+                            IsActive = true,
                             IsDeleted = false,
-                            Name = "Assistant Head"
+                            IsSystemRole = true,
+                            Name = "Principal",
+                            Priority = 90
                         },
                         new
                         {
                             Id = 4,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
-                            Description = "Teaching and review",
+                            Description = "Human resource management",
+                            IsActive = true,
                             IsDeleted = false,
-                            Name = "Senior Lecturer"
+                            IsSystemRole = true,
+                            Name = "HRManager",
+                            Priority = 80
                         },
                         new
                         {
                             Id = 5,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
-                            Description = "Teaching operations",
+                            Description = "Financial operations",
+                            IsActive = true,
                             IsDeleted = false,
-                            Name = "Lecturer"
+                            IsSystemRole = true,
+                            Name = "Accountant",
+                            Priority = 70
                         },
                         new
                         {
                             Id = 6,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
-                            Description = "Admission, fees, reports",
+                            Description = "Academic teaching operations",
+                            IsActive = true,
                             IsDeleted = false,
-                            Name = "Office Staff"
+                            IsSystemRole = true,
+                            Name = "Teacher",
+                            Priority = 60
                         },
                         new
                         {
                             Id = 7,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
-                            Description = "Student portal access",
+                            Description = "Library management",
+                            IsActive = true,
                             IsDeleted = false,
-                            Name = "Student"
+                            IsSystemRole = true,
+                            Name = "Librarian",
+                            Priority = 50
+                        },
+                        new
+                        {
+                            Id = 8,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
+                            Description = "General employee operations",
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsSystemRole = true,
+                            Name = "Staff",
+                            Priority = 40
+                        },
+                        new
+                        {
+                            Id = 9,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
+                            Description = "Student portal access",
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsSystemRole = true,
+                            Name = "Student",
+                            Priority = 10
+                        },
+                        new
+                        {
+                            Id = 10,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
+                            Description = "Parent portal access",
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsSystemRole = true,
+                            Name = "Parent",
+                            Priority = 5
                         });
                 });
 
@@ -9954,6 +10865,141 @@ namespace SchoolManagementSystem.Migrations
                         new
                         {
                             RoleId = 3,
+                            PermissionId = 10
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 11
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 12
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 13
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 14
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 15
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 16
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 17
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 18
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 19
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 20
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 21
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 22
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 23
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 24
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 25
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 26
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 27
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 28
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 29
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 30
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 31
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 32
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 33
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 34
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 35
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 36
+                        },
+                        new
+                        {
+                            RoleId = 3,
                             PermissionId = 37
                         },
                         new
@@ -10040,6 +11086,51 @@ namespace SchoolManagementSystem.Migrations
                         {
                             RoleId = 3,
                             PermissionId = 54
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 55
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 56
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 57
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 58
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 59
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 60
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 61
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 62
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 63
                         },
                         new
                         {
@@ -10314,6 +11405,321 @@ namespace SchoolManagementSystem.Migrations
                         new
                         {
                             RoleId = 3,
+                            PermissionId = 118
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 119
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 120
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 121
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 122
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 123
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 124
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 125
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 126
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 127
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 128
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 129
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 130
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 131
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 132
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 133
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 134
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 135
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 136
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 137
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 138
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 139
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 140
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 141
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 142
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 143
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 144
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 145
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 146
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 147
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 148
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 149
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 150
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 151
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 152
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 153
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 154
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 155
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 156
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 157
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 158
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 159
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 160
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 161
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 162
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 163
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 164
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 165
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 166
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 167
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 168
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 169
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 170
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 171
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 172
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 173
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 174
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 175
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 176
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 177
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 178
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 179
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 180
+                        },
+                        new
+                        {
+                            RoleId = 3,
                             PermissionId = 181
                         },
                         new
@@ -10355,6 +11761,51 @@ namespace SchoolManagementSystem.Migrations
                         {
                             RoleId = 3,
                             PermissionId = 189
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 190
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 191
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 192
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 193
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 194
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 195
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 196
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 197
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 198
                         },
                         new
                         {
@@ -10628,53 +12079,363 @@ namespace SchoolManagementSystem.Migrations
                         },
                         new
                         {
+                            RoleId = 3,
+                            PermissionId = 253
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 254
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 255
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 256
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 257
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 258
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 259
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 260
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 261
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 262
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 263
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 264
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 265
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 266
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 267
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 268
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 269
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 270
+                        },
+                        new
+                        {
+                            RoleId = 4,
+                            PermissionId = 1
+                        },
+                        new
+                        {
+                            RoleId = 4,
+                            PermissionId = 2
+                        },
+                        new
+                        {
+                            RoleId = 4,
+                            PermissionId = 3
+                        },
+                        new
+                        {
+                            RoleId = 4,
+                            PermissionId = 4
+                        },
+                        new
+                        {
+                            RoleId = 4,
+                            PermissionId = 5
+                        },
+                        new
+                        {
+                            RoleId = 4,
+                            PermissionId = 6
+                        },
+                        new
+                        {
+                            RoleId = 4,
+                            PermissionId = 7
+                        },
+                        new
+                        {
+                            RoleId = 4,
+                            PermissionId = 8
+                        },
+                        new
+                        {
+                            RoleId = 4,
+                            PermissionId = 9
+                        },
+                        new
+                        {
+                            RoleId = 4,
+                            PermissionId = 91
+                        },
+                        new
+                        {
+                            RoleId = 4,
+                            PermissionId = 92
+                        },
+                        new
+                        {
+                            RoleId = 4,
+                            PermissionId = 93
+                        },
+                        new
+                        {
+                            RoleId = 4,
+                            PermissionId = 94
+                        },
+                        new
+                        {
+                            RoleId = 4,
+                            PermissionId = 95
+                        },
+                        new
+                        {
+                            RoleId = 4,
+                            PermissionId = 96
+                        },
+                        new
+                        {
+                            RoleId = 4,
+                            PermissionId = 97
+                        },
+                        new
+                        {
+                            RoleId = 4,
+                            PermissionId = 98
+                        },
+                        new
+                        {
+                            RoleId = 4,
+                            PermissionId = 99
+                        },
+                        new
+                        {
+                            RoleId = 4,
+                            PermissionId = 181
+                        },
+                        new
+                        {
+                            RoleId = 4,
+                            PermissionId = 182
+                        },
+                        new
+                        {
+                            RoleId = 4,
+                            PermissionId = 183
+                        },
+                        new
+                        {
+                            RoleId = 4,
+                            PermissionId = 184
+                        },
+                        new
+                        {
+                            RoleId = 4,
+                            PermissionId = 185
+                        },
+                        new
+                        {
+                            RoleId = 4,
+                            PermissionId = 186
+                        },
+                        new
+                        {
+                            RoleId = 4,
+                            PermissionId = 187
+                        },
+                        new
+                        {
+                            RoleId = 4,
+                            PermissionId = 188
+                        },
+                        new
+                        {
+                            RoleId = 4,
+                            PermissionId = 189
+                        },
+                        new
+                        {
                             RoleId = 5,
                             PermissionId = 1
                         },
                         new
                         {
                             RoleId = 5,
-                            PermissionId = 46
+                            PermissionId = 2
                         },
                         new
                         {
                             RoleId = 5,
-                            PermissionId = 64
+                            PermissionId = 3
                         },
                         new
                         {
                             RoleId = 5,
-                            PermissionId = 91
+                            PermissionId = 4
                         },
                         new
                         {
                             RoleId = 5,
-                            PermissionId = 92
+                            PermissionId = 5
                         },
                         new
                         {
                             RoleId = 5,
-                            PermissionId = 100
+                            PermissionId = 6
                         },
                         new
                         {
                             RoleId = 5,
-                            PermissionId = 109
+                            PermissionId = 7
                         },
                         new
                         {
                             RoleId = 5,
-                            PermissionId = 110
+                            PermissionId = 8
                         },
                         new
                         {
                             RoleId = 5,
-                            PermissionId = 118
+                            PermissionId = 9
                         },
                         new
                         {
                             RoleId = 5,
-                            PermissionId = 119
+                            PermissionId = 127
+                        },
+                        new
+                        {
+                            RoleId = 5,
+                            PermissionId = 128
+                        },
+                        new
+                        {
+                            RoleId = 5,
+                            PermissionId = 129
+                        },
+                        new
+                        {
+                            RoleId = 5,
+                            PermissionId = 130
+                        },
+                        new
+                        {
+                            RoleId = 5,
+                            PermissionId = 131
+                        },
+                        new
+                        {
+                            RoleId = 5,
+                            PermissionId = 132
+                        },
+                        new
+                        {
+                            RoleId = 5,
+                            PermissionId = 133
+                        },
+                        new
+                        {
+                            RoleId = 5,
+                            PermissionId = 134
+                        },
+                        new
+                        {
+                            RoleId = 5,
+                            PermissionId = 135
+                        },
+                        new
+                        {
+                            RoleId = 5,
+                            PermissionId = 136
+                        },
+                        new
+                        {
+                            RoleId = 5,
+                            PermissionId = 137
+                        },
+                        new
+                        {
+                            RoleId = 5,
+                            PermissionId = 138
+                        },
+                        new
+                        {
+                            RoleId = 5,
+                            PermissionId = 139
+                        },
+                        new
+                        {
+                            RoleId = 5,
+                            PermissionId = 140
+                        },
+                        new
+                        {
+                            RoleId = 5,
+                            PermissionId = 141
+                        },
+                        new
+                        {
+                            RoleId = 5,
+                            PermissionId = 142
+                        },
+                        new
+                        {
+                            RoleId = 5,
+                            PermissionId = 143
+                        },
+                        new
+                        {
+                            RoleId = 5,
+                            PermissionId = 144
                         },
                         new
                         {
@@ -10684,7 +12445,42 @@ namespace SchoolManagementSystem.Migrations
                         new
                         {
                             RoleId = 5,
-                            PermissionId = 226
+                            PermissionId = 182
+                        },
+                        new
+                        {
+                            RoleId = 5,
+                            PermissionId = 183
+                        },
+                        new
+                        {
+                            RoleId = 5,
+                            PermissionId = 184
+                        },
+                        new
+                        {
+                            RoleId = 5,
+                            PermissionId = 185
+                        },
+                        new
+                        {
+                            RoleId = 5,
+                            PermissionId = 186
+                        },
+                        new
+                        {
+                            RoleId = 5,
+                            PermissionId = 187
+                        },
+                        new
+                        {
+                            RoleId = 5,
+                            PermissionId = 188
+                        },
+                        new
+                        {
+                            RoleId = 5,
+                            PermissionId = 189
                         },
                         new
                         {
@@ -10694,197 +12490,42 @@ namespace SchoolManagementSystem.Migrations
                         new
                         {
                             RoleId = 6,
-                            PermissionId = 2
-                        },
-                        new
-                        {
-                            RoleId = 6,
-                            PermissionId = 3
-                        },
-                        new
-                        {
-                            RoleId = 6,
-                            PermissionId = 5
-                        },
-                        new
-                        {
-                            RoleId = 6,
-                            PermissionId = 6
-                        },
-                        new
-                        {
-                            RoleId = 6,
-                            PermissionId = 7
-                        },
-                        new
-                        {
-                            RoleId = 6,
-                            PermissionId = 8
-                        },
-                        new
-                        {
-                            RoleId = 6,
-                            PermissionId = 9
-                        },
-                        new
-                        {
-                            RoleId = 6,
-                            PermissionId = 37
-                        },
-                        new
-                        {
-                            RoleId = 6,
-                            PermissionId = 38
-                        },
-                        new
-                        {
-                            RoleId = 6,
-                            PermissionId = 39
-                        },
-                        new
-                        {
-                            RoleId = 6,
-                            PermissionId = 41
-                        },
-                        new
-                        {
-                            RoleId = 6,
-                            PermissionId = 42
-                        },
-                        new
-                        {
-                            RoleId = 6,
-                            PermissionId = 43
-                        },
-                        new
-                        {
-                            RoleId = 6,
-                            PermissionId = 44
-                        },
-                        new
-                        {
-                            RoleId = 6,
-                            PermissionId = 45
-                        },
-                        new
-                        {
-                            RoleId = 6,
                             PermissionId = 46
                         },
                         new
                         {
                             RoleId = 6,
-                            PermissionId = 47
+                            PermissionId = 64
                         },
                         new
                         {
                             RoleId = 6,
-                            PermissionId = 48
+                            PermissionId = 91
                         },
                         new
                         {
                             RoleId = 6,
-                            PermissionId = 50
+                            PermissionId = 92
                         },
                         new
                         {
                             RoleId = 6,
-                            PermissionId = 51
+                            PermissionId = 109
                         },
                         new
                         {
                             RoleId = 6,
-                            PermissionId = 52
+                            PermissionId = 110
                         },
                         new
                         {
                             RoleId = 6,
-                            PermissionId = 53
+                            PermissionId = 118
                         },
                         new
                         {
                             RoleId = 6,
-                            PermissionId = 54
-                        },
-                        new
-                        {
-                            RoleId = 6,
-                            PermissionId = 127
-                        },
-                        new
-                        {
-                            RoleId = 6,
-                            PermissionId = 128
-                        },
-                        new
-                        {
-                            RoleId = 6,
-                            PermissionId = 129
-                        },
-                        new
-                        {
-                            RoleId = 6,
-                            PermissionId = 131
-                        },
-                        new
-                        {
-                            RoleId = 6,
-                            PermissionId = 132
-                        },
-                        new
-                        {
-                            RoleId = 6,
-                            PermissionId = 133
-                        },
-                        new
-                        {
-                            RoleId = 6,
-                            PermissionId = 134
-                        },
-                        new
-                        {
-                            RoleId = 6,
-                            PermissionId = 135
-                        },
-                        new
-                        {
-                            RoleId = 6,
-                            PermissionId = 136
-                        },
-                        new
-                        {
-                            RoleId = 6,
-                            PermissionId = 137
-                        },
-                        new
-                        {
-                            RoleId = 6,
-                            PermissionId = 138
-                        },
-                        new
-                        {
-                            RoleId = 6,
-                            PermissionId = 140
-                        },
-                        new
-                        {
-                            RoleId = 6,
-                            PermissionId = 141
-                        },
-                        new
-                        {
-                            RoleId = 6,
-                            PermissionId = 142
-                        },
-                        new
-                        {
-                            RoleId = 6,
-                            PermissionId = 143
-                        },
-                        new
-                        {
-                            RoleId = 6,
-                            PermissionId = 144
+                            PermissionId = 119
                         },
                         new
                         {
@@ -10900,6 +12541,11 @@ namespace SchoolManagementSystem.Migrations
                         {
                             RoleId = 6,
                             PermissionId = 183
+                        },
+                        new
+                        {
+                            RoleId = 6,
+                            PermissionId = 184
                         },
                         new
                         {
@@ -10929,82 +12575,92 @@ namespace SchoolManagementSystem.Migrations
                         new
                         {
                             RoleId = 6,
-                            PermissionId = 208
+                            PermissionId = 226
                         },
                         new
                         {
                             RoleId = 6,
-                            PermissionId = 209
+                            PermissionId = 227
                         },
                         new
                         {
                             RoleId = 6,
-                            PermissionId = 210
+                            PermissionId = 228
                         },
                         new
                         {
                             RoleId = 6,
-                            PermissionId = 212
+                            PermissionId = 229
                         },
                         new
                         {
                             RoleId = 6,
-                            PermissionId = 213
+                            PermissionId = 230
                         },
                         new
                         {
                             RoleId = 6,
-                            PermissionId = 214
+                            PermissionId = 231
                         },
                         new
                         {
                             RoleId = 6,
-                            PermissionId = 215
+                            PermissionId = 232
                         },
                         new
                         {
                             RoleId = 6,
-                            PermissionId = 216
+                            PermissionId = 233
                         },
                         new
                         {
                             RoleId = 6,
-                            PermissionId = 217
+                            PermissionId = 234
                         },
                         new
                         {
                             RoleId = 6,
-                            PermissionId = 218
+                            PermissionId = 235
                         },
                         new
                         {
                             RoleId = 6,
-                            PermissionId = 219
+                            PermissionId = 236
                         },
                         new
                         {
                             RoleId = 6,
-                            PermissionId = 221
+                            PermissionId = 237
                         },
                         new
                         {
                             RoleId = 6,
-                            PermissionId = 222
+                            PermissionId = 238
                         },
                         new
                         {
                             RoleId = 6,
-                            PermissionId = 223
+                            PermissionId = 239
                         },
                         new
                         {
                             RoleId = 6,
-                            PermissionId = 224
+                            PermissionId = 240
                         },
                         new
                         {
                             RoleId = 6,
-                            PermissionId = 225
+                            PermissionId = 241
+                        },
+                        new
+                        {
+                            RoleId = 6,
+                            PermissionId = 242
+                        },
+                        new
+                        {
+                            RoleId = 6,
+                            PermissionId = 243
                         },
                         new
                         {
@@ -11014,41 +12670,526 @@ namespace SchoolManagementSystem.Migrations
                         new
                         {
                             RoleId = 7,
+                            PermissionId = 2
+                        },
+                        new
+                        {
+                            RoleId = 7,
+                            PermissionId = 3
+                        },
+                        new
+                        {
+                            RoleId = 7,
+                            PermissionId = 4
+                        },
+                        new
+                        {
+                            RoleId = 7,
+                            PermissionId = 5
+                        },
+                        new
+                        {
+                            RoleId = 7,
+                            PermissionId = 6
+                        },
+                        new
+                        {
+                            RoleId = 7,
+                            PermissionId = 7
+                        },
+                        new
+                        {
+                            RoleId = 7,
+                            PermissionId = 8
+                        },
+                        new
+                        {
+                            RoleId = 7,
+                            PermissionId = 9
+                        },
+                        new
+                        {
+                            RoleId = 7,
+                            PermissionId = 145
+                        },
+                        new
+                        {
+                            RoleId = 7,
+                            PermissionId = 146
+                        },
+                        new
+                        {
+                            RoleId = 7,
+                            PermissionId = 147
+                        },
+                        new
+                        {
+                            RoleId = 7,
+                            PermissionId = 148
+                        },
+                        new
+                        {
+                            RoleId = 7,
+                            PermissionId = 149
+                        },
+                        new
+                        {
+                            RoleId = 7,
+                            PermissionId = 150
+                        },
+                        new
+                        {
+                            RoleId = 7,
+                            PermissionId = 151
+                        },
+                        new
+                        {
+                            RoleId = 7,
+                            PermissionId = 152
+                        },
+                        new
+                        {
+                            RoleId = 7,
+                            PermissionId = 153
+                        },
+                        new
+                        {
+                            RoleId = 7,
+                            PermissionId = 181
+                        },
+                        new
+                        {
+                            RoleId = 7,
+                            PermissionId = 182
+                        },
+                        new
+                        {
+                            RoleId = 7,
+                            PermissionId = 183
+                        },
+                        new
+                        {
+                            RoleId = 7,
+                            PermissionId = 184
+                        },
+                        new
+                        {
+                            RoleId = 7,
+                            PermissionId = 185
+                        },
+                        new
+                        {
+                            RoleId = 7,
+                            PermissionId = 186
+                        },
+                        new
+                        {
+                            RoleId = 7,
+                            PermissionId = 187
+                        },
+                        new
+                        {
+                            RoleId = 7,
+                            PermissionId = 188
+                        },
+                        new
+                        {
+                            RoleId = 7,
+                            PermissionId = 189
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 1
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 2
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 3
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 5
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 6
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 7
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 8
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 9
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 37
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 38
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 39
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 41
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 42
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 43
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 44
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 45
+                        },
+                        new
+                        {
+                            RoleId = 8,
                             PermissionId = 46
                         },
                         new
                         {
-                            RoleId = 7,
-                            PermissionId = 91
+                            RoleId = 8,
+                            PermissionId = 47
                         },
                         new
                         {
-                            RoleId = 7,
-                            PermissionId = 109
+                            RoleId = 8,
+                            PermissionId = 48
                         },
                         new
                         {
-                            RoleId = 7,
-                            PermissionId = 118
+                            RoleId = 8,
+                            PermissionId = 50
                         },
                         new
                         {
-                            RoleId = 7,
-                            PermissionId = 119
+                            RoleId = 8,
+                            PermissionId = 51
                         },
                         new
                         {
-                            RoleId = 7,
+                            RoleId = 8,
+                            PermissionId = 52
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 53
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 54
+                        },
+                        new
+                        {
+                            RoleId = 8,
                             PermissionId = 127
                         },
                         new
                         {
-                            RoleId = 7,
+                            RoleId = 8,
+                            PermissionId = 128
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 129
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 131
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 132
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 133
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 134
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 135
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 136
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 137
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 138
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 140
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 141
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 142
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 143
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 144
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 181
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 182
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 183
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 185
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 186
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 187
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 188
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 189
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 208
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 209
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 210
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 212
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 213
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 214
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 215
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 216
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 217
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 218
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 219
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 221
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 222
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 223
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 224
+                        },
+                        new
+                        {
+                            RoleId = 8,
+                            PermissionId = 225
+                        },
+                        new
+                        {
+                            RoleId = 9,
+                            PermissionId = 1
+                        },
+                        new
+                        {
+                            RoleId = 9,
+                            PermissionId = 46
+                        },
+                        new
+                        {
+                            RoleId = 9,
+                            PermissionId = 91
+                        },
+                        new
+                        {
+                            RoleId = 9,
+                            PermissionId = 109
+                        },
+                        new
+                        {
+                            RoleId = 9,
+                            PermissionId = 118
+                        },
+                        new
+                        {
+                            RoleId = 9,
+                            PermissionId = 119
+                        },
+                        new
+                        {
+                            RoleId = 9,
+                            PermissionId = 127
+                        },
+                        new
+                        {
+                            RoleId = 9,
                             PermissionId = 172
                         },
                         new
                         {
-                            RoleId = 7,
+                            RoleId = 9,
+                            PermissionId = 217
+                        },
+                        new
+                        {
+                            RoleId = 10,
+                            PermissionId = 1
+                        },
+                        new
+                        {
+                            RoleId = 10,
+                            PermissionId = 91
+                        },
+                        new
+                        {
+                            RoleId = 10,
+                            PermissionId = 109
+                        },
+                        new
+                        {
+                            RoleId = 10,
+                            PermissionId = 127
+                        },
+                        new
+                        {
+                            RoleId = 10,
+                            PermissionId = 172
+                        },
+                        new
+                        {
+                            RoleId = 10,
                             PermissionId = 217
                         });
                 });
@@ -11061,6 +13202,15 @@ namespace SchoolManagementSystem.Migrations
                     b.Property<int>("RoleId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime?>("EffectiveFrom")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("EffectiveTo")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsPrimary")
+                        .HasColumnType("bit");
+
                     b.HasKey("UserId", "RoleId");
 
                     b.HasIndex("RoleId");
@@ -11071,7 +13221,8 @@ namespace SchoolManagementSystem.Migrations
                         new
                         {
                             UserId = 1,
-                            RoleId = 1
+                            RoleId = 1,
+                            IsPrimary = false
                         });
                 });
 
@@ -11464,6 +13615,365 @@ namespace SchoolManagementSystem.Migrations
                     b.HasIndex("DesignationId");
 
                     b.ToTable("Employees");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.EmployeeAttendance", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime>("AttendanceDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<TimeSpan?>("CheckInTime")
+                        .HasColumnType("time");
+
+                    b.Property<TimeSpan?>("CheckOutTime")
+                        .HasColumnType("time");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<long>("EmployeeId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Remarks")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId", "AttendanceDate")
+                        .IsUnique();
+
+                    b.ToTable("EmployeeAttendances");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.EmployeeDocument", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("DocumentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<long>("EmployeeId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("OriginalFileName")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<DateTime>("UploadedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UploadedById")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.HasIndex("UploadedById");
+
+                    b.ToTable("EmployeeDocuments");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.EmployeeLeave", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<DateTime?>("ApprovedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ApprovedById")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("EmployeeId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("LeaveTypeId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Reason")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("RejectionReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Remarks")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TotalDays")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApprovedById");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.HasIndex("LeaveTypeId");
+
+                    b.ToTable("EmployeeLeaves");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.EmployeePayroll", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<int>("AbsentDays")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ApprovedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("ApprovedById")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("BonusAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("DeductionAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<long>("EmployeeId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime>("GeneratedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("GeneratedById")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("GrossSalary")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("LateDays")
+                        .HasColumnType("int");
+
+                    b.Property<int>("LeaveDays")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("NetSalary")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<double>("OvertimeHours")
+                        .HasColumnType("float");
+
+                    b.Property<int>("PaidLeaveDays")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("PaymentDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("PaymentStatus")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PayrollMonth")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PayrollYear")
+                        .HasColumnType("int");
+
+                    b.Property<int>("PresentDays")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Remarks")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("UnpaidLeaveDays")
+                        .HasColumnType("int");
+
+                    b.Property<int>("WorkingDays")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApprovedById");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.HasIndex("GeneratedById");
+
+                    b.ToTable("EmployeePayrolls");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.EmployeeSalaryStructure", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<decimal>("BasicSalary")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("EffectiveFrom")
+                        .HasColumnType("datetime2");
+
+                    b.Property<long>("EmployeeId")
+                        .HasColumnType("bigint");
+
+                    b.Property<decimal>("HouseRent")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("MedicalAllowance")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("OtherAllowance")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("ProvidentFund")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TaxPercentage")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TransportAllowance")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.ToTable("EmployeeSalaryStructures");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.Holiday", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsRecurring")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Holidays");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.LeaveType", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("ColorCode")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("DefaultDaysPerYear")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPaid")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("LeaveTypes");
                 });
 
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Exam.AdmitCard", b =>
@@ -15314,6 +17824,75 @@ namespace SchoolManagementSystem.Migrations
                     b.ToTable("Vehicles");
                 });
 
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Academic.AcademicDocument", b =>
+                {
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Academic.SchoolClass", "Class")
+                        .WithMany()
+                        .HasForeignKey("ClassId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Academic.Section", "Section")
+                        .WithMany()
+                        .HasForeignKey("SectionId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Academic.Subject", "Subject")
+                        .WithMany()
+                        .HasForeignKey("SubjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Employee.Employee", "UploadedBy")
+                        .WithMany()
+                        .HasForeignKey("UploadedByEmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Class");
+
+                    b.Navigation("Section");
+
+                    b.Navigation("Subject");
+
+                    b.Navigation("UploadedBy");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Academic.ClassRoutine", b =>
+                {
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Academic.SchoolClass", "Class")
+                        .WithMany()
+                        .HasForeignKey("ClassId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Employee.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Academic.Section", "Section")
+                        .WithMany()
+                        .HasForeignKey("SectionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Academic.Subject", "Subject")
+                        .WithMany()
+                        .HasForeignKey("SubjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Class");
+
+                    b.Navigation("Employee");
+
+                    b.Navigation("Section");
+
+                    b.Navigation("Subject");
+                });
+
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Academic.ClassSubject", b =>
                 {
                     b.HasOne("SchoolManagementSystem.Models.Entities.Academic.SchoolClass", "SchoolClass")
@@ -15364,6 +17943,60 @@ namespace SchoolManagementSystem.Migrations
                     b.Navigation("ClassSubject");
 
                     b.Navigation("Teacher");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Academic.EmployeeSubjectAssignment", b =>
+                {
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Academic.AcademicYear", "AcademicYear")
+                        .WithMany()
+                        .HasForeignKey("AcademicYearId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Academic.SchoolClass", "Class")
+                        .WithMany()
+                        .HasForeignKey("ClassId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Employee.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Academic.Section", "Section")
+                        .WithMany()
+                        .HasForeignKey("SectionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Academic.Subject", "Subject")
+                        .WithMany()
+                        .HasForeignKey("SubjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("AcademicYear");
+
+                    b.Navigation("Class");
+
+                    b.Navigation("Employee");
+
+                    b.Navigation("Section");
+
+                    b.Navigation("Subject");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Academic.ExamDutyAssignment", b =>
+                {
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Employee.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
                 });
 
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Academic.LessonPlan", b =>
@@ -15472,6 +18105,17 @@ namespace SchoolManagementSystem.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Auth.Notification", b =>
+                {
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Auth.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Auth.PasswordResetToken", b =>
                 {
                     b.HasOne("SchoolManagementSystem.Models.Entities.Auth.ApplicationUser", "User")
@@ -15549,6 +18193,98 @@ namespace SchoolManagementSystem.Migrations
                     b.Navigation("Department");
 
                     b.Navigation("Designation");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.EmployeeAttendance", b =>
+                {
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Employee.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.EmployeeDocument", b =>
+                {
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Employee.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Auth.ApplicationUser", "UploadedBy")
+                        .WithMany()
+                        .HasForeignKey("UploadedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+
+                    b.Navigation("UploadedBy");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.EmployeeLeave", b =>
+                {
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Auth.ApplicationUser", "ApprovedBy")
+                        .WithMany()
+                        .HasForeignKey("ApprovedById")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Employee.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Employee.LeaveType", "LeaveType")
+                        .WithMany()
+                        .HasForeignKey("LeaveTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("ApprovedBy");
+
+                    b.Navigation("Employee");
+
+                    b.Navigation("LeaveType");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.EmployeePayroll", b =>
+                {
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Auth.ApplicationUser", "ApprovedBy")
+                        .WithMany()
+                        .HasForeignKey("ApprovedById")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Employee.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Auth.ApplicationUser", "GeneratedBy")
+                        .WithMany()
+                        .HasForeignKey("GeneratedById")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("ApprovedBy");
+
+                    b.Navigation("Employee");
+
+                    b.Navigation("GeneratedBy");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.EmployeeSalaryStructure", b =>
+                {
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Employee.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
                 });
 
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Exam.ExamConfiguration", b =>

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace SchoolManagementSystem.Models.ViewModels.Employee;
@@ -72,6 +73,10 @@ public class EmployeeViewModel
 
     [Display(Name = "Photo")]
     public string? PhotoPath { get; set; }
+
+    /// <summary>Upload file from the form — not persisted directly, saved via service.</summary>
+    [Display(Name = "Upload Photo")]
+    public IFormFile? PhotoFile { get; set; }
 
     [Display(Name = "Active")]
     public bool IsActive { get; set; } = true;

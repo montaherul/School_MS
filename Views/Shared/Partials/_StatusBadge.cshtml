@@ -1,0 +1,14 @@
+@using SchoolManagementSystem.Extensions
+@model Enum
+
+@if (Model != null)
+{
+    <span class="@Model.ToBadgeClass()">
+        <i class="@Model.ToIcon() me-1"></i>
+        @Model.GetDisplayName()
+    </span>
+}
+else
+{
+    <span class="badge bg-secondary">N/A</span>
+}

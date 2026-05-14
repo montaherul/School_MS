@@ -47,6 +47,10 @@ public class Role : BaseEntity
     [MaxLength(200)]
     public string? Description { get; set; }
 
+    public int Priority { get; set; } = 0;
+    public bool IsSystemRole { get; set; }
+    public bool IsActive { get; set; } = true;
+
     public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
     public ICollection<RolePermission> RolePermissions { get; set; } = new List<RolePermission>();
 }
@@ -60,11 +64,15 @@ public class Permission : BaseEntity
     public string ModuleName { get; set; } = string.Empty;
 
     [MaxLength(80)]
+    public string Category { get; set; } = "General";
+
+    [MaxLength(80)]
     public string Action { get; set; } = string.Empty;
 
     [MaxLength(160)]
     public string Code { get; set; } = string.Empty;
 
+    public bool IsCritical { get; set; }
     public bool CanCreate { get; set; }
     public bool CanRead { get; set; }
     public bool CanUpdate { get; set; }
@@ -77,6 +85,10 @@ public class UserRole
     public ApplicationUser? User { get; set; }
     public int RoleId { get; set; }
     public Role? Role { get; set; }
+
+    public bool IsPrimary { get; set; }
+    public DateTime? EffectiveFrom { get; set; }
+    public DateTime? EffectiveTo { get; set; }
 }
 
 public class RolePermission

@@ -49,7 +49,7 @@ public class ResultManagementController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Super Admin,Principal")]
+    [Authorize(Roles = "Admin,SuperAdmin,Principal")]
     public async Task<IActionResult> AdminIndex(CancellationToken ct)
     {
         var exams = await _examService.GetExamsAsync(0); 
@@ -57,7 +57,7 @@ public class ResultManagementController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Teacher,Senior Lecturer,Lecturer,Office Staff")]
+    [Authorize(Roles = "Teacher,Staff")]
     public async Task<IActionResult> TeacherEntry(CancellationToken ct)
     {
         var currentUserId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
@@ -75,7 +75,7 @@ public class ResultManagementController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Teacher,Senior Lecturer,Lecturer,Office Staff")]
+    [Authorize(Roles = "Teacher,Staff")]
     public async Task<IActionResult> GetSubjectsForTeacher(int classId, int sectionId, CancellationToken ct)
     {
         var currentUserId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
@@ -137,7 +137,7 @@ public class ResultManagementController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Principal,Teacher,Senior Lecturer,Lecturer")]
+    [Authorize(Roles = "Principal,Teacher")]
     public async Task<IActionResult> MarkEntry(int examId, int classId, int sectionId, int subjectId)
     {
         if (examId <= 0 || classId <= 0 || sectionId <= 0 || subjectId <= 0) return BadRequest();
@@ -146,7 +146,7 @@ public class ResultManagementController : Controller
     }
 
     [HttpPost]
-    [Authorize(Roles = "Principal,Teacher,Senior Lecturer,Lecturer,Office Staff")]
+    [Authorize(Roles = "Principal,Teacher,Staff")]
     [IgnoreAntiforgeryToken]
     public async Task<IActionResult> SaveMarks([FromBody] MarkBatchDto dto, CancellationToken ct)
     {
@@ -160,7 +160,7 @@ public class ResultManagementController : Controller
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin,Super Admin,Principal")]
+    [Authorize(Roles = "Admin,SuperAdmin,Principal")]
     [IgnoreAntiforgeryToken]
     public async Task<IActionResult> PublishResults([FromBody] ResultPublishDto dto)
     {
@@ -176,7 +176,7 @@ public class ResultManagementController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Super Admin,Principal")]
+    [Authorize(Roles = "Admin,SuperAdmin,Principal")]
     public async Task<IActionResult> ReEvaluationDashboard()
     {
         var model = await _reEvaluationService.GetReEvaluationDashboardAsync();
@@ -184,7 +184,7 @@ public class ResultManagementController : Controller
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin,Super Admin,Principal")]
+    [Authorize(Roles = "Admin,SuperAdmin,Principal")]
     [IgnoreAntiforgeryToken]
     public async Task<IActionResult> ProcessReEvaluation([FromBody] ReEvaluationProcessDto dto)
     {

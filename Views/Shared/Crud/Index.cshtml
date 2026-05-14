@@ -1,8 +1,8 @@
 @model SchoolManagementSystem.Models.ViewModels.Shared.CrudListViewModel
 @{
     ViewData["Title"] = Model.ModuleName;
-    bool isStudent = User.IsInRole("Student");
-    bool canManage = !isStudent && (User.IsInRole("Super Admin") || User.IsInRole("Principal") || User.IsInRole("Assistant Head") || User.IsInRole("Senior Lecturer") || User.IsInRole("Lecturer") || User.IsInRole("Office Staff"));
+    bool isStudent = User.IsInRole(SchoolManagementSystem.Constants.Roles.Student);
+    bool canManage = !isStudent && (User.IsInRole(SchoolManagementSystem.Constants.Roles.SuperAdmin) || User.IsInRole(SchoolManagementSystem.Constants.Roles.Admin) || User.IsInRole(SchoolManagementSystem.Constants.Roles.Principal) || User.IsInRole(SchoolManagementSystem.Constants.Roles.Teacher) || User.IsInRole(SchoolManagementSystem.Constants.Roles.Staff));
 }
 
 <div class="page-title">

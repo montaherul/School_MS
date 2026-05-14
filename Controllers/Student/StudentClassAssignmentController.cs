@@ -4,10 +4,11 @@ using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Models.Entities.Assignment;
 using SchoolManagementSystem.Services.Interfaces.Assignment;
 using System.Security.Claims;
+using SchoolManagementSystem.Constants;
 
 namespace SchoolManagementSystem.Controllers.Student;
 
-[Authorize(Roles = "Super Admin,Principal,Assistant Head,Senior Lecturer,Lecturer,Student")]
+[Authorize(Roles = "SuperAdmin,Admin,Principal,Teacher,Student")]
 public class StudentClassAssignmentController : Controller
 {
     private readonly IAssignmentService _service;
@@ -23,9 +24,9 @@ public class StudentClassAssignmentController : Controller
         if (!int.TryParse(userIdStr, out var userId)) return Forbid();
 
         var query = _service.Query();
-        query = await _service.ApplySecurityFiltersAsync(query, userId, User.IsInRole("Student"), 
-            User.IsInRole("Teacher") || User.IsInRole("Senior Lecturer") || User.IsInRole("Lecturer"),
-            User.IsInRole("Super Admin") || User.IsInRole("Principal") || User.IsInRole("Assistant Head"), ct);
+        query = await _service.ApplySecurityFiltersAsync(query, userId, User.IsInRole(Roles.Student), 
+            User.IsInRole(Roles.Teacher),
+            User.IsInRole(Roles.SuperAdmin) || User.IsInRole(Roles.Admin) || User.IsInRole(Roles.Principal), ct);
 
         // Basic pagination for now, or I could use a PagedResult pattern
         var total = await query.CountAsync(ct);

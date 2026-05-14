@@ -4,6 +4,8 @@ using SchoolManagementSystem.Data;
 using SchoolManagementSystem.Models.Entities.Student;
 using SchoolManagementSystem.Models.DTOs.Student;
 using SchoolManagementSystem.Repositories.Interfaces.Students;
+using Dapper;
+using System.Data;
 
 namespace SchoolManagementSystem.Repositories.Implementations.Students;
 
@@ -13,22 +15,39 @@ public class StudentRepository : BaseRepository<Student>, IStudentRepository
 
     public async Task<(List<StudentListItemDto> items, int totalRecords)> GetPagedAsync(int page, int pageSize, string? search, int? classId, int? sectionId, int? status, CancellationToken ct)
     {
-        var parameters = new[]
+        var connection = _db.Database.GetDbConnection();
+        
+        var parameters = new DynamicParameters();
+        parameters.Add("@PageNumber", page);
+        parameters.Add("@PageSize", pageSize);
+        parameters.Add("@Search", search);
+        parameters.Add("@ClassId", classId);
+        parameters.Add("@SectionId", sectionId);
+        parameters.Add("@Status", status);
+        parameters.Add("@SortField", "StudentNo");
+        parameters.Add("@SortDirection", "ASC");
+
+        var result = (await connection.QueryAsync<dynamic>(
+            "sp_Student_GetPaged",
+            parameters,
+            commandType: CommandType.StoredProcedure
+        )).ToList();
+
+        var data = result.Select(x => new StudentListItemDto
         {
-            new Microsoft.Data.SqlClient.SqlParameter("@PageNumber", page),
-            new Microsoft.Data.SqlClient.SqlParameter("@PageSize", pageSize),
-            new Microsoft.Data.SqlClient.SqlParameter("@SearchTerm", (object?)search ?? DBNull.Value),
-            new Microsoft.Data.SqlClient.SqlParameter("@ClassId", classId ?? 0),
-            new Microsoft.Data.SqlClient.SqlParameter("@SectionId", sectionId ?? 0),
-            new Microsoft.Data.SqlClient.SqlParameter("@Status", (object?)status ?? DBNull.Value)
-        };
+            Id = Convert.ToInt32(x.Id),
+            StudentNo = x.StudentNo,
+            FullName = x.FullName,
+            ClassName = x.ClassName,
+            SectionName = x.SectionName,
+            RollNumber = x.RollNumber,
+            Status = Convert.ToInt32(x.Status).ToString(),
+            ProfilePicturePath = x.ProfilePicturePath
+        }).ToList();
 
-        var items = await _db.Set<StudentListItemDto>()
-            .FromSqlRaw("EXEC sp_GetStudentList @PageNumber, @PageSize, @SearchTerm, @ClassId, @SectionId, @Status", parameters)
-            .ToListAsync(ct);
+        int totalRecords = data.Any() ? (int)result.First().TotalCount : 0;
 
-        int totalRecords = items.FirstOrDefault()?.TotalRecords ?? 0;
-        return (items, totalRecords);
+        return (data, totalRecords);
     }
 
     public async Task<StudentUpsertDto?> GetForEditAsync(int id, CancellationToken ct)

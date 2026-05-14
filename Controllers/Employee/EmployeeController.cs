@@ -7,6 +7,9 @@ using SchoolManagementSystem.Filters;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using SchoolManagementSystem.Services.Interfaces.Academic;
+using SchoolManagementSystem.Constants;
+using SchoolManagementSystem.Models.Common;
+using SchoolManagementSystem.Models.DTOs.Common;
 
 namespace SchoolManagementSystem.Controllers.Employee;
 
@@ -42,29 +45,59 @@ public class EmployeeController : Controller
         _teacherAcademicService = teacherAcademicService;
     }
 
-    [RequirePermission("Employee.View")]
-    public async Task<IActionResult> Index(int page = 1, int pageSize = 10, string? search = null, long? departmentId = null, long? designationId = null, bool? isActive = null, CancellationToken ct = default)
-
+    [RequirePermission(Permissions.Employee.View)]
+    public async Task<IActionResult> Index(CancellationToken ct = default)
     {
-        bool isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest" || Request.Headers["Accept"].ToString().Contains("application/json") || Request.Query.ContainsKey("page");
-
-        if (isAjax)
-        {
-            var result = await _employeeService.GetPagedAsync(page, pageSize, search, departmentId, designationId, isActive, ct);
-            return Json(new { 
-                data = result.Items, 
-                last_page = Math.Ceiling((double)result.TotalItems / pageSize), 
-                total_records = result.TotalItems 
-            });
-        }
-
         ViewBag.Departments = await _departmentService.GetAllAsync(ct);
         ViewBag.Designations = await _designationService.GetAllAsync(ct);
-        
         return View();
     }
 
-    [RequirePermission("Employee.Create")]
+    [HttpPost]
+    [RequirePermission(Permissions.Employee.View)]
+    public async Task<IActionResult> GetPaged([FromBody] GridRequestDto request, CancellationToken ct = default)
+    {
+        try
+        {
+            // Extract filters from JSON if provided
+            int? departmentId = null;
+            int? designationId = null;
+
+            if (!string.IsNullOrEmpty(request.Filters))
+            {
+                try
+                {
+                    var filters = System.Text.Json.JsonDocument.Parse(request.Filters).RootElement;
+                    if (filters.TryGetProperty("departmentId", out var deptVal) && deptVal.ValueKind != System.Text.Json.JsonValueKind.Null)
+                        departmentId = deptVal.GetInt32();
+                    if (filters.TryGetProperty("designationId", out var desigVal) && desigVal.ValueKind != System.Text.Json.JsonValueKind.Null)
+                        designationId = desigVal.GetInt32();
+                }
+                catch { /* Ignore filter parsing errors */ }
+            }
+
+            var result = await _employeeService.GetPagedAsync(request.Page, request.Size, request.Search, departmentId, designationId, null, ct);
+            
+            return Json(new PagedApiResponse<SchoolManagementSystem.Models.DTOs.Employee.EmployeeListItemDto>
+            { 
+                data = result.Items, 
+                last_page = (int)Math.Ceiling((double)result.TotalItems / request.Size),
+                total = result.TotalItems 
+            });
+        }
+        catch (Exception ex)
+        {
+            return Json(new PagedApiResponse<object>
+            {
+                data = new List<object>(),
+                last_page = 1,
+                total = 0,
+                error = ex.Message
+            });
+        }
+    }
+
+    [RequirePermission(Permissions.Employee.Create)]
     public async Task<IActionResult> Create()
     {
         var model = new EmployeeViewModel
@@ -95,7 +128,7 @@ public class EmployeeController : Controller
 
 
 
-    [RequirePermission("Employee.Edit")]
+    [RequirePermission(Permissions.Employee.Update)]
     public async Task<IActionResult> Edit(long id)
     {
         var model = await _employeeService.GetForEditAsync(id);
@@ -125,7 +158,7 @@ public class EmployeeController : Controller
     }
 
 
-    [RequirePermission("Employee.View")]
+    [RequirePermission(Permissions.Employee.View)]
     public async Task<IActionResult> Details(long id)
 
     {
@@ -151,7 +184,7 @@ public class EmployeeController : Controller
     }
 
     [HttpPost]
-    [RequirePermission("Employee.Edit")]
+    [RequirePermission(Permissions.Employee.Update)]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ToggleAccess(long id)
     {
@@ -168,18 +201,18 @@ public class EmployeeController : Controller
     }
 
     [HttpPost]
-    [RequirePermission("Employee.Delete")]
+    [RequirePermission(Permissions.Employee.Delete)]
     public async Task<IActionResult> Delete(long id)
 
     {
         try
         {
             await _employeeService.DeleteAsync(id, User.Identity?.Name ?? "system");
-            return Json(new { success = true, message = "Employee deleted successfully" });
+            return Json(ApiResponse.Ok("Employee deleted successfully"));
         }
         catch (Exception ex)
         {
-            return Json(new { success = false, message = ex.Message });
+            return Json(ApiResponse.Fail(ex.Message));
         }
     }
 
@@ -221,7 +254,7 @@ public class EmployeeController : Controller
         var userId = long.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
         var employeeId = await _employeeService.GetEmployeeIdByUserIdAsync(userId);
         
-        if (employeeId != model.Id && !User.HasClaim("Permission", "Employee.Update"))
+        if (employeeId != model.Id && !User.HasClaim("Permission", Permissions.Employee.Update))
         {
             return Forbid();
         }

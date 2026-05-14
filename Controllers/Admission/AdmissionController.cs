@@ -6,6 +6,8 @@ using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Services.Interfaces.Academic;
 using SchoolManagementSystem.Services.Interfaces.Admissions;
 using System.Security.Claims;
+using SchoolManagementSystem.Constants;
+using SchoolManagementSystem.Models.Common;
 
 namespace SchoolManagementSystem.Controllers.Admission;
 
@@ -61,7 +63,7 @@ public class AdmissionController : Controller
         }
     }
 
-    [RequirePermission("Admission.View")]
+    [RequirePermission(Permissions.Admission.View)]
     public async Task<IActionResult> Index(int page = 1, int pageSize = 10, string? search = null, int? classId = null, string? status = null, CancellationToken ct = default)
     {
         bool isAjax = Request.Headers["Accept"].ToString().Contains("application/json") || Request.Headers["X-Requested-With"] == "XMLHttpRequest" || Request.Query.ContainsKey("page");
@@ -93,15 +95,15 @@ public class AdmissionController : Controller
     }
 
     [HttpGet]
-    [RequirePermission("Admission.Create")]
+    [RequirePermission(Permissions.Admission.Create)]
     public IActionResult Create() => RedirectToAction(nameof(CreateEdit));
 
     [HttpGet]
-    [RequirePermission("Admission.Create")]
+    [RequirePermission(Permissions.Admission.Update)]
     public IActionResult Edit(int id) => RedirectToAction(nameof(CreateEdit), new { id });
 
     [HttpGet]
-    [RequirePermission("Admission.Create")]
+    [RequirePermission(Permissions.Admission.Update)]
     public async Task<IActionResult> CreateEdit(int? id, CancellationToken ct)
     {
         ViewBag.Classes = await _admissionService.GetAvailableClassesAsync(ct);
@@ -122,7 +124,7 @@ public class AdmissionController : Controller
     }
 
     [HttpPost]
-    [RequirePermission("Admission.Create")]
+    [RequirePermission(Permissions.Admission.Update)]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> CreateEdit(int? id, AdmissionCreateDto model, CancellationToken ct)
     {
@@ -162,7 +164,7 @@ public class AdmissionController : Controller
     }
 
     [HttpGet]
-    [RequirePermission("Admission.View")]
+    [RequirePermission(Permissions.Admission.View)]
     public async Task<IActionResult> Details(int id, CancellationToken ct)
     {
         var application = await _admissionService.GetByIdAsync(id, ct);
@@ -171,7 +173,7 @@ public class AdmissionController : Controller
     }
 
     [HttpGet]
-    [RequirePermission("Admission.Delete")]
+    [RequirePermission(Permissions.Admission.Delete)]
     public async Task<IActionResult> Delete(int id, CancellationToken ct)
     {
         var application = await _admissionService.GetByIdAsync(id, ct);
@@ -180,7 +182,7 @@ public class AdmissionController : Controller
     }
 
     [HttpPost]
-    [RequirePermission("Admission.Delete")]
+    [RequirePermission(Permissions.Admission.Delete)]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id, CancellationToken ct)
     {
@@ -190,7 +192,7 @@ public class AdmissionController : Controller
     }
 
     [HttpPost]
-    [RequirePermission("Admission.Approve")]
+    [RequirePermission(Permissions.Admission.Approve)]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Approve([FromBody] AdmissionApproveRequest request, CancellationToken ct)
     {
@@ -198,16 +200,16 @@ public class AdmissionController : Controller
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
             await _admissionService.ApproveAndConvertAsync(request.Id, request.SectionId, userId, ct);
-            return Json(new { success = true, message = "Application converted successfully." });
+            return Json(ApiResponse.Ok("Application converted successfully."));
         }
         catch (Exception ex)
         {
-            return Json(new { success = false, message = ex.Message });
+            return Json(ApiResponse.Fail(ex.Message));
         }
     }
 
     [HttpPost]
-    [RequirePermission("Admission.Approve")]
+    [RequirePermission(Permissions.Admission.Reject)]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Reject(int id, CancellationToken ct)
     {
@@ -215,16 +217,16 @@ public class AdmissionController : Controller
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
             await _admissionService.RejectAsync(id, userId, ct);
-            return Json(new { success = true, message = "Application rejected successfully." });
+            return Json(ApiResponse.Ok("Application rejected successfully."));
         }
         catch (Exception ex)
         {
-            return Json(new { success = false, message = ex.Message });
+            return Json(ApiResponse.Fail(ex.Message));
         }
     }
 
     [HttpGet]
-    [RequirePermission("Admission.View")]
+    [RequirePermission(Permissions.Admission.View)]
     public async Task<IActionResult> GetClassSections(int classId, CancellationToken ct)
     {
         var result = await _sectionService.GetAdmissionSectionsAsync(classId, ct);
@@ -232,7 +234,7 @@ public class AdmissionController : Controller
     }
 
     [HttpPost]
-    [RequirePermission("Admission.Create")]
+    [RequirePermission(Permissions.Admission.Create)]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> CreateSectionAjax(int schoolClassId, string name, int? parentSectionId = null, CancellationToken ct = default)
     {
@@ -240,11 +242,11 @@ public class AdmissionController : Controller
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
             int id = await _sectionService.CreateAjaxAsync(schoolClassId, name.Trim(), parentSectionId, userId, ct);
-            return Json(new { success = true, id = id, name = name.Trim() });
+            return Json(ApiResponse.Ok(new { id = id, name = name.Trim() }, "Section created successfully."));
         }
         catch (Exception ex)
         {
-            return Json(new { success = false, message = ex.Message });
+            return Json(ApiResponse.Fail(ex.Message));
         }
     }
 

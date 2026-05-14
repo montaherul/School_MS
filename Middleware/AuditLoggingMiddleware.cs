@@ -16,18 +16,25 @@ public class AuditLoggingMiddleware
     {
         await _next(context);
 
-        if (context.User.Identity?.IsAuthenticated == true &&
-            HttpMethods.IsPost(context.Request.Method))
+        try
         {
-            db.AuditLogs.Add(new AuditLog
+            if (context.User.Identity?.IsAuthenticated == true &&
+                HttpMethods.IsPost(context.Request.Method))
             {
-                Module = context.Request.Path.Value?.Split('/', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "System",
-                Action = context.Request.Method,
-                IpAddress = context.Connection.RemoteIpAddress?.ToString(),
-                Details = $"{context.Response.StatusCode} {context.Request.Path}",
-                CreatedBy = context.User.Identity.Name ?? "system"
-            });
-            await db.SaveChangesAsync();
+                db.AuditLogs.Add(new AuditLog
+                {
+                    Module = context.Request.Path.Value?.Split('/', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? "System",
+                    Action = context.Request.Method,
+                    IpAddress = context.Connection.RemoteIpAddress?.ToString(),
+                    Details = $"{context.Response.StatusCode} {context.Request.Path}",
+                    CreatedBy = context.User.Identity.Name ?? "system"
+                });
+                await db.SaveChangesAsync();
+            }
+        }
+        catch
+        {
+            // Fail silently to prevent audit logging from crashing the application
         }
     }
 }

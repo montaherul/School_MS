@@ -59,13 +59,38 @@ public class AuthService : IAuthService
         user.LastLoginAt = DateTime.UtcNow;
         await _unitOfWork.SaveChangesAsync(ct);
 
-        var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, user.Id.ToString()), new(ClaimTypes.Name, user.UserName), new(ClaimTypes.Email, user.Email) };
-        claims.AddRange(user.UserRoles.Where(x => x.Role is not null).Select(x => new Claim(ClaimTypes.Role, x.Role!.Name)));
+        var now = DateTime.UtcNow;
+        var activeUserRoles = user.UserRoles
+            .Where(ur => (!ur.EffectiveFrom.HasValue || ur.EffectiveFrom <= now) && 
+                         (!ur.EffectiveTo.HasValue || ur.EffectiveTo >= now))
+            .ToList();
+
+        var claims = new List<Claim> 
+        { 
+            new(ClaimTypes.NameIdentifier, user.Id.ToString()), 
+            new(ClaimTypes.Name, user.UserName), 
+            new(ClaimTypes.Email, user.Email) 
+        };
+
+        if (user.EmployeeId.HasValue)
+        {
+            var employeeId = (int)user.EmployeeId.Value;
+            var employee = await _unitOfWork.Repository<SchoolManagementSystem.Models.Entities.Employee.Employee>().GetByIdAsync(employeeId, ct);
+            if (employee != null)
+            {
+                claims.Add(new Claim("DepartmentId", employee.DepartmentId.ToString()));
+            }
+        }
+
+        claims.AddRange(activeUserRoles.Where(x => x.Role is not null).Select(x => new Claim(ClaimTypes.Role, x.Role!.Name)));
         
-        var roleIds = user.UserRoles.Select(x => x.RoleId).ToArray();
+        var roleIds = activeUserRoles.Select(x => x.RoleId).ToArray();
         var permissions = await _unitOfWork.Repository<RolePermission>().Query()
             .Where(x => roleIds.Contains(x.RoleId) && x.Permission != null)
-            .Select(x => x.Permission!.Code).Distinct().ToListAsync(ct);
+            .Select(x => x.Permission!.Code)
+            .Distinct()
+            .ToListAsync(ct);
+            
         claims.AddRange(permissions.Select(code => new Claim("Permission", code)));
 
         return (true, null, new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme));

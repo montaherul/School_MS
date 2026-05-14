@@ -2,9 +2,9 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Data;
+using SchoolManagementSystem.Data.Seeders;
 using SchoolManagementSystem.Extensions;
 using SchoolManagementSystem.Helpers.Email;
-using SchoolManagementSystem.Helpers.Files;
 using SchoolManagementSystem.Helpers.Pdf;
 using SchoolManagementSystem.Helpers.Security;
 using SchoolManagementSystem.Middleware;
@@ -102,13 +102,16 @@ builder.WebHost.ConfigureKestrel(serverOptions =>
     serverOptions.ListenAnyIP(5000); // 🔥 important
 });
 builder.Services.AddHttpContextAccessor();
+builder.Services.AddSchoolHealthChecks(builder.Configuration);
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseDeveloperExceptionPage();
+}
+else
+{
+    app.UseMiddleware<GlobalExceptionMiddleware>();
     app.UseHsts();
 }
 
@@ -121,6 +124,7 @@ app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseMiddleware<AuditLoggingMiddleware>();
+app.MapSchoolHealthChecks();
 
 app.MapControllerRoute(
     name: "default",
@@ -128,8 +132,8 @@ app.MapControllerRoute(
 
 await using (var scope = app.Services.CreateAsyncScope())
 {
-    var seeder = scope.ServiceProvider.GetRequiredService<ClassSubjectMappingSeeder>();
-    await seeder.SeedAsync();
+    var runner = scope.ServiceProvider.GetRequiredService<IDataSeederRunner>();
+    await runner.RunAllAsync();
 }
 
 app.Run();

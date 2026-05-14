@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.Services.Interfaces.Academic;
+using SchoolManagementSystem.Constants;
 
 namespace SchoolManagementSystem.Controllers.Result;
 
@@ -30,7 +31,7 @@ public class AdminResultController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    [Authorize(Roles = Roles.Admin + "," + Roles.SuperAdmin + "," + Roles.Principal)]
     public async Task<IActionResult> Dashboard()
     {
         var dashboardData = await _analyticsService.GetAdminDashboardAsync();
@@ -48,7 +49,7 @@ public class AdminResultController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    [Authorize(Roles = Roles.Admin + "," + Roles.SuperAdmin + "," + Roles.Principal)]
     public async Task<IActionResult> AllSubjects(CancellationToken ct)
     {
         var groupedSubjects = await _subjectService.GetGroupedSubjectsAsync(ct);
@@ -57,7 +58,7 @@ public class AdminResultController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    [Authorize(Roles = Roles.Admin + "," + Roles.SuperAdmin + "," + Roles.Principal)]
     public async Task<IActionResult> AllResults(int? examId, int? classId, string? status, CancellationToken ct)
     {
         var results = await _publicationService.GetAllResultsAsync(examId, classId, status);
@@ -70,7 +71,7 @@ public class AdminResultController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    [Authorize(Roles = Roles.Admin + "," + Roles.SuperAdmin + "," + Roles.Principal)]
     public async Task<IActionResult> TabulationSheet(int examId, int? classId, int? sectionId, CancellationToken ct)
     {
         var tabulationSheet = await _analyticsService.GetTabulationSheetAsync(examId, classId, sectionId);
@@ -85,7 +86,7 @@ public class AdminResultController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    [Authorize(Roles = Roles.Admin + "," + Roles.SuperAdmin + "," + Roles.Principal)]
     public async Task<IActionResult> MeritLists(int examId, CancellationToken ct)
     {
         var exam = await _examService.GetExamByIdAsync(examId, ct);
@@ -101,7 +102,7 @@ public class AdminResultController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    [Authorize(Roles = Roles.Admin + "," + Roles.SuperAdmin + "," + Roles.Principal)]
     public async Task<IActionResult> SubjectAnalysis(int examId, CancellationToken ct)
     {
         var exam = await _examService.GetExamByIdAsync(examId, ct);
@@ -112,7 +113,7 @@ public class AdminResultController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    [Authorize(Roles = Roles.Admin + "," + Roles.SuperAdmin + "," + Roles.Principal)]
     public async Task<IActionResult> ResultPublishing()
     {
         var resultPublications = await _publicationService.GetResultPublicationsAsync();
@@ -120,7 +121,7 @@ public class AdminResultController : Controller
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin,Super Admin,Principal")]
+    [Authorize(Roles = Roles.Admin + "," + Roles.SuperAdmin + "," + Roles.Principal)]
     public async Task<IActionResult> RecalculateResults(int examId)
     {
         try
@@ -136,7 +137,7 @@ public class AdminResultController : Controller
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin,Super Admin,Principal")]
+    [Authorize(Roles = Roles.Admin + "," + Roles.SuperAdmin + "," + Roles.Principal)]
     public async Task<IActionResult> RecalculateMeritPositions(int examId)
     {
         try

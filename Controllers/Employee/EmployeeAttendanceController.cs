@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Models.DTOs.Employee;
 using SchoolManagementSystem.Services.Interfaces.Employee;
+using SchoolManagementSystem.Constants;
+using SchoolManagementSystem.Models.DTOs.Common;
 
 namespace SchoolManagementSystem.Controllers.Employee;
 
@@ -21,20 +23,44 @@ public class EmployeeAttendanceController : Controller
         _departmentService = departmentService;
     }
 
-    [RequirePermission("Attendance.View")]
-    public async Task<IActionResult> Index(DateTime? date, long? departmentId)
+    [RequirePermission(Permissions.Attendance.View)]
+    public async Task<IActionResult> Index(DateTime? date, long? departmentId, CancellationToken ct = default)
     {
-        var targetDate = date ?? DateTime.Today;
-        var model = await _attendanceService.GetDailyAttendanceAsync(targetDate, departmentId);
-        
         ViewBag.Departments = await GetDepartmentListAsync();
-        ViewBag.TargetDate = targetDate;
-        ViewBag.DepartmentId = departmentId;
-
-        return View(model);
+        ViewBag.TargetDate = date ?? DateTime.Today;
+        return View();
     }
 
-    [RequirePermission("Attendance.Create")]
+    [HttpPost]
+    [RequirePermission(Permissions.Attendance.View)]
+    public async Task<IActionResult> GetPaged([FromBody] GridRequestDto request, CancellationToken ct = default)
+    {
+        try
+        {
+            // For attendance, we might need date range from JSON Filters or standardized fields
+            // For now, using nulls to show the pattern
+            var result = await _attendanceService.GetPagedAsync(request.Page, request.Size, request.Search, null, null, null, null, ct);
+            
+            return Json(new PagedApiResponse<SchoolManagementSystem.Models.DTOs.Employee.EmployeeAttendanceDto>
+            { 
+                data = result.Items, 
+                last_page = (int)Math.Ceiling((double)result.TotalItems / request.Size),
+                total = result.TotalItems 
+            });
+        }
+        catch (Exception ex)
+        {
+            return Json(new PagedApiResponse<object>
+            {
+                data = new List<object>(),
+                last_page = 1,
+                total = 0,
+                error = ex.Message
+            });
+        }
+    }
+
+    [RequirePermission(Permissions.Attendance.Mark)]
     public async Task<IActionResult> MarkDailyAttendance(DateTime? date, long? departmentId)
     {
         var targetDate = date ?? DateTime.Today;
@@ -48,7 +74,7 @@ public class EmployeeAttendanceController : Controller
     }
 
     [HttpPost]
-    [RequirePermission("Attendance.Create")]
+    [RequirePermission(Permissions.Attendance.Mark)]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> SaveAttendance(List<EmployeeAttendanceDto> attendanceList)
     {
@@ -71,7 +97,7 @@ public class EmployeeAttendanceController : Controller
         }
     }
 
-    [RequirePermission("Attendance.View")]
+    [RequirePermission(Permissions.Attendance.View)]
     public async Task<IActionResult> EmployeeHistory(long id, int page = 1, DateTime? startDate = null, DateTime? endDate = null)
     {
         var model = await _attendanceService.GetEmployeeHistoryPagedAsync(id, page, 20, startDate, endDate);
@@ -81,7 +107,7 @@ public class EmployeeAttendanceController : Controller
         return View(model);
     }
 
-    [RequirePermission("Reports.View")]
+    [RequirePermission(Permissions.Reports.View)]
     public async Task<IActionResult> MonthlyReport(long? employeeId, DateTime? month)
     {
         var targetMonth = month ?? DateTime.Today;

@@ -1,5 +1,4 @@
 using SchoolManagementSystem.Helpers.Email;
-using SchoolManagementSystem.Helpers.Files;
 using SchoolManagementSystem.Helpers.Pdf;
 using SchoolManagementSystem.Helpers.Security;
 using SchoolManagementSystem.Repositories.Implementations;
@@ -50,6 +49,10 @@ using SchoolManagementSystem.Services.Interfaces.Employee;
 
 using SchoolManagementSystem.UnitOfWork.Implementations;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
+using SchoolManagementSystem.Services.Interfaces.Infrastructure;
+using SchoolManagementSystem.Services.Implementations.Infrastructure;
+using SchoolManagementSystem.Data.Seeders;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace SchoolManagementSystem.Extensions;
 
@@ -122,7 +125,6 @@ public static class ServiceRegistration
         services.AddScoped<IResultAnalyticsService, ResultAnalyticsService>();
         services.AddScoped<IAuditLogService, AuditLogService>();
         services.AddScoped<IPasswordHashService, Pbkdf2PasswordHashService>();
-        services.AddScoped<IFileStorageService, LocalFileStorageService>();
         services.AddScoped<IEmailSender, SmtpEmailSender>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IPdfGenerator, PlainPdfGenerator>();
@@ -139,6 +141,17 @@ public static class ServiceRegistration
         services.AddScoped<IDesignationService, DesignationService>();
         services.AddScoped<IClassRoutineService, ClassRoutineService>();
         services.AddScoped<ITeacherAcademicService, TeacherAcademicService>();
+        services.AddScoped<SchoolManagementSystem.Services.Interfaces.Auth.INotificationService, SchoolManagementSystem.Services.Implementations.Auth.NotificationService>();
+
+        // Infrastructure & Hardening
+        services.AddMemoryCache();
+        services.AddScoped<ICacheService, CacheService>();
+        services.AddScoped<IFileStorageService, FileStorageService>();
+        
+        // Data Seeders
+        services.AddScoped<IDataSeederRunner, DataSeederRunner>();
+        services.AddScoped<IDataSeeder, RolePermissionSeeder>();
+        services.AddScoped<IDataSeeder, HrReferenceDataSeeder>();
 
         return services;
     }

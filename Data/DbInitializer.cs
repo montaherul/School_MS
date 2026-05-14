@@ -40,13 +40,16 @@ public static class DbInitializer
         var createdAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         modelBuilder.Entity<Role>().HasData(
-            new Role { Id = 1, Name = "Super Admin", Description = "System owner with all permissions", CreatedAt = createdAt },
-            new Role { Id = 2, Name = "Principal", Description = "Final approval and all modules", CreatedAt = createdAt },
-            new Role { Id = 3, Name = "Assistant Head", Description = "Academic operations", CreatedAt = createdAt },
-            new Role { Id = 4, Name = "Senior Lecturer", Description = "Teaching and review", CreatedAt = createdAt },
-            new Role { Id = 5, Name = "Lecturer", Description = "Teaching operations", CreatedAt = createdAt },
-            new Role { Id = 6, Name = "Office Staff", Description = "Admission, fees, reports", CreatedAt = createdAt },
-            new Role { Id = 7, Name = "Student", Description = "Student portal access", CreatedAt = createdAt });
+            new Role { Id = 1, Name = "SuperAdmin", Description = "Full system owner with all permissions", Priority = 100, IsSystemRole = true, IsActive = true, CreatedAt = createdAt },
+            new Role { Id = 2, Name = "Admin", Description = "Administrative operations", Priority = 95, IsSystemRole = true, IsActive = true, CreatedAt = createdAt },
+            new Role { Id = 3, Name = "Principal", Description = "Academic + operational authority", Priority = 90, IsSystemRole = true, IsActive = true, CreatedAt = createdAt },
+            new Role { Id = 4, Name = "HRManager", Description = "Human resource management", Priority = 80, IsSystemRole = true, IsActive = true, CreatedAt = createdAt },
+            new Role { Id = 5, Name = "Accountant", Description = "Financial operations", Priority = 70, IsSystemRole = true, IsActive = true, CreatedAt = createdAt },
+            new Role { Id = 6, Name = "Teacher", Description = "Academic teaching operations", Priority = 60, IsSystemRole = true, IsActive = true, CreatedAt = createdAt },
+            new Role { Id = 7, Name = "Librarian", Description = "Library management", Priority = 50, IsSystemRole = true, IsActive = true, CreatedAt = createdAt },
+            new Role { Id = 8, Name = "Staff", Description = "General employee operations", Priority = 40, IsSystemRole = true, IsActive = true, CreatedAt = createdAt },
+            new Role { Id = 9, Name = "Student", Description = "Student portal access", Priority = 10, IsSystemRole = true, IsActive = true, CreatedAt = createdAt },
+            new Role { Id = 10, Name = "Parent", Description = "Parent portal access", Priority = 5, IsSystemRole = true, IsActive = true, CreatedAt = createdAt });
 
         modelBuilder.Entity<ApplicationUser>().HasData(
             new ApplicationUser
@@ -88,33 +91,55 @@ public static class DbInitializer
                 CreatedAt = createdAt
             })).ToArray();
         modelBuilder.Entity<Permission>().HasData(permissions);
-        var adminRolePermissions = permissions.Select(p => new RolePermission { RoleId = 1, PermissionId = p.Id });
-        var principalRolePermissions = permissions.Select(p => new RolePermission { RoleId = 2, PermissionId = p.Id });
-        var assistantHeadRolePermissions = permissions
-            .Where(p =>
-                p.ModuleName is "Dashboard" or "Academic" or "Classes" or "Sections" or "Subjects" or "Admissions" or "Admission" or "Students" or "Student" or "Attendance" or "Exams" or "Exam" or "Marks" or "Result" or "Communication" or "Reports")
-            .Select(p => new RolePermission { RoleId = 3, PermissionId = p.Id });
-        var teacherRolePermissions = permissions
+        var superAdminPermissions = permissions.Select(p => new RolePermission { RoleId = 1, PermissionId = p.Id });
+        var adminPermissions = permissions.Select(p => new RolePermission { RoleId = 2, PermissionId = p.Id });
+        var principalPermissions = permissions.Select(p => new RolePermission { RoleId = 3, PermissionId = p.Id });
+        
+        var hrManagerPermissions = permissions
+            .Where(p => p.ModuleName is "Dashboard" or "Employee" or "Attendance" or "Leave" or "Payroll" or "HR" or "Reports")
+            .Select(p => new RolePermission { RoleId = 4, PermissionId = p.Id });
+
+        var accountantPermissions = permissions
+            .Where(p => p.ModuleName is "Dashboard" or "Fees" or "Payments" or "Payroll" or "Reports")
+            .Select(p => new RolePermission { RoleId = 5, PermissionId = p.Id });
+
+        var teacherPermissions = permissions
             .Where(p =>
                 p.Code is "Dashboard.View" or "Classes.View" or "Students.View" or "Attendance.View" or "Attendance.Create" or "Marks.View" or "Marks.Create" or "Assignments.View" or "Assignments.Create" ||
-                p.Code is "Reports.View" or "Exam.View" or "Exams.View")
-            .Select(p => new RolePermission { RoleId = 5, PermissionId = p.Id });
-        var officeRolePermissions = permissions
+                p.ModuleName is "Exam" or "Result" or "Reports")
+            .Select(p => new RolePermission { RoleId = 6, PermissionId = p.Id });
+
+        var librarianPermissions = permissions
+            .Where(p => p.ModuleName is "Dashboard" or "Library" or "Reports")
+            .Select(p => new RolePermission { RoleId = 7, PermissionId = p.Id });
+
+        var staffPermissions = permissions
             .Where(p =>
                 p.ModuleName is "Dashboard" or "Admissions" or "Admission" or "Students" or "Student" or "Fees" or "Payments" or "Reports" &&
                 p.Action is not "Delete")
-            .Select(p => new RolePermission { RoleId = 6, PermissionId = p.Id });
-        var studentRolePermissions = permissions
+            .Select(p => new RolePermission { RoleId = 8, PermissionId = p.Id });
+
+        var studentPermissions = permissions
             .Where(p =>
                 p.Code is "Dashboard.View" or "Students.View" or "Student.View" or "Attendance.View" or "Marks.View" or "Assignments.View" or "Assignments.Create" or "Notifications.View" or "Fees.View")
-            .Select(p => new RolePermission { RoleId = 7, PermissionId = p.Id });
+            .Select(p => new RolePermission { RoleId = 9, PermissionId = p.Id });
+
+        var parentPermissions = permissions
+            .Where(p =>
+                p.Code is "Dashboard.View" or "Student.View" or "Attendance.View" or "Marks.View" or "Notifications.View" or "Fees.View")
+            .Select(p => new RolePermission { RoleId = 10, PermissionId = p.Id });
+
         modelBuilder.Entity<RolePermission>().HasData(
-            adminRolePermissions
-            .Concat(principalRolePermissions)
-            .Concat(assistantHeadRolePermissions)
-            .Concat(teacherRolePermissions)
-            .Concat(officeRolePermissions)
-            .Concat(studentRolePermissions));
+            superAdminPermissions
+            .Concat(adminPermissions)
+            .Concat(principalPermissions)
+            .Concat(hrManagerPermissions)
+            .Concat(accountantPermissions)
+            .Concat(teacherPermissions)
+            .Concat(librarianPermissions)
+            .Concat(staffPermissions)
+            .Concat(studentPermissions)
+            .Concat(parentPermissions));
 
         modelBuilder.Entity<AcademicYear>().HasData(new AcademicYear { Id = 1, Name = "2026", StartsOn = new DateTime(2026, 1, 1), EndsOn = new DateTime(2026, 12, 31), IsActive = true, CreatedAt = createdAt });
         //modelBuilder.Entity<SchoolClass>().HasData(

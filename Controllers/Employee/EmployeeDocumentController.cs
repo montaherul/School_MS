@@ -5,6 +5,8 @@ using SchoolManagementSystem.Models.Entities.Employee;
 using SchoolManagementSystem.Repositories.Interfaces.Employee;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using System.Security.Claims;
+using SchoolManagementSystem.Constants;
+using SchoolManagementSystem.Services.Interfaces.Infrastructure;
 
 namespace SchoolManagementSystem.Controllers.Employee;
 
@@ -13,16 +15,16 @@ public class EmployeeDocumentController : Controller
 {
     private readonly IEmployeeDocumentRepository _docRepo;
     private readonly IUnitOfWork _uow;
-    private readonly IWebHostEnvironment _env;
+    private readonly IFileStorageService _fileStorage;
 
-    public EmployeeDocumentController(IEmployeeDocumentRepository docRepo, IUnitOfWork uow, IWebHostEnvironment env)
+    public EmployeeDocumentController(IEmployeeDocumentRepository docRepo, IUnitOfWork uow, IFileStorageService fileStorage)
     {
         _docRepo = docRepo;
         _uow = uow;
-        _env = env;
+        _fileStorage = fileStorage;
     }
 
-    [RequirePermission("Employee.View")]
+    [RequirePermission(Permissions.Employee.View)]
     public async Task<IActionResult> Index(long employeeId)
     {
         var docs = await _docRepo.GetByEmployeeIdAsync(employeeId);
@@ -31,29 +33,20 @@ public class EmployeeDocumentController : Controller
     }
 
     [HttpPost]
-    [RequirePermission("Employee.Update")]
+    [RequirePermission(Permissions.Employee.Update)]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Upload(long employeeId, string documentType, IFormFile file)
     {
         if (file != null && file.Length > 0)
         {
-            string uploadsFolder = Path.Combine(_env.WebRootPath, "uploads", "documents", employeeId.ToString());
-            if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
-
-            string fileName = Guid.NewGuid().ToString() + "_" + file.FileName;
-            string filePath = Path.Combine(uploadsFolder, fileName);
-
-            using (var fileStream = new FileStream(filePath, FileMode.Create))
-            {
-                await file.CopyToAsync(fileStream);
-            }
+            var filePath = await _fileStorage.SaveAsync(file, AppConstants.FileUpload.DocumentFolder + "/" + employeeId);
 
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
             var doc = new EmployeeDocument
             {
                 EmployeeId = employeeId,
                 DocumentType = documentType,
-                FilePath = "/uploads/documents/" + employeeId + "/" + fileName,
+                FilePath = filePath,
                 OriginalFileName = file.FileName,
                 UploadedById = userId,
                 UploadedAt = DateTime.UtcNow
@@ -66,13 +59,13 @@ public class EmployeeDocumentController : Controller
         return RedirectToAction(nameof(Index), new { employeeId });
     }
 
-    [RequirePermission("Employee.View")]
+    [RequirePermission(Permissions.Employee.View)]
     public async Task<IActionResult> Download(long id)
     {
         var doc = await _docRepo.FirstOrDefaultAsync(d => d.Id == id);
         if (doc == null) return NotFound();
 
-        string filePath = Path.Combine(_env.WebRootPath, doc.FilePath.TrimStart('/'));
+        string filePath = _fileStorage.GetAbsolutePath(doc.FilePath);
         if (!System.IO.File.Exists(filePath)) return NotFound();
 
         return File(System.IO.File.ReadAllBytes(filePath), "application/octet-stream", doc.OriginalFileName);

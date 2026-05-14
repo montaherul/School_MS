@@ -1,0 +1,16 @@
+@model SchoolManagementSystem.Models.ViewModels.Shared.EmptyStateModel
+
+<div class="text-center py-5">
+    <div class="mb-3">
+        <i class="bi @Model.Icon text-muted" style="font-size: 4rem; opacity: 0.3;"></i>
+    </div>
+    <h4 class="fw-bold">@Model.Title</h4>
+    <p class="text-muted mx-auto" style="max-width: 400px;">@Model.Description</p>
+    
+    @if (!string.IsNullOrEmpty(Model.ActionUrl) && !string.IsNullOrEmpty(Model.ActionText))
+    {
+        <a href="@Model.ActionUrl" class="btn btn-primary rounded-pill px-4 mt-2">
+            <i class="bi bi-plus-lg me-1"></i> @Model.ActionText
+        </a>
+    }
+</div>

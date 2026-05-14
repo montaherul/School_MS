@@ -1,0 +1,71 @@
+@{
+    var code    = ViewData["Code"]    ?? 500;
+    var title   = ViewData["Title"]   ?? "Error";
+    var message = ViewData["Message"] ?? "An error occurred.";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@code — @title | SchoolMS</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" />
+    <style>
+        :root {
+            --brand: #4f46e5;
+            --bg: #f8f9fa;
+        }
+        body {
+            margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+            background: var(--bg); font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+        .error-card {
+            text-align: center; padding: 3rem 2.5rem; background: #fff;
+            border-radius: 1.25rem; box-shadow: 0 8px 32px rgba(0,0,0,.10); max-width: 520px; width: 90%;
+        }
+        .error-code {
+            font-size: 6rem; font-weight: 800; line-height: 1;
+            background: linear-gradient(135deg, var(--brand), #818cf8);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .error-icon { font-size: 3rem; color: var(--brand); margin-bottom: .5rem; }
+        h1 { font-size: 1.6rem; font-weight: 700; color: #1e293b; margin: .75rem 0 .5rem; }
+        p  { color: #64748b; font-size: 1rem; line-height: 1.6; margin-bottom: 2rem; }
+        .btn-home {
+            display: inline-flex; align-items: center; gap: .5rem;
+            background: var(--brand); color: #fff; padding: .75rem 1.75rem;
+            border-radius: .75rem; font-weight: 600; text-decoration: none;
+            transition: opacity .2s;
+        }
+        .btn-home:hover { opacity: .88; color: #fff; }
+        .btn-back {
+            display: inline-flex; align-items: center; gap: .5rem;
+            color: var(--brand); padding: .75rem 1.25rem; font-weight: 500;
+            text-decoration: none; border-radius: .75rem; margin-left: .5rem;
+            transition: background .2s;
+        }
+        .btn-back:hover { background: #ede9fe; }
+    </style>
+</head>
+<body>
+    <div class="error-card">
+        @{
+            var icon = (int)code switch {
+                404 => "bi-map",
+                403 => "bi-shield-lock",
+                _   => "bi-exclamation-triangle"
+            };
+        }
+        <div class="error-icon"><i class="bi @icon"></i></div>
+        <div class="error-code">@code</div>
+        <h1>@title</h1>
+        <p>@message</p>
+        <a href="/" class="btn-home">
+            <i class="bi bi-house-door-fill"></i> Go to Dashboard
+        </a>
+        <a href="javascript:history.back()" class="btn-back">
+            <i class="bi bi-arrow-left"></i> Go Back
+        </a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,57 @@
+@* 
+    Shared Stat Card Partial
+    Usage: @await Html.PartialAsync("_StatCard", new StatCardModel { ... })
+    OR:    <partial name="_StatCard" model="new StatCardModel { ... }" />
+    
+    Model properties:
+    - Title        (string)   - Card label
+    - Value        (string)   - Main metric
+    - Icon         (string)   - Bootstrap icon class e.g. "bi-people-fill"
+    - Color        (string)   - CSS color e.g. "#4f46e5" or var(--bs-success)
+    - Subtitle     (string?)  - Optional secondary text
+    - TrendPercent (double?)  - Optional percentage change
+    - LinkUrl      (string?)  - Optional href
+*@
+@model SchoolManagementSystem.Models.ViewModels.Shared.StatCardModel
+
+@{
+    var cardStyle = $"border-left: 4px solid {Model.Color ?? "#4f46e5"}";
+    var iconBg    = $"background: {Model.Color ?? "#4f46e5"}22";
+}
+
+<div class="adm-stat-card card border-0 shadow-sm h-100" style="@cardStyle; border-radius: 1rem; overflow: hidden;">
+    <div class="card-body d-flex align-items-center gap-3 p-3">
+        <div class="stat-icon d-flex align-items-center justify-content-center rounded-3 flex-shrink-0"
+             style="@iconBg; width: 54px; height: 54px;">
+            <i class="bi @Model.Icon fs-4" style="color: @(Model.Color ?? "#4f46e5")"></i>
+        </div>
+        <div class="flex-grow-1 min-width-0">
+            <div class="small text-muted text-uppercase fw-semibold mb-1" style="font-size: .7rem; letter-spacing: .05em;">
+                @Model.Title
+            </div>
+            <div class="fw-bold fs-4 lh-1 mb-1">
+                @if (!string.IsNullOrEmpty(Model.LinkUrl))
+                {
+                    <a href="@Model.LinkUrl" class="text-decoration-none text-dark stretched-link">@Model.Value</a>
+                }
+                else
+                {
+                    @Model.Value
+                }
+            </div>
+            @if (!string.IsNullOrEmpty(Model.Subtitle))
+            {
+                <div class="text-muted" style="font-size: .75rem;">@Model.Subtitle</div>
+            }
+            @if (Model.TrendPercent.HasValue)
+            {
+                var trendUp   = Model.TrendPercent > 0;
+                var trendIcon = trendUp ? "bi-arrow-up-right" : "bi-arrow-down-right";
+                var trendCls  = trendUp ? "text-success" : "text-danger";
+                <span class="@trendCls small fw-semibold">
+                    <i class="bi @trendIcon"></i> @Math.Abs(Model.TrendPercent.Value).ToString("F1")%
+                </span>
+            }
+        </div>
+    </div>
+</div>

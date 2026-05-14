@@ -115,7 +115,7 @@ public class EmployeePayrollService : IEmployeePayrollService
                 DeductionAmount = absenceDeduction + structure.ProvidentFund + taxAmount,
                 NetSalary = netSalary,
                 PaymentStatus = PayrollPaymentStatus.Pending,
-                GeneratedById = generatedByUserId,
+                GeneratedById = (int)generatedByUserId,
                 GeneratedAt = DateTime.UtcNow
             };
 
@@ -149,7 +149,7 @@ public class EmployeePayrollService : IEmployeePayrollService
             throw new InvalidOperationException("Only pending payroll can be approved.");
 
         payroll.PaymentStatus = PayrollPaymentStatus.Approved;
-        payroll.ApprovedById = approvedByUserId;
+        payroll.ApprovedById = (int)approvedByUserId;
         payroll.ApprovedAt = DateTime.UtcNow;
 
         _payrollRepo.Update(payroll);
@@ -217,53 +217,15 @@ public class EmployeePayrollService : IEmployeePayrollService
 
     public async Task<PagedResult<EmployeePayrollDto>> GetPagedAsync(int page, int pageSize, int month, int year, long? departmentId, PayrollPaymentStatus? status, CancellationToken ct = default)
     {
-        var query = _payrollRepo.Query()
-            .Include(p => p.Employee).ThenInclude(e => e.Department)
-            .Include(p => p.Employee).ThenInclude(e => e.Designation)
-            .Include(p => p.GeneratedBy)
-            .Include(p => p.ApprovedBy)
-            .Where(p => p.PayrollMonth == month && p.PayrollYear == year);
-
-        if (departmentId.HasValue) query = query.Where(p => p.Employee.DepartmentId == departmentId.Value);
-        if (status.HasValue) query = query.Where(p => p.PaymentStatus == status.Value);
-
-        var totalItems = await query.CountAsync(ct);
-        var items = await query.OrderBy(p => p.Employee.FullName)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .Select(p => new EmployeePayrollDto
-            {
-                Id = p.Id,
-                EmployeeId = p.EmployeeId,
-                EmployeeName = p.Employee.FullName,
-                EmployeeCode = p.Employee.EmployeeCode,
-                DepartmentName = p.Employee.Department.Name,
-                DesignationName = p.Employee.Designation.Name,
-                PayrollMonth = p.PayrollMonth,
-                PayrollYear = p.PayrollYear,
-                WorkingDays = p.WorkingDays,
-                PresentDays = p.PresentDays,
-                AbsentDays = p.AbsentDays,
-                LeaveDays = p.LeaveDays,
-                PaidLeaveDays = p.PaidLeaveDays,
-                UnpaidLeaveDays = p.UnpaidLeaveDays,
-                LateDays = p.LateDays,
-                OvertimeHours = p.OvertimeHours,
-                BonusAmount = p.BonusAmount,
-                DeductionAmount = p.DeductionAmount,
-                GrossSalary = p.GrossSalary,
-                NetSalary = p.NetSalary,
-                PaymentStatus = p.PaymentStatus,
-                PaymentDate = p.PaymentDate,
-                Remarks = p.Remarks,
-                GeneratedByName = p.GeneratedBy != null ? p.GeneratedBy.UserName : null,
-                GeneratedAt = p.GeneratedAt,
-                ApprovedByName = p.ApprovedBy != null ? p.ApprovedBy.UserName : null,
-                ApprovedAt = p.ApprovedAt
-            })
-            .ToListAsync(ct);
-
-        return new PagedResult<EmployeePayrollDto> { Items = items, TotalItems = totalItems, Page = page, PageSize = pageSize };
+        var result = await _payrollRepo.GetPagedAsync(page, pageSize, null, departmentId, (int?)status, month, year, ct);
+        
+        return new PagedResult<EmployeePayrollDto>
+        {
+            Items = result.items,
+            TotalItems = result.totalRecords,
+            Page = page,
+            PageSize = pageSize
+        };
     }
 
     public async Task<EmployeePayrollDto?> GetByIdAsync(long id, CancellationToken ct = default)

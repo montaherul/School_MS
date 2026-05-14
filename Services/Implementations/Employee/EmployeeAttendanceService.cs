@@ -171,4 +171,19 @@ public class EmployeeAttendanceService : IEmployeeAttendanceService
             TotalLeave = records.Count(r => r.Status == AttendanceStatus.Leave)
         };
     }
+
+    public async Task<PagedResult<EmployeeAttendanceDto>> GetPagedAsync(
+        int page, int pageSize, string? search, long? departmentId, int? status, 
+        DateTime? fromDate, DateTime? toDate, CancellationToken ct = default)
+    {
+        var result = await _attendanceRepository.GetPagedAsync(page, pageSize, search, departmentId, status, fromDate, toDate, ct);
+        
+        return new PagedResult<EmployeeAttendanceDto>
+        {
+            Items = result.items,
+            TotalItems = result.totalRecords,
+            Page = page,
+            PageSize = pageSize
+        };
+    }
 }

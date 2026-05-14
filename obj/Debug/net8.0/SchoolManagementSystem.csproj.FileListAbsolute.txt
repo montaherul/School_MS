@@ -771,3 +771,6 @@ C:\Users\islam\OneDrive\Documents\New project\SchoolMS\bin\Debug\net8.0\build-cl
 C:\Users\islam\OneDrive\Documents\New project\SchoolMS\bin\Debug\net8.0\build-clean-arch\SchoolManagementSystem.staticwebassets.endpoints.json
 C:\Users\islam\OneDrive\Documents\New project\SchoolMS\bin\Debug\net8.0\build-clean-arch\SchoolManagementSystem.staticwebassets.runtime.json
 C:\Users\islam\OneDrive\Documents\New project\SchoolMS\bin\Debug\net8.0\errors.json
+C:\Users\islam\OneDrive\Documents\New project\SchoolMS\bin\Debug\net8.0\HealthChecks.SqlServer.dll
+C:\Users\islam\OneDrive\Documents\New project\SchoolMS\bin\Debug\net8.0\Dapper.dll
+C:\Users\islam\OneDrive\Documents\New project\SchoolMS\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

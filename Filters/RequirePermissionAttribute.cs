@@ -1,10 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.EntityFrameworkCore;
-using SchoolManagementSystem.Data;
+using SchoolManagementSystem.Constants;
 
 namespace SchoolManagementSystem.Filters;
 
+/// <summary>
+/// Authorizes access based on granular permission codes.
+/// Supports Super Admin bypass and merged permission claims.
+/// </summary>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)]
 public class RequirePermissionAttribute : Attribute, IAsyncAuthorizationFilter
 {
@@ -15,31 +18,31 @@ public class RequirePermissionAttribute : Attribute, IAsyncAuthorizationFilter
         _permissionCode = permissionCode;
     }
 
-    public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
+    public Task OnAuthorizationAsync(AuthorizationFilterContext context)
     {
-        if (context.HttpContext.User.Identity?.IsAuthenticated != true)
+        var user = context.HttpContext.User;
+
+        if (user.Identity?.IsAuthenticated != true)
         {
             context.Result = new ChallengeResult();
-            return;
+            return Task.CompletedTask;
         }
 
-        if (context.HttpContext.User.IsInRole("Super Admin"))
+        // 1. Super Admin Bypass (Centralized)
+        if (user.IsInRole(Roles.SuperAdmin))
         {
-            return;
+            return Task.CompletedTask;
         }
 
-        var db = context.HttpContext.RequestServices.GetRequiredService<SchoolDbContext>();
-        var roles = context.HttpContext.User.Claims
-            .Where(x => x.Type == System.Security.Claims.ClaimTypes.Role)
-            .Select(x => x.Value)
-            .ToArray();
+        // 2. Check for merged permission claim
+        // This is populated during login by AuthService and reflects the UNION of all active roles.
+        var hasPermission = user.HasClaim(c => c.Type == "Permission" && c.Value == _permissionCode);
 
-        var allowed = await db.RolePermissions
-            .AnyAsync(rp => rp.Permission != null && rp.Role != null && rp.Permission.Code == _permissionCode && roles.Contains(rp.Role.Name));
-
-        if (!allowed)
+        if (!hasPermission)
         {
             context.Result = new ForbidResult();
         }
+
+        return Task.CompletedTask;
     }
 }
