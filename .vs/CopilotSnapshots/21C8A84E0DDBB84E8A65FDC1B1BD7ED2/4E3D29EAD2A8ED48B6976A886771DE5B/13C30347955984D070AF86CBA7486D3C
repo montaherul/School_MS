@@ -1,3 +1,0 @@
-﻿namespace SchoolManagementSystem.Models.ViewModels.Dashboard;
-
-public record ChartPoint(string Label, decimal Value);
