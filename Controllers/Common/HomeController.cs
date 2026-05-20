@@ -1,8 +1,8 @@
-<<<<<<< HEAD
+
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using SchoolManagementSystem.Models;
-=======
+
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -18,13 +18,13 @@ using SchoolManagementSystem.Models.Entities.Employee;
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Services.Interfaces.Website;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 
 namespace SchoolManagementSystem.Controllers.Common;
 
 public class HomeController : Controller
 {
-<<<<<<< HEAD
+
     private readonly ILogger<HomeController> _logger;
 
     public HomeController(ILogger<HomeController> logger)
@@ -38,7 +38,7 @@ public class HomeController : Controller
         {
             return RedirectToAction("Index", "Dashboard");
         }
-=======
+
     private readonly ISchoolWebsiteService _websiteService;
     private readonly ISliderService _sliderService;
     private readonly INoticeService _noticeService;
@@ -123,7 +123,7 @@ public class HomeController : Controller
     [HttpGet("/admission-info")]
     public IActionResult Admission()
     {
->>>>>>> d8b24e6 (attendece and website curtomize)
+
         return View();
     }
 
@@ -138,7 +138,7 @@ public class HomeController : Controller
         return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
     }
 }
-<<<<<<< HEAD
 
-=======
->>>>>>> d8b24e6 (attendece and website curtomize)
+
+
+

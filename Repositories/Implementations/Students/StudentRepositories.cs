@@ -4,11 +4,11 @@ using SchoolManagementSystem.Data;
 using SchoolManagementSystem.Models.Entities.Student;
 using SchoolManagementSystem.Models.DTOs.Student;
 using SchoolManagementSystem.Repositories.Interfaces.Students;
-<<<<<<< HEAD
+
 using Dapper;
 using System.Data;
-=======
->>>>>>> d8b24e6 (attendece and website curtomize)
+
+
 
 namespace SchoolManagementSystem.Repositories.Implementations.Students;
 
@@ -18,7 +18,7 @@ public class StudentRepository : BaseRepository<Student>, IStudentRepository
 
     public async Task<(List<StudentListItemDto> items, int totalRecords)> GetPagedAsync(int page, int pageSize, string? search, int? classId, int? sectionId, int? status, CancellationToken ct)
     {
-<<<<<<< HEAD
+
         var connection = _db.Database.GetDbConnection();
         
         var parameters = new DynamicParameters();
@@ -52,7 +52,7 @@ public class StudentRepository : BaseRepository<Student>, IStudentRepository
         int totalRecords = data.Any() ? (int)result.First().TotalCount : 0;
 
         return (data, totalRecords);
-=======
+
         var parameters = new[]
         {
             new Microsoft.Data.SqlClient.SqlParameter("@PageNumber", page),
@@ -69,7 +69,7 @@ public class StudentRepository : BaseRepository<Student>, IStudentRepository
 
         int totalRecords = items.FirstOrDefault()?.TotalRecords ?? 0;
         return (items, totalRecords);
->>>>>>> d8b24e6 (attendece and website curtomize)
+
     }
 
     public async Task<StudentUpsertDto?> GetForEditAsync(int id, CancellationToken ct)

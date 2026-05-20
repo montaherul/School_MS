@@ -2,10 +2,10 @@
 @inject SchoolManagementSystem.Services.Interfaces.Dashboard.IDashboardResolverService _dashboardResolver
 @using System.Security.Claims
 @using Microsoft.EntityFrameworkCore
-<<<<<<< HEAD
+
 @using SchoolManagementSystem.Constants
-=======
->>>>>>> d8b24e6 (attendece and website curtomize)
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -38,13 +38,13 @@
 
 @{
     bool isAuthenticated = User.Identity?.IsAuthenticated == true;
-<<<<<<< HEAD
+
     bool isStudent = User.IsInRole(Roles.Student);
     bool isTeacherLike = User.IsInRole(Roles.Teacher) || User.IsInRole(Roles.Principal);
     
     bool IsAdmin() => User.IsInRole(Roles.SuperAdmin) || User.IsInRole(Roles.Admin);
     bool Can(string c) => User.HasClaim("Permission", c);
-=======
+
     bool isStudent = User.IsInRole("Student");
     bool isAccountant = User.IsInRole("Accountant");
     bool isApplicationAdmin = User.IsInRole("Admin");
@@ -54,14 +54,14 @@
     bool IsAdmin() => User.IsInRole("Super Admin");
     bool Can(string c) => IsAdmin() || User.HasClaim("Permission", c);
     bool CanAny(params string[] permissions) => permissions.Any(Can);
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 
     string roleLabel = "User";
     string roleBadgeClass = "staff";
     string? userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
     int userId = 0;
 
-<<<<<<< HEAD
+
     if (isAuthenticated && int.TryParse(userIdStr, out userId))
     {
         var roles = User.Claims.Where(c => c.Type == ClaimTypes.Role).Select(c => c.Value).ToArray();
@@ -75,7 +75,7 @@
             _ => "staff"
         };
     }
-=======
+
     string roleLabel =
      IsAdmin() ? "Super Admin" :
      isStudent ? "Student" :
@@ -88,7 +88,7 @@
      User.IsInRole("Assistant Head") ? "Assistant Head" :
      User.IsInRole("Office Staff") ? "Office Staff" :
      "User";
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 
     string userName = User.Identity?.Name ?? "";
     string initials = string.Join("", userName.Split(' ', System.StringSplitOptions.RemoveEmptyEntries)
@@ -108,16 +108,16 @@
         }
         else
         {
-<<<<<<< HEAD
+
             profilePicture = _db.Teachers.AsNoTracking()
                 .Where(t => t.UserId == userId && !t.IsDeleted)
                 .Select(t => t.ProfilePicturePath)
-=======
+
             // For Teacher, Staff, and potentially Admin if they are linked to a Teacher/Staff record
             profilePicture = _db.Employees.AsNoTracking()
                 .Where(e => e.UserId == userId && !e.IsDeleted)
                 .Select(e => e.ProfilePicturePath)
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                 .FirstOrDefault();
         }
     }
@@ -183,19 +183,19 @@
                             <span class="nav-section-label"><span class="nav-text">People</span></span>
                             @if (Can(Permissions.Admission.View))
                             {
-<<<<<<< HEAD
+
                                 <a asp-controller="Admission" asp-action="Index" data-title="Admissions"><i class="bi bi-person-plus"></i><span class="nav-text">Admissions</span></a>
                             }
 
                             @if (Can(Permissions.Student.View))
-=======
+
                                 <a asp-controller="Admission" asp-action="Index" data-title="Students"><i class="bi bi-people"></i><span class="nav-text">Admissions</span></a>
                                 @* <a href="/Admission/Index" data-title="Admissions"><i class="bi bi-person-plus"></i><span class="nav-text">Admissions</span></a>
                             *@
                             }
 
                             @if (Can("Students.View") || Can("Student.View"))
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                             {
                                 <a asp-controller="Student" asp-action="Index" data-title="Students"><i class="bi bi-people"></i><span class="nav-text">Students</span></a>
                             }

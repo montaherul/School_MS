@@ -4,17 +4,17 @@ using Microsoft.Extensions.Logging;
 using SchoolManagementSystem.Data;
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
-<<<<<<< HEAD
+
 
 using SchoolManagementSystem.Data.Seeders;
-=======
->>>>>>> d8b24e6 (attendece and website curtomize)
+
+
 
 namespace SchoolManagementSystem.Services.Implementations.Academic;
 
 public class ClassSubjectMappingSeeder : IDataSeeder
 {
-<<<<<<< HEAD
+
     public int Order => 3;
     public string Name => "ClassSubjectMappingSeeder";
 
@@ -22,12 +22,12 @@ public class ClassSubjectMappingSeeder : IDataSeeder
     private readonly IUnitOfWork _uow;
     private readonly ILogger<ClassSubjectMappingSeeder> _logger;
 
-=======
+
     private readonly SchoolDbContext _db;
     private readonly IUnitOfWork _uow;
     private readonly ILogger<ClassSubjectMappingSeeder> _logger;
 
->>>>>>> d8b24e6 (attendece and website curtomize)
+
     public ClassSubjectMappingSeeder(
         SchoolDbContext db,
         IUnitOfWork uow,
@@ -124,9 +124,9 @@ public class ClassSubjectMappingSeeder : IDataSeeder
             classIds[i] = classId;
         }
 
-        // =========================================
+        // ======
         // Religion Subjects
-        // =========================================
+        // ======
         var religionSubjects = new[]
      {
     new { Code = "IRE", ReligionType = "Islam" },
@@ -138,9 +138,9 @@ public class ClassSubjectMappingSeeder : IDataSeeder
     new { Code = "CRE", ReligionType = "Christian" }
 };
 
-        // =========================================
+        // ======
         // Classes 1–5
-        // =========================================
+        // ======
 
         var class1To5Compulsory = new[]
         {
@@ -175,9 +175,9 @@ public class ClassSubjectMappingSeeder : IDataSeeder
             }
         }
 
-        // =========================================
+        // ======
         // Classes 6–8
-        // =========================================
+        // ======
 
         var class6To8Compulsory = new[]
         {
@@ -194,9 +194,9 @@ public class ClassSubjectMappingSeeder : IDataSeeder
             "SCI"       // বিজ্ঞান (Class 6-8)
         };
 
-        // =========================================
+        // ======
         // Optional Subjects 6–8
-        // =========================================
+        // ======
 
         var optionalSubjects6To8 = new[]
         {
@@ -234,9 +234,9 @@ public class ClassSubjectMappingSeeder : IDataSeeder
             }
         }
 
-        // =========================================
+        // ======
         // Student Groups
-        // =========================================
+        // ======
 
         var scienceGroupId =
             GetGroupId(groupLookup, "SCIENCE");
@@ -247,9 +247,9 @@ public class ClassSubjectMappingSeeder : IDataSeeder
         var humanitiesGroupId =
             GetGroupId(groupLookup, "HUMANITIES");
 
-        // =========================================
+        // ======
         // Science Group
-        // =========================================
+        // ======
 
         var scienceSubjects = new[]
         {
@@ -266,9 +266,9 @@ public class ClassSubjectMappingSeeder : IDataSeeder
             "ICT"
         };
 
-        // =========================================
+        // ======
         // Business Studies Group
-        // =========================================
+        // ======
 
         var businessSubjects = new[]
         {
@@ -285,9 +285,9 @@ public class ClassSubjectMappingSeeder : IDataSeeder
             "CAREER"
         };
 
-        // =========================================
+        // ======
         // Humanities Group
-        // =========================================
+        // ======
 
         var humanitiesSubjects = new[]
         {

@@ -1,31 +1,31 @@
-<<<<<<< HEAD
-=======
+
+
 @inject SchoolManagementSystem.Services.Interfaces.Website.ISchoolWebsiteService WebsiteService
 @{
     var websiteSettings = await WebsiteService.GetSettingsAsync(Context.RequestAborted);
 }
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<<<<<<< HEAD
+
     <title>@ViewData["Title"] - SchoolMS</title>
 
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-=======
+
     <title>@ViewData["Title"] - @(websiteSettings?.SchoolName ?? "Bangladesh Public School")</title>
 
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
->>>>>>> d8b24e6 (attendece and website curtomize)
+
     <!-- Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <!-- Bootstrap -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-<<<<<<< HEAD
+
     <!-- App styles -->
     <link rel="stylesheet" href="~/css/schoolms-universal.css" asp-append-version="true" />
 
@@ -106,7 +106,7 @@
                     </a>
                 </div>
 
-=======
+
     <!-- Animate CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     
@@ -400,12 +400,12 @@
                         <a href="/Auth/Login" class="btn btn-edu-navy"><i class="bi bi-box-arrow-in-right me-1"></i> Login Portal</a>
                     }
                 </div>
->>>>>>> d8b24e6 (attendece and website curtomize)
+
             </div>
         </div>
     </nav>
 
-<<<<<<< HEAD
+
     <main role="main">
         @RenderBody()
     </main>
@@ -427,7 +427,7 @@
                         <a href="#" style="width:40px;height:40px;background:rgba(255,255,255,0.1);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background 0.2s;"><i class="bi bi-twitter-x"></i></a>
                         <a href="#" style="width:40px;height:40px;background:rgba(255,255,255,0.1);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background 0.2s;"><i class="bi bi-instagram"></i></a>
                         <a href="#" style="width:40px;height:40px;background:rgba(255,255,255,0.1);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background 0.2s;"><i class="bi bi-linkedin"></i></a>
-=======
+
     <!-- ── Page Content ── -->
     <main role="main" class="pb-3">
         @RenderBody()
@@ -463,12 +463,12 @@
                         <a href="@(websiteSettings?.YouTubeUrl ?? "#")" class="social-btn" target="_blank"><i class="bi bi-youtube"></i></a>
                         <a href="#" class="social-btn"><i class="bi bi-twitter-x"></i></a>
                         <a href="#" class="social-btn"><i class="bi bi-linkedin"></i></a>
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                     </div>
                 </div>
 
                 <div class="col-lg-2 col-md-4">
-<<<<<<< HEAD
+
                     <h5 class="lp-footer-title">Quick Links</h5>
                     <a href="/#about" class="lp-footer-link">About Us</a>
                     <a href="/#academics" class="lp-footer-link">Academics</a>
@@ -497,7 +497,7 @@
                     <div class="d-flex align-items-center gap-3 mb-3 text-muted">
                         <i class="bi bi-envelope-fill text-white"></i>
                         <span>contact@schoolms.edu</span>
-=======
+
                     <h5 class="edu-footer-title">About Us</h5>
                     <a href="/about" class="edu-footer-link">About School</a>
                     <a href="/principal-message" class="edu-footer-link">Principal Message</a>
@@ -528,32 +528,32 @@
                     <div class="d-flex align-items-center gap-3 mb-3" style="font-size:14px">
                         <i class="bi bi-envelope-fill text-warning"></i>
                         <span>@(websiteSettings?.Email ?? "info@school.gov.bd")</span>
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                     </div>
                 </div>
             </div>
 
-<<<<<<< HEAD
+
             <div class="lp-footer-bottom">
                 <div>&copy; 2026 SchoolMS Institution. All rights reserved.</div>
                 <div class="d-flex gap-4">
                     <a href="#" class="text-muted text-decoration-none hover-white">Privacy Policy</a>
                     <a href="#" class="text-muted text-decoration-none hover-white">Terms & Conditions</a>
-=======
+
             <div class="edu-footer-bottom d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 text-center">
                 <div>@(websiteSettings?.FooterText ?? "© 2026 Bangladesh Public School. All rights reserved.")</div>
                 <div class="d-flex gap-4">
                     <a href="/Auth/Login" class="text-white-50 text-decoration-none">Faculty Login</a>
                     <a href="/Auth/Login" class="text-white-50 text-decoration-none">Student Portal</a>
                     <a href="/about" class="text-white-50 text-decoration-none">Terms of Use</a>
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                 </div>
             </div>
         </div>
     </footer>
 
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-<<<<<<< HEAD
+
 
     <script>
         // Navbar transparency on scroll
@@ -566,7 +566,7 @@
                 } else {
                     navbar.style.background = 'var(--clr-topbar)';
                     navbar.style.backdropFilter = 'none';
-=======
+
     <script>
         // Shrink header on scroll
         window.addEventListener('scroll', function() {
@@ -576,7 +576,7 @@
                     navbar.classList.add('scrolled');
                 } else {
                     navbar.classList.remove('scrolled');
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                 }
             }
         });

@@ -10,11 +10,11 @@ using SchoolManagementSystem.Constants;
 
 namespace SchoolManagementSystem.Controllers.Fees;
 
-<<<<<<< HEAD
+
 [Authorize(Roles = Roles.SuperAdmin + "," + Roles.Admin + "," + Roles.Principal + "," + Roles.Accountant + "," + Roles.Staff)]
-=======
+
 [Authorize]
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 public class FeeStructureController : Controller
 {
     private readonly IFeeStructureService _service;

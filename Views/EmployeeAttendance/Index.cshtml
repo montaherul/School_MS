@@ -1,5 +1,5 @@
 @using SchoolManagementSystem.Models.DTOs.Employee
-<<<<<<< HEAD
+
 @model IEnumerable<EmployeeAttendanceDto>
 @{
     ViewData["Title"] = "Employee Attendance";
@@ -52,7 +52,7 @@
             <div class="adm-filters__field adm-filters__field--actions">
                 <label class="adm-label">&nbsp;</label>
                 <button id="btn-reset" class="adm-btn adm-btn--ghost">Reset</button>
-=======
+
 @{
     ViewData["Title"] = "Employee Attendance";
     var today = DateTime.Today.ToString("yyyy-MM-dd");
@@ -289,17 +289,17 @@
                 <button type="button" class="btn btn-primary" id="btnLoad">
                     <i class="bi bi-search me-1"></i> Load Employees
                 </button>
->>>>>>> d8b24e6 (attendece and website curtomize)
+
             </div>
         </div>
     </div>
 
-<<<<<<< HEAD
+
     <!-- GRID -->
     <div class="adm-table-card">
         <div class="adm-table-card__body">
             <div id="attendance-table"></div>
-=======
+
     <div class="ea-summary">
         <div class="ea-card">
             <span class="ea-card__label">Total Employees</span>
@@ -407,12 +407,12 @@
                 </div>
                 <div id="historyTable"></div>
             </div>
->>>>>>> d8b24e6 (attendece and website curtomize)
+
         </div>
     </div>
 </div>
 
-<<<<<<< HEAD
+
 @section Scripts {
     <script>
         const searchInput = document.getElementById('table-search');
@@ -493,7 +493,7 @@
             reloadTable();
         });
     </script>
-=======
+
 <div class="ea-toast-stack" id="toastStack"></div>
 
 @Html.AntiForgeryToken()
@@ -822,5 +822,5 @@
     loadGrid();
 })();
 </script>
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 }

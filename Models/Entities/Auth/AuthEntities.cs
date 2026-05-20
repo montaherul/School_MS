@@ -32,16 +32,16 @@ public class ApplicationUser : BaseEntity
     public int FailedLoginAttempts { get; set; }
     public DateTime? LockoutUntil { get; set; }
     
-<<<<<<< HEAD
+
     public long? EmployeeId { get; set; }
     public virtual SchoolManagementSystem.Models.Entities.Employee.Employee? Employee { get; set; }
 
-=======
+
     public bool MustChangePassword { get; set; } = false;
     
     public int? EmployeeId { get; set; }
     
->>>>>>> d8b24e6 (attendece and website curtomize)
+
     public ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
 
 }
@@ -155,7 +155,7 @@ public class UserSession : BaseEntity
 
     public bool IsActive { get; set; } = true;
 }
-<<<<<<< HEAD
+
 
 public class Notification : BaseEntity
 {
@@ -175,5 +175,5 @@ public class Notification : BaseEntity
     [MaxLength(500)]
     public string? RedirectUrl { get; set; }
 }
-=======
->>>>>>> d8b24e6 (attendece and website curtomize)
+
+

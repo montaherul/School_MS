@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 @{
     ViewData["Title"] = "Employee Management";
 }
@@ -7,7 +7,7 @@
 
 <div class="adm-page">
 
-=======
+
 @model SchoolManagementSystem.Models.DTOs.Common.PagedResult<SchoolManagementSystem.Models.DTOs.Employee.EmployeeListItemDto>
 
 @{
@@ -17,7 +17,7 @@
 }
 
 <div class="adm-page">
->>>>>>> d8b24e6 (attendece and website curtomize)
+
     <!-- HEADER -->
     <div class="adm-header">
         <div class="adm-header__left">
@@ -26,7 +26,7 @@
             </div>
             <div>
                 <h1 class="adm-header__title">Employee Management</h1>
-<<<<<<< HEAD
+
                 <p class="adm-header__sub">Manage staff, teachers, and other employees</p>
             </div>
         </div>
@@ -48,7 +48,7 @@
 
     <!-- FILTERS -->
     <div class="adm-filters mb-3">
-=======
+
                 <p class="adm-header__sub">Manage school faculty, administration, and support staff records</p>
             </div>
         </div>
@@ -60,37 +60,37 @@
 
     <!-- FILTERS -->
     <div class="adm-filters">
->>>>>>> d8b24e6 (attendece and website curtomize)
+
         <div class="adm-filters__row">
             <!-- SEARCH -->
             <div class="adm-filters__field adm-filters__field--search">
                 <label class="adm-label">Search</label>
                 <div class="adm-input-wrap">
                     <i class="bi bi-search adm-input-wrap__icon"></i>
-<<<<<<< HEAD
+
                     <input type="text" id="table-search" class="adm-input" placeholder="Name, code or phone..." />
-=======
+
                     <input type="text" id="employee-search" class="adm-input" placeholder="Search by name, code, or phone..." />
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                 </div>
             </div>
 
             <!-- DEPARTMENT -->
             <div class="adm-filters__field">
                 <label class="adm-label">Department</label>
-<<<<<<< HEAD
+
                 <select id="departmentFilter" class="adm-select">
                     <option value="">All Departments</option>
                     @foreach (var d in (IEnumerable<SchoolManagementSystem.Models.DTOs.Employee.DepartmentDto>)ViewBag.Departments)
                     {
                         <option value="@d.Id">@d.Name</option>
-=======
+
                 <select id="filter-department" class="adm-select">
                     <option value="">All Departments</option>
                     @foreach (var dept in departments)
                     {
                         <option value="@dept.Id">@dept.Name</option>
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                     }
                 </select>
             </div>
@@ -98,29 +98,29 @@
             <!-- DESIGNATION -->
             <div class="adm-filters__field">
                 <label class="adm-label">Designation</label>
-<<<<<<< HEAD
+
                 <select id="designationFilter" class="adm-select">
                     <option value="">All Designations</option>
                     @foreach (var d in (IEnumerable<SchoolManagementSystem.Models.DTOs.Employee.DesignationDto>)ViewBag.Designations)
                     {
                         <option value="@d.Id">@d.Name</option>
-=======
+
                 <select id="filter-designation" class="adm-select">
                     <option value="">All Designations</option>
                     @foreach (var desig in designations)
                     {
                         <option value="@desig.Id">@desig.Name</option>
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                     }
                 </select>
             </div>
 
-<<<<<<< HEAD
+
             <!-- RESET -->
             <div class="adm-filters__field adm-filters__field--actions">
                 <label class="adm-label">Action</label>
                 <button id="btn-reset" class="adm-btn adm-btn--ghost">Reset</button>
-=======
+
             <!-- STAFF TYPE -->
             <div class="adm-filters__field">
                 <label class="adm-label">Staff Type</label>
@@ -148,7 +148,7 @@
             <div class="adm-filters__field adm-filters__field--actions">
                 <label class="adm-label">Reset</label>
                 <button id="btn-reset" class="adm-btn adm-btn--ghost">Reset Filters</button>
->>>>>>> d8b24e6 (attendece and website curtomize)
+
             </div>
         </div>
     </div>
@@ -156,7 +156,7 @@
     <!-- TABLE -->
     <div class="adm-table-card">
         <div class="adm-table-card__body">
-<<<<<<< HEAD
+
             <div id="loadingOverlay" class="adm-loading adm-loading--hidden">
                 <div class="adm-loading__spinner"></div>
                 <span class="adm-loading__text">Loading employees...</span>
@@ -190,14 +190,14 @@
         <div class="adm-modal__footer">
             <button class="adm-btn adm-btn--ghost" id="cancelDeleteBtn">Cancel</button>
             <button class="adm-btn adm-btn--danger" id="confirmDeleteBtn">Delete</button>
-=======
+
             <div id="employee-table"></div>
->>>>>>> d8b24e6 (attendece and website curtomize)
+
         </div>
     </div>
 </div>
 
-<<<<<<< HEAD
+
 @section Scripts {
     <script>
         let pendingDeleteId = null;
@@ -341,7 +341,7 @@
             closeDeleteModal();
             if (data.success) reloadTable();
             else alert(data.message);
-=======
+
 @Html.AntiForgeryToken()
 
 @section Scripts {
@@ -484,7 +484,7 @@
                 statusInput.value = "";
                 reloadTable();
             });
->>>>>>> d8b24e6 (attendece and website curtomize)
+
         });
     </script>
 }

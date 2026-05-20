@@ -18,12 +18,12 @@ using SchoolManagementSystem.Models.Entities.System;
 using SchoolManagementSystem.Models.Entities.Teachers;
 using SchoolManagementSystem.Models.Entities.Transport;
 using SchoolManagementSystem.Models.Entities.Employee;
-<<<<<<< HEAD
 
 
-=======
+
+
 using SchoolManagementSystem.Models.Entities.Website;
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 
 
 namespace SchoolManagementSystem.Data;
@@ -195,11 +195,11 @@ public class SchoolDbContext : DbContext
         modelBuilder.Entity<FinalResult>().HasIndex(x => new { x.AcademicYearId, x.StudentId }).IsUnique();
         modelBuilder.Entity<ReEvaluationRequest>().HasIndex(x => new { x.ExamId, x.StudentId, x.SubjectId }).IsUnique();
         modelBuilder.Entity<RollNumberAssignment>().HasIndex(x => new { x.AcademicYearId, x.StudentId, x.ToClassId }).IsUnique();
-<<<<<<< HEAD
-=======
+
+
         modelBuilder.Entity<AttendanceRecord>().HasIndex(x => new { x.StudentId, x.AttendanceDate }).IsUnique().HasFilter("[IsDeleted] = 0");
         modelBuilder.Entity<AttendanceNotificationLog>().HasIndex(x => new { x.StudentId, x.AttendanceDate, x.NotificationType, x.NotificationChannel }).IsUnique().HasFilter("[IsDeleted] = 0");
->>>>>>> d8b24e6 (attendece and website curtomize)
+
         modelBuilder.Entity<Subject>().HasIndex(x => x.Code).IsUnique();
         modelBuilder.Entity<Teacher>().HasIndex(x => x.TeacherCode).IsUnique();
         modelBuilder.Entity<FeeInvoice>().HasIndex(x => x.InvoiceNo).IsUnique();

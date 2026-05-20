@@ -26,8 +26,8 @@ public class RoleController : GenericCrudController<Role>
 
         return View();
     }
-<<<<<<< HEAD
-=======
+
+
 
     [HttpGet("AllPermissions")]
     public async Task<IActionResult> GetAllPermissions(CancellationToken ct)
@@ -49,6 +49,6 @@ public class RoleController : GenericCrudController<Role>
         var result = await _roleService.AssignPermissionsToRoleAsync(id, permissionIds, ct);
         return Ok(new { success = result });
     }
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 }
 

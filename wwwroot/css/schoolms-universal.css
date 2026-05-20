@@ -4,11 +4,11 @@
    Include once in _Layout.cshtml or your shared CSS bundle.
    ═══════════════════════════════════════════════════════════════════ */
 
-<<<<<<< HEAD
-=======
+
+
 @import url('https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap');
 
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 /* ─────────────────────────────────────────────────────────────────
    0. RESET
    ───────────────────────────────────────────────────────────────── */
@@ -97,11 +97,11 @@
     --adm-transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     --sidebar-transition: width 0.28s var(--ease), margin-left 0.28s var(--ease);
     /* ── Typography ── */
-<<<<<<< HEAD
+
     --font: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-=======
+
     --font: 'Plus Jakarta Sans', 'Hind Siliguri', system-ui, -apple-system, sans-serif;
->>>>>>> d8b24e6 (attendece and website curtomize)
+
     --topbar-h: 60px;
 }
 
@@ -2683,10 +2683,10 @@ body {
     background: transparent !important;
     padding: 0 !important;
 }
-<<<<<<< HEAD
-/* =========================
+
+/* ====
    Navbar
-========================= */
+==== */
 
 .lp-navbar {
     background: #ffffff;
@@ -2723,9 +2723,9 @@ body {
     height: 1.5rem;
 }
 
-/* =========================
+/* ====
    Mobile Responsive
-========================= */
+==== */
 
 @media (max-width: 991px) {
 
@@ -2798,8 +2798,8 @@ body {
 .id-card-container {
     flex-wrap: wrap;
 }
-=======
->>>>>>> d8b24e6 (attendece and website curtomize)
+
+
 /* ─────────────────────────────────────────────────────────────────
    26. REDUCED MOTION
    ───────────────────────────────────────────────────────────────── */

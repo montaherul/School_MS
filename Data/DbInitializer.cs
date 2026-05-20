@@ -40,7 +40,7 @@ public static class DbInitializer
         var createdAt = new DateTime(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         modelBuilder.Entity<Role>().HasData(
-<<<<<<< HEAD
+
             new Role { Id = 1, Name = "SuperAdmin", Description = "Full system owner with all permissions", Priority = 100, IsSystemRole = true, IsActive = true, CreatedAt = createdAt },
             new Role { Id = 2, Name = "Admin", Description = "Administrative operations", Priority = 95, IsSystemRole = true, IsActive = true, CreatedAt = createdAt },
             new Role { Id = 3, Name = "Principal", Description = "Academic + operational authority", Priority = 90, IsSystemRole = true, IsActive = true, CreatedAt = createdAt },
@@ -51,7 +51,7 @@ public static class DbInitializer
             new Role { Id = 8, Name = "Staff", Description = "General employee operations", Priority = 40, IsSystemRole = true, IsActive = true, CreatedAt = createdAt },
             new Role { Id = 9, Name = "Student", Description = "Student portal access", Priority = 10, IsSystemRole = true, IsActive = true, CreatedAt = createdAt },
             new Role { Id = 10, Name = "Parent", Description = "Parent portal access", Priority = 5, IsSystemRole = true, IsActive = true, CreatedAt = createdAt });
-=======
+
             new Role { Id = 1, Name = "Super Admin", Description = "System owner with all permissions", CreatedAt = createdAt },
             new Role { Id = 2, Name = "Principal", Description = "Final approval and all modules", CreatedAt = createdAt },
             new Role { Id = 3, Name = "Assistant Head", Description = "Academic operations", CreatedAt = createdAt },
@@ -66,7 +66,7 @@ public static class DbInitializer
             new Role { Id = 24, Name = "SupportStaff", Description = "Support and cleaning", CreatedAt = createdAt },
             new Role { Id = 25, Name = "Guardian", Description = "Guardian portal access", CreatedAt = createdAt },
             new Role { Id = 26, Name = "Admin", Description = "Administrator", CreatedAt = createdAt });
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 
         modelBuilder.Entity<ApplicationUser>().HasData(
             new ApplicationUser
@@ -90,9 +90,9 @@ public static class DbInitializer
             "Dashboard", "Users", "Roles", "Permissions", "Admissions", "Students", "Teachers", "Classes",
             "Sections", "Subjects", "Attendance", "Exams", "Marks", "Assignments", "Fees", "Payments",
             "Library", "Transport", "Health", "Notifications", "Reports", "Settings", "Academic",
-<<<<<<< HEAD
+
             "Admission", "Student", "Exam", "Result", "Communication", "System", "AuditLogs"
-=======
+
             "Admission", "Student", "Exam", "Result", "Communication", "System", "AuditLogs",
             "FeeStructures", "Invoices", "Scholarships", "Waivers", "StudentDues", "FinancialTransactions",
             "FinanceReports", "FinanceConfiguration", "FinanceDashboard", "Receipts"
@@ -101,7 +101,7 @@ public static class DbInitializer
         {
             "View", "Read", "Create", "Edit", "Update", "Delete", "Approve", "Assign", "Publish", "Export",
             "Print", "Generate", "Manage"
->>>>>>> d8b24e6 (attendece and website curtomize)
+
         };
         var permissions = modules.SelectMany(module => actions
             .Select(action => new Permission
@@ -118,7 +118,7 @@ public static class DbInitializer
                 CreatedAt = createdAt
             })).ToArray();
         modelBuilder.Entity<Permission>().HasData(permissions);
-<<<<<<< HEAD
+
         var superAdminPermissions = permissions.Select(p => new RolePermission { RoleId = 1, PermissionId = p.Id });
         var adminPermissions = permissions.Select(p => new RolePermission { RoleId = 2, PermissionId = p.Id });
         var principalPermissions = permissions.Select(p => new RolePermission { RoleId = 3, PermissionId = p.Id });
@@ -132,7 +132,7 @@ public static class DbInitializer
             .Select(p => new RolePermission { RoleId = 5, PermissionId = p.Id });
 
         var teacherPermissions = permissions
-=======
+
 
         var financeModules = new HashSet<string>
         {
@@ -157,7 +157,7 @@ public static class DbInitializer
                 p.ModuleName is "Dashboard" or "Academic" or "Classes" or "Sections" or "Subjects" or "Admissions" or "Admission" or "Students" or "Student" or "Attendance" or "Exams" or "Exam" or "Marks" or "Result" or "Communication" or "Reports")
             .Select(p => new RolePermission { RoleId = 3, PermissionId = p.Id });
         var teacherRolePermissions = permissions
->>>>>>> d8b24e6 (attendece and website curtomize)
+
             .Where(p =>
                 p.Code is "Dashboard.View" or "Classes.View" or "Students.View" or "Attendance.View" or "Attendance.Create" or "Marks.View" or "Marks.Create" or "Assignments.View" or "Assignments.Create" ||
                 p.ModuleName is "Exam" or "Result" or "Reports")
@@ -175,7 +175,7 @@ public static class DbInitializer
 
         var studentPermissions = permissions
             .Where(p =>
-<<<<<<< HEAD
+
                 p.Code is "Dashboard.View" or "Students.View" or "Student.View" or "Attendance.View" or "Marks.View" or "Assignments.View" or "Assignments.Create" or "Notifications.View" or "Fees.View")
             .Select(p => new RolePermission { RoleId = 9, PermissionId = p.Id });
 
@@ -195,7 +195,7 @@ public static class DbInitializer
             .Concat(staffPermissions)
             .Concat(studentPermissions)
             .Concat(parentPermissions));
-=======
+
                 p.Code is "Dashboard.View" or "Dashboard.Read" or "Students.View" or "Student.View" or "Attendance.View" or "Marks.View" or "Assignments.View" or "Assignments.Create" or "Notifications.View" or "Fees.View" or
                     "Invoices.View" or "Invoices.Read" or "Payments.View" or "Payments.Read" or "StudentDues.View" or "StudentDues.Read" or
                     "Receipts.View" or "Receipts.Read" or "Receipts.Print" or "Receipts.Export")
@@ -213,7 +213,7 @@ public static class DbInitializer
             .Concat(studentRolePermissions)
             .Concat(accountantRolePermissions)
             .Concat(applicationAdminRolePermissions));
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 
         modelBuilder.Entity<AcademicYear>().HasData(new AcademicYear { Id = 1, Name = "2026", StartsOn = new DateTime(2026, 1, 1), EndsOn = new DateTime(2026, 12, 31), IsActive = true, CreatedAt = createdAt });
         //modelBuilder.Entity<SchoolClass>().HasData(
@@ -298,7 +298,7 @@ public static class DbInitializer
         //    new Section { Id = 3, SchoolClassId = 2, Name = "A", CreatedAt = createdAt });
         modelBuilder.Entity<Subject>().HasData(
 
-<<<<<<< HEAD
+
        
        new Subject { Id = 9, Code = "BAN1", Name = "বাংলা ১ম পত্র", CreatedAt = createdAt },
        new Subject { Id = 10, Code = "BAN2", Name = "বাংলা ২য় পত্র", CreatedAt = createdAt },
@@ -307,7 +307,7 @@ public static class DbInitializer
        new Subject { Id = 13, Code = "SCI", Name = "বিজ্ঞান", CreatedAt = createdAt },
        new Subject { Id = 14, Code = "ICT", Name = "তথ্য ও যোগাযোগ প্রযুক্তি", CreatedAt = createdAt },
        new Subject { Id = 15, Code = "AGR", Name = "কৃষি শিক্ষা", CreatedAt = createdAt },
-=======
+
             // Primary Subjects
             new Subject { Id = 1, Code = "BAN", Name = "বাংলা", NameBn = "বাংলা", CreatedAt = createdAt },
             new Subject { Id = 2, Code = "ENG", Name = "English", NameBn = "ইংরেজি", CreatedAt = createdAt },
@@ -317,7 +317,7 @@ public static class DbInitializer
             new Subject { Id = 6, Code = "REL", Name = "Religion and Moral Education", NameBn = "ধর্ম ও নৈতিক শিক্ষা", CreatedAt = createdAt },
             new Subject { Id = 7, Code = "ART", Name = "Arts and Crafts", NameBn = "চারুকলা", CreatedAt = createdAt },
             new Subject { Id = 8, Code = "PE", Name = "Physical Education", NameBn = "শারীরিক শিক্ষা", CreatedAt = createdAt },
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 
             // SSC Common Subjects
             new Subject { Id = 9, Code = "BAN1", Name = "Bangla 1st Paper", NameBn = "বাংলা ১ম পত্র", CreatedAt = createdAt },

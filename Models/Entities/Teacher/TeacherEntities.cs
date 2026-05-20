@@ -10,7 +10,7 @@ namespace SchoolManagementSystem.Models.Entities.Teachers;
 public class Teacher : BaseEntity
 {
     [Required]
-<<<<<<< HEAD
+
     [MaxLength(30)]
     public string TeacherNo { get; set; } = string.Empty;
 
@@ -44,16 +44,16 @@ public class Teacher : BaseEntity
 
     // ── Demographics ──────────────────────────────────────────────────────────
     [Required]
-=======
+
     public int EmployeeId { get; set; }
     public SchoolManagementSystem.Models.Entities.Employee.Employee? Employee { get; set; }
 
     [Required]
->>>>>>> d8b24e6 (attendece and website curtomize)
+
     [MaxLength(50)]
     public string TeacherCode { get; set; } = string.Empty;
 
-<<<<<<< HEAD
+
     [Required]
     [MaxLength(50)]
     public string Country { get; set; } = "Bangladesh";
@@ -90,7 +90,7 @@ public class Teacher : BaseEntity
 
     [MaxLength(100)]
     public string? Department { get; set; }
-=======
+
     // Compatibility Alias
     [NotMapped]
     public string TeacherNo
@@ -98,7 +98,7 @@ public class Teacher : BaseEntity
         get => TeacherCode;
         set => TeacherCode = value;
     }
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 
     [MaxLength(200)]
     public string? SubjectSpecialization { get; set; }
@@ -117,15 +117,15 @@ public class Teacher : BaseEntity
     [MaxLength(500)]
     public string? Remarks { get; set; }
 
-<<<<<<< HEAD
+
     // ── Status & Auth link ────────────────────────────────────────────────────
     [Required]
     public TeacherStatus Status { get; set; } = TeacherStatus.Active;
-=======
+
     // Compatibility Alias for designation/department properties queried dynamically
     [NotMapped]
     public string FullName => Employee?.FullName ?? string.Empty;
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 
     [NotMapped]
     public string? FullNameBangla => Employee?.FullName; // Dynamic fallback
@@ -167,11 +167,11 @@ public class Teacher : BaseEntity
     // ── Navigation ────────────────────────────────────────────────────────────
     public ICollection<TeacherDocument> Documents { get; set; } = new List<TeacherDocument>();
 
-<<<<<<< HEAD
+
     public ICollection<TeacherClassAssignment> ClassAssignments { get; set; }= new List<TeacherClassAssignment>();
-=======
+
     public ICollection<TeacherClassAssignment> ClassAssignments { get; set; } = new List<TeacherClassAssignment>();
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 
     public ICollection<TeacherSubjectAssignment> SubjectAssignments { get; set; } = new List<TeacherSubjectAssignment>();
 }

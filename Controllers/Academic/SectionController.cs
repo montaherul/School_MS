@@ -16,13 +16,13 @@ public class SectionController : Controller
 {
     private readonly ISectionService _service;
     private readonly ISchoolClassService _classService;
-<<<<<<< HEAD
+
 
     public SectionController(ISectionService service, ISchoolClassService classService)
     {
         _service = service;
         _classService = classService;
-=======
+
     private readonly ITeacherScopeService _teacherScopeService;
 
     public SectionController(ISectionService service, ISchoolClassService classService, ITeacherScopeService teacherScopeService)
@@ -30,7 +30,7 @@ public class SectionController : Controller
         _service = service;
         _classService = classService;
         _teacherScopeService = teacherScopeService;
->>>>>>> d8b24e6 (attendece and website curtomize)
+
     }
 
     [RequirePermission("Sections.View")]
@@ -53,12 +53,12 @@ public class SectionController : Controller
     }
 
     [HttpGet]
-<<<<<<< HEAD
+
     [RequirePermission("Sections.View")]
     public async Task<IActionResult> GetSectionsByClass(int classId, CancellationToken ct)
     {
         var sections = await _service.GetByClassIdAsync(classId, ct);
-=======
+
     public async Task<IActionResult> GetSectionsByClass(int classId, CancellationToken ct)
     {
         var sections = await _service.GetByClassIdAsync(classId, ct);
@@ -77,7 +77,7 @@ public class SectionController : Controller
                 sections = new List<SectionOptionDto>();
             }
         }
->>>>>>> d8b24e6 (attendece and website curtomize)
+
         return Json(sections);
     }
 

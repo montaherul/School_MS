@@ -14,14 +14,14 @@ public class PaymentService : BaseService<Payment>, IPaymentService
     {
     }
 
-<<<<<<< HEAD
-=======
+
+
     protected override IQueryable<Payment> ApplySecurityFilters(IQueryable<Payment> query, ClaimsPrincipal user)
     {
         return GetPaymentsForUser(query, user);
     }
 
->>>>>>> d8b24e6 (attendece and website curtomize)
+
     public IQueryable<Payment> GetPaymentsForUser(IQueryable<Payment> query, ClaimsPrincipal user)
     {
         if (user.IsInRole("Student"))

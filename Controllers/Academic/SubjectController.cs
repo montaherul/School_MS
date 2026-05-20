@@ -27,11 +27,11 @@ public class SubjectController : Controller
 
     [HttpGet]
     [RequirePermission("Subjects.View")]
-<<<<<<< HEAD
+
     public async Task<IActionResult> GetList(int page = 1, int size = 10, string? search = null)
-=======
+
     public async Task<IActionResult> GetList(int page = 1, int size = 10, string? search = null, string? group = null, string? status = null)
->>>>>>> d8b24e6 (attendece and website curtomize)
+
     {
         var result = await _service.GetPagedAsync(page, size, search, group, status);
         return Json(new { data = result.Items, last_page = Math.Ceiling((double)result.TotalItems / result.PageSize) });

@@ -59,7 +59,7 @@ public class AuthService : IAuthService
         user.LastLoginAt = DateTime.UtcNow;
         await _unitOfWork.SaveChangesAsync(ct);
 
-<<<<<<< HEAD
+
         var now = DateTime.UtcNow;
         var activeUserRoles = user.UserRoles
             .Where(ur => (!ur.EffectiveFrom.HasValue || ur.EffectiveFrom <= now) && 
@@ -92,7 +92,7 @@ public class AuthService : IAuthService
             .Distinct()
             .ToListAsync(ct);
             
-=======
+
         var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, user.Id.ToString()), new(ClaimTypes.Name, user.UserName), new(ClaimTypes.Email, user.Email) };
         claims.AddRange(user.UserRoles.Where(x => x.Role is not null).Select(x => new Claim(ClaimTypes.Role, x.Role!.Name)));
         
@@ -100,7 +100,7 @@ public class AuthService : IAuthService
         var permissions = await _unitOfWork.Repository<RolePermission>().Query()
             .Where(x => roleIds.Contains(x.RoleId) && x.Permission != null)
             .Select(x => x.Permission!.Code).Distinct().ToListAsync(ct);
->>>>>>> d8b24e6 (attendece and website curtomize)
+
         claims.AddRange(permissions.Select(code => new Claim("Permission", code)));
 
         return (true, null, new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme));

@@ -28,8 +28,8 @@ public class TeacherAssignmentController : Controller
         return View(teacher);
     }
 
-<<<<<<< HEAD
-=======
+
+
     /// <summary>JSON endpoint used by Teacher/Details.cshtml assignment tab.</summary>
     [HttpGet("GetByTeacher/{teacherId}")]
     public async Task<IActionResult> GetByTeacher(int teacherId, CancellationToken ct)
@@ -70,7 +70,7 @@ public class TeacherAssignmentController : Controller
         return Json(merged);
     }
 
->>>>>>> d8b24e6 (attendece and website curtomize)
+
     [HttpPost("AssignClass")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AssignClass(int teacherId, int classId, int sectionId, int academicYearId)

@@ -1,16 +1,16 @@
 @using SchoolManagementSystem.Models.DTOs.Academic
 @{
     ViewData["Title"] = "Attendance Records";
-<<<<<<< HEAD
+
     bool canManage = User.IsInRole(SchoolManagementSystem.Constants.Roles.SuperAdmin) || User.IsInRole(SchoolManagementSystem.Constants.Roles.Principal) || User.IsInRole(SchoolManagementSystem.Constants.Roles.Admin) || User.IsInRole(SchoolManagementSystem.Constants.Roles.Teacher);
-=======
+
     bool canManage = User.IsInRole("Super Admin") || User.IsInRole("Principal")
                   || User.IsInRole("Assistant Head") || User.IsInRole("Senior Lecturer")
                   || User.IsInRole("Lecturer");
 
     var classes = ViewBag.Classes as IEnumerable<SchoolClassListItemDto> ?? Enumerable.Empty<SchoolClassListItemDto>();
     var todayStr = DateTime.Today.ToString("yyyy-MM-dd");
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 }
 
 <div class="adm-page">

@@ -18,11 +18,11 @@ public class UserRoleRepository : BaseRepository<UserRole>, IUserRoleRepository
 {
     public UserRoleRepository(SchoolDbContext db) : base(db) { }
 }
-<<<<<<< HEAD
+
 
 public class AuditLogRepository : BaseRepository<AuditLog>, IAuditLogRepository
 {
     public AuditLogRepository(SchoolDbContext db) : base(db) { }
 }
-=======
->>>>>>> d8b24e6 (attendece and website curtomize)
+
+

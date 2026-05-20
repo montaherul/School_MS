@@ -7,10 +7,10 @@ public class SubjectListItemDto
     public int Id { get; set; }
     public string Code { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
-<<<<<<< HEAD
-=======
+
+
     public string NameBn { get; set; } = string.Empty;
->>>>>>> d8b24e6 (attendece and website curtomize)
+
     public string? SubjectGroup { get; set; }
     public bool IsReligionSubject { get; set; }
     public string? ReligionType { get; set; }
@@ -30,14 +30,14 @@ public class SubjectUpsertDto
     [Required]
     [StringLength(100)]
     public string Name { get; set; } = string.Empty;
-<<<<<<< HEAD
-=======
+
+
 
     [Required]
     [StringLength(100)]
     public string NameBn { get; set; } = string.Empty;
 
->>>>>>> d8b24e6 (attendece and website curtomize)
+
     public string? SubjectGroup { get; set; }
     public bool IsReligionSubject { get; set; }
     public string? ReligionType { get; set; }

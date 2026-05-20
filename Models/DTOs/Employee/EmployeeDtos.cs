@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 namespace SchoolManagementSystem.Models.DTOs.Employee;
 
 public class EmployeeDto
@@ -47,7 +47,7 @@ public class DepartmentDto
     public long Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Code { get; set; } = string.Empty;
-=======
+
 using Microsoft.AspNetCore.Http;
 using System.ComponentModel.DataAnnotations;
 
@@ -263,12 +263,12 @@ public class EmployeeExperienceDto
 
     [MaxLength(500)]
     public string? Remarks { get; set; }
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 }
 
 public class DesignationDto
 {
-<<<<<<< HEAD
+
     public long Id { get; set; }
     public string Name { get; set; } = string.Empty;
 }
@@ -399,7 +399,7 @@ public class PayrollSummaryDto
     public int TotalPaid { get; set; }
     public int TotalPending { get; set; }
     public decimal AverageSalary { get; set; }
-=======
+
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public int RoleLevel { get; set; }
@@ -411,5 +411,5 @@ public class DepartmentDto
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 }

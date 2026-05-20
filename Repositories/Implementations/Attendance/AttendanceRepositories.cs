@@ -12,76 +12,81 @@ public class AttendanceRepository : BaseRepository<AttendanceRecord>, IAttendanc
 {
     public AttendanceRepository(SchoolDbContext db) : base(db) { }
 
-    public async Task<(List<AttendanceRecordListItemDto> items, int totalRecords)> GetListByStoredProcedureAsync(
-<<<<<<< HEAD
-        int pageNumber, int pageSize, string? searchTerm, int studentId, CancellationToken ct)
-=======
-        int pageNumber, int pageSize, string? searchTerm,
-        int studentId, int classId, int sectionId, DateOnly? attendanceDate,
-        CancellationToken ct)
->>>>>>> d8b24e6 (attendece and website curtomize)
+    public async Task<(List<AttendanceRecordListItemDto> items, int totalRecords)>
+        GetListByStoredProcedureAsync(
+            int pageNumber,
+            int pageSize,
+            string? searchTerm,
+            int studentId,
+            int classId,
+            int sectionId,
+            DateOnly? attendanceDate,
+            CancellationToken ct)
     {
         using var command = _db.Database.GetDbConnection().CreateCommand();
+
         command.CommandText = "sp_GetAttendanceList";
         command.CommandType = CommandType.StoredProcedure;
-<<<<<<< HEAD
+
         command.Parameters.Add(new SqlParameter("@PageNumber", pageNumber));
         command.Parameters.Add(new SqlParameter("@PageSize", pageSize));
-        command.Parameters.Add(new SqlParameter("@SearchTerm", (object?)searchTerm ?? DBNull.Value));
+        command.Parameters.Add(new SqlParameter("@SearchTerm",
+            (object?)searchTerm ?? DBNull.Value));
         command.Parameters.Add(new SqlParameter("@StudentId", studentId));
-=======
+        command.Parameters.Add(new SqlParameter("@ClassId", classId));
+        command.Parameters.Add(new SqlParameter("@SectionId", sectionId));
 
-        command.Parameters.Add(new SqlParameter("@PageNumber",     pageNumber));
-        command.Parameters.Add(new SqlParameter("@PageSize",       pageSize));
-        command.Parameters.Add(new SqlParameter("@SearchTerm",     (object?)searchTerm   ?? DBNull.Value));
-        command.Parameters.Add(new SqlParameter("@StudentId",      studentId));
-        command.Parameters.Add(new SqlParameter("@ClassId",        classId));
-        command.Parameters.Add(new SqlParameter("@SectionId",      sectionId));
-        command.Parameters.Add(new SqlParameter("@AttendanceDate",
-            attendanceDate.HasValue ? (object)attendanceDate.Value.ToDateTime(TimeOnly.MinValue).Date : DBNull.Value));
->>>>>>> d8b24e6 (attendece and website curtomize)
+        command.Parameters.Add(new SqlParameter(
+            "@AttendanceDate",
+            attendanceDate.HasValue
+                ? attendanceDate.Value.ToDateTime(TimeOnly.MinValue).Date
+                : DBNull.Value));
 
         await _db.Database.OpenConnectionAsync(ct);
+
         try
         {
             using var reader = await command.ExecuteReaderAsync(ct);
-            var items = new List<AttendanceRecordListItemDto>();
-<<<<<<< HEAD
-=======
 
->>>>>>> d8b24e6 (attendece and website curtomize)
+            var items = new List<AttendanceRecordListItemDto>();
+
             while (await reader.ReadAsync(ct))
             {
                 items.Add(new AttendanceRecordListItemDto
                 {
-<<<<<<< HEAD
                     Id = reader.GetInt32(0),
                     StudentId = reader.GetInt32(1),
-                    StudentName = reader.IsDBNull(2) ? "" : reader.GetString(2),
+                    StudentName = reader.IsDBNull(2)
+                        ? ""
+                        : reader.GetString(2),
+
                     SchoolClassId = reader.GetInt32(3),
-                    ClassName = reader.IsDBNull(4) ? "" : reader.GetString(4),
+
+                    ClassName = reader.IsDBNull(4)
+                        ? ""
+                        : reader.GetString(4),
+
                     SectionId = reader.GetInt32(5),
-                    SectionName = reader.IsDBNull(6) ? "" : reader.GetString(6),
-                    Status = (SchoolManagementSystem.Models.Enums.AttendanceStatus)reader.GetInt32(7),
-                    Remarks = reader.IsDBNull(8) ? "" : reader.GetString(8),
-                    TotalRecords = reader.IsDBNull(10) ? 0 : reader.GetInt32(10)
-                });
-            }
-            return (items, items.FirstOrDefault()?.TotalRecords ?? 0);
-        }
-        finally { await _db.Database.CloseConnectionAsync(); }
-=======
-                    Id             = reader.GetInt32(0),
-                    StudentId      = reader.GetInt32(1),
-                    StudentName    = reader.IsDBNull(2)  ? "" : reader.GetString(2),
-                    SchoolClassId  = reader.GetInt32(3),
-                    ClassName      = reader.IsDBNull(4)  ? "" : reader.GetString(4),
-                    SectionId      = reader.GetInt32(5),
-                    SectionName    = reader.IsDBNull(6)  ? "" : reader.GetString(6),
-                    Status         = (SchoolManagementSystem.Models.Enums.AttendanceStatus)reader.GetInt32(7),
-                    Remarks        = reader.IsDBNull(8)  ? "" : reader.GetString(8),
-                    AttendanceDate = reader.IsDBNull(9)  ? DateOnly.MinValue : DateOnly.FromDateTime(reader.GetDateTime(9)),
-                    TotalRecords   = reader.IsDBNull(10) ? 0  : reader.GetInt32(10)
+
+                    SectionName = reader.IsDBNull(6)
+                        ? ""
+                        : reader.GetString(6),
+
+                    Status =
+                        (SchoolManagementSystem.Models.Enums.AttendanceStatus)
+                        reader.GetInt32(7),
+
+                    Remarks = reader.IsDBNull(8)
+                        ? ""
+                        : reader.GetString(8),
+
+                    AttendanceDate = reader.IsDBNull(9)
+                        ? DateOnly.MinValue
+                        : DateOnly.FromDateTime(reader.GetDateTime(9)),
+
+                    TotalRecords = reader.IsDBNull(10)
+                        ? 0
+                        : reader.GetInt32(10)
                 });
             }
 
@@ -91,6 +96,5 @@ public class AttendanceRepository : BaseRepository<AttendanceRecord>, IAttendanc
         {
             await _db.Database.CloseConnectionAsync();
         }
->>>>>>> d8b24e6 (attendece and website curtomize)
     }
 }

@@ -13,12 +13,12 @@ public interface IAttendanceRecordService
         DateOnly? attendanceDate = null,
         CancellationToken cancellationToken = default);
 
-<<<<<<< HEAD
 
-=======
+
+
     Task<AttendanceRecordUpsertDto?> GetForEditAsync(int id, CancellationToken cancellationToken = default);
     Task<int>  CreateAsync(AttendanceRecordUpsertDto dto, string createdBy, CancellationToken cancellationToken = default);
     Task       UpdateAsync(AttendanceRecordUpsertDto dto, string updatedBy, CancellationToken cancellationToken = default);
     Task       DeleteAsync(int id, string updatedBy, CancellationToken cancellationToken = default);
 }
->>>>>>> d8b24e6 (attendece and website curtomize)
+

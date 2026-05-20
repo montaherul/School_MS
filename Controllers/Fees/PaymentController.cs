@@ -1,11 +1,11 @@
-<<<<<<< HEAD
+
 using Microsoft.AspNetCore.Authorization;
 using SchoolManagementSystem.Controllers.Common;
-=======
+
 using Microsoft.AspNetCore.Mvc;
 using SchoolManagementSystem.Controllers.Common;
 using SchoolManagementSystem.Filters;
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 using SchoolManagementSystem.Models.Entities.Fees;
 using SchoolManagementSystem.Services.Interfaces.Fees;
 
@@ -15,8 +15,8 @@ public class PaymentController : GenericCrudController<Payment>
 {
     public PaymentController(IPaymentService service) : base(service, "Payment") { }
 
-<<<<<<< HEAD
-=======
+
+
     [RequirePermission("Payments.Read")]
     public override Task<IActionResult> Index(int page = 1, int pageSize = 10, string? search = null, CancellationToken cancellationToken = default)
     {
@@ -74,19 +74,19 @@ public class PaymentController : GenericCrudController<Payment>
         return base.DeleteConfirmed(id, cancellationToken);
     }
 
->>>>>>> d8b24e6 (attendece and website curtomize)
+
     protected override IQueryable<Payment> ApplySecurityFilters(IQueryable<Payment> query)
     {
         return ((IPaymentService)_service).GetPaymentsForUser(query, User);
     }
-<<<<<<< HEAD
+
 }
 
-=======
+
 
     private bool Can(string permissionCode)
     {
         return User.IsInRole("Super Admin") || User.HasClaim("Permission", permissionCode);
     }
 }
->>>>>>> d8b24e6 (attendece and website curtomize)
+

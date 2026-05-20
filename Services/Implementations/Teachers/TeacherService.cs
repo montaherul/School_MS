@@ -12,10 +12,10 @@ using SchoolManagementSystem.UnitOfWork.Interfaces;
 using SchoolManagementSystem.Repositories.Interfaces.Auth;
 using System.Data;
 using SchoolManagementSystem.Repositories.Interfaces.Teachers;
-<<<<<<< HEAD
+
 using SchoolManagementSystem.Constants;
-=======
->>>>>>> d8b24e6 (attendece and website curtomize)
+
+
 
 namespace SchoolManagementSystem.Services.Implementations.Teachers;
 
@@ -49,7 +49,7 @@ public class TeacherService : ITeacherService
 
     public async Task<int> CreateAsync(TeacherUpsertDto dto, string createdBy, CancellationToken ct = default)
     {
-<<<<<<< HEAD
+
         var userName = await GenerateUserNameAsync(dto.FullName, ct);
         var email = dto.EmailAddress ?? $"{userName}@school.local";
 
@@ -146,9 +146,9 @@ public class TeacherService : ITeacherService
         }
 
         return teacher.Id;
-=======
+
         throw new InvalidOperationException("Workforce Architecture Update: Teachers can no longer be created manually as isolated entities. Please navigate to the Employee module to onboard a new staff member and assign them a teaching designation. The system will automatically synchronize their academic teaching profile.");
->>>>>>> d8b24e6 (attendece and website curtomize)
+
     }
 
     public async Task UpdateAsync(TeacherUpsertDto dto, string updatedBy, CancellationToken ct = default)
@@ -156,7 +156,7 @@ public class TeacherService : ITeacherService
         var teacher = await _teacherRepository.FirstOrDefaultAsync(t => t.Id == dto.Id && !t.IsDeleted, ct)
             ?? throw new Exception("Teacher not found");
 
-<<<<<<< HEAD
+
         teacher.FullName = dto.FullName;
         teacher.FullNameBangla = dto.FullNameBangla;
         teacher.DateOfBirth = dto.DateOfBirth;
@@ -204,19 +204,19 @@ public class TeacherService : ITeacherService
             if (!string.IsNullOrEmpty(teacher.NationalIdPath)) DeleteFile(teacher.NationalIdPath);
             teacher.NationalIdPath = await SaveFileAsync(dto.NationalIdFile, "teachers/documents", ct);
         }
-=======
+
         // We only update the academic extension fields, personal workforce fields are managed in Employee module.
         if (!string.IsNullOrEmpty(dto.TeacherNo))
         {
             teacher.TeacherCode = dto.TeacherNo;
         }
         teacher.SubjectSpecialization = dto.Specialization;
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 
         teacher.UpdatedBy = updatedBy;
         teacher.UpdatedAt = DateTime.UtcNow;
 
-<<<<<<< HEAD
+
         if (teacher.UserId.HasValue)
         {
             var user = await _userRepository.FirstOrDefaultAsync(u => u.Id == teacher.UserId.Value, ct);
@@ -232,8 +232,8 @@ public class TeacherService : ITeacherService
                 user.UpdatedAt = DateTime.UtcNow;
             }
         }
-=======
->>>>>>> d8b24e6 (attendece and website curtomize)
+
+
         await _unitOfWork.SaveChangesAsync(ct);
     }
 
@@ -270,7 +270,7 @@ public class TeacherService : ITeacherService
 
     public async Task DeactivateAsync(int id, string updatedBy, CancellationToken ct = default)
     {
-<<<<<<< HEAD
+
         var teacher = await _teacherRepository.FirstOrDefaultAsync(t => t.Id == id && !t.IsDeleted, ct) ?? throw new Exception("Teacher not found");
         teacher.Status = TeacherStatus.Inactive; teacher.UpdatedBy = updatedBy; teacher.UpdatedAt = DateTime.UtcNow;
         if (teacher.UserId.HasValue)
@@ -278,18 +278,18 @@ public class TeacherService : ITeacherService
             var user = await _userRepository.FirstOrDefaultAsync(u => u.Id == teacher.UserId.Value, ct);
             if (user != null) { user.Status = AccountStatus.Inactive; user.UpdatedBy = updatedBy; user.UpdatedAt = DateTime.UtcNow; }
         }
-=======
+
         var teacher = await _teacherRepository.Query().Include(t => t.Employee).FirstOrDefaultAsync(t => t.Id == id && !t.IsDeleted, ct) ?? throw new Exception("Teacher not found");
         teacher.IsDeleted = true; // Soft delete the academic metadata link
         teacher.UpdatedBy = updatedBy; 
         teacher.UpdatedAt = DateTime.UtcNow;
->>>>>>> d8b24e6 (attendece and website curtomize)
+
         await _unitOfWork.SaveChangesAsync(ct);
     }
 
     public async Task ActivateAsync(int id, string updatedBy, CancellationToken ct = default)
     {
-<<<<<<< HEAD
+
         var teacher = await _teacherRepository.FirstOrDefaultAsync(t => t.Id == id && !t.IsDeleted, ct) ?? throw new Exception("Teacher not found");
         teacher.Status = TeacherStatus.Active; teacher.UpdatedBy = updatedBy; teacher.UpdatedAt = DateTime.UtcNow;
         if (teacher.UserId.HasValue)
@@ -305,7 +305,7 @@ public class TeacherService : ITeacherService
         return await _teacherRepository.GetByUserIdAsync(userId, ct);
     }
 
-=======
+
         var teacher = await _teacherRepository.Query().Include(t => t.Employee).FirstOrDefaultAsync(t => t.Id == id, ct) ?? throw new Exception("Teacher not found");
         teacher.IsDeleted = false; // Restore the academic metadata link
         teacher.UpdatedBy = updatedBy; 
@@ -318,7 +318,7 @@ public class TeacherService : ITeacherService
         return await _teacherRepository.GetByUserIdAsync(userId, ct);
     }
 
->>>>>>> d8b24e6 (attendece and website curtomize)
+
     private async Task<string> SaveFileAsync(IFormFile file, string subFolder, CancellationToken ct)
     {
         var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads", subFolder);

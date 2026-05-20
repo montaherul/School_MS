@@ -11,11 +11,11 @@ public class StudentListItemDto
     public string StudentNo { get; set; } = string.Empty;
     public string FullName { get; set; } = string.Empty;
     public string? FullNameBangla { get; set; }
-<<<<<<< HEAD
+
     public DateTime DateOfBirth { get; set; }
     public string Gender { get; set; } = string.Empty;
-=======
->>>>>>> d8b24e6 (attendece and website curtomize)
+
+
     public int ClassId { get; set; }
     public int SectionId { get; set; }
     public string ClassName { get; set; } = string.Empty;
@@ -47,11 +47,11 @@ public class StudentListItemDto
     public string? BirthCertificateNo { get; set; }
 
     public string? FatherOrGuardianMobileNo { get; set; }
-<<<<<<< HEAD
-=======
+
+
     [NotMapped]
     public IFormFile? ProfilePicture { get; set; }
->>>>>>> d8b24e6 (attendece and website curtomize)
+
     public string? ProfilePicturePath { get; set; }
     public DateTime CreatedAt { get; set; }
     public int TotalRecords { get; set; }

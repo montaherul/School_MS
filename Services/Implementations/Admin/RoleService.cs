@@ -36,8 +36,8 @@ public class RoleService : IRoleService
 
         return new PagedResult<dynamic> { Items = items, Page = page, PageSize = pageSize, TotalItems = totalCount };
     }
-<<<<<<< HEAD
-=======
+
+
 
     public async Task<List<int>> GetPermissionsByRoleIdAsync(int roleId, CancellationToken ct = default)
     {
@@ -74,6 +74,6 @@ public class RoleService : IRoleService
             .OrderBy(p => p.Module).ThenBy(p => p.Action)
             .ToListAsync(ct);
     }
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 }
 

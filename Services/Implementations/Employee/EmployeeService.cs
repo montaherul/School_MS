@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Models.DTOs.Employee;
-<<<<<<< HEAD
+
 using SchoolManagementSystem.Models.DTOs.Common;
 using SchoolManagementSystem.Models.Entities.Employee;
 using SchoolManagementSystem.Models.ViewModels.Employee;
@@ -11,7 +11,7 @@ using SchoolManagementSystem.UnitOfWork.Interfaces;
 using SchoolManagementSystem.Helpers.Security;
 using SchoolManagementSystem.Models.Entities.Auth;
 
-=======
+
 using SchoolManagementSystem.Models.Entities.Employee;
 using SchoolManagementSystem.Models.Entities.Auth;
 using SchoolManagementSystem.Models.Enums;
@@ -19,14 +19,14 @@ using SchoolManagementSystem.Services.Interfaces.Employee;
 using SchoolManagementSystem.Services.Interfaces.Email;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using Microsoft.AspNetCore.Http;
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 
 namespace SchoolManagementSystem.Services.Implementations.Employee;
 
 public class EmployeeService : IEmployeeService
 {
     private readonly IUnitOfWork _unitOfWork;
-<<<<<<< HEAD
+
     private readonly IEmployeeRepository _employeeRepository;
     private readonly IUserRepository _userRepository;
     private readonly IRoleRepository _roleRepository;
@@ -181,7 +181,7 @@ public class EmployeeService : IEmployeeService
                     CreatedBy = createdBy,
                     CreatedAt = DateTime.UtcNow
                 }, ct);
-=======
+
     private readonly IUserProvisionService _userProvisionService;
     private readonly IEmailService _emailService;
     private readonly SchoolManagementSystem.Services.Interfaces.Teachers.ITeacherSynchronizationService _teacherSynchronizationService;
@@ -405,13 +405,13 @@ public class EmployeeService : IEmployeeService
         catch
         {
             // Suppress secondary sync errors to ensure the primary employee saving transaction is successful
->>>>>>> d8b24e6 (attendece and website curtomize)
+
         }
 
         return employee.Id;
     }
 
-<<<<<<< HEAD
+
 
     public async Task UpdateAsync(EmployeeViewModel model, string updatedBy, CancellationToken ct = default)
     {
@@ -552,7 +552,7 @@ public class EmployeeService : IEmployeeService
                     CreatedBy = updatedBy,
                     CreatedAt = DateTime.UtcNow
                 }, ct);
-=======
+
     public async Task<bool> DeleteAsync(int id, CancellationToken ct)
     {
         var employee = await _unitOfWork.Repository<SchoolManagementSystem.Models.Entities.Employee.Employee>().FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted, ct);
@@ -600,12 +600,12 @@ public class EmployeeService : IEmployeeService
             {
                 user.Status = (status == "Active") ? AccountStatus.Active : AccountStatus.Inactive;
                 user.UpdatedAt = DateTime.UtcNow;
->>>>>>> d8b24e6 (attendece and website curtomize)
+
             }
         }
 
         await _unitOfWork.SaveChangesAsync(ct);
-<<<<<<< HEAD
+
     }
 
     public async Task ToggleAccessAsync(long id, string updatedBy, CancellationToken ct = default)
@@ -704,7 +704,7 @@ public class EmployeeService : IEmployeeService
         var fileName = Guid.NewGuid() + Path.GetExtension(file.FileName);
         var filePath = Path.Combine(folderPath, fileName);
         await using var stream = new FileStream(filePath, FileMode.Create);
-=======
+
 
         // Auto-synchronize teaching employee status updates to Teacher extension layer
         try
@@ -761,14 +761,14 @@ public class EmployeeService : IEmployeeService
         var fileName = Guid.NewGuid() + Path.GetExtension(file.FileName);
         var filePath = Path.Combine(folderPath, fileName);
         using var stream = new FileStream(filePath, FileMode.Create);
->>>>>>> d8b24e6 (attendece and website curtomize)
+
         await file.CopyToAsync(stream, ct);
         return $"/uploads/{subFolder}/{fileName}";
     }
 
     private void DeleteFile(string? relativePath)
     {
-<<<<<<< HEAD
+
         if (string.IsNullOrWhiteSpace(relativePath)) return;
         var fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", relativePath.TrimStart('/'));
         if (File.Exists(fullPath)) File.Delete(fullPath);
@@ -867,7 +867,7 @@ public class DesignationService : IDesignationService
         var d = await _designationRepository.GetByIdAsync(id, ct) ?? throw new Exception("Designation not found");
         _designationRepository.Remove(d);
         await _unitOfWork.SaveChangesAsync(ct);
-=======
+
         if (string.IsNullOrEmpty(relativePath)) return;
         var fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", relativePath.TrimStart('/'));
         if (File.Exists(fullPath)) File.Delete(fullPath);
@@ -1318,6 +1318,6 @@ public static class EmployeeExtensions
                 Remarks = ex.Remarks
             }).ToList()
         };
->>>>>>> d8b24e6 (attendece and website curtomize)
+
     }
 }

@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 @model SchoolManagementSystem.Models.ViewModels.Employee.EmployeeViewModel
 @{
     ViewData["Title"] = Model.Id == 0 ? "Create Employee" : "Edit Employee";
@@ -94,7 +94,7 @@
                             <label asp-for="Gender" class="form-label">Gender <span class="text-danger">*</span></label>
                             <select asp-for="Gender" class="form-select">
                                 <option value="">Select</option>
-=======
+
 @model SchoolManagementSystem.Models.DTOs.Employee.EmployeeUpsertDto
 @{
     var isEdit = Model.Id > 0;
@@ -160,14 +160,14 @@
                             <label asp-for="Gender" class="form-label fw-bold">Gender <span class="text-danger">*</span></label>
                             <select asp-for="Gender" class="form-select" required>
                                 <option value="">Select Gender</option>
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                                 <option value="Male">Male</option>
                                 <option value="Female">Female</option>
                                 <option value="Other">Other</option>
                             </select>
                             <span asp-validation-for="Gender" class="text-danger small"></span>
                         </div>
-<<<<<<< HEAD
+
                         <div class="col-md-4">
                             <label asp-for="DateOfBirth" class="form-label">Date of Birth <span class="text-danger">*</span></label>
                             <input asp-for="DateOfBirth" type="date" class="form-control" />
@@ -184,7 +184,7 @@
                             <span asp-validation-for="Email" class="text-danger small"></span>
                         </div>
                         <div class="col-md-4">
-=======
+
                         <div class="col-md-3">
                             <label asp-for="DateOfBirth" class="form-label fw-bold">Date of Birth <span class="text-danger">*</span></label>
                             <input asp-for="DateOfBirth" type="date" class="form-control" required />
@@ -203,7 +203,7 @@
                         </div>
 
                         <div class="col-md-3">
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                             <label asp-for="BloodGroup" class="form-label">Blood Group</label>
                             <select asp-for="BloodGroup" class="form-select">
                                 <option value="">Select</option>
@@ -217,7 +217,7 @@
                                 <option value="O-">O-</option>
                             </select>
                         </div>
-<<<<<<< HEAD
+
                         <div class="col-md-4">
                             <label asp-for="Nationality" class="form-label">Nationality</label>
                             <input asp-for="Nationality" class="form-control" />
@@ -352,7 +352,7 @@
                     @(Model.Id == 0 ? "Create Employee" : "Update Employee")
                 </button>
                 <a asp-action="Index" class="adm-btn adm-btn--ghost px-4">Cancel</a>
-=======
+
                         <div class="col-md-3">
                             <label asp-for="Religion" class="form-label">Religion</label>
                             <input asp-for="Religion" class="form-control" placeholder="e.g. Islam, Hinduism" />
@@ -665,13 +665,13 @@
             <div class="d-flex gap-3 justify-content-end mb-5">
                 <a asp-action="Index" class="btn btn-outline-secondary px-5"><i class="bi bi-x-circle me-1"></i> Cancel</a>
                 <button type="submit" class="btn btn-primary px-5 btn-submit-form"><i class="bi bi-check-circle me-1"></i> Save Employee Records</button>
->>>>>>> d8b24e6 (attendece and website curtomize)
+
             </div>
         </form>
     </div>
 </div>
 
-<<<<<<< HEAD
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
@@ -683,7 +683,7 @@
                     document.getElementById("PermanentPostOffice").value = document.getElementById("PresentPostOffice").value;
                     document.getElementById("PermanentThana").value = document.getElementById("PresentThana").value;
                     document.getElementById("PermanentDistrict").value = document.getElementById("PresentDistrict").value;
-=======
+
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         // Core Address mapping
@@ -717,12 +717,12 @@
                 const isTeaching = selectedOpt.getAttribute("data-teaching");
                 if (isTeaching !== null) {
                     switchTeaching.checked = (isTeaching === "true");
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                 }
             });
         }
 
-<<<<<<< HEAD
+
         const enableLogin = document.getElementById("enableLogin");
         const loginFields = document.getElementById("loginFields");
         const usernameInput = document.querySelector('input[name="Username"]');
@@ -733,7 +733,7 @@
                 loginFields.style.display = this.checked ? "block" : "none";
                 if (this.checked && !usernameInput.value && employeeCodeInput) {
                     usernameInput.value = employeeCodeInput.value;
-=======
+
         // Profile Picture Preview
         const inpProfile = document.getElementById("inputProfilePic");
         const imgProfile = document.getElementById("imgPicPreview");
@@ -746,17 +746,17 @@
                         imgProfile.src = reader.result;
                     };
                     reader.readAsDataURL(file);
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                 }
             });
         }
 
-<<<<<<< HEAD
+
         if (employeeCodeInput && usernameInput && !usernameInput.readOnly) {
             employeeCodeInput.addEventListener("keyup", function() {
                 if (enableLogin && enableLogin.checked) {
                     usernameInput.value = this.value;
-=======
+
         // Signature Preview
         const inpSignature = document.getElementById("inputSignature");
         const imgSignature = document.getElementById("imgSigPreview");
@@ -769,12 +769,12 @@
                         imgSignature.src = reader.result;
                     };
                     reader.readAsDataURL(file);
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                 }
             });
         }
 
-<<<<<<< HEAD
+
         const designationSelect = document.querySelector('select[name="DesignationId"]');
         const roleSelect = document.querySelector('select[name="RoleId"]');
 
@@ -802,7 +802,7 @@
             });
         }
     </script>
-=======
+
         // 3. Educational Qualifications Row Builder
         const btnAddQual = document.getElementById("btnAddQual");
         const tblQual = document.getElementById("tblQualifications").querySelector("tbody");
@@ -966,5 +966,5 @@
 </style>
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 }

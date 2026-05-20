@@ -14,7 +14,7 @@ public class DashboardService : IDashboardService
     private readonly IDashboardRepository _dashboardRepository;
     private readonly IDashboardQueryRepository _dashboardQueryRepository;
     private readonly IUnitOfWork _uow;
-<<<<<<< HEAD
+
     private readonly SchoolManagementSystem.Services.Interfaces.Employee.IEmployeeAttendanceService _employeeAttendanceService;
     private readonly SchoolManagementSystem.Services.Interfaces.Employee.IEmployeeLeaveService _employeeLeaveService;
     private readonly SchoolManagementSystem.Services.Interfaces.Employee.IEmployeePayrollService _employeePayrollService;
@@ -26,27 +26,27 @@ public class DashboardService : IDashboardService
         SchoolManagementSystem.Services.Interfaces.Employee.IEmployeeAttendanceService employeeAttendanceService,
         SchoolManagementSystem.Services.Interfaces.Employee.IEmployeeLeaveService employeeLeaveService,
         SchoolManagementSystem.Services.Interfaces.Employee.IEmployeePayrollService employeePayrollService)
-=======
+
 
     public DashboardService(IDashboardRepository dashboardRepository, IDashboardQueryRepository dashboardQueryRepository, IUnitOfWork uow)
->>>>>>> d8b24e6 (attendece and website curtomize)
+
     {
         _dashboardRepository = dashboardRepository;
         _dashboardQueryRepository = dashboardQueryRepository;
         _uow = uow;
-<<<<<<< HEAD
+
         _employeeAttendanceService = employeeAttendanceService;
         _employeeLeaveService = employeeLeaveService;
         _employeePayrollService = employeePayrollService;
-=======
->>>>>>> d8b24e6 (attendece and website curtomize)
+
+
     }
 
     public async Task<DashboardViewModel> GetDashboardAsync(CancellationToken cancellationToken = default)
     {
         var data = await _dashboardRepository.GetAdminDashboardDataAsync(cancellationToken);
-<<<<<<< HEAD
-=======
+
+
 
         var employeeRepo = _uow.Repository<SchoolManagementSystem.Models.Entities.Employee.Employee>();
         var totalEmployees = await employeeRepo.CountAsync(e => !e.IsDeleted, cancellationToken);
@@ -72,7 +72,7 @@ public class DashboardService : IDashboardService
             .Select(a => a.SubjectId)
             .Distinct()
             .CountAsync(cancellationToken);
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 
         return new DashboardViewModel
         {
@@ -81,7 +81,7 @@ public class DashboardService : IDashboardService
             FeesCollected = data.feesCollected,
             FeesDue = data.feesTotal - data.feesCollected,
             AttendancePercentage = data.totalAttendance == 0 ? 0 : Math.Round((decimal)data.presentAttendance / data.totalAttendance * 100, 2),
-<<<<<<< HEAD
+
             EmployeeAttendance = await _employeeAttendanceService.GetDashboardSummaryAsync(DateTime.Today, cancellationToken),
             PendingLeaveRequests = (await _employeeLeaveService.GetPagedAsync(1, 1, null, null, null, LeaveStatus.Pending, cancellationToken)).TotalItems,
             EmployeesOnLeaveToday = (await _employeeLeaveService.GetPagedAsync(1, 100, null, null, null, LeaveStatus.Approved, cancellationToken)).Items
@@ -91,7 +91,7 @@ public class DashboardService : IDashboardService
             StudentsByClass = data.studentsByClass,
             MonthlyCollections = data.monthlyCollections,
             RecentActivities = data.recentActivities
-=======
+
             StudentsByClass = data.studentsByClass,
             MonthlyCollections = data.monthlyCollections,
             RecentActivities = data.recentActivities,
@@ -103,7 +103,7 @@ public class DashboardService : IDashboardService
             AssignedClasses = assignedClasses,
             TotalSubjects = totalSubjects,
             AssignedSubjects = assignedSubjects
->>>>>>> d8b24e6 (attendece and website curtomize)
+
         };
     }
 
@@ -148,8 +148,8 @@ public class DashboardService : IDashboardService
             .Select(ur => ur.Role != null ? ur.Role.Name : null)
             .Where(roleName => roleName != null)
             .ToListAsync(cancellationToken)!;
-<<<<<<< HEAD
-=======
+
+
 
         var classAssignments = await _uow.Repository<SchoolManagementSystem.Models.Entities.Teachers.TeacherClassAssignment>().Query()
             .AsNoTracking()
@@ -165,7 +165,7 @@ public class DashboardService : IDashboardService
             .Include(a => a.Section)
             .Where(a => a.TeacherId == teacher.Id && !a.IsDeleted)
             .ToListAsync(cancellationToken);
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 
         var model = new TeacherDashboardViewModel
         {
@@ -175,15 +175,15 @@ public class DashboardService : IDashboardService
             TeacherNo = teacher.TeacherNo,
             IsPrincipal = userRoles.Contains("Principal") || userRoles.Contains("Assistant Head"),
             IsSeniorLecturer = userRoles.Contains("Senior Lecturer"),
-<<<<<<< HEAD
+
             MyClassesCount = await _uow.Repository<SchoolManagementSystem.Models.Entities.Teachers.TeacherClassAssignment>().CountAsync(a => a.TeacherId == teacher.Id && !a.IsDeleted, cancellationToken),
             MySubjectsCount = await _uow.Repository<SchoolManagementSystem.Models.Entities.Teachers.TeacherSubjectAssignment>().CountAsync(a => a.TeacherId == teacher.Id && !a.IsDeleted, cancellationToken),
-=======
+
             MyClassesCount = classAssignments.Count,
             MySubjectsCount = subjectAssignments.Count,
             MyClasses = classAssignments.Select(a => $"{a.Class?.Name} {a.Section?.Name}").ToList(),
             MySubjects = subjectAssignments.Select(a => $"{a.Subject?.Name} ({a.Class?.Name}{a.Section?.Name})").ToList(),
->>>>>>> d8b24e6 (attendece and website curtomize)
+
             AttendanceRate = 95.5m // Placeholder or real logic
         };
 

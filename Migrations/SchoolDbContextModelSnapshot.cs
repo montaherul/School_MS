@@ -192,15 +192,15 @@ namespace SchoolManagementSystem.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-<<<<<<< HEAD
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<DateTime>("DateOfBirth")
                         .HasColumnType("datetime2");
 
-=======
->>>>>>> d8b24e6 (attendece and website curtomize)
+
+
                     b.Property<string>("EmailAddress")
                         .HasColumnType("nvarchar(max)");
 
@@ -220,13 +220,13 @@ namespace SchoolManagementSystem.Migrations
                     b.Property<string>("FullNameBangla")
                         .HasColumnType("nvarchar(max)");
 
-<<<<<<< HEAD
+
                     b.Property<string>("Gender")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-=======
->>>>>>> d8b24e6 (attendece and website curtomize)
+
+
                     b.Property<int>("Id")
                         .HasColumnType("int");
 
@@ -296,7 +296,7 @@ namespace SchoolManagementSystem.Migrations
                     b.ToTable("StudentListItemResults");
                 });
 
-<<<<<<< HEAD
+
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Academic.AcademicDocument", b =>
                 {
                     b.Property<int>("Id")
@@ -363,8 +363,8 @@ namespace SchoolManagementSystem.Migrations
                     b.ToTable("AcademicDocuments");
                 });
 
-=======
->>>>>>> d8b24e6 (attendece and website curtomize)
+
+
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Academic.AcademicYear", b =>
                 {
                     b.Property<int>("Id")
@@ -3392,13 +3392,13 @@ namespace SchoolManagementSystem.Migrations
                         .HasMaxLength(160)
                         .HasColumnType("nvarchar(160)");
 
-<<<<<<< HEAD
+
                     b.Property<long?>("EmployeeId")
                         .HasColumnType("bigint");
-=======
+
                     b.Property<int?>("EmployeeId")
                         .HasColumnType("int");
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 
                     b.Property<int>("FailedLoginAttempts")
                         .HasColumnType("int");
@@ -3415,12 +3415,12 @@ namespace SchoolManagementSystem.Migrations
                     b.Property<DateTime?>("LockoutUntil")
                         .HasColumnType("datetime2");
 
-<<<<<<< HEAD
-=======
+
+
                     b.Property<bool>("MustChangePassword")
                         .HasColumnType("bit");
 
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasMaxLength(512)
@@ -8149,17 +8149,17 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
-<<<<<<< HEAD
+
                             Category = "General",
                             Code = "AuditLogs.View",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
                             IsCritical = false,
-=======
+
                             Code = "AuditLogs.View",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                             IsDeleted = false,
                             Module = "AuditLogs",
                             ModuleName = "AuditLogs"
@@ -8172,17 +8172,17 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = false,
-<<<<<<< HEAD
+
                             Category = "General",
                             Code = "AuditLogs.Create",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
                             IsCritical = false,
-=======
+
                             Code = "AuditLogs.Create",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                             IsDeleted = false,
                             Module = "AuditLogs",
                             ModuleName = "AuditLogs"
@@ -8195,17 +8195,17 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
-<<<<<<< HEAD
+
                             Category = "General",
                             Code = "AuditLogs.Edit",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
                             IsCritical = false,
-=======
+
                             Code = "AuditLogs.Edit",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                             IsDeleted = false,
                             Module = "AuditLogs",
                             ModuleName = "AuditLogs"
@@ -8218,17 +8218,17 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = false,
                             CanUpdate = false,
-<<<<<<< HEAD
+
                             Category = "General",
                             Code = "AuditLogs.Delete",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
                             IsCritical = false,
-=======
+
                             Code = "AuditLogs.Delete",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                             IsDeleted = false,
                             Module = "AuditLogs",
                             ModuleName = "AuditLogs"
@@ -8241,17 +8241,17 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
-<<<<<<< HEAD
+
                             Category = "General",
                             Code = "AuditLogs.Approve",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
                             IsCritical = false,
-=======
+
                             Code = "AuditLogs.Approve",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                             IsDeleted = false,
                             Module = "AuditLogs",
                             ModuleName = "AuditLogs"
@@ -8264,17 +8264,17 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
-<<<<<<< HEAD
+
                             Category = "General",
                             Code = "AuditLogs.Assign",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
                             IsCritical = false,
-=======
+
                             Code = "AuditLogs.Assign",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                             IsDeleted = false,
                             Module = "AuditLogs",
                             ModuleName = "AuditLogs"
@@ -8287,17 +8287,17 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = false,
                             CanUpdate = true,
-<<<<<<< HEAD
+
                             Category = "General",
                             Code = "AuditLogs.Publish",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
                             IsCritical = false,
-=======
+
                             Code = "AuditLogs.Publish",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                             IsDeleted = false,
                             Module = "AuditLogs",
                             ModuleName = "AuditLogs"
@@ -8310,17 +8310,17 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = false,
                             CanRead = true,
                             CanUpdate = false,
-<<<<<<< HEAD
+
                             Category = "General",
                             Code = "AuditLogs.Export",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
                             IsCritical = false,
-=======
+
                             Code = "AuditLogs.Export",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                             IsDeleted = false,
                             Module = "AuditLogs",
                             ModuleName = "AuditLogs"
@@ -8333,17 +8333,17 @@ namespace SchoolManagementSystem.Migrations
                             CanDelete = true,
                             CanRead = true,
                             CanUpdate = true,
-<<<<<<< HEAD
+
                             Category = "General",
                             Code = "AuditLogs.Manage",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
                             IsCritical = false,
-=======
+
                             Code = "AuditLogs.Manage",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                             IsDeleted = false,
                             Module = "AuditLogs",
                             ModuleName = "AuditLogs"
@@ -8479,7 +8479,7 @@ namespace SchoolManagementSystem.Migrations
                             Description = "Library management",
                             IsActive = true,
                             IsDeleted = false,
-<<<<<<< HEAD
+
                             IsSystemRole = true,
                             Name = "Librarian",
                             Priority = 50
@@ -8519,7 +8519,7 @@ namespace SchoolManagementSystem.Migrations
                             IsSystemRole = true,
                             Name = "Parent",
                             Priority = 5
-=======
+
                             Name = "Student"
                         },
                         new
@@ -8584,7 +8584,7 @@ namespace SchoolManagementSystem.Migrations
                             Description = "Administrator",
                             IsDeleted = false,
                             Name = "Admin"
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                         });
                 });
 
@@ -11351,7 +11351,7 @@ namespace SchoolManagementSystem.Migrations
                         new
                         {
                             RoleId = 3,
-<<<<<<< HEAD
+
                             PermissionId = 10
                         },
                         new
@@ -11487,8 +11487,8 @@ namespace SchoolManagementSystem.Migrations
                         new
                         {
                             RoleId = 3,
-=======
->>>>>>> d8b24e6 (attendece and website curtomize)
+
+
                             PermissionId = 37
                         },
                         new
@@ -11579,7 +11579,7 @@ namespace SchoolManagementSystem.Migrations
                         new
                         {
                             RoleId = 3,
-<<<<<<< HEAD
+
                             PermissionId = 55
                         },
                         new
@@ -11625,8 +11625,8 @@ namespace SchoolManagementSystem.Migrations
                         new
                         {
                             RoleId = 3,
-=======
->>>>>>> d8b24e6 (attendece and website curtomize)
+
+
                             PermissionId = 64
                         },
                         new
@@ -11897,7 +11897,7 @@ namespace SchoolManagementSystem.Migrations
                         new
                         {
                             RoleId = 3,
-<<<<<<< HEAD
+
                             PermissionId = 118
                         },
                         new
@@ -12213,8 +12213,8 @@ namespace SchoolManagementSystem.Migrations
                         new
                         {
                             RoleId = 3,
-=======
->>>>>>> d8b24e6 (attendece and website curtomize)
+
+
                             PermissionId = 181
                         },
                         new
@@ -12260,7 +12260,7 @@ namespace SchoolManagementSystem.Migrations
                         new
                         {
                             RoleId = 3,
-<<<<<<< HEAD
+
                             PermissionId = 190
                         },
                         new
@@ -12306,8 +12306,8 @@ namespace SchoolManagementSystem.Migrations
                         new
                         {
                             RoleId = 3,
-=======
->>>>>>> d8b24e6 (attendece and website curtomize)
+
+
                             PermissionId = 199
                         },
                         new
@@ -12577,7 +12577,7 @@ namespace SchoolManagementSystem.Migrations
                         },
                         new
                         {
-<<<<<<< HEAD
+
                             RoleId = 3,
                             PermissionId = 253
                         },
@@ -12803,8 +12803,8 @@ namespace SchoolManagementSystem.Migrations
                         },
                         new
                         {
-=======
->>>>>>> d8b24e6 (attendece and website curtomize)
+
+
                             RoleId = 5,
                             PermissionId = 1
                         },
@@ -13982,7 +13982,7 @@ namespace SchoolManagementSystem.Migrations
 
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.Department", b =>
                 {
-<<<<<<< HEAD
+
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
@@ -13993,7 +13993,7 @@ namespace SchoolManagementSystem.Migrations
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
-=======
+
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
@@ -14010,15 +14010,15 @@ namespace SchoolManagementSystem.Migrations
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-<<<<<<< HEAD
-=======
+
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -14026,7 +14026,7 @@ namespace SchoolManagementSystem.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
 
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                     b.HasKey("Id");
 
                     b.ToTable("Departments");
@@ -14034,13 +14034,13 @@ namespace SchoolManagementSystem.Migrations
 
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.Designation", b =>
                 {
-<<<<<<< HEAD
+
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bigint");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-=======
+
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
@@ -14066,15 +14066,15 @@ namespace SchoolManagementSystem.Migrations
 
                     b.Property<bool>("IsTeachingRole")
                         .HasColumnType("bit");
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-<<<<<<< HEAD
-=======
+
+
                     b.Property<bool>("RequiresLogin")
                         .HasColumnType("bit");
 
@@ -14088,13 +14088,13 @@ namespace SchoolManagementSystem.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
 
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                     b.HasKey("Id");
 
                     b.ToTable("Designations");
                 });
 
-<<<<<<< HEAD
+
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.Employee", b =>
                 {
                     b.Property<long>("Id")
@@ -14102,7 +14102,7 @@ namespace SchoolManagementSystem.Migrations
                         .HasColumnType("bigint");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-=======
+
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.DesignationRoleMapping", b =>
                 {
                     b.Property<int>("Id")
@@ -14159,13 +14159,13 @@ namespace SchoolManagementSystem.Migrations
                     b.Property<string>("BirthCertificateNo")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 
                     b.Property<string>("BloodGroup")
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
-<<<<<<< HEAD
+
                     b.Property<DateTime>("DateOfBirth")
                         .HasColumnType("datetime2");
 
@@ -14178,7 +14178,7 @@ namespace SchoolManagementSystem.Migrations
                     b.Property<string>("Email")
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
-=======
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -14207,19 +14207,19 @@ namespace SchoolManagementSystem.Migrations
                     b.Property<string>("EmergencyContactPhone")
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 
                     b.Property<string>("EmployeeCode")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-<<<<<<< HEAD
+
                     b.Property<string>("FullName")
                         .IsRequired()
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
-=======
+
                     b.Property<string>("EmployeeType")
                         .IsRequired()
                         .HasMaxLength(50)
@@ -14233,28 +14233,28 @@ namespace SchoolManagementSystem.Migrations
                         .IsRequired()
                         .HasMaxLength(120)
                         .HasColumnType("nvarchar(120)");
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 
                     b.Property<string>("Gender")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-<<<<<<< HEAD
+
                     b.Property<bool>("IsActive")
-=======
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsTeachingStaff")
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                         .HasColumnType("bit");
 
                     b.Property<DateTime>("JoiningDate")
                         .HasColumnType("datetime2");
 
-<<<<<<< HEAD
-=======
+
+
                     b.Property<string>("MotherName")
                         .HasMaxLength(120)
                         .HasColumnType("nvarchar(120)");
@@ -14263,13 +14263,13 @@ namespace SchoolManagementSystem.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                     b.Property<string>("Nationality")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-<<<<<<< HEAD
+
                     b.Property<string>("PermanentDistrict")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
@@ -14314,7 +14314,7 @@ namespace SchoolManagementSystem.Migrations
                     b.Property<decimal>("Salary")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
-=======
+
                     b.Property<string>("PermanentAddress")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
@@ -14361,7 +14361,7 @@ namespace SchoolManagementSystem.Migrations
 
                     b.Property<int?>("UserId1")
                         .HasColumnType("int");
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 
                     b.HasKey("Id");
 
@@ -14369,7 +14369,7 @@ namespace SchoolManagementSystem.Migrations
 
                     b.HasIndex("DesignationId");
 
-<<<<<<< HEAD
+
                     b.ToTable("Employees");
                 });
 
@@ -14389,7 +14389,7 @@ namespace SchoolManagementSystem.Migrations
 
                     b.Property<TimeSpan?>("CheckOutTime")
                         .HasColumnType("time");
-=======
+
                     b.HasIndex("Email")
                         .IsUnique()
                         .HasFilter("[Email] IS NOT NULL");
@@ -14422,14 +14422,14 @@ namespace SchoolManagementSystem.Migrations
 
                     b.Property<int>("ClassId")
                         .HasColumnType("int");
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("CreatedBy")
                         .IsRequired()
-<<<<<<< HEAD
+
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -14441,7 +14441,7 @@ namespace SchoolManagementSystem.Migrations
                         .HasColumnType("nvarchar(500)");
 
                     b.Property<int>("Status")
-=======
+
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
 
@@ -14455,14 +14455,14 @@ namespace SchoolManagementSystem.Migrations
                         .HasColumnType("int");
 
                     b.Property<int>("SubjectId")
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("UpdatedBy")
-<<<<<<< HEAD
+
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -14504,16 +14504,16 @@ namespace SchoolManagementSystem.Migrations
 
                     b.Property<int>("UploadedById")
                         .HasColumnType("int");
-=======
+
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 
                     b.HasKey("Id");
 
                     b.HasIndex("EmployeeId");
 
-<<<<<<< HEAD
+
                     b.HasIndex("UploadedById");
 
                     b.ToTable("EmployeeDocuments");
@@ -14553,7 +14553,7 @@ namespace SchoolManagementSystem.Migrations
                     b.Property<string>("RejectionReason")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
-=======
+
                     b.ToTable("EmployeeAcademicAssignments");
                 });
 
@@ -14649,7 +14649,7 @@ namespace SchoolManagementSystem.Migrations
                         .IsRequired()
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 
                     b.Property<string>("Remarks")
                         .HasMaxLength(500)
@@ -14658,7 +14658,7 @@ namespace SchoolManagementSystem.Migrations
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("datetime2");
 
-<<<<<<< HEAD
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
@@ -14776,7 +14776,7 @@ namespace SchoolManagementSystem.Migrations
                         .HasColumnType("bigint");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-=======
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -14867,7 +14867,7 @@ namespace SchoolManagementSystem.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 
                     b.Property<decimal>("BasicSalary")
                         .HasPrecision(18, 2)
@@ -14876,13 +14876,13 @@ namespace SchoolManagementSystem.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-<<<<<<< HEAD
+
                     b.Property<DateTime>("EffectiveFrom")
                         .HasColumnType("datetime2");
 
                     b.Property<long>("EmployeeId")
                         .HasColumnType("bigint");
-=======
+
                     b.Property<string>("CreatedBy")
                         .IsRequired()
                         .HasMaxLength(64)
@@ -14897,17 +14897,17 @@ namespace SchoolManagementSystem.Migrations
 
                     b.Property<int>("EmployeeId")
                         .HasColumnType("int");
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 
                     b.Property<decimal>("HouseRent")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-<<<<<<< HEAD
+
                     b.Property<bool>("IsActive")
-=======
+
                     b.Property<bool>("IsDeleted")
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                         .HasColumnType("bit");
 
                     b.Property<decimal>("MedicalAllowance")
@@ -14918,15 +14918,15 @@ namespace SchoolManagementSystem.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-<<<<<<< HEAD
+
                     b.Property<decimal>("ProvidentFund")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<decimal>("TaxPercentage")
-=======
+
                     b.Property<decimal>("TotalSalary")
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
@@ -14934,8 +14934,8 @@ namespace SchoolManagementSystem.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-<<<<<<< HEAD
-=======
+
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
@@ -14943,12 +14943,12 @@ namespace SchoolManagementSystem.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
 
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                     b.HasKey("Id");
 
                     b.HasIndex("EmployeeId");
 
-<<<<<<< HEAD
+
                     b.ToTable("EmployeeSalaryStructures");
                 });
 
@@ -15012,9 +15012,9 @@ namespace SchoolManagementSystem.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("LeaveTypes");
-=======
+
                     b.ToTable("EmployeeSalaries");
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                 });
 
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Exam.AdmitCard", b =>
@@ -18171,7 +18171,7 @@ namespace SchoolManagementSystem.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-<<<<<<< HEAD
+
                     b.Property<string>("MaritalStatus")
                         .IsRequired()
                         .HasMaxLength(30)
@@ -18261,9 +18261,9 @@ namespace SchoolManagementSystem.Migrations
                         .HasColumnType("nvarchar(120)");
 
                     b.Property<int>("Status")
-=======
+
                     b.Property<int?>("TeacherId")
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                         .HasColumnType("int");
 
                     b.Property<DateTime>("Timestamp")
@@ -18950,7 +18950,7 @@ namespace SchoolManagementSystem.Migrations
                     b.ToTable("Vehicles");
                 });
 
-<<<<<<< HEAD
+
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Academic.AcademicDocument", b =>
                 {
                     b.HasOne("SchoolManagementSystem.Models.Entities.Academic.SchoolClass", "Class")
@@ -19018,7 +19018,7 @@ namespace SchoolManagementSystem.Migrations
                     b.Navigation("Section");
 
                     b.Navigation("Subject");
-=======
+
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Website.Announcement", b =>
                 {
                     b.Property<int>("Id")
@@ -19436,7 +19436,7 @@ namespace SchoolManagementSystem.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("WebsitePages");
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                 });
 
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Academic.ClassSubject", b =>
@@ -19631,14 +19631,14 @@ namespace SchoolManagementSystem.Migrations
                     b.Navigation("AssignmentTask");
                 });
 
-<<<<<<< HEAD
+
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Auth.ApplicationUser", b =>
                 {
                     b.HasOne("SchoolManagementSystem.Models.Entities.Employee.Employee", "Employee")
                         .WithOne("User")
                         .HasForeignKey("SchoolManagementSystem.Models.Entities.Auth.ApplicationUser", "EmployeeId")
                         .OnDelete(DeleteBehavior.Restrict);
-=======
+
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Attendance.EmployeeAttendance", b =>
                 {
                     b.HasOne("SchoolManagementSystem.Models.Entities.Employee.Employee", "Employee")
@@ -19646,13 +19646,13 @@ namespace SchoolManagementSystem.Migrations
                         .HasForeignKey("EmployeeId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 
                     b.Navigation("Employee");
                 });
 
-<<<<<<< HEAD
-=======
+
+
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Attendance.LeaveApplication", b =>
                 {
                     b.HasOne("SchoolManagementSystem.Models.Entities.Employee.Employee", "Employee")
@@ -19699,7 +19699,7 @@ namespace SchoolManagementSystem.Migrations
                     b.Navigation("Student");
                 });
 
->>>>>>> d8b24e6 (attendece and website curtomize)
+
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Auth.AuditLog", b =>
                 {
                     b.HasOne("SchoolManagementSystem.Models.Entities.Auth.ApplicationUser", "User")
@@ -19781,12 +19781,12 @@ namespace SchoolManagementSystem.Migrations
                     b.Navigation("User");
                 });
 
-<<<<<<< HEAD
+
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.Employee", b =>
                 {
                     b.HasOne("SchoolManagementSystem.Models.Entities.Employee.Department", "Department")
                         .WithMany("Employees")
-=======
+
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.DesignationRoleMapping", b =>
                 {
                     b.HasOne("SchoolManagementSystem.Models.Entities.Employee.Designation", "Designation")
@@ -19810,29 +19810,29 @@ namespace SchoolManagementSystem.Migrations
                 {
                     b.HasOne("SchoolManagementSystem.Models.Entities.Employee.Department", "Department")
                         .WithMany()
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                         .HasForeignKey("DepartmentId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("SchoolManagementSystem.Models.Entities.Employee.Designation", "Designation")
-<<<<<<< HEAD
+
                         .WithMany("Employees")
-=======
+
                         .WithMany()
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                         .HasForeignKey("DesignationId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-<<<<<<< HEAD
+
                     b.Navigation("Department");
 
                     b.Navigation("Designation");
                 });
 
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.EmployeeAttendance", b =>
-=======
+
                     b.HasOne("SchoolManagementSystem.Models.Entities.Auth.ApplicationUser", "User")
                         .WithMany()
                         .HasForeignKey("UserId1")
@@ -19846,7 +19846,7 @@ namespace SchoolManagementSystem.Migrations
                 });
 
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.EmployeeAcademicAssignment", b =>
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                 {
                     b.HasOne("SchoolManagementSystem.Models.Entities.Employee.Employee", "Employee")
                         .WithMany()
@@ -19860,16 +19860,16 @@ namespace SchoolManagementSystem.Migrations
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.EmployeeDocument", b =>
                 {
                     b.HasOne("SchoolManagementSystem.Models.Entities.Employee.Employee", "Employee")
-<<<<<<< HEAD
+
                         .WithMany()
-=======
+
                         .WithMany("Documents")
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                         .HasForeignKey("EmployeeId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-<<<<<<< HEAD
+
                     b.HasOne("SchoolManagementSystem.Models.Entities.Auth.ApplicationUser", "UploadedBy")
                         .WithMany()
                         .HasForeignKey("UploadedById")
@@ -19936,7 +19936,7 @@ namespace SchoolManagementSystem.Migrations
                 {
                     b.HasOne("SchoolManagementSystem.Models.Entities.Employee.Employee", "Employee")
                         .WithMany()
-=======
+
                     b.Navigation("Employee");
                 });
 
@@ -19966,7 +19966,7 @@ namespace SchoolManagementSystem.Migrations
                 {
                     b.HasOne("SchoolManagementSystem.Models.Entities.Employee.Employee", "Employee")
                         .WithMany("Salaries")
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                         .HasForeignKey("EmployeeId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -20748,7 +20748,7 @@ namespace SchoolManagementSystem.Migrations
                     b.Navigation("UserRoles");
                 });
 
-<<<<<<< HEAD
+
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.Department", b =>
                 {
                     b.Navigation("Employees");
@@ -20762,7 +20762,7 @@ namespace SchoolManagementSystem.Migrations
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.Employee", b =>
                 {
                     b.Navigation("User");
-=======
+
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.Employee", b =>
                 {
                     b.Navigation("Attendances");
@@ -20776,7 +20776,7 @@ namespace SchoolManagementSystem.Migrations
                     b.Navigation("Qualifications");
 
                     b.Navigation("Salaries");
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                 });
 
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Exam.Exam", b =>

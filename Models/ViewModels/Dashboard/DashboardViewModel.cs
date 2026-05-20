@@ -15,9 +15,9 @@ public class DashboardViewModel
     public IReadOnlyList<ChartPoint> StudentsByClass { get; set; } = [];
     public IReadOnlyList<ChartPoint> MonthlyCollections { get; set; } = [];
     public IReadOnlyList<RecentActivityItem> RecentActivities { get; set; } = [];
-<<<<<<< HEAD
+
     public decimal TotalCollections { get; set; }
-=======
+
     
     // Employee Workforce Metrics
     public int TotalEmployees { get; set; }
@@ -33,7 +33,7 @@ public class DashboardViewModel
     public int TotalSubjects { get; set; }
     public int AssignedSubjects { get; set; }
     public int UnassignedSubjects => TotalSubjects - AssignedSubjects;
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 }
 
 public record RecentActivityItem(string Module, string Title, DateTime At, string Summary = "");

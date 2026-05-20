@@ -30,20 +30,20 @@ public class SectionService : ISectionService
         if (!string.IsNullOrWhiteSpace(search))
         {
             var lower = search.ToLower();
-<<<<<<< HEAD
+
             query = query.Where(s => s.Name.ToLower().Contains(lower) || s.SchoolClass.Name.ToLower().Contains(lower));
-=======
+
             query = query.Where(s => s.Name.ToLower().Contains(lower) || s.SchoolClass!.Name.ToLower().Contains(lower));
->>>>>>> d8b24e6 (attendece and website curtomize)
+
         }
 
         var totalCount = await query.CountAsync(cancellationToken);
         var items = await query
-<<<<<<< HEAD
+
             .OrderBy(s => s.SchoolClass.Name).ThenBy(s => s.Name)
-=======
+
             .OrderBy(s => s.SchoolClass!.Name).ThenBy(s => s.Name)
->>>>>>> d8b24e6 (attendece and website curtomize)
+
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .Select(s => new SectionListItemDto
@@ -51,11 +51,11 @@ public class SectionService : ISectionService
                 Id = s.Id,
                 Name = s.Name,
                 SchoolClassId = s.SchoolClassId,
-<<<<<<< HEAD
+
                 ClassName = s.SchoolClass.Name,
-=======
+
                 ClassName = s.SchoolClass!.Name,
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                 ParentSectionId = s.ParentSectionId,
                 GroupName = s.ParentSection != null ? s.ParentSection.Name : null
             })

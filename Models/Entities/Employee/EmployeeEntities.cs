@@ -1,33 +1,33 @@
-<<<<<<< HEAD
-=======
+
+
 using SchoolManagementSystem.Models.Entities.Auth;
 using SchoolManagementSystem.Models.Entities.Base;
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SchoolManagementSystem.Models.Entities.Employee;
 
-<<<<<<< HEAD
+
 public class Employee
 {
     [Key]
     public long Id { get; set; }
 
-=======
+
 public class Employee : BaseEntity
 {
->>>>>>> d8b24e6 (attendece and website curtomize)
+
     [Required]
     [MaxLength(50)]
     public string EmployeeCode { get; set; } = string.Empty;
 
     [Required]
-<<<<<<< HEAD
+
     [MaxLength(150)]
     public string FullName { get; set; } = string.Empty;
 
-=======
+
     [MaxLength(120)]
     public string FullName { get; set; } = string.Empty;
 
@@ -37,12 +37,12 @@ public class Employee : BaseEntity
     [MaxLength(120)]
     public string? MotherName { get; set; }
 
->>>>>>> d8b24e6 (attendece and website curtomize)
+
     [Required]
     [MaxLength(20)]
     public string Gender { get; set; } = string.Empty;
 
-<<<<<<< HEAD
+
     [Required]
     public DateTime DateOfBirth { get; set; }
 
@@ -54,15 +54,15 @@ public class Employee : BaseEntity
     [EmailAddress]
     public string? Email { get; set; }
 
-=======
+
     public DateTime DateOfBirth { get; set; }
 
->>>>>>> d8b24e6 (attendece and website curtomize)
+
     [MaxLength(10)]
     public string? BloodGroup { get; set; }
 
     [MaxLength(50)]
-<<<<<<< HEAD
+
     public string Nationality { get; set; } = "Bangladeshi";
 
     // Present Address
@@ -240,7 +240,7 @@ public class EmployeeLeave
 
     [MaxLength(500)]
     public string? RejectionReason { get; set; }
-=======
+
     public string? Religion { get; set; }
 
     [MaxLength(50)]
@@ -297,12 +297,12 @@ public class EmployeeLeave
 
     [MaxLength(30)]
     public string? EmergencyContactPhone { get; set; }
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 
     [MaxLength(500)]
     public string? Remarks { get; set; }
 
-<<<<<<< HEAD
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
 }
@@ -446,7 +446,7 @@ public class EmployeeDocument
     public virtual SchoolManagementSystem.Models.Entities.Auth.ApplicationUser UploadedBy { get; set; } = null!;
 
     public DateTime UploadedAt { get; set; } = DateTime.UtcNow;
-=======
+
     // Navigations
     public ICollection<EmployeeQualification> Qualifications { get; set; } = new List<EmployeeQualification>();
     public ICollection<EmployeeDocument> Documents { get; set; } = new List<EmployeeDocument>();
@@ -590,5 +590,5 @@ public class EmployeeAcademicAssignment : BaseEntity
     public int SectionId { get; set; }
     public int SubjectId { get; set; }
     public int AcademicYearId { get; set; }
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 }

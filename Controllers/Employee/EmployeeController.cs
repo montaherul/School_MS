@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using SchoolManagementSystem.Services.Interfaces.Employee;
@@ -11,14 +11,14 @@ using SchoolManagementSystem.Services.Interfaces.Academic;
 using SchoolManagementSystem.Constants;
 using SchoolManagementSystem.Models.Common;
 using SchoolManagementSystem.Models.DTOs.Common;
-=======
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Models.DTOs.Employee;
 using SchoolManagementSystem.Services.Interfaces.Employee;
 using System.Security.Claims;
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 
 namespace SchoolManagementSystem.Controllers.Employee;
 
@@ -28,33 +28,33 @@ public class EmployeeController : Controller
     private readonly IEmployeeService _employeeService;
     private readonly IDepartmentService _departmentService;
     private readonly IDesignationService _designationService;
-<<<<<<< HEAD
+
     private readonly IRoleRepository _roleRepository;
     private readonly IEmployeeAttendanceService _attendanceService;
     private readonly IEmployeeLeaveService _leaveService;
     private readonly ISalaryStructureService _structureService;
     private readonly SchoolManagementSystem.Services.Interfaces.Academic.ITeacherAcademicService _teacherAcademicService;
-=======
->>>>>>> d8b24e6 (attendece and website curtomize)
+
+
 
     public EmployeeController(
         IEmployeeService employeeService,
         IDepartmentService departmentService,
-<<<<<<< HEAD
+
         IDesignationService designationService,
         IRoleRepository roleRepository,
         IEmployeeAttendanceService attendanceService,
         IEmployeeLeaveService leaveService,
         ISalaryStructureService structureService,
         SchoolManagementSystem.Services.Interfaces.Academic.ITeacherAcademicService teacherAcademicService)
-=======
+
         IDesignationService designationService)
->>>>>>> d8b24e6 (attendece and website curtomize)
+
     {
         _employeeService = employeeService;
         _departmentService = departmentService;
         _designationService = designationService;
-<<<<<<< HEAD
+
         _roleRepository = roleRepository;
         _attendanceService = attendanceService;
         _leaveService = leaveService;
@@ -122,7 +122,7 @@ public class EmployeeController : Controller
             Departments = await GetDepartmentListAsync(),
             Designations = await GetDesignationListAsync(),
             Roles = await GetRoleListAsync()
-=======
+
     }
 
     [RequirePermission("Users.View")] // Fallback to Users permission or specialized if desired
@@ -153,12 +153,12 @@ public class EmployeeController : Controller
             DateOfBirth = DateTime.Today.AddYears(-25),
             Status = "Active",
             IsTeachingStaff = false
->>>>>>> d8b24e6 (attendece and website curtomize)
+
         };
         return View("CreateEdit", model);
     }
 
-<<<<<<< HEAD
+
 
 
     [HttpPost]
@@ -305,7 +305,7 @@ public class EmployeeController : Controller
         var employeeId = await _employeeService.GetEmployeeIdByUserIdAsync(userId);
         
         if (employeeId != model.Id && !User.HasClaim("Permission", Permissions.Employee.Update))
-=======
+
     [RequirePermission("Users.Edit")]
     public async Task<IActionResult> Edit(int id, CancellationToken ct)
     {
@@ -377,12 +377,12 @@ public class EmployeeController : Controller
 
         // Security Check: Users.View allows viewing any employee, or they can view their own profile.
         if (!isOwnProfile && !User.HasClaim("Permission", "Users.View") && !User.IsInRole("Super Admin"))
->>>>>>> d8b24e6 (attendece and website curtomize)
+
         {
             return Forbid();
         }
 
-<<<<<<< HEAD
+
         // Only update contact fields
         var existing = await _employeeService.GetDetailAsync(model.Id);
         if (existing == null) return NotFound();
@@ -400,7 +400,7 @@ public class EmployeeController : Controller
     }
 }
 
-=======
+
         var dto = await _employeeService.GetDetailsAsync(targetId, ct);
         if (dto == null) return NotFound("Employee details not found.");
         
@@ -458,4 +458,4 @@ public class EmployeeController : Controller
         ViewBag.Designations = await _designationService.GetAllAsync(ct);
     }
 }
->>>>>>> d8b24e6 (attendece and website curtomize)
+

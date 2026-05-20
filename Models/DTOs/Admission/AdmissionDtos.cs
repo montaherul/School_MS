@@ -101,7 +101,7 @@ public class AdmissionApproveRequest
 public class AdmissionListResultDto
 {
     public int Id { get; set; }
-<<<<<<< HEAD
+
     public string ApplicationNo { get; set; }
     public string ApplicantName { get; set; }
     public string? ApplicantNameBangla { get; set; }
@@ -137,7 +137,7 @@ public class AdmissionListResultDto
     public string PermanentThana { get; set; }
     public string PermanentDistrict { get; set; }
     public string ProfilePicturePath { get; set; }
-=======
+
     public string ApplicationNo { get; set; } = string.Empty;
     public string ApplicantName { get; set; } = string.Empty;
     public string? ApplicantNameBangla { get; set; }
@@ -173,7 +173,7 @@ public class AdmissionListResultDto
     public string? PermanentThana { get; set; }
     public string? PermanentDistrict { get; set; }
     public string? ProfilePicturePath { get; set; }
->>>>>>> d8b24e6 (attendece and website curtomize)
+
     public int TotalRecords { get; set; }
 
     // Computed properties for UI

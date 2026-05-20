@@ -153,14 +153,14 @@
 
         <div class="adm-table-card__body">
 
-<<<<<<< HEAD
+
             <div id="loadingOverlay" class="adm-loading adm-loading--hidden">
                 <div class="adm-loading__spinner"></div>
                 <span class="adm-loading__text">Loading students...</span>
             </div>
 
-=======
->>>>>>> d8b24e6 (attendece and website curtomize)
+
+
             <div id="data-table"></div>
 
         </div>
@@ -259,7 +259,7 @@
             pendingDeleteId = null;
         }
 
-<<<<<<< HEAD
+
         function showLoadingOverlay(show) {
             const el = document.getElementById('loadingOverlay');
             if (show) {
@@ -271,8 +271,8 @@
             }
         }
 
-=======
->>>>>>> d8b24e6 (attendece and website curtomize)
+
+
         document.getElementById('closeDeleteModal').addEventListener('click', closeDeleteModal);
         document.getElementById('cancelDeleteBtn').addEventListener('click', closeDeleteModal);
 
@@ -283,7 +283,7 @@
             responsiveLayout: "collapse",
             pagination: true,
             paginationMode: "remote",
-<<<<<<< HEAD
+
             ajaxURL: "/Student/GetPaged",
             ajaxConfig: {
                 method: "POST",
@@ -313,11 +313,11 @@
             dataLoaded: function() {
                 showLoadingOverlay(false);
             },
-=======
+
             ajaxURL: '@Url.Action("Index", "Student")',
             paginationSize: 10,
             ajaxParams: function() { return getFilters(); },
->>>>>>> d8b24e6 (attendece and website curtomize)
+
             ajaxResponse: function (url, params, response) {
                 return {
                     data: response.data || [],
@@ -452,11 +452,11 @@
             
             if (classId) {
                 try {
-<<<<<<< HEAD
+
                     const res = await fetch(`/Section/GetSectionsByClass?classId=${classId}`);
-=======
+
                     const res = await fetch('@Url.Action("GetSectionsByClass", "Section")?classId=' + classId);
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                     const sections = await res.json();
                     sections.forEach(s => {
                         sectionFilter.innerHTML += `<option value="${s.id}">${s.name}</option>`;
@@ -483,11 +483,11 @@
 
         document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
             if (!pendingDeleteId) return;
-<<<<<<< HEAD
+
             const res = await fetch(`/Student/DeleteConfirmed/${pendingDeleteId}`, {
-=======
+
             const res = await fetch('@Url.Action("DeleteConfirmed", "Student")/' + pendingDeleteId, {
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                 method: "POST",
                 headers: { "RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]').value }
             });

@@ -15,11 +15,11 @@ using SchoolManagementSystem.Repositories.Implementations.Teachers;
 using SchoolManagementSystem.Repositories.Implementations.Result;
 using SchoolManagementSystem.Repositories.Implementations.Dashboard;
 using SchoolManagementSystem.Repositories.Implementations.Auth;
-<<<<<<< HEAD
+
 using SchoolManagementSystem.Repositories.Implementations.Employee;
 
-=======
->>>>>>> d8b24e6 (attendece and website curtomize)
+
+
 using SchoolManagementSystem.Repositories.Interfaces;
 using SchoolManagementSystem.Repositories.Interfaces.Academic;
 using SchoolManagementSystem.Repositories.Interfaces.Admission;
@@ -30,16 +30,16 @@ using SchoolManagementSystem.Repositories.Interfaces.Teachers;
 using SchoolManagementSystem.Repositories.Interfaces.Result;
 using SchoolManagementSystem.Repositories.Interfaces.Auth;
 using SchoolManagementSystem.Repositories.Interfaces.Dashboard;
-<<<<<<< HEAD
+
 using SchoolManagementSystem.Repositories.Interfaces.Employee;
 
-=======
->>>>>>> d8b24e6 (attendece and website curtomize)
+
+
 using SchoolManagementSystem.Service.Implementations.Dashboard;
 using SchoolManagementSystem.Service.Interfaces.Dashboard;
 using SchoolManagementSystem.Services.Implementations.Admissions;
 using SchoolManagementSystem.Services.Implementations.Admin;
-<<<<<<< HEAD
+
 using SchoolManagementSystem.Services.Implementations.Academic;
 using SchoolManagementSystem.Services.Implementations.Dashboard;
 using SchoolManagementSystem.Services.Implementations.Email;
@@ -64,7 +64,7 @@ using SchoolManagementSystem.Services.Interfaces.Infrastructure;
 using SchoolManagementSystem.Services.Implementations.Infrastructure;
 using SchoolManagementSystem.Data.Seeders;
 using Microsoft.Extensions.Caching.Memory;
-=======
+
 using SchoolManagementSystem.Services.Implementations.Email;
 using SchoolManagementSystem.Services.Implementations.Fees;
 using SchoolManagementSystem.Services.Implementations.Result;
@@ -83,7 +83,7 @@ using SchoolManagementSystem.Repositories.Interfaces.Employee;
 using SchoolManagementSystem.Repositories.Implementations.Employee;
 using SchoolManagementSystem.Services.Interfaces.Employee;
 using SchoolManagementSystem.Services.Implementations.Employee;
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 
 namespace SchoolManagementSystem.Extensions;
 
@@ -98,10 +98,10 @@ public static class ServiceRegistration
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<IUserRoleRepository, UserRoleRepository>();
-<<<<<<< HEAD
+
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();
-=======
->>>>>>> d8b24e6 (attendece and website curtomize)
+
+
         services.AddScoped<IAdmissionRepository, AdmissionRepository>();
         services.AddScoped<IAttendanceRepository, AttendanceRepository>();
         services.AddScoped<IFeeStructureRepository, FeeStructureRepository>();
@@ -110,8 +110,8 @@ public static class ServiceRegistration
         services.AddScoped<ITeacherRepository, TeacherRepository>();
         services.AddScoped<ITeacherClassAssignmentRepository, TeacherClassAssignmentRepository>();
         services.AddScoped<ITeacherSubjectAssignmentRepository, TeacherSubjectAssignmentRepository>();
-<<<<<<< HEAD
-=======
+
+
         
         // Register Employee Repositories
         services.AddScoped<IEmployeeRepository, EmployeeRepository>();
@@ -121,7 +121,7 @@ public static class ServiceRegistration
         services.AddScoped<IEmployeeDocumentRepository, EmployeeDocumentRepository>();
         services.AddScoped<IEmployeeExperienceRepository, EmployeeExperienceRepository>();
 
->>>>>>> d8b24e6 (attendece and website curtomize)
+
         services.AddScoped<IAcademicYearRepository, AcademicYearRepository>();
         services.AddScoped<ISchoolClassRepository, SchoolClassRepository>();
         services.AddScoped<ISectionRepository, SectionRepository>();
@@ -139,7 +139,7 @@ public static class ServiceRegistration
         services.AddScoped<IPromotionHistoryRepository, PromotionHistoryRepository>();
         services.AddScoped<IDashboardRepository, DashboardRepository>();
         services.AddScoped<IDashboardQueryRepository, DashboardQueryRepository>();
-<<<<<<< HEAD
+
         
         // Employee Module
         services.AddScoped<IEmployeeRepository, EmployeeRepository>();
@@ -154,7 +154,7 @@ public static class ServiceRegistration
         services.AddScoped<IEmployeeDocumentRepository, EmployeeDocumentRepository>();
         services.AddScoped<INotificationRepository, NotificationRepository>();
 
-=======
+
 
         // Register Public Website Repositories
         services.AddScoped<ISchoolSettingRepository, SchoolSettingRepository>();
@@ -164,16 +164,16 @@ public static class ServiceRegistration
         services.AddScoped<IGalleryRepository, GalleryRepository>();
         services.AddScoped<IGalleryImageRepository, GalleryImageRepository>();
         services.AddScoped<INoticeRepository, NoticeRepository>();
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 
         services.AddScoped<IDashboardService, DashboardService>();
         services.AddScoped<IStudentService, StudentService>();
         services.AddScoped<IAdmissionService, AdmissionService>();
-<<<<<<< HEAD
+
         services.AddScoped<ITeacherService, TeacherService>();
         services.AddScoped<ITeacherScopeService, TeacherScopeService>();
         services.AddScoped<ITeacherHRService, TeacherHRService>();
-=======
+
         services.AddScoped<IFeeStructureService, FeeStructureService>();
         services.AddScoped<IFeeInvoiceService, FeeInvoiceService>();
         services.AddScoped<ITeacherService, TeacherService>();
@@ -190,7 +190,7 @@ public static class ServiceRegistration
         services.AddScoped<IUserProvisionService, UserProvisionService>();
         services.AddScoped<EmployeeModuleSeeder>();
 
->>>>>>> d8b24e6 (attendece and website curtomize)
+
         services.AddScoped<IResultCalculationService, ResultCalculationService>();
         services.AddScoped<IGPACalculationService, GPACalculationService>();
         services.AddScoped<IMeritCalculationService, MeritCalculationService>();
@@ -200,8 +200,8 @@ public static class ServiceRegistration
         services.AddScoped<IReEvaluationService, ReEvaluationService>();
         services.AddScoped<IReportCardService, ReportCardService>();
         services.AddScoped<IResultAnalyticsService, ResultAnalyticsService>();
-<<<<<<< HEAD
-=======
+
+
 
         // Register Public Website Services
         services.AddScoped<ISchoolWebsiteService, SchoolWebsiteService>();
@@ -210,14 +210,14 @@ public static class ServiceRegistration
         services.AddScoped<IEventService, EventService>();
         services.AddScoped<IGalleryService, GalleryService>();
         services.AddScoped<IWebsitePageService, WebsitePageService>();
->>>>>>> d8b24e6 (attendece and website curtomize)
+
         services.AddScoped<IAuditLogService, AuditLogService>();
         services.AddScoped<IPasswordHashService, Pbkdf2PasswordHashService>();
         services.AddScoped<IEmailSender, SmtpEmailSender>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IPdfGenerator, PlainPdfGenerator>();
 
-<<<<<<< HEAD
+
         // Employee Module
         services.AddScoped<IEmployeeService, EmployeeService>();
         services.AddScoped<IEmployeeAttendanceService, EmployeeAttendanceService>();
@@ -241,7 +241,7 @@ public static class ServiceRegistration
         services.AddScoped<IDataSeederRunner, DataSeederRunner>();
         services.AddScoped<IDataSeeder, RolePermissionSeeder>();
         services.AddScoped<IDataSeeder, HrReferenceDataSeeder>();
-=======
+
         // Attendance & Leave Management Modules
         services.AddScoped<SchoolManagementSystem.Repositories.Interfaces.Attendance.IStudentAttendanceRepository, SchoolManagementSystem.Repositories.Implementations.Attendance.StudentAttendanceRepository>();
         services.AddScoped<SchoolManagementSystem.Repositories.Interfaces.Attendance.IEmployeeAttendanceRepository, SchoolManagementSystem.Repositories.Implementations.Attendance.EmployeeAttendanceRepository>();
@@ -255,7 +255,7 @@ public static class ServiceRegistration
         services.AddScoped<SchoolManagementSystem.Services.Interfaces.Attendance.IEmployeeAttendanceService, SchoolManagementSystem.Services.Implementations.Attendance.EmployeeAttendanceService>();
         services.AddScoped<SchoolManagementSystem.Services.Interfaces.Attendance.ILeaveService, SchoolManagementSystem.Services.Implementations.Attendance.LeaveService>();
         services.AddScoped<SchoolManagementSystem.Services.Interfaces.Attendance.IAttendanceReportService, SchoolManagementSystem.Services.Implementations.Attendance.AttendanceReportService>();
->>>>>>> d8b24e6 (attendece and website curtomize)
+
 
         return services;
     }

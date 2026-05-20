@@ -8,24 +8,24 @@ namespace SchoolManagementSystem.Controllers.Dashboard;
 [Authorize]
 public class DashboardController : Controller
 {
-<<<<<<< HEAD
+
     private readonly SchoolManagementSystem.Services.Interfaces.Dashboard.IDashboardResolverService _resolver;
 
     public DashboardController(SchoolManagementSystem.Services.Interfaces.Dashboard.IDashboardResolverService resolver)
     {
         _resolver = resolver;
-=======
+
     private readonly IDashboardService _service;
 
     public DashboardController(IDashboardService service)
     {
         _service = service;
->>>>>>> d8b24e6 (attendece and website curtomize)
+
     }
 
     public async Task<IActionResult> Index()
     {
-<<<<<<< HEAD
+
         var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (!long.TryParse(userIdStr, out var userId)) return RedirectToAction("Login", "Auth");
 
@@ -35,7 +35,7 @@ public class DashboardController : Controller
         var model = await _resolver.GetDashboardModelAsync(userId, roles);
 
         return View(viewName, model);
-=======
+
         if (User.IsInRole("Student"))
         {
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -59,6 +59,6 @@ public class DashboardController : Controller
 
         var data = await _service.GetDashboardAsync();
         return View(data);
->>>>>>> d8b24e6 (attendece and website curtomize)
+
     }
 }

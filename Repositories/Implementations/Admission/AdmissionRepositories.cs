@@ -31,8 +31,8 @@ public class AdmissionRepository : BaseRepository<AdmissionApplication>, IAdmiss
             using var reader = await command.ExecuteReaderAsync(ct);
             var items = new List<AdmissionListResultDto>();
 
-<<<<<<< HEAD
-=======
+
+
             var ordId = reader.GetOrdinal("Id");
             var ordAppNo = reader.GetOrdinal("ApplicationNo");
             var ordName = reader.GetOrdinal("ApplicantName");
@@ -72,12 +72,12 @@ public class AdmissionRepository : BaseRepository<AdmissionApplication>, IAdmiss
             var ordAt = reader.GetOrdinal("CreatedAt");
             var ordTotal = reader.GetOrdinal("TotalRecords");
 
->>>>>>> d8b24e6 (attendece and website curtomize)
+
             while (await reader.ReadAsync(ct))
             {
                 items.Add(new AdmissionListResultDto
                 {
-<<<<<<< HEAD
+
                     Id = reader.GetInt32(0),
                     ApplicationNo = reader.IsDBNull(1) ? string.Empty : reader.GetString(1),
                     ApplicantName = reader.IsDBNull(2) ? string.Empty : reader.GetString(2),
@@ -116,7 +116,7 @@ public class AdmissionRepository : BaseRepository<AdmissionApplication>, IAdmiss
                     CreatedBy = reader.IsDBNull(35) ? string.Empty : reader.GetString(35),
                     CreatedAt = reader.IsDBNull(36) ? DateTime.MinValue : reader.GetDateTime(36),
                     TotalRecords = reader.IsDBNull(37) ? 0 : reader.GetInt32(37)
-=======
+
                     Id = reader.GetInt32(ordId),
                     ApplicationNo = reader.IsDBNull(ordAppNo) ? string.Empty : reader.GetString(ordAppNo),
                     ApplicantName = reader.IsDBNull(ordName) ? string.Empty : reader.GetString(ordName),
@@ -155,7 +155,7 @@ public class AdmissionRepository : BaseRepository<AdmissionApplication>, IAdmiss
                     CreatedBy = reader.IsDBNull(ordBy) ? string.Empty : reader.GetString(ordBy),
                     CreatedAt = reader.IsDBNull(ordAt) ? DateTime.MinValue : reader.GetDateTime(ordAt),
                     TotalRecords = reader.IsDBNull(ordTotal) ? 0 : reader.GetInt32(ordTotal)
->>>>>>> d8b24e6 (attendece and website curtomize)
+
                 });
             }
             return (items, items.FirstOrDefault()?.TotalRecords ?? 0);
