@@ -314,6 +314,74 @@
         <!-- LEFT -->
         <div class="col-lg-8">
 
+<<<<<<< HEAD
+=======
+            <!-- MY ASSIGNMENTS -->
+            <div class="row g-4 mb-4">
+                <!-- CLASS TEACHER AREA -->
+                <div class="col-md-6">
+                    <div class="adm-table-card h-100">
+                        <div class="dash-section__header p-4 border-bottom">
+                            <h5 class="dash-section__title">Class Teacher Area</h5>
+                        </div>
+                        <div class="p-4">
+                            <h6 class="fw-bold mb-2">My Classes</h6>
+                            @if (Model.MyClasses.Any())
+                            {
+                                <ul class="list-unstyled">
+                                    @foreach (var cls in Model.MyClasses)
+                                    {
+                                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>@cls</li>
+                                    }
+                                </ul>
+                            }
+                            else
+                            {
+                                <p class="text-muted">No classes assigned as class teacher.</p>
+                            }
+                            <hr />
+                            <h6 class="fw-bold mb-2">Quick Actions</h6>
+                            <div class="d-flex flex-wrap gap-2">
+                                <a href="/StudentAttendance" class="adm-btn adm-btn--sm adm-btn--primary">Mark Attendance</a>
+                                <a href="/StudentAttendance/Report" class="adm-btn adm-btn--sm adm-btn--ghost">Attendance Reports</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SUBJECT TEACHER AREA -->
+                <div class="col-md-6">
+                    <div class="adm-table-card h-100">
+                        <div class="dash-section__header p-4 border-bottom">
+                            <h5 class="dash-section__title">Subject Teacher Area</h5>
+                        </div>
+                        <div class="p-4">
+                            <h6 class="fw-bold mb-2">My Subjects</h6>
+                            @if (Model.MySubjects.Any())
+                            {
+                                <ul class="list-unstyled">
+                                    @foreach (var sub in Model.MySubjects)
+                                    {
+                                        <li class="mb-2"><i class="bi bi-book-half text-info me-2"></i>@sub</li>
+                                    }
+                                </ul>
+                            }
+                            else
+                            {
+                                <p class="text-muted">No subjects assigned as subject teacher.</p>
+                            }
+                            <hr />
+                            <h6 class="fw-bold mb-2">Quick Actions</h6>
+                            <div class="d-flex flex-wrap gap-2">
+                                <a href="/Result/Marks" class="adm-btn adm-btn--sm adm-btn--success">Enter Marks</a>
+                                <a href="/Result/Analytics" class="adm-btn adm-btn--sm adm-btn--ghost">Result Analytics</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+>>>>>>> d8b24e6 (attendece and website curtomize)
             <!-- RESULT STATUS -->
             <div class="adm-table-card mb-4">
 

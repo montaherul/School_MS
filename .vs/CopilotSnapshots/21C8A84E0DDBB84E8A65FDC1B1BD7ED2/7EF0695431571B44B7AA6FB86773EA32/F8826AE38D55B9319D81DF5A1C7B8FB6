@@ -1,0 +1,8 @@
+﻿using SchoolManagementSystem.Models.Entities.Academic;
+
+namespace SchoolManagementSystem.Repositories.Interfaces.Academic;
+
+public interface IAcademicYearRepository : IBaseRepository<AcademicYear> { }
+public interface ISchoolClassRepository : IBaseRepository<SchoolClass> { }
+public interface ISectionRepository : IBaseRepository<Section> { }
+public interface ISubjectRepository : IBaseRepository<Subject> { }

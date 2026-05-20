@@ -1,0 +1,87 @@
+@model SchoolManagementSystem.Models.Entities.Website.Event
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    bool isEdit = Model.Id > 0;
+    ViewData["Title"] = isEdit ? "Modify Calendar Event" : "Create Calendar Event";
+}
+
+<div class="container-fluid py-4">
+    <div class="mb-4">
+        <a href="/Admin/Website" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i> Cancel</a>
+    </div>
+
+    <div class="card border-0 shadow-sm max-w-800 mx-auto">
+        <div class="card-header bg-white py-3">
+            <h5 class="fw-bold mb-0 text-primary"><i class="bi bi-calendar-event me-2"></i> @(isEdit ? "Update Academic Event Details" : "Create New Academic Event")</h5>
+        </div>
+        <div class="card-body p-4">
+            <form action="/Admin/Website/Events/CreateEdit/@(isEdit ? Model.Id.ToString() : "")" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Event Title</label>
+                    <input type="text" name="Title" value="@Model.Title" class="form-control" placeholder="Annual Sports Day 2026" required/>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Event Date & Time</label>
+                            <input type="datetime-local" name="EventDate" value="@Model.EventDate.ToString("yyyy-MM-ddTHH:mm")" class="form-control" required/>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Event Venue / Location</label>
+                            <input type="text" name="EventLocation" value="@Model.EventLocation" class="form-control" placeholder="School Central Playground" required/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Show Countdown Timer Widget</label>
+                            <select name="IsUpcoming" class="form-select">
+                                <option value="true" selected="@(Model.IsUpcoming)">Yes (Show Timer)</option>
+                                <option value="false" selected="@(!Model.IsUpcoming)">No (Hide Timer)</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Status Visibility</label>
+                            <select name="IsPublished" class="form-select">
+                                <option value="true" selected="@(Model.IsPublished)">Visible (Published)</option>
+                                <option value="false" selected="@(!Model.IsPublished)">Hidden (Draft)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Event Description / Details Content</label>
+                    <textarea name="Description" class="form-control" rows="8" placeholder="Type event agenda, rules, and details..." required>@Model.Description</textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Upload Cover Banner Photo</label>
+                    <input type="file" name="coverFile" class="form-control"/>
+                    @if (isEdit && !string.IsNullOrEmpty(Model.CoverImagePath))
+                    {
+                        <div class="mt-3">
+                            <label class="form-label text-muted small">Current Banner Thumbnail:</label>
+                            <div>
+                                <img src="@Model.CoverImagePath" class="img-thumbnail" style="max-height: 140px;"/>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="text-end pt-3 border-top">
+                    <button type="submit" class="btn btn-primary px-5"><i class="bi bi-save me-1"></i> Save Calendar Event</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

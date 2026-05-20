@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SchoolManagementSystem.Models.DTOs.Student;
 
@@ -10,8 +11,11 @@ public class StudentListItemDto
     public string StudentNo { get; set; } = string.Empty;
     public string FullName { get; set; } = string.Empty;
     public string? FullNameBangla { get; set; }
+<<<<<<< HEAD
     public DateTime DateOfBirth { get; set; }
     public string Gender { get; set; } = string.Empty;
+=======
+>>>>>>> d8b24e6 (attendece and website curtomize)
     public int ClassId { get; set; }
     public int SectionId { get; set; }
     public string ClassName { get; set; } = string.Empty;
@@ -43,6 +47,11 @@ public class StudentListItemDto
     public string? BirthCertificateNo { get; set; }
 
     public string? FatherOrGuardianMobileNo { get; set; }
+<<<<<<< HEAD
+=======
+    [NotMapped]
+    public IFormFile? ProfilePicture { get; set; }
+>>>>>>> d8b24e6 (attendece and website curtomize)
     public string? ProfilePicturePath { get; set; }
     public DateTime CreatedAt { get; set; }
     public int TotalRecords { get; set; }
@@ -141,6 +150,8 @@ public class StudentUpsertDto
     public string? PermanentDistrict { get; set; }
     // Navigation props mapped
     public string? ProfilePicturePath { get; set; }
+
+    [NotMapped]
     public IFormFile? ProfilePicture { get; set; }
     public int? UserId { get; set; }
     //sectionname

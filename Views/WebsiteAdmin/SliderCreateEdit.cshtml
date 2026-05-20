@@ -1,0 +1,84 @@
+@model SchoolManagementSystem.Models.Entities.Website.Slider
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    bool isEdit = Model.Id > 0;
+    ViewData["Title"] = isEdit ? "Modify Hero Slide" : "Add Hero Slide";
+}
+
+<div class="container-fluid py-4">
+    <div class="mb-4">
+        <a href="/Admin/Website" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i> Cancel</a>
+    </div>
+
+    <div class="card border-0 shadow-sm max-w-700 mx-auto">
+        <div class="card-header bg-white py-3">
+            <h5 class="fw-bold mb-0 text-primary"><i class="bi bi-images me-2"></i> @(isEdit ? "Update Hero Banner Slide" : "Create New Hero Slide")</h5>
+        </div>
+        <div class="card-body p-4">
+            <form action="/Admin/Website/Sliders/CreateEdit/@(isEdit ? Model.Id.ToString() : "")" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Primary Bold Title Text</label>
+                    <input type="text" name="Title" value="@Model.Title" class="form-control" placeholder="Shaping the Future of Learning" required/>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Subtitle Tagline</label>
+                    <input type="text" name="Subtitle" value="@Model.Subtitle" class="form-control" placeholder="Gateway to Excellence" required/>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Button Label Text (Optional)</label>
+                            <input type="text" name="ButtonText" value="@Model.ButtonText" class="form-control" placeholder="Apply Now"/>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Button Link URL (Optional)</label>
+                            <input type="text" name="ButtonUrl" value="@Model.ButtonUrl" class="form-control" placeholder="/Admission/Apply"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Display Order Position</label>
+                            <input type="number" name="DisplayOrder" value="@Model.DisplayOrder" class="form-control" required/>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Status Visibility</label>
+                            <select name="IsActive" class="form-select">
+                                <option value="true" selected="@(Model.IsActive)">Visible (Published)</option>
+                                <option value="false" selected="@(!Model.IsActive)">Hidden (Draft)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-bold">Upload Slide Image (Width: 1920px, Height: 700px recommended)</label>
+                    <input type="file" name="imageFile" class="form-control"/>
+                    @if (isEdit && !string.IsNullOrEmpty(Model.ImagePath))
+                    {
+                        <div class="mt-3">
+                            <label class="form-label text-muted small">Current Slider Cover Thumbnail:</label>
+                            <div>
+                                <img src="@Model.ImagePath" class="img-thumbnail" style="max-height: 140px;"/>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="text-end pt-3 border-top">
+                    <button type="submit" class="btn btn-primary px-5"><i class="bi bi-save me-1"></i> Save Hero Slide</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

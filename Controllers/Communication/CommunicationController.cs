@@ -2,7 +2,10 @@ using Microsoft.AspNetCore.Authorization;
 using SchoolManagementSystem.Controllers.Common;
 using SchoolManagementSystem.Models.Entities.Communication;
 using SchoolManagementSystem.Services.Interfaces.Base;
+<<<<<<< HEAD
 using SchoolManagementSystem.Constants;
+=======
+>>>>>>> d8b24e6 (attendece and website curtomize)
 
 namespace SchoolManagementSystem.Controllers.Communication;
 

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 @{
     ViewData["Title"] = "Employee Management";
 }
@@ -6,6 +7,17 @@
 
 <div class="adm-page">
 
+=======
+@model SchoolManagementSystem.Models.DTOs.Common.PagedResult<SchoolManagementSystem.Models.DTOs.Employee.EmployeeListItemDto>
+
+@{
+    ViewData["Title"] = "Employees";
+    var departments = ViewBag.Departments as IReadOnlyList<SchoolManagementSystem.Models.DTOs.Employee.DepartmentDto> ?? new List<SchoolManagementSystem.Models.DTOs.Employee.DepartmentDto>();
+    var designations = ViewBag.Designations as IReadOnlyList<SchoolManagementSystem.Models.DTOs.Employee.DesignationDto> ?? new List<SchoolManagementSystem.Models.DTOs.Employee.DesignationDto>();
+}
+
+<div class="adm-page">
+>>>>>>> d8b24e6 (attendece and website curtomize)
     <!-- HEADER -->
     <div class="adm-header">
         <div class="adm-header__left">
@@ -14,6 +26,7 @@
             </div>
             <div>
                 <h1 class="adm-header__title">Employee Management</h1>
+<<<<<<< HEAD
                 <p class="adm-header__sub">Manage staff, teachers, and other employees</p>
             </div>
         </div>
@@ -35,24 +48,49 @@
 
     <!-- FILTERS -->
     <div class="adm-filters mb-3">
+=======
+                <p class="adm-header__sub">Manage school faculty, administration, and support staff records</p>
+            </div>
+        </div>
+        <a asp-action="Create" class="adm-btn adm-btn--primary">
+            <i class="bi bi-person-plus-fill"></i>
+            <span>Add New Employee</span>
+        </a>
+    </div>
+
+    <!-- FILTERS -->
+    <div class="adm-filters">
+>>>>>>> d8b24e6 (attendece and website curtomize)
         <div class="adm-filters__row">
             <!-- SEARCH -->
             <div class="adm-filters__field adm-filters__field--search">
                 <label class="adm-label">Search</label>
                 <div class="adm-input-wrap">
                     <i class="bi bi-search adm-input-wrap__icon"></i>
+<<<<<<< HEAD
                     <input type="text" id="table-search" class="adm-input" placeholder="Name, code or phone..." />
+=======
+                    <input type="text" id="employee-search" class="adm-input" placeholder="Search by name, code, or phone..." />
+>>>>>>> d8b24e6 (attendece and website curtomize)
                 </div>
             </div>
 
             <!-- DEPARTMENT -->
             <div class="adm-filters__field">
                 <label class="adm-label">Department</label>
+<<<<<<< HEAD
                 <select id="departmentFilter" class="adm-select">
                     <option value="">All Departments</option>
                     @foreach (var d in (IEnumerable<SchoolManagementSystem.Models.DTOs.Employee.DepartmentDto>)ViewBag.Departments)
                     {
                         <option value="@d.Id">@d.Name</option>
+=======
+                <select id="filter-department" class="adm-select">
+                    <option value="">All Departments</option>
+                    @foreach (var dept in departments)
+                    {
+                        <option value="@dept.Id">@dept.Name</option>
+>>>>>>> d8b24e6 (attendece and website curtomize)
                     }
                 </select>
             </div>
@@ -60,19 +98,57 @@
             <!-- DESIGNATION -->
             <div class="adm-filters__field">
                 <label class="adm-label">Designation</label>
+<<<<<<< HEAD
                 <select id="designationFilter" class="adm-select">
                     <option value="">All Designations</option>
                     @foreach (var d in (IEnumerable<SchoolManagementSystem.Models.DTOs.Employee.DesignationDto>)ViewBag.Designations)
                     {
                         <option value="@d.Id">@d.Name</option>
+=======
+                <select id="filter-designation" class="adm-select">
+                    <option value="">All Designations</option>
+                    @foreach (var desig in designations)
+                    {
+                        <option value="@desig.Id">@desig.Name</option>
+>>>>>>> d8b24e6 (attendece and website curtomize)
                     }
+                </select>
+            </div>
+
+<<<<<<< HEAD
+            <!-- RESET -->
+            <div class="adm-filters__field adm-filters__field--actions">
+                <label class="adm-label">Action</label>
+                <button id="btn-reset" class="adm-btn adm-btn--ghost">Reset</button>
+=======
+            <!-- STAFF TYPE -->
+            <div class="adm-filters__field">
+                <label class="adm-label">Staff Type</label>
+                <select id="filter-stafftype" class="adm-select">
+                    <option value="">All Staff</option>
+                    <option value="true">Teaching Staff</option>
+                    <option value="false">Non-Teaching Staff</option>
+                </select>
+            </div>
+
+            <!-- STATUS -->
+            <div class="adm-filters__field">
+                <label class="adm-label">Status</label>
+                <select id="filter-status" class="adm-select">
+                    <option value="">All Statuses</option>
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                    <option value="Resigned">Resigned</option>
+                    <option value="Retired">Retired</option>
+                    <option value="On Leave">On Leave</option>
                 </select>
             </div>
 
             <!-- RESET -->
             <div class="adm-filters__field adm-filters__field--actions">
-                <label class="adm-label">Action</label>
-                <button id="btn-reset" class="adm-btn adm-btn--ghost">Reset</button>
+                <label class="adm-label">Reset</label>
+                <button id="btn-reset" class="adm-btn adm-btn--ghost">Reset Filters</button>
+>>>>>>> d8b24e6 (attendece and website curtomize)
             </div>
         </div>
     </div>
@@ -80,6 +156,7 @@
     <!-- TABLE -->
     <div class="adm-table-card">
         <div class="adm-table-card__body">
+<<<<<<< HEAD
             <div id="loadingOverlay" class="adm-loading adm-loading--hidden">
                 <div class="adm-loading__spinner"></div>
                 <span class="adm-loading__text">Loading employees...</span>
@@ -113,10 +190,14 @@
         <div class="adm-modal__footer">
             <button class="adm-btn adm-btn--ghost" id="cancelDeleteBtn">Cancel</button>
             <button class="adm-btn adm-btn--danger" id="confirmDeleteBtn">Delete</button>
+=======
+            <div id="employee-table"></div>
+>>>>>>> d8b24e6 (attendece and website curtomize)
         </div>
     </div>
 </div>
 
+<<<<<<< HEAD
 @section Scripts {
     <script>
         let pendingDeleteId = null;
@@ -260,6 +341,150 @@
             closeDeleteModal();
             if (data.success) reloadTable();
             else alert(data.message);
+=======
+@Html.AntiForgeryToken()
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchInput = document.getElementById('employee-search');
+            const departmentInput = document.getElementById('filter-department');
+            const designationInput = document.getElementById('filter-designation');
+            const staffTypeInput = document.getElementById('filter-stafftype');
+            const statusInput = document.getElementById('filter-status');
+
+            const table = new Tabulator("#employee-table", {
+                ajaxURL: "@Url.Action("Index")",
+                ajaxConfig: "GET",
+                pagination: true,
+                paginationMode: "remote",
+                paginationSize: 10,
+                layout: "fitColumns",
+                responsiveLayout: "collapse",
+                responsiveLayoutCollapseStartOpen: false,
+                columnMinWidth: 100,
+                movableColumns: true,
+                placeholder:
+                    "<div class='dash-empty'>" +
+                    "<i class='bi bi-people fs-1'></i>" +
+                    "<div class='dash-empty__title'>No Employees Found</div>" +
+                    "<div class='dash-empty__sub'>Try adjusting your search query or filters.</div>" +
+                    "</div>",
+                ajaxParams: getFilters(),
+                columns: [
+                    {
+                        title: "Employee",
+                        field: "fullName",
+                        widthGrow: 2,
+                        minWidth: 260,
+                        responsive: 0,
+                        formatter: function (cell) {
+                            const data = cell.getData();
+                            let avatar = "";
+                            if (data.profilePicturePath) {
+                                avatar = `<div class="adm-avatar"><img src="${data.profilePicturePath}" /></div>`;
+                            } else {
+                                avatar = `<div class="adm-avatar" style="background:var(--adm-primary); color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700;">${(data.fullName || "E").substring(0, 2).toUpperCase()}</div>`;
+                            }
+
+                            const staffBadge = data.isTeachingStaff 
+                                ? `<span class="badge bg-primary-subtle text-primary border border-primary-subtle" style="font-size:10px; margin-left:6px;">Teaching</span>`
+                                : `<span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle" style="font-size:10px; margin-left:6px;">Staff</span>`;
+
+                            return `
+                                <div class="adm-teacher-cell">
+                                    ${avatar}
+                                    <div class="adm-teacher-info">
+                                        <div class="adm-cell-name">
+                                            ${data.fullName || "-"}
+                                            ${staffBadge}
+                                        </div>
+                                        <div class="adm-cell-mono">${data.employeeCode || "-"}</div>
+                                    </div>
+                                </div>
+                            `;
+                        }
+                    },
+                    { title: "Designation", field: "designation", minWidth: 150 },
+                    { title: "Department", field: "department", minWidth: 150 },
+                    { 
+                        title: "Phone", 
+                        field: "phone", 
+                        minWidth: 140,
+                        formatter: function (cell) {
+                            return `<span class="adm-cell-phone">${cell.getValue() || "-"}</span>`;
+                        }
+                    },
+                    {
+                        title: "Status",
+                        field: "status",
+                        hozAlign: "center",
+                        minWidth: 120,
+                        formatter: function (cell) {
+                            const value = cell.getValue();
+                            let statusClass = "adm-status--pending";
+                            if (value === "Active") statusClass = "adm-status--approved";
+                            else if (value === "Inactive" || value === "Resigned" || value === "Retired") statusClass = "adm-status--rejected";
+                            
+                            return `<span class="adm-status ${statusClass}">${value || "Unknown"}</span>`;
+                        }
+                    },
+                    {
+                        title: "Actions",
+                        hozAlign: "center",
+                        headerSort: false,
+                        width: 150,
+                        minWidth: 150,
+                        cssClass: "adm-col-actions",
+                        formatter: function (cell) {
+                            const data = cell.getData();
+                            return `
+                                <div class="actions-cell">
+                                    <a href="@Url.Action("Details")/${data.id}" class="adm-action" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    <a href="@Url.Action("Edit")/${data.id}" class="adm-action adm-action--edit" title="Edit Records">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                </div>
+                            `;
+                        }
+                    }
+                ]
+            });
+
+            function getFilters() {
+                return {
+                    search: searchInput.value,
+                    departmentId: departmentInput.value || null,
+                    designationId: designationInput.value || null,
+                    isTeachingStaff: staffTypeInput.value || null,
+                    status: statusInput.value || null
+                };
+            }
+
+            function reloadTable() {
+                table.setData("@Url.Action("Index")", getFilters());
+            }
+
+            searchInput.addEventListener('keyup', function (e) {
+                if (e.key === "Enter") reloadTable();
+            });
+
+            departmentInput.addEventListener('change', reloadTable);
+            designationInput.addEventListener('change', reloadTable);
+            staffTypeInput.addEventListener('change', reloadTable);
+            statusInput.addEventListener('change', reloadTable);
+
+            document.getElementById('btn-reset').addEventListener('click', function () {
+                searchInput.value = "";
+                departmentInput.value = "";
+                designationInput.value = "";
+                staffTypeInput.value = "";
+                statusInput.value = "";
+                reloadTable();
+            });
+>>>>>>> d8b24e6 (attendece and website curtomize)
         });
     </script>
 }

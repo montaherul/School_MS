@@ -36,5 +36,44 @@ public class RoleService : IRoleService
 
         return new PagedResult<dynamic> { Items = items, Page = page, PageSize = pageSize, TotalItems = totalCount };
     }
+<<<<<<< HEAD
+=======
+
+    public async Task<List<int>> GetPermissionsByRoleIdAsync(int roleId, CancellationToken ct = default)
+    {
+        return await _unitOfWork.Repository<RolePermission>().Query()
+            .Where(rp => rp.RoleId == roleId)
+            .Select(rp => rp.PermissionId)
+            .ToListAsync(ct);
+    }
+
+    public async Task<bool> AssignPermissionsToRoleAsync(int roleId, List<int> permissionIds, CancellationToken ct = default)
+    {
+        var repo = _unitOfWork.Repository<RolePermission>();
+        
+        // Remove existing permissions
+        var existing = await repo.Query().Where(rp => rp.RoleId == roleId).ToListAsync(ct);
+        foreach (var rp in existing)
+        {
+            repo.Remove(rp);
+        }
+
+        // Add new permissions
+        foreach (var pid in permissionIds)
+        {
+            await repo.AddAsync(new RolePermission { RoleId = roleId, PermissionId = pid }, ct);
+        }
+
+        await _unitOfWork.SaveChangesAsync(ct);
+        return true;
+    }
+
+    public async Task<List<Permission>> GetAllPermissionsAsync(CancellationToken ct = default)
+    {
+        return await _unitOfWork.Repository<Permission>().Query()
+            .OrderBy(p => p.Module).ThenBy(p => p.Action)
+            .ToListAsync(ct);
+    }
+>>>>>>> d8b24e6 (attendece and website curtomize)
 }
 

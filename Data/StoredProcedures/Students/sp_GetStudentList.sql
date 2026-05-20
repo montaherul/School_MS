@@ -47,6 +47,7 @@ BEGIN
                 ELSE 'Unknown'
             END AS [Status],
             s.FatherName,
+<<<<<<< HEAD
             s.FatherOccupation,
             s.MotherName,
             s.MotherOccupation,
@@ -63,6 +64,11 @@ BEGIN
             s.PermanentPostOffice,
             s.PermanentThana,
             s.PermanentDistrict,
+=======
+            s.MotherName,
+            s.Religion,
+            s.BloodGroup,
+>>>>>>> d8b24e6 (attendece and website curtomize)
             s.CreatedAt,
             ROW_NUMBER() OVER (ORDER BY s.CreatedAt DESC) AS RowNum,
             COUNT(*) OVER () AS TotalCount
@@ -102,6 +108,7 @@ BEGIN
         ProfilePicturePath,
         [Status],
         FatherName,
+<<<<<<< HEAD
         FatherOccupation,
         MotherName,
         MotherOccupation,
@@ -118,6 +125,11 @@ BEGIN
         PermanentPostOffice,
         PermanentThana,
         PermanentDistrict,
+=======
+        MotherName,
+        Religion,
+        BloodGroup,
+>>>>>>> d8b24e6 (attendece and website curtomize)
         CreatedAt,
         TotalCount AS TotalRecords
     FROM 

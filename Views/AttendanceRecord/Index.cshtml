@@ -1,64 +1,127 @@
+@using SchoolManagementSystem.Models.DTOs.Academic
 @{
     ViewData["Title"] = "Attendance Records";
+<<<<<<< HEAD
     bool canManage = User.IsInRole(SchoolManagementSystem.Constants.Roles.SuperAdmin) || User.IsInRole(SchoolManagementSystem.Constants.Roles.Principal) || User.IsInRole(SchoolManagementSystem.Constants.Roles.Admin) || User.IsInRole(SchoolManagementSystem.Constants.Roles.Teacher);
+=======
+    bool canManage = User.IsInRole("Super Admin") || User.IsInRole("Principal")
+                  || User.IsInRole("Assistant Head") || User.IsInRole("Senior Lecturer")
+                  || User.IsInRole("Lecturer");
+
+    var classes = ViewBag.Classes as IEnumerable<SchoolClassListItemDto> ?? Enumerable.Empty<SchoolClassListItemDto>();
+    var todayStr = DateTime.Today.ToString("yyyy-MM-dd");
+>>>>>>> d8b24e6 (attendece and website curtomize)
 }
 
-<div class="page-title d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h1 class="mb-1"><i class="bi bi-calendar-check me-2"></i>Attendance</h1>
-        <p class="text-muted mb-0">Track and manage student daily attendance</p>
-    </div>
-    @if (canManage)
-    {
-        <a href="/AttendanceRecord/CreateEdit" class="btn btn-primary shadow-sm">
-            <i class="bi bi-plus-circle me-1"></i> Add Attendance
-        </a>
-    }
-</div>
+<div class="adm-page">
 
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
-        <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-}
-
-<div class="card shadow-sm mb-4">
-    <div class="card-body">
-        <div class="row g-3">
-            <div class="col-md-8">
-                <div class="input-group">
-                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-                    <input type="text" id="attendanceSearch" class="form-control border-start-0" placeholder="Search by student or remarks...">
-                    <button class="btn btn-outline-secondary" type="button" id="searchBtn">Search</button>
-                </div>
+    @* ── Page Header ── *@
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8"  y1="2" x2="8"  y2="6"></line>
+                    <line x1="3"  y1="10" x2="21" y2="10"></line>
+                    <polyline points="9 16 11 18 15 14"></polyline>
+                </svg>
             </div>
-            <div class="col-md-4 text-end">
-                <button class="btn btn-outline-secondary" id="refreshBtn">
-                    <i class="bi bi-arrow-clockwise me-1"></i> Refresh
-                </button>
+            <div>
+                <h1 class="adm-header__title">Attendance Records</h1>
+                <p class="adm-header__sub">Filter and browse student daily attendance records</p>
             </div>
         </div>
+        @if (canManage)
+        {
+            <div class="adm-btn-group">
+                <a href="@Url.Action("CreateEdit", "AttendanceRecord")" class="adm-btn adm-btn--primary">
+                    <i class="bi bi-plus-circle me-1"></i> Add Record
+                </a>
+            </div>
+        }
     </div>
-</div>
 
-<div class="card shadow-sm">
-    <div class="card-body p-0">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @* ── Filter Panel ── *@
+    <div class="adm-table-card mb-3" style="padding:20px 24px;">
+        <div class="row g-3 align-items-end">
+
+            <div class="col-md-3">
+                <label class="form-label fw-semibold small text-muted text-uppercase mb-1">Date</label>
+                <input type="date" id="filterDate" class="form-control" value="@todayStr">
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label fw-semibold small text-muted text-uppercase mb-1">Class</label>
+                <select id="filterClass" class="form-select">
+                    <option value="">— All Classes —</option>
+                    @foreach (var c in classes)
+                    {
+                        <option value="@c.Id">@c.Name</option>
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label fw-semibold small text-muted text-uppercase mb-1">Section</label>
+                <select id="filterSection" class="form-select" disabled>
+                    <option value="">— All Sections —</option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label fw-semibold small text-muted text-uppercase mb-1">Search</label>
+                <div class="input-group">
+                    <input type="text" id="filterSearch" class="form-control" placeholder="Name / student ID / remarks…">
+                    <button class="btn btn-primary" id="btnApply" type="button" title="Apply filters">
+                        <i class="bi bi-funnel-fill"></i>
+                    </button>
+                    <button class="btn btn-outline-secondary" id="btnReset" type="button" title="Clear all filters">
+                        <i class="bi bi-x-circle"></i>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        @* Summary badge — shown after data loads *@
+        <div id="summaryBadges" class="mt-3 d-flex gap-2 flex-wrap" style="display:none !important;"></div>
+    </div>
+
+    @* ── Tabulator Grid ── *@
+    <div class="adm-table-card p-0">
         <div id="attendance-table"></div>
     </div>
+
+    @* ── AJAX error toast ── *@
+    <div id="ajaxErrorToast" class="alert alert-danger d-none mt-3" role="alert">
+        <i class="bi bi-exclamation-circle me-2"></i>
+        <span id="ajaxErrorMsg">Failed to load attendance records. Please try again.</span>
+    </div>
+
 </div>
 
-<!-- Delete Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1">
+@* ── Delete Confirmation Modal ── *@
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Confirm Delete</h5>
+                <h5 class="modal-title text-danger" id="deleteModalLabel">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Confirm Delete
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                Are you sure you want to delete this attendance record?
+            <div class="modal-body pt-2">
+                Are you sure you want to permanently delete this attendance record?
             </div>
             <div class="modal-footer border-0 pt-0">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -71,106 +134,285 @@
 </div>
 
 @section Scripts {
-    <script>
-        var pendingDeleteId = null;
-        var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+<script>
+(function () {
+    'use strict';
 
-        var table = new Tabulator("#attendance-table", {
-            height: "calc(100vh - 300px)",
-            layout: "fitColumns",
-            pagination: "remote",
-            ajaxURL: '@Url.Action("GetList", "AttendanceRecord")',
-            paginationSize: 10,
-            ajaxConfig: "GET",
-            ajaxResponse: function(url, params, response) {
-                return {
-                    data: response.data,
-                    last_page: response.last_page
-                };
-            },
-            columns: [
-                { title: "Student", field: "studentName", widthGrow: 2, formatter: function(cell) {
-                    return `<div class="fw-bold">${cell.getValue()}</div><small class="text-muted">ID: ${cell.getData().studentId}</small>`;
-                }},
-                { title: "Class", field: "className", widthGrow: 1 },
-                { title: "Section", field: "sectionName", widthGrow: 1 },
-                { title: "Status", field: "status", width: 120, hozAlign: "center", formatter: function(cell) {
-                    var val = cell.getValue();
-                    var badge = "bg-secondary";
-                    var text = "Unknown";
-                    
-                    if (val === 1) { badge = "bg-success"; text = "Present"; }
-                    else if (val === 2) { badge = "bg-danger"; text = "Absent"; }
-                    else if (val === 3) { badge = "bg-warning text-dark"; text = "Late"; }
-                    else if (val === 4) { badge = "bg-info text-dark"; text = "Excused"; }
-                    
-                    return `<span class="badge ${badge}">${text}</span>`;
-                }},
-                { title: "Remarks", field: "remarks", widthGrow: 2, formatter: function(cell) {
-                    return cell.getValue() || '<span class="text-muted small italic">No remarks</span>';
-                }},
-                @if (canManage)
-                {
-                    <text>
-                    { title: "Actions", field: "id", hozAlign: "right", headerSort: false, width: 140, formatter: function(cell) {
-                        return `
-                            <div class="btn-group btn-group-sm">
-                                <a href="/AttendanceRecord/CreateEdit/${cell.getValue()}" class="btn btn-outline-primary" title="Edit"><i class="bi bi-pencil"></i></a>
-                                <button class="btn btn-outline-danger delete-btn" title="Delete"><i class="bi bi-trash"></i></button>
-                            </div>
-                        `;
-                    }, cellClick: function(e, cell) {
-                        if (e.target.closest('.delete-btn')) {
-                            pendingDeleteId = cell.getValue();
-                            deleteModal.show();
+    /* ── Server-rendered URLs (no hardcoded paths) ── */
+    var LIST_URL     = '@Url.Action("GetList",            "AttendanceRecord")';
+    var SECTIONS_URL = '@Url.Action("GetSectionsByClass", "AttendanceRecord")';
+    var EDIT_URL     = '@Url.Action("CreateEdit",         "AttendanceRecord")';
+    var DELETE_URL   = '@Url.Action("DeleteConfirmed",    "AttendanceRecord")';
+    var TODAY        = '@todayStr';
+
+    /* ── State ── */
+    var pendingDeleteId = null;
+    var deleteModal     = new bootstrap.Modal(document.getElementById('deleteModal'));
+
+    /* ── Status badge helper ── */
+    var STATUS_MAP = {
+        1: { label: 'Present', cls: 'bg-success' },
+        2: { label: 'Absent',  cls: 'bg-danger'  },
+        3: { label: 'Late',    cls: 'bg-warning text-dark' },
+        4: { label: 'Leave',   cls: 'bg-info text-dark'   }
+    };
+
+    function statusBadge(val) {
+        var s = STATUS_MAP[val] || { label: 'Unknown', cls: 'bg-secondary' };
+        return '<span class="badge ' + s.cls + ' px-2 py-1">' + s.label + '</span>';
+    }
+
+    /* ── Read current filter values ── */
+    function readFilters() {
+        return {
+            classId        : document.getElementById('filterClass').value.trim(),
+            sectionId      : document.getElementById('filterSection').value.trim(),
+            attendanceDate : document.getElementById('filterDate').value.trim(),
+            search         : document.getElementById('filterSearch').value.trim()
+        };
+    }
+
+    /* ── Build URL with current filters ──
+       We construct a full URL with querystring so Tabulator always sends the right params.   */
+    function buildListUrl() {
+        var f   = readFilters();
+        var qs  = [];
+        if (f.classId)        qs.push('classId='        + encodeURIComponent(f.classId));
+        if (f.sectionId)      qs.push('sectionId='      + encodeURIComponent(f.sectionId));
+        if (f.attendanceDate) qs.push('attendanceDate=' + encodeURIComponent(f.attendanceDate));
+        if (f.search)         qs.push('search='         + encodeURIComponent(f.search));
+        return LIST_URL + (qs.length ? '?' + qs.join('&') : '');
+    }
+
+    /* ── Summary badge ── */
+    function updateSummary(total) {
+        var el = document.getElementById('summaryBadges');
+        if (total > 0) {
+            el.style.cssText = '';          // clear inline display:none
+            el.style.display = 'flex';
+            el.innerHTML = '<span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2">'
+                + '<i class="bi bi-list-check me-1"></i>' + total + ' record(s) found</span>';
+        } else {
+            el.style.display = 'none';
+        }
+    }
+
+    /* ── Error toast ── */
+    function showError(msg) {
+        var el = document.getElementById('ajaxErrorToast');
+        document.getElementById('ajaxErrorMsg').textContent = msg || 'Failed to load records.';
+        el.classList.remove('d-none');
+        setTimeout(function () { el.classList.add('d-none'); }, 6000);
+    }
+
+    /* ── Tabulator init ── */
+    var table = new Tabulator('#attendance-table', {
+        height         : 'calc(100vh - 380px)',
+        layout         : 'fitColumns',
+        pagination     : true,
+        paginationMode : 'remote',
+        ajaxURL        : buildListUrl(),     /* set initially; updated on filter apply */
+        paginationSize : 15,
+        paginationSizeSelector: [10, 15, 25, 50],
+        ajaxConfig     : {
+            method  : 'GET',
+            headers : { 'X-Requested-With': 'XMLHttpRequest' }
+        },
+        /* Parse server response into Tabulator's expected shape */
+        ajaxResponse: function (url, params, response) {
+            /* Guard against non-object or error responses */
+            if (!response || typeof response !== 'object') {
+                showError('Invalid response from server.');
+                return { last_page: 1, data: [] };
+            }
+            var rows     = Array.isArray(response.data) ? response.data : [];
+            var lastPage = (typeof response.last_page === 'number' && response.last_page >= 1)
+                           ? response.last_page : 1;
+            var total    = response.total_records || rows.length;
+
+            updateSummary(total);
+            return { last_page: lastPage, data: rows };
+        },
+        /* Handle HTTP / network errors gracefully */
+        ajaxError: function (error) {
+            console.error('[AttendanceRecord] AJAX error:', error);
+            showError('Server error loading attendance records (' + (error.status || '') + ').');
+        },
+        columns: [
+            {
+                title    : 'Date',
+                field    : 'attendanceDate',
+                width    : 120,
+                sorter   : 'string',
+                formatter: function (cell) {
+                    var v = cell.getValue();
+                    if (!v) return '<span class="text-muted">—</span>';
+                    /* DateOnly serialises as "YYYY-MM-DD" */
+                    try {
+                        var parts = String(v).substring(0, 10).split('-');
+                        if (parts.length === 3) {
+                            var d = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+                            v = d.toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
                         }
-                    }}
-                    </text>
+                    } catch (e) { /* fallback to raw value */ }
+                    return '<span class="fw-semibold text-primary">' + v + '</span>';
                 }
-            ],
-            placeholder: "<div class='p-4 text-center text-muted'>No attendance records found</div>"
-        });
-
-        document.getElementById('searchBtn').addEventListener('click', function() {
-            var search = document.getElementById('attendanceSearch').value;
-            table.setData('@Url.Action("GetList", "AttendanceRecord")', { search: search });
-        });
-
-        document.getElementById('attendanceSearch').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') document.getElementById('searchBtn').click();
-        });
-
-        document.getElementById('refreshBtn').addEventListener('click', function() {
-            table.setData();
-        });
-
-        document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
-            if (!pendingDeleteId) return;
-            
-            var token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
-            
-            var formData = new FormData();
-            formData.append('id', pendingDeleteId);
-            if (token) formData.append('__RequestVerificationToken', token);
-
-            fetch('/AttendanceRecord/DeleteConfirmed/' + pendingDeleteId, {
-                method: 'POST',
-                headers: {
-                    'RequestVerificationToken': token
+            },
+            {
+                title    : 'Student',
+                field    : 'studentName',
+                widthGrow: 2,
+                formatter: function (cell) {
+                    var name = cell.getValue() || '—';
+                    var id   = (cell.getData() || {}).studentId || '';
+                    return '<div class="fw-bold">' + name + '</div>'
+                         + '<small class="text-muted">Student ID: ' + id + '</small>';
                 }
-            }).then(res => {
-                deleteModal.hide();
-                table.setData();
+            },
+            {
+                title    : 'Class',
+                field    : 'className',
+                widthGrow: 1
+            },
+            {
+                title    : 'Section',
+                field    : 'sectionName',
+                widthGrow: 1
+            },
+            {
+                title    : 'Status',
+                field    : 'status',
+                width    : 100,
+                hozAlign : 'center',
+                formatter: function (cell) { return statusBadge(cell.getValue()); }
+            },
+            {
+                title    : 'Remarks',
+                field    : 'remarks',
+                widthGrow: 2,
+                formatter: function (cell) {
+                    var v = cell.getValue();
+                    return v ? v : '<span class="text-muted fst-italic small">No remarks</span>';
+                }
+            }
+            @if (canManage)
+            {
+                <text>
+            ,{
+                title      : 'Actions',
+                field      : 'id',
+                hozAlign   : 'right',
+                headerSort : false,
+                width      : 110,
+                formatter  : function (cell) {
+                    var id = cell.getValue();
+                    return '<div class="btn-group btn-group-sm">'
+                        + '<a href="' + EDIT_URL + '/' + id + '" class="btn btn-outline-primary" title="Edit"><i class="bi bi-pencil"></i></a>'
+                        + '<button class="btn btn-outline-danger delete-btn" data-id="' + id + '" title="Delete"><i class="bi bi-trash"></i></button>'
+                        + '</div>';
+                },
+                cellClick  : function (e, cell) {
+                    var btn = e.target.closest('.delete-btn');
+                    if (btn) {
+                        pendingDeleteId = cell.getValue();
+                        deleteModal.show();
+                    }
+                }
+            }
+                </text>
+            }
+        ],
+        placeholder: '<div class="p-5 text-center text-muted"><i class="bi bi-calendar-x fs-1 d-block mb-2 opacity-50"></i>No attendance records found for the selected filters</div>'
+    });
+
+    /* ── Apply filters: rebuild URL then reload data ── */
+    function applyFilters() {
+        var newUrl = buildListUrl();
+        table.setPage(1);
+        table.setData(newUrl);
+    }
+
+    document.getElementById('btnApply').addEventListener('click', applyFilters);
+    document.getElementById('filterSearch').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') applyFilters();
+    });
+
+    /* ── Reset all filters ── */
+    document.getElementById('btnReset').addEventListener('click', function () {
+        document.getElementById('filterDate').value    = TODAY;
+        document.getElementById('filterClass').value   = '';
+        document.getElementById('filterSection').innerHTML = '<option value="">— All Sections —</option>';
+        document.getElementById('filterSection').disabled  = true;
+        document.getElementById('filterSearch').value  = '';
+        applyFilters();
+    });
+
+    /* ── Class → Section cascade dropdown ── */
+    document.getElementById('filterClass').addEventListener('change', function () {
+        var classId   = this.value;
+        var secSelect = document.getElementById('filterSection');
+        secSelect.innerHTML = '<option value="">— All Sections —</option>';
+        secSelect.disabled  = true;
+
+        if (!classId) return;
+
+        fetch(SECTIONS_URL + '?classId=' + encodeURIComponent(classId))
+            .then(function (r) {
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                return r.json();
+            })
+            .then(function (sections) {
+                if (!Array.isArray(sections) || sections.length === 0) return;
+                sections.forEach(function (s) {
+                    var opt = document.createElement('option');
+                    opt.value       = s.id;
+                    opt.textContent = s.name;
+                    secSelect.appendChild(opt);
+                });
+                secSelect.disabled = false;
+            })
+            .catch(function (err) {
+                console.warn('[AttendanceRecord] GetSectionsByClass failed:', err);
+                secSelect.disabled = true;
             });
-        });
-    </script>
+    });
 
-    <style>
-        .tabulator { border: none !important; }
-        .tabulator .tabulator-header { background-color: #f8f9fa; border-bottom: 1px solid #e2e8f0; }
-        .tabulator .tabulator-header .tabulator-col { background-color: #f8f9fa; font-weight: 700; color: #475569; padding: 12px 8px; }
-        .tabulator .tabulator-row { border-bottom: 1px solid #f1f5f9; }
-        .tabulator .tabulator-row:hover { background-color: #f8fafc !important; }
-        .tabulator .tabulator-row .tabulator-cell { padding: 12px 8px; vertical-align: middle; }
-    </style>
+    /* ── Confirm delete ── */
+    document.getElementById('confirmDeleteBtn').addEventListener('click', function () {
+        if (!pendingDeleteId) return;
+        var tokenInput = document.querySelector('input[name="__RequestVerificationToken"]');
+
+        fetch(DELETE_URL + '/' + pendingDeleteId, {
+            method : 'POST',
+            headers: tokenInput ? { 'RequestVerificationToken': tokenInput.value } : {}
+        })
+        .then(function (r) {
+            deleteModal.hide();
+            if (r.ok || r.redirected) {
+                applyFilters();
+            } else {
+                showError('Delete failed (HTTP ' + r.status + ').');
+            }
+        })
+        .catch(function (err) {
+            deleteModal.hide();
+            showError('Delete request failed: ' + err.message);
+        });
+    });
+
+}());
+</script>
+
+<style>
+    /* ── Tabulator overrides ── */
+    #attendance-table .tabulator              { border: none !important; border-radius: 0; }
+    #attendance-table .tabulator-header       { background: var(--adm-bg-2, #f8f9fa); border-bottom: 1px solid var(--adm-border, #e2e8f0); }
+    #attendance-table .tabulator-col          { background: transparent; font-weight: 700; color: #475569; padding: 12px 10px; }
+    #attendance-table .tabulator-col-title    { white-space: nowrap; }
+    #attendance-table .tabulator-row          { border-bottom: 1px solid #f1f5f9; transition: background .15s; }
+    #attendance-table .tabulator-row:hover    { background: #f8fafc !important; }
+    #attendance-table .tabulator-cell         { padding: 11px 10px; vertical-align: middle; }
+    #attendance-table .tabulator-footer       { background: var(--adm-bg-2, #f8f9fa); border-top: 1px solid #e2e8f0; padding: 8px 12px; }
+    #attendance-table .tabulator-placeholder  { min-height: 200px; display: flex; align-items: center; justify-content: center; }
+</style>
 }

@@ -4,13 +4,17 @@ using Microsoft.Extensions.Logging;
 using SchoolManagementSystem.Data;
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
+<<<<<<< HEAD
 
 using SchoolManagementSystem.Data.Seeders;
+=======
+>>>>>>> d8b24e6 (attendece and website curtomize)
 
 namespace SchoolManagementSystem.Services.Implementations.Academic;
 
 public class ClassSubjectMappingSeeder : IDataSeeder
 {
+<<<<<<< HEAD
     public int Order => 3;
     public string Name => "ClassSubjectMappingSeeder";
 
@@ -18,6 +22,12 @@ public class ClassSubjectMappingSeeder : IDataSeeder
     private readonly IUnitOfWork _uow;
     private readonly ILogger<ClassSubjectMappingSeeder> _logger;
 
+=======
+    private readonly SchoolDbContext _db;
+    private readonly IUnitOfWork _uow;
+    private readonly ILogger<ClassSubjectMappingSeeder> _logger;
+
+>>>>>>> d8b24e6 (attendece and website curtomize)
     public ClassSubjectMappingSeeder(
         SchoolDbContext db,
         IUnitOfWork uow,
@@ -137,7 +147,7 @@ public class ClassSubjectMappingSeeder : IDataSeeder
             "BAN",       // বাংলা
             "ENG",       // ইংরেজি
             "MAT",       // গণিত
-            "SCI",   // প্রাথমিক বিজ্ঞান
+            "GSCI",   // প্রাথমিক বিজ্ঞান
             "SOC",       // বাংলাদেশ ও বিশ্ব পরিচয়
             "ICT",       // ICT
             "PE",        // শারীরিক শিক্ষা

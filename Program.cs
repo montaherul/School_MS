@@ -2,7 +2,10 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Data;
+<<<<<<< HEAD
 using SchoolManagementSystem.Data.Seeders;
+=======
+>>>>>>> d8b24e6 (attendece and website curtomize)
 using SchoolManagementSystem.Extensions;
 using SchoolManagementSystem.Helpers.Email;
 using SchoolManagementSystem.Helpers.Pdf;
@@ -13,22 +16,39 @@ using SchoolManagementSystem.Repositories.Interfaces;
 using SchoolManagementSystem.Service.Implementations.Dashboard;
 using SchoolManagementSystem.Service.Interfaces.Dashboard;
 using SchoolManagementSystem.Services.Implementations.Academic;
+<<<<<<< HEAD
+=======
+using SchoolManagementSystem.Services.Implementations.Admin;
+>>>>>>> d8b24e6 (attendece and website curtomize)
 using SchoolManagementSystem.Services.Implementations.Admissions;
+using SchoolManagementSystem.Services.Implementations.Assignment;
+using SchoolManagementSystem.Services.Implementations.Attendance;
+using SchoolManagementSystem.Services.Implementations.Auth;
 using SchoolManagementSystem.Services.Implementations.Email;
 using SchoolManagementSystem.Services.Implementations.Result;
 using SchoolManagementSystem.Services.Implementations.Students;
 using SchoolManagementSystem.Services.Implementations.Teachers;
+<<<<<<< HEAD
+=======
+using SchoolManagementSystem.Services.Interfaces.Admin;
+>>>>>>> d8b24e6 (attendece and website curtomize)
 using SchoolManagementSystem.Services.Interfaces.Admissions;
+using SchoolManagementSystem.Services.Interfaces.Assignment;
+using SchoolManagementSystem.Services.Interfaces.Attendance;
+using SchoolManagementSystem.Services.Interfaces.Auth;
 using SchoolManagementSystem.Services.Interfaces.Email;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.Services.Interfaces.Students;
 using SchoolManagementSystem.Services.Interfaces.Teachers;
+<<<<<<< HEAD
 using SchoolManagementSystem.Services.Implementations.Admin;
 using SchoolManagementSystem.Services.Implementations.Assignment;
 using SchoolManagementSystem.Services.Implementations.Auth;
 using SchoolManagementSystem.Services.Interfaces.Admin;
 using SchoolManagementSystem.Services.Interfaces.Assignment;
 using SchoolManagementSystem.Services.Interfaces.Auth;
+=======
+>>>>>>> d8b24e6 (attendece and website curtomize)
 using SchoolManagementSystem.UnitOfWork.Implementations;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 
@@ -87,15 +107,26 @@ builder.Services.AddScoped<SchoolManagementSystem.Services.Interfaces.Academic.I
 builder.Services.AddScoped<SchoolManagementSystem.Services.Interfaces.Academic.ISchoolClassService, SchoolManagementSystem.Services.Implementations.Academic.SchoolClassService>();
 builder.Services.AddScoped<SchoolManagementSystem.Services.Interfaces.Academic.ISectionService, SchoolManagementSystem.Services.Implementations.Academic.SectionService>();
 builder.Services.AddScoped<SchoolManagementSystem.Services.Interfaces.Academic.ISubjectService, SchoolManagementSystem.Services.Implementations.Academic.SubjectService>();
+<<<<<<< HEAD
 builder.Services.AddScoped<SchoolManagementSystem.Services.Interfaces.Fees.IPaymentService, SchoolManagementSystem.Services.Implementations.Fees.PaymentService>();
 builder.Services.AddScoped(typeof(SchoolManagementSystem.Services.Interfaces.Base.IBaseService<>), typeof(SchoolManagementSystem.Services.Implementations.Base.BaseService<>));
 builder.Services.AddScoped<ITeacherAssignmentService, TeacherAssignmentService>();
+=======
+builder.Services.AddScoped<SchoolManagementSystem.Services.Interfaces.Academic.IClassSubjectMappingService, SchoolManagementSystem.Services.Implementations.Academic.ClassSubjectMappingService>();
+builder.Services.AddScoped<SchoolManagementSystem.Services.Interfaces.Fees.IPaymentService, SchoolManagementSystem.Services.Implementations.Fees.PaymentService>();
+builder.Services.AddScoped(typeof(SchoolManagementSystem.Services.Interfaces.Base.IBaseService<>), typeof(SchoolManagementSystem.Services.Implementations.Base.BaseService<>));
+>>>>>>> d8b24e6 (attendece and website curtomize)
 builder.Services.AddScoped<IExamService, ExamService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<IRoleService, RoleService>();
 builder.Services.AddScoped<IAssignmentService, AssignmentService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ClassSubjectMappingSeeder>();
+<<<<<<< HEAD
+=======
+builder.Services.AddScoped<SchoolManagementSystem.Services.Implementations.Website.WebsiteSeeder>();
+builder.Services.AddScoped<IAttendanceRecordService, AttendanceRecordService>();
+>>>>>>> d8b24e6 (attendece and website curtomize)
 
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
@@ -105,21 +136,26 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddSchoolHealthChecks(builder.Configuration);
 var app = builder.Build();
 
+<<<<<<< HEAD
+=======
+app.UseStatusCodePagesWithReExecute("/Error/Index", "?statusCode={0}");
+>>>>>>> d8b24e6 (attendece and website curtomize)
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
 }
 else
 {
+<<<<<<< HEAD
     app.UseMiddleware<GlobalExceptionMiddleware>();
+=======
+    app.UseExceptionHandler("/Error/Index");
+>>>>>>> d8b24e6 (attendece and website curtomize)
     app.UseHsts();
 }
 
-//app.UseHttpsRedirection();commnnt out for ip run
 app.UseStaticFiles();
-
 app.UseRouting();
-
 app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
@@ -132,8 +168,22 @@ app.MapControllerRoute(
 
 await using (var scope = app.Services.CreateAsyncScope())
 {
+<<<<<<< HEAD
     var runner = scope.ServiceProvider.GetRequiredService<IDataSeederRunner>();
     await runner.RunAllAsync();
+=======
+    var seeder = scope.ServiceProvider.GetRequiredService<ClassSubjectMappingSeeder>();
+    await seeder.SeedAsync();
+
+    var seederEmployee = scope.ServiceProvider.GetRequiredService<SchoolManagementSystem.Services.Implementations.Employee.EmployeeModuleSeeder>();
+    await seederEmployee.SeedAsync();
+
+    var seederWebsite = scope.ServiceProvider.GetRequiredService<SchoolManagementSystem.Services.Implementations.Website.WebsiteSeeder>();
+    await seederWebsite.SeedAsync();
+
+    var db = scope.ServiceProvider.GetRequiredService<SchoolDbContext>();
+    await FinanceRbacSeeder.SeedAsync(db);
+>>>>>>> d8b24e6 (attendece and website curtomize)
 }
 
 app.Run();

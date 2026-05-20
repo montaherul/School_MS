@@ -6,6 +6,7 @@ using SchoolManagementSystem.Models.DTOs.Academic;
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Models.ViewModels.Academic;
 using SchoolManagementSystem.Services.Interfaces.Academic;
+using SchoolManagementSystem.Services.Interfaces.Teachers;
 using System.Security.Claims;
 
 namespace SchoolManagementSystem.Controllers.Academic;
@@ -15,11 +16,21 @@ public class SectionController : Controller
 {
     private readonly ISectionService _service;
     private readonly ISchoolClassService _classService;
+<<<<<<< HEAD
 
     public SectionController(ISectionService service, ISchoolClassService classService)
     {
         _service = service;
         _classService = classService;
+=======
+    private readonly ITeacherScopeService _teacherScopeService;
+
+    public SectionController(ISectionService service, ISchoolClassService classService, ITeacherScopeService teacherScopeService)
+    {
+        _service = service;
+        _classService = classService;
+        _teacherScopeService = teacherScopeService;
+>>>>>>> d8b24e6 (attendece and website curtomize)
     }
 
     [RequirePermission("Sections.View")]
@@ -42,10 +53,31 @@ public class SectionController : Controller
     }
 
     [HttpGet]
+<<<<<<< HEAD
     [RequirePermission("Sections.View")]
     public async Task<IActionResult> GetSectionsByClass(int classId, CancellationToken ct)
     {
         var sections = await _service.GetByClassIdAsync(classId, ct);
+=======
+    public async Task<IActionResult> GetSectionsByClass(int classId, CancellationToken ct)
+    {
+        var sections = await _service.GetByClassIdAsync(classId, ct);
+        
+        bool isStaff = User.IsInRole("Super Admin") || User.IsInRole("Admin") || User.IsInRole("Principal") || User.IsInRole("Assistant Head");
+        if (!isStaff)
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (int.TryParse(userIdStr, out var userId))
+            {
+                var assignedSectionIds = await _teacherScopeService.GetAssignedSectionIdsAsync(userId, classId, ct);
+                sections = sections.Where(s => assignedSectionIds.Contains(s.Id)).ToList();
+            }
+            else
+            {
+                sections = new List<SectionOptionDto>();
+            }
+        }
+>>>>>>> d8b24e6 (attendece and website curtomize)
         return Json(sections);
     }
 

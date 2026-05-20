@@ -13,6 +13,7 @@ public class AttendanceRecordListItemDto
     public string SectionName { get; set; } = string.Empty;
     public SchoolManagementSystem.Models.Enums.AttendanceStatus Status { get; set; }
     public string Remarks { get; set; } = string.Empty;
+    public DateOnly AttendanceDate { get; set; }
     public int TotalRecords { get; set; }
 }
 

@@ -3,7 +3,10 @@ using Microsoft.AspNetCore.Mvc;
 using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.Services.Interfaces.Academic;
+<<<<<<< HEAD
 using SchoolManagementSystem.Constants;
+=======
+>>>>>>> d8b24e6 (attendece and website curtomize)
 
 namespace SchoolManagementSystem.Controllers.Result;
 
@@ -31,7 +34,11 @@ public class AdminResultController : Controller
     }
 
     [HttpGet]
+<<<<<<< HEAD
     [Authorize(Roles = Roles.Admin + "," + Roles.SuperAdmin + "," + Roles.Principal)]
+=======
+    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+>>>>>>> d8b24e6 (attendece and website curtomize)
     public async Task<IActionResult> Dashboard()
     {
         var dashboardData = await _analyticsService.GetAdminDashboardAsync();
@@ -49,7 +56,11 @@ public class AdminResultController : Controller
     }
 
     [HttpGet]
+<<<<<<< HEAD
     [Authorize(Roles = Roles.Admin + "," + Roles.SuperAdmin + "," + Roles.Principal)]
+=======
+    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+>>>>>>> d8b24e6 (attendece and website curtomize)
     public async Task<IActionResult> AllSubjects(CancellationToken ct)
     {
         var groupedSubjects = await _subjectService.GetGroupedSubjectsAsync(ct);
@@ -58,7 +69,11 @@ public class AdminResultController : Controller
     }
 
     [HttpGet]
+<<<<<<< HEAD
     [Authorize(Roles = Roles.Admin + "," + Roles.SuperAdmin + "," + Roles.Principal)]
+=======
+    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+>>>>>>> d8b24e6 (attendece and website curtomize)
     public async Task<IActionResult> AllResults(int? examId, int? classId, string? status, CancellationToken ct)
     {
         var results = await _publicationService.GetAllResultsAsync(examId, classId, status);
@@ -71,7 +86,11 @@ public class AdminResultController : Controller
     }
 
     [HttpGet]
+<<<<<<< HEAD
     [Authorize(Roles = Roles.Admin + "," + Roles.SuperAdmin + "," + Roles.Principal)]
+=======
+    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+>>>>>>> d8b24e6 (attendece and website curtomize)
     public async Task<IActionResult> TabulationSheet(int examId, int? classId, int? sectionId, CancellationToken ct)
     {
         var tabulationSheet = await _analyticsService.GetTabulationSheetAsync(examId, classId, sectionId);
@@ -86,7 +105,11 @@ public class AdminResultController : Controller
     }
 
     [HttpGet]
+<<<<<<< HEAD
     [Authorize(Roles = Roles.Admin + "," + Roles.SuperAdmin + "," + Roles.Principal)]
+=======
+    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+>>>>>>> d8b24e6 (attendece and website curtomize)
     public async Task<IActionResult> MeritLists(int examId, CancellationToken ct)
     {
         var exam = await _examService.GetExamByIdAsync(examId, ct);
@@ -102,7 +125,11 @@ public class AdminResultController : Controller
     }
 
     [HttpGet]
+<<<<<<< HEAD
     [Authorize(Roles = Roles.Admin + "," + Roles.SuperAdmin + "," + Roles.Principal)]
+=======
+    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+>>>>>>> d8b24e6 (attendece and website curtomize)
     public async Task<IActionResult> SubjectAnalysis(int examId, CancellationToken ct)
     {
         var exam = await _examService.GetExamByIdAsync(examId, ct);
@@ -113,7 +140,11 @@ public class AdminResultController : Controller
     }
 
     [HttpGet]
+<<<<<<< HEAD
     [Authorize(Roles = Roles.Admin + "," + Roles.SuperAdmin + "," + Roles.Principal)]
+=======
+    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+>>>>>>> d8b24e6 (attendece and website curtomize)
     public async Task<IActionResult> ResultPublishing()
     {
         var resultPublications = await _publicationService.GetResultPublicationsAsync();
@@ -121,7 +152,11 @@ public class AdminResultController : Controller
     }
 
     [HttpPost]
+<<<<<<< HEAD
     [Authorize(Roles = Roles.Admin + "," + Roles.SuperAdmin + "," + Roles.Principal)]
+=======
+    [Authorize(Roles = "Admin,Super Admin,Principal")]
+>>>>>>> d8b24e6 (attendece and website curtomize)
     public async Task<IActionResult> RecalculateResults(int examId)
     {
         try
@@ -137,7 +172,11 @@ public class AdminResultController : Controller
     }
 
     [HttpPost]
+<<<<<<< HEAD
     [Authorize(Roles = Roles.Admin + "," + Roles.SuperAdmin + "," + Roles.Principal)]
+=======
+    [Authorize(Roles = "Admin,Super Admin,Principal")]
+>>>>>>> d8b24e6 (attendece and website curtomize)
     public async Task<IActionResult> RecalculateMeritPositions(int examId)
     {
         try

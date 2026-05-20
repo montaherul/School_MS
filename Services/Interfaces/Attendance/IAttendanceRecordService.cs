@@ -5,11 +5,20 @@ namespace SchoolManagementSystem.Services.Interfaces.Attendance;
 
 public interface IAttendanceRecordService
 {
-    Task<PagedResult<AttendanceRecordListItemDto>> GetPagedAsync(int page, int pageSize, string? search, int? studentId = null, CancellationToken cancellationToken = default);
+    Task<PagedResult<AttendanceRecordListItemDto>> GetPagedAsync(
+        int page, int pageSize, string? search,
+        int? studentId = null,
+        int? classId   = null,
+        int? sectionId = null,
+        DateOnly? attendanceDate = null,
+        CancellationToken cancellationToken = default);
+
+<<<<<<< HEAD
+
+=======
     Task<AttendanceRecordUpsertDto?> GetForEditAsync(int id, CancellationToken cancellationToken = default);
-    Task<int> CreateAsync(AttendanceRecordUpsertDto dto, string createdBy, CancellationToken cancellationToken = default);
-    Task UpdateAsync(AttendanceRecordUpsertDto dto, string updatedBy, CancellationToken cancellationToken = default);
-    Task DeleteAsync(int id, string updatedBy, CancellationToken cancellationToken = default);
+    Task<int>  CreateAsync(AttendanceRecordUpsertDto dto, string createdBy, CancellationToken cancellationToken = default);
+    Task       UpdateAsync(AttendanceRecordUpsertDto dto, string updatedBy, CancellationToken cancellationToken = default);
+    Task       DeleteAsync(int id, string updatedBy, CancellationToken cancellationToken = default);
 }
-
-
+>>>>>>> d8b24e6 (attendece and website curtomize)

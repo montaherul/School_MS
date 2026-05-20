@@ -2,6 +2,7 @@
 @using System.Text.Json
 @{
     ViewData["Title"] = "Dashboard";
+    bool Can(string permissionCode) => User.IsInRole("Super Admin") || User.HasClaim("Permission", permissionCode);
 }
 
 <div class="adm-page">
@@ -24,7 +25,11 @@
     </div>
 
     <!-- ── Metric Cards ── -->
+<<<<<<< HEAD
     <div class="dash-stats" style="grid-template-columns: repeat(5,1fr);">
+=======
+    <div class="dash-stats" style="grid-template-columns: repeat(6,1fr);">
+>>>>>>> d8b24e6 (attendece and website curtomize)
         <div class="dash-stat-card">
             <div class="dash-stat-card__icon dash-stat-card__icon--primary">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
@@ -35,6 +40,18 @@
             </div>
         </div>
         <div class="dash-stat-card">
+<<<<<<< HEAD
+=======
+            <div class="dash-stat-card__icon" style="background: rgba(13,148,136,.1); color: #0d9488;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Employees</span>
+                <span class="dash-stat-card__value">@Model.TotalEmployees</span>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+>>>>>>> d8b24e6 (attendece and website curtomize)
             <div class="dash-stat-card__icon dash-stat-card__icon--warning">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c0 2 4 3 6 3s6-1 6-3v-5" /></svg>
             </div>
@@ -71,6 +88,7 @@
             </div>
         </div>
     </div>
+<<<<<<< HEAD
     
     <!-- ── Staff Attendance Metrics ── -->
     <div class="dash-stats mt-4" style="grid-template-columns: repeat(4,1fr);">
@@ -173,6 +191,8 @@
             </div>
         </div>
     </div>
+=======
+>>>>>>> d8b24e6 (attendece and website curtomize)
 
     <!-- ── Charts + Activity + Modules ── -->
     <div class="dash-main-grid">
@@ -204,6 +224,116 @@
             <div id="activity-table"></div>
         </div>
 
+<<<<<<< HEAD
+=======
+        <!-- Academic Assignment Summary -->
+        <div class="dash-panel">
+            <div class="dash-panel__header">
+                <h2 class="dash-panel__title">
+                    <i class="bi bi-person-workspace" style="color:var(--adm-primary);"></i>
+                    Academic Assignment Summary
+                </h2>
+            </div>
+            <div class="p-4">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded">
+                            <h6 class="fw-bold mb-2">Classes</h6>
+                            <div class="d-flex justify-content-between">
+                                <span>Total Classes:</span>
+                                <span class="fw-bold">@Model.TotalClasses</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Assigned:</span>
+                                <span class="text-success">@Model.AssignedClasses</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Unassigned:</span>
+                                <span class="@(Model.UnassignedClasses > 0 ? "text-danger" : "text-muted")">@Model.UnassignedClasses</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 border rounded">
+                            <h6 class="fw-bold mb-2">Subjects</h6>
+                            <div class="d-flex justify-content-between">
+                                <span>Total Subjects:</span>
+                                <span class="fw-bold">@Model.TotalSubjects</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Assigned:</span>
+                                <span class="text-success">@Model.AssignedSubjects</span>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span>Unassigned:</span>
+                                <span class="@(Model.UnassignedSubjects > 0 ? "text-danger" : "text-muted")">@Model.UnassignedSubjects</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 d-flex flex-wrap gap-2">
+                    <a href="/Teacher/Index" class="adm-btn adm-btn--sm adm-btn--primary">Manage Assignments</a>
+                    <a href="/Teacher/Logs" class="adm-btn adm-btn--sm adm-btn--ghost">Assignment Logs</a>
+                    <a href="/Teacher/Conflicts" class="adm-btn adm-btn--sm adm-btn--ghost">Conflict Resolver</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Academic Result Operations -->
+        <div class="dash-panel" style="grid-column: span 2;">
+            <div class="dash-panel__header">
+                <h2 class="dash-panel__title">
+                    <i class="bi bi-award dash-icon-success" style="color: var(--adm-primary);"></i>
+                    Examination & Academic Results Center
+                </h2>
+            </div>
+            <div class="row p-3 g-3">
+                <div class="col-md-4">
+                    <div class="card bg-dark text-white border-secondary p-3 h-100" style="background: rgba(15, 118, 110, 0.05) !important;">
+                        <h5 class="card-title text-primary"><i class="bi bi-calendar3"></i> Exam Scheduling</h5>
+                        <p class="card-text text-muted" style="font-size: 0.85rem; margin-bottom: 12px;">Create datesheets, prevent room slot double-bookings, and print ready routines.</p>
+                        <a href="/ExamSchedule/Index" class="btn btn-outline-primary btn-sm mt-auto w-100">Schedule & Routine</a>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-dark text-white border-secondary p-3 h-100" style="background: rgba(15, 118, 110, 0.05) !important;">
+                        <h5 class="card-title text-success"><i class="bi bi-input-cursor-text"></i> Grade Entry Sheet</h5>
+                        <p class="card-text text-muted" style="font-size: 0.85rem; margin-bottom: 12px;">Assigned subject markentry sheets for teachers. Rounding rules & modifications audit trail.</p>
+                        <a href="/Marks/Index" class="btn btn-outline-success btn-sm mt-auto w-100">Enter Academic Marks</a>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-dark text-white border-secondary p-3 h-100" style="background: rgba(15, 118, 110, 0.05) !important;">
+                        <h5 class="card-title text-warning"><i class="bi bi-file-earmark-bar-graph"></i> Report Cards</h5>
+                        <p class="card-text text-muted" style="font-size: 0.85rem; margin-bottom: 12px;">Class-wise aggregate positions, NCTB standard letter grades, and printable PDF cards.</p>
+                        <a href="/ReportCard/Index" class="btn btn-outline-warning btn-sm mt-auto w-100">Student Progress Sheets</a>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-dark text-white border-secondary p-3 h-100" style="background: rgba(15, 118, 110, 0.05) !important;">
+                        <h5 class="card-title text-info"><i class="bi bi-trophy"></i> School Standings</h5>
+                        <p class="card-text text-muted" style="font-size: 0.85rem; margin-bottom: 12px;">School-wide, class-wise, section-wise and group ranking merit lists.</p>
+                        <a href="/MeritList/Index" class="btn btn-outline-info btn-sm mt-auto w-100">Merit Rankings</a>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-dark text-white border-secondary p-3 h-100" style="background: rgba(15, 118, 110, 0.05) !important;">
+                        <h5 class="card-title text-danger"><i class="bi bi-grid-3x3"></i> Tabulation Matrix</h5>
+                        <p class="card-text text-muted" style="font-size: 0.85rem; margin-bottom: 12px;">Standard full-view dynamic subject-by-subject school grade book tabulation sheets.</p>
+                        <a href="/AcademicAnalytics/TabulationSheet" class="btn btn-outline-danger btn-sm mt-auto w-100">Generate Grade Book</a>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-dark text-white border-secondary p-3 h-100" style="background: rgba(15, 118, 110, 0.05) !important;">
+                        <h5 class="card-title text-primary"><i class="bi bi-pie-chart"></i> Subject Analytics</h5>
+                        <p class="card-text text-muted" style="font-size: 0.85rem; margin-bottom: 12px;">Deep exam analysis including subject pass-percentages and average/min/max metrics.</p>
+                        <a href="/AcademicAnalytics/Index" class="btn btn-outline-primary btn-sm mt-auto w-100">Analytics Dashboard</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+>>>>>>> d8b24e6 (attendece and website curtomize)
         <!-- Operational Modules -->
         <div class="dash-panel">
             <div class="dash-panel__header">
@@ -216,11 +346,27 @@
                 <a class="dash-module-btn" href="/Admission/Index"><i class="bi bi-person-plus"></i> Admissions</a>
                 <a class="dash-module-btn" href="/Student/Index"><i class="bi bi-people"></i> Students</a>
                 <a class="dash-module-btn" href="/AttendanceRecord/Index"><i class="bi bi-calendar-check"></i> Attendance</a>
+<<<<<<< HEAD
                 <a class="dash-module-btn" href="/FeeStructure/Index"><i class="bi bi-cash-coin"></i> Fees</a>
+=======
+                @if (Can("FeeStructures.Read"))
+                {
+                    <a class="dash-module-btn" href="/FeeStructure/Index"><i class="bi bi-cash-coin"></i> Fee Structures</a>
+                }
+>>>>>>> d8b24e6 (attendece and website curtomize)
                 <a class="dash-module-btn" href="/SchoolClass/Index"><i class="bi bi-building"></i> Classes</a>
                 <a class="dash-module-btn" href="/Section/Index"><i class="bi bi-grid-3x3-gap"></i> Sections</a>
                 <a class="dash-module-btn" href="/Subject/Index"><i class="bi bi-book"></i> Subjects</a>
                 <a class="dash-module-btn" href="/Teacher/Index"><i class="bi bi-person-badge"></i> Teachers</a>
+<<<<<<< HEAD
+=======
+                <a class="dash-module-btn" href="/Employee"><i class="bi bi-person-workspace"></i> Employees</a>
+                <a class="dash-module-btn" href="/ExamSchedule/Index"><i class="bi bi-calendar4-event"></i> Schedules</a>
+                <a class="dash-module-btn" href="/Marks/Index"><i class="bi bi-pen"></i> Marks Entry</a>
+                <a class="dash-module-btn" href="/ReportCard/Index"><i class="bi bi-file-earmark-pdf"></i> Report Cards</a>
+                <a class="dash-module-btn" href="/MeritList/Index"><i class="bi bi-trophy"></i> Rankings</a>
+                <a class="dash-module-btn" href="/AcademicAnalytics/Index"><i class="bi bi-bar-chart-line"></i> Exam Analytics</a>
+>>>>>>> d8b24e6 (attendece and website curtomize)
                 @if (User.IsInRole("Super Admin") || User.IsInRole("Principal"))
                 {
                     <a class="dash-module-btn dash-module-btn--primary" href="/ResultManagement/AdminIndex"><i class="bi bi-shield-check"></i> Result Management</a>

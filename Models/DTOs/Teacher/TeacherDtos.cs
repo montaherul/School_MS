@@ -150,4 +150,7 @@ public class TeacherUpsertDto
     // ── Media ─────────────────────────────────────────────────────────────────
     public string? ProfilePicturePath { get; set; }
     public IFormFile? ProfilePicture { get; set; }
+
+    // ── Workforce Status (read-only, derived from Employee) ────────────────────
+    public string Status { get; set; } = "Active";
 }

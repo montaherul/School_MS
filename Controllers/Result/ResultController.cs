@@ -5,7 +5,10 @@ using SchoolManagementSystem.Services.Interfaces.Result;
 using Microsoft.AspNetCore.Authorization;
 using SchoolManagementSystem.Filters;
 using Microsoft.AspNetCore.Mvc;
+<<<<<<< HEAD
 using SchoolManagementSystem.Constants;
+=======
+>>>>>>> d8b24e6 (attendece and website curtomize)
 
 namespace SchoolManagementSystem.Controllers.Result;
 
@@ -16,6 +19,7 @@ public class ResultController : GenericCrudController<MarkEntry>
     {
     }
 
+<<<<<<< HEAD
     [RequirePermission(Permissions.Result.View)]
     public override Task<IActionResult> Index(int page = 1, int pageSize = 10, string? search = null, CancellationToken cancellationToken = default)
         => base.Index(page, pageSize, search, cancellationToken);
@@ -37,6 +41,29 @@ public class ResultController : GenericCrudController<MarkEntry>
         => base.Delete(id, cancellationToken);
 
     [RequirePermission(Permissions.Result.Delete)]
+=======
+    [RequirePermission("Result.View")]
+    public override Task<IActionResult> Index(int page = 1, int pageSize = 10, string? search = null, CancellationToken cancellationToken = default)
+        => base.Index(page, pageSize, search, cancellationToken);
+
+    [RequirePermission("Result.View")]
+    public override Task<IActionResult> Details(int id, CancellationToken cancellationToken = default)
+        => base.Details(id, cancellationToken);
+
+    [RequirePermission("Result.Create")]
+    public override Task<IActionResult> CreateEdit(int? id = null, CancellationToken cancellationToken = default)
+        => base.CreateEdit(id, cancellationToken);
+
+    [RequirePermission("Result.Create")]
+    public override Task<IActionResult> Save(IFormCollection form, CancellationToken cancellationToken = default)
+        => base.Save(form, cancellationToken);
+
+    [RequirePermission("Result.Delete")]
+    public override Task<IActionResult> Delete(int id, CancellationToken cancellationToken = default)
+        => base.Delete(id, cancellationToken);
+
+    [RequirePermission("Result.Delete")]
+>>>>>>> d8b24e6 (attendece and website curtomize)
     public override Task<IActionResult> DeleteConfirmed(int id, CancellationToken cancellationToken = default)
         => base.DeleteConfirmed(id, cancellationToken);
 }

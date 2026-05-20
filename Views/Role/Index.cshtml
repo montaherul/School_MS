@@ -76,13 +76,14 @@
                     field: "id",
                     hozAlign: "right",
                     headerSort: false,
-                    width: 140,
+                    width: 180,
                     formatter: function(cell) {
                         var id = cell.getValue();
                         return `
                             <div class="btn-group btn-group-sm">
                                 <a href="/Role/Details/${id}" class="btn btn-outline-secondary" title="View"><i class="bi bi-eye"></i></a>
                                 <a href="/Role/Edit/${id}" class="btn btn-outline-primary" title="Edit"><i class="bi bi-pencil"></i></a>
+                                <button class="btn btn-outline-success" onclick="managePermissions(${id})" title="Manage Permissions"><i class="bi bi-shield-lock"></i></button>
                                 <a href="/Role/Delete/${id}" class="btn btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></a>
                             </div>
                         `;
@@ -104,7 +105,111 @@
             searchInput.value = "";
             table.setFilter("search", "=", "");
         });
+
+        // Permissions Management
+        var currentRoleId = 0;
+        var allPermissions = [];
+
+        async function managePermissions(roleId) {
+            currentRoleId = roleId;
+            $('#permissionsModal').modal('show');
+            $('#permissions-loading').show();
+            $('#permissions-container').hide();
+
+            // Load all permissions if not loaded
+            if (allPermissions.length === 0) {
+                const resp = await fetch('/Role/AllPermissions');
+                allPermissions = await resp.json();
+                renderPermissions();
+            }
+
+            // Load role permissions
+            const roleResp = await fetch(`/Role/${roleId}/Permissions`);
+            const rolePerms = await roleResp.json();
+
+            // Check checkboxes
+            $('.perm-check').prop('checked', false);
+            rolePerms.forEach(pid => {
+                $(`#perm-${pid}`).prop('checked', true);
+            });
+
+            $('#permissions-loading').hide();
+            $('#permissions-container').show();
+        }
+
+        function renderPermissions() {
+            const container = $('#permissions-container');
+            container.empty();
+
+            // Group by Module
+            const grouped = {};
+            allPermissions.forEach(p => {
+                if (!grouped[p.module]) grouped[p.module] = [];
+                grouped[p.module].push(p);
+            });
+
+            for (const module in grouped) {
+                let html = `<div class="mb-3">
+                                <h6 class="border-bottom pb-1 text-primary">${module}</h6>
+                                <div class="row">`;
+                grouped[module].forEach(p => {
+                    html += `<div class="col-md-4 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input perm-check" type="checkbox" value="${p.id}" id="perm-${p.id}">
+                                    <label class="form-check-label small" for="perm-${p.id}">${p.action}</label>
+                                </div>
+                             </div>`;
+                });
+                html += `</div></div>`;
+                container.append(html);
+            }
+        }
+
+        async function savePermissions() {
+            const selected = [];
+            $('.perm-check:checked').each(function() {
+                selected.push(parseInt($(this).val()));
+            });
+
+            const resp = await fetch(`/Role/${currentRoleId}/Permissions`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(selected)
+            });
+
+            const res = await resp.json();
+            if (res.success) {
+                $('#permissionsModal').modal('hide');
+                toastr.success('Permissions updated successfully');
+                table.setData(); // Refresh table to update counts
+            } else {
+                toastr.error('Failed to update permissions');
+            }
+        }
     </script>
+
+    <!-- Modal -->
+    <div class="modal fade" id="permissionsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Manage Permissions</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="permissions-loading" class="text-center p-4">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <p class="text-muted mt-2">Loading permissions...</p>
+                    </div>
+                    <div id="permissions-container" style="display:none;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="savePermissions()">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <style>
         .bg-purple-soft { background-color: rgba(167, 139, 250, 0.1); }

@@ -5,7 +5,7 @@ namespace SchoolManagementSystem.Services.Interfaces.Academic;
 
 public interface ISubjectService
 {
-    Task<PagedResult<SubjectListItemDto>> GetPagedAsync(int page, int pageSize, string? search, CancellationToken cancellationToken = default);
+    Task<PagedResult<SubjectListItemDto>> GetPagedAsync(int page, int pageSize, string? search, string? group = null, string? status = null, CancellationToken cancellationToken = default);
     Task<SubjectUpsertDto?> GetForEditAsync(int id, CancellationToken cancellationToken = default);
     Task<int> CreateAsync(SubjectUpsertDto dto, string createdBy, CancellationToken cancellationToken = default);
     Task UpdateAsync(SubjectUpsertDto dto, string updatedBy, CancellationToken cancellationToken = default);

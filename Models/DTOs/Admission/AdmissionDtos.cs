@@ -101,6 +101,7 @@ public class AdmissionApproveRequest
 public class AdmissionListResultDto
 {
     public int Id { get; set; }
+<<<<<<< HEAD
     public string ApplicationNo { get; set; }
     public string ApplicantName { get; set; }
     public string? ApplicantNameBangla { get; set; }
@@ -136,6 +137,43 @@ public class AdmissionListResultDto
     public string PermanentThana { get; set; }
     public string PermanentDistrict { get; set; }
     public string ProfilePicturePath { get; set; }
+=======
+    public string ApplicationNo { get; set; } = string.Empty;
+    public string ApplicantName { get; set; } = string.Empty;
+    public string? ApplicantNameBangla { get; set; }
+    public DateTime DateOfBirth { get; set; }
+    public string Gender { get; set; } = string.Empty;
+    public int AppliedClassId { get; set; }
+    public string ClassName { get; set; } = string.Empty;
+    public string ApplicantMobileNumber { get; set; } = string.Empty;
+    public string FatherOrGuardianMobileNo { get; set; } = string.Empty;
+    public string? AlternativeNumber { get; set; }
+    public string? ApplicantEmail { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public string FatherName { get; set; } = string.Empty;
+    public string? FatherOccupation { get; set; }
+    public string MotherName { get; set; } = string.Empty;
+    public string? MotherOccupation { get; set; }
+    public string? GuardianName { get; set; }
+    public string? GuardianOccupation { get; set; }
+    public string Nationality { get; set; } = string.Empty;
+    public string Religion { get; set; } = string.Empty;
+    public string? BloodGroup { get; set; }
+    public string? BirthCertificateNo { get; set; }
+    public string? BirthCertificatePath { get; set; }
+    public string? PaymentSlipPath { get; set; }
+    public string? PaymentMethod { get; set; }
+    public string? TransactionDetails { get; set; }
+    public string? PresentVillage { get; set; }
+    public string? PresentPostOffice { get; set; }
+    public string? PresentThana { get; set; }
+    public string? PresentDistrict { get; set; }
+    public string? PermanentVillage { get; set; }
+    public string? PermanentPostOffice { get; set; }
+    public string? PermanentThana { get; set; }
+    public string? PermanentDistrict { get; set; }
+    public string? ProfilePicturePath { get; set; }
+>>>>>>> d8b24e6 (attendece and website curtomize)
     public int TotalRecords { get; set; }
 
     // Computed properties for UI

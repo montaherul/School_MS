@@ -1,0 +1,98 @@
+﻿using System;
+using SchoolManagementSystem.Models.Enums;
+
+namespace SchoolManagementSystem.Models.DTOs.Attendance
+{
+    public class StudentAttendanceDto
+    {
+        public int Id { get; set; }
+        public int StudentId { get; set; }
+        public string StudentNo { get; set; } = string.Empty;
+        public string StudentName { get; set; } = string.Empty;
+        public string RollNumber { get; set; } = string.Empty;
+        public int ClassId { get; set; }
+        public string ClassName { get; set; } = string.Empty;
+        public int SectionId { get; set; }
+        public string SectionName { get; set; } = string.Empty;
+        public int? StudentGroupId { get; set; }
+        public string StudentGroupName { get; set; } = string.Empty;
+        public DateTime AttendanceDate { get; set; }
+        public AttendanceStatus Status { get; set; }
+        public string StatusName { get; set; } = AttendanceStatus.Present.ToString();
+        public string? Remarks { get; set; }
+
+        // For guardian notifications
+        public string? GuardianEmail { get; set; }
+        public bool NotificationSent { get; set; }
+    }
+
+    public class StudentAttendanceBulkDto
+    {
+        public int ClassId { get; set; }
+        public int SectionId { get; set; }
+        public int? StudentGroupId { get; set; }
+        public DateTime AttendanceDate { get; set; }
+        public List<StudentAttendanceItemDto> Attendances { get; set; } = new List<StudentAttendanceItemDto>();
+
+        /// <summary>
+        /// If true, automatically send guardian email notifications for absent students
+        /// </summary>
+        public bool SendNotifications { get; set; } = true;
+    }
+
+    public class StudentAttendanceItemDto
+    {
+        public int Id { get; set; }
+        public int StudentId { get; set; }
+        public AttendanceStatus Status { get; set; }
+        public string? StatusName { get; set; }
+        public string? Remarks { get; set; }
+
+        // For previous status tracking (to detect status changes)
+        public AttendanceStatus? PreviousStatus { get; set; }
+    }
+
+    public class StudentAttendanceFilterDto
+    {
+        public DateTime AttendanceDate { get; set; } = DateTime.Today;
+        public int? ClassId { get; set; }
+        public int? SectionId { get; set; }
+        public int? StudentGroupId { get; set; }
+        public int Page { get; set; } = 1;
+        public int PageSize { get; set; } = 50;
+    }
+
+    public class StudentAttendanceSummaryDto
+    {
+        public int TotalStudents { get; set; }
+        public int Present { get; set; }
+        public int Absent { get; set; }
+        public int Late { get; set; }
+        public int Leave { get; set; }
+    }
+
+    public class StudentAttendanceMonthlySummaryDto
+    {
+        public int StudentId { get; set; }
+        public string StudentNo { get; set; } = string.Empty;
+        public string StudentName { get; set; } = string.Empty;
+        public string RollNumber { get; set; } = string.Empty;
+        public int Year { get; set; }
+        public int Month { get; set; }
+        public int TotalDays { get; set; }
+        public int PresentCount { get; set; }
+        public int AbsentCount { get; set; }
+        public int LateCount { get; set; }
+        public int LeaveCount { get; set; }
+        public double AttendancePercentage { get; set; }
+    }
+
+    public class BulkAttendanceSaveResponse
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; } = string.Empty;
+        public int RecordsSaved { get; set; }
+        public int NotificationsSent { get; set; }
+        public List<string> Errors { get; set; } = new List<string>();
+    }
+}

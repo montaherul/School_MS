@@ -1,0 +1,47 @@
+﻿using System.Data;
+using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
+using SchoolManagementSystem.Data;
+using SchoolManagementSystem.Models.Entities.Exam;
+using SchoolManagementSystem.Models.DTOs.Result;
+using SchoolManagementSystem.Repositories.Implementations;
+using SchoolManagementSystem.Repositories.Interfaces;
+using SchoolManagementSystem.Repositories.StoredProcedures.Interfaces;
+
+namespace SchoolManagementSystem.Repositories.StoredProcedures.Implementations;
+
+public class ExamSpRepository : GenericRepository<Exam>, IExamSpRepository
+{
+    public ExamSpRepository(SchoolDbContext db) : base(db)
+    {
+    }
+
+    public async Task<IEnumerable<ExamUpsertDto>> GetExamsForAdminAsync(int academicYearId, CancellationToken ct)
+    {
+        var exams = new List<ExamUpsertDto>();
+        using var command = _db.Database.GetDbConnection().CreateCommand();
+        command.CommandText = "sp_GetExamsForAdmin";
+        command.CommandType = CommandType.StoredProcedure;
+        command.Parameters.Add(new SqlParameter("@AcademicYearId", academicYearId));
+
+        await _db.Database.OpenConnectionAsync(ct);
+        try
+        {
+            using var reader = await command.ExecuteReaderAsync(ct);
+            while (await reader.ReadAsync(ct))
+            {
+                exams.Add(new ExamUpsertDto
+                {
+                    Id = reader.GetInt32(0),
+                    Name = reader.GetString(1),
+                    Term = (SchoolManagementSystem.Models.Enums.ExamTerm)reader.GetInt32(2),
+                    StartsOn = DateOnly.FromDateTime(reader.GetDateTime(3)),
+                    EndsOn = DateOnly.FromDateTime(reader.GetDateTime(4)),
+                    Status = (SchoolManagementSystem.Models.Enums.ResultWorkflowStatus)reader.GetInt32(5)
+                });
+            }
+            return exams;
+        }
+        finally { await _db.Database.CloseConnectionAsync(); }
+    }
+}

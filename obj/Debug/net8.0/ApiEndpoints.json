@@ -1,0 +1,254 @@
+[
+  {
+    "ContainingType": "SchoolManagementSystem.Controllers.Result.ExamAdminController",
+    "Method": "GetAcademicYears",
+    "RelativePath": "api/ExamAdmin/academic-years",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SchoolManagementSystem.Controllers.Result.ExamAdminController",
+    "Method": "CalculateMerit",
+    "RelativePath": "api/ExamAdmin/calculate-merit/{examId}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "examId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SchoolManagementSystem.Controllers.Result.ExamAdminController",
+    "Method": "GetClasses",
+    "RelativePath": "api/ExamAdmin/classes",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SchoolManagementSystem.Controllers.Result.ExamAdminController",
+    "Method": "CreateExam",
+    "RelativePath": "api/ExamAdmin/create-exam",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "SchoolManagementSystem.Models.DTOs.Result.ExamUpsertDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SchoolManagementSystem.Controllers.Result.ExamAdminController",
+    "Method": "DeleteExam",
+    "RelativePath": "api/ExamAdmin/delete-exam/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SchoolManagementSystem.Controllers.Result.ExamAdminController",
+    "Method": "DeleteGradingRule",
+    "RelativePath": "api/ExamAdmin/delete-grading-rule/{id}",
+    "HttpMethod": "DELETE",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SchoolManagementSystem.Controllers.Result.ExamAdminController",
+    "Method": "GetExamStatus",
+    "RelativePath": "api/ExamAdmin/exam-status/{examId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "examId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SchoolManagementSystem.Controllers.Result.ExamAdminController",
+    "Method": "GetAllExams",
+    "RelativePath": "api/ExamAdmin/exams",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "academicYearId",
+        "Type": "System.Int32",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SchoolManagementSystem.Controllers.Result.ExamAdminController",
+    "Method": "GetGradingRules",
+    "RelativePath": "api/ExamAdmin/grading-rules",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SchoolManagementSystem.Controllers.Result.ExamAdminController",
+    "Method": "LockExam",
+    "RelativePath": "api/ExamAdmin/lock-exam/{examId}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "examId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "reason",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SchoolManagementSystem.Controllers.Result.ExamAdminController",
+    "Method": "PublishResults",
+    "RelativePath": "api/ExamAdmin/publish-results/{examId}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "examId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "SchoolManagementSystem.Models.DTOs.Result.ResultPublishDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SchoolManagementSystem.Controllers.Result.ExamAdminController",
+    "Method": "GetSections",
+    "RelativePath": "api/ExamAdmin/sections/{classId}",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "classId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SchoolManagementSystem.Controllers.Result.ExamAdminController",
+    "Method": "GetSubjects",
+    "RelativePath": "api/ExamAdmin/subjects",
+    "HttpMethod": "GET",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SchoolManagementSystem.Controllers.Result.ExamAdminController",
+    "Method": "UnlockExam",
+    "RelativePath": "api/ExamAdmin/unlock-exam/{examId}",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "examId",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "reason",
+        "Type": "System.String",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SchoolManagementSystem.Controllers.Result.ExamAdminController",
+    "Method": "UpdateExam",
+    "RelativePath": "api/ExamAdmin/update-exam/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "dto",
+        "Type": "SchoolManagementSystem.Models.DTOs.Result.ExamUpsertDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SchoolManagementSystem.Controllers.Result.ExamAdminController",
+    "Method": "UpsertGradingRule",
+    "RelativePath": "api/ExamAdmin/upsert-grading-rule",
+    "HttpMethod": "POST",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "dto",
+        "Type": "SchoolManagementSystem.Models.DTOs.Result.GradingRuleUpsertDto",
+        "IsRequired": true
+      }
+    ],
+    "ReturnTypes": []
+  }
+]

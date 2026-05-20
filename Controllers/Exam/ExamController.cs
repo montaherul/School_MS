@@ -1,15 +1,19 @@
 using SchoolManagementSystem.Controllers.Common;
 using SchoolManagementSystem.Services.Interfaces.Base;
 using ExamEntity = SchoolManagementSystem.Models.Entities.Exam.Exam;
+<<<<<<< HEAD
 using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Constants;
 using Microsoft.AspNetCore.Mvc;
+=======
+>>>>>>> d8b24e6 (attendece and website curtomize)
 
 namespace SchoolManagementSystem.Controllers.Exam;
 
 public class ExamController : GenericCrudController<ExamEntity>
 {
     public ExamController(IBaseService<ExamEntity> service) : base(service, "Exam") { }
+<<<<<<< HEAD
 
     [RequirePermission(Permissions.Exam.View)]
     public override Task<IActionResult> Index(int page = 1, int pageSize = 10, string? search = null, CancellationToken cancellationToken = default)
@@ -27,3 +31,7 @@ public class ExamController : GenericCrudController<ExamEntity>
     public override Task<IActionResult> Delete(int id, CancellationToken cancellationToken = default)
         => base.Delete(id, cancellationToken);
 }
+=======
+}
+
+>>>>>>> d8b24e6 (attendece and website curtomize)

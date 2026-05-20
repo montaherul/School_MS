@@ -28,6 +28,49 @@ public class TeacherAssignmentController : Controller
         return View(teacher);
     }
 
+<<<<<<< HEAD
+=======
+    /// <summary>JSON endpoint used by Teacher/Details.cshtml assignment tab.</summary>
+    [HttpGet("GetByTeacher/{teacherId}")]
+    public async Task<IActionResult> GetByTeacher(int teacherId, CancellationToken ct)
+    {
+        var classAssignments  = await _service.GetTeacherClassAssignmentsAsync(teacherId, ct);
+        var subjectAssignments = await _service.GetTeacherSubjectAssignmentsAsync(teacherId, 0, 0, ct);
+
+        // Merge into a unified flat list for the Details tab
+        var merged = subjectAssignments.Select(s => {
+            var classAssign = classAssignments.FirstOrDefault(ca => ca.ClassId == s.ClassId && ca.SectionId == s.SectionId);
+            return new
+            {
+                className      = classAssign?.ClassName ?? "Unknown",
+                sectionName    = classAssign?.SectionName ?? "Unknown",
+                subjectName    = s.SubjectName,
+                isClassTeacher = false
+            };
+        }).ToList();
+
+        // Append class-only rows that have no subject assignments
+        foreach (var ca in classAssignments)
+        {
+            bool hasSubjects = subjectAssignments.Any(s =>
+                s.ClassId == ca.ClassId && s.SectionId == ca.SectionId);
+
+            if (!hasSubjects)
+            {
+                merged.Add(new
+                {
+                    className      = ca.ClassName,
+                    sectionName    = ca.SectionName,
+                    subjectName    = (string?)"—",
+                    isClassTeacher = true // Since it's a class assignment without specific subjects, assume class teacher role or general assignment
+                });
+            }
+        }
+
+        return Json(merged);
+    }
+
+>>>>>>> d8b24e6 (attendece and website curtomize)
     [HttpPost("AssignClass")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AssignClass(int teacherId, int classId, int sectionId, int academicYearId)

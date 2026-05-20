@@ -1,94 +1,160 @@
 @model SchoolManagementSystem.Models.DTOs.Teacher.TeacherUpsertDto
+@using System.Security.Claims
 @{
-    ViewData["Title"] = "Teacher Details - " + Model.FullName;
+    ViewData["Title"] = "Teacher Profile – " + Model.FullName;
+    var statusClass = Model.Status == "Active" ? "adm-status--approved" : "adm-status--rejected";
+    var joiningYear = Model.JoiningDate.HasValue ? Model.JoiningDate.Value.Year.ToString() : "N/A";
 }
 
-<div class="page-header mb-4">
-    <div class="d-flex align-items-center gap-3">
-        <a asp-action="Index" class="btn btn-light btn-sm rounded-circle"><i class="bi bi-arrow-left"></i></a>
-        <div>
-            <h1 class="page-title h3 mb-0">Teacher Profile</h1>
-            <p class="text-muted small mb-0">Detailed view of faculty record and assignments.</p>
+<div class="adm-page">
+
+    <!-- HEADER -->
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-person-badge"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Teacher Profile</h1>
+                <p class="adm-header__sub">Detailed academic record and workforce information</p>
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Index" class="adm-btn adm-btn--ghost">
+                <i class="bi bi-arrow-left"></i>
+                <span>Back</span>
+            </a>
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="adm-btn adm-btn--primary">
+                <i class="bi bi-pencil-square"></i>
+                <span>Edit Profile</span>
+            </a>
         </div>
     </div>
-</div>
 
-<div class="row g-4">
-    <!-- Left Column: Quick Actions & Profile Summary -->
-    <div class="col-lg-4">
-        <div class="card border-0 shadow-sm text-center mb-4 overflow-hidden">
-            <div class="card-header bg-primary py-5"></div>
-            <div class="card-body pt-0" style="margin-top: -50px;">
-                <div class="avatar-container mb-3">
-                    <img src="@(string.IsNullOrEmpty(Model.ProfilePicturePath) ? "/img/default-avatar.png" : Model.ProfilePicturePath)" 
-                         class="rounded-circle border border-4 border-white shadow-sm bg-white" 
-                         style="width: 120px; height: 120px; object-fit: cover;" alt="Profile Picture" />
-                </div>
-                <h4 class="mb-1 fw-bold text-dark">@Model.FullName</h4>
-                <p class="text-primary fw-bold mb-1">@Model.Designation</p>
-                <p class="text-muted small mb-3">@Model.Department Department</p>
-                
-                <div class="d-flex justify-content-center gap-2 mb-4">
-                    <span class="badge bg-primary-subtle text-primary border-0 rounded-pill px-3">@Model.TeacherNo</span>
-                    <span class="badge bg-success-subtle text-success border-0 rounded-pill px-3">Active</span>
+    <div class="row g-4 mt-1">
+
+        <!-- ── LEFT PANEL ─────────────────────────────────────────── -->
+        <div class="col-lg-4">
+
+            <!-- Profile Card -->
+            <div class="card border-0 shadow-sm text-center mb-4 overflow-hidden">
+                <div style="height:90px;background:linear-gradient(135deg,var(--adm-primary,#4f46e5),#7c3aed)"></div>
+                <div class="card-body pt-0" style="margin-top:-50px">
+                    <div class="mb-3">
+                        @if (!string.IsNullOrEmpty(Model.ProfilePicturePath))
+                        {
+                            <img src="@Model.ProfilePicturePath"
+                                 class="rounded-circle border border-4 border-white shadow"
+                                 style="width:100px;height:100px;object-fit:cover" alt="Profile" />
+                        }
+                        else
+                        {
+                            <div class="rounded-circle border border-4 border-white shadow d-inline-flex align-items-center justify-content-center fw-bold text-white"
+                                 style="width:100px;height:100px;background:var(--adm-primary,#4f46e5);font-size:2rem">
+                                @(Model.FullName.Length > 0 ? Model.FullName.Substring(0, 1).ToUpper() : "T")
+                            </div>
+                        }
+                    </div>
+
+                    <h4 class="fw-bold mb-1">@Model.FullName</h4>
+                    @if (!string.IsNullOrEmpty(Model.FullNameBangla))
+                    {
+                        <div class="text-muted small mb-1">@Model.FullNameBangla</div>
+                    }
+                    <p class="fw-semibold mb-1" style="color:var(--adm-primary,#4f46e5)">@Model.Designation</p>
+                    <p class="text-muted small mb-3">@Model.Department Department</p>
+
+                    <div class="d-flex justify-content-center gap-2 mb-3 flex-wrap">
+                        <span class="badge rounded-pill px-3 py-2" style="background:rgba(79,70,229,.1);color:var(--adm-primary,#4f46e5)">
+                            <i class="bi bi-person-badge me-1"></i>@Model.TeacherNo
+                        </span>
+                        <span class="adm-status @statusClass">@Model.Status</span>
+                    </div>
                 </div>
 
-                <div class="d-grid gap-2">
-                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">
-                        <i class="bi bi-pencil-square me-2"></i>Edit Profile
-                    </a>
-                    <button class="btn btn-outline-danger btn-sm border-0 mt-2">
-                        <i class="bi bi-person-x me-2"></i>Deactivate Account
-                    </button>
-                </div>
-            </div>
-            <div class="card-footer bg-light border-0 py-3">
-                <div class="row g-0">
-                    <div class="col-6 border-end">
-                        <div class="fw-bold text-dark">2026</div>
-                        <div class="x-small text-muted text-uppercase">Joining Year</div>
-                    </div>
-                    <div class="col-6">
-                        <div class="fw-bold text-dark">12</div>
-                        <div class="x-small text-muted text-uppercase">Classes/Week</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-header bg-white border-bottom py-3">
-                <h6 class="mb-0 fw-bold"><i class="bi bi-telephone-fill me-2 text-primary"></i>Contact Information</h6>
-            </div>
-            <div class="card-body">
-                <div class="d-flex align-items-center mb-3">
-                    <div class="icon-box-sm bg-light text-primary rounded-circle me-3"><i class="bi bi-phone"></i></div>
-                    <div>
-                        <div class="x-small text-muted">Primary Mobile</div>
-                        <div class="fw-bold">@Model.MobileNumber</div>
-                    </div>
-                </div>
-                <div class="d-flex align-items-center mb-3">
-                    <div class="icon-box-sm bg-light text-primary rounded-circle me-3"><i class="bi bi-envelope"></i></div>
-                    <div>
-                        <div class="x-small text-muted">Email Address</div>
-                        <div class="fw-bold">@Model.EmailAddress</div>
-                    </div>
-                </div>
-                 @if (!string.IsNullOrEmpty(Model.AlternativeNumber))
-                 {
-                    <div class="d-flex align-items-center">
-                        <div class="icon-box-sm bg-light text-primary rounded-circle me-3"><i class="bi bi-telephone"></i></div>
-                        <div>
-                            <div class="x-small text-muted">Alternative Contact</div>
-                            <div class="fw-bold">@Model.AlternativeNumber</div>
+                <div class="card-footer bg-light border-0 py-3">
+                    <div class="row g-0 text-center">
+                        <div class="col-4 border-end">
+                            <div class="fw-bold text-dark">@joiningYear</div>
+                            <div class="text-muted" style="font-size:.7rem">JOINING</div>
+                        </div>
+                        <div class="col-4 border-end">
+                            <div class="fw-bold text-dark">@(string.IsNullOrEmpty(Model.Specialization) ? "—" : Model.Specialization.Split(',')[0].Trim())</div>
+                            <div class="text-muted" style="font-size:.7rem">SUBJECT</div>
+                        </div>
+                        <div class="col-4">
+                            <div class="fw-bold text-dark">@Model.Gender</div>
+                            <div class="text-muted" style="font-size:.7rem">GENDER</div>
                         </div>
                     </div>
-                 }
+                </div>
             </div>
-        </div>
-    </div>
 
+            <!-- Contact Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white fw-bold py-3">
+                    <i class="bi bi-telephone-fill me-2 text-primary"></i>Contact Information
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-circle bg-light text-primary d-flex align-items-center justify-content-center me-3" style="width:36px;height:36px">
+                            <i class="bi bi-phone"></i>
+                        </div>
+                        <div>
+                            <div class="text-muted" style="font-size:.72rem">Primary Mobile</div>
+                            <div class="fw-bold">@(string.IsNullOrEmpty(Model.MobileNumber) ? "N/A" : Model.MobileNumber)</div>
+                        </div>
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.AlternativeNumber))
+                    {
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="rounded-circle bg-light text-primary d-flex align-items-center justify-content-center me-3" style="width:36px;height:36px">
+                                <i class="bi bi-telephone"></i>
+                            </div>
+                            <div>
+                                <div class="text-muted" style="font-size:.72rem">Alternative Number</div>
+                                <div class="fw-bold">@Model.AlternativeNumber</div>
+                            </div>
+                        </div>
+                    }
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-light text-primary d-flex align-items-center justify-content-center me-3" style="width:36px;height:36px">
+                            <i class="bi bi-envelope"></i>
+                        </div>
+                        <div>
+                            <div class="text-muted" style="font-size:.72rem">Email Address</div>
+                            <div class="fw-bold" style="word-break:break-all">@(string.IsNullOrEmpty(Model.EmailAddress) ? "N/A" : Model.EmailAddress)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Academic Card -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white fw-bold py-3">
+                    <i class="bi bi-mortarboard-fill me-2 text-primary"></i>Academic Details
+                </div>
+                <div class="card-body">
+                    @{
+                        void DetailRow(string label, string? value)
+                        {
+                            <div class="d-flex justify-content-between py-2 border-bottom">
+                                <span class="text-muted small">@label</span>
+                                <span class="fw-semibold small text-end">@(string.IsNullOrEmpty(value) ? "N/A" : value)</span>
+                            </div>
+                        }
+                    }
+                    @{ DetailRow("Qualification", Model.Qualification); }
+                    @{ DetailRow("Specialization", Model.Specialization); }
+                    @{ DetailRow("Joining Date", Model.JoiningDate?.ToString("dd MMM yyyy")); }
+                    @{ DetailRow("Nationality", Model.Nationality); }
+                    @{ DetailRow("Country", Model.Country); }
+                </div>
+            </div>
+
+        </div>
+
+<<<<<<< HEAD
     <!-- Right Column: Tabs & Main Details -->
     <div class="col-lg-8">
         <div class="card border-0 shadow-sm">
@@ -150,34 +216,48 @@
                                 <div class="fw-bold">@(Model.JoiningDate?.ToString("dd MMM yyyy") ?? "N/A")</div>
                             </div>
                         </div>
+=======
+        <!-- ── RIGHT PANEL ────────────────────────────────────────── -->
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white p-0 border-bottom">
+                    <ul class="nav nav-tabs border-0 px-3" id="profileTabs" role="tablist">
+                        <li class="nav-item">
+                            <button class="nav-link active py-3 border-0" data-bs-toggle="tab" data-bs-target="#pane-info" type="button">
+                                <i class="bi bi-person me-1"></i>Personal Info
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link py-3 border-0" data-bs-toggle="tab" data-bs-target="#pane-address" type="button">
+                                <i class="bi bi-geo-alt me-1"></i>Address
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link py-3 border-0" data-bs-toggle="tab" data-bs-target="#pane-identity" type="button">
+                                <i class="bi bi-card-text me-1"></i>Identity & Family
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link py-3 border-0" data-bs-toggle="tab" data-bs-target="#pane-assignments" type="button">
+                                <i class="bi bi-diagram-3 me-1"></i>Assignments
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+>>>>>>> d8b24e6 (attendece and website curtomize)
 
-                        <div class="row g-4 mb-5">
-                            <div class="col-12">
-                                <h6 class="fw-bold text-muted text-uppercase x-small mb-3">Identity & Family</h6>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="text-muted x-small">NID Number</div>
-                                <div class="fw-bold">@(Model.NationalIdNo ?? "N/A")</div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="text-muted x-small">Father's Name</div>
-                                <div class="fw-bold">@(Model.FatherName ?? "N/A")</div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="text-muted x-small">Mother's Name</div>
-                                <div class="fw-bold">@(Model.MotherName ?? "N/A")</div>
-                            </div>
-                        </div>
+                <div class="card-body p-4">
+                    <div class="tab-content">
 
-                        <div class="row g-4">
-                            <div class="col-12">
-                                <h6 class="fw-bold text-muted text-uppercase x-small mb-3">Address Details</h6>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="p-3 bg-light rounded-3">
-                                    <div class="x-small text-muted mb-1 fw-bold">Present Address</div>
-                                    <div class="small">@Model.PresentVillage, @Model.PresentPostOffice, @Model.PresentThana, @Model.PresentDistrict</div>
+                        <!-- Tab: Personal Info -->
+                        <div class="tab-pane fade show active" id="pane-info" role="tabpanel">
+                            <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size:.72rem;letter-spacing:.05em">General Information</h6>
+                            <div class="row g-4">
+                                <div class="col-md-4">
+                                    <div class="text-muted" style="font-size:.72rem">Full Name</div>
+                                    <div class="fw-semibold">@Model.FullName</div>
                                 </div>
+<<<<<<< HEAD
                             </div>
                             <div class="col-md-6">
                                 <div class="p-3 bg-light rounded-3">
@@ -331,45 +411,166 @@
                                     <div class="flex-grow-1 overflow-hidden">
                                         <div class="fw-bold text-truncate small">CV_JohnSmith.pdf</div>
                                         <div class="x-small text-muted">Uploaded on 12 Jan 2026</div>
+=======
+                                @if (!string.IsNullOrEmpty(Model.FullNameBangla))
+                                {
+                                    <div class="col-md-4">
+                                        <div class="text-muted" style="font-size:.72rem">Name (Bangla)</div>
+                                        <div class="fw-semibold">@Model.FullNameBangla</div>
+>>>>>>> d8b24e6 (attendece and website curtomize)
                                     </div>
-                                    <button class="btn btn-sm btn-light rounded-circle ms-2"><i class="bi bi-download"></i></button>
+                                }
+                                <div class="col-md-4">
+                                    <div class="text-muted" style="font-size:.72rem">Date of Birth</div>
+                                    <div class="fw-semibold">@(Model.DateOfBirth != default ? Model.DateOfBirth.ToString("dd MMM yyyy") : "N/A")</div>
                                 </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="d-flex align-items-center p-3 border rounded-3 hover-shadow-sm transition">
-                                    <div class="icon-box bg-primary-subtle text-primary rounded-3 me-3"><i class="bi bi-file-earmark-image-fill"></i></div>
-                                    <div class="flex-grow-1 overflow-hidden">
-                                        <div class="fw-bold text-truncate small">NID_Copy.jpg</div>
-                                        <div class="x-small text-muted">Uploaded on 12 Jan 2026</div>
-                                    </div>
-                                    <button class="btn btn-sm btn-light rounded-circle ms-2"><i class="bi bi-download"></i></button>
+                                <div class="col-md-4">
+                                    <div class="text-muted" style="font-size:.72rem">Gender</div>
+                                    <div class="fw-semibold">@(string.IsNullOrEmpty(Model.Gender) ? "N/A" : Model.Gender)</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-muted" style="font-size:.72rem">Blood Group</div>
+                                    <div class="fw-semibold">@(string.IsNullOrEmpty(Model.BloodGroup) ? "N/A" : Model.BloodGroup)</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-muted" style="font-size:.72rem">Religion</div>
+                                    <div class="fw-semibold">@(string.IsNullOrEmpty(Model.Religion) ? "N/A" : Model.Religion)</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-muted" style="font-size:.72rem">Marital Status</div>
+                                    <div class="fw-semibold">@(string.IsNullOrEmpty(Model.MaritalStatus) ? "N/A" : Model.MaritalStatus)</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-muted" style="font-size:.72rem">Nationality</div>
+                                    <div class="fw-semibold">@(string.IsNullOrEmpty(Model.Nationality) ? "N/A" : Model.Nationality)</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-muted" style="font-size:.72rem">Country</div>
+                                    <div class="fw-semibold">@(string.IsNullOrEmpty(Model.Country) ? "N/A" : Model.Country)</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-muted" style="font-size:.72rem">Designation</div>
+                                    <div class="fw-semibold">@(string.IsNullOrEmpty(Model.Designation) ? "N/A" : Model.Designation)</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-muted" style="font-size:.72rem">Department</div>
+                                    <div class="fw-semibold">@(string.IsNullOrEmpty(Model.Department) ? "N/A" : Model.Department)</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-muted" style="font-size:.72rem">Joining Date</div>
+                                    <div class="fw-semibold">@(Model.JoiningDate?.ToString("dd MMM yyyy") ?? "N/A")</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-muted" style="font-size:.72rem">Qualification</div>
+                                    <div class="fw-semibold">@(string.IsNullOrEmpty(Model.Qualification) ? "N/A" : Model.Qualification)</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-muted" style="font-size:.72rem">Specialization</div>
+                                    <div class="fw-semibold">@(string.IsNullOrEmpty(Model.Specialization) ? "N/A" : Model.Specialization)</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-muted" style="font-size:.72rem">Status</div>
+                                    <div><span class="adm-status @statusClass">@Model.Status</span></div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Tab: Activity (Placeholder) -->
-                    <div class="tab-pane fade" id="activity-pane" role="tabpanel">
-                        <h6 class="mb-4 fw-bold">Recent System Activity</h6>
-                        <div class="timeline">
-                            <div class="timeline-item d-flex gap-3 mb-4">
-                                <div class="timeline-icon bg-success-subtle text-success rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; flex-shrink: 0;"><i class="bi bi-check-lg"></i></div>
-                                <div>
-                                    <div class="fw-bold small">Teacher Profile Updated</div>
-                                    <div class="x-small text-muted">by Super Admin | 2 hours ago</div>
+                        <!-- Tab: Address -->
+                        <div class="tab-pane fade" id="pane-address" role="tabpanel">
+                            <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size:.72rem;letter-spacing:.05em">Address Details</h6>
+                            <div class="row g-4">
+                                <div class="col-md-6">
+                                    <div class="p-3 bg-light rounded-3">
+                                        <div class="fw-bold small mb-2"><i class="bi bi-house me-1 text-primary"></i>Present Address</div>
+                                        <div class="small text-muted">
+                                            @{
+                                                var present = string.Join(", ", new[] { Model.PresentVillage, Model.PresentPostOffice, Model.PresentThana, Model.PresentDistrict }
+                                                    .Where(s => !string.IsNullOrWhiteSpace(s)));
+                                            }
+                                            @(string.IsNullOrEmpty(present) ? "Not provided" : present)
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="timeline-item d-flex gap-3 mb-4">
-                                <div class="timeline-icon bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; flex-shrink: 0;"><i class="bi bi-key-fill"></i></div>
-                                <div>
-                                    <div class="fw-bold small">User Account Generated</div>
-                                    <div class="x-small text-muted">by system | 12 Jan 2026</div>
-                                    <div class="mt-2 p-2 bg-light rounded x-small border">
-                                        <span class="text-muted">Username:</span> john.smith
+                                <div class="col-md-6">
+                                    <div class="p-3 bg-light rounded-3">
+                                        <div class="fw-bold small mb-2"><i class="bi bi-house-door me-1 text-success"></i>Permanent Address</div>
+                                        <div class="small text-muted">
+                                            @{
+                                                var permanent = string.Join(", ", new[] { Model.PermanentVillage, Model.PermanentPostOffice, Model.PermanentThana, Model.PermanentDistrict }
+                                                    .Where(s => !string.IsNullOrWhiteSpace(s)));
+                                            }
+                                            @(string.IsNullOrEmpty(permanent) ? "Not provided" : permanent)
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Tab: Identity & Family -->
+                        <div class="tab-pane fade" id="pane-identity" role="tabpanel">
+                            <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size:.72rem;letter-spacing:.05em">Identity & Family</h6>
+                            <div class="row g-4">
+                                <div class="col-md-4">
+                                    <div class="text-muted" style="font-size:.72rem">NID Number</div>
+                                    <div class="fw-semibold">@(string.IsNullOrEmpty(Model.NationalIdNo) ? "N/A" : Model.NationalIdNo)</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-muted" style="font-size:.72rem">Passport No.</div>
+                                    <div class="fw-semibold">@(string.IsNullOrEmpty(Model.PassportNo) ? "N/A" : Model.PassportNo)</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-muted" style="font-size:.72rem">Father's Name</div>
+                                    <div class="fw-semibold">@(string.IsNullOrEmpty(Model.FatherName) ? "N/A" : Model.FatherName)</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-muted" style="font-size:.72rem">Mother's Name</div>
+                                    <div class="fw-semibold">@(string.IsNullOrEmpty(Model.MotherName) ? "N/A" : Model.MotherName)</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-muted" style="font-size:.72rem">Spouse Name</div>
+                                    <div class="fw-semibold">@(string.IsNullOrEmpty(Model.SpouseName) ? "N/A" : Model.SpouseName)</div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="text-muted" style="font-size:.72rem">Marital Status</div>
+                                    <div class="fw-semibold">@(string.IsNullOrEmpty(Model.MaritalStatus) ? "N/A" : Model.MaritalStatus)</div>
+                                </div>
+                            </div>
+                            @if (!string.IsNullOrEmpty(Model.NationalIdPath))
+                            {
+                                <div class="mt-4">
+                                    <h6 class="fw-bold text-uppercase text-muted mb-3" style="font-size:.72rem">NID Document</h6>
+                                    <a href="@Model.NationalIdPath" target="_blank" class="btn btn-outline-primary btn-sm">
+                                        <i class="bi bi-file-earmark-image me-1"></i>View NID Document
+                                    </a>
+                                </div>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.PassportPath))
+                            {
+                                <div class="mt-3">
+                                    <h6 class="fw-bold text-uppercase text-muted mb-3" style="font-size:.72rem">Passport Document</h6>
+                                    <a href="@Model.PassportPath" target="_blank" class="btn btn-outline-secondary btn-sm">
+                                        <i class="bi bi-file-earmark-image me-1"></i>View Passport Document
+                                    </a>
+                                </div>
+                            }
+                        </div>
+
+                        <!-- Tab: Assignments -->
+                        <div class="tab-pane fade" id="pane-assignments" role="tabpanel">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <h6 class="mb-0 fw-bold">Assigned Classes & Subjects</h6>
+                                <a href="/TeacherAssignment/@Model.Id" class="adm-btn adm-btn--primary" style="font-size:.8rem;padding:.35rem .85rem">
+                                    <i class="bi bi-plus-lg me-1"></i>Manage Assignments
+                                </a>
+                            </div>
+                            <div id="assignments-container">
+                                <div class="text-center py-5 text-muted">
+                                    <i class="bi bi-hourglass-split fs-2 mb-2 d-block"></i>
+                                    Loading assignments...
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -378,15 +579,66 @@
 </div>
 
 <style>
-    .icon-box-sm { width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; }
-    .icon-box { width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
-    .fw-600 { font-weight: 600; }
-    .x-small { font-size: 0.75rem; }
-    .hover-shadow-sm:hover { shadow: 0 .125rem .25rem rgba(0,0,0,.075)!important; }
-    .transition { transition: all 0.2s ease; }
-    .nav-tabs .nav-link.active { color: var(--clr-primary); border-bottom: 2px solid var(--clr-primary) !important; font-weight: 700; background: transparent; }
-    .nav-tabs .nav-link { color: var(--clr-text-muted); font-weight: 500; }
-    .timeline { position: relative; }
-    .timeline::before { content: ''; position: absolute; left: 15px; top: 0; bottom: 0; width: 2px; background: #f1f5f9; }
-    .timeline-item { position: relative; z-index: 1; }
+    .nav-tabs .nav-link.active {
+        color: var(--adm-primary, #4f46e5);
+        border-bottom: 2px solid var(--adm-primary, #4f46e5) !important;
+        font-weight: 700;
+        background: transparent;
+    }
+    .nav-tabs .nav-link {
+        color: var(--clr-text-muted, #64748b);
+        font-weight: 500;
+        border: none;
+    }
+    .nav-tabs .nav-link:hover {
+        color: var(--adm-primary, #4f46e5);
+        border-color: transparent;
+    }
 </style>
+
+@section Scripts {
+<script>
+    // Lazy-load assignments when that tab is clicked
+    document.querySelector('[data-bs-target="#pane-assignments"]')?.addEventListener('shown.bs.tab', function () {
+        const container = document.getElementById('assignments-container');
+        if (container.dataset.loaded) return;
+        container.dataset.loaded = true;
+
+        fetch('/TeacherAssignment/GetByTeacher/@Model.Id')
+            .then(r => r.ok ? r.json() : Promise.reject(r))
+            .then(data => {
+                if (!data || data.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-5 text-muted">
+                            <i class="bi bi-diagram-3 fs-2 mb-2 d-block"></i>
+                            <div>No class or subject assignments yet.</div>
+                            <a href="/TeacherAssignment/@Model.Id" class="adm-btn adm-btn--primary mt-3" style="font-size:.8rem">
+                                Assign Now
+                            </a>
+                        </div>`;
+                    return;
+                }
+                let rows = data.map(a => `
+                    <tr>
+                        <td><div class="fw-bold">${a.className ?? '-'}</div><div class="text-muted" style="font-size:.75rem">${a.sectionName ?? ''}</div></td>
+                        <td>${a.subjectName ?? '-'}</td>
+                        <td><span class="badge bg-light text-primary border rounded-pill">${a.isClassTeacher ? 'Class Teacher' : 'Subject Teacher'}</span></td>
+                    </tr>`).join('');
+                container.innerHTML = `
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="bg-light"><tr>
+                                <th class="small py-3">Class & Section</th>
+                                <th class="small py-3">Subject</th>
+                                <th class="small py-3">Role</th>
+                            </tr></thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>`;
+            })
+            .catch(() => {
+                container.innerHTML = `<div class="alert alert-warning">Could not load assignments. <a href="/TeacherAssignment/@Model.Id">Manage here</a>.</div>`;
+            });
+    });
+</script>
+}

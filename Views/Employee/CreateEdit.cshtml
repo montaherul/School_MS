@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 @model SchoolManagementSystem.Models.ViewModels.Employee.EmployeeViewModel
 @{
     ViewData["Title"] = Model.Id == 0 ? "Create Employee" : "Edit Employee";
@@ -93,12 +94,80 @@
                             <label asp-for="Gender" class="form-label">Gender <span class="text-danger">*</span></label>
                             <select asp-for="Gender" class="form-select">
                                 <option value="">Select</option>
+=======
+@model SchoolManagementSystem.Models.DTOs.Employee.EmployeeUpsertDto
+@{
+    var isEdit = Model.Id > 0;
+    ViewData["Title"] = isEdit ? "Edit Employee Records" : "New Employee Registration";
+    var departments = ViewBag.Departments as IReadOnlyList<SchoolManagementSystem.Models.DTOs.Employee.DepartmentDto> ?? new List<SchoolManagementSystem.Models.DTOs.Employee.DepartmentDto>();
+    var designations = ViewBag.Designations as IReadOnlyList<SchoolManagementSystem.Models.DTOs.Employee.DesignationDto> ?? new List<SchoolManagementSystem.Models.DTOs.Employee.DesignationDto>();
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-11">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <div class="d-flex align-items-center">
+                <a asp-action="Index" class="btn btn-outline-secondary btn-sm me-3"><i class="bi bi-arrow-left"></i> Back to List</a>
+                <h2 class="mb-0 text-gradient"><i class="bi bi-people-fill me-2"></i>@(isEdit ? "Edit Employee: " + Model.FullName : "Register New Employee")</h2>
+            </div>
+            @if (isEdit)
+            {
+                <span class="badge bg-secondary p-2 fs-6">Code: @Model.EmployeeCode</span>
+            }
+        </div>
+
+        <form asp-action="Save" method="post" enctype="multipart/form-data" id="employeeForm">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="EmployeeCode" />
+            <input type="hidden" asp-for="ProfilePicturePath" />
+            <input type="hidden" asp-for="SignaturePath" />
+
+            <div asp-validation-summary="All" class="alert alert-danger mb-4" id="validationSummary" style="display:none;"></div>
+
+            <!-- TABS NAVIGATION -->
+            <ul class="nav nav-tabs nav-justified mb-4" id="employeeTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="personal-tab" data-bs-toggle="tab" data-bs-target="#personal" type="button" role="tab"><i class="bi bi-person-fill me-1"></i>1. Personal Info</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="professional-tab" data-bs-toggle="tab" data-bs-target="#professional" type="button" role="tab"><i class="bi bi-briefcase-fill me-1"></i>2. Professional & Contact</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="qualifications-tab" data-bs-toggle="tab" data-bs-target="#qualifications" type="button" role="tab"><i class="bi bi-mortarboard-fill me-1"></i>3. Qualifications</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="experience-tab" data-bs-toggle="tab" data-bs-target="#experience" type="button" role="tab"><i class="bi bi-award-fill me-1"></i>4. Work Experience</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="documents-tab" data-bs-toggle="tab" data-bs-target="#documents" type="button" role="tab"><i class="bi bi-file-earmark-arrow-up-fill me-1"></i>5. Attachments</button>
+                </li>
+            </ul>
+
+            <!-- TABS CONTENT -->
+            <div class="tab-content card shadow-sm p-4 mb-4" id="employeeTabsContent" style="background-color: var(--bs-card-bg, #fff);">
+                
+                <!-- 1. PERSONAL INFO -->
+                <div class="tab-pane fade show active" id="personal" role="tabpanel">
+                    <h5 class="card-title text-primary border-bottom pb-2 mb-3"><i class="bi bi-person-badge me-2"></i>Personal Particulars</h5>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label asp-for="FullName" class="form-label fw-bold">Full Name (English) <span class="text-danger">*</span></label>
+                            <input asp-for="FullName" class="form-control" placeholder="Enter Full Name" required />
+                            <span asp-validation-for="FullName" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="Gender" class="form-label fw-bold">Gender <span class="text-danger">*</span></label>
+                            <select asp-for="Gender" class="form-select" required>
+                                <option value="">Select Gender</option>
+>>>>>>> d8b24e6 (attendece and website curtomize)
                                 <option value="Male">Male</option>
                                 <option value="Female">Female</option>
                                 <option value="Other">Other</option>
                             </select>
                             <span asp-validation-for="Gender" class="text-danger small"></span>
                         </div>
+<<<<<<< HEAD
                         <div class="col-md-4">
                             <label asp-for="DateOfBirth" class="form-label">Date of Birth <span class="text-danger">*</span></label>
                             <input asp-for="DateOfBirth" type="date" class="form-control" />
@@ -115,6 +184,26 @@
                             <span asp-validation-for="Email" class="text-danger small"></span>
                         </div>
                         <div class="col-md-4">
+=======
+                        <div class="col-md-3">
+                            <label asp-for="DateOfBirth" class="form-label fw-bold">Date of Birth <span class="text-danger">*</span></label>
+                            <input asp-for="DateOfBirth" type="date" class="form-control" required />
+                            <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="FatherName" class="form-label">Father's Name</label>
+                            <input asp-for="FatherName" class="form-control" placeholder="Father's Name" />
+                            <span asp-validation-for="FatherName" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="MotherName" class="form-label">Mother's Name</label>
+                            <input asp-for="MotherName" class="form-control" placeholder="Mother's Name" />
+                            <span asp-validation-for="MotherName" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-3">
+>>>>>>> d8b24e6 (attendece and website curtomize)
                             <label asp-for="BloodGroup" class="form-label">Blood Group</label>
                             <select asp-for="BloodGroup" class="form-select">
                                 <option value="">Select</option>
@@ -128,6 +217,7 @@
                                 <option value="O-">O-</option>
                             </select>
                         </div>
+<<<<<<< HEAD
                         <div class="col-md-4">
                             <label asp-for="Nationality" class="form-label">Nationality</label>
                             <input asp-for="Nationality" class="form-control" />
@@ -262,11 +352,326 @@
                     @(Model.Id == 0 ? "Create Employee" : "Update Employee")
                 </button>
                 <a asp-action="Index" class="adm-btn adm-btn--ghost px-4">Cancel</a>
+=======
+                        <div class="col-md-3">
+                            <label asp-for="Religion" class="form-label">Religion</label>
+                            <input asp-for="Religion" class="form-control" placeholder="e.g. Islam, Hinduism" />
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="Nationality" class="form-label">Nationality</label>
+                            <input asp-for="Nationality" class="form-control" />
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="NIDNumber" class="form-label">NID/National ID Number</label>
+                            <input asp-for="NIDNumber" class="form-control" placeholder="10 or 17 digit NID" />
+                            <span asp-validation-for="NIDNumber" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="BirthCertificateNo" class="form-label">Birth Certificate Number</label>
+                            <input asp-for="BirthCertificateNo" class="form-control" placeholder="Birth Reg Number" />
+                        </div>
+
+                        <div class="col-md-12 mt-4">
+                            <h6 class="fw-bold text-success border-bottom pb-2 mb-3"><i class="bi bi-geo-alt-fill me-2"></i>Residential Addresses</h6>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label asp-for="PresentAddress" class="form-label fw-bold">Present Address</label>
+                                    <textarea asp-for="PresentAddress" class="form-control" rows="3" placeholder="Village, Post, Thana, District"></textarea>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <label asp-for="PermanentAddress" class="form-label fw-bold mb-0">Permanent Address</label>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="chkSameAddress">
+                                            <label class="form-check-label small" for="chkSameAddress">Same as Present</label>
+                                        </div>
+                                    </div>
+                                    <textarea asp-for="PermanentAddress" class="form-control" rows="3" placeholder="Village, Post, Thana, District"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. PROFESSIONAL & CONTACT -->
+                <div class="tab-pane fade" id="professional" role="tabpanel">
+                    <h5 class="card-title text-primary border-bottom pb-2 mb-3"><i class="bi bi-telephone-fill me-2"></i>Contact Information</h5>
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label asp-for="Phone" class="form-label fw-bold">Primary Phone <span class="text-danger">*</span></label>
+                            <input asp-for="Phone" class="form-control" placeholder="e.g. 017XXXXXXXX" required />
+                            <span asp-validation-for="Phone" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Email" class="form-label fw-bold">Email Address</label>
+                            <input asp-for="Email" type="email" class="form-control" placeholder="e.g. email@school.local" />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="EmergencyContactName" class="form-label">Emergency Contact Name</label>
+                            <input asp-for="EmergencyContactName" class="form-control" placeholder="Contact Person" />
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="EmergencyContactPhone" class="form-label">Emergency Contact Phone</label>
+                            <input asp-for="EmergencyContactPhone" class="form-control" placeholder="Contact Phone" />
+                        </div>
+                    </div>
+
+                    <h5 class="card-title text-success border-bottom pb-2 mb-3"><i class="bi bi-briefcase-fill me-2"></i>Professional Particulars</h5>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label asp-for="DepartmentId" class="form-label fw-bold">Department <span class="text-danger">*</span></label>
+                            <select asp-for="DepartmentId" class="form-select" required>
+                                <option value="">Select Department</option>
+                                @foreach (var d in departments)
+                                {
+                                    <option value="@d.Id">@d.Name</option>
+                                }
+                            </select>
+                            <span asp-validation-for="DepartmentId" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="DesignationId" class="form-label fw-bold">Designation <span class="text-danger">*</span></label>
+                            <select asp-for="DesignationId" class="form-select" required>
+                                <option value="">Select Designation</option>
+                                @foreach (var d in designations)
+                                {
+                                    <option value="@d.Id" data-teaching="@d.IsTeachingRole.ToString().ToLower()">@d.Name</option>
+                                }
+                            </select>
+                            <span asp-validation-for="DesignationId" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="JoiningDate" class="form-label fw-bold">Joining Date <span class="text-danger">*</span></label>
+                            <input asp-for="JoiningDate" type="date" class="form-control" required />
+                            <span asp-validation-for="JoiningDate" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="EmployeeType" class="form-label fw-bold">Employment Type <span class="text-danger">*</span></label>
+                            <select asp-for="EmployeeType" class="form-select" required>
+                                <option value="Full-Time">Full-Time</option>
+                                <option value="Part-Time">Part-Time</option>
+                                <option value="Contractual">Contractual</option>
+                                <option value="Substitute">Substitute</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="Status" class="form-label fw-bold">Status <span class="text-danger">*</span></label>
+                            <select asp-for="Status" class="form-select" required>
+                                <option value="Active">Active</option>
+                                <option value="Inactive">Inactive</option>
+                                <option value="Resigned">Resigned</option>
+                                <option value="Retired">Retired</option>
+                                <option value="On Leave">On Leave</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-center mt-4">
+                            <div class="form-check form-switch p-3 border rounded w-100" style="background-color: var(--bs-tertiary-bg, #f8f9fa);">
+                                <input class="form-check-input ms-0 me-2" type="checkbox" asp-for="IsTeachingStaff" id="chkIsTeaching">
+                                <label class="form-check-label fw-bold" for="chkIsTeaching">Is Teaching Staff?</label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-12">
+                            <label asp-for="Remarks" class="form-label">Remarks / Special Notes</label>
+                            <textarea asp-for="Remarks" class="form-control" rows="2"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. QUALIFICATIONS -->
+                <div class="tab-pane fade" id="qualifications" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+                        <h5 class="card-title text-primary mb-0"><i class="bi bi-mortarboard-fill me-2"></i>Educational Qualifications</h5>
+                        <button type="button" class="btn btn-primary btn-sm" id="btnAddQual"><i class="bi bi-plus-lg"></i> Add Qualification</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover align-middle" id="tblQualifications">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Exam/Degree Name <span class="text-danger">*</span></th>
+                                    <th>Board/University</th>
+                                    <th>Institute Name</th>
+                                    <th>Subject/Group</th>
+                                    <th style="width:100px;">Passing Year</th>
+                                    <th style="width:100px;">GPA/CGPA</th>
+                                    <th style="width:250px;">Upload Certificate</th>
+                                    <th style="width:50px;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (int i = 0; i < Model.Qualifications.Count; i++)
+                                {
+                                    <tr>
+                                        <td>
+                                            <input type="hidden" name="Qualifications[@i].Id" value="@Model.Qualifications[i].Id" />
+                                            <input type="hidden" name="Qualifications[@i].EmployeeId" value="@Model.Qualifications[i].EmployeeId" />
+                                            <input type="hidden" name="Qualifications[@i].CertificateFilePath" value="@Model.Qualifications[i].CertificateFilePath" />
+                                            <input name="Qualifications[@i].ExamName" class="form-control form-control-sm" value="@Model.Qualifications[i].ExamName" required />
+                                        </td>
+                                        <td><input name="Qualifications[@i].BoardOrUniversity" class="form-control form-control-sm" value="@Model.Qualifications[i].BoardOrUniversity" /></td>
+                                        <td><input name="Qualifications[@i].InstituteName" class="form-control form-control-sm" value="@Model.Qualifications[i].InstituteName" /></td>
+                                        <td><input name="Qualifications[@i].GroupOrSubject" class="form-control form-control-sm" value="@Model.Qualifications[i].GroupOrSubject" /></td>
+                                        <td><input name="Qualifications[@i].PassingYear" class="form-control form-control-sm text-center" value="@Model.Qualifications[i].PassingYear" placeholder="e.g. 2018" /></td>
+                                        <td><input name="Qualifications[@i].CGPAOrDivision" class="form-control form-control-sm text-center" value="@Model.Qualifications[i].CGPAOrDivision" placeholder="e.g. 5.00" /></td>
+                                        <td>
+                                            <input type="file" name="Qualifications[@i].CertificateFile" class="form-control form-control-sm" accept=".pdf,.jpg,.jpeg,.png" />
+                                            @if (!string.IsNullOrEmpty(Model.Qualifications[i].CertificateFilePath))
+                                            {
+                                                <div class="mt-1 small"><a href="@Model.Qualifications[i].CertificateFilePath" target="_blank" class="text-info"><i class="bi bi-file-earmark-pdf"></i> Current Certificate</a></div>
+                                            }
+                                        </td>
+                                        <td class="text-center">
+                                            <button type="button" class="btn btn-outline-danger btn-sm btn-delete-row"><i class="bi bi-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 4. WORK EXPERIENCE -->
+                <div class="tab-pane fade" id="experience" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
+                        <h5 class="card-title text-primary mb-0"><i class="bi bi-award-fill me-2"></i>Previous Employment History</h5>
+                        <button type="button" class="btn btn-primary btn-sm" id="btnAddExp"><i class="bi bi-plus-lg"></i> Add Experience</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover align-middle" id="tblExperience">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Organization <span class="text-danger">*</span></th>
+                                    <th>Designation <span class="text-danger">*</span></th>
+                                    <th style="width:160px;">Start Date <span class="text-danger">*</span></th>
+                                    <th style="width:160px;">End Date</th>
+                                    <th>Key Responsibilities / Remarks</th>
+                                    <th style="width:50px;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (int i = 0; i < Model.Experiences.Count; i++)
+                                {
+                                    <tr>
+                                        <td>
+                                            <input type="hidden" name="Experiences[@i].Id" value="@Model.Experiences[i].Id" />
+                                            <input type="hidden" name="Experiences[@i].EmployeeId" value="@Model.Experiences[i].EmployeeId" />
+                                            <input name="Experiences[@i].OrganizationName" class="form-control form-control-sm" value="@Model.Experiences[i].OrganizationName" required />
+                                        </td>
+                                        <td><input name="Experiences[@i].Designation" class="form-control form-control-sm" value="@Model.Experiences[i].Designation" required /></td>
+                                        <td><input name="Experiences[@i].StartDate" type="date" class="form-control form-control-sm" value="@Model.Experiences[i].StartDate.ToString("yyyy-MM-dd")" required /></td>
+                                        <td><input name="Experiences[@i].EndDate" type="date" class="form-control form-control-sm" value="@(Model.Experiences[i].EndDate?.ToString("yyyy-MM-dd"))" /></td>
+                                        <td><input name="Experiences[@i].Remarks" class="form-control form-control-sm" value="@Model.Experiences[i].Remarks" /></td>
+                                        <td class="text-center">
+                                            <button type="button" class="btn btn-outline-danger btn-sm btn-delete-row"><i class="bi bi-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 5. UPLOADS & SECURE DOCUMENTS -->
+                <div class="tab-pane fade" id="documents" role="tabpanel">
+                    <h5 class="card-title text-primary border-bottom pb-2 mb-4"><i class="bi bi-file-earmark-arrow-up-fill me-2"></i>Profile Pictures & Digital Signature</h5>
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-6 border-end">
+                            <div class="d-flex align-items-start">
+                                <div class="me-4 text-center">
+                                    <img id="imgPicPreview" src="@(string.IsNullOrEmpty(Model.ProfilePicturePath) ? "/images/default-user.png" : Model.ProfilePicturePath)" style="width:120px; height:120px; object-fit:cover; border-radius:50%; border:3px solid var(--adm-primary, #6f42c1);" />
+                                    <div class="small text-muted mt-2">Recommended: Square Aspect Ratio</div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <label asp-for="ProfilePictureFile" class="form-label fw-bold">Upload Profile Photo</label>
+                                    <input asp-for="ProfilePictureFile" type="file" class="form-control" accept="image/*" id="inputProfilePic" />
+                                    <span class="text-muted small">Max file size: 2MB (.jpg, .jpeg, .png)</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex align-items-start">
+                                <div class="me-4 text-center">
+                                    <img id="imgSigPreview" src="@(string.IsNullOrEmpty(Model.SignaturePath) ? "/images/default-sig.png" : Model.SignaturePath)" style="width:180px; height:70px; object-fit:contain; border:1px dashed #ccc; padding:4px;" />
+                                    <div class="small text-muted mt-2">Recommended: Transparent PNG</div>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <label asp-for="SignatureFile" class="form-label fw-bold">Upload Digital Signature</label>
+                                    <input asp-for="SignatureFile" type="file" class="form-control" accept="image/*" id="inputSignature" />
+                                    <span class="text-muted small">Max file size: 1MB (.png, .jpg)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3 mt-4">
+                        <h5 class="card-title text-success mb-0"><i class="bi bi-file-text-fill me-2"></i>Legal Identity & Employment Documents</h5>
+                        <button type="button" class="btn btn-success btn-sm" id="btnAddDoc"><i class="bi bi-plus-lg"></i> Attach Document</button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered align-middle" id="tblDocuments">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="width:200px;">Document Type <span class="text-danger">*</span></th>
+                                    <th>Document Description Name <span class="text-danger">*</span></th>
+                                    <th style="width:300px;">Upload File <span class="text-danger">*</span></th>
+                                    <th style="width:160px;">Expiry Date (If applicable)</th>
+                                    <th>Additional Remarks</th>
+                                    <th style="width:50px;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (int i = 0; i < Model.Documents.Count; i++)
+                                {
+                                    <tr>
+                                        <td>
+                                            <input type="hidden" name="Documents[@i].Id" value="@Model.Documents[i].Id" />
+                                            <input type="hidden" name="Documents[@i].EmployeeId" value="@Model.Documents[i].EmployeeId" />
+                                            <input type="hidden" name="Documents[@i].FilePath" value="@Model.Documents[i].FilePath" />
+                                            <select name="Documents[@i].DocumentType" class="form-select form-select-sm" required>
+                                                <option value="NID" selected="@(Model.Documents[i].DocumentType == "NID")">National ID Card</option>
+                                                <option value="Passport" selected="@(Model.Documents[i].DocumentType == "Passport")">International Passport</option>
+                                                <option value="Appointment" selected="@(Model.Documents[i].DocumentType == "Appointment")">Appointment Letter</option>
+                                                <option value="Joining" selected="@(Model.Documents[i].DocumentType == "Joining")">Joining Report</option>
+                                                <option value="CV" selected="@(Model.Documents[i].DocumentType == "CV")">Curriculum Vitae (CV)</option>
+                                                <option value="Medical" selected="@(Model.Documents[i].DocumentType == "Medical")">Medical Fitness Report</option>
+                                                <option value="Other" selected="@(Model.Documents[i].DocumentType == "Other")">Other Custom Document</option>
+                                            </select>
+                                        </td>
+                                        <td><input name="Documents[@i].DocumentName" class="form-control form-control-sm" value="@Model.Documents[i].DocumentName" required /></td>
+                                        <td>
+                                            <input type="file" name="Documents[@i].DocumentFile" class="form-control form-control-sm" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" />
+                                            @if (!string.IsNullOrEmpty(Model.Documents[i].FilePath))
+                                            {
+                                                <div class="mt-1 small"><a href="@Model.Documents[i].FilePath" target="_blank" class="text-info"><i class="bi bi-file-earmark-pdf"></i> View Saved File</a></div>
+                                            }
+                                        </td>
+                                        <td><input name="Documents[@i].ExpiryDate" type="date" class="form-control form-control-sm" value="@(Model.Documents[i].ExpiryDate?.ToString("yyyy-MM-dd"))" /></td>
+                                        <td><input name="Documents[@i].Remarks" class="form-control form-control-sm" value="@Model.Documents[i].Remarks" /></td>
+                                        <td class="text-center">
+                                            <button type="button" class="btn btn-outline-danger btn-sm btn-delete-row"><i class="bi bi-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- BUTTONS -->
+            <div class="d-flex gap-3 justify-content-end mb-5">
+                <a asp-action="Index" class="btn btn-outline-secondary px-5"><i class="bi bi-x-circle me-1"></i> Cancel</a>
+                <button type="submit" class="btn btn-primary px-5 btn-submit-form"><i class="bi bi-check-circle me-1"></i> Save Employee Records</button>
+>>>>>>> d8b24e6 (attendece and website curtomize)
             </div>
         </form>
     </div>
 </div>
 
+<<<<<<< HEAD
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
@@ -278,10 +683,46 @@
                     document.getElementById("PermanentPostOffice").value = document.getElementById("PresentPostOffice").value;
                     document.getElementById("PermanentThana").value = document.getElementById("PresentThana").value;
                     document.getElementById("PermanentDistrict").value = document.getElementById("PresentDistrict").value;
+=======
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Core Address mapping
+        const chkSame = document.getElementById("chkSameAddress");
+        const txtPresent = document.getElementById("PresentAddress");
+        const txtPermanent = document.getElementById("PermanentAddress");
+
+        if (chkSame && txtPresent && txtPermanent) {
+            chkSame.addEventListener("change", function () {
+                if (this.checked) {
+                    txtPermanent.value = txtPresent.value;
+                    txtPermanent.setAttribute("readonly", true);
+                } else {
+                    txtPermanent.removeAttribute("readonly");
+                }
+            });
+
+            // If same already on edit mode
+            if (isEditMode() && txtPresent.value === txtPermanent.value && txtPresent.value !== "") {
+                chkSame.checked = true;
+                txtPermanent.setAttribute("readonly", true);
+            }
+        }
+
+        // Auto change IsTeachingStaff switch based on Designation's default mapping
+        const ddlDesignation = document.getElementById("DesignationId");
+        const switchTeaching = document.getElementById("chkIsTeaching");
+        if (ddlDesignation && switchTeaching) {
+            ddlDesignation.addEventListener("change", function () {
+                const selectedOpt = this.options[this.selectedIndex];
+                const isTeaching = selectedOpt.getAttribute("data-teaching");
+                if (isTeaching !== null) {
+                    switchTeaching.checked = (isTeaching === "true");
+>>>>>>> d8b24e6 (attendece and website curtomize)
                 }
             });
         }
 
+<<<<<<< HEAD
         const enableLogin = document.getElementById("enableLogin");
         const loginFields = document.getElementById("loginFields");
         const usernameInput = document.querySelector('input[name="Username"]');
@@ -292,18 +733,48 @@
                 loginFields.style.display = this.checked ? "block" : "none";
                 if (this.checked && !usernameInput.value && employeeCodeInput) {
                     usernameInput.value = employeeCodeInput.value;
+=======
+        // Profile Picture Preview
+        const inpProfile = document.getElementById("inputProfilePic");
+        const imgProfile = document.getElementById("imgPicPreview");
+        if (inpProfile && imgProfile) {
+            inpProfile.addEventListener("change", function (e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function () {
+                        imgProfile.src = reader.result;
+                    };
+                    reader.readAsDataURL(file);
+>>>>>>> d8b24e6 (attendece and website curtomize)
                 }
             });
         }
 
+<<<<<<< HEAD
         if (employeeCodeInput && usernameInput && !usernameInput.readOnly) {
             employeeCodeInput.addEventListener("keyup", function() {
                 if (enableLogin && enableLogin.checked) {
                     usernameInput.value = this.value;
+=======
+        // Signature Preview
+        const inpSignature = document.getElementById("inputSignature");
+        const imgSignature = document.getElementById("imgSigPreview");
+        if (inpSignature && imgSignature) {
+            inpSignature.addEventListener("change", function (e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function () {
+                        imgSignature.src = reader.result;
+                    };
+                    reader.readAsDataURL(file);
+>>>>>>> d8b24e6 (attendece and website curtomize)
                 }
             });
         }
 
+<<<<<<< HEAD
         const designationSelect = document.querySelector('select[name="DesignationId"]');
         const roleSelect = document.querySelector('select[name="RoleId"]');
 
@@ -331,4 +802,169 @@
             });
         }
     </script>
+=======
+        // 3. Educational Qualifications Row Builder
+        const btnAddQual = document.getElementById("btnAddQual");
+        const tblQual = document.getElementById("tblQualifications").querySelector("tbody");
+        if (btnAddQual && tblQual) {
+            btnAddQual.addEventListener("click", function () {
+                const index = tblQual.querySelectorAll("tr").length;
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>
+                        <input type="hidden" name="Qualifications[${index}].Id" value="0" />
+                        <input type="hidden" name="Qualifications[${index}].EmployeeId" value="0" />
+                        <input type="hidden" name="Qualifications[${index}].CertificateFilePath" value="" />
+                        <input name="Qualifications[${index}].ExamName" class="form-control form-control-sm" required placeholder="e.g. SSC, HSC, B.Sc" />
+                    </td>
+                    <td><input name="Qualifications[${index}].BoardOrUniversity" class="form-control form-control-sm" placeholder="e.g. Dhaka Board" /></td>
+                    <td><input name="Qualifications[${index}].InstituteName" class="form-control form-control-sm" placeholder="e.g. Dhaka College" /></td>
+                    <td><input name="Qualifications[${index}].GroupOrSubject" class="form-control form-control-sm" placeholder="e.g. Science, Physics" /></td>
+                    <td><input name="Qualifications[${index}].PassingYear" class="form-control form-control-sm text-center" placeholder="Year" /></td>
+                    <td><input name="Qualifications[${index}].CGPAOrDivision" class="form-control form-control-sm text-center" placeholder="GPA" /></td>
+                    <td><input type="file" name="Qualifications[${index}].CertificateFile" class="form-control form-control-sm" accept=".pdf,.jpg,.jpeg,.png" /></td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-outline-danger btn-sm btn-delete-row"><i class="bi bi-trash"></i></button>
+                    </td>
+                `;
+                tblQual.appendChild(tr);
+                bindDeleteRowEvent(tr);
+            });
+        }
+
+        // 4. Experiences Row Builder
+        const btnAddExp = document.getElementById("btnAddExp");
+        const tblExp = document.getElementById("tblExperience").querySelector("tbody");
+        if (btnAddExp && tblExp) {
+            btnAddExp.addEventListener("click", function () {
+                const index = tblExp.querySelectorAll("tr").length;
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>
+                        <input type="hidden" name="Experiences[${index}].Id" value="0" />
+                        <input type="hidden" name="Experiences[${index}].EmployeeId" value="0" />
+                        <input name="Experiences[${index}].OrganizationName" class="form-control form-control-sm" required placeholder="e.g. High School Name" />
+                    </td>
+                    <td><input name="Experiences[${index}].Designation" class="form-control form-control-sm" required placeholder="e.g. Lecturer" /></td>
+                    <td><input name="Experiences[${index}].StartDate" type="date" class="form-control form-control-sm" required /></td>
+                    <td><input name="Experiences[${index}].EndDate" type="date" class="form-control form-control-sm" /></td>
+                    <td><input name="Experiences[${index}].Remarks" class="form-control form-control-sm" placeholder="Responsibilities" /></td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-outline-danger btn-sm btn-delete-row"><i class="bi bi-trash"></i></button>
+                    </td>
+                `;
+                tblExp.appendChild(tr);
+                bindDeleteRowEvent(tr);
+            });
+        }
+
+        // 5. Secure Documents Row Builder
+        const btnAddDoc = document.getElementById("btnAddDoc");
+        const tblDoc = document.getElementById("tblDocuments").querySelector("tbody");
+        if (btnAddDoc && tblDoc) {
+            btnAddDoc.addEventListener("click", function () {
+                const index = tblDoc.querySelectorAll("tr").length;
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>
+                        <input type="hidden" name="Documents[${index}].Id" value="0" />
+                        <input type="hidden" name="Documents[${index}].EmployeeId" value="0" />
+                        <input type="hidden" name="Documents[${index}].FilePath" value="" />
+                        <select name="Documents[${index}].DocumentType" class="form-select form-select-sm" required>
+                            <option value="NID">National ID Card</option>
+                            <option value="Passport">International Passport</option>
+                            <option value="Appointment">Appointment Letter</option>
+                            <option value="Joining">Joining Report</option>
+                            <option value="CV">Curriculum Vitae (CV)</option>
+                            <option value="Medical">Medical Fitness Report</option>
+                            <option value="Other" selected>Other Custom Document</option>
+                        </select>
+                    </td>
+                    <td><input name="Documents[${index}].DocumentName" class="form-control form-control-sm" required placeholder="Document Description Name" /></td>
+                    <td><input type="file" name="Documents[${index}].DocumentFile" class="form-control form-control-sm" required accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" /></td>
+                    <td><input name="Documents[${index}].ExpiryDate" type="date" class="form-control form-control-sm" /></td>
+                    <td><input name="Documents[${index}].Remarks" class="form-control form-control-sm" placeholder="Notes" /></td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-outline-danger btn-sm btn-delete-row"><i class="bi bi-trash"></i></button>
+                    </td>
+                `;
+                tblDoc.appendChild(tr);
+                bindDeleteRowEvent(tr);
+            });
+        }
+
+        // Binding delete events on existing rows
+        document.querySelectorAll("table tbody tr").forEach(function (tr) {
+            bindDeleteRowEvent(tr);
+        });
+
+        function bindDeleteRowEvent(row) {
+            const btn = row.querySelector(".btn-delete-row");
+            if (btn) {
+                btn.addEventListener("click", function () {
+                    if (confirm("Are you sure you want to remove this row?")) {
+                        const tableBody = row.parentElement;
+                        row.remove();
+                        // Re-index all inputs inside this table to prevent model binding gaps
+                        reIndexTableInputs(tableBody);
+                    }
+                });
+            }
+        }
+
+        function reIndexTableInputs(tableBody) {
+            const trs = tableBody.querySelectorAll("tr");
+            trs.forEach(function (tr, index) {
+                const inputs = tr.querySelectorAll("input, select, textarea");
+                inputs.forEach(function (input) {
+                    const name = input.getAttribute("name");
+                    if (name) {
+                        // Matches something like "Qualifications[0].ExamName" -> change index to "index"
+                        const updatedName = name.replace(/\[\d+\]/, `[${index}]`);
+                        input.setAttribute("name", updatedName);
+                        // Also update id if exists
+                        const id = input.getAttribute("id");
+                        if (id) {
+                            const updatedId = id.replace(/_\d+__/, `_${index}__`);
+                            input.setAttribute("id", updatedId);
+                        }
+                    }
+                });
+            });
+        }
+
+        function isEditMode() {
+            const idVal = parseInt(document.getElementById("Id").value);
+            return idVal > 0;
+        }
+    });
+</script>
+
+<style>
+    .text-gradient {
+        background: linear-gradient(45deg, var(--adm-primary, #6f42c1), #007bff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .nav-tabs .nav-link {
+        font-weight: 600;
+        color: #6c757d;
+        border: none;
+        border-bottom: 3px solid transparent;
+        padding: 12px 16px;
+    }
+    .nav-tabs .nav-link.active {
+        color: var(--adm-primary, #6f42c1);
+        border: none;
+        border-bottom: 3px solid var(--adm-primary, #6f42c1);
+        background: transparent;
+    }
+    .nav-tabs .nav-link:hover {
+        border-color: transparent;
+        color: var(--adm-primary, #6f42c1);
+    }
+</style>
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+>>>>>>> d8b24e6 (attendece and website curtomize)
 }

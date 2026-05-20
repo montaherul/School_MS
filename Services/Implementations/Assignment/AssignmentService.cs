@@ -28,7 +28,11 @@ public class AssignmentService : BaseService<AssignmentTask>, IAssignmentService
 
         if (isTeacher && !isAdmin)
         {
+<<<<<<< HEAD
             var teacher = await _unitOfWork.Repository<Teacher>().Query().AsNoTracking().FirstOrDefaultAsync(t => t.UserId == userId && !t.IsDeleted, ct);
+=======
+            var teacher = await _unitOfWork.Repository<Teacher>().Query().AsNoTracking().FirstOrDefaultAsync(t => t.Employee!.UserId == userId && !t.IsDeleted, ct);
+>>>>>>> d8b24e6 (attendece and website curtomize)
             if (teacher != null)
             {
                 var assignedClassIds = await _unitOfWork.Repository<TeacherClassAssignment>().Query()

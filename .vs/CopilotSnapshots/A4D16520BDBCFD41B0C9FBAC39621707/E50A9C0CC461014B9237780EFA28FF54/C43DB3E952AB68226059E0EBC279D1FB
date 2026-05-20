@@ -1,0 +1,543 @@
+﻿@{
+    ViewData["Title"] = "Student Attendance";
+    var today = DateTime.Today.ToString("yyyy-MM-dd");
+    var classes = ViewBag.Classes as List<dynamic> ?? new List<dynamic>();
+    var defaultClassId = ViewBag.DefaultClassId;
+    var defaultSectionId = ViewBag.DefaultSectionId;
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
+<link rel="stylesheet" href="https://unpkg.com/tabulator-tables@5.4.0/dist/css/tabulator.min.css">
+
+<style>
+    /* Student Attendance page - aligned with Employee Attendance patterns */
+    .sa-page {
+        display: grid;
+        gap: 18px;
+    }
+
+    .sa-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .sa-title {
+        margin: 0;
+        font-size: 26px;
+        font-weight: 800;
+        color: #111827;
+    }
+
+    .sa-subtitle {
+        margin: 4px 0 0;
+        color: #64748b;
+        font-size: 14px;
+    }
+
+    .sa-panel,
+    .sa-grid-wrap {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        box-shadow: 0 10px 28px rgba(15, 23, 42, .06);
+    }
+
+    .sa-panel {
+        padding: 18px;
+    }
+
+    .sa-toolbar {
+        position: sticky;
+        top: 70px;
+        z-index: 5;
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+        padding: 12px 14px;
+        border-bottom: 1px solid #e5e7eb;
+        background: rgba(255, 255, 255, .96);
+        backdrop-filter: blur(12px);
+    }
+
+    .sa-summary {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(140px, 1fr));
+        gap: 12px;
+    }
+
+    .sa-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        background: #fff;
+        padding: 14px;
+    }
+
+    .sa-card__label {
+        display: block;
+        color: #64748b;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .sa-card__value {
+        display: block;
+        margin-top: 6px;
+        font-size: 24px;
+        font-weight: 800;
+        color: #111827;
+    }
+
+    .sa-status-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 76px;
+        border-radius: 999px;
+        padding: 5px 10px;
+        font-size: 12px;
+        font-weight: 800;
+        border: 1px solid transparent;
+    }
+
+    .sa-status-Present {
+        color: #047857;
+        background: #d1fae5;
+        border-color: #a7f3d0;
+    }
+
+    .sa-status-Absent {
+        color: #b91c1c;
+        background: #fee2e2;
+        border-color: #fecaca;
+    }
+
+    .sa-status-Late {
+        color: #92400e;
+        background: #fef3c7;
+        border-color: #fde68a;
+    }
+
+    .sa-status-Leave {
+        color: #1d4ed8;
+        background: #dbeafe;
+        border-color: #bfdbfe;
+    }
+
+    .sa-toast-stack {
+        position: fixed;
+        top: 84px;
+        right: 18px;
+        z-index: 1090;
+        display: grid;
+        gap: 10px;
+        width: min(360px, calc(100vw - 28px));
+    }
+
+    .sa-toast {
+        border-radius: 8px;
+        padding: 12px 14px;
+        color: #fff;
+        box-shadow: 0 18px 36px rgba(15, 23, 42, .18);
+    }
+
+    .sa-toast.success { background: #047857; }
+    .sa-toast.error { background: #b91c1c; }
+    .sa-toast.info { background: #2563eb; }
+
+    #studentAttendanceTable .tabulator-row.tabulator-selected {
+        background: #eff6ff;
+    }
+
+    @@media (max-width: 991px) {
+        .sa-summary {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .sa-header,
+        .sa-toolbar {
+            align-items: stretch;
+            flex-direction: column;
+        }
+
+        .sa-toolbar .btn,
+        .sa-header .btn {
+            width: 100%;
+        }
+    }
+
+    @@media (max-width: 575px) {
+        .sa-summary {
+            grid-template-columns: 1fr;
+        }
+
+        .sa-title {
+            font-size: 22px;
+        }
+    }
+</style>
+
+<div class="sa-page">
+    <div class="sa-header">
+        <div>
+            <h1 class="sa-title">Student Attendance</h1>
+            <p class="sa-subtitle">Bulk mark, edit, save, and review student attendance with automatic guardian notifications.</p>
+        </div>
+        <button type="button" class="btn btn-outline-secondary" id="btnExport">
+            <i class="bi bi-download me-1"></i> Export CSV
+        </button>
+    </div>
+
+    <div class="sa-panel">
+        <div class="row g-3 align-items-end">
+            <div class="col-lg-2 col-md-4">
+                <label class="form-label fw-semibold">Attendance Date</label>
+                <input type="date" id="filterDate" class="form-control" value="@today" />
+            </div>
+            <div class="col-lg-2 col-md-4">
+                <label class="form-label fw-semibold">Class</label>
+                <select id="filterClass" class="form-select">
+                    <option value="">Select class</option>
+                    @if (classes != null)
+                    {
+                        @foreach (var cls in classes)
+                        {
+                            <option value="@cls.Id" @(cls.Id == defaultClassId ? "selected" : "")>@cls.Name</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-lg-2 col-md-4">
+                <label class="form-label fw-semibold">Section</label>
+                <select id="filterSection" class="form-select">
+                    <option value="">Select section</option>
+                </select>
+            </div>
+            <div class="col-lg-2 col-md-4">
+                <label class="form-label fw-semibold">Student Group</label>
+                <select id="filterGroup" class="form-select">
+                    <option value="">All groups</option>
+                </select>
+            </div>
+            <div class="col-lg-2 col-md-4">
+                <label class="form-label fw-semibold">Notifications</label>
+                <div class="form-check mt-2">
+                    <input class="form-check-input" type="checkbox" id="enableNotifications" checked />
+                    <label class="form-check-label" for="enableNotifications">
+                        Send absent emails
+                    </label>
+                </div>
+            </div>
+            <div class="col-lg-2 col-md-4 d-grid">
+                <button type="button" class="btn btn-primary" id="btnLoad">
+                    <i class="bi bi-search me-1"></i> Load Students
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="sa-summary">
+        <div class="sa-card">
+            <span class="sa-card__label">Total Students</span>
+            <span class="sa-card__value" id="sumTotal">0</span>
+        </div>
+        <div class="sa-card">
+            <span class="sa-card__label">Present</span>
+            <span class="sa-card__value text-success" id="sumPresent">0</span>
+        </div>
+        <div class="sa-card">
+            <span class="sa-card__label">Absent</span>
+            <span class="sa-card__value text-danger" id="sumAbsent">0</span>
+        </div>
+        <div class="sa-card">
+            <span class="sa-card__label">Late</span>
+            <span class="sa-card__value text-warning" id="sumLate">0</span>
+        </div>
+        <div class="sa-card">
+            <span class="sa-card__label">Leave</span>
+            <span class="sa-card__value text-primary" id="sumLeave">0</span>
+        </div>
+    </div>
+
+    <div class="sa-grid-wrap">
+        <div class="sa-toolbar">
+            <div class="d-flex gap-2 flex-wrap">
+                <button type="button" class="btn btn-success btn-sm" id="btnMarkAllPresent">
+                    <i class="bi bi-check2-circle me-1"></i> Mark All Present
+                </button>
+                <button type="button" class="btn btn-outline-danger btn-sm" id="btnSelectedAbsent">
+                    <i class="bi bi-x-circle me-1"></i> Mark Selected Absent
+                </button>
+                <button type="button" class="btn btn-outline-warning btn-sm" id="btnSelectedLate">
+                    <i class="bi bi-clock me-1"></i> Mark Selected Late
+                </button>
+                <button type="button" class="btn btn-outline-primary btn-sm" id="btnApplyLeave">
+                    <i class="bi bi-calendar2-check me-1"></i> Apply Leave
+                </button>
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="btnResetSelection">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i> Reset Selection
+                </button>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+                <button type="button" class="btn btn-outline-secondary btn-sm" id="btnReset">
+                    <i class="bi bi-sliders me-1"></i> Reset
+                </button>
+                <button type="button" class="btn btn-primary btn-sm" id="btnSave">
+                    <i class="bi bi-cloud-arrow-up me-1"></i> Save Attendance
+                </button>
+            </div>
+        </div>
+        <div id="studentAttendanceTable"></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="https://unpkg.com/tabulator-tables@5.4.0/dist/js/tabulator.min.js"></script>
+
+    <script>
+        // Routes
+        const routes = {
+            loadAttendance: '@Url.Action("LoadAttendance", "StudentAttendance")',
+            saveAttendance: '@Url.Action("SaveAttendance", "StudentAttendance")',
+            getSections: '@Url.Action("GetSections", "StudentAttendance")',
+            getGroups: '@Url.Action("GetGroups", "StudentAttendance")',
+            export: '@Url.Action("ExportAttendanceCSV", "StudentAttendance")'
+        };
+
+        const defaultClassId = @(defaultClassId?.ToString() ?? "null");
+        const defaultSectionId = @(defaultSectionId?.ToString() ?? "null");
+        let currentData = [];
+        let tabulatorTable = null;
+
+        // Initialize Tabulator
+        function initializeTable() {
+            tabulatorTable = new Tabulator("#studentAttendanceTable", {
+                height: 500,
+                layout: "fitColumns",
+                selectable: "highlight",
+                movableColumns: true,
+                selectableRangeMode: "click",
+                columns: [
+                    { title: "Select", formatter: "rowSelection", hozAlign: "center", width: 40 },
+                    { title: "Roll", field: "rollNumber", width: 60 },
+                    { title: "Student ID", field: "studentId", width: 100 },
+                    { title: "Name", field: "studentName", width: 150 },
+                    { title: "Class", field: "className", width: 80 },
+                    { title: "Section", field: "sectionName", width: 80 },
+                    {
+                        title: "Status",
+                        field: "status",
+                        width: 100,
+                        hozAlign: "center",
+                        editor: "select",
+                        editorParams: {
+                            values: {
+                                "0": "Present",
+                                "1": "Absent",
+                                "2": "Late",
+                                "3": "Leave"
+                            }
+                        },
+                        formatter: function(cell) {
+                            const statusMap = {
+                                "Present": "Present",
+                                "Absent": "Absent",
+                                "Late": "Late",
+                                "Leave": "Leave"
+                            };
+                            const statusValue = cell.getValue();
+                            const statusName = statusMap[statusValue] || statusValue;
+                            return `<span class="sa-status-badge sa-status-${statusName}">${statusName}</span>`;
+                        }
+                    },
+                    { title: "Remarks", field: "remarks", width: 150, editor: "textarea" }
+                ],
+                data: [],
+                pagination: "local",
+                paginationSize: 25,
+                rowClick: function(e, row) {
+                    row.toggleSelect();
+                }
+            });
+        }
+
+        // Load attendance data
+        async function loadAttendance() {
+            const classId = $('#filterClass').val();
+            const sectionId = $('#filterSection').val();
+            const studentGroupId = $('#filterGroup').val();
+            const attendanceDate = $('#filterDate').val();
+
+            if (!classId || !sectionId) {
+                toastr.warning('Please select class and section');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${routes.loadAttendance}?page=1&size=1000&attendanceDate=${attendanceDate}&classId=${classId}&sectionId=${sectionId}&studentGroupId=${studentGroupId || ''}`);
+                const result = await response.json();
+
+                if (result.data) {
+                    currentData = result.data;
+                    tabulatorTable.setData(result.data);
+                    updateSummary(result.summary);
+                    toastr.success(`Loaded ${result.data.length} students`);
+                } else {
+                    toastr.error(result.message || 'Failed to load attendance');
+                }
+            } catch (error) {
+                toastr.error('Error loading attendance: ' + error.message);
+                console.error(error);
+            }
+        }
+
+        // Update summary cards
+        function updateSummary(summary) {
+            $('#sumTotal').text(summary.totalStudents || 0);
+            $('#sumPresent').text(summary.present || 0);
+            $('#sumAbsent').text(summary.absent || 0);
+            $('#sumLate').text(summary.late || 0);
+            $('#sumLeave').text(summary.leave || 0);
+        }
+
+        // Save attendance
+        async function saveAttendance() {
+            const classId = $('#filterClass').val();
+            const sectionId = $('#filterSection').val();
+            const studentGroupId = $('#filterGroup').val();
+            const attendanceDate = $('#filterDate').val();
+            const enableNotifications = $('#enableNotifications').is(':checked');
+
+            const rows = tabulatorTable.getData();
+            const attendances = rows.map(row => ({
+                id: row.id,
+                studentId: row.studentId,
+                status: row.status,
+                remarks: row.remarks
+            }));
+
+            if (!attendances.length) {
+                toastr.warning('No attendance data to save');
+                return;
+            }
+
+            try {
+                const response = await fetch(routes.saveAttendance, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    body: JSON.stringify({
+                        classId: parseInt(classId),
+                        sectionId: parseInt(sectionId),
+                        studentGroupId: studentGroupId ? parseInt(studentGroupId) : null,
+                        attendanceDate: attendanceDate,
+                        attendances: attendances,
+                        sendNotifications: enableNotifications
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    toastr.success(result.message);
+                    loadAttendance();
+                } else {
+                    toastr.error(result.message || 'Failed to save attendance');
+                }
+            } catch (error) {
+                toastr.error('Error saving attendance: ' + error.message);
+                console.error(error);
+            }
+        }
+
+        // Bulk operations
+        $('#btnMarkAllPresent').click(function() {
+            tabulatorTable.getData().forEach(row => {
+                row.status = 'Present';
+                tabulatorTable.updateData([row]);
+            });
+            updateTableSummary();
+        });
+
+        $('#btnSelectedAbsent').click(function() {
+            const selected = tabulatorTable.getSelectedData();
+            selected.forEach(row => {
+                row.status = 'Absent';
+                tabulatorTable.updateData([row]);
+            });
+            updateTableSummary();
+        });
+
+        $('#btnSelectedLate').click(function() {
+            const selected = tabulatorTable.getSelectedData();
+            selected.forEach(row => {
+                row.status = 'Late';
+                tabulatorTable.updateData([row]);
+            });
+            updateTableSummary();
+        });
+
+        $('#btnApplyLeave').click(function() {
+            const selected = tabulatorTable.getSelectedData();
+            selected.forEach(row => {
+                row.status = 'Leave';
+                tabulatorTable.updateData([row]);
+            });
+            updateTableSummary();
+        });
+
+        $('#btnResetSelection').click(function() {
+            tabulatorTable.deselectRow();
+        });
+
+        $('#btnReset').click(function() {
+            $('#filterClass').val(defaultClassId || '');
+            $('#filterSection').val(defaultSectionId || '');
+            $('#filterGroup').val('');
+            $('#filterDate').val(new Date().toISOString().split('T')[0]);
+            tabulatorTable.clearData();
+        });
+
+        // Export
+        $('#btnExport').click(function() {
+            const classId = $('#filterClass').val();
+            const sectionId = $('#filterSection').val();
+            const fromDate = $('#filterDate').val();
+            if (classId && sectionId) {
+                window.location.href = `${routes.export}?classId=${classId}&sectionId=${sectionId}&fromDate=${fromDate}&toDate=${fromDate}`;
+            } else {
+                toastr.warning('Please select class and section first');
+            }
+        });
+
+        // Event handlers
+        $('#btnLoad').click(loadAttendance);
+        $('#btnSave').click(saveAttendance);
+
+        // Initialize on page load
+        $(document).ready(function() {
+            initializeTable();
+            if (defaultClassId) {
+                $('#filterClass').val(defaultClassId);
+            }
+        });
+
+        function updateTableSummary() {
+            const data = tabulatorTable.getData();
+            const summary = {
+                totalStudents: data.length,
+                present: data.filter(d => d.status === 'Present').length,
+                absent: data.filter(d => d.status === 'Absent').length,
+                late: data.filter(d => d.status === 'Late').length,
+                leave: data.filter(d => d.status === 'Leave').length
+            };
+            updateSummary(summary);
+        }
+    </script>
+}

@@ -20,6 +20,8 @@ public class TeacherDashboardViewModel : EmployeeDashboardViewModel
     public int PendingResultEntries { get; set; }
     
     // Lists
+    public List<string> MyClasses { get; set; } = new();
+    public List<string> MySubjects { get; set; } = new();
     public List<AssignmentDashboardItem> UpcomingAssignments { get; set; } = new();
     public List<RecentActivityItem> RecentNotices { get; set; } = new();
     public List<ScheduleItemDto> TodaysSchedule { get; set; } = new();

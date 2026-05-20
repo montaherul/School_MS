@@ -27,9 +27,13 @@ public class SubjectController : Controller
 
     [HttpGet]
     [RequirePermission("Subjects.View")]
+<<<<<<< HEAD
     public async Task<IActionResult> GetList(int page = 1, int size = 10, string? search = null)
+=======
+    public async Task<IActionResult> GetList(int page = 1, int size = 10, string? search = null, string? group = null, string? status = null)
+>>>>>>> d8b24e6 (attendece and website curtomize)
     {
-        var result = await _service.GetPagedAsync(page, size, search);
+        var result = await _service.GetPagedAsync(page, size, search, group, status);
         return Json(new { data = result.Items, last_page = Math.Ceiling((double)result.TotalItems / result.PageSize) });
     }
 
@@ -41,7 +45,19 @@ public class SubjectController : Controller
         {
             var dto = await _service.GetForEditAsync(id.Value);
             if (dto == null) return NotFound();
-            var vm = new SubjectViewModel { Id = dto.Id,Code = dto.Code,Name = dto.Name,            };
+            var vm = new SubjectViewModel 
+            { 
+                Id = dto.Id,
+                Code = dto.Code,
+                Name = dto.Name,
+                NameBn = dto.NameBn,
+                SubjectGroup = dto.SubjectGroup,
+                IsReligionSubject = dto.IsReligionSubject,
+                ReligionType = dto.ReligionType,
+                IsOptional = dto.IsOptional,
+                IsPractical = dto.IsPractical,
+                IsActive = dto.IsActive
+            };
             return View(vm);
         }
         return View(new SubjectViewModel());
@@ -62,7 +78,14 @@ public class SubjectController : Controller
         {
             Id = vm.Id,
             Code = vm.Code,
-            Name = vm.Name
+            Name = vm.Name,
+            NameBn = vm.NameBn,
+            SubjectGroup = vm.SubjectGroup,
+            IsReligionSubject = vm.IsReligionSubject,
+            ReligionType = vm.ReligionType,
+            IsOptional = vm.IsOptional,
+            IsPractical = vm.IsPractical,
+            IsActive = vm.IsActive
         };
 
         if (vm.IsEditMode)

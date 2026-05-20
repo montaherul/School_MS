@@ -6,8 +6,11 @@ using SchoolManagementSystem.Services.Interfaces.Academic;
 using SchoolManagementSystem.Services.Interfaces.Students;
 using SchoolManagementSystem.Services.Interfaces.Teachers;
 using System.Security.Claims;
+<<<<<<< HEAD
 using SchoolManagementSystem.Constants;
 using SchoolManagementSystem.Models.DTOs.Common;
+=======
+>>>>>>> d8b24e6 (attendece and website curtomize)
 
 namespace SchoolManagementSystem.Controllers.Student;
 
@@ -28,16 +31,24 @@ public class StudentController : Controller
         _sectionService = sectionService;
     }
 
+<<<<<<< HEAD
     [RequirePermission(Permissions.Student.View)]
     public async Task<IActionResult> Index(int? classId = null, int? sectionId = null, CancellationToken ct = default)
     {
         if (User.IsInRole(Roles.Student))
+=======
+    [RequirePermission("Student.View")]
+    public async Task<IActionResult> Index(int page = 1, int pageSize = 10, string? search = null, int? classId = null, int? sectionId = null, CancellationToken ct = default)
+    {
+        if (User.IsInRole("Student"))
+>>>>>>> d8b24e6 (attendece and website curtomize)
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
             var studentId = await _studentService.GetStudentIdByUserIdAsync(userId, ct);
             return RedirectToAction(nameof(Details), new { id = studentId });
         }
 
+<<<<<<< HEAD
         ViewBag.Classes = await _sectionService.GetAvailableClassesAsync(ct);
         ViewBag.ClassId = classId;
         ViewBag.SectionId = sectionId;
@@ -97,6 +108,33 @@ public class StudentController : Controller
     public IActionResult Edit(int id)
     {
         if (User.IsInRole(Roles.Student)) return Forbid();
+=======
+        bool isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest" || Request.Headers["Accept"].ToString().Contains("application/json") || Request.Query.ContainsKey("page");
+
+        if (isAjax)
+        {
+            var result = await _studentService.GetPagedAsync(page, pageSize, search, classId, sectionId, null, ct);
+            return Json(new { 
+                data = result.Items, 
+                last_page = Math.Ceiling((double)result.TotalItems / pageSize), 
+                total_records = result.TotalItems 
+            });
+        }
+
+        ViewBag.Classes = await _sectionService.GetAvailableClassesAsync(ct);
+        return View();
+    }
+
+    [HttpGet]
+    [RequirePermission("Student.Create")]
+    public IActionResult Create() => RedirectToAction(nameof(CreateEdit));
+
+    [HttpGet]
+    [RequirePermission("Student.Edit")]
+    public IActionResult Edit(int id)
+    {
+        if (User.IsInRole("Student")) return Forbid();
+>>>>>>> d8b24e6 (attendece and website curtomize)
         return RedirectToAction(nameof(CreateEdit), new { id });
     }
 
@@ -108,7 +146,11 @@ public class StudentController : Controller
 
         if (string.IsNullOrEmpty(id))
         {
+<<<<<<< HEAD
             if (User.IsInRole(Roles.Student))
+=======
+            if (User.IsInRole("Student"))
+>>>>>>> d8b24e6 (attendece and website curtomize)
             {
                 var studentId = await _studentService.GetStudentIdByUserIdAsync(currentUserId, ct);
                 if (studentId == null) return NotFound("Student record not found.");
@@ -116,7 +158,11 @@ public class StudentController : Controller
                 return View(dto);
             }
             
+<<<<<<< HEAD
             if (User.IsInRole(Roles.Teacher))
+=======
+            if (User.IsInRole("Teacher") || User.IsInRole("Senior Lecturer") || User.IsInRole("Lecturer"))
+>>>>>>> d8b24e6 (attendece and website curtomize)
             {
                 var teacher = await _teacherService.GetByUserIdAsync(currentUserId, ct);
                 if (teacher != null) return RedirectToAction("Details", "Teacher", new { id = teacher.Id });
@@ -138,12 +184,20 @@ public class StudentController : Controller
         if (studentDto == null) return NotFound();
 
         // SECURITY CHECK
+<<<<<<< HEAD
         if (User.IsInRole(Roles.Student))
+=======
+        if (User.IsInRole("Student"))
+>>>>>>> d8b24e6 (attendece and website curtomize)
         {
             var loggedInStudentId = await _studentService.GetStudentIdByUserIdAsync(currentUserId, ct);
             if (loggedInStudentId != studentDto.Id) return Forbid(); 
         }
+<<<<<<< HEAD
         else if (!User.HasClaim("Permission", Permissions.Student.View) && !User.IsInRole(Roles.SuperAdmin))
+=======
+        else if (!User.HasClaim("Permission", "Student.View") && !User.IsInRole("Super Admin"))
+>>>>>>> d8b24e6 (attendece and website curtomize)
         {
             return Forbid();
         }
@@ -170,12 +224,20 @@ public class StudentController : Controller
         if (dto == null) return NotFound();
 
         // SECURITY CHECK
+<<<<<<< HEAD
         if (User.IsInRole(Roles.Student))
+=======
+        if (User.IsInRole("Student"))
+>>>>>>> d8b24e6 (attendece and website curtomize)
         {
             var loggedInStudentId = await _studentService.GetStudentIdByUserIdAsync(currentUserId, ct);
             if (loggedInStudentId != dto.Id) return Forbid();
         }
+<<<<<<< HEAD
         else if (!User.HasClaim("Permission", Permissions.Student.View) && !User.IsInRole(Roles.SuperAdmin))
+=======
+        else if (!User.HasClaim("Permission", "Student.View") && !User.IsInRole("Super Admin"))
+>>>>>>> d8b24e6 (attendece and website curtomize)
         {
             return Forbid();
         }
@@ -193,7 +255,11 @@ public class StudentController : Controller
 
         if (string.IsNullOrEmpty(id))
         {
+<<<<<<< HEAD
             if (!User.IsInRole(Roles.Student)) return NotFound();
+=======
+            if (!User.IsInRole("Student")) return NotFound();
+>>>>>>> d8b24e6 (attendece and website curtomize)
             var studentId = await _studentService.GetStudentIdByUserIdAsync(currentUserId, ct);
             if (studentId == null) return NotFound();
             dto = await _studentService.GetForEditAsync(studentId.Value, ct);
@@ -210,12 +276,20 @@ public class StudentController : Controller
         if (dto == null) return NotFound();
 
         // SECURITY CHECK
+<<<<<<< HEAD
         if (User.IsInRole(Roles.Student))
+=======
+        if (User.IsInRole("Student"))
+>>>>>>> d8b24e6 (attendece and website curtomize)
         {
             var loggedInStudentId = await _studentService.GetStudentIdByUserIdAsync(currentUserId, ct);
             if (loggedInStudentId != dto.Id) return Forbid();
         }
+<<<<<<< HEAD
         else if (!User.HasClaim("Permission", Permissions.Student.View) && !User.IsInRole(Roles.SuperAdmin))
+=======
+        else if (!User.HasClaim("Permission", "Student.View") && !User.IsInRole("Super Admin"))
+>>>>>>> d8b24e6 (attendece and website curtomize)
         {
             return Forbid();
         }
@@ -226,7 +300,11 @@ public class StudentController : Controller
     [HttpGet]
     public async Task<IActionResult> CreateEdit(int? id, CancellationToken ct)
     {
+<<<<<<< HEAD
         if (User.IsInRole(Roles.Student)) return Forbid();
+=======
+        if (User.IsInRole("Student")) return Forbid();
+>>>>>>> d8b24e6 (attendece and website curtomize)
 
         var sections = await _sectionService.GetByClassIdAsync(0, ct); // Get all or handle by class
         var selectList = sections.Select(s => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
@@ -238,14 +316,22 @@ public class StudentController : Controller
 
         if (id.HasValue && id > 0)
         {
+<<<<<<< HEAD
             if (!User.HasClaim("Permission", Permissions.Student.Update) && !User.IsInRole(Roles.SuperAdmin)) return Forbid();
+=======
+            if (!User.HasClaim("Permission", "Student.Edit") && !User.IsInRole("Super Admin")) return Forbid();
+>>>>>>> d8b24e6 (attendece and website curtomize)
             var dto = await _studentService.GetForEditAsync(id.Value, ct);
             if (dto == null) return NotFound();
             dto.Sections = selectList;
             return View(dto);
         }
 
+<<<<<<< HEAD
         if (!User.HasClaim("Permission", Permissions.Student.Create) && !User.IsInRole(Roles.SuperAdmin)) return Forbid();
+=======
+        if (!User.HasClaim("Permission", "Student.Create") && !User.IsInRole("Super Admin")) return Forbid();
+>>>>>>> d8b24e6 (attendece and website curtomize)
         return View(new StudentUpsertDto { DateOfBirth = DateTime.Today.AddYears(-10), Sections = selectList });
     }
 
@@ -253,19 +339,31 @@ public class StudentController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> CreateEdit(StudentUpsertDto model, CancellationToken ct)
     {
+<<<<<<< HEAD
         if (User.IsInRole(Roles.Student)) return Forbid();
+=======
+        if (User.IsInRole("Student")) return Forbid();
+>>>>>>> d8b24e6 (attendece and website curtomize)
         if (!ModelState.IsValid) return View(model);
 
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
         if (model.Id == 0)
         {
+<<<<<<< HEAD
             if (!User.HasClaim("Permission", Permissions.Student.Create) && !User.IsInRole(Roles.SuperAdmin)) return Forbid();
+=======
+            if (!User.HasClaim("Permission", "Student.Create") && !User.IsInRole("Super Admin")) return Forbid();
+>>>>>>> d8b24e6 (attendece and website curtomize)
             await _studentService.CreateAsync(model, userId, ct);
             TempData["SuccessMessage"] = "Student created successfully.";
         }
         else
         {
+<<<<<<< HEAD
             if (!User.HasClaim("Permission", Permissions.Student.Update) && !User.IsInRole(Roles.SuperAdmin)) return Forbid();
+=======
+            if (!User.HasClaim("Permission", "Student.Edit") && !User.IsInRole("Super Admin")) return Forbid();
+>>>>>>> d8b24e6 (attendece and website curtomize)
             await _studentService.UpdateAsync(model, userId, ct);
             TempData["SuccessMessage"] = "Student updated successfully.";
         }
@@ -277,7 +375,11 @@ public class StudentController : Controller
     public Task<IActionResult> Save(StudentUpsertDto model, CancellationToken ct) => CreateEdit(model, ct);
 
     [HttpGet]
+<<<<<<< HEAD
     [RequirePermission(Permissions.Student.Delete)]
+=======
+    [RequirePermission("Student.Delete")]
+>>>>>>> d8b24e6 (attendece and website curtomize)
     public async Task<IActionResult> Delete(int id, CancellationToken ct)
     {
         var dto = await _studentService.GetForEditAsync(id, ct);
@@ -286,7 +388,11 @@ public class StudentController : Controller
 
     [HttpPost, ActionName("Delete")]
     [ValidateAntiForgeryToken]
+<<<<<<< HEAD
     [RequirePermission(Permissions.Student.Delete)]
+=======
+    [RequirePermission("Student.Delete")]
+>>>>>>> d8b24e6 (attendece and website curtomize)
     public async Task<IActionResult> DeleteConfirmed(int id, CancellationToken ct)
     {
         try

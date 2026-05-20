@@ -1,0 +1,9 @@
+﻿namespace SchoolManagementSystem.Models.DTOs.Common;
+
+public class RecentActivityItem
+{
+    public string ActivityType { get; set; }
+    public string Description { get; set; }
+    public DateTime Timestamp { get; set; }
+    public string? UserName { get; set; }
+}

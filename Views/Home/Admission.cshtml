@@ -1,0 +1,94 @@
+@{
+    Layout = "~/Views/Shared/_PublicLayout.cshtml";
+    ViewData["Title"] = "Admission Information";
+}
+
+<!-- Header Hero -->
+<div class="py-5 text-white" style="background: linear-gradient(135deg, var(--edu-navy), var(--edu-dark));">
+    <div class="container text-center py-4">
+        <h1 class="display-4 fw-bold">Admission Information</h1>
+        <p class="lead text-white-50">Learn about eligibility criteria, fees, rules, and register today</p>
+    </div>
+</div>
+
+<section class="py-5 bg-white">
+    <div class="container py-3">
+        <div class="row g-5">
+            <div class="col-lg-8">
+                <h3 class="fw-bold text-dark mb-3"><i class="bi bi-info-circle text-primary me-2"></i> General Guidelines</h3>
+                <p class="text-muted leading-relaxed">
+                    Admissions are open for Classes VI to IX for the current academic session. Registration can be processed completely online using our centralized portal, or by downloading the offline form and submitting it to the school admissions counter.
+                </p>
+
+                <h4 class="fw-bold mt-5 text-dark"><i class="bi bi-patch-check text-primary me-2"></i> Eligibility Requirements</h4>
+                <ul class="text-muted d-flex flex-column gap-2" style="font-size:15px;">
+                    <li><strong>Class VI:</strong> Minimum age of 11 years. Successful completion of Primary Education Completion (PEC) or equivalent.</li>
+                    <li><strong>Class VII & VIII:</strong> Promotion card/transcript from previous recognized school.</li>
+                    <li><strong>Class IX:</strong> Minimum age of 14 years. Junior School Certificate (JSC) or equivalent transcript.</li>
+                </ul>
+
+                <h4 class="fw-bold mt-4 text-dark"><i class="bi bi-cash-stack text-primary me-2"></i> Admission Fees</h4>
+                <p class="text-muted">
+                    Fees must be cleared during the submission of the application. The dynamic payment slip or transaction ID (bKash/Rocket/Nagad) must be included.
+                </p>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped" style="font-size:14px;">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Category</th>
+                                <th>Class Range</th>
+                                <th>Registration Fee</th>
+                                <th>Session Fee</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>General Students</td>
+                                <td>Class VI - VIII</td>
+                                <td>BDT 200</td>
+                                <td>BDT 1,500</td>
+                            </tr>
+                            <tr>
+                                <td>General Students</td>
+                                <td>Class IX</td>
+                                <td>BDT 250</td>
+                                <td>BDT 2,000</td>
+                            </tr>
+                            <tr>
+                                <td>Merit / Quota</td>
+                                <td>All Classes</td>
+                                <td>Free</td>
+                                <td>Free / Discounted</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h4 class="fw-bold mt-4 text-dark"><i class="bi bi-file-earmark-pdf text-primary me-2"></i> Download Forms & Guides</h4>
+                <p class="text-muted">
+                    If you prefer to fill out a paper form, download the PDF copy, fill it completely, and submit it along with your birth certificate copy to the admin office.
+                </p>
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="#" class="btn btn-sm btn-outline-danger"><i class="bi bi-file-earmark-pdf-fill me-2"></i> Admission Circular (PDF)</a>
+                    <a href="#" class="btn btn-sm btn-outline-danger"><i class="bi bi-file-earmark-pdf-fill me-2"></i> Offline Admission Form (PDF)</a>
+                </div>
+            </div>
+
+            <!-- Apply CTA Card -->
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm p-4 bg-light rounded text-center" style="border-top: 4px solid var(--edu-gold); position:sticky; top:100px;">
+                    <div class="p-3 bg-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow-sm" style="width:70px; height:70px; color:var(--edu-gold)">
+                        <i class="bi bi-lightning-charge-fill fs-2"></i>
+                    </div>
+                    <h4 class="fw-bold text-dark mb-2">Apply Online Now</h4>
+                    <p class="text-muted small mb-4">Submit your details, upload birth certificates, and get an immediate application tracking number.</p>
+                    
+                    <div class="d-flex flex-column gap-2">
+                        <a href="/Admission/Apply" class="btn btn-edu-gold w-100 py-3"><i class="bi bi-pencil-square me-2"></i> Online Application</a>
+                        <a href="/contact" class="btn btn-outline-secondary w-100 py-2">Query Helpline</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

@@ -15,6 +15,11 @@ public class Notice : BaseEntity
     public string AudienceRole { get; set; } = "All";
 
     public DateTime PublishAt { get; set; } = DateTime.UtcNow;
+
+    [MaxLength(260)]
+    public string? AttachmentPath { get; set; }
+
+    public bool IsPublished { get; set; } = true;
 }
 
 public class MessageThread : BaseEntity

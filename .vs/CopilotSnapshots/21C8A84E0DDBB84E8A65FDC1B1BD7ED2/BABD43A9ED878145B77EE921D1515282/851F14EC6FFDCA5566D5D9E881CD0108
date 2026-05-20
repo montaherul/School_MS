@@ -1,0 +1,21 @@
+﻿using SchoolManagementSystem.Models.Entities.Fees;
+using SchoolManagementSystem.Services.Interfaces.Fees;
+
+namespace SchoolManagementSystem.Repositories.Interfaces;
+
+/// <summary>
+/// Stored Procedure repository for Fee Invoice module operations.
+/// Handles fee invoice data retrieval via sp_GetFeeInvoiceList.
+/// </summary>
+public interface IFeeInvoiceSpRepository : IBaseRepository<FeeInvoice>
+{
+    /// <summary>
+    /// Get paginated fee invoice list from stored procedure with filtering.
+    /// </summary>
+    Task<(List<FeeInvoiceListItemDto> items, int totalRecords)> GetListByStoredProcedureAsync(
+        int pageNumber,
+        int pageSize,
+        string? searchTerm,
+        int? studentId,
+        CancellationToken ct = default);
+}

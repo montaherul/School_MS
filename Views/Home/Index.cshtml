@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 @{
     Layout = "_PublicLayout";
     ViewData["Title"] = "Welcome to SchoolMS";
@@ -264,10 +265,113 @@
                             <div>
                                 <h5 class="fw-bold text-dark mb-1">Trusted Institution</h5>
                                 <p class="text-muted small mb-0">Government recognized and widely accredited.</p>
+=======
+@model SchoolManagementSystem.Models.ViewModels.Website.HomepageViewModel
+@{
+    Layout = "~/Views/Shared/_PublicLayout.cshtml";
+    ViewData["Title"] = "Welcome to Our School";
+}
+
+<!-- ── 1. Hero Banner Slider ── -->
+<div id="heroCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" style="margin-top:-20px;">
+    <div class="carousel-indicators">
+        @for (int i = 0; i < Model.Sliders.Count; i++)
+        {
+            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="@i" class="@(i == 0 ? "active" : "")" aria-current="@(i == 0 ? "true" : "false")"></button>
+        }
+        @if (Model.Sliders.Count == 0)
+        {
+            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active" aria-current="true"></button>
+        }
+    </div>
+    
+    <div class="carousel-inner" style="height: 520px; background-color: var(--edu-dark);">
+        @for (int i = 0; i < Model.Sliders.Count; i++)
+        {
+            var slider = Model.Sliders[i];
+            <div class="carousel-item @(i == 0 ? "active" : "")" style="height: 100%;">
+                <div style="background-image: url('@slider.ImagePath'); background-size: cover; background-position: center; width: 100%; height: 100%; position: relative;">
+                    <div style="position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(180deg, rgba(8,28,51,0.4), rgba(8,28,51,0.85));"></div>
+                    <div class="container h-100 d-flex align-items-center" style="position: relative; z-index: 5;">
+                        <div class="text-white animate__animated animate__fadeInUp" style="max-width: 650px;">
+                            <span class="badge bg-warning text-dark mb-3 px-3 py-2 fw-bold text-uppercase fs-6">@slider.Subtitle</span>
+                            <h1 class="display-4 fw-extrabold mb-3 text-white">@slider.Title</h1>
+                            @if (!string.IsNullOrEmpty(slider.ButtonText))
+                            {
+                                <a href="@slider.ButtonUrl" class="btn btn-edu-gold mt-3">@slider.ButtonText <i class="bi bi-arrow-right-short ms-2"></i></a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+        
+        @if (Model.Sliders.Count == 0)
+        {
+            <div class="carousel-item active" style="height: 100%;">
+                <div style="background-image: url('https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=1471&auto=format&fit=cover'); background-size: cover; background-position: center; width: 100%; height: 100%; position: relative;">
+                    <div style="position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(180deg, rgba(8,28,51,0.4), rgba(8,28,51,0.85));"></div>
+                    <div class="container h-100 d-flex align-items-center" style="position: relative; z-index: 5;">
+                        <div class="text-white animate__animated animate__fadeInUp" style="max-width: 650px;">
+                            <span class="badge bg-warning text-dark mb-3 px-3 py-2 fw-bold text-uppercase fs-6">Gateway to Knowledge</span>
+                            <h1 class="display-4 fw-extrabold mb-3 text-white">Shaping the Future of Education</h1>
+                            <p class="lead mb-4 text-white-50">Welcome to our integrated educational portal. Register today for open admissions and dynamic class rooms.</p>
+                            <a href="/Admission/Apply" class="btn btn-edu-gold">Apply Online Now <i class="bi bi-chevron-right ms-2"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+    
+    <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+    </button>
+</div>
+
+<!-- ── 2. Announcement Scrolling Marquee ── -->
+<div class="bg-warning py-2 text-dark border-bottom border-top border-dark" style="position: relative; z-index: 10; font-weight: 700; font-size: 14px;">
+    <div class="container d-flex align-items-center">
+        <span class="text-uppercase bg-danger text-white px-2 py-1 rounded me-3 text-nowrap animate__animated animate__pulse animate__infinite" style="font-size:12px;"><i class="bi bi-megaphone-fill me-1"></i> Latest Alert:</span>
+        <marquee behavior="scroll" direction="left" onmouseover="this.stop();" onmouseout="this.start();">
+            @foreach (var n in Model.LatestNotices)
+            {
+                <span class="me-5"><i class="bi bi-dot mx-2 text-primary fs-4"></i> <a href="/notice/details/@n.Id" class="text-dark text-decoration-none">@n.Title (@n.PublishAt.ToString("dd MMM yyyy"))</a></span>
+            }
+            @if (Model.LatestNotices.Count == 0)
+            {
+                <span>Welcome to our new school portal system! Admissions for the current academic session are now officially open. Submit your applications online!</span>
+            }
+        </marquee>
+    </div>
+</div>
+
+<!-- ── 3. Welcome & Principal Message Section ── -->
+<section class="py-5 bg-white" id="welcome">
+    <div class="container py-3">
+        <div class="row g-5 align-items-center">
+            <div class="col-lg-7">
+                <span class="text-warning fw-extrabold text-uppercase letter-spacing-1 d-block mb-2">Welcome Address</span>
+                <h2 class="display-5 fw-bold text-dark mb-4" style="line-height: 1.2;">Nurturing Brilliance, Cultivating Leadership</h2>
+                <p class="lead text-muted mb-4">
+                    On behalf of the students, faculty, and administration, we welcome you to the official gateway of our historic institution. We believe in providing an educational foundation that couples rigorous academic challenges with moral values.
+                </p>
+                <div class="row g-4 mb-4">
+                    <div class="col-sm-6">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="p-3 bg-light rounded-circle text-primary"><i class="bi bi-shield-check fs-3"></i></div>
+                            <div>
+                                <h5 class="fw-bold mb-0">Government EIIN</h5>
+                                <p class="text-muted mb-0 small">Registered Code: @Model.Settings.EIIN</p>
+>>>>>>> d8b24e6 (attendece and website curtomize)
                             </div>
                         </div>
                     </div>
                     <div class="col-sm-6">
+<<<<<<< HEAD
                         <div class="d-flex align-items-start gap-3">
                             <i class="bi bi-person-video3 fs-3 text-info"></i>
                             <div>
@@ -291,10 +395,18 @@
                             <div>
                                 <h5 class="fw-bold text-dark mb-1">Real-time Comms</h5>
                                 <p class="text-muted small mb-0">Instant notifications for parents and students.</p>
+=======
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="p-3 bg-light rounded-circle text-primary"><i class="bi bi-clock-history fs-3"></i></div>
+                            <div>
+                                <h5 class="fw-bold mb-0">Office Hours</h5>
+                                <p class="text-muted mb-0 small">Sat - Thu (8:00 AM - 2:00 PM)</p>
+>>>>>>> d8b24e6 (attendece and website curtomize)
                             </div>
                         </div>
                     </div>
                 </div>
+<<<<<<< HEAD
             </div>
             <div class="col-lg-6 px-lg-5">
                 <div class="row g-3">
@@ -580,8 +692,251 @@
                             <button type="submit" class="lp-btn-primary w-100 py-3">Send Message <i class="bi bi-send-fill ms-2"></i></button>
                         </div>
                     </form>
+=======
+                <div class="d-flex gap-3">
+                    <a href="/about" class="btn btn-edu-navy">Read Full History</a>
+                    <a href="/mission-vision" class="btn btn-outline-secondary">Our Values</a>
+                </div>
+            </div>
+            
+            <div class="col-lg-5">
+                <div class="card border-0 shadow-lg" style="border-radius: 12px; overflow: hidden; border-top: 4px solid var(--edu-gold);">
+                    <div class="card-body p-4 text-center">
+                        <div class="mb-4">
+                            @if (!string.IsNullOrEmpty(Model.Settings.PrincipalImagePath))
+                            {
+                                <img src="@Model.Settings.PrincipalImagePath" class="rounded-circle shadow" style="width: 140px; height: 140px; object-fit: cover; border: 3px solid var(--edu-gold);" alt="Principal picture"/>
+                            }
+                            else
+                            {
+                                <div class="bg-light rounded-circle shadow mx-auto d-flex align-items-center justify-content-center" style="width: 140px; height: 140px; border: 3px solid var(--edu-gold); color:var(--edu-navy)">
+                                    <i class="bi bi-person-fill fs-1"></i>
+                                </div>
+                            }
+                        </div>
+                        <h4 class="fw-bold text-dark mb-1">@Model.Settings.PrincipalName</h4>
+                        <p class="text-warning fw-semibold mb-3">Head Teacher / Principal</p>
+                        <p class="text-muted italic small mb-4 px-2" style="font-style: italic;">
+                            "@(Model.Settings.PrincipalMessage?.Length > 200 ? Model.Settings.PrincipalMessage.Substring(0, 197) + "..." : Model.Settings.PrincipalMessage)"
+                        </p>
+                        <a href="/principal-message" class="btn btn-sm btn-edu-navy px-4">Read Full Message</a>
+                    </div>
+>>>>>>> d8b24e6 (attendece and website curtomize)
                 </div>
             </div>
         </div>
     </div>
 </section>
+<<<<<<< HEAD
+=======
+
+<!-- ── 4. Notice Board & Events Section ── -->
+<section class="py-5 bg-light border-top border-bottom">
+    <div class="container py-3">
+        <div class="row g-5">
+            <!-- Notices List -->
+            <div class="col-lg-7">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <span class="text-primary fw-bold text-uppercase fs-6">Bulletin Board</span>
+                        <h3 class="fw-bold text-dark mb-0">Latest School Notices</h3>
+                    </div>
+                    <a href="/notices" class="btn btn-sm btn-outline-primary px-3 rounded-pill">View All Board <i class="bi bi-arrow-right"></i></a>
+                </div>
+                
+                <div class="d-flex flex-column gap-3">
+                    @foreach (var notice in Model.LatestNotices)
+                    {
+                        <div class="card border-0 shadow-sm transition-hover" style="border-radius: 8px; border-left: 4px solid var(--edu-navy);">
+                            <div class="card-body p-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
+                                <div>
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <span class="badge bg-light text-primary border"><i class="bi bi-bookmark-fill me-1"></i> @notice.AudienceRole</span>
+                                        <span class="text-muted small"><i class="bi bi-calendar-event me-1"></i> @notice.PublishAt.ToString("dd MMM yyyy")</span>
+                                    </div>
+                                    <h5 class="fw-bold mb-1 text-dark">
+                                        <a href="/notice/details/@notice.Id" class="text-dark text-decoration-none hover-primary">@notice.Title</a>
+                                    </h5>
+                                </div>
+                                <a href="/notice/details/@notice.Id" class="btn btn-sm btn-edu-gold px-3"><i class="bi bi-arrow-right"></i></a>
+                            </div>
+                        </div>
+                    }
+                    @if (Model.LatestNotices.Count == 0)
+                    {
+                        <div class="text-center p-5 text-muted bg-white rounded shadow-sm">
+                            <i class="bi bi-journal-x fs-1 mb-3 d-block text-black-50"></i>
+                            No active notices are currently available on the bulletin board. Check back later!
+                        </div>
+                    }
+                </div>
+            </div>
+            
+            <!-- Events List -->
+            <div class="col-lg-5">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <span class="text-primary fw-bold text-uppercase fs-6">Calendar Events</span>
+                        <h3 class="fw-bold text-dark mb-0">Upcoming Events</h3>
+                    </div>
+                    <a href="/events" class="btn btn-sm btn-outline-primary px-3 rounded-pill">View Calendar</a>
+                </div>
+                
+                <div class="d-flex flex-column gap-4">
+                    @foreach (var ev in Model.UpcomingEvents)
+                    {
+                        <div class="d-flex gap-3 align-items-start bg-white p-3 rounded shadow-sm border transition-hover">
+                            <div class="text-center p-3 rounded" style="background-color: var(--edu-light); min-width: 80px; border-top: 3px solid var(--edu-gold);">
+                                <h4 class="fw-bold text-primary mb-0">@ev.EventDate.ToString("dd")</h4>
+                                <span class="text-uppercase small fw-bold text-dark">@ev.EventDate.ToString("MMM")</span>
+                            </div>
+                            <div>
+                                <span class="badge bg-warning text-dark mb-2" style="font-size:11px;"><i class="bi bi-geo-alt-fill me-1"></i> @ev.EventLocation</span>
+                                <h6 class="fw-bold text-dark mb-1">
+                                    <a href="/event/details/@ev.Id" class="text-dark text-decoration-none hover-primary">@ev.Title</a>
+                                </h6>
+                                <p class="text-muted small mb-0 text-truncate" style="max-width: 280px;">@ev.Description</p>
+                            </div>
+                        </div>
+                    }
+                    @if (Model.UpcomingEvents.Count == 0)
+                    {
+                        <div class="text-center p-5 text-muted bg-white rounded shadow-sm">
+                            <i class="bi bi-calendar-x fs-1 mb-3 d-block text-black-50"></i>
+                            No upcoming events are listed on the academic calendar at this time.
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── 5. Dynamic Stats Block Section ── -->
+<section class="py-5 text-white" style="background: linear-gradient(135deg, var(--edu-navy), var(--edu-dark)); position: relative;">
+    <div style="position: absolute; top:0; left:0; width:100%; height:100%; background: url('https://www.transparenttextures.com/patterns/black-paper.png'); opacity:0.1;"></div>
+    <div class="container py-4 position-relative">
+        <div class="row g-4 text-center justify-content-center">
+            <div class="col-6 col-md-3">
+                <div class="p-3">
+                    <div class="p-3 bg-warning text-dark rounded-circle mx-auto d-flex align-items-center justify-content-center mb-3 shadow" style="width:70px; height:70px;">
+                        <i class="bi bi-people-fill fs-2"></i>
+                    </div>
+                    <h2 class="display-5 fw-extrabold text-white mb-1">@Model.StudentCount+</h2>
+                    <span class="text-white-50 text-uppercase fw-semibold" style="font-size:13px;">Active Students</span>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="p-3">
+                    <div class="p-3 bg-warning text-dark rounded-circle mx-auto d-flex align-items-center justify-content-center mb-3 shadow" style="width:70px; height:70px;">
+                        <i class="bi bi-person-workspace fs-2"></i>
+                    </div>
+                    <h2 class="display-5 fw-extrabold text-white mb-1">@Model.TeacherCount+</h2>
+                    <span class="text-white-50 text-uppercase fw-semibold" style="font-size:13px;">Honorable Teachers</span>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="p-3">
+                    <div class="p-3 bg-warning text-dark rounded-circle mx-auto d-flex align-items-center justify-content-center mb-3 shadow" style="width:70px; height:70px;">
+                        <i class="bi bi-building fs-2"></i>
+                    </div>
+                    <h2 class="display-5 fw-extrabold text-white mb-1">@Model.ClassCount+</h2>
+                    <span class="text-white-50 text-uppercase fw-semibold" style="font-size:13px;">Classrooms</span>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="p-3">
+                    <div class="p-3 bg-warning text-dark rounded-circle mx-auto d-flex align-items-center justify-content-center mb-3 shadow" style="width:70px; height:70px;">
+                        <i class="bi bi-mortarboard fs-2"></i>
+                    </div>
+                    <h2 class="display-5 fw-extrabold text-white mb-1">98.5%</h2>
+                    <span class="text-white-50 text-uppercase fw-semibold" style="font-size:13px;">Success Rate</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── 6. Photo Albums Gallery Preview Section ── -->
+<section class="py-5 bg-white">
+    <div class="container py-3">
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <div>
+                <span class="text-warning fw-bold text-uppercase fs-6">Campus Life</span>
+                <h2 class="fw-bold text-dark mb-0">Our Photo Gallery</h2>
+            </div>
+            <a href="/gallery" class="btn btn-edu-navy">View All Albums</a>
+        </div>
+        
+        <div class="row g-4">
+            @foreach (var album in Model.Albums)
+            {
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm overflow-hidden transition-hover" style="border-radius: 8px;">
+                        <div style="position:relative; height: 240px; overflow:hidden;">
+                            @if (!string.IsNullOrEmpty(album.CoverImagePath))
+                            {
+                                <img src="@album.CoverImagePath" class="w-100 h-100" style="object-fit: cover;" alt="album cover"/>
+                            }
+                            else
+                            {
+                                <div class="bg-light w-100 h-100 d-flex align-items-center justify-content-center text-muted">
+                                    <i class="bi bi-image fs-1 text-black-50"></i>
+                                </div>
+                            }
+                            <div style="position:absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(360deg, rgba(0,0,0,0.8), transparent 60%);"></div>
+                            <div class="p-3 text-white" style="position:absolute; bottom:0; left:0; right:0;">
+                                <h5 class="fw-bold mb-1">@album.AlbumName</h5>
+                                <span class="small text-white-50">@album.Description</span>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-white border-0 text-center p-3">
+                            <a href="/gallery/album/@album.Id" class="btn btn-sm btn-outline-primary w-100 rounded-pill">Open Album</a>
+                        </div>
+                    </div>
+                </div>
+            }
+            @if (Model.Albums.Count == 0)
+            {
+                <div class="col-12 text-center p-5 text-muted bg-light rounded">
+                    <i class="bi bi-images fs-1 mb-3 d-block text-black-50"></i>
+                    No photo albums have been published to the gallery yet.
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- ── 7. Admission CTA Banner ── -->
+<section class="py-5" style="background-color: var(--edu-light);">
+    <div class="container py-3">
+        <div class="bg-white p-5 shadow rounded-lg" style="border-left: 8px solid var(--edu-gold); border-radius: 12px;">
+            <div class="row g-4 align-items-center">
+                <div class="col-lg-8">
+                    <span class="badge bg-warning text-dark text-uppercase px-3 py-2 mb-3">Admission is Ongoing</span>
+                    <h2 class="fw-bold text-dark mb-2">Apply for Admission in 2026 Academic Year</h2>
+                    <p class="text-muted mb-0 lead" style="font-size:16px;">
+                        Quick and seamless online registration. Connects directly to our centralized admission processing system. Review the requirements and get enrolled.
+                    </p>
+                </div>
+                <div class="col-lg-4 text-lg-end">
+                    <div class="d-flex flex-column gap-2 justify-content-lg-end">
+                        <a href="/Admission/Apply" class="btn btn-edu-gold px-4 py-3"><i class="bi bi-pencil-square me-2"></i> Apply Online Now</a>
+                        <a href="/admission" class="btn btn-outline-primary px-4 py-3"><i class="bi bi-info-circle me-2"></i> Admission Info</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+    .transition-hover {
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .transition-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(11,37,69,0.12) !important;
+    }
+</style>
+>>>>>>> d8b24e6 (attendece and website curtomize)

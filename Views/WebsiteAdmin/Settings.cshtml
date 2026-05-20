@@ -1,0 +1,150 @@
+@model SchoolManagementSystem.Models.Entities.Website.SchoolSetting
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Global Website Configuration";
+}
+
+<div class="container-fluid py-4">
+    <div class="mb-4">
+        <a href="/Admin/Website" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i> Back to Console</a>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3">
+            <h5 class="fw-bold mb-0 text-primary"><i class="bi bi-sliders me-2"></i> Update Global School Settings</h5>
+        </div>
+        <div class="card-body p-4">
+            <form action="/Admin/Website/Settings" method="post" enctype="multipart/form-data">
+                @Html.AntiForgeryToken()
+
+                <div class="row g-4">
+                    <!-- General Settings -->
+                    <div class="col-md-6">
+                        <h6 class="fw-bold mb-3 border-bottom pb-2 text-dark"><i class="bi bi-info-circle-fill me-1 text-primary"></i> General Profile</h6>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">School Name</label>
+                            <input type="text" name="SchoolName" value="@Model.SchoolName" class="form-control" required/>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Short Abbreviation Name</label>
+                            <input type="text" name="ShortName" value="@Model.ShortName" class="form-control" required/>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Government EIIN</label>
+                            <input type="text" name="EIIN" value="@Model.EIIN" class="form-control" required/>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Email Address</label>
+                            <input type="email" name="Email" value="@Model.Email" class="form-control" required/>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Contact Phone Number</label>
+                            <input type="text" name="Phone" value="@Model.Phone" class="form-control" required/>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Physical Address</label>
+                            <textarea name="Address" class="form-control" rows="3" required>@Model.Address</textarea>
+                        </div>
+                    </div>
+
+                    <!-- Branding Files -->
+                    <div class="col-md-6">
+                        <h6 class="fw-bold mb-3 border-bottom pb-2 text-dark"><i class="bi bi-palette-fill me-1 text-primary"></i> Brand & Visual Identity</h6>
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Upload Brand Logo</label>
+                            <input type="file" name="logoFile" class="form-control"/>
+                            @if (!string.IsNullOrEmpty(Model.LogoPath))
+                            {
+                                <div class="mt-2">
+                                    <img src="@Model.LogoPath" style="height: 60px; border:1px solid #ddd; border-radius: 4px; padding:3px;"/>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Upload Browser Favicon (PNG/ICO)</label>
+                            <input type="file" name="faviconFile" class="form-control"/>
+                            @if (!string.IsNullOrEmpty(Model.FaviconPath))
+                            {
+                                <div class="mt-2">
+                                    <img src="@Model.FaviconPath" style="height: 30px;"/>
+                                </div>
+                            }
+                        </div>
+
+                        <h6 class="fw-bold mt-4 mb-3 border-bottom pb-2 text-dark"><i class="bi bi-link-45deg me-1 text-primary"></i> Social Channels</h6>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Facebook Page URL</label>
+                            <input type="url" name="FacebookUrl" value="@Model.FacebookUrl" class="form-control" placeholder="https://facebook.com/page"/>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">YouTube Channel URL</label>
+                            <input type="url" name="YouTubeUrl" value="@Model.YouTubeUrl" class="form-control" placeholder="https://youtube.com/channel"/>
+                        </div>
+                    </div>
+
+                    <!-- Principal / Leadership -->
+                    <div class="col-12">
+                        <h6 class="fw-bold mb-3 border-bottom pb-2 text-dark"><i class="bi bi-person-badge-fill me-1 text-primary"></i> School Leadership & Message</h6>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Principal / Head Teacher Name</label>
+                                    <input type="text" name="PrincipalName" value="@Model.PrincipalName" class="form-control" required/>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Principal Photograph</label>
+                                    <input type="file" name="principalFile" class="form-control"/>
+                                    @if (!string.IsNullOrEmpty(Model.PrincipalImagePath))
+                                    {
+                                        <div class="mt-2">
+                                            <img src="@Model.PrincipalImagePath" class="img-thumbnail" style="max-height: 120px;"/>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Principal Welcome Address Message</label>
+                                    <textarea name="PrincipalMessage" class="form-control" rows="6" required>@Model.PrincipalMessage</textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mission & Vision -->
+                    <div class="col-md-6">
+                        <h6 class="fw-bold mb-3 border-bottom pb-2 text-dark"><i class="bi bi-compass-fill me-1 text-primary"></i> Core Mission</h6>
+                        <textarea name="Mission" class="form-control" rows="4">@Model.Mission</textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="fw-bold mb-3 border-bottom pb-2 text-dark"><i class="bi bi-eye-fill me-1 text-primary"></i> Core Vision</h6>
+                        <textarea name="Vision" class="form-control" rows="4">@Model.Vision</textarea>
+                    </div>
+
+                    <!-- Map and Footer -->
+                    <div class="col-md-6">
+                        <h6 class="fw-bold mb-3 border-bottom pb-2 text-dark"><i class="bi bi-map-fill me-1 text-primary"></i> Google Map Embed HTML Code</h6>
+                        <textarea name="GoogleMapEmbed" class="form-control" rows="4" placeholder="<iframe>...</iframe>">@Model.GoogleMapEmbed</textarea>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="fw-bold mb-3 border-bottom pb-2 text-dark"><i class="bi bi-c-circle-fill me-1 text-primary"></i> Footer Copyright Text</h6>
+                        <textarea name="FooterText" class="form-control" rows="4" required>@Model.FooterText</textarea>
+                    </div>
+
+                    <!-- Submit -->
+                    <div class="col-12 text-end pt-3">
+                        <button type="submit" class="btn btn-primary px-5"><i class="bi bi-save me-1"></i> Save Configurations</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,125 @@
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.EntityFrameworkCore;
+using SchoolManagementSystem.Helpers.Email;
+using SchoolManagementSystem.Helpers.Security;
+using SchoolManagementSystem.Models.Entities.Auth;
+using SchoolManagementSystem.Models.Enums;
+using SchoolManagementSystem.Models.ViewModels.Auth;
+using SchoolManagementSystem.Services.Interfaces.Auth;
+using SchoolManagementSystem.UnitOfWork.Interfaces;
+using System.Security.Claims;
+using System.Security.Cryptography;
+
+namespace SchoolManagementSystem.Services.Implementations.Auth;
+
+public class AuthService : IAuthService
+{
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IPasswordHashService _passwordHashService;
+    private readonly IEmailSender _emailSender;
+
+    public AuthService(IUnitOfWork unitOfWork, IPasswordHashService passwordHashService, IEmailSender emailSender)
+    {
+        _unitOfWork = unitOfWork;
+        _passwordHashService = passwordHashService;
+        _emailSender = emailSender;
+    }
+
+    public async Task<(bool success, string? message, ClaimsIdentity? identity)> LoginAsync(LoginViewModel model, CancellationToken ct = default)
+    {
+        var user = await _unitOfWork.Repository<ApplicationUser>().Query()
+            .Include(x => x.UserRoles).ThenInclude(x => x.Role)
+            .FirstOrDefaultAsync(x => x.Status == AccountStatus.Active && !x.IsDeleted && (x.UserName == model.UserNameOrEmail || x.Email == model.UserNameOrEmail), ct);
+
+        if (user is null || !_passwordHashService.VerifyPassword(model.Password, user.PasswordHash)) return (false, "Invalid login attempt.", null);
+
+        if (user.PasswordHash == "ChangeThisHash") user.PasswordHash = _passwordHashService.HashPassword(model.Password);
+        user.LastLoginAt = DateTime.UtcNow;
+        await _unitOfWork.SaveChangesAsync(ct);
+
+        var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, user.Id.ToString()), new(ClaimTypes.Name, user.UserName), new(ClaimTypes.Email, user.Email) };
+        claims.AddRange(user.UserRoles.Where(x => x.Role is not null).Select(x => new Claim(ClaimTypes.Role, x.Role!.Name)));
+        
+        var roleIds = user.UserRoles.Select(x => x.RoleId).ToArray();
+        var permissions = await _unitOfWork.Repository<RolePermission>().Query()
+            .Where(x => roleIds.Contains(x.RoleId) && x.Permission != null)
+            .Select(x => x.Permission!.Code).Distinct().ToListAsync(ct);
+        claims.AddRange(permissions.Select(code => new Claim("Permission", code)));
+
+        return (true, null, new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme));
+    }
+
+    public async Task<(bool success, string message)> ForgotPasswordAsync(ForgotPasswordViewModel model, CancellationToken ct = default)
+    {
+        var user = await _unitOfWork.Repository<ApplicationUser>().FirstOrDefaultAsync(u => u.Status == AccountStatus.Active && !u.IsDeleted && (u.UserName == model.UserNameOrEmail || u.Email == model.UserNameOrEmail), ct);
+        const string successMsg = "If the account exists, a password reset OTP has been sent to the registered email.";
+        if (user is null) return (true, successMsg);
+
+        var tokenRepo = _unitOfWork.Repository<PasswordResetToken>();
+        var previousTokens = await tokenRepo.ListAsync(t => t.UserId == user.Id && !t.Used);
+        foreach (var t in previousTokens) t.Used = true;
+
+        var otp = GenerateOtp();
+        await tokenRepo.AddAsync(new PasswordResetToken { UserId = user.Id, Otp = otp, ExpiresAt = DateTime.UtcNow.AddMinutes(10), Used = false, CreatedBy = user.UserName });
+        await _unitOfWork.SaveChangesAsync(ct);
+
+        var htmlBody = $@"<div style='font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;'><h2>Password Reset</h2><p>Hello,</p><p>You requested a password reset for your account.</p><div style='background: #f0f7ff; padding: 15px; text-align: center; border-radius: 8px; margin: 20px 0;'><span style='font-size: 24px; font-weight: bold; letter-spacing: 5px; color: #1a56db;'>{otp}</span></div><p>This code will expire in 10 minutes.</p></div>";
+        await _emailSender.SendAsync(user.Email, "Password Reset Code", htmlBody, ct);
+        return (true, successMsg);
+    }
+
+    public async Task<(bool success, string message)> VerifyOtpAsync(VerifyOtpViewModel model, CancellationToken ct = default)
+    {
+        var user = await _unitOfWork.Repository<ApplicationUser>().FirstOrDefaultAsync(u => u.Status == AccountStatus.Active && !u.IsDeleted && (u.UserName == model.UserNameOrEmail || u.Email == model.UserNameOrEmail), ct);
+        if (user is null) return (false, "Invalid account or OTP.");
+
+        var token = await _unitOfWork.Repository<PasswordResetToken>().Query()
+            .Where(t => t.UserId == user.Id && !t.Used && t.ExpiresAt > DateTime.UtcNow && t.Otp == model.Otp)
+            .OrderByDescending(t => t.Id).FirstOrDefaultAsync(ct);
+
+        return token is null ? (false, "Invalid or expired OTP.") : (true, "OTP verified successfully.");
+    }
+
+    public async Task<(bool success, string message)> ResetPasswordAsync(ResetPasswordViewModel model, CancellationToken ct = default)
+    {
+        var user = await _unitOfWork.Repository<ApplicationUser>().FirstOrDefaultAsync(u => u.Status == AccountStatus.Active && !u.IsDeleted && (u.UserName == model.UserNameOrEmail || u.Email == model.UserNameOrEmail), ct);
+        if (user is null) return (false, "Invalid OTP or account.");
+
+        var token = await _unitOfWork.Repository<PasswordResetToken>().Query()
+            .Where(t => t.UserId == user.Id && !t.Used && t.ExpiresAt > DateTime.UtcNow && t.Otp == model.Otp)
+            .OrderByDescending(t => t.Id).FirstOrDefaultAsync(ct);
+
+        if (token is null) return (false, "Invalid or expired OTP.");
+
+        user.PasswordHash = _passwordHashService.HashPassword(model.NewPassword);
+        token.Used = true;
+        token.UpdatedAt = DateTime.UtcNow;
+        token.UpdatedBy = "system";
+        await _unitOfWork.SaveChangesAsync(ct);
+        return (true, "Password reset successful.");
+    }
+
+    public async Task<bool> IsActivationTokenValidAsync(string token, CancellationToken ct = default)
+    {
+        return await _unitOfWork.Repository<ApplicationUser>().AnyAsync(u => !u.IsDeleted && !u.IsEmailConfirmed && u.ActivationToken == token && u.ActivationTokenExpiry > DateTime.UtcNow, ct);
+    }
+
+    public async Task<(bool success, string message)> ActivateAccountAsync(SetPasswordViewModel model, CancellationToken ct = default)
+    {
+        var user = await _unitOfWork.Repository<ApplicationUser>().FirstOrDefaultAsync(u => !u.IsDeleted && !u.IsEmailConfirmed && u.ActivationToken == model.Token && u.ActivationTokenExpiry > DateTime.UtcNow, ct);
+        if (user is null) return (false, "Invalid or expired activation token.");
+
+        user.PasswordHash = _passwordHashService.HashPassword(model.Password);
+        user.IsEmailConfirmed = true;
+        user.Status = AccountStatus.Active;
+        user.ActivationToken = null;
+        user.ActivationTokenExpiry = null;
+        user.UpdatedAt = DateTime.UtcNow;
+        user.UpdatedBy = user.UserName;
+        await _unitOfWork.SaveChangesAsync(ct);
+        return (true, "Account activated successfully.");
+    }
+
+    private static string GenerateOtp() => RandomNumberGenerator.GetInt32(0, 1_000_000).ToString("D6");
+}
+

@@ -35,7 +35,14 @@ public class TeacherAssignmentService : ITeacherAssignmentService
         return await _unitOfWork.Repository<TeacherSubjectAssignment>().Query()
             .AsNoTracking()
             .Include(a => a.Subject)
+<<<<<<< HEAD
             .Where(a => a.TeacherId == teacherId && a.ClassId == classId && a.SectionId == sectionId && !a.IsDeleted)
+=======
+            .Where(a => a.TeacherId == teacherId 
+                && (classId == 0 || a.ClassId == classId) 
+                && (sectionId == 0 || a.SectionId == sectionId) 
+                && !a.IsDeleted)
+>>>>>>> d8b24e6 (attendece and website curtomize)
             .Select(a => new TeacherSubjectAssignmentDto
             {
                 SubjectId = a.SubjectId,

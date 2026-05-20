@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Data;
+using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Services.Interfaces.Teachers;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using SchoolManagementSystem.Repositories.Interfaces.Teachers;
@@ -35,7 +36,7 @@ public class TeacherScopeService : ITeacherScopeService
     {
         return await _teacherRepository.Query()
             .AsNoTracking()
-            .Where(t => t.UserId == userId && !t.IsDeleted)
+            .Where(t => t.Employee.UserId == userId && !t.IsDeleted)
             .Select(t => (int?)t.Id)
             .FirstOrDefaultAsync(ct);
     }
@@ -79,8 +80,18 @@ public class TeacherScopeService : ITeacherScopeService
         var teacherId = await GetTeacherIdByUserIdAsync(userId, ct);
         if (teacherId == null) return Enumerable.Empty<int>();
 
+<<<<<<< HEAD
         return await _classAssignmentRepository.Query()
             .Where(a => a.TeacherId == teacherId && !a.IsDeleted)
+=======
+        var activeYear = await _uow.Repository<AcademicYear>().Query()
+            .FirstOrDefaultAsync(y => y.IsActive && !y.IsDeleted, ct);
+            
+        if (activeYear == null) return Enumerable.Empty<int>();
+
+        return await _classAssignmentRepository.Query()
+            .Where(a => a.TeacherId == teacherId && a.AcademicYearId == activeYear.Id && a.IsActive && !a.IsDeleted)
+>>>>>>> d8b24e6 (attendece and website curtomize)
             .Select(a => a.ClassId)
             .Distinct()
             .ToListAsync(ct);
@@ -91,8 +102,18 @@ public class TeacherScopeService : ITeacherScopeService
         var teacherId = await GetTeacherIdByUserIdAsync(userId, ct);
         if (teacherId == null) return Enumerable.Empty<int>();
 
+<<<<<<< HEAD
         return await _classAssignmentRepository.Query()
             .Where(a => a.TeacherId == teacherId && a.ClassId == classId && !a.IsDeleted)
+=======
+        var activeYear = await _uow.Repository<AcademicYear>().Query()
+            .FirstOrDefaultAsync(y => y.IsActive && !y.IsDeleted, ct);
+            
+        if (activeYear == null) return Enumerable.Empty<int>();
+
+        return await _classAssignmentRepository.Query()
+            .Where(a => a.TeacherId == teacherId && a.ClassId == classId && a.AcademicYearId == activeYear.Id && a.IsActive && !a.IsDeleted)
+>>>>>>> d8b24e6 (attendece and website curtomize)
             .Select(a => a.SectionId)
             .Distinct()
             .ToListAsync(ct);

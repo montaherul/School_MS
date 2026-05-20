@@ -1,0 +1,21 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using SchoolManagementSystem.Models.DTOs.Attendance;
+
+namespace SchoolManagementSystem.Services.Interfaces.Attendance
+{
+    public interface IStudentAttendanceService
+    {
+        Task<int> MarkAttendanceAsync(StudentAttendanceItemDto dto, int classId, int sectionId, DateTime date, string recordedBy, CancellationToken ct = default);
+        Task<bool> BulkMarkAsync(StudentAttendanceBulkDto dto, string recordedBy, CancellationToken ct = default);
+        Task UpdateAttendanceAsync(int id, SchoolManagementSystem.Models.Enums.AttendanceStatus status, string? remarks, string updatedBy, CancellationToken ct = default);
+        Task DeleteAttendanceAsync(int id, string deletedBy, CancellationToken ct = default);
+        
+        // Tabulator list integration
+        Task<(List<StudentAttendanceDto> Data, int TotalRecords)> GetPagedAsync(int page, int size, int? classId, int? sectionId, DateTime? date, CancellationToken ct = default);
+        
+        Task<double> GetAttendancePercentageAsync(int studentId, int academicYearId, CancellationToken ct = default);
+    }
+}

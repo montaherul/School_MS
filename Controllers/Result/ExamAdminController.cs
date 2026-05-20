@@ -5,7 +5,10 @@ using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.Services.Interfaces.Academic;
 using System.Security.Claims;
+<<<<<<< HEAD
 using SchoolManagementSystem.Constants;
+=======
+>>>>>>> d8b24e6 (attendece and website curtomize)
 
 namespace SchoolManagementSystem.Controllers.Result;
 
@@ -13,7 +16,11 @@ namespace SchoolManagementSystem.Controllers.Result;
 /// ExamAdminController: Admin-only exam management
 /// Controls exam creation, editing, grading rules, and exam configuration
 /// </summary>
+<<<<<<< HEAD
 [Authorize(Roles = Roles.Admin + "," + Roles.SuperAdmin + "," + Roles.Principal)]
+=======
+[Authorize(Roles = "Admin,Super Admin,Principal")]
+>>>>>>> d8b24e6 (attendece and website curtomize)
 [Route("api/[controller]")]
 [ApiController]
 public class ExamAdminController : ControllerBase
@@ -42,7 +49,11 @@ public class ExamAdminController : ControllerBase
     /// Get all exams with optional filtering by academic year
     /// </summary>
     [HttpGet("exams")]
+<<<<<<< HEAD
     [Authorize(Roles = Roles.Admin + "," + Roles.SuperAdmin + "," + Roles.Principal)]
+=======
+    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+>>>>>>> d8b24e6 (attendece and website curtomize)
     public async Task<IActionResult> GetAllExams(int academicYearId = 0, CancellationToken ct = default)
     {
         try
@@ -124,7 +135,11 @@ public class ExamAdminController : ControllerBase
     /// Get all grading rules
     /// </summary>
     [HttpGet("grading-rules")]
+<<<<<<< HEAD
     [Authorize(Roles = Roles.Admin + "," + Roles.SuperAdmin + "," + Roles.Principal)]
+=======
+    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+>>>>>>> d8b24e6 (attendece and website curtomize)
     public async Task<IActionResult> GetGradingRules(CancellationToken ct = default)
     {
         try
@@ -223,7 +238,11 @@ public class ExamAdminController : ControllerBase
     /// Get exam status including result publication status
     /// </summary>
     [HttpGet("exam-status/{examId}")]
+<<<<<<< HEAD
     [Authorize(Roles = Roles.Admin + "," + Roles.SuperAdmin + "," + Roles.Principal)]
+=======
+    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+>>>>>>> d8b24e6 (attendece and website curtomize)
     public async Task<IActionResult> GetExamStatus(int examId, CancellationToken ct = default)
     {
         try
@@ -283,7 +302,11 @@ public class ExamAdminController : ControllerBase
     /// Get subjects for exam configuration
     /// </summary>
     [HttpGet("subjects")]
+<<<<<<< HEAD
     [Authorize(Roles = Roles.Admin + "," + Roles.SuperAdmin + "," + Roles.Principal)]
+=======
+    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+>>>>>>> d8b24e6 (attendece and website curtomize)
     public async Task<IActionResult> GetSubjects(CancellationToken ct = default)
     {
         try
@@ -302,7 +325,11 @@ public class ExamAdminController : ControllerBase
     /// Get classes for exam setup
     /// </summary>
     [HttpGet("classes")]
+<<<<<<< HEAD
     [Authorize(Roles = Roles.Admin + "," + Roles.SuperAdmin + "," + Roles.Principal)]
+=======
+    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+>>>>>>> d8b24e6 (attendece and website curtomize)
     public async Task<IActionResult> GetClasses(CancellationToken ct = default)
     {
         try
@@ -321,7 +348,11 @@ public class ExamAdminController : ControllerBase
     /// Get sections for a class
     /// </summary>
     [HttpGet("sections/{classId}")]
+<<<<<<< HEAD
     [Authorize(Roles = Roles.Admin + "," + Roles.SuperAdmin + "," + Roles.Principal)]
+=======
+    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+>>>>>>> d8b24e6 (attendece and website curtomize)
     public async Task<IActionResult> GetSections(int classId, CancellationToken ct = default)
     {
         try
@@ -340,7 +371,11 @@ public class ExamAdminController : ControllerBase
     /// Get academic years for exam filtering
     /// </summary>
     [HttpGet("academic-years")]
+<<<<<<< HEAD
     [Authorize(Roles = Roles.Admin + "," + Roles.SuperAdmin + "," + Roles.Principal)]
+=======
+    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+>>>>>>> d8b24e6 (attendece and website curtomize)
     public async Task<IActionResult> GetAcademicYears(CancellationToken ct = default)
     {
         try
