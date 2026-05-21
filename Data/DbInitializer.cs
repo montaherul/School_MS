@@ -46,7 +46,14 @@ public static class DbInitializer
             new Role { Id = 4, Name = "Senior Lecturer", Description = "Teaching and review", CreatedAt = createdAt },
             new Role { Id = 5, Name = "Lecturer", Description = "Teaching operations", CreatedAt = createdAt },
             new Role { Id = 6, Name = "Office Staff", Description = "Admission, fees, reports", CreatedAt = createdAt },
-            new Role { Id = 7, Name = "Student", Description = "Student portal access", CreatedAt = createdAt });
+            new Role { Id = 7, Name = "Student", Description = "Student portal access", CreatedAt = createdAt },
+            new Role { Id = 20, Name = "Accountant", Description = "Accounts and finance", CreatedAt = createdAt },
+            new Role { Id = 21, Name = "Librarian", Description = "Library services", CreatedAt = createdAt },
+            new Role { Id = 22, Name = "LabAssistant", Description = "Lab assistance", CreatedAt = createdAt },
+            new Role { Id = 23, Name = "TransportStaff", Description = "Transport services", CreatedAt = createdAt },
+            new Role { Id = 24, Name = "SupportStaff", Description = "Support and cleaning", CreatedAt = createdAt },
+            new Role { Id = 25, Name = "Guardian", Description = "Guardian portal access", CreatedAt = createdAt },
+            new Role { Id = 26, Name = "Admin", Description = "Administrator", CreatedAt = createdAt });
 
         modelBuilder.Entity<ApplicationUser>().HasData(
             new ApplicationUser
@@ -70,9 +77,15 @@ public static class DbInitializer
             "Dashboard", "Users", "Roles", "Permissions", "Admissions", "Students", "Teachers", "Classes",
             "Sections", "Subjects", "Attendance", "Exams", "Marks", "Assignments", "Fees", "Payments",
             "Library", "Transport", "Health", "Notifications", "Reports", "Settings", "Academic",
-            "Admission", "Student", "Exam", "Result", "Communication", "System"
+            "Admission", "Student", "Exam", "Result", "Communication", "System", "AuditLogs",
+            "FeeStructures", "Invoices", "Scholarships", "Waivers", "StudentDues", "FinancialTransactions",
+            "FinanceReports", "FinanceConfiguration", "FinanceDashboard", "Receipts"
         };
-        var actions = new[] { "View", "Create", "Edit", "Delete", "Approve", "Assign", "Publish", "Export", "Manage" };
+        var actions = new[]
+        {
+            "View", "Read", "Create", "Edit", "Update", "Delete", "Approve", "Assign", "Publish", "Export",
+            "Print", "Generate", "Manage"
+        };
         var permissions = modules.SelectMany(module => actions
             .Select(action => new Permission
             {
@@ -81,14 +94,36 @@ public static class DbInitializer
                 ModuleName = module,
                 Action = action,
                 Code = $"{module}.{action}",
-                CanCreate = action is "Create" or "Manage",
-                CanRead = action is "View" or "Export" or "Manage",
-                CanUpdate = action is "Edit" or "Approve" or "Assign" or "Publish" or "Manage",
+                CanCreate = action is "Create" or "Generate" or "Manage",
+                CanRead = action is "View" or "Read" or "Export" or "Print" or "Generate" or "Manage",
+                CanUpdate = action is "Edit" or "Update" or "Approve" or "Assign" or "Publish" or "Manage",
                 CanDelete = action is "Delete" or "Manage",
                 CreatedAt = createdAt
             })).ToArray();
         modelBuilder.Entity<Permission>().HasData(permissions);
+
+        var financeModules = new HashSet<string>
+        {
+            "FeeStructures", "Invoices", "Payments", "Scholarships", "Waivers", "StudentDues",
+            "FinancialTransactions", "FinanceReports", "FinanceConfiguration", "FinanceDashboard", "Receipts"
+        };
+
         var adminRolePermissions = permissions.Select(p => new RolePermission { RoleId = 1, PermissionId = p.Id });
+        var principalRolePermissions = permissions
+            .Where(p => !financeModules.Contains(p.ModuleName) ||
+                p.Code is
+                    "FinanceDashboard.View" or "FinanceDashboard.Read" or
+                    "FinanceReports.View" or "FinanceReports.Read" or "FinanceReports.Export" or "FinanceReports.Print" or
+                    "Payments.View" or "Payments.Read" or
+                    "Invoices.View" or "Invoices.Read" or
+                    "StudentDues.View" or "StudentDues.Read" or
+                    "Scholarships.View" or "Scholarships.Read" or "Scholarships.Approve" or
+                    "Waivers.View" or "Waivers.Read" or "Waivers.Approve")
+            .Select(p => new RolePermission { RoleId = 2, PermissionId = p.Id });
+        var assistantHeadRolePermissions = permissions
+            .Where(p =>
+                p.ModuleName is "Dashboard" or "Academic" or "Classes" or "Sections" or "Subjects" or "Admissions" or "Admission" or "Students" or "Student" or "Attendance" or "Exams" or "Exam" or "Marks" or "Result" or "Communication" or "Reports")
+            .Select(p => new RolePermission { RoleId = 3, PermissionId = p.Id });
         var teacherRolePermissions = permissions
             .Where(p =>
                 p.Code is "Dashboard.View" or "Classes.View" or "Students.View" or "Attendance.View" or "Attendance.Create" or "Marks.View" or "Marks.Create" or "Assignments.View" or "Assignments.Create" ||
@@ -101,9 +136,23 @@ public static class DbInitializer
             .Select(p => new RolePermission { RoleId = 6, PermissionId = p.Id });
         var studentRolePermissions = permissions
             .Where(p =>
-                p.Code is "Dashboard.View" or "Students.View" or "Student.View" or "Attendance.View" or "Marks.View" or "Assignments.View" or "Assignments.Create" or "Notifications.View" or "Fees.View")
+                p.Code is "Dashboard.View" or "Dashboard.Read" or "Students.View" or "Student.View" or "Attendance.View" or "Marks.View" or "Assignments.View" or "Assignments.Create" or "Notifications.View" or "Fees.View" or
+                    "Invoices.View" or "Invoices.Read" or "Payments.View" or "Payments.Read" or "StudentDues.View" or "StudentDues.Read" or
+                    "Receipts.View" or "Receipts.Read" or "Receipts.Print" or "Receipts.Export")
             .Select(p => new RolePermission { RoleId = 7, PermissionId = p.Id });
-        modelBuilder.Entity<RolePermission>().HasData(adminRolePermissions.Concat(teacherRolePermissions).Concat(officeRolePermissions).Concat(studentRolePermissions));
+        var accountantRolePermissions = permissions
+            .Where(p => financeModules.Contains(p.ModuleName) || p.Code is "Dashboard.View" or "Dashboard.Read")
+            .Select(p => new RolePermission { RoleId = 20, PermissionId = p.Id });
+        var applicationAdminRolePermissions = permissions.Select(p => new RolePermission { RoleId = 26, PermissionId = p.Id });
+        modelBuilder.Entity<RolePermission>().HasData(
+            adminRolePermissions
+            .Concat(principalRolePermissions)
+            .Concat(assistantHeadRolePermissions)
+            .Concat(teacherRolePermissions)
+            .Concat(officeRolePermissions)
+            .Concat(studentRolePermissions)
+            .Concat(accountantRolePermissions)
+            .Concat(applicationAdminRolePermissions));
 
         modelBuilder.Entity<AcademicYear>().HasData(new AcademicYear { Id = 1, Name = "2026", StartsOn = new DateTime(2026, 1, 1), EndsOn = new DateTime(2026, 12, 31), IsActive = true, CreatedAt = createdAt });
         //modelBuilder.Entity<SchoolClass>().HasData(
@@ -187,49 +236,54 @@ public static class DbInitializer
 
         //    new Section { Id = 3, SchoolClassId = 2, Name = "A", CreatedAt = createdAt });
         modelBuilder.Entity<Subject>().HasData(
-       new Subject { Id = 1, Code = "BAN", Name = "বাংলা", CreatedAt = createdAt },
-       new Subject { Id = 2, Code = "ENG", Name = "ইংরেজি", CreatedAt = createdAt },
-       new Subject { Id = 3, Code = "MAT", Name = "গণিত", CreatedAt = createdAt },
-       new Subject { Id = 4, Code = "SCI", Name = "সাধারণ বিজ্ঞান", CreatedAt = createdAt },
-       new Subject { Id = 5, Code = "SOC", Name = "বাংলাদেশ ও বিশ্ব পরিচয়", CreatedAt = createdAt },
-       new Subject { Id = 6, Code = "REL", Name = "ধর্ম ও নৈতিক শিক্ষা", CreatedAt = createdAt },
-       new Subject { Id = 7, Code = "ART", Name = "চারুকলা", CreatedAt = createdAt },
-       new Subject { Id = 8, Code = "PE", Name = "শারীরিক শিক্ষা", CreatedAt = createdAt },
 
-       // Class 1–5 Books
-       new Subject { Id = 9, Code = "BAN1", Name = "বাংলা ১ম পত্র", CreatedAt = createdAt },
-       new Subject { Id = 10, Code = "BAN2", Name = "বাংলা ২য় পত্র", CreatedAt = createdAt },
-       new Subject { Id = 11, Code = "ENG1", Name = "ইংরেজি ১ম পত্র", CreatedAt = createdAt },
-       new Subject { Id = 12, Code = "ENG2", Name = "ইংরেজি ২য় পত্র", CreatedAt = createdAt },
-       new Subject { Id = 13, Code = "SCI", Name = "বিজ্ঞান", CreatedAt = createdAt },
-       new Subject { Id = 14, Code = "ICT", Name = "তথ্য ও যোগাযোগ প্রযুক্তি", CreatedAt = createdAt },
-       new Subject { Id = 15, Code = "AGR", Name = "কৃষি শিক্ষা", CreatedAt = createdAt },
+            // Primary Subjects
+            new Subject { Id = 1, Code = "BAN", Name = "বাংলা", NameBn = "বাংলা", CreatedAt = createdAt },
+            new Subject { Id = 2, Code = "ENG", Name = "English", NameBn = "ইংরেজি", CreatedAt = createdAt },
+            new Subject { Id = 3, Code = "MAT", Name = "Mathematics", NameBn = "গণিত", CreatedAt = createdAt },
+            new Subject { Id = 4, Code = "GSCI", Name = "General Science", NameBn = "সাধারণ বিজ্ঞান", CreatedAt = createdAt },
+            new Subject { Id = 5, Code = "SOC", Name = "Bangladesh and Global Studies", NameBn = "বাংলাদেশ ও বিশ্ব পরিচয়", CreatedAt = createdAt },
+            new Subject { Id = 6, Code = "REL", Name = "Religion and Moral Education", NameBn = "ধর্ম ও নৈতিক শিক্ষা", CreatedAt = createdAt },
+            new Subject { Id = 7, Code = "ART", Name = "Arts and Crafts", NameBn = "চারুকলা", CreatedAt = createdAt },
+            new Subject { Id = 8, Code = "PE", Name = "Physical Education", NameBn = "শারীরিক শিক্ষা", CreatedAt = createdAt },
 
-       // Science Group
-       new Subject { Id = 16, Code = "PHY", Name = "পদার্থবিজ্ঞান", CreatedAt = createdAt },
-       new Subject { Id = 17, Code = "CHE", Name = "রসায়ন", CreatedAt = createdAt },
-       new Subject { Id = 18, Code = "BIO", Name = "জীববিজ্ঞান", CreatedAt = createdAt },
-       new Subject { Id = 19, Code = "HMA", Name = "উচ্চতর গণিত", CreatedAt = createdAt },
+            // SSC Common Subjects
+            new Subject { Id = 9, Code = "BAN1", Name = "Bangla 1st Paper", NameBn = "বাংলা ১ম পত্র", CreatedAt = createdAt },
+            new Subject { Id = 10, Code = "BAN2", Name = "Bangla 2nd Paper", NameBn = "বাংলা ২য় পত্র", CreatedAt = createdAt },
+            new Subject { Id = 11, Code = "ENG1", Name = "English 1st Paper", NameBn = "ইংরেজি ১ম পত্র", CreatedAt = createdAt },
+            new Subject { Id = 12, Code = "ENG2", Name = "English 2nd Paper", NameBn = "ইংরেজি ২য় পত্র", CreatedAt = createdAt },
+            new Subject { Id = 13, Code = "SCI", Name = "Science", NameBn = "বিজ্ঞান", CreatedAt = createdAt },
+            new Subject { Id = 14, Code = "ICT", Name = "Information and Communication Technology", NameBn = "তথ্য ও যোগাযোগ প্রযুক্তি", CreatedAt = createdAt },
+            new Subject { Id = 15, Code = "AGR", Name = "Agriculture Studies", NameBn = "কৃষি শিক্ষা", CreatedAt = createdAt },
 
-       // Business Studies
-       new Subject { Id = 20, Code = "ACC", Name = "হিসাববিজ্ঞান", CreatedAt = createdAt },
-       new Subject { Id = 21, Code = "FIN", Name = "ফাইন্যান্স", CreatedAt = createdAt },
-       new Subject { Id = 22, Code = "BUS", Name = "ব্যবসায় উদ্যোগ", CreatedAt = createdAt },
+            // Science Group
+            new Subject { Id = 16, Code = "PHY", Name = "Physics", NameBn = "পদার্থবিজ্ঞান", CreatedAt = createdAt, SubjectGroup = "Science" },
+            new Subject { Id = 17, Code = "CHE", Name = "Chemistry", NameBn = "রসায়ন", CreatedAt = createdAt, SubjectGroup = "Science" },
+            new Subject { Id = 18, Code = "BIO", Name = "Biology", NameBn = "জীববিজ্ঞান", CreatedAt = createdAt, SubjectGroup = "Science" },
+            new Subject { Id = 19, Code = "HMA", Name = "Higher Mathematics", NameBn = "উচ্চতর গণিত", CreatedAt = createdAt, SubjectGroup = "Science" },
 
-       // Humanities
-       new Subject { Id = 23, Code = "HIS", Name = "ইতিহাস", CreatedAt = createdAt },
-       new Subject { Id = 24, Code = "GEO", Name = "ভূগোল ও পরিবেশ", CreatedAt = createdAt },
-       new Subject { Id = 25, Code = "ECO", Name = "অর্থনীতি", CreatedAt = createdAt },
-       new Subject { Id = 26, Code = "CIV", Name = "নাগরিকতা", CreatedAt = createdAt },
+            // Business Studies
+            new Subject { Id = 20, Code = "ACC", Name = "Accounting", NameBn = "হিসাববিজ্ঞান", CreatedAt = createdAt, SubjectGroup = "Business Studies" },
+            new Subject { Id = 21, Code = "FIN", Name = "Finance and Banking", NameBn = "ফাইন্যান্স", CreatedAt = createdAt, SubjectGroup = "Business Studies" },
+            new Subject { Id = 22, Code = "BUS", Name = "Business Entrepreneurship", NameBn = "ব্যবসায় উদ্যোগ", CreatedAt = createdAt, SubjectGroup = "Business Studies" },
 
-       // Others
-       new Subject { Id = 27, Code = "CAREER", Name = "ক্যারিয়ার শিক্ষা", CreatedAt = createdAt },
-       new Subject { Id = 28, Code = "HEALTH", Name = "শারীরিক শিক্ষা, স্বাস্থ্য ও খেলাধুলা", CreatedAt = createdAt },
-       new Subject { Id = 29, Code = "HSC", Name = "গার্হস্থ্য বিজ্ঞান", CreatedAt = createdAt }
-   );
-        modelBuilder.Entity<Teacher>().HasData(
-            new Teacher { Id = 1, TeacherNo = "T-0001", FullName = "Senior Lecturer", Designation = "Senior Lecturer", MobileNumber = "01000000001", CreatedAt = createdAt },
-            new Teacher { Id = 2, TeacherNo = "T-0002", FullName = "Class Teacher", Designation = "Lecturer", MobileNumber = "01000000002", CreatedAt = createdAt });
+            // Humanities
+            new Subject { Id = 23, Code = "HIS", Name = "History", NameBn = "ইতিহাস", CreatedAt = createdAt, SubjectGroup = "Humanities" },
+            new Subject { Id = 24, Code = "GEO", Name = "Geography and Environment", NameBn = "ভূগোল ও পরিবেশ", CreatedAt = createdAt, SubjectGroup = "Humanities" },
+            new Subject { Id = 25, Code = "ECO", Name = "Economics", NameBn = "অর্থনীতি", CreatedAt = createdAt, SubjectGroup = "Humanities" },
+            new Subject { Id = 26, Code = "CIV", Name = "Civics", NameBn = "নাগরিকতা", CreatedAt = createdAt, SubjectGroup = "Humanities" },
+
+            // Others
+            new Subject { Id = 27, Code = "CAREER", Name = "Career Education", NameBn = "ক্যারিয়ার শিক্ষা", CreatedAt = createdAt },
+            new Subject { Id = 28, Code = "HEALTH", Name = "Physical Education, Health and Sports", NameBn = "শারীরিক শিক্ষা, স্বাস্থ্য ও খেলাধুলা", CreatedAt = createdAt },
+            new Subject { Id = 29, Code = "HSC", Name = "Home Science", NameBn = "গার্হস্থ্য বিজ্ঞান", CreatedAt = createdAt },
+
+            // Religion & Moral Education
+            new Subject { Id = 30, Code = "IRE", Name = "Islam and Moral Education", NameBn = "ইসলাম ও নৈতিক শিক্ষা", CreatedAt = createdAt },
+            new Subject { Id = 31, Code = "HRE", Name = "Hindu Religion and Moral Education", NameBn = "হিন্দুধর্ম ও নৈতিক শিক্ষা", CreatedAt = createdAt },
+            new Subject { Id = 32, Code = "BRE", Name = "Buddhist Religion and Moral Education", NameBn = "বৌদ্ধধর্ম ও নৈতিক শিক্ষা", CreatedAt = createdAt },
+            new Subject { Id = 33, Code = "CRE", Name = "Christian Religion and Moral Education", NameBn = "খ্রিস্টধর্ম ও নৈতিক শিক্ষা", CreatedAt = createdAt }
+        );
 
         modelBuilder.Entity<Student>().HasData(
             new Student { Id = 1, StudentNo = "STU-2026-0001", FullName = "Sample Student One", DateOfBirth = new DateTime(2018, 2, 1), Gender = "Male", FatherName = "Father One", MotherName = "Mother One", MobileNumber = "01700000010", Nationality = "Bangladeshi", Country = "Bangladesh", MaritalStatus = "Single", Religion = "Islam", ClassId = 1, SectionId = 1, RollNumber = 1, Status = StudentStatus.Active, CreatedAt = createdAt },
@@ -258,6 +312,12 @@ public static class DbInitializer
         modelBuilder.Entity<Notice>().HasData(new Notice { Id = 1, Title = "Welcome to the 2026 academic session", Body = "Classes and office activities are active.", AudienceRole = "All", PublishAt = createdAt, CreatedAt = createdAt });
         modelBuilder.Entity<Book>().HasData(new Book { Id = 1, AccessionNo = "B-0001", Title = "Primary Mathematics", Author = "Academic Board", TotalCopies = 10, AvailableCopies = 8, CreatedAt = createdAt });
         modelBuilder.Entity<SchoolProfile>().HasData(new SchoolProfile { Id = 1, Name = "School Management System", Address = "Dhaka, Bangladesh", Phone = "01000000000", Email = "info@school.local", CreatedAt = createdAt });
+
+        modelBuilder.Entity<StudentGroup>().HasData(
+            new StudentGroup { Id = 1, Name = "Science", Code = "SCI", Description = "Science Group", MinClass = 9, MaxClass = 10, DisplayOrder = 1, IsActive = true, CreatedAt = createdAt },
+            new StudentGroup { Id = 2, Name = "Business Studies", Code = "BS", Description = "Business Studies Group", MinClass = 9, MaxClass = 10, DisplayOrder = 2, IsActive = true, CreatedAt = createdAt },
+            new StudentGroup { Id = 3, Name = "Humanities", Code = "HUM", Description = "Humanities Group", MinClass = 9, MaxClass = 10, DisplayOrder = 3, IsActive = true, CreatedAt = createdAt }
+        );
 
         modelBuilder.Entity<GradingRule>().HasData(
             new GradingRule { Id = 1, Grade = "A+", MinMarks = 80, MaxMarks = 100, GradePoint = 5.0m, CreatedAt = createdAt },

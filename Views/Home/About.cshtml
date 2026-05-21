@@ -1,0 +1,71 @@
+@model SchoolManagementSystem.Models.Entities.Website.SchoolSetting
+@{
+    Layout = "~/Views/Shared/_PublicLayout.cshtml";
+    ViewData["Title"] = "About Our School";
+}
+
+<!-- Header Hero -->
+<div class="py-5 text-white" style="background: linear-gradient(135deg, var(--edu-navy), var(--edu-dark));">
+    <div class="container text-center py-4">
+        <h1 class="display-4 fw-bold">About Our School</h1>
+        <p class="lead text-white-50">Discover our legacy, academic standards, and future visions</p>
+    </div>
+</div>
+
+<section class="py-5 bg-white">
+    <div class="container py-3">
+        <div class="row g-5">
+            <div class="col-lg-8">
+                <h2 class="fw-bold text-dark mb-3">Welcome to @Model.SchoolName</h2>
+                <hr class="border-warning border-3 opacity-100 mb-4" style="width: 60px; height: 4px;"/>
+                
+                <p class="lead text-muted mb-4">
+                    Founded with a passion to deliver high-quality, moral, and standard education, @Model.SchoolName has been a hallmark of learning for years, fostering academic excellence and social responsibility in Bangladesh.
+                </p>
+                
+                <h4 class="fw-bold mt-5 text-dark"><i class="bi bi-award text-warning me-2"></i> Our Historic Achievements</h4>
+                <p class="text-muted">
+                    We consistently achieve top standings in public board examinations (JSC, SSC) within the region. Our student debate club, sports team, and science Olympiad cohorts hold multiple national championship trophies.
+                </p>
+
+                <h4 class="fw-bold mt-4 text-dark"><i class="bi bi-briefcase text-warning me-2"></i> Modern Infrastructure & Facilities</h4>
+                <p class="text-muted">
+                    Equipped with state-of-the-art physics, chemistry, and biology labs, a rich multimedia library containing over 5,000 reference books, computerized smart classrooms, and an expansive playground.
+                </p>
+
+                <h4 class="fw-bold mt-4 text-dark"><i class="bi bi-palette text-warning me-2"></i> Extracurricular Activities</h4>
+                <p class="text-muted">
+                    Beyond standard textbooks, we host dynamic science fairs, cultural programs, physical education boot camps, and volunteer scouts camps. This ensures a holistic character growth program.
+                </p>
+            </div>
+            
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm p-4 bg-light rounded" style="border-top: 4px solid var(--edu-gold);">
+                    <h4 class="fw-bold text-dark mb-3">At a Glance</h4>
+                    <ul class="list-unstyled mb-0 d-flex flex-column gap-3" style="font-size:15px;">
+                        <li class="d-flex justify-content-between border-bottom pb-2">
+                            <span class="text-muted">Establishment:</span>
+                            <span class="fw-bold text-dark">2005</span>
+                        </li>
+                        <li class="d-flex justify-content-between border-bottom pb-2">
+                            <span class="text-muted">Government EIIN:</span>
+                            <span class="fw-bold text-dark">@Model.EIIN</span>
+                        </li>
+                        <li class="d-flex justify-content-between border-bottom pb-2">
+                            <span class="text-muted">Institution Level:</span>
+                            <span class="fw-bold text-dark">Secondary (VI - X)</span>
+                        </li>
+                        <li class="d-flex justify-content-between border-bottom pb-2">
+                            <span class="text-muted">Medium:</span>
+                            <span class="fw-bold text-dark">Bangla</span>
+                        </li>
+                        <li class="d-flex justify-content-between">
+                            <span class="text-muted">Location:</span>
+                            <span class="fw-bold text-dark text-end" style="max-width:180px;">@Model.Address</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

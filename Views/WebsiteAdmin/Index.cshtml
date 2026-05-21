@@ -1,0 +1,295 @@
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Public Website Configuration";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800"><i class="bi bi-globe me-2 text-primary"></i> Public Website Administration</h1>
+            <p class="text-muted mb-0">Configure settings, home sliders, notices, events, and galleries of the public portal.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="/Admin/Website/Settings" class="btn btn-primary shadow-sm"><i class="bi bi-gear-fill me-1"></i> Edit School Settings</a>
+            <a href="/" target="_blank" class="btn btn-outline-secondary shadow-sm"><i class="bi bi-eye-fill me-1"></i> View Live Site</a>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white p-0 border-bottom">
+            <ul class="nav nav-tabs border-0" id="websiteTabs" role="tablist">
+                <li class="nav-item">
+                    <button class="nav-link active px-4 py-3 fw-bold border-0 border-bottom-primary" id="sliders-tab" data-bs-toggle="tab" data-bs-target="#sliders-pane" type="button" role="tab"><i class="bi bi-images me-1"></i> Home Sliders</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link px-4 py-3 fw-bold border-0" id="notices-tab" data-bs-toggle="tab" data-bs-target="#notices-pane" type="button" role="tab"><i class="bi bi-megaphone-fill me-1"></i> Notice Board</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link px-4 py-3 fw-bold border-0" id="events-tab" data-bs-toggle="tab" data-bs-target="#events-pane" type="button" role="tab"><i class="bi bi-calendar3 me-1"></i> School Events</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link px-4 py-3 fw-bold border-0" id="galleries-tab" data-bs-toggle="tab" data-bs-target="#galleries-pane" type="button" role="tab"><i class="bi bi-images-alt me-1"></i> Photo Albums</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link px-4 py-3 fw-bold border-0" id="pages-tab" data-bs-toggle="tab" data-bs-target="#pages-pane" type="button" role="tab"><i class="bi bi-file-earmark-richtext-fill me-1"></i> CMS Pages</button>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body p-4">
+            <div class="tab-content" id="websiteTabsContent">
+                
+                <!-- ── 1. Hero Sliders Pane ── -->
+                <div class="tab-pane fade show active" id="sliders-pane" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0">Hero Slideshow Settings</h5>
+                        <a href="/Admin/Website/Sliders/CreateEdit" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i> Add New Slide</a>
+                    </div>
+                    <div id="slidersGrid"></div>
+                </div>
+
+                <!-- ── 2. Notices Pane ── -->
+                <div class="tab-pane fade" id="notices-pane" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0">Bulletin Notice Board Announcements</h5>
+                        <a href="/Admin/Website/Notices/CreateEdit" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i> Create Notice</a>
+                    </div>
+                    <div id="noticesGrid"></div>
+                </div>
+
+                <!-- ── 3. Events Pane ── -->
+                <div class="tab-pane fade" id="events-pane" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0">Academic & Extra Events</h5>
+                        <a href="/Admin/Website/Events/CreateEdit" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i> Create Event</a>
+                    </div>
+                    <div id="eventsGrid"></div>
+                </div>
+
+                <!-- ── 4. Galleries Pane ── -->
+                <div class="tab-pane fade" id="galleries-pane" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0">School Life Photo Albums</h5>
+                        <a href="/Admin/Website/Galleries/CreateEdit" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i> Add Photo Album</a>
+                    </div>
+                    <div id="galleriesGrid"></div>
+                </div>
+
+                <!-- ── 5. CMS Pages Pane ── -->
+                <div class="tab-pane fade" id="pages-pane" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0">Dynamic Lightweight CMS Pages</h5>
+                        <a href="/Admin/Website/Pages/CreateEdit" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i> Add Custom Page</a>
+                    </div>
+                    <div id="pagesGrid"></div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link href="https://unpkg.com/tabulator-tables@5.5.0/dist/css/tabulator_bootstrap5.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/tabulator-tables@5.5.0/dist/js/tabulator.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // Anti-Forgery Token Helper
+        const getAntiforgeryToken = () => {
+            return document.querySelector('input[name="__RequestVerificationToken"]')?.value || "";
+        };
+
+        // Initialize Sliders Grid
+        const slidersTable = new Tabulator("#slidersGrid", {
+            ajaxURL: "/Admin/Website/Sliders/List",
+            layout: "fitColumns",
+            responsiveLayout: "collapse",
+            placeholder: "No sliders configured",
+            columns: [
+                { title: "Display Order", field: "displayOrder", width: 140, horizAlign: "center" },
+                { title: "Thumbnail", field: "imagePath", width: 120, formatter: function(cell) {
+                    return `<img src="${cell.getValue()}" style="height:36px; border-radius:4px; object-fit:cover;"/>`;
+                }},
+                { title: "Slide Title", field: "title" },
+                { title: "Subtitle Tagline", field: "subtitle" },
+                { title: "Status", field: "isActive", width: 120, horizAlign: "center", formatter: function(cell) {
+                    return cell.getValue() ? `<span class="badge bg-success">Active</span>` : `<span class="badge bg-secondary">Hidden</span>`;
+                }},
+                { title: "Actions", width: 150, horizAlign: "center", headerSort: false, formatter: function(cell) {
+                    const row = cell.getRow().getData();
+                    return `
+                        <div class="btn-group btn-group-sm">
+                            <a href="/Admin/Website/Sliders/CreateEdit/${row.id}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteObject('/Admin/Website/Sliders/Delete/${row.id}', slidersTable)"><i class="bi bi-trash"></i></button>
+                        </div>
+                    `;
+                }}
+            ]
+        });
+
+        // Initialize Notices Grid
+        const noticesTable = new Tabulator("#noticesGrid", {
+            ajaxURL: "/Admin/Website/Notices/List",
+            layout: "fitColumns",
+            responsiveLayout: "collapse",
+            pagination: true,
+            paginationMode: "remote",
+            paginationSize: 10,
+            ajaxResponse: function(url, params, response) {
+                return {
+                    last_page: response.last_page,
+                    data: response.data
+                };
+            },
+            placeholder: "No announcements published",
+            columns: [
+                { title: "Publish Date", field: "publishAt", width: 150, formatter: function(cell) {
+                    return new Date(cell.getValue()).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                }},
+                { title: "Title / Subject", field: "title" },
+                { title: "Target Audience", field: "audienceRole", width: 160 },
+                { title: "Published", field: "isPublished", width: 120, horizAlign: "center", formatter: function(cell) {
+                    return cell.getValue() ? `<span class="badge bg-success">Published</span>` : `<span class="badge bg-warning">Draft</span>`;
+                }},
+                { title: "Actions", width: 150, horizAlign: "center", headerSort: false, formatter: function(cell) {
+                    const row = cell.getRow().getData();
+                    return `
+                        <div class="btn-group btn-group-sm">
+                            <a href="/Admin/Website/Notices/CreateEdit/${row.id}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteObject('/Admin/Website/Notices/Delete/${row.id}', noticesTable)"><i class="bi bi-trash"></i></button>
+                        </div>
+                    `;
+                }}
+            ]
+        });
+
+        // Initialize Events Grid
+        const eventsTable = new Tabulator("#eventsGrid", {
+            ajaxURL: "/Admin/Website/Events/List",
+            layout: "fitColumns",
+            responsiveLayout: "collapse",
+            placeholder: "No events listed",
+            columns: [
+                { title: "Event Date", field: "eventDate", width: 150, formatter: function(cell) {
+                    return new Date(cell.getValue()).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                }},
+                { title: "Event Title", field: "title" },
+                { title: "Venue", field: "eventLocation", width: 200 },
+                { title: "Status", field: "isPublished", width: 120, horizAlign: "center", formatter: function(cell) {
+                    return cell.getValue() ? `<span class="badge bg-success">Active</span>` : `<span class="badge bg-secondary">Draft</span>`;
+                }},
+                { title: "Actions", width: 150, horizAlign: "center", headerSort: false, formatter: function(cell) {
+                    const row = cell.getRow().getData();
+                    return `
+                        <div class="btn-group btn-group-sm">
+                            <a href="/Admin/Website/Events/CreateEdit/${row.id}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteObject('/Admin/Website/Events/Delete/${row.id}', eventsTable)"><i class="bi bi-trash"></i></button>
+                        </div>
+                    `;
+                }}
+            ]
+        });
+
+        // Initialize Galleries Grid
+        const galleriesTable = new Tabulator("#galleriesGrid", {
+            ajaxURL: "/Admin/Website/Galleries/List",
+            layout: "fitColumns",
+            responsiveLayout: "collapse",
+            placeholder: "No photo albums created",
+            columns: [
+                { title: "Cover", field: "coverImagePath", width: 120, formatter: function(cell) {
+                    return cell.getValue() ? `<img src="${cell.getValue()}" style="height:36px; border-radius:4px; object-fit:cover;"/>` : `<i class="bi bi-images text-muted fs-3"></i>`;
+                }},
+                { title: "Album Title", field: "albumName" },
+                { title: "Description Tagline", field: "description" },
+                { title: "Actions", width: 150, horizAlign: "center", headerSort: false, formatter: function(cell) {
+                    const row = cell.getRow().getData();
+                    return `
+                        <div class="btn-group btn-group-sm">
+                            <a href="/Admin/Website/Galleries/CreateEdit/${row.id}" class="btn btn-sm btn-outline-primary" title="Edit Album / Upload Images"><i class="bi bi-images"></i> Manage</a>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteObject('/Admin/Website/Galleries/Delete/${row.id}', galleriesTable)"><i class="bi bi-trash"></i></button>
+                        </div>
+                    `;
+                }}
+            ]
+        });
+
+        // Initialize Pages Grid
+        const pagesTable = new Tabulator("#pagesGrid", {
+            ajaxURL: "/Admin/Website/Pages/List",
+            layout: "fitColumns",
+            responsiveLayout: "collapse",
+            placeholder: "No CMS pages created",
+            columns: [
+                { title: "Page Title", field: "title" },
+                { title: "Slug Address", field: "slug", width: 250, formatter: function(cell) {
+                    return `<code>/p/${cell.getValue()}</code>`;
+                }},
+                { title: "Published", field: "isPublished", width: 120, horizAlign: "center", formatter: function(cell) {
+                    return cell.getValue() ? `<span class="badge bg-success">Published</span>` : `<span class="badge bg-secondary">Draft</span>`;
+                }},
+                { title: "Actions", width: 180, horizAlign: "center", headerSort: false, formatter: function(cell) {
+                    const row = cell.getRow().getData();
+                    return `
+                        <div class="btn-group btn-group-sm">
+                            <a href="/p/${row.slug}" target="_blank" class="btn btn-sm btn-outline-secondary" title="View Page"><i class="bi bi-eye"></i></a>
+                            <a href="/Admin/Website/Pages/CreateEdit/${row.id}" class="btn btn-sm btn-outline-primary" title="Edit Page"><i class="bi bi-pencil"></i></a>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteObject('/Admin/Website/Pages/Delete/${row.id}', pagesTable)"><i class="bi bi-trash"></i></button>
+                        </div>
+                    `;
+                }}
+            ]
+        });
+
+        // Combined Delete Helper
+        function deleteObject(url, targetTable) {
+            Swal.fire({
+                title: "Are you sure?",
+                text: "This item will be soft-deleted and removed from the live website immediately.",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                confirmButtonText: "Yes, delete it!"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Create verification token form payload
+                    const token = getAntiforgeryToken();
+                    
+                    fetch(url, {
+                        method: "POST",
+                        headers: {
+                            "RequestVerificationToken": token,
+                            "Content-Type": "application/json"
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire("Deleted!", "The record was removed successfully.", "success");
+                            targetTable.setData();
+                        } else {
+                            Swal.fire("Error!", "Deletion failed: " + data.message, "error");
+                        }
+                    })
+                    .catch(err => {
+                        Swal.fire("Error!", "An unexpected request conflict occurred.", "error");
+                    });
+                }
+            });
+        }
+
+        // Fix Bootstrap tab resizing issue with Tabulator
+        document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(tabEl => {
+            tabEl.addEventListener('shown.bs.tab', function (event) {
+                const targetPane = event.target.getAttribute("data-bs-target");
+                if (targetPane === "#sliders-pane") slidersTable.redraw();
+                else if (targetPane === "#notices-pane") noticesTable.redraw();
+                else if (targetPane === "#events-pane") eventsTable.redraw();
+                else if (targetPane === "#galleries-pane") galleriesTable.redraw();
+                else if (targetPane === "#pages-pane") pagesTable.redraw();
+            });
+        });
+    </script>
+}

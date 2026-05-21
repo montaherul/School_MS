@@ -1,0 +1,184 @@
+@{
+    ViewData["Title"] = "Marks Entry Center";
+    var exams = ViewBag.Exams as IEnumerable<SchoolManagementSystem.Models.Entities.Exam.Exam>;
+    var classes = ViewBag.Classes as IEnumerable<SchoolManagementSystem.Models.Entities.Academic.SchoolClass>;
+    var assignments = ViewBag.Assignments as IEnumerable<SchoolManagementSystem.Models.Entities.Teachers.TeacherClassAssignment>;
+    var isTeacher = (bool)ViewBag.IsTeacher;
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                    <polyline points="10 9 9 9 8 9" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Marks Entry Center</h1>
+                <p class="adm-header__sub">Evaluate students, enter component marks, and submit academic results.</p>
+            </div>
+        </div>
+        @if (!isTeacher)
+        {
+            <div class="adm-btn-group">
+                <a href="@Url.Action("AuditLog")" class="adm-btn adm-btn--ghost">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="me-2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                    Audit Logs
+                </a>
+            </div>
+        }
+    </div>
+
+    <!-- ── Filter Selector Panel ── -->
+    <div class="adm-table-card" style="border-radius: var(--adm-radius-lg); padding: 40px; border: 1px solid var(--adm-border);">
+        <form id="marksEntrySelectForm" method="get" action="@Url.Action("Entry")">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Select Examination</label>
+                    <select name="examId" class="form-select adm-select" required>
+                        <option value="">-- Choose Exam --</option>
+                        @if (exams != null)
+                        {
+                            foreach (var e in exams)
+                            {
+                                <option value="@e.Id">@e.Name</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                @if (isTeacher && assignments != null && assignments.Any())
+                {
+                    <div class="col-md-6">
+                        <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Assigned Class & Section</label>
+                        <select id="teacherAssignmentSelect" class="form-select adm-select" required>
+                            <option value="">-- Choose Assignment --</option>
+                            @foreach (var a in assignments)
+                            {
+                                <option value="@a.ClassId" data-section="@a.SectionId">@(a.Class?.Name ?? "N/A") – @(a.Section?.Name ?? "N/A")</option>
+                            }
+                        </select>
+                        <input type="hidden" name="classId" id="classIdHidden" />
+                        <input type="hidden" name="sectionId" id="sectionIdHidden" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Select Subject</label>
+                        <select name="subjectId" id="teacherSubjectSelect" class="form-select adm-select" required disabled>
+                            <option value="">-- Choose Subject --</option>
+                        </select>
+                    </div>
+                }
+                else
+                {
+                    <div class="col-md-6">
+                        <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Select Class</label>
+                        <select name="classId" id="adminClassSelect" class="form-select adm-select" required>
+                            <option value="">-- Choose Class --</option>
+                            @if (classes != null)
+                            {
+                                foreach (var c in classes)
+                                {
+                                    <option value="@c.Id">@c.Name</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Select Section</label>
+                        <select name="sectionId" id="adminSectionSelect" class="form-select adm-select" required disabled>
+                            <option value="">-- Choose Section --</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Select Subject</label>
+                        <select name="subjectId" id="adminSubjectSelect" class="form-select adm-select" required disabled>
+                            <option value="">-- Choose Subject --</option>
+                        </select>
+                    </div>
+                }
+
+                <div class="col-12 mt-5">
+                    <button type="submit" class="adm-btn adm-btn--primary px-5 py-2" style="font-size: 1rem;">
+                        Load Marksheet
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Teacher workflow: dynamic subjects based on class & section
+            $('#teacherAssignmentSelect').change(function() {
+                var classId = $(this).val();
+                var sectionId = $(this).find(':selected').data('section');
+                
+                $('#classIdHidden').val(classId);
+                $('#sectionIdHidden').val(sectionId);
+
+                if (classId && sectionId) {
+                    $.ajax({
+                        url: '@Url.Action("GetSubjectsForTeacher", "ResultManagement")',
+                        data: { classId: classId, sectionId: sectionId },
+                        success: function(subjects) {
+                            var $select = $('#teacherSubjectSelect');
+                            $select.empty().append('<option value="">-- Choose Subject --</option>');
+                            $.each(subjects, function(i, s) {
+                                $select.append($('<option>', { value: s.subjectId, text: s.subjectName }));
+                            });
+                            $select.prop('disabled', false);
+                        }
+                    });
+                } else {
+                    $('#teacherSubjectSelect').empty().append('<option value="">-- Choose Subject --</option>').prop('disabled', true);
+                }
+            });
+
+            // Admin workflow: Class -> Section -> Subject cascade
+            $('#adminClassSelect').change(function() {
+                var classId = $(this).val();
+                if (classId) {
+                    // Load Sections
+                    $.ajax({
+                        url: '/Academic/Section/GetByClass/' + classId,
+                        success: function(sections) {
+                            var $select = $('#adminSectionSelect');
+                            $select.empty().append('<option value="">-- Choose Section --</option>');
+                            $.each(sections, function(i, s) {
+                                $select.append($('<option>', { value: s.id, text: s.name }));
+                            });
+                            $select.prop('disabled', false);
+                        }
+                    });
+
+                    // Load Subjects
+                    $.ajax({
+                        url: '@Url.Action("GetSubjectsForClass", "ResultManagement")',
+                        data: { classId: classId },
+                        success: function(subjects) {
+                            var $select = $('#adminSubjectSelect');
+                            $select.empty().append('<option value="">-- Choose Subject --</option>');
+                            $.each(subjects, function(i, s) {
+                                $select.append($('<option>', { value: s.id, text: s.name }));
+                            });
+                            $select.prop('disabled', false);
+                        }
+                    });
+                } else {
+                    $('#adminSectionSelect').empty().append('<option value="">-- Choose Section --</option>').prop('disabled', true);
+                    $('#adminSubjectSelect').empty().append('<option value="">-- Choose Subject --</option>').prop('disabled', true);
+                }
+            });
+        });
+    </script>
+}

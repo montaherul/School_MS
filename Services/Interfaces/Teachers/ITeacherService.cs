@@ -14,4 +14,6 @@ public interface ITeacherService
 
     Task DeactivateAsync(int id, string updatedBy, CancellationToken ct = default);
     Task ActivateAsync(int id, string updatedBy, CancellationToken ct = default);
+    Task<TeacherUpsertDto?> GetByUserIdAsync(int userId, CancellationToken ct = default);
 }
+

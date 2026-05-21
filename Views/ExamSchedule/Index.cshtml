@@ -1,0 +1,167 @@
+@model IEnumerable<SchoolManagementSystem.Models.Entities.Exam.ExamSchedule>
+@{
+    ViewData["Title"] = "Exam Schedules";
+    var exams = ViewBag.Exams as IEnumerable<SchoolManagementSystem.Models.Entities.Exam.Exam>;
+    var classes = ViewBag.Classes as IEnumerable<SchoolManagementSystem.Models.Entities.Academic.SchoolClass>;
+}
+
+<div class="adm-page">
+    <!-- ── Page Header ── -->
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Exam Schedules</h1>
+                <p class="adm-header__sub">Configure, review, and print exam routines for classes.</p>
+            </div>
+        </div>
+        <div class="adm-btn-group">
+            <a href="@Url.Action("Create")" class="adm-btn adm-btn--primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                New Schedule
+            </a>
+        </div>
+    </div>
+
+    <!-- ── Filters Panel ── -->
+    <div class="adm-table-card" style="margin-bottom: 24px; padding: 20px; border-radius: var(--adm-radius-lg);">
+        <form method="get" action="@Url.Action("Index")" class="row g-3">
+            <div class="col-md-5">
+                <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Select Exam</label>
+                <select name="examId" class="form-select adm-select">
+                    <option value="">-- All Exams --</option>
+                    @if (exams != null)
+                    {
+                        foreach (var e in exams)
+                        {
+                            <!option value="@e.Id" @(ViewBag.SelectedExamId == e.Id ? "selected" : "")>@e.Name</!option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-5">
+                <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Select Class</label>
+                <select name="classId" class="form-select adm-select">
+                    <option value="">-- All Classes --</option>
+                    @if (classes != null)
+                    {
+                        foreach (var c in classes)
+                        {
+                            <!option value="@c.Id" @(ViewBag.SelectedClassId == c.Id ? "selected" : "")>@c.Name</!option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="adm-btn adm-btn--primary w-100" style="height: 38px;">
+                    Filter
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- ── Schedules Table ── -->
+    <div class="adm-table-card" style="border-radius: var(--adm-radius-lg); border-top: 1px solid var(--adm-border);">
+        <div class="adm-table-card__body">
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive" style="border-radius: var(--adm-radius-lg);">
+                    <table class="dash-table">
+                        <thead>
+                            <tr>
+                                <th>Exam</th>
+                                <th>Class & Subject</th>
+                                <th>Exam Date</th>
+                                <th>Time Slot</th>
+                                <th>Room No</th>
+                                <th>Instructions</th>
+                                <th style="text-align:right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var s in Model)
+                            {
+                                <tr id="row-@s.Id">
+                                    <td><span class="adm-cell-name">@s.Exam.Name</span></td>
+                                    <td>
+                                        <div class="d-flex flex-column">
+                                            <span class="adm-cell-name">@s.Subject.Name</span>
+                                            <small style="color: var(--adm-text-3);">Class: @string.Join(", ", s.Subject.ClassSubjects.Select(cs => cs.SchoolClass?.Name))</small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="adm-cell-dob">@s.ExamDate.ToString("dd MMM yyyy")</span>
+                                    </td>
+                                    <td>
+                                        <span class="adm-status adm-status--neutral">
+                                            @s.StartsAt.ToString("hh:mm tt") – @s.EndsAt.ToString("hh:mm tt")
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="adm-cell-name">Room @s.RoomNo</span>
+                                    </td>
+                                    <td>
+                                        <span style="color: var(--adm-text-2);">@(string.IsNullOrEmpty(s.Instructions) ? "None" : s.Instructions)</span>
+                                    </td>
+                                    <td>
+                                        <div class="actions-cell">
+                                            <a href="@Url.Action("Routine", "ExamSchedule", new { examId = s.ExamId, classId = s.Subject.ClassSubjects.FirstOrDefault()?.SchoolClassId ?? 0 })"
+                                               class="adm-action adm-action--edit" title="Class Routine" style="color: var(--adm-primary);">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                                            </a>
+                                            <a href="@Url.Action("Edit", new { id = s.Id })" class="adm-action adm-action--edit" title="Edit Schedule">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></svg>
+                                            </a>
+                                            <button type="button" onclick="deleteSchedule(@s.Id)" class="adm-action adm-action--delete" title="Delete Schedule">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="dash-empty">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /></svg>
+                    <h3 class="dash-empty__title">No Schedules Configured</h3>
+                    <p class="dash-empty__sub">Choose filters or create a new exam schedule to display data.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function deleteSchedule(id) {
+            if (confirm('Are you sure you want to delete this exam schedule?')) {
+                $.ajax({
+                    url: '@Url.Action("Delete")',
+                    type: 'POST',
+                    data: { 
+                        id: id,
+                        __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function (res) {
+                        if (res.success) {
+                            $('#row-' + id).fadeOut(300, function() { $(this).remove(); });
+                        } else {
+                            alert(res.message || 'Error occurred while deleting.');
+                        }
+                    }
+                });
+            }
+        }
+    </script>
+}

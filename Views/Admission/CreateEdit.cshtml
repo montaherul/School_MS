@@ -254,17 +254,25 @@
                 </div>
                 <div class="card-body p-4">
                     <div class="row g-3">
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <label asp-for="BirthCertificateNo" class="form-label">Birth Certificate No.</label>
                             <input asp-for="BirthCertificateNo" class="form-control" />
                         </div>
-                        <div class="col-md-4">
-                            <label asp-for="NationalIdNo" class="form-label">National ID No.</label>
-                            <input asp-for="NationalIdNo" class="form-control" />
+                        <div class="col-md-6">
+                            <label asp-for="BirthCertificateFile" class="form-label">Birth Certificate (Document)</label>
+                            <input asp-for="BirthCertificateFile" type="file" class="form-control" accept=".pdf,.jpg,.jpeg,.png" />
+                            @if (!string.IsNullOrEmpty(Model.BirthCertificatePath))
+                            {
+                                <div class="mt-1"><a href="@Model.BirthCertificatePath" target="_blank" class="text-info small"><i class="bi bi-file-earmark-pdf"></i> View Current Document</a></div>
+                            }
                         </div>
-                        <div class="col-md-4">
-                            <label asp-for="PassportNo" class="form-label">Passport No. (if any)</label>
-                            <input asp-for="PassportNo" class="form-control" />
+                        <div class="col-md-6">
+                            <label asp-for="PaymentSlipFile" class="form-label">Payment Slip / Receipt (Document)</label>
+                            <input asp-for="PaymentSlipFile" type="file" class="form-control" accept=".pdf,.jpg,.jpeg,.png" />
+                            @if (!string.IsNullOrEmpty(Model.PaymentSlipPath))
+                            {
+                                <div class="mt-1"><a href="@Model.PaymentSlipPath" target="_blank" class="text-info small"><i class="bi bi-file-earmark-pdf"></i> View Current Receipt</a></div>
+                            }
                         </div>
                     </div>
                 </div>

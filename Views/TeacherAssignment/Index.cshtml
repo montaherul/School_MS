@@ -207,7 +207,7 @@
         function loadSections(classId, targetId) {
             if (!classId) return;
             // First try sections (if class has sub-sections)
-            fetch(`/Section/GetSectionsByClass?classId=${classId}`)
+            fetch('@Url.Action("GetSectionsByClass", "Section")?classId=' + classId)
                 .then(r => r.json())
                 .then(data => {
                     const sel = document.getElementById(targetId);
@@ -216,7 +216,7 @@
                         data.forEach(s => sel.innerHTML += `<option value="${s.id}">${s.name}</option>`);
                     } else {
                         // If no sub-sections, try top-level groups
-                        fetch(`/Section/GetGroupsForClass?classId=${classId}`)
+                        fetch('@Url.Action("GetGroupsForClass", "Section")?classId=' + classId)
                             .then(r2 => r2.json())
                             .then(data2 => {
                                 data2.forEach(s => sel.innerHTML += `<option value="${s.id}">${s.name}</option>`);
@@ -229,7 +229,7 @@
             loadSections(classId, 'subj-section-select');
             if (!classId) return;
             // Assuming there's a GetSubjectsForClass endpoint that returns all subjects for a class
-            fetch(`/ResultManagement/GetSubjectsForClass?classId=${classId}`)
+            fetch('@Url.Action("GetSubjectsForClass", "ResultManagement")?classId=' + classId)
                 .then(r => r.json())
                 .then(data => {
                     const sel = document.getElementById('subject-select');
@@ -241,7 +241,7 @@
         function removeAssignment(type, id) {
             if (!confirm(`Are you sure you want to remove this ${type} assignment?`)) return;
             
-            const url = type === 'Class' ? '/TeacherAssignment/RemoveClassAssignment' : '/TeacherAssignment/RemoveSubjectAssignment';
+            const url = type === 'Class' ? '@Url.Action("RemoveClassAssignment", "TeacherAssignment")' : '@Url.Action("RemoveSubjectAssignment", "TeacherAssignment")';
             
             const formData = new FormData();
             formData.append('id', id);

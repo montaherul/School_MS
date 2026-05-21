@@ -6,6 +6,8 @@ using SchoolManagementSystem.Models.Entities.Student;
 using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
+using SchoolManagementSystem.Repositories.Interfaces.Result;
+using SchoolManagementSystem.Repositories.Interfaces.Students;
 
 namespace SchoolManagementSystem.Services.Implementations.Result;
 
@@ -16,22 +18,28 @@ namespace SchoolManagementSystem.Services.Implementations.Result;
 public class PromotionService : IPromotionService
 {
     private readonly IUnitOfWork _uow;
-    private readonly SchoolDbContext _db;
+    private readonly IFinalResultRepository _finalResultRepository;
+    private readonly IPromotionHistoryRepository _promotionHistoryRepository;
+    private readonly IStudentRepository _studentRepository;
 
-    public PromotionService(IUnitOfWork uow, SchoolDbContext db)
+    public PromotionService(
+        IUnitOfWork uow,
+        IFinalResultRepository finalResultRepository,
+        IPromotionHistoryRepository promotionHistoryRepository,
+        IStudentRepository studentRepository)
     {
         _uow = uow;
-        _db = db;
+        _finalResultRepository = finalResultRepository;
+        _promotionHistoryRepository = promotionHistoryRepository;
+        _studentRepository = studentRepository;
     }
 
     public async Task<PromotionEligibility> CalculatePromotionEligibilityAsync(int studentId, int academicYearId)
     {
-        var student = await _db.Students.FindAsync(studentId);
+        var student = await _studentRepository.GetByIdAsync(studentId);
         if (student == null) throw new ArgumentException("Student not found");
 
-        var finalResult = await _db.FinalResults
-            .FirstOrDefaultAsync(fr => fr.StudentId == studentId && fr.AcademicYearId == academicYearId);
-
+        var finalResult = await _finalResultRepository.FirstOrDefaultAsync(fr => fr.StudentId == studentId && fr.AcademicYearId == academicYearId);
         var rules = await GetPromotionRulesAsync(student.ClassId);
 
         return CalculatePromotionEligibilityInternal(studentId, finalResult, rules);
@@ -55,13 +63,12 @@ public class PromotionService : IPromotionService
             StudentId = studentId,
             GPA = finalResult.FinalGpa,
             FailedSubjects = finalResult.TotalFailedSubjects,
-            TotalSubjects = 0, // Should be calculated if needed
+            TotalSubjects = 0,
             IsEligible = false,
             Reason = "",
             RecommendedAction = ""
         };
 
-        // Apply Bangladesh promotion rules
         if (rules.RequireAllSubjectsPass && finalResult.TotalFailedSubjects > 0)
         {
             eligibility.Reason = $"Failed {finalResult.TotalFailedSubjects} subject(s). All subjects must be passed.";
@@ -102,13 +109,11 @@ public class PromotionService : IPromotionService
 
     public async Task<PromotionResult> ProcessClassPromotionAsync(int classId, int academicYearId, int processedByUserId)
     {
-        var students = await _db.Students
-            .Where(s => s.ClassId == classId)
-            .ToListAsync();
+        var students = await _studentRepository.ListAsync(s => s.ClassId == classId);
 
-        var finalResults = await _db.FinalResults
-            .Where(fr => fr.AcademicYearId == academicYearId && students.Select(s => s.Id).Contains(fr.StudentId))
-            .ToDictionaryAsync(fr => fr.StudentId);
+        var studentIds = students.Select(s => s.Id).ToList();
+        var finalResults = (await _finalResultRepository.ListAsync(fr => fr.AcademicYearId == academicYearId && studentIds.Contains(fr.StudentId)))
+            .ToDictionary(fr => fr.StudentId);
 
         var rules = await GetPromotionRulesAsync(classId);
 
@@ -127,12 +132,11 @@ public class PromotionService : IPromotionService
             var status = eligibility.RecommendedAction switch
             {
                 "Promote" => PromotionStatus.Promoted,
-                "Conditional Promotion" => PromotionStatus.Promoted, 
+                "Conditional Promotion" => PromotionStatus.Promoted,
                 "Repeat" => PromotionStatus.Repeat,
                 _ => PromotionStatus.Pending
             };
 
-            // Get next class (simple logic - increment class ID)
             var nextClassId = classId + 1;
 
             var promotionHistory = new PromotionHistory
@@ -147,7 +151,7 @@ public class PromotionService : IPromotionService
                 Remarks = eligibility.Reason
             };
 
-            _db.PromotionHistories.Add(promotionHistory);
+            await _promotionHistoryRepository.AddAsync(promotionHistory);
 
             var record = new PromotionRecord
             {
@@ -163,7 +167,6 @@ public class PromotionService : IPromotionService
 
             result.Records.Add(record);
 
-            // Update counters
             switch (status)
             {
                 case PromotionStatus.Promoted:
@@ -178,7 +181,7 @@ public class PromotionService : IPromotionService
             }
         }
 
-        await _db.SaveChangesAsync();
+        await _uow.SaveChangesAsync();
         return result;
     }
 
@@ -186,13 +189,11 @@ public class PromotionService : IPromotionService
     {
         var result = new BulkPromotionResult();
 
-        var students = await _db.Students
-            .Where(s => s.ClassId == request.FromClassId)
-            .ToListAsync();
+        var students = await _studentRepository.ListAsync(s => s.ClassId == request.FromClassId);
 
-        var finalResults = await _db.FinalResults
-            .Where(fr => fr.AcademicYearId == request.AcademicYearId && students.Select(s => s.Id).Contains(fr.StudentId))
-            .ToDictionaryAsync(fr => fr.StudentId);
+        var studentIds = students.Select(s => s.Id).ToList();
+        var finalResults = (await _finalResultRepository.ListAsync(fr => fr.AcademicYearId == request.AcademicYearId && studentIds.Contains(fr.StudentId)))
+            .ToDictionary(fr => fr.StudentId);
 
         var rules = await GetPromotionRulesAsync(request.FromClassId);
 
@@ -222,7 +223,7 @@ public class PromotionService : IPromotionService
                     Remarks = request.Comments
                 };
 
-                _db.PromotionHistories.Add(promotionHistory);
+                await _promotionHistoryRepository.AddAsync(promotionHistory);
 
                 var record = new PromotionRecord
                 {
@@ -246,39 +247,36 @@ public class PromotionService : IPromotionService
             }
         }
 
-        await _db.SaveChangesAsync();
+        await _uow.SaveChangesAsync();
         return result;
     }
 
     public async Task<PromotionRules> GetPromotionRulesAsync(int classId)
     {
-        // For now, return default Bangladesh rules
-        // In a real implementation, this would be stored in database
         var rules = new PromotionRules
         {
             ClassId = classId,
-            MinimumGPA = 1.0m, // D grade
+            MinimumGPA = 1.0m,
             MaximumFailedSubjects = 2,
             AllowConditionalPromotion = true,
             ConditionalPromotionGPA = 0.8m,
-            RequireAllSubjectsPass = classId >= 9, // SSC classes require all subjects pass
-            CriticalSubjects = ["Bangla", "English", "Mathematics"] // Critical subjects that must be passed
+            RequireAllSubjectsPass = classId >= 9,
+            CriticalSubjects = ["Bangla", "English", "Mathematics"]
         };
 
-        // Class-specific rules for Bangladesh system
-        if (classId <= 5) // Primary
+        if (classId <= 5)
         {
-            rules.MaximumFailedSubjects = 3; // More lenient for primary
+            rules.MaximumFailedSubjects = 3;
             rules.MinimumGPA = 0.5m;
         }
-        else if (classId <= 8) // Secondary
+        else if (classId <= 8)
         {
             rules.MaximumFailedSubjects = 2;
             rules.MinimumGPA = 1.0m;
         }
-        else // SSC (9-10)
+        else
         {
-            rules.MaximumFailedSubjects = 1; // Stricter for SSC
+            rules.MaximumFailedSubjects = 1;
             rules.MinimumGPA = 1.5m;
             rules.RequireAllSubjectsPass = true;
         }
@@ -288,14 +286,12 @@ public class PromotionService : IPromotionService
 
     public async Task UpdatePromotionRulesAsync(int classId, PromotionRules rules)
     {
-        // In a real implementation, save to database
-        // For now, this is a placeholder
         throw new NotImplementedException("Promotion rules storage not implemented");
     }
 
     public async Task<IEnumerable<PromotionRecord>> GetStudentPromotionHistoryAsync(int studentId)
     {
-        var history = await _db.PromotionHistories
+        return await _promotionHistoryRepository.Query()
             .Include(p => p.FromClass)
             .Include(p => p.ToClass)
             .Include(p => p.AcademicYear)
@@ -304,7 +300,7 @@ public class PromotionService : IPromotionService
             .Select(p => new PromotionRecord
             {
                 StudentId = p.StudentId,
-                StudentName = "", // Would need to join with Student
+                StudentName = "",
                 FromClassId = p.FromClassId,
                 ToClassId = p.ToClassId,
                 Status = p.Status,
@@ -313,16 +309,13 @@ public class PromotionService : IPromotionService
                 ProcessedByUserId = p.PromotedByUserId ?? 0
             })
             .ToListAsync();
-
-        return history;
     }
 
     public async Task ReversePromotionAsync(int promotionHistoryId, int reversedByUserId, string reason)
     {
-        var promotion = await _db.PromotionHistories.FindAsync(promotionHistoryId);
+        var promotion = await _promotionHistoryRepository.GetByIdAsync(promotionHistoryId);
         if (promotion == null) throw new ArgumentException("Promotion history not found");
 
-        // Create reversal record
         var reversal = new PromotionHistory
         {
             StudentId = promotion.StudentId,
@@ -335,7 +328,7 @@ public class PromotionService : IPromotionService
             Remarks = $"Reversal: {reason}"
         };
 
-        _db.PromotionHistories.Add(reversal);
-        await _db.SaveChangesAsync();
+        await _promotionHistoryRepository.AddAsync(reversal);
+        await _uow.SaveChangesAsync();
     }
 }

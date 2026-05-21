@@ -1,0 +1,113 @@
+@model IEnumerable<SchoolManagementSystem.Models.Entities.Result.ResultAuditLog>
+@{
+    ViewData["Title"] = "Academic Result Audit Logs";
+    var exams = ViewBag.Exams as IEnumerable<SchoolManagementSystem.Models.Entities.Exam.Exam>;
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Marks Modification Audit Logs</h1>
+                <p class="adm-header__sub">Track changes, modifications, and updates to marks entered by teachers.</p>
+            </div>
+        </div>
+        <div class="adm-btn-group">
+            <a href="@Url.Action("Index")" class="adm-btn adm-btn--ghost">Back</a>
+        </div>
+    </div>
+
+    <!-- ── Filter Selector Panel ── -->
+    <div class="adm-table-card" style="margin-bottom: 24px; padding: 20px; border-radius: var(--adm-radius-lg);">
+        <form method="get" action="@Url.Action("AuditLog")" class="row g-3">
+            <div class="col-md-8">
+                <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Filter by Examination</label>
+                <select name="examId" class="form-select adm-select">
+                    <option value="">-- All Exams --</option>
+                    @if (exams != null)
+                    {
+                        foreach (var e in exams)
+                        {
+                            <!option value="@e.Id" @(ViewBag.SelectedExamId == e.Id ? "selected" : "")>@e.Name</!option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="adm-btn adm-btn--primary w-100" style="height: 38px;">
+                    Search Records
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- ── Audit Log Table ── -->
+    <div class="adm-table-card" style="border-radius: var(--adm-radius-lg); border-top: 1px solid var(--adm-border);">
+        <div class="adm-table-card__body">
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive" style="border-radius: var(--adm-radius-lg);">
+                    <table class="dash-table">
+                        <thead>
+                            <tr>
+                                <th>Timestamp</th>
+                                <th>Exam</th>
+                                <th>Student</th>
+                                <th>Subject</th>
+                                <th>Old Marks</th>
+                                <th>New Marks</th>
+                                <th>Audited Action</th>
+                                <th>Reason</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var log in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <span class="adm-cell-dob">@log.CreatedAt.ToString("dd MMM yyyy hh:mm:ss tt")</span>
+                                    </td>
+                                    <td><span class="adm-cell-name">@log.Exam.Name</span></td>
+                                    <td>
+                                        <div class="d-flex flex-column">
+                                            <span class="adm-cell-name">@log.Student.FullName</span>
+                                            <small style="color: var(--adm-text-3);">ID: @log.Student.StudentNo</small>
+                                        </div>
+                                    </td>
+                                    <td><span class="adm-cell-name">@log.Subject.Name</span></td>
+                                    <td class="text-center font-weight-bold" style="color: var(--adm-text-3);">@log.OldMarks.ToString("F2")</td>
+                                    <td class="text-center font-weight-bold text-success">@log.NewMarks.ToString("F2")</td>
+                                    <td>
+                                        @if (log.NewMarks > log.OldMarks)
+                                        {
+                                            <span class="adm-status adm-status--converted">Marks Increased</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="adm-status adm-status--rejected">Marks Decreased</span>
+                                        }
+                                    </td>
+                                    <td><span style="color: var(--adm-text-2);">@log.Reason</span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="dash-empty">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="12 6 12 12 16 14" /><circle cx="12" cy="12" r="10" /></svg>
+                    <h3 class="dash-empty__title">No Audit Logs Found</h3>
+                    <p class="dash-empty__sub">No marks modifications have been recorded under current filters.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>

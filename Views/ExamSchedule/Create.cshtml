@@ -1,0 +1,95 @@
+@model SchoolManagementSystem.Models.Entities.Exam.ExamSchedule
+@{
+    ViewData["Title"] = "Add Exam Schedule";
+    var exams = ViewBag.Exams as IEnumerable<SchoolManagementSystem.Models.Entities.Exam.Exam>;
+    var subjects = ViewBag.Subjects as IEnumerable<SchoolManagementSystem.Models.Entities.Academic.ClassSubject>;
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Add Exam Schedule</h1>
+                <p class="adm-header__sub">Define a time and room slot for a subject exam.</p>
+            </div>
+        </div>
+        <div class="adm-btn-group">
+            <a href="@Url.Action("Index")" class="adm-btn adm-btn--ghost">
+                Back to List
+            </a>
+        </div>
+    </div>
+
+    <div class="adm-table-card" style="border-radius: var(--adm-radius-lg); padding: 30px; border: 1px solid var(--adm-border);">
+        <form method="post" action="@Url.Action("Create")">
+            @Html.AntiForgeryToken()
+            @Html.ValidationSummary(true, "", new { @class = "text-danger mb-4" })
+
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Select Exam</label>
+                    <select name="ExamId" class="form-select adm-select" required>
+                        <option value="">-- Choose Exam --</option>
+                        @if (exams != null)
+                        {
+                            foreach (var e in exams)
+                            {
+                                <option value="@e.Id">@e.Name</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Select Subject</label>
+                    <select name="SubjectId" class="form-select adm-select" required>
+                        <option value="">-- Choose Subject --</option>
+                        @if (subjects != null)
+                        {
+                            foreach (var s in subjects)
+                            {
+                                <option value="@s.SubjectId">@s.Subject?.Name (@s.SchoolClass?.Name)</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Exam Date</label>
+                    <input type="date" name="ExamDate" class="form-control adm-select" required />
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Starts At</label>
+                    <input type="time" name="StartsAt" class="form-control adm-select" required />
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Ends At</label>
+                    <input type="time" name="EndsAt" class="form-control adm-select" required />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Room Number</label>
+                    <input type="text" name="RoomNo" class="form-control adm-select" placeholder="e.g. 302, Hall A" required />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Special Instructions</label>
+                    <input type="text" name="Instructions" class="form-control adm-select" placeholder="e.g. Bring scientific calculator" />
+                </div>
+
+                <div class="col-12 mt-5">
+                    <button type="submit" class="adm-btn adm-btn--primary px-5">
+                        Save Schedule
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

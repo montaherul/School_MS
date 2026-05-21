@@ -421,3 +421,48 @@ public class ReEvaluationRequest : BaseEntity
     public virtual Student.Student Student { get; set; } = null!;
     public virtual Academic.Subject Subject { get; set; } = null!;
 }
+
+/// <summary>
+/// Roll Number Assignment: Tracks roll number generation and assignment for promoted students
+/// Enables tracking of automatic roll generation based on merit ranking
+/// </summary>
+public class RollNumberAssignment : BaseEntity
+{
+    public int AcademicYearId { get; set; }
+    public int StudentId { get; set; }
+    public int FromClassId { get; set; }
+    public int ToClassId { get; set; }
+    public int SectionId { get; set; }
+
+    /// <summary>
+    /// Roll number assigned to student in new class
+    /// </summary>
+    public int RollNumber { get; set; }
+
+    /// <summary>
+    /// Merit position based on which roll was assigned
+    /// </summary>
+    public int MeritPosition { get; set; }
+
+    /// <summary>
+    /// GPA/Total Marks used for merit calculation
+    /// </summary>
+    public decimal MeritValue { get; set; } = 0;
+
+    /// <summary>
+    /// Who generated the roll numbers
+    /// </summary>
+    public int GeneratedByUserId { get; set; }
+
+    public DateTime GeneratedAt { get; set; } = DateTime.Now;
+
+    [MaxLength(260)]
+    public string? Remarks { get; set; }
+
+    // Navigation Properties
+    public virtual Academic.AcademicYear AcademicYear { get; set; } = null!;
+    public virtual Student.Student Student { get; set; } = null!;
+    public virtual Academic.SchoolClass FromClass { get; set; } = null!;
+    public virtual Academic.SchoolClass ToClass { get; set; } = null!;
+    public virtual Academic.Section Section { get; set; } = null!;
+}

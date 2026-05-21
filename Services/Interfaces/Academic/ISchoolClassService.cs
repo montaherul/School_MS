@@ -10,5 +10,7 @@ public interface ISchoolClassService
     Task<int> CreateAsync(SchoolClassUpsertDto dto, string createdBy, CancellationToken cancellationToken = default);
     Task UpdateAsync(SchoolClassUpsertDto dto, string updatedBy, CancellationToken cancellationToken = default);
     Task DeleteAsync(int id, string updatedBy, CancellationToken cancellationToken = default);
+    Task<IEnumerable<SchoolClassListItemDto>> GetAllAsync(CancellationToken cancellationToken = default);
 }
+
 

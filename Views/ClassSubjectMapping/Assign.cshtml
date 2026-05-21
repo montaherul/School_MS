@@ -1,0 +1,253 @@
+@model SchoolManagementSystem.Models.DTOs.Academic.ClassSubjectAssignmentDto
+@{
+    ViewData["Title"] = "Map Subjects to Class";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-xl-9 col-lg-11">
+            
+            <div class="d-flex align-items-center mb-4">
+                <a href="/ClassSubjectMapping/Index" class="btn btn-outline-secondary btn-sm me-3 border-2 rounded-pill px-3">
+                    <i class="bi bi-arrow-left me-1"></i> Back
+                </a>
+                <h2 class="mb-0 fw-bold text-dark">
+                    <i class="bi bi-link-45deg me-2 text-primary"></i>Map Subjects to Class
+                </h2>
+            </div>
+
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="card-header bg-gradient bg-primary py-3 px-4 text-white">
+                    <p class="mb-0 text-white-50 small">Batch Subject Assigner</p>
+                    <h5 class="mb-0 fw-semibold text-white">Establish Class-Subject Mappings</h5>
+                </div>
+                <div class="card-body p-4 bg-light-subtle">
+                    
+                    <form asp-action="Assign" method="post" id="assignmentForm">
+                        
+                        <!-- Step 1: Scope Definition -->
+                        <h6 class="text-uppercase text-secondary fw-bold small tracking-wider mb-3">
+                            <i class="bi bi-1-circle-fill me-2 text-primary"></i>1. Define Academic Scope
+                        </h6>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label asp-for="SchoolClassId" class="form-label fw-bold text-muted">Academic Class <span class="text-danger">*</span></label>
+                                <select asp-for="SchoolClassId" class="form-select rounded-3 border-2" id="ddlClass" required>
+                                    <option value="">-- Choose Class --</option>
+                                    @if (ViewBag.Classes != null)
+                                    {
+                                        foreach (var cls in ViewBag.Classes)
+                                        {
+                                            <option value="@cls.Id">@cls.Name</option>
+                                        }
+                                    }
+                                </select>
+                                <span asp-validation-for="SchoolClassId" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="GroupName" class="form-label fw-bold text-muted">Curriculum Stream / Group</label>
+                                <select asp-for="GroupName" class="form-select rounded-3 border-2" id="ddlGroup">
+                                    <option value="">General (No Stream)</option>
+                                    <option value="Science">Science Group</option>
+                                    <option value="Business Studies">Business Studies Group</option>
+                                    <option value="Humanities">Humanities Group</option>
+                                </select>
+                                <span asp-validation-for="GroupName" class="text-danger small"></span>
+                                <div class="form-text small">Applies to secondary classes (Class 9-10)</div>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Defaults Configurations -->
+                        <h6 class="text-uppercase text-secondary fw-bold small tracking-wider mb-3">
+                            <i class="bi bi-2-circle-fill me-2 text-primary"></i>2. Configure Default Mark Rules
+                        </h6>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label asp-for="FullMarks" class="form-label fw-bold text-muted">Default Full Marks <span class="text-danger">*</span></label>
+                                <input asp-for="FullMarks" class="form-control rounded-3 border-2" type="number" step="0.5" required />
+                                <span asp-validation-for="FullMarks" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="PassMarks" class="form-label fw-bold text-muted">Default Pass Marks <span class="text-danger">*</span></label>
+                                <input asp-for="PassMarks" class="form-control rounded-3 border-2" type="number" step="0.5" required />
+                                <span asp-validation-for="PassMarks" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <!-- Step 3: Subject Picker -->
+                        <h6 class="text-uppercase text-secondary fw-bold small tracking-wider mb-3">
+                            <i class="bi bi-3-circle-fill me-2 text-primary"></i>3. Select NCTB Subjects to Map
+                        </h6>
+                        
+                        <div class="card border-0 shadow-sm rounded-3 mb-4 overflow-hidden">
+                            <div class="card-header bg-light py-2 px-3 border-0 d-flex justify-content-between align-items-center">
+                                <span class="fw-semibold text-dark small">Unmapped Subjects Checklist</span>
+                                <div class="form-check form-check-inline mb-0" id="selectAllWrapper" style="display: none;">
+                                    <input class="form-check-input" type="checkbox" id="chkSelectAll" />
+                                    <label class="form-check-label fw-bold text-muted small" for="chkSelectAll">Select All</label>
+                                </div>
+                            </div>
+                            <div class="card-body p-3 bg-white" style="max-height: 350px; overflow-y: auto;" id="subjectsChecklistContainer">
+                                <div class="text-center text-muted py-4">
+                                    <i class="bi bi-arrow-up-circle fs-1 d-block mb-2 text-muted opacity-50"></i>
+                                    Please select an Academic Class and Stream Group to load unmapped subjects
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Controls -->
+                        <hr class="my-4 border-2 opacity-50" />
+                        <div class="d-flex justify-content-end gap-3">
+                            <a href="/ClassSubjectMapping/Index" class="btn btn-outline-secondary px-4 py-2 border-2 rounded-pill fw-semibold">
+                                <i class="bi bi-x-circle me-1"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary px-5 py-2 rounded-pill fw-semibold shadow-sm bg-gradient" id="btnSubmit" disabled>
+                                <i class="bi bi-save me-1"></i> Save Curriculum Mappings
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        $(document).ready(function() {
+            const ddlClass = $('#ddlClass');
+            const ddlGroup = $('#ddlGroup');
+            const checklistContainer = $('#subjectsChecklistContainer');
+            const selectAllWrapper = $('#chkSelectAll');
+            const selectAllCheck = $('#chkSelectAll');
+            const btnSubmit = $('#btnSubmit');
+
+            // Load subjects
+            function loadUnmappedSubjects() {
+                const classId = ddlClass.val();
+                const groupName = ddlGroup.val();
+
+                if (!classId) {
+                    checklistContainer.html(`
+                        <div class="text-center text-muted py-4">
+                            <i class="bi bi-arrow-up-circle fs-1 d-block mb-2 text-muted opacity-50"></i>
+                            Please select an Academic Class and Stream Group to load unmapped subjects
+                        </div>
+                    `);
+                    $('#selectAllWrapper').hide();
+                    btnSubmit.prop('disabled', true);
+                    return;
+                }
+
+                checklistContainer.html(`
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status"></div>
+                        <span class="d-block mt-2 text-muted small">Loading unmapped curriculum subjects...</span>
+                    </div>
+                `);
+
+                fetch(`/ClassSubjectMapping/GetUnmappedSubjects?classId=${classId}&groupName=${encodeURIComponent(groupName || '')}`)
+                    .then(res => res.json())
+                    .then(subjects => {
+                        if (!subjects || subjects.length === 0) {
+                            checklistContainer.html(`
+                                <div class="text-center text-success py-4">
+                                    <i class="bi bi-check2-circle fs-1 d-block mb-2 text-success"></i>
+                                    All available master subjects are already mapped to this class/group combination!
+                                </div>
+                            `);
+                            $('#selectAllWrapper').hide();
+                            btnSubmit.prop('disabled', true);
+                            return;
+                        }
+
+                        let html = '<div class="row g-2">';
+                        subjects.forEach(sub => {
+                            const badge = sub.subjectGroup 
+                                ? `<span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill mx-1 small">${sub.subjectGroup}</span>`
+                                : '';
+                            const religionBadge = sub.isReligionSubject
+                                ? `<span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill mx-1 small">${sub.religionType || 'Religion'}</span>`
+                                : '';
+                            const optionalBadge = sub.isOptional
+                                ? `<span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill mx-1 small">Optional</span>`
+                                : '';
+
+                            html += `
+                                <div class="col-md-6 col-lg-4">
+                                    <div class="p-2 border rounded-3 bg-white h-100 d-flex align-items-center justify-content-between hover-card">
+                                        <div class="form-check mb-0 flex-grow-1">
+                                            <input class="form-check-input subject-checkbox" type="checkbox" name="SubjectIds" value="${sub.id}" id="sub_${sub.id}" />
+                                            <label class="form-check-label text-dark fw-semibold small d-block cursor-pointer ms-1" for="sub_${sub.id}">
+                                                <span class="text-primary">${sub.code}</span> - ${sub.name}
+                                                <span class="d-block text-muted small">${sub.nameBn}</span>
+                                            </label>
+                                        </div>
+                                        <div class="d-flex flex-column align-items-end gap-1">
+                                            ${badge}
+                                            ${religionBadge}
+                                            ${optionalBadge}
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        html += '</div>';
+
+                        checklistContainer.html(html);
+                        $('#selectAllWrapper').show();
+                        selectAllCheck.prop('checked', false);
+                        toggleSubmitButton();
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        checklistContainer.html(`
+                            <div class="text-center text-danger py-4">
+                                <i class="bi bi-exclamation-octagon fs-1 d-block mb-2 text-danger"></i>
+                                Error loading unmapped subjects. Please refresh.
+                            </div>
+                        `);
+                        $('#selectAllWrapper').hide();
+                        btnSubmit.prop('disabled', true);
+                    });
+            }
+
+            // Toggle select all
+            selectAllCheck.on('change', function() {
+                const checked = $(this).is(':checked');
+                $('.subject-checkbox').prop('checked', checked);
+                toggleSubmitButton();
+            });
+
+            // Toggle submit based on selection
+            checklistContainer.on('change', '.subject-checkbox', function() {
+                toggleSubmitButton();
+            });
+
+            function toggleSubmitButton() {
+                const selectedCount = $('.subject-checkbox:checked').length;
+                btnSubmit.prop('disabled', selectedCount === 0);
+            }
+
+            // Bind triggers
+            ddlClass.on('change', loadUnmappedSubjects);
+            ddlGroup.on('change', loadUnmappedSubjects);
+        });
+    </script>
+    
+    <style>
+        .hover-card {
+            transition: all 0.2s ease-in-out;
+        }
+        .hover-card:hover {
+            border-color: var(--bs-primary) !important;
+            background-color: var(--bs-primary-bg-subtle) !important;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        .cursor-pointer {
+            cursor: pointer;
+        }
+    </style>
+}

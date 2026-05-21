@@ -1,0 +1,11 @@
+using SchoolManagementSystem.Models.Entities.Teachers;
+using SchoolManagementSystem.Models.DTOs.Teacher;
+
+namespace SchoolManagementSystem.Repositories.Interfaces.Teachers;
+
+public interface ITeacherRepository : IBaseRepository<Teacher>
+{
+    Task<(List<TeacherListItemDto> items, int totalRecords)> GetPagedAsync(int page, int pageSize, string? search, string? department, string? status, CancellationToken ct);
+    Task<TeacherUpsertDto?> GetForEditAsync(int id, CancellationToken ct);
+    Task<TeacherUpsertDto?> GetByUserIdAsync(int userId, CancellationToken ct);
+}

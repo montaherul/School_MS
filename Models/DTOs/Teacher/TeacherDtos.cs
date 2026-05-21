@@ -23,7 +23,9 @@ public class TeacherListItemDto
     public string? Religion { get; set; }
     public string? Nationality { get; set; }
     public string? NationalIdNo { get; set; }
+    public string? NationalIdPath { get; set; }
     public string? PassportNo { get; set; }
+    public string? PassportPath { get; set; }
     public string? FatherName { get; set; }
     public string? MotherName { get; set; }
     public string? SpouseName { get; set; }
@@ -87,8 +89,14 @@ public class TeacherUpsertDto
     [MaxLength(50), Display(Name = "Passport No")]
     public string? PassportNo { get; set; }
 
+    public string? PassportPath { get; set; }
+    public IFormFile? PassportFile { get; set; }
+
     [MaxLength(50), Display(Name = "National ID No")]
     public string? NationalIdNo { get; set; }
+
+    public string? NationalIdPath { get; set; }
+    public IFormFile? NationalIdFile { get; set; }
 
     // ── Professional ─────────────────────────────────────────────────────────
     [Required, MaxLength(100)]
@@ -142,4 +150,7 @@ public class TeacherUpsertDto
     // ── Media ─────────────────────────────────────────────────────────────────
     public string? ProfilePicturePath { get; set; }
     public IFormFile? ProfilePicture { get; set; }
+
+    // ── Workforce Status (read-only, derived from Employee) ────────────────────
+    public string Status { get; set; } = "Active";
 }

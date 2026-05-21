@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Models.DTOs.Academic;
 using SchoolManagementSystem.Models.ViewModels.Academic;
 using SchoolManagementSystem.Services.Interfaces.Academic;
@@ -16,6 +17,7 @@ public class SchoolClassController : Controller
     public IActionResult Index() { return View(); }
     public IActionResult Create() => RedirectToAction(nameof(CreateEdit));
     public IActionResult Edit(int id) => RedirectToAction(nameof(CreateEdit), new { id });
+    [RequirePermission("Classes.View")]
     public async Task<IActionResult> Details(int id, CancellationToken cancellationToken)
     {
         var dto = await _service.GetForEditAsync(id, cancellationToken);
@@ -23,6 +25,7 @@ public class SchoolClassController : Controller
     }
 
     [HttpGet]
+    [RequirePermission("Classes.View")]
     public async Task<IActionResult> GetList(int page = 1, int size = 10, string? search = null)
     {
         var result = await _service.GetPagedAsync(page, size, search);
@@ -30,6 +33,7 @@ public class SchoolClassController : Controller
     }
 
     [HttpGet]
+    [RequirePermission("Classes.Create")]
     public async Task<IActionResult> CreateEdit(int? id)
     {
         if (id.HasValue && id > 0)
@@ -44,6 +48,7 @@ public class SchoolClassController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [RequirePermission("Classes.Create")]
     public async Task<IActionResult> CreateEdit(SchoolClassViewModel vm)
     {
         if (!ModelState.IsValid) return View(vm);
@@ -54,9 +59,11 @@ public class SchoolClassController : Controller
     }
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [RequirePermission("Classes.Create")]
     public Task<IActionResult> Save(SchoolClassViewModel vm) => CreateEdit(vm);
 
     [HttpGet]
+    [RequirePermission("Classes.Delete")]
     public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
     {
         var dto = await _service.GetForEditAsync(id, cancellationToken);
@@ -64,6 +71,7 @@ public class SchoolClassController : Controller
     }
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [RequirePermission("Classes.Delete")]
     public async Task<IActionResult> DeleteConfirmed(int id, CancellationToken cancellationToken)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";

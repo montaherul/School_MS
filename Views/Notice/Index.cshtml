@@ -1,0 +1,93 @@
+@model IReadOnlyList<SchoolManagementSystem.Models.Entities.Communication.Notice>
+@{
+    Layout = "~/Views/Shared/_PublicLayout.cshtml";
+    ViewData["Title"] = "Notice Board";
+    string? search = ViewBag.Search as string;
+    int currentPage = ViewBag.CurrentPage;
+    int totalPages = ViewBag.TotalPages;
+}
+
+<!-- Header Hero -->
+<div class="py-5 text-white" style="background: linear-gradient(135deg, var(--edu-navy), var(--edu-dark));">
+    <div class="container text-center py-4">
+        <h1 class="display-4 fw-bold">School Notice Board</h1>
+        <p class="lead text-white-50">Latest notices, exams routines, circulars, and educational announcements</p>
+    </div>
+</div>
+
+<section class="py-5 bg-white">
+    <div class="container py-3">
+        <!-- Search bar -->
+        <div class="card border-0 shadow-sm p-4 bg-light rounded mb-5" style="border-top: 3px solid var(--edu-gold);">
+            <form action="/notices" method="get">
+                <div class="row g-3">
+                    <div class="col-md-9">
+                        <input type="text" name="search" value="@search" class="form-control form-control-lg border-0 shadow-sm" placeholder="Search notices by title, date, or keywords..."/>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn btn-lg btn-edu-navy w-100 shadow-sm"><i class="bi bi-search me-2"></i> Search Notice</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Notices list -->
+        <div class="row g-4">
+            @foreach (var notice in Model)
+            {
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm p-4 h-100 transition-hover" style="border-radius: 8px; border-left: 5px solid var(--edu-navy); background-color: #fff;">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <span class="badge bg-light text-primary border"><i class="bi bi-person-fill me-1"></i> @notice.AudienceRole</span>
+                            <span class="text-muted small"><i class="bi bi-calendar-event me-1"></i> @notice.PublishAt.ToString("dd MMM yyyy")</span>
+                        </div>
+                        <h4 class="fw-bold text-dark mb-3">@notice.Title</h4>
+                        <p class="text-muted mb-4 small" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; line-height:1.6;">
+                            @notice.Body
+                        </p>
+                        <div class="mt-auto d-flex justify-content-between align-items-center border-top pt-3">
+                            <a href="/notice/details/@notice.Id" class="btn btn-sm btn-edu-navy">Read Full Details <i class="bi bi-arrow-right-short ms-1"></i></a>
+                            @if (!string.IsNullOrEmpty(notice.AttachmentPath))
+                            {
+                                <a href="@notice.AttachmentPath" target="_blank" class="text-danger fw-semibold small text-decoration-none"><i class="bi bi-file-earmark-pdf-fill me-1"></i> Attachment</a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @if (Model.Count == 0)
+            {
+                <div class="col-12 text-center p-5 text-muted bg-light rounded shadow-sm">
+                    <i class="bi bi-journal-x fs-1 mb-3 d-block text-black-50"></i>
+                    No notices matching your search criteria were found.
+                </div>
+            }
+        </div>
+
+        <!-- Pagination -->
+        @if (totalPages > 1)
+        {
+            <nav class="mt-5">
+                <ul class="pagination justify-content-center">
+                    @for (int i = 1; i <= totalPages; i++)
+                    {
+                        <li class="page-item @(i == currentPage ? "active" : "")">
+                            <a class="page-link" href="/notices?search=@search&page=@i">@i</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        }
+    </div>
+</section>
+
+<style>
+    .transition-hover {
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .transition-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(11,37,69,0.12) !important;
+    }
+</style>

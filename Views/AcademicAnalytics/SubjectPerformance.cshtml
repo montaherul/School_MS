@@ -1,0 +1,81 @@
+@model IEnumerable<SchoolManagementSystem.Models.DTOs.Result.SubjectPerformanceDto>
+@{
+    ViewData["Title"] = "Subject Performance Analysis";
+    var exam = ViewBag.Exam as SchoolManagementSystem.Models.Entities.Exam.Exam;
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="20" x2="18" y2="10" />
+                    <line x1="12" y1="20" x2="12" y2="4" />
+                    <line x1="6" y1="20" x2="6" y2="14" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Subject Performance Analysis</h1>
+                <p class="adm-header__sub">Exam: <strong>@exam?.Name</strong></p>
+            </div>
+        </div>
+        <div class="adm-btn-group">
+            <a href="@Url.Action("Index")" class="adm-btn adm-btn--ghost">Back</a>
+        </div>
+    </div>
+
+    <!-- ── Subject Analytics Table ── -->
+    <div class="adm-table-card" style="border-radius: var(--adm-radius-lg); border-top: 1px solid var(--adm-border);">
+        <div class="adm-table-card__body">
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive" style="border-radius: var(--adm-radius-lg);">
+                    <table class="dash-table">
+                        <thead>
+                            <tr>
+                                <th>Subject</th>
+                                <th>Average Marks</th>
+                                <th>Highest Marks</th>
+                                <th>Lowest Marks</th>
+                                <th>Passed Count</th>
+                                <th>Failed Count</th>
+                                <th>Pass Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var s in Model)
+                            {
+                                <tr>
+                                    <td><span class="adm-cell-name">@s.SubjectName</span></td>
+                                    <td class="text-center font-weight-bold">@s.AverageMarks.ToString("F2")</td>
+                                    <td class="text-center font-weight-bold text-success">@s.HighestMarks.ToString("F2")</td>
+                                    <td class="text-center font-weight-bold text-danger">@s.LowestMarks.ToString("F2")</td>
+                                    <td class="text-center text-success font-weight-bold">@s.PassedCount</td>
+                                    <td class="text-center text-danger font-weight-bold">@s.FailedCount</td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <span class="font-weight-bold me-3">@s.PassPercentage.ToString("F1")%</span>
+                                            <div class="progress" style="width: 100px; height: 8px; border-radius: 50px; background-color: var(--adm-border);">
+                                                <div class="progress-bar" role="progressbar" 
+                                                     style="width: @(s.PassPercentage)%; border-radius: 50px; background: linear-gradient(135deg, var(--adm-primary), #00F2FE);" 
+                                                     aria-valuenow="@s.PassPercentage" aria-valuemin="0" aria-valuemax="100"></div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="dash-empty">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></svg>
+                    <h3 class="dash-empty__title">No Subject Data Available</h3>
+                    <p class="dash-empty__sub">Marks must be submitted and tabulated before subject performance analysis can be calculated.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>

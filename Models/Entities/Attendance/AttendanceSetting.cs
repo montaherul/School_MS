@@ -1,0 +1,21 @@
+using System;
+using System.ComponentModel.DataAnnotations;
+
+namespace SchoolManagementSystem.Models.Entities.Attendance
+{
+    public class AttendanceSetting
+    {
+        [Key]
+        public int Id { get; set; }
+
+        public TimeSpan SchoolStartTime { get; set; } = new TimeSpan(8, 0, 0);
+        public int LateAfterMinutes { get; set; } = 15;
+
+        [MaxLength(100)]
+        public string WorkingDays { get; set; } = "Sun,Mon,Tue,Wed,Thu"; 
+
+        public int AttendanceLockAfterHours { get; set; } = 24; 
+        
+        public bool AutoAbsentEnabled { get; set; } = true;
+    }
+}

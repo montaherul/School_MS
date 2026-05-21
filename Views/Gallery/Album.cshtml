@@ -1,0 +1,96 @@
+@model SchoolManagementSystem.Models.Entities.Website.Gallery
+@{
+    Layout = "~/Views/Shared/_PublicLayout.cshtml";
+    ViewData["Title"] = Model.AlbumName;
+}
+
+<!-- Header Hero -->
+<div class="py-5 text-white" style="background: linear-gradient(135deg, var(--edu-navy), var(--edu-dark));">
+    <div class="container text-center py-4">
+        <span class="badge bg-warning text-dark px-3 py-2 mb-3 text-uppercase fw-bold"><i class="bi bi-folder-fill me-1"></i> Album Collection</span>
+        <h1 class="display-4 fw-bold">@Model.AlbumName</h1>
+        <p class="lead text-white-50">@Model.Description</p>
+    </div>
+</div>
+
+<section class="py-5 bg-white">
+    <div class="container py-3">
+        <!-- Back Link -->
+        <div class="mb-4">
+            <a href="/gallery" class="btn btn-sm btn-outline-secondary"><i class="bi bi-chevron-left me-1"></i> Back to Gallery Albums</a>
+        </div>
+
+        <div class="row g-4">
+            @foreach (var img in Model.Images.Where(i => !i.IsDeleted))
+            {
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <div class="card border-0 shadow-sm overflow-hidden h-100 transition-hover" style="border-radius: 8px; cursor: pointer;" onclick="openLightbox('@img.ImagePath', '@img.Caption')">
+                        <div style="height: 200px; overflow: hidden; position: relative;">
+                            <img src="@img.ImagePath" class="w-100 h-100 hover-zoom" style="object-fit: cover; transition: transform 0.5s;" alt="@img.Caption"/>
+                            <div class="image-overlay d-flex align-items-center justify-content-center" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(11,37,69, 0.7); opacity: 0; transition: opacity 0.3s;">
+                                <i class="bi bi-zoom-in text-white display-6"></i>
+                            </div>
+                        </div>
+                        @if (!string.IsNullOrEmpty(img.Caption))
+                        {
+                            <div class="card-body p-2 bg-light text-center">
+                                <span class="fw-semibold text-dark small">@img.Caption</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            @if (Model.Images.Count(i => !i.IsDeleted) == 0)
+            {
+                <div class="col-12 text-center p-5 text-muted bg-light rounded">
+                    <i class="bi bi-image-fill fs-1 mb-3 d-block text-black-50"></i>
+                    No images have been uploaded to this album collection yet.
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- Lightbox Modal -->
+<div class="modal fade" id="lightboxModal" tabindex="-1" aria-hidden="true" style="background-color: rgba(8,28,51,0.95);">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content bg-transparent border-0">
+            <div class="modal-header border-0 p-0 position-relative">
+                <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3" data-bs-dismiss="modal" aria-label="Close" style="z-index: 1000;"></button>
+            </div>
+            <div class="modal-body text-center p-0">
+                <img id="lightboxImage" src="" class="img-fluid rounded shadow-lg" style="max-height: 80vh; object-fit: contain;"/>
+                <h5 id="lightboxCaption" class="text-white mt-3 fw-bold"></h5>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .transition-hover:hover .image-overlay {
+        opacity: 1 !important;
+    }
+    .transition-hover:hover .hover-zoom {
+        transform: scale(1.08);
+    }
+    .hover-zoom {
+        transition: transform 0.4s ease;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        let modalObj = null;
+        
+        document.addEventListener("DOMContentLoaded", function() {
+            modalObj = new bootstrap.Modal(document.getElementById('lightboxModal'));
+        });
+
+        function openLightbox(imagePath, caption) {
+            document.getElementById('lightboxImage').src = imagePath;
+            document.getElementById('lightboxCaption').innerText = caption;
+            modalObj.show();
+        }
+    </script>
+}

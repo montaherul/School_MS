@@ -2,263 +2,437 @@
     ViewData["Title"] = "Student Management";
 }
 
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-}
-
-@if (TempData["ErrorMessage"] != null)
-{
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <i class="bi bi-exclamation-triangle-fill me-2"></i>@TempData["ErrorMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-}
-
 @Html.AntiForgeryToken()
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 class="mb-0"><i class="bi bi-person-lines-fill me-2"></i>Students</h2>
-    <a href="/Student/CreateEdit" class="btn btn-primary">
-        <i class="bi bi-person-plus-fill me-1"></i>Add Student
-    </a>
-</div>
-<div class="d-flex gap-2 mb-3">
-    <select id="classFilter" class="form-select w-auto">
-        <option value="">All Classes</option>
-    </select>
+<div class="adm-page">
 
-    <select id="sectionFilter" class="form-select w-auto">
-        <option value="">All Sections</option>
-    </select>
-</div>
-<div class="card shadow-sm">
-    <div class="card-body p-0">
-        <div id="data-table"></div>
-    </div>
-</div>
+    <!-- ALERTS -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="adm-alert adm-alert--success mb-3">
 
-<!-- Delete Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title text-danger">
-                    <i class="bi bi-exclamation-triangle-fill me-2"></i>Confirm Delete
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                Are you sure you want to delete <strong id="deleteName"></strong>?
-            </div>
-            <div class="modal-footer border-0 pt-0">
-                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button class="btn btn-danger" id="confirmDeleteBtn">
-                    <i class="bi bi-trash me-1"></i>Delete
-                </button>
-            </div>
+            <i class="bi bi-check-circle-fill me-2"></i>
+
+            @TempData["SuccessMessage"]
+
         </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="adm-alert adm-alert--error mb-3">
+
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+
+            @TempData["ErrorMessage"]
+
+        </div>
+    }
+
+    <!-- HEADER -->
+    <div class="adm-header">
+
+        <div class="adm-header__left">
+
+            <div class="adm-header__icon-wrap">
+
+                <i class="bi bi-person-lines-fill"></i>
+
+            </div>
+
+            <div>
+
+                <h1 class="adm-header__title">
+                    Student Management
+                </h1>
+
+                <p class="adm-header__sub">
+                    Manage students, academic records and sections
+                </p>
+
+            </div>
+
+        </div>
+
+        <a href="/Student/CreateEdit"
+           class="adm-btn adm-btn--primary">
+
+            <i class="bi bi-person-plus-fill"></i>
+
+            <span>Add Student</span>
+
+        </a>
+
     </div>
+
+    <!-- FILTERS -->
+    <div class="adm-filters mb-3">
+
+        <div class="adm-filters__row">
+
+            <!-- SEARCH -->
+            <div class="adm-filters__field adm-filters__field--search">
+
+                <label class="adm-label">
+                    Search
+                </label>
+
+                <div class="adm-input-wrap">
+
+                    <i class="bi bi-search adm-input-wrap__icon"></i>
+
+                    <input type="text"
+                           id="table-search"
+                           class="adm-input"
+                           placeholder="Search by student name, ID or mobile..." />
+
+                </div>
+
+            </div>
+
+            <!-- CLASS -->
+            <div class="adm-filters__field">
+
+                <label class="adm-label">
+                    Class
+                </label>
+
+                <select id="classFilter" class="adm-select">
+                    <option value="">All Classes</option>
+                    @if (ViewBag.Classes != null)
+                    {
+                        foreach (var c in (IEnumerable<dynamic>)ViewBag.Classes)
+                        {
+                            <option value="@c.Id">@c.Name</option>
+                        }
+                    }
+                </select>
+
+            </div>
+
+            <!-- SECTION -->
+            <div class="adm-filters__field">
+
+                <label class="adm-label">
+                    Section
+                </label>
+
+                <select id="sectionFilter"
+                        class="adm-select">
+
+                    <option value="">
+                        All Sections
+                    </option>
+
+                </select>
+
+            </div>
+
+            <!-- RESET -->
+            <div class="adm-filters__field adm-filters__field--actions">
+
+                <label class="adm-label">
+                    Action
+                </label>
+
+                <button id="btn-reset"
+                        class="adm-btn adm-btn--ghost">
+
+                    Reset Filters
+
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- TABLE -->
+    <div class="adm-table-card">
+
+        <div class="adm-table-card__body">
+
+            <div id="data-table"></div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<!-- DELETE MODAL -->
+<div class="adm-modal-backdrop d-none"
+     id="deleteModalBackdrop">
+
+    <div class="adm-modal">
+
+        <div class="adm-modal__header">
+
+            <div class="adm-modal__header-left">
+
+                <div class="adm-modal__header-icon adm-modal__header-icon--danger">
+
+                    <i class="bi bi-trash"></i>
+
+                </div>
+
+                <div>
+
+                    <h5 class="adm-modal__title">
+                        Confirm Delete
+                    </h5>
+
+                    <p class="adm-modal__subtitle">
+                        This action cannot be undone
+                    </p>
+
+                </div>
+
+            </div>
+
+            <button type="button"
+                    class="adm-modal__close"
+                    id="closeDeleteModal">
+
+                <i class="bi bi-x-lg"></i>
+
+            </button>
+
+        </div>
+
+        <div class="adm-modal__body">
+
+            Are you sure you want to delete
+            <strong id="deleteName"></strong>?
+
+        </div>
+
+        <div class="adm-modal__footer">
+
+            <button class="adm-btn adm-btn--ghost"
+                    id="cancelDeleteBtn">
+
+                Cancel
+
+            </button>
+
+            <button class="adm-btn adm-btn--danger"
+                    id="confirmDeleteBtn">
+
+                <i class="bi bi-trash"></i>
+
+                Delete
+
+            </button>
+
+        </div>
+
+    </div>
+
 </div>
 
 @section Scripts {
     <script>
-        var pendingDeleteId = null;
-        var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
-        var currentSearchTerm = "";
-        var currentClass = "";
-        var currentSection = "";
+        let pendingDeleteId = null;
+        const deleteModal = document.getElementById('deleteModalBackdrop');
+        const searchInput = document.getElementById('table-search');
+        const classFilter = document.getElementById('classFilter');
+        const sectionFilter = document.getElementById('sectionFilter');
 
-        // 🔹 DETAILS VIEW
-        function rowDetailsFormatter(row) {
-            var d = row.getData();
-            return `
-                <div class="p-4 bg-white border rounded shadow-sm">
-                    <div class="row align-items-center mb-4">
-                        <div class="col-auto">
-                            ${d.profilePicturePath
-                                ? `<img src="${d.profilePicturePath}" style="width:120px;height:120px;border-radius:15px;object-fit:cover;border:3px solid #f1f5f9;" />`
-                                : `<div class="bg-light rounded-3 d-flex align-items-center justify-content-center" style="width:120px;height:120px;font-size:40px;color:#cbd5e1;"><i class="bi bi-person"></i></div>`
-                            }
-                        </div>
-                        <div class="col">
-                            <h4 class="fw-bold mb-1">${d.fullName}</h4>
-                            <p class="text-muted mb-2"><i class="bi bi-hash me-1"></i>${d.studentNo} | <i class="bi bi-award me-1"></i>Roll: ${d.rollNumber}</p>
-                            <span class="badge bg-primary-soft text-primary px-3 py-2 rounded-pill">${d.className} - ${d.sectionName}</span>
-                        </div>
-                        <div class="col-md-3 text-end">
-                            <div class="card border-0 bg-light p-2 text-center">
-                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${d.studentNo}" class="img-fluid mx-auto mb-2" style="width:80px" />
-                                <a href="/Student/PrintIdCard/${d.id}" class="btn btn-sm btn-white border w-100"><i class="bi bi-printer me-1"></i> Print ID</a>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row g-4">
-                        <div class="col-md-6">
-                            <h6 class="text-uppercase fw-bold tiny text-muted ls-1 mb-3">Family Information</h6>
-                            <div class="bg-light p-3 rounded-3">
-                                <div class="mb-2"><b>Father:</b> ${d.fatherName || 'N/A'} (${d.fatherOccupation || 'N/A'})</div>
-                                <div class="mb-2"><b>Mother:</b> ${d.motherName || 'N/A'} (${d.motherOccupation || 'N/A'})</div>
-                                <div><b>Guardian Phone:</b> ${d.fatherOrGuardianMobileNo || 'N/A'}</div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <h6 class="text-uppercase fw-bold tiny text-muted ls-1 mb-3">Contact & Identification</h6>
-                            <div class="bg-light p-3 rounded-3">
-                                <div class="mb-2"><b>Email:</b> ${d.emailAddress || 'N/A'}</div>
-                                <div class="mb-2"><b>Mobile:</b> ${d.mobileNumber || 'N/A'}</div>
-                                <div><b>NID/Birth Cert:</b> ${d.nationalIdNo || d.birthCertificateNo || 'N/A'}</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="mt-4 pt-3 border-top d-flex gap-4 text-muted small">
-                        <span><i class="bi bi-droplet me-1"></i>Blood: <b>${d.bloodGroup || 'N/A'}</b></span>
-                        <span><i class="bi bi-moon-stars me-1"></i>Religion: <b>${d.religion || 'N/A'}</b></span>
-                        <span><i class="bi bi-flag me-1"></i>Nationality: <b>${d.nationality || 'N/A'}</b></span>
-                    </div>
-                </div>
-            `;
+        function openDeleteModal(name, id) {
+            pendingDeleteId = id;
+            document.getElementById('deleteName').textContent = name;
+            deleteModal.classList.remove('d-none');
         }
 
-        // Initialize Tabulator
-        var table = new Tabulator("#data-table", {
+        function closeDeleteModal() {
+            deleteModal.classList.add('d-none');
+            pendingDeleteId = null;
+        }
+
+        document.getElementById('closeDeleteModal').addEventListener('click', closeDeleteModal);
+        document.getElementById('cancelDeleteBtn').addEventListener('click', closeDeleteModal);
+
+        // TABULATOR
+        const table = new Tabulator("#data-table", {
             height: "calc(100vh - 250px)",
             layout: "fitColumns",
+            responsiveLayout: "collapse",
             pagination: true,
             paginationMode: "remote",
-            ajaxURL: "/Student/Index",
+            ajaxURL: '@Url.Action("Index", "Student")',
             paginationSize: 10,
-            paginationDataSent: {
-                "page": "page",
-                "size": "pageSize"
-            },
-            ajaxResponse: function(url, params, response) {
+            ajaxParams: function() { return getFilters(); },
+            ajaxResponse: function (url, params, response) {
                 return {
                     data: response.data || [],
                     last_page: response.last_page || 1
                 };
             },
+            placeholder: `
+                <div class='dash-empty'>
+                    <i class='bi bi-people fs-1'></i>
+                    <div class='dash-empty__title'>No Students Found</div>
+                    <div class='dash-empty__sub'>Try adjusting your filters or search.</div>
+                </div>`,
             columns: [
                 {
-                    formatter: function(cell) {
-                        return "<i class='bi bi-plus-circle text-primary'></i>";
+                    formatter: function (cell) {
+                        return '<i class="bi bi-plus-circle text-primary row-toggle-icon"></i>';
                     },
-                    width: 40, hozAlign: "center", headerSort: false,
-                    cellClick: function(e, cell) {
+                    width: 50, hozAlign: "center", headerSort: false,
+                    cellClick: function (e, cell) {
                         const row = cell.getRow();
-                        row.toggle();
-                        const icon = cell.getElement().querySelector("i");
-                        icon.classList.toggle("bi-plus-circle");
-                        icon.classList.toggle("bi-dash-circle");
+                        const data = row.getData();
+                        const element = row.getElement();
+                        const existing = element.querySelector('.student-row-details');
+
+                        if (existing) {
+                            existing.remove();
+                            cell.getElement().querySelector('i').classList.replace('bi-dash-circle', 'bi-plus-circle');
+                            return;
+                        }
+
+                        const details = document.createElement('div');
+                        details.className = 'student-row-details';
+                        details.innerHTML = `
+                            <div class="adm-table-card m-3">
+                                <div class="p-4">
+                                    <div class="row g-4">
+                                        <div class="col-lg-4">
+                                            <div class="d-flex gap-3">
+                                                <div class="adm-avatar adm-avatar--xl">
+                                                    <img src="${data.profilePicturePath || '/images/default-user.png'}" />
+                                                </div>
+                                                <div>
+                                                    <h5 class="fw-bold mb-1">${data.fullName}</h5>
+                                                    <div class="adm-cell-mono mb-2">${data.studentNo}</div>
+                                                    <span class="adm-status adm-status--approved">${data.className} - ${data.sectionName}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-4">
+                                            <h6 class="fw-bold mb-3">Family Information</h6>
+                                            <div class="small">
+                                                <div><strong>Father:</strong> ${data.fatherName || 'N/A'}</div>
+                                                <div><strong>Mother:</strong> ${data.motherName || 'N/A'}</div>
+                                                <div><strong>Guardian Mobile:</strong> ${data.fatherOrGuardianMobileNo || 'N/A'}</div>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-4">
+                                            <h6 class="fw-bold mb-3">Contact Information</h6>
+                                            <div class="small">
+                                                <div><strong>Mobile:</strong> ${data.mobileNumber || 'N/A'}</div>
+                                                <div><strong>Email:</strong> ${data.emailAddress || 'N/A'}</div>
+                                                <div><strong>Blood Group:</strong> ${data.bloodGroup || 'N/A'}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>`;
+                        element.appendChild(details);
+                        cell.getElement().querySelector('i').classList.replace('bi-plus-circle', 'bi-dash-circle');
                     }
                 },
                 {
-                    title: "Photo", field: "profilePicturePath", width: 60, hozAlign: "center", headerSort: false,
-                    formatter: function(cell) {
-                        const url = cell.getValue();
-                        return `<img src="${url || '/images/default-user.png'}" style="width:32px;height:32px;border-radius:50%;object-fit:cover;border:1px solid #e2e8f0;" />`;
+                    title: "Photo", field: "profilePicturePath", width: 70, hozAlign: "center",
+                    formatter: function (cell) {
+                        return `<div class="adm-avatar"><img src="${cell.getValue() || '/images/default-user.png'}" /></div>`;
                     }
                 },
-                { title: "Student No", field: "studentNo", widthGrow: 1.2, formatter: (c) => `<span class="fw-bold text-dark">${c.getValue()}</span>` },
-                { title: "Name", field: "fullName", widthGrow: 2 },
-                { title: "Class", field: "className", width: 100 },
-                { title: "Section", field: "sectionName", width: 100 },
-                { title: "Roll", field: "rollNumber", width: 70 },
+                { 
+                    title: "Student No", field: "studentNo", 
+                    formatter: (cell) => `<span class="adm-cell-mono">${cell.getValue()}</span>` 
+                },
+                { 
+                    title: "Name", field: "fullName", 
+                    formatter: (cell) => `<span class="adm-cell-name">${cell.getValue()}</span>` 
+                },
+                { title: "Class", field: "className" },
+                { title: "Section", field: "sectionName" },
+                { title: "Roll", field: "rollNumber", width: 80 },
                 {
-                    title: "Status", field: "status", width: 100,
-                    formatter: function(cell) {
+                    title: "Status", field: "status", hozAlign: "center",
+                    formatter: function (cell) {
                         const val = cell.getValue();
-                        const color = val === "Active" ? "bg-success" : "bg-secondary";
-                        return `<span class="badge ${color}">${val}</span>`;
+                        const cls = val === "Active" ? "adm-status--approved" : "adm-status--neutral";
+                        return `<span class="adm-status ${cls}">${val}</span>`;
                     }
                 },
                 {
-                    title: "Actions", field: "id", width: 140, hozAlign: "right", headerSort: false,
-                    formatter: function(cell) {
+                    title: "Actions", width: 150, hozAlign: "center", headerSort: false,
+                    formatter: function (cell) {
                         const d = cell.getRow().getData();
                         return `
-                            <div class="btn-group btn-group-sm">
-                                <a href="/Student/Details/${d.studentNo}" class="btn btn-outline-info" title="View"><i class="bi bi-eye"></i></a>
-                                <a href="/Student/CreateEdit/${d.id}" class="btn btn-outline-primary" title="Edit"><i class="bi bi-pencil"></i></a>
-                                <button class="btn btn-outline-danger delete-btn" title="Delete"><i class="bi bi-trash"></i></button>
-                            </div>
-                        `;
-                    },
-                    cellClick: function(e, cell) {
-                        if (e.target.closest(".delete-btn")) {
-                            const d = cell.getRow().getData();
-                            pendingDeleteId = d.id;
-                            document.getElementById("deleteName").textContent = d.fullName;
-                            deleteModal.show();
-                        }
+                            <div class="actions-cell">
+                                <a href="/Student/Details/${d.studentNo}" class="adm-action"><i class="bi bi-eye"></i></a>
+                                <a href="/Student/CreateEdit/${d.id}" class="adm-action adm-action--edit"><i class="bi bi-pencil"></i></a>
+                                <button class="adm-action adm-action--reject delete-btn" data-id="${d.id}" data-name="${d.fullName}">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>`;
                     }
                 }
-            ],
-            placeholder: "<div class='p-5 text-center text-muted'><i class='bi bi-people fs-1 d-block mb-3 opacity-25'></i>No students found matching your criteria</div>",
-            rowFormatter: function(row) {
-                var el = document.createElement("div");
-                el.style.display = "none";
-                el.className = "row-details-container p-2 bg-light";
-                el.innerHTML = rowDetailsFormatter(row);
-                row.getElement().appendChild(el);
-                row.toggle = function() {
-                    el.style.display = el.style.display === "none" ? "block" : "none";
-                };
-            }
+            ]
         });
 
-        // Search & Filters
-        function applyFilters() {
-            currentSearchTerm = document.getElementById("table-search")?.value || "";
-            const classVal = document.getElementById("classFilter")?.value;
-            const sectionVal = document.getElementById("sectionFilter")?.value;
-            
-            let filters = [];
-            if (classVal) filters.push({ field: "className", type: "=", value: classVal });
-            if (sectionVal) filters.push({ field: "sectionName", type: "=", value: sectionVal });
-            
-            table.setFilter(filters);
+        function getFilters() {
+            return {
+                search: searchInput.value,
+                classId: classFilter.value,
+                sectionId: sectionFilter.value
+            };
         }
 
-        // Note: For remote pagination, we might want to handle class/section filters via ajaxParams instead of setFilter
-        // but for now setFilter works if the backend Index handles these parameters (we can add them to Index later).
+        function reloadTable() {
+            table.setData();
+        }
 
-        document.getElementById("confirmDeleteBtn").addEventListener("click", function() {
-            if (!pendingDeleteId) return;
-            fetch("/Student/DeleteConfirmed/" + pendingDeleteId, {
-                method: "POST",
-                headers: {
-                    "RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]').value,
-                    "Accept": "application/json"
-                }
-            })
-            .then(r => r.json())
-            .then(d => {
-                deleteModal.hide();
-                if (d.success) table.setData();
-                else alert(d.message);
-            });
+        // Event Listeners
+        searchInput.addEventListener('keyup', (e) => { if (e.key === "Enter") reloadTable(); });
+        
+        classFilter.addEventListener('change', async function() {
+            const classId = this.value;
+            sectionFilter.innerHTML = '<option value="">All Sections</option>';
+            
+            if (classId) {
+                try {
+                    const res = await fetch('@Url.Action("GetSectionsByClass", "Section")?classId=' + classId);
+                    const sections = await res.json();
+                    sections.forEach(s => {
+                        sectionFilter.innerHTML += `<option value="${s.id}">${s.name}</option>`;
+                    });
+                } catch (e) { console.error("Error loading sections:", e); }
+            }
+            reloadTable();
         });
 
-        // Populate filter dropdowns from initial data if possible, or keep as is.
-        // In remote mode, it's better to fetch these from the server.
-    </script>
+        sectionFilter.addEventListener('change', reloadTable);
 
-    <style>
-        .tabulator { border: none !important; }
-        .tabulator .tabulator-header { background-color: #f8f9fa; border-bottom: 1px solid #e2e8f0; }
-        .tabulator .tabulator-header .tabulator-col { background-color: #f8f9fa; font-weight: 700; color: #475569; padding: 12px 8px; }
-        .tabulator .tabulator-row { border-bottom: 1px solid #f1f5f9; }
-        .tabulator .tabulator-row:hover { background-color: #f8fafc !important; }
-        .tabulator .tabulator-row .tabulator-cell { padding: 12px 8px; vertical-align: middle; }
-        .bg-primary-soft { background-color: rgba(26, 86, 219, 0.1); }
-        .row-details-container { border-top: 1px solid #e2e8f0; }
-        .tiny { font-size: 11px; }
-        .ls-1 { letter-spacing: 0.5px; }
-    </style>
+        document.getElementById('btn-reset').addEventListener('click', () => {
+            searchInput.value = "";
+            classFilter.value = "";
+            sectionFilter.innerHTML = '<option value="">All Sections</option>';
+            reloadTable();
+        });
+
+        // Delete Logic
+        document.addEventListener('click', (e) => {
+            const btn = e.target.closest('.delete-btn');
+            if (btn) openDeleteModal(btn.dataset.name, btn.dataset.id);
+        });
+
+        document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
+            if (!pendingDeleteId) return;
+            const res = await fetch('@Url.Action("DeleteConfirmed", "Student")/' + pendingDeleteId, {
+                method: "POST",
+                headers: { "RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]').value }
+            });
+            const data = await res.json();
+            closeDeleteModal();
+            if (data.success) reloadTable();
+            else alert(data.message);
+        });
+    </script>
 }

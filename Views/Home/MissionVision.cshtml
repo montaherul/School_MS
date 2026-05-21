@@ -1,0 +1,69 @@
+@model SchoolManagementSystem.Models.Entities.Website.SchoolSetting
+@{
+    Layout = "~/Views/Shared/_PublicLayout.cshtml";
+    ViewData["Title"] = "Mission & Vision";
+}
+
+<!-- Header Hero -->
+<div class="py-5 text-white" style="background: linear-gradient(135deg, var(--edu-navy), var(--edu-dark));">
+    <div class="container text-center py-4">
+        <h1 class="display-4 fw-bold">Our Philosophy</h1>
+        <p class="lead text-white-50">Our driving values, core mission, and strategic academic vision</p>
+    </div>
+</div>
+
+<section class="py-5 bg-white">
+    <div class="container py-3">
+        <div class="row g-5">
+            <!-- Mission -->
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm p-5 h-100 bg-light" style="border-left: 6px solid var(--edu-navy); border-radius:10px;">
+                    <div class="p-3 bg-white rounded-circle d-inline-flex align-items-center justify-content-center mb-4 text-primary shadow-sm" style="width:60px; height:60px;">
+                        <i class="bi bi-compass-fill fs-3"></i>
+                    </div>
+                    <h3 class="fw-bold text-dark mb-3">Our Core Mission</h3>
+                    <p class="text-muted leading-relaxed" style="font-size:15px; line-height:1.7;">
+                        @Model.Mission
+                    </p>
+                    @if (string.IsNullOrEmpty(Model.Mission))
+                    {
+                        <p class="text-muted leading-relaxed" style="font-size:15px; line-height:1.7;">
+                            To offer a holistic educational foundation that inspires young minds to learn, build character, and excel academically. We foster critical thinking, moral responsibility, and basic life skills, enabling our students to thrive as responsible citizens in Bangladesh and the global arena.
+                        </p>
+                    }
+                </div>
+            </div>
+            
+            <!-- Vision -->
+            <div class="col-md-6">
+                <div class="card border-0 shadow-sm p-5 h-100 bg-light" style="border-left: 6px solid var(--edu-gold); border-radius:10px;">
+                    <div class="p-3 bg-white rounded-circle d-inline-flex align-items-center justify-content-center mb-4 text-warning shadow-sm" style="width:60px; height:60px;">
+                        <i class="bi bi-eye-fill fs-3"></i>
+                    </div>
+                    <h3 class="fw-bold text-dark mb-3">Our Strategic Vision</h3>
+                    <p class="text-muted leading-relaxed" style="font-size:15px; line-height:1.7;">
+                        @Model.Vision
+                    </p>
+                    @if (string.IsNullOrEmpty(Model.Vision))
+                    {
+                        <p class="text-muted leading-relaxed" style="font-size:15px; line-height:1.7;">
+                            To emerge as a premier benchmark educational center in Bangladesh, noted for its innovative instructional methodologies, multimedia integration, character building, and comprehensive extracurricular success. We aspire to sculpt active learners who lead with intelligence, courage, and integrity.
+                        </p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-5 p-5 bg-white border shadow-sm rounded-lg" style="border-radius: 12px;">
+            <div class="row g-4 align-items-center text-center text-md-start">
+                <div class="col-md-9">
+                    <h4 class="fw-bold text-dark">Join Our Family Today</h4>
+                    <p class="text-muted mb-0">Admissions are open for multiple classes. Enrolling online takes less than five minutes.</p>
+                </div>
+                <div class="col-md-3 text-md-end">
+                    <a href="/Admission/Apply" class="btn btn-edu-gold">Apply Online Now</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

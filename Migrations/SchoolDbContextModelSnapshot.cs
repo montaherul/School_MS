@@ -22,7 +22,7 @@ namespace SchoolManagementSystem.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("SchoolManagementSystem.Models.DTOs.Admission.StoredProcedures.AdmissionListResultDto", b =>
+            modelBuilder.Entity("SchoolManagementSystem.Models.DTOs.Admission.AdmissionListResultDto", b =>
                 {
                     b.Property<string>("AlternativeNumber")
                         .IsRequired()
@@ -40,6 +40,9 @@ namespace SchoolManagementSystem.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("ApplicantNameBangla")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ApplicationNo")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -48,6 +51,10 @@ namespace SchoolManagementSystem.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("BirthCertificateNo")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BirthCertificatePath")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -104,19 +111,15 @@ namespace SchoolManagementSystem.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("NationalIdNo")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("Nationality")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("PassportNo")
+                    b.Property<string>("PaymentMethod")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("PaymentMethod")
+                    b.Property<string>("PaymentSlipPath")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -172,6 +175,109 @@ namespace SchoolManagementSystem.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.ToTable("AdmissionListResults");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.DTOs.Student.StudentListItemDto", b =>
+                {
+                    b.Property<string>("BirthCertificateNo")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("BloodGroup")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ClassId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ClassName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EmailAddress")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FatherName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FatherOccupation")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FatherOrGuardianMobileNo")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FullNameBangla")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<string>("MobileNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MotherName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MotherOccupation")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Nationality")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PermanentDistrict")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PermanentPostOffice")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PermanentThana")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PermanentVillage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PresentDistrict")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PresentPostOffice")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PresentThana")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PresentVillage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ProfilePicturePath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Religion")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("RollNumber")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SectionId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SectionName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StudentNo")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("TotalRecords")
+                        .HasColumnType("int");
+
+                    b.ToTable("StudentListItemResults");
                 });
 
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Academic.AcademicYear", b =>
@@ -1052,6 +1158,50 @@ namespace SchoolManagementSystem.Migrations
                         .IsUnique();
 
                     b.ToTable("StudentGroups");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Code = "SCI",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
+                            Description = "Science Group",
+                            DisplayOrder = 1,
+                            IsActive = true,
+                            IsDeleted = false,
+                            MaxClass = 10,
+                            MinClass = 9,
+                            Name = "Science"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Code = "BS",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
+                            Description = "Business Studies Group",
+                            DisplayOrder = 2,
+                            IsActive = true,
+                            IsDeleted = false,
+                            MaxClass = 10,
+                            MinClass = 9,
+                            Name = "Business Studies"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Code = "HUM",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
+                            Description = "Humanities Group",
+                            DisplayOrder = 3,
+                            IsActive = true,
+                            IsDeleted = false,
+                            MaxClass = 10,
+                            MinClass = 9,
+                            Name = "Humanities"
+                        });
                 });
 
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Academic.StudentGroupAssignment", b =>
@@ -1354,7 +1504,7 @@ namespace SchoolManagementSystem.Migrations
                         new
                         {
                             Id = 4,
-                            Code = "SCI",
+                            Code = "GSCI",
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
                             DefaultFullMarks = 100m,
@@ -2078,6 +2228,118 @@ namespace SchoolManagementSystem.Migrations
                             Name = "গার্হস্থ্য বিজ্ঞান",
                             NameBn = "",
                             SubjectGroup = ""
+                        },
+                        new
+                        {
+                            Id = 30,
+                            Code = "IRE",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
+                            DefaultFullMarks = 100m,
+                            DefaultPassMarks = 33m,
+                            DisplayOrder = 0,
+                            HasAssignment = false,
+                            HasCQ = false,
+                            HasContinuousAssessment = false,
+                            HasLab = false,
+                            HasMCQ = false,
+                            HasOral = false,
+                            HasPractical = false,
+                            HasViva = false,
+                            HasWritten = true,
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = true,
+                            IsOptional = false,
+                            IsPractical = false,
+                            IsReligionSubject = false,
+                            Name = "ইসলাম ও নৈতিক শিক্ষা",
+                            NameBn = "",
+                            SubjectGroup = ""
+                        },
+                        new
+                        {
+                            Id = 31,
+                            Code = "HRE",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
+                            DefaultFullMarks = 100m,
+                            DefaultPassMarks = 33m,
+                            DisplayOrder = 0,
+                            HasAssignment = false,
+                            HasCQ = false,
+                            HasContinuousAssessment = false,
+                            HasLab = false,
+                            HasMCQ = false,
+                            HasOral = false,
+                            HasPractical = false,
+                            HasViva = false,
+                            HasWritten = true,
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = true,
+                            IsOptional = false,
+                            IsPractical = false,
+                            IsReligionSubject = false,
+                            Name = "হিন্দুধর্ম ও নৈতিক শিক্ষা",
+                            NameBn = "",
+                            SubjectGroup = ""
+                        },
+                        new
+                        {
+                            Id = 32,
+                            Code = "BRE",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
+                            DefaultFullMarks = 100m,
+                            DefaultPassMarks = 33m,
+                            DisplayOrder = 0,
+                            HasAssignment = false,
+                            HasCQ = false,
+                            HasContinuousAssessment = false,
+                            HasLab = false,
+                            HasMCQ = false,
+                            HasOral = false,
+                            HasPractical = false,
+                            HasViva = false,
+                            HasWritten = true,
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = true,
+                            IsOptional = false,
+                            IsPractical = false,
+                            IsReligionSubject = false,
+                            Name = "বৌদ্ধধর্ম ও নৈতিক শিক্ষা",
+                            NameBn = "",
+                            SubjectGroup = ""
+                        },
+                        new
+                        {
+                            Id = 33,
+                            Code = "CRE",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
+                            DefaultFullMarks = 100m,
+                            DefaultPassMarks = 33m,
+                            DisplayOrder = 0,
+                            HasAssignment = false,
+                            HasCQ = false,
+                            HasContinuousAssessment = false,
+                            HasLab = false,
+                            HasMCQ = false,
+                            HasOral = false,
+                            HasPractical = false,
+                            HasViva = false,
+                            HasWritten = true,
+                            IsActive = true,
+                            IsDeleted = false,
+                            IsMandatory = true,
+                            IsOptional = false,
+                            IsPractical = false,
+                            IsReligionSubject = false,
+                            Name = "খ্রিস্টধর্ম ও নৈতিক শিক্ষা",
+                            NameBn = "",
+                            SubjectGroup = ""
                         });
                 });
 
@@ -2172,6 +2434,10 @@ namespace SchoolManagementSystem.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<string>("BirthCertificatePath")
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
                     b.Property<string>("BloodGroup")
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
@@ -2236,22 +2502,18 @@ namespace SchoolManagementSystem.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("NationalIdNo")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.Property<string>("Nationality")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("PassportNo")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("PaymentMethod")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("PaymentSlipPath")
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
 
                     b.Property<string>("PermanentDistrict")
                         .HasMaxLength(100)
@@ -2518,6 +2780,45 @@ namespace SchoolManagementSystem.Migrations
                     b.ToTable("Assignments");
                 });
 
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Attendance.AttendanceLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("EntityId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("EntityName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("IPAddress")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AttendanceLogs");
+                });
+
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Attendance.AttendanceRecord", b =>
                 {
                     b.Property<int>("Id")
@@ -2603,6 +2904,77 @@ namespace SchoolManagementSystem.Migrations
                         });
                 });
 
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Attendance.AttendanceSetting", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AttendanceLockAfterHours")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("AutoAbsentEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("LateAfterMinutes")
+                        .HasColumnType("int");
+
+                    b.Property<TimeSpan>("SchoolStartTime")
+                        .HasColumnType("time");
+
+                    b.Property<string>("WorkingDays")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AttendanceSettings");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Attendance.EmployeeAttendance", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("AttendanceDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<TimeSpan?>("CheckInTime")
+                        .HasColumnType("time");
+
+                    b.Property<TimeSpan?>("CheckOutTime")
+                        .HasColumnType("time");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RecordedBy")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Remarks")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.ToTable("EmployeeAttendances");
+                });
+
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Attendance.LeaveApplication", b =>
                 {
                     b.Property<int>("Id")
@@ -2611,27 +2983,109 @@ namespace SchoolManagementSystem.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("ApprovedByUserId")
+                    b.Property<int>("ApprovalStatus")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ApprovedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ApprovedBy")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("AttachmentPath")
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("FromDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("LeaveTypeId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Remarks")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("ToDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("TotalDays")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.HasIndex("LeaveTypeId");
+
+                    b.ToTable("LeaveApplications");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Attendance.LeaveType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPaid")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MaxDays")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("LeaveTypes");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Attendance.StudentAttendance", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("AttendanceDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("ClassId")
                         .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("CreatedBy")
+                    b.Property<string>("RecordedBy")
                         .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateOnly>("FromDate")
-                        .HasColumnType("date");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Reason")
-                        .IsRequired()
+                    b.Property<string>("Remarks")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("SectionId")
+                        .HasColumnType("int");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -2639,19 +3093,15 @@ namespace SchoolManagementSystem.Migrations
                     b.Property<int>("StudentId")
                         .HasColumnType("int");
 
-                    b.Property<DateOnly>("ToDate")
-                        .HasColumnType("date");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
-
                     b.HasKey("Id");
 
-                    b.ToTable("LeaveApplications");
+                    b.HasIndex("ClassId");
+
+                    b.HasIndex("SectionId");
+
+                    b.HasIndex("StudentId");
+
+                    b.ToTable("StudentAttendances");
                 });
 
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Auth.ApplicationUser", b =>
@@ -2682,6 +3132,12 @@ namespace SchoolManagementSystem.Migrations
                         .HasMaxLength(160)
                         .HasColumnType("nvarchar(160)");
 
+                    b.Property<int?>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FailedLoginAttempts")
+                        .HasColumnType("int");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -2690,6 +3146,12 @@ namespace SchoolManagementSystem.Migrations
 
                     b.Property<DateTime?>("LastLoginAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LockoutUntil")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("MustChangePassword")
+                        .HasColumnType("bit");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -2732,8 +3194,10 @@ namespace SchoolManagementSystem.Migrations
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
                             Email = "admin@school.local",
+                            FailedLoginAttempts = 0,
                             IsDeleted = false,
                             IsEmailConfirmed = true,
+                            MustChangePassword = false,
                             PasswordHash = "ChangeThisHash",
                             Status = 1,
                             UserName = "admin"
@@ -6818,6 +7282,141 @@ namespace SchoolManagementSystem.Migrations
                             IsDeleted = false,
                             Module = "System",
                             ModuleName = "System"
+                        },
+                        new
+                        {
+                            Id = 262,
+                            Action = "View",
+                            CanCreate = false,
+                            CanDelete = false,
+                            CanRead = true,
+                            CanUpdate = false,
+                            Code = "AuditLogs.View",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
+                            IsDeleted = false,
+                            Module = "AuditLogs",
+                            ModuleName = "AuditLogs"
+                        },
+                        new
+                        {
+                            Id = 263,
+                            Action = "Create",
+                            CanCreate = true,
+                            CanDelete = false,
+                            CanRead = false,
+                            CanUpdate = false,
+                            Code = "AuditLogs.Create",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
+                            IsDeleted = false,
+                            Module = "AuditLogs",
+                            ModuleName = "AuditLogs"
+                        },
+                        new
+                        {
+                            Id = 264,
+                            Action = "Edit",
+                            CanCreate = false,
+                            CanDelete = false,
+                            CanRead = false,
+                            CanUpdate = true,
+                            Code = "AuditLogs.Edit",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
+                            IsDeleted = false,
+                            Module = "AuditLogs",
+                            ModuleName = "AuditLogs"
+                        },
+                        new
+                        {
+                            Id = 265,
+                            Action = "Delete",
+                            CanCreate = false,
+                            CanDelete = true,
+                            CanRead = false,
+                            CanUpdate = false,
+                            Code = "AuditLogs.Delete",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
+                            IsDeleted = false,
+                            Module = "AuditLogs",
+                            ModuleName = "AuditLogs"
+                        },
+                        new
+                        {
+                            Id = 266,
+                            Action = "Approve",
+                            CanCreate = false,
+                            CanDelete = false,
+                            CanRead = false,
+                            CanUpdate = true,
+                            Code = "AuditLogs.Approve",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
+                            IsDeleted = false,
+                            Module = "AuditLogs",
+                            ModuleName = "AuditLogs"
+                        },
+                        new
+                        {
+                            Id = 267,
+                            Action = "Assign",
+                            CanCreate = false,
+                            CanDelete = false,
+                            CanRead = false,
+                            CanUpdate = true,
+                            Code = "AuditLogs.Assign",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
+                            IsDeleted = false,
+                            Module = "AuditLogs",
+                            ModuleName = "AuditLogs"
+                        },
+                        new
+                        {
+                            Id = 268,
+                            Action = "Publish",
+                            CanCreate = false,
+                            CanDelete = false,
+                            CanRead = false,
+                            CanUpdate = true,
+                            Code = "AuditLogs.Publish",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
+                            IsDeleted = false,
+                            Module = "AuditLogs",
+                            ModuleName = "AuditLogs"
+                        },
+                        new
+                        {
+                            Id = 269,
+                            Action = "Export",
+                            CanCreate = false,
+                            CanDelete = false,
+                            CanRead = true,
+                            CanUpdate = false,
+                            Code = "AuditLogs.Export",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
+                            IsDeleted = false,
+                            Module = "AuditLogs",
+                            ModuleName = "AuditLogs"
+                        },
+                        new
+                        {
+                            Id = 270,
+                            Action = "Manage",
+                            CanCreate = true,
+                            CanDelete = true,
+                            CanRead = true,
+                            CanUpdate = true,
+                            Code = "AuditLogs.Manage",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
+                            IsDeleted = false,
+                            Module = "AuditLogs",
+                            ModuleName = "AuditLogs"
                         });
                 });
 
@@ -6923,6 +7522,69 @@ namespace SchoolManagementSystem.Migrations
                             Description = "Student portal access",
                             IsDeleted = false,
                             Name = "Student"
+                        },
+                        new
+                        {
+                            Id = 20,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
+                            Description = "Accounts and finance",
+                            IsDeleted = false,
+                            Name = "Accountant"
+                        },
+                        new
+                        {
+                            Id = 21,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
+                            Description = "Library services",
+                            IsDeleted = false,
+                            Name = "Librarian"
+                        },
+                        new
+                        {
+                            Id = 22,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
+                            Description = "Lab assistance",
+                            IsDeleted = false,
+                            Name = "LabAssistant"
+                        },
+                        new
+                        {
+                            Id = 23,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
+                            Description = "Transport services",
+                            IsDeleted = false,
+                            Name = "TransportStaff"
+                        },
+                        new
+                        {
+                            Id = 24,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
+                            Description = "Support and cleaning",
+                            IsDeleted = false,
+                            Name = "SupportStaff"
+                        },
+                        new
+                        {
+                            Id = 25,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
+                            Description = "Guardian portal access",
+                            IsDeleted = false,
+                            Name = "Guardian"
+                        },
+                        new
+                        {
+                            Id = 26,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
+                            Description = "Administrator",
+                            IsDeleted = false,
+                            Name = "Admin"
                         });
                 });
 
@@ -8248,6 +8910,2121 @@ namespace SchoolManagementSystem.Migrations
                         },
                         new
                         {
+                            RoleId = 1,
+                            PermissionId = 262
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 263
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 264
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 265
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 266
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 267
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 268
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 269
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 270
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 1
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 2
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 3
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 4
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 5
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 6
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 7
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 8
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 9
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 10
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 11
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 12
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 13
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 14
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 15
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 16
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 17
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 18
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 19
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 20
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 21
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 22
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 23
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 24
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 25
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 26
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 27
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 28
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 29
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 30
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 31
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 32
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 33
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 34
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 35
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 36
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 37
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 38
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 39
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 40
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 41
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 42
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 43
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 44
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 45
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 46
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 47
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 48
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 49
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 50
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 51
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 52
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 53
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 54
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 55
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 56
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 57
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 58
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 59
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 60
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 61
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 62
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 63
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 64
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 65
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 66
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 67
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 68
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 69
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 70
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 71
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 72
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 73
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 74
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 75
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 76
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 77
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 78
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 79
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 80
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 81
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 82
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 83
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 84
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 85
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 86
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 87
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 88
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 89
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 90
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 91
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 92
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 93
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 94
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 95
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 96
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 97
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 98
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 99
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 100
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 101
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 102
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 103
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 104
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 105
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 106
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 107
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 108
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 109
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 110
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 111
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 112
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 113
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 114
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 115
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 116
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 117
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 118
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 119
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 120
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 121
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 122
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 123
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 124
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 125
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 126
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 127
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 128
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 129
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 130
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 131
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 132
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 133
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 134
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 135
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 136
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 137
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 138
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 139
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 140
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 141
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 142
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 143
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 144
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 145
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 146
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 147
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 148
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 149
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 150
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 151
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 152
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 153
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 154
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 155
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 156
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 157
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 158
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 159
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 160
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 161
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 162
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 163
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 164
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 165
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 166
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 167
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 168
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 169
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 170
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 171
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 172
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 173
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 174
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 175
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 176
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 177
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 178
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 179
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 180
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 181
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 182
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 183
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 184
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 185
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 186
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 187
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 188
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 189
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 190
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 191
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 192
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 193
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 194
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 195
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 196
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 197
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 198
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 199
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 200
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 201
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 202
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 203
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 204
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 205
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 206
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 207
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 208
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 209
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 210
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 211
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 212
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 213
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 214
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 215
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 216
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 217
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 218
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 219
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 220
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 221
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 222
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 223
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 224
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 225
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 226
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 227
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 228
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 229
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 230
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 231
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 232
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 233
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 234
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 235
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 236
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 237
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 238
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 239
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 240
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 241
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 242
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 243
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 244
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 245
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 246
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 247
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 248
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 249
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 250
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 251
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 252
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 253
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 254
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 255
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 256
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 257
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 258
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 259
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 260
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 261
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 262
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 263
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 264
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 265
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 266
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 267
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 268
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 269
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 270
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 1
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 2
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 3
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 4
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 5
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 6
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 7
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 8
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 9
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 37
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 38
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 39
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 40
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 41
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 42
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 43
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 44
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 45
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 46
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 47
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 48
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 49
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 50
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 51
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 52
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 53
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 54
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 64
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 65
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 66
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 67
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 68
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 69
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 70
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 71
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 72
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 73
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 74
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 75
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 76
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 77
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 78
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 79
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 80
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 81
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 82
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 83
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 84
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 85
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 86
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 87
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 88
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 89
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 90
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 91
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 92
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 93
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 94
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 95
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 96
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 97
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 98
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 99
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 100
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 101
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 102
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 103
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 104
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 105
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 106
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 107
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 108
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 109
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 110
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 111
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 112
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 113
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 114
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 115
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 116
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 117
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 181
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 182
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 183
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 184
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 185
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 186
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 187
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 188
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 189
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 199
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 200
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 201
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 202
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 203
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 204
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 205
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 206
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 207
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 208
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 209
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 210
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 211
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 212
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 213
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 214
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 215
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 216
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 217
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 218
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 219
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 220
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 221
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 222
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 223
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 224
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 225
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 226
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 227
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 228
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 229
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 230
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 231
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 232
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 233
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 234
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 235
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 236
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 237
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 238
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 239
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 240
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 241
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 242
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 243
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 244
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 245
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 246
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 247
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 248
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 249
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 250
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 251
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 252
+                        },
+                        new
+                        {
                             RoleId = 5,
                             PermissionId = 1
                         },
@@ -8695,6 +11472,67 @@ namespace SchoolManagementSystem.Migrations
                         });
                 });
 
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Auth.UserSession", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("IpAddress")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("LoginAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("LogoutAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SessionId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("UserAgent")
+                        .HasMaxLength(512)
+                        .HasColumnType("nvarchar(512)");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SessionId")
+                        .IsUnique();
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserSessions");
+                });
+
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Communication.Circular", b =>
                 {
                     b.Property<int>("Id")
@@ -8825,6 +11663,10 @@ namespace SchoolManagementSystem.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("AttachmentPath")
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
                     b.Property<string>("AudienceRole")
                         .IsRequired()
                         .HasMaxLength(80)
@@ -8844,6 +11686,9 @@ namespace SchoolManagementSystem.Migrations
                         .HasColumnType("nvarchar(64)");
 
                     b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPublished")
                         .HasColumnType("bit");
 
                     b.Property<DateTime>("PublishAt")
@@ -8874,9 +11719,603 @@ namespace SchoolManagementSystem.Migrations
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
                             IsDeleted = false,
+                            IsPublished = true,
                             PublishAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Title = "Welcome to the 2026 academic session"
                         });
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.Department", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Departments");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.Designation", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsAdministrativeRole")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsTeachingRole")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("RequiresLogin")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("RoleLevel")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Designations");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.DesignationRoleMapping", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<int>("DesignationId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("RoleId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
+
+                    b.HasIndex("DesignationId", "RoleId")
+                        .IsUnique();
+
+                    b.ToTable("DesignationRoleMappings");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.Employee", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BirthCertificateNo")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("BloodGroup")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTime>("DateOfBirth")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("DepartmentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DesignationId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(160)
+                        .HasColumnType("nvarchar(160)");
+
+                    b.Property<string>("EmergencyContactName")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("EmergencyContactPhone")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("EmployeeCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("EmployeeType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("FatherName")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("Gender")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsTeachingStaff")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("JoiningDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("MotherName")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("NIDNumber")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Nationality")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("PermanentAddress")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("PresentAddress")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("ProfilePicturePath")
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<string>("Religion")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Remarks")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("SignaturePath")
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<int?>("UserId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("UserId1")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DepartmentId");
+
+                    b.HasIndex("DesignationId");
+
+                    b.HasIndex("Email")
+                        .IsUnique()
+                        .HasFilter("[Email] IS NOT NULL");
+
+                    b.HasIndex("EmployeeCode")
+                        .IsUnique();
+
+                    b.HasIndex("NIDNumber")
+                        .IsUnique()
+                        .HasFilter("[NIDNumber] IS NOT NULL");
+
+                    b.HasIndex("Phone")
+                        .IsUnique();
+
+                    b.HasIndex("UserId1");
+
+                    b.ToTable("Employees");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.EmployeeAcademicAssignment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AcademicYearId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ClassId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("SectionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SubjectId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.ToTable("EmployeeAcademicAssignments");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.EmployeeDocument", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("DocumentName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("DocumentType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("ExpiryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("FilePath")
+                        .IsRequired()
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Remarks")
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.ToTable("EmployeeDocuments");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.EmployeeExperience", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("Designation")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("EndDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("OrganizationName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Remarks")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.ToTable("EmployeeExperiences");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.EmployeeQualification", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BoardOrUniversity")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("CGPAOrDivision")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("CertificateFilePath")
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ExamName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("GroupOrSubject")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("InstituteName")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("PassingYear")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("Result")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.ToTable("EmployeeQualifications");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.EmployeeSalary", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("BasicSalary")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<decimal>("Deduction")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("EffectiveFrom")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("HouseRent")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("MedicalAllowance")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("OtherAllowance")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TotalSalary")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TransportAllowance")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.ToTable("EmployeeSalaries");
                 });
 
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Exam.AdmitCard", b =>
@@ -10967,6 +14406,83 @@ namespace SchoolManagementSystem.Migrations
                     b.ToTable("ResultPublications");
                 });
 
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Result.RollNumberAssignment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AcademicYearId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<int>("FromClassId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("GeneratedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("GeneratedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("MeritPosition")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("MeritValue")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Remarks")
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<int>("RollNumber")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SectionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ToClassId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FromClassId");
+
+                    b.HasIndex("SectionId");
+
+                    b.HasIndex("StudentId");
+
+                    b.HasIndex("ToClassId");
+
+                    b.HasIndex("AcademicYearId", "StudentId", "ToClassId")
+                        .IsUnique();
+
+                    b.ToTable("RollNumberAssignments");
+                });
+
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Result.StudentExamResult", b =>
                 {
                     b.Property<int>("Id")
@@ -11309,16 +14825,8 @@ namespace SchoolManagementSystem.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("NationalIdNo")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.Property<string>("Nationality")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("PassportNo")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -11808,15 +15316,131 @@ namespace SchoolManagementSystem.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("AlternativeNumber")
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
 
-                    b.Property<string>("BloodGroup")
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
 
-                    b.Property<string>("Country")
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsClassTeacher")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsExamController")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsRoutineCoordinator")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Remarks")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("SubjectSpecialization")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("TeacherCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("TeachingExperienceYears")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TeachingLevel")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.HasIndex("TeacherCode")
+                        .IsUnique();
+
+                    b.ToTable("Teachers");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Teachers.TeacherAcademicProfile", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<int>("ExperienceYears")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsClassTeacherEligible")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsExamController")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsRoutineCoordinator")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("SubjectSpecialization")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("TeacherId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TeachingLevel")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TeacherId");
+
+                    b.ToTable("TeacherAcademicProfiles");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Teachers.TeacherAssignmentLog", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Action")
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
@@ -11829,133 +15453,30 @@ namespace SchoolManagementSystem.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
 
-                    b.Property<DateTime>("DateOfBirth")
-                        .HasColumnType("datetime2");
+                    b.Property<int?>("EntityId")
+                        .HasColumnType("int");
 
-                    b.Property<string>("Department")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Designation")
+                    b.Property<string>("EntityName")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
-                    b.Property<string>("EmailAddress")
-                        .HasMaxLength(160)
-                        .HasColumnType("nvarchar(160)");
-
-                    b.Property<string>("FatherName")
-                        .HasMaxLength(120)
-                        .HasColumnType("nvarchar(120)");
-
-                    b.Property<string>("FullName")
-                        .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("nvarchar(120)");
-
-                    b.Property<string>("FullNameBangla")
-                        .HasMaxLength(120)
-                        .HasColumnType("nvarchar(120)");
-
-                    b.Property<string>("Gender")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
+                    b.Property<string>("IPAddress")
+                        .HasMaxLength(45)
+                        .HasColumnType("nvarchar(45)");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime?>("JoiningDate")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("Remarks")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
-                    b.Property<string>("MaritalStatus")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
-
-                    b.Property<string>("MobileNumber")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
-
-                    b.Property<string>("MotherName")
-                        .HasMaxLength(120)
-                        .HasColumnType("nvarchar(120)");
-
-                    b.Property<string>("NationalIdNo")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("Nationality")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("PassportNo")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("PermanentDistrict")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("PermanentPostOffice")
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.Property<string>("PermanentThana")
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.Property<string>("PermanentVillage")
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.Property<string>("PresentDistrict")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("PresentPostOffice")
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.Property<string>("PresentThana")
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.Property<string>("PresentVillage")
-                        .HasMaxLength(150)
-                        .HasColumnType("nvarchar(150)");
-
-                    b.Property<string>("ProfilePicturePath")
-                        .HasMaxLength(260)
-                        .HasColumnType("nvarchar(260)");
-
-                    b.Property<string>("Qualification")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("Religion")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
-
-                    b.Property<string>("Specialization")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("SpouseName")
-                        .HasMaxLength(120)
-                        .HasColumnType("nvarchar(120)");
-
-                    b.Property<int>("Status")
+                    b.Property<int?>("TeacherId")
                         .HasColumnType("int");
 
-                    b.Property<string>("TeacherNo")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -11964,55 +15485,11 @@ namespace SchoolManagementSystem.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
 
-                    b.Property<int?>("UserId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("TeacherNo")
-                        .IsUnique();
+                    b.HasIndex("TeacherId");
 
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Teachers");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Country = "Bangladesh",
-                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedBy = "system",
-                            DateOfBirth = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Designation = "Senior Lecturer",
-                            FullName = "Senior Lecturer",
-                            Gender = "",
-                            IsDeleted = false,
-                            MaritalStatus = "",
-                            MobileNumber = "01000000001",
-                            Nationality = "Bangladeshi",
-                            Religion = "",
-                            Status = 1,
-                            TeacherNo = "T-0001"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Country = "Bangladesh",
-                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
-                            CreatedBy = "system",
-                            DateOfBirth = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
-                            Designation = "Lecturer",
-                            FullName = "Class Teacher",
-                            Gender = "",
-                            IsDeleted = false,
-                            MaritalStatus = "",
-                            MobileNumber = "01000000002",
-                            Nationality = "Bangladeshi",
-                            Religion = "",
-                            Status = 1,
-                            TeacherNo = "T-0002"
-                        });
+                    b.ToTable("TeacherAssignmentLogs");
                 });
 
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Teachers.TeacherAttendance", b =>
@@ -12075,6 +15552,13 @@ namespace SchoolManagementSystem.Migrations
                     b.Property<int>("AcademicYearId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("AssignedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("AssignedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
                     b.Property<int>("ClassId")
                         .HasColumnType("int");
 
@@ -12086,11 +15570,18 @@ namespace SchoolManagementSystem.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsClassTeacher")
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
+
+                    b.Property<string>("Remarks")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
                     b.Property<int>("SectionId")
                         .HasColumnType("int");
@@ -12109,12 +15600,15 @@ namespace SchoolManagementSystem.Migrations
 
                     b.HasIndex("AcademicYearId");
 
-                    b.HasIndex("ClassId");
-
                     b.HasIndex("SectionId");
 
+                    b.HasIndex("ClassId", "SectionId", "AcademicYearId")
+                        .IsUnique()
+                        .HasFilter("[IsActive] = 1 AND [IsDeleted] = 0");
+
                     b.HasIndex("TeacherId", "ClassId", "SectionId", "AcademicYearId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
 
                     b.ToTable("TeacherClassAssignments");
                 });
@@ -12371,6 +15865,13 @@ namespace SchoolManagementSystem.Migrations
                     b.Property<int>("AcademicYearId")
                         .HasColumnType("int");
 
+                    b.Property<DateTime>("AssignedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("AssignedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
                     b.Property<int>("ClassId")
                         .HasColumnType("int");
 
@@ -12382,8 +15883,15 @@ namespace SchoolManagementSystem.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
 
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
+
+                    b.Property<string>("Remarks")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
 
                     b.Property<int>("SectionId")
                         .HasColumnType("int");
@@ -12412,7 +15920,8 @@ namespace SchoolManagementSystem.Migrations
                     b.HasIndex("SubjectId");
 
                     b.HasIndex("TeacherId", "SubjectId", "ClassId", "SectionId", "AcademicYearId")
-                        .IsUnique();
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
 
                     b.ToTable("TeacherSubjectAssignments");
                 });
@@ -12650,6 +16159,425 @@ namespace SchoolManagementSystem.Migrations
                     b.ToTable("Vehicles");
                 });
 
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Website.Announcement", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Announcements");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Website.Event", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CoverImagePath")
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<DateTime>("EventDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("EventLocation")
+                        .HasMaxLength(160)
+                        .HasColumnType("nvarchar(160)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPublished")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsUpcoming")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("nvarchar(160)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Events");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Website.Gallery", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AlbumName")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("nvarchar(160)");
+
+                    b.Property<string>("CoverImagePath")
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Galleries");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Website.GalleryImage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Caption")
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
+
+                    b.Property<int>("GalleryId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ImagePath")
+                        .IsRequired()
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GalleryId");
+
+                    b.ToTable("GalleryImages");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Website.SchoolSetting", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("EIIN")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("nvarchar(160)");
+
+                    b.Property<string>("FacebookUrl")
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<string>("FaviconPath")
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<string>("FooterText")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("GoogleMapEmbed")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("LogoPath")
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<string>("Mission")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("PrincipalImagePath")
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<string>("PrincipalMessage")
+                        .HasMaxLength(4000)
+                        .HasColumnType("nvarchar(4000)");
+
+                    b.Property<string>("PrincipalName")
+                        .HasMaxLength(160)
+                        .HasColumnType("nvarchar(160)");
+
+                    b.Property<string>("SchoolName")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("nvarchar(160)");
+
+                    b.Property<string>("ShortName")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("Vision")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("Website")
+                        .IsRequired()
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<string>("YouTubeUrl")
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("SchoolSettings");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Website.Slider", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ButtonText")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("ButtonUrl")
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ImagePath")
+                        .IsRequired()
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Subtitle")
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("nvarchar(160)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Sliders");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Website.WebsitePage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPublished")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("MetaDescription")
+                        .HasMaxLength(260)
+                        .HasColumnType("nvarchar(260)");
+
+                    b.Property<string>("MetaTitle")
+                        .HasMaxLength(160)
+                        .HasColumnType("nvarchar(160)");
+
+                    b.Property<string>("Slug")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("nvarchar(160)");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("nvarchar(160)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("WebsitePages");
+                });
+
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Academic.ClassSubject", b =>
                 {
                     b.HasOne("SchoolManagementSystem.Models.Entities.Academic.SchoolClass", "SchoolClass")
@@ -12788,6 +16716,63 @@ namespace SchoolManagementSystem.Migrations
                     b.Navigation("AssignmentTask");
                 });
 
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Attendance.EmployeeAttendance", b =>
+                {
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Employee.Employee", "Employee")
+                        .WithMany("Attendances")
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Attendance.LeaveApplication", b =>
+                {
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Employee.Employee", "Employee")
+                        .WithMany("Leaves")
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Attendance.LeaveType", "LeaveType")
+                        .WithMany()
+                        .HasForeignKey("LeaveTypeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+
+                    b.Navigation("LeaveType");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Attendance.StudentAttendance", b =>
+                {
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Academic.SchoolClass", "Class")
+                        .WithMany()
+                        .HasForeignKey("ClassId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Academic.Section", "Section")
+                        .WithMany()
+                        .HasForeignKey("SectionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Student.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Class");
+
+                    b.Navigation("Section");
+
+                    b.Navigation("Student");
+                });
+
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Auth.AuditLog", b =>
                 {
                     b.HasOne("SchoolManagementSystem.Models.Entities.Auth.ApplicationUser", "User")
@@ -12845,6 +16830,117 @@ namespace SchoolManagementSystem.Migrations
                     b.Navigation("Role");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Auth.UserSession", b =>
+                {
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Auth.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.DesignationRoleMapping", b =>
+                {
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Employee.Designation", "Designation")
+                        .WithMany()
+                        .HasForeignKey("DesignationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Auth.Role", "Role")
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Designation");
+
+                    b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.Employee", b =>
+                {
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Employee.Department", "Department")
+                        .WithMany()
+                        .HasForeignKey("DepartmentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Employee.Designation", "Designation")
+                        .WithMany()
+                        .HasForeignKey("DesignationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Auth.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId1")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Department");
+
+                    b.Navigation("Designation");
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.EmployeeAcademicAssignment", b =>
+                {
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Employee.Employee", "Employee")
+                        .WithMany()
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.EmployeeDocument", b =>
+                {
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Employee.Employee", "Employee")
+                        .WithMany("Documents")
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.EmployeeExperience", b =>
+                {
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Employee.Employee", "Employee")
+                        .WithMany("Experiences")
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.EmployeeQualification", b =>
+                {
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Employee.Employee", "Employee")
+                        .WithMany("Qualifications")
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.EmployeeSalary", b =>
+                {
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Employee.Employee", "Employee")
+                        .WithMany("Salaries")
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
                 });
 
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Exam.ExamConfiguration", b =>
@@ -13183,6 +17279,49 @@ namespace SchoolManagementSystem.Migrations
                     b.Navigation("Exam");
                 });
 
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Result.RollNumberAssignment", b =>
+                {
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Academic.AcademicYear", "AcademicYear")
+                        .WithMany()
+                        .HasForeignKey("AcademicYearId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Academic.SchoolClass", "FromClass")
+                        .WithMany()
+                        .HasForeignKey("FromClassId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Academic.Section", "Section")
+                        .WithMany()
+                        .HasForeignKey("SectionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Student.Student", "Student")
+                        .WithMany()
+                        .HasForeignKey("StudentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Academic.SchoolClass", "ToClass")
+                        .WithMany()
+                        .HasForeignKey("ToClassId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("AcademicYear");
+
+                    b.Navigation("FromClass");
+
+                    b.Navigation("Section");
+
+                    b.Navigation("Student");
+
+                    b.Navigation("ToClass");
+                });
+
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Result.StudentExamResult", b =>
                 {
                     b.HasOne("SchoolManagementSystem.Models.Entities.Exam.Exam", "Exam")
@@ -13303,12 +17442,34 @@ namespace SchoolManagementSystem.Migrations
 
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Teachers.Teacher", b =>
                 {
-                    b.HasOne("SchoolManagementSystem.Models.Entities.Auth.ApplicationUser", "User")
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Employee.Employee", "Employee")
                         .WithMany()
-                        .HasForeignKey("UserId")
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Teachers.TeacherAcademicProfile", b =>
+                {
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Teachers.Teacher", "Teacher")
+                        .WithMany()
+                        .HasForeignKey("TeacherId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Teacher");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Teachers.TeacherAssignmentLog", b =>
+                {
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Teachers.Teacher", "Teacher")
+                        .WithMany()
+                        .HasForeignKey("TeacherId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.Navigation("User");
+                    b.Navigation("Teacher");
                 });
 
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Teachers.TeacherAttendance", b =>
@@ -13499,6 +17660,17 @@ namespace SchoolManagementSystem.Migrations
                     b.Navigation("Teacher");
                 });
 
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Website.GalleryImage", b =>
+                {
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Website.Gallery", "Gallery")
+                        .WithMany("Images")
+                        .HasForeignKey("GalleryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Gallery");
+                });
+
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Academic.ClassSubject", b =>
                 {
                     b.Navigation("ClassSubjectTeachers");
@@ -13545,6 +17717,21 @@ namespace SchoolManagementSystem.Migrations
                     b.Navigation("UserRoles");
                 });
 
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Employee.Employee", b =>
+                {
+                    b.Navigation("Attendances");
+
+                    b.Navigation("Documents");
+
+                    b.Navigation("Experiences");
+
+                    b.Navigation("Leaves");
+
+                    b.Navigation("Qualifications");
+
+                    b.Navigation("Salaries");
+                });
+
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Exam.Exam", b =>
                 {
                     b.Navigation("ExamSchedules");
@@ -13578,6 +17765,11 @@ namespace SchoolManagementSystem.Migrations
                     b.Navigation("Documents");
 
                     b.Navigation("SubjectAssignments");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Website.Gallery", b =>
+                {
+                    b.Navigation("Images");
                 });
 #pragma warning restore 612, 618
         }

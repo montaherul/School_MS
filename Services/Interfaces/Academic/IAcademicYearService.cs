@@ -11,3 +11,4 @@ public interface IAcademicYearService
     Task UpdateAsync(AcademicYearUpsertDto dto, string updatedBy, CancellationToken cancellationToken = default);
     Task DeleteAsync(int id, string updatedBy, CancellationToken cancellationToken = default);
 }
+

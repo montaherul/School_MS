@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Models.DTOs.Fees;
 using SchoolManagementSystem.Models.ViewModels.Fees;
 using SchoolManagementSystem.Services.Interfaces.Fees;
@@ -7,21 +8,25 @@ using System.Security.Claims;
 
 namespace SchoolManagementSystem.Controllers.Fees;
 
-[Authorize(Roles = "Super Admin,Principal,Assistant Head,Office Staff")]
+[Authorize]
 public class FeeStructureController : Controller
 {
     private readonly IFeeStructureService _service;
     public FeeStructureController(IFeeStructureService service) { _service = service; }
 
+    [RequirePermission("FeeStructures.Read")]
     public IActionResult Index() { return View(); }
 
     [HttpGet]
+    [RequirePermission("FeeStructures.Create")]
     public IActionResult Create() => RedirectToAction(nameof(CreateEdit));
 
     [HttpGet]
+    [RequirePermission("FeeStructures.Update")]
     public IActionResult Edit(int id) => RedirectToAction(nameof(CreateEdit), new { id });
 
     [HttpGet]
+    [RequirePermission("FeeStructures.Read")]
     public async Task<IActionResult> GetList(int page = 1, int size = 10, string? search = null)
     {
         var result = await _service.GetPagedAsync(page, size, search);
@@ -31,6 +36,11 @@ public class FeeStructureController : Controller
     [HttpGet]
     public async Task<IActionResult> CreateEdit(int? id)
     {
+        if (!Can(id.HasValue && id > 0 ? "FeeStructures.Update" : "FeeStructures.Create"))
+        {
+            return Forbid();
+        }
+
         if (id.HasValue && id > 0)
         {
             var dto = await _service.GetForEditAsync(id.Value);
@@ -45,6 +55,11 @@ public class FeeStructureController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> CreateEdit(FeeStructureViewModel vm)
     {
+        if (!Can(vm.IsEditMode ? "FeeStructures.Update" : "FeeStructures.Create"))
+        {
+            return Forbid();
+        }
+
         if (!ModelState.IsValid) return View(vm);
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
         if (vm.IsEditMode) { await _service.UpdateAsync(vm, userId); TempData["SuccessMessage"] = "FeeStructure updated successfully."; }
@@ -57,6 +72,7 @@ public class FeeStructureController : Controller
     public Task<IActionResult> Save(FeeStructureViewModel vm) => CreateEdit(vm);
 
     [HttpGet]
+    [RequirePermission("FeeStructures.Read")]
     public async Task<IActionResult> Details(int id)
     {
         var dto = await _service.GetForEditAsync(id);
@@ -73,6 +89,7 @@ public class FeeStructureController : Controller
     }
 
     [HttpGet]
+    [RequirePermission("FeeStructures.Delete")]
     public async Task<IActionResult> Delete(int id)
     {
         var dto = await _service.GetForEditAsync(id);
@@ -90,6 +107,7 @@ public class FeeStructureController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [RequirePermission("FeeStructures.Delete")]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
@@ -97,5 +115,9 @@ public class FeeStructureController : Controller
         TempData["SuccessMessage"] = "FeeStructure deleted successfully.";
         return RedirectToAction(nameof(Index));
     }
-}
 
+    private bool Can(string permissionCode)
+    {
+        return User.IsInRole("Super Admin") || User.HasClaim("Permission", permissionCode);
+    }
+}

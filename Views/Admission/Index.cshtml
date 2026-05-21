@@ -103,7 +103,16 @@
                 <div class="adm-loading__spinner"></div>
                 <span class="adm-loading__text">Loading admissions...</span>
             </div>
-            <div id="admissionTable"></div>
+
+            <div class="table-shell">
+                <div class="table-responsive">
+                    <div id="admissionTable" class="table-fixed"></div>
+                </div>
+                <div class="table-footer">
+                    <div class="table-info" id="tableInfo">No records</div>
+                    <div class="pagination-wrapper" id="paginationWrapper"></div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -157,11 +166,12 @@
 @Html.AntiForgeryToken()
 
 @section Scripts {
-    <link href="https://unpkg.com/tabulator-tables@5.7.0/dist/css/tabulator.min.css" rel="stylesheet">
-    <script type="text/javascript" src="https://unpkg.com/tabulator-tables@5.7.0/dist/js/tabulator.min.js"></script>
+    <!-- xlsx, jsPDF — page-specific, keep these -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+    <!-- your page script below -->
 
     <script>
         // ── State ────────────────────────────────────
@@ -169,6 +179,7 @@
         let currentSearchTerm = '';
         let currentStatus = '';
         let currentTotalRecords = 0;
+        let currentPageSize = 10;
         let table = null;
         let currentClassIdForSection = 0;
         let loadedSectionData = [];
@@ -204,7 +215,10 @@
         function actionFormatter(cell) {
         const row = cell.getRow().getData();
         if (row.status === 'Pending') {
-        return '<div class="adm-actions">' +
+        return '<div class="actions-cell">' +
+        '<a href="/Admission/Details/' + row.id + '" class="adm-action adm-action--view" title="Details">' +
+        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>' +
+        '</a>' +
         '<a href="/Admission/CreateEdit/' + row.id + '" class="adm-action adm-action--edit" title="Edit">' +
         '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>' +
         '</a>' +
@@ -221,17 +235,17 @@
 
         // ── Column Definitions ───────────────────────
         const columnDefs = [
-        { title: "", field: "profilePicturePath", width: 56, sorter: false, headerSort: false, formatter: photoFormatter, cssClass: "adm-col-photo" },
+        { title: "", field: "profilePicturePath", width: 56, minWidth: 56, sorter: false, headerSort: false, formatter: photoFormatter, cssClass: "adm-col-photo" },
         {
-        title: "App No", field: "applicationNo", widthGrow: 1, sorter: false, headerSort: false,
+        title: "App No", field: "applicationNo", width: 160, minWidth: 160, sorter: false, headerSort: false,
         formatter: function (c) { return '<span class="adm-cell-mono">' + c.getValue() + '</span>'; }
         },
         {
-        title: "Applicant Name", field: "applicantName", widthGrow: 2.2, sorter: false, headerSort: false,
+        title: "Applicant Name", field: "applicantName", width: 240, minWidth: 240, sorter: false, headerSort: false,
         formatter: function (c) { return '<span class="adm-cell-name">' + c.getValue() + '</span>'; }
         },
         {
-        title: "Age / DOB", field: "dateOfBirth", widthGrow: 1.2, sorter: false, headerSort: false,
+        title: "Age / DOB", field: "dateOfBirth", width: 140, minWidth: 140, sorter: false, headerSort: false,
         formatter: function (c) {
         const dob = new Date(c.getValue());
         const age = c.getRow().getData().age;
@@ -239,16 +253,16 @@
         }
         },
         {
-        title: "Gender", field: "gender", widthGrow: 0.8, sorter: false, headerSort: false,
+        title: "Gender", field: "gender", width: 100, minWidth: 100, sorter: false, headerSort: false,
         formatter: function (c) { return '<span class="adm-cell-gender">' + c.getValue() + '</span>'; }
         },
-        { title: "Class", field: "className", widthGrow: 1, sorter: false, headerSort: false },
+        { title: "Class", field: "className", width: 160, minWidth: 160, sorter: false, headerSort: false },
         {
-        title: "Phone", field: "applicantMobileNumber", widthGrow: 1.3, sorter: false, headerSort: false,
+        title: "Phone", field: "applicantMobileNumber", width: 160, minWidth: 160, sorter: false, headerSort: false,
         formatter: function (c) { return '<span class="adm-cell-phone">' + c.getValue() + '</span>'; }
         },
-        { title: "Status", field: "status", widthGrow: 1, sorter: false, headerSort: false, formatter: statusFormatter },
-        { title: "", field: "id", width: 120, sorter: false, headerSort: false, formatter: actionFormatter, cssClass: "adm-col-actions" }
+        { title: "Status", field: "status", width: 140, minWidth: 140, sorter: false, headerSort: false, formatter: statusFormatter },
+        { title: "", field: "id", width: 180, minWidth: 180, sorter: false, headerSort: false, formatter: actionFormatter, cssClass: "adm-col-actions" }
         ];
 
         // ── Init Table ───────────────────────────────
@@ -269,14 +283,23 @@
         "last_row": "total_records",
         "data": "data"
         },
+        tableBuilt: function () {
+        attachPaginationFooter();
+        updateTableInfo(0, 0, currentTotalRecords);
+        },
         ajaxResponse: function (url, params, response) {
         var total = response.total_records || 0;
         var pageSize = params.pageSize || 10;
+        currentPageSize = pageSize;
         var lastPage = total > 0 ? Math.ceil(total / pageSize) : 1;
+        var currentPage = params.page || 1;
+        var startRow = total === 0 ? 0 : ((currentPage - 1) * pageSize) + 1;
+        var endRow = total === 0 ? 0 : Math.min(currentPage * pageSize, total);
 
         currentTotalRecords = total;
         updateTabCounts(response.counts || {});
         updateFilterBadges();
+        updateTableInfo(startRow, endRow, total);
 
         return {
         data: response.data || [],
@@ -285,20 +308,44 @@
         };
         },
         columns: columnDefs,
-        layout: "fitColumns",
-        responsiveLayout: "collapse",
+        layout: "fitDataTable",
+        responsiveLayout: false,
+
         pagination: true,
         paginationMode: "remote",
         paginationSize: 10,
-        paginationDataSent: { "page": "page", "size": "pageSize" },
+
+        paginationDataSent: {
+        page: "page",
+        size: "pageSize"
+        },
+
         paginationInitialPage: 1,
-        paginationCounter: function (pageSize, currentRow, totalRows) {
-        if (totalRows === 0) return "No records";
-        var start = (currentRow - 1) * pageSize + 1;
-        var end = Math.min(currentRow * pageSize, totalRows);
-        return "Showing <strong>" + start + "&ndash;" + end + "</strong> of <strong>" + totalRows + "</strong>";
-        }
+
+        // FIX HERE
+        paginationCounter: false
         });
+        }
+
+        function attachPaginationFooter() {
+        var footer = document.querySelector('#admissionTable .tabulator-footer');
+        var wrapper = document.getElementById('paginationWrapper');
+        if (!footer || !wrapper) return;
+        if (footer.parentElement !== wrapper) {
+        wrapper.innerHTML = '';
+        wrapper.appendChild(footer);
+        footer.classList.add('table-pagination');
+        }
+        }
+
+        function updateTableInfo(startRow, endRow, totalRows) {
+        var info = document.getElementById('tableInfo');
+        if (!info) return;
+        if (!totalRows) {
+        info.textContent = 'No admissions found';
+        return;
+        }
+        info.innerHTML = 'Showing <strong>' + startRow + '</strong> to <strong>' + endRow + '</strong> of <strong>' + totalRows + '</strong> admissions';
         }
 
         // ── Reload ───────────────────────────────────
@@ -597,1051 +644,4 @@
         }
     </script>
 
-    <style>
-        /* ═══════════════════════════════════════════════
-        DESIGN SYSTEM
-        ═══════════════════════════════════════════════ */
-        :root {
-        --adm-primary: #0F766E;
-        --adm-primary-h: #0D6B63;
-        --adm-primary-l: #14B8A6;
-        --adm-primary-bg: #F0FDFA;
-        --adm-accent: #E8705A;
-        --adm-bg: #F7F8F6;
-        --adm-surface: #FFFFFF;
-        --adm-surface-2: #F1F3F0;
-        --adm-border: #E2E5E0;
-        --adm-border-h: #CBD1C8;
-        --adm-text: #1A1D1A;
-        --adm-text-2: #5C6358;
-        --adm-text-3: #8A9188;
-        --adm-pending: #D97706;
-        --adm-pending-bg: #FFFBEB;
-        --adm-converted: #0284C7;
-        --adm-converted-bg: #F0F9FF;
-        --adm-rejected: #DC2626;
-        --adm-rejected-bg: #FEF2F2;
-        --adm-success: #059669;
-        --adm-success-bg: #ECFDF5;
-        --adm-radius-sm: 6px;
-        --adm-radius: 10px;
-        --adm-radius-lg: 14px;
-        --adm-shadow-sm: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.03);
-        --adm-shadow: 0 1px 4px rgba(0,0,0,0.05), 0 4px 16px rgba(0,0,0,0.04);
-        --adm-shadow-lg: 0 4px 8px rgba(0,0,0,0.04), 0 12px 32px rgba(0,0,0,0.06);
-        --adm-transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        /* ═══════════════════════════════════════════════
-        PAGE LAYOUT
-        ═══════════════════════════════════════════════ */
-        .adm-page {
-        max-width: 1440px;
-        margin: 0 auto;
-        padding: 24px 28px 40px;
-        }
-
-        /* ═══════════════════════════════════════════════
-        HEADER
-        ═══════════════════════════════════════════════ */
-        .adm-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 20px;
-        }
-
-        .adm-header__left {
-        display: flex;
-        align-items: center;
-        gap: 16px;
-        }
-
-        .adm-header__icon-wrap {
-        width: 52px;
-        height: 52px;
-        border-radius: var(--adm-radius-lg);
-        background: linear-gradient(135deg, var(--adm-primary), var(--adm-primary-l));
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #fff;
-        flex-shrink: 0;
-        box-shadow: 0 4px 12px rgba(15,118,110,0.3);
-        }
-
-        .adm-header__title {
-        font-size: 22px;
-        font-weight: 700;
-        color: var(--adm-text);
-        margin: 0;
-        line-height: 1.2;
-        letter-spacing: -0.02em;
-        }
-
-        .adm-header__sub {
-        font-size: 13px;
-        color: var(--adm-text-3);
-        margin: 2px 0 0;
-        }
-
-        /* ═══════════════════════════════════════════════
-        BUTTONS
-        ═══════════════════════════════════════════════ */
-        .adm-btn {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        padding: 9px 18px;
-        font-size: 13.5px;
-        font-weight: 600;
-        border: none;
-        border-radius: var(--adm-radius);
-        cursor: pointer;
-        transition: all var(--adm-transition);
-        text-decoration: none;
-        white-space: nowrap;
-        line-height: 1.4;
-        font-family: inherit;
-        }
-
-        .adm-btn--primary {
-        background: linear-gradient(135deg, var(--adm-primary), var(--adm-primary-l));
-        color: #fff;
-        box-shadow: 0 2px 8px rgba(15,118,110,0.25);
-        }
-
-        .adm-btn--primary:hover {
-        box-shadow: 0 4px 16px rgba(15,118,110,0.35);
-        transform: translateY(-1px);
-        }
-
-        .adm-btn--ghost {
-        background: var(--adm-surface);
-        color: var(--adm-text-2);
-        border: 1px solid var(--adm-border);
-        }
-
-        .adm-btn--ghost:hover {
-        background: var(--adm-surface-2);
-        border-color: var(--adm-border-h);
-        color: var(--adm-text);
-        }
-
-        .adm-btn--ghost:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-        transform: none;
-        }
-
-        .adm-btn--success {
-        background: linear-gradient(135deg, var(--adm-success), #10B981);
-        color: #fff;
-        box-shadow: 0 2px 8px rgba(5,150,105,0.25);
-        }
-
-        .adm-btn--success:hover {
-        box-shadow: 0 4px 16px rgba(5,150,105,0.35);
-        transform: translateY(-1px);
-        }
-
-        .adm-btn--success:disabled {
-        opacity: 0.7;
-        cursor: not-allowed;
-        transform: none;
-        }
-
-        .adm-btn--icon-only {
-        padding: 9px 10px;
-        }
-
-        .adm-btn__spinner {
-        display: inline-block;
-        width: 14px;
-        height: 14px;
-        border: 2px solid rgba(255,255,255,0.3);
-        border-top-color: #fff;
-        border-radius: 50%;
-        animation: adm-spin 0.6s linear infinite;
-        }
-        @@keyframes adm-spin {
-        to {
-        transform: rotate(360deg);
-        }
-        }
-
-        /* ═══════════════════════════════════════════════
-        FILTER BAR
-        ═══════════════════════════════════════════════ */
-        .adm-filters {
-        background: var(--adm-surface);
-        border: 1px solid var(--adm-border);
-        border-radius: var(--adm-radius-lg);
-        padding: 16px 20px;
-        box-shadow: var(--adm-shadow-sm);
-        }
-
-        .adm-filters__row {
-        display: flex;
-        gap: 14px;
-        align-items: flex-end;
-        }
-
-        .adm-filters__field {
-        flex: 1;
-        }
-
-        .adm-filters__field--search {
-        flex: 1.6;
-        }
-
-        .adm-filters__field--actions {
-        flex: 0 0 auto;
-        }
-
-        .adm-label {
-        display: block;
-        font-size: 11.5px;
-        font-weight: 600;
-        color: var(--adm-text-3);
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        margin-bottom: 6px;
-        }
-
-        .adm-input-wrap {
-        position: relative;
-        display: flex;
-        align-items: center;
-        }
-
-        .adm-input-wrap__icon {
-        position: absolute;
-        left: 12px;
-        color: var(--adm-text-3);
-        pointer-events: none;
-        z-index: 1;
-        }
-
-        .adm-input {
-        width: 100%;
-        padding: 8px 12px 8px 38px;
-        font-size: 13.5px;
-        border: 1px solid var(--adm-border);
-        border-radius: var(--adm-radius);
-        background: var(--adm-surface-2);
-        color: var(--adm-text);
-        transition: all var(--adm-transition);
-        outline: none;
-        font-family: inherit;
-        }
-
-        .adm-input:focus {
-        border-color: var(--adm-primary);
-        box-shadow: 0 0 0 3px rgba(15,118,110,0.1);
-        background: #fff;
-        }
-
-        .adm-input::placeholder {
-        color: var(--adm-text-3);
-        }
-
-        .adm-input-wrap__btn {
-        margin-left: 6px;
-        padding: 8px 14px;
-        font-size: 12.5px;
-        font-weight: 600;
-        background: var(--adm-primary);
-        color: #fff;
-        border: none;
-        border-radius: var(--adm-radius);
-        cursor: pointer;
-        transition: all var(--adm-transition);
-        font-family: inherit;
-        }
-
-        .adm-input-wrap__btn:hover {
-        background: var(--adm-primary-h);
-        }
-
-        .adm-input-wrap__addon {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 40px;
-        border: 1px solid var(--adm-border);
-        border-left: none;
-        border-radius: 0 var(--adm-radius) var(--adm-radius) 0;
-        background: var(--adm-surface-2);
-        color: var(--adm-text-3);
-        cursor: pointer;
-        transition: all var(--adm-transition);
-        }
-
-        .adm-input-wrap__addon:hover {
-        background: var(--adm-primary-bg);
-        color: var(--adm-primary);
-        }
-
-        .adm-select {
-        width: 100%;
-        padding: 8px 32px 8px 12px;
-        font-size: 13.5px;
-        border: 1px solid var(--adm-border);
-        border-radius: var(--adm-radius);
-        background: var(--adm-surface-2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238A9188' stroke-width='2.5' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 10px center;
-        color: var(--adm-text);
-        appearance: none;
-        cursor: pointer;
-        transition: all var(--adm-transition);
-        outline: none;
-        font-family: inherit;
-        }
-
-        .adm-select:focus {
-        border-color: var(--adm-primary);
-        box-shadow: 0 0 0 3px rgba(15,118,110,0.1);
-        background-color: #fff;
-        }
-
-        .adm-btn-group {
-        display: flex;
-        gap: 6px;
-        }
-
-        .adm-filter-badges {
-        margin-top: 10px;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 6px;
-        min-height: 0;
-        }
-
-        .adm-filter-badges:empty {
-        margin-top: 0;
-        }
-
-        .adm-badge {
-        display: inline-flex;
-        align-items: center;
-        padding: 3px 10px;
-        font-size: 11px;
-        font-weight: 600;
-        border-radius: 100px;
-        letter-spacing: 0.01em;
-        }
-
-        .adm-badge--primary {
-        background: var(--adm-primary-bg);
-        color: var(--adm-primary);
-        }
-
-        .adm-badge--neutral {
-        background: var(--adm-surface-2);
-        color: var(--adm-text-2);
-        border: 1px solid var(--adm-border);
-        }
-
-        .adm-badge--info {
-        background: var(--adm-converted-bg);
-        color: var(--adm-converted);
-        }
-
-        /* ═══════════════════════════════════════════════
-        TABS
-        ═══════════════════════════════════════════════ */
-        .adm-tabs {
-        display: flex;
-        gap: 4px;
-        padding: 12px 20px 0;
-        background: var(--adm-surface);
-        border: 1px solid var(--adm-border);
-        border-top: none;
-        }
-
-        .adm-tab {
-        display: inline-flex;
-        align-items: center;
-        gap: 7px;
-        padding: 10px 16px;
-        font-size: 13px;
-        font-weight: 500;
-        color: var(--adm-text-3);
-        background: none;
-        border: none;
-        border-bottom: 2.5px solid transparent;
-        cursor: pointer;
-        transition: all var(--adm-transition);
-        font-family: inherit;
-        }
-
-        .adm-tab:hover {
-        color: var(--adm-text);
-        background: var(--adm-surface-2);
-        }
-
-        .adm-tab--active {
-        color: var(--adm-primary);
-        font-weight: 650;
-        border-bottom-color: var(--adm-primary);
-        }
-
-        .adm-tab__dot {
-        width: 7px;
-        height: 7px;
-        border-radius: 50%;
-        flex-shrink: 0;
-        }
-
-        .adm-tab__dot--pending {
-        background: var(--adm-pending);
-        }
-
-        .adm-tab__dot--converted {
-        background: var(--adm-converted);
-        }
-
-        .adm-tab__dot--rejected {
-        background: var(--adm-rejected);
-        }
-
-        .adm-tab__count {
-        font-size: 11px;
-        font-weight: 700;
-        padding: 1px 7px;
-        border-radius: 100px;
-        min-width: 22px;
-        text-align: center;
-        line-height: 18px;
-        }
-
-        .adm-tab__count--neutral {
-        background: var(--adm-surface-2);
-        color: var(--adm-text-3);
-        }
-
-        .adm-tab__count--pending {
-        background: var(--adm-pending-bg);
-        color: var(--adm-pending);
-        }
-
-        .adm-tab__count--converted {
-        background: var(--adm-converted-bg);
-        color: var(--adm-converted);
-        }
-
-        .adm-tab__count--rejected {
-        background: var(--adm-rejected-bg);
-        color: var(--adm-rejected);
-        }
-
-        .adm-tab--active .adm-tab__count--neutral {
-        background: var(--adm-primary-bg);
-        color: var(--adm-primary);
-        }
-
-        /* ═══════════════════════════════════════════════
-        TABLE CARD
-        ═══════════════════════════════════════════════ */
-        .adm-table-card {
-        background: var(--adm-surface);
-        border: 1px solid var(--adm-border);
-        border-top: none;
-        border-radius: 0 0 var(--adm-radius-lg) var(--adm-radius-lg);
-        box-shadow: var(--adm-shadow);
-        overflow: hidden;
-        }
-
-        .adm-table-card__body {
-        position: relative;
-        min-height: 200px;
-        }
-
-        /* ═══════════════════════════════════════════════
-        LOADING OVERLAY
-        ═══════════════════════════════════════════════ */
-        .adm-loading {
-        position: absolute;
-        inset: 0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        gap: 12px;
-        background: rgba(255,255,255,0.85);
-        backdrop-filter: blur(2px);
-        z-index: 10;
-        transition: opacity 0.25s ease;
-        }
-
-        .adm-loading--hidden {
-        opacity: 0;
-        pointer-events: none;
-        }
-
-        .adm-loading--visible {
-        opacity: 1;
-        pointer-events: auto;
-        }
-
-        .adm-loading__spinner {
-        width: 32px;
-        height: 32px;
-        border: 3px solid var(--adm-border);
-        border-top-color: var(--adm-primary);
-        border-radius: 50%;
-        animation: adm-spin 0.7s linear infinite;
-        }
-
-        .adm-loading__text {
-        font-size: 13px;
-        color: var(--adm-text-3);
-        font-weight: 500;
-        }
-
-        /* ═══════════════════════════════════════════════
-        TABULATOR OVERRIDES — TABLE BODY
-        ═══════════════════════════════════════════════ */
-        .tabulator {
-        font-family: inherit;
-        border: none !important;
-        background: transparent !important;
-        }
-
-        .tabulator .tabulator-header {
-        background: var(--adm-surface-2) !important;
-        border-bottom: 1px solid var(--adm-border) !important;
-        }
-
-        .tabulator .tabulator-header .tabulator-col {
-        background: transparent !important;
-        border-right: none !important;
-        padding: 11px 12px !important;
-        font-size: 11.5px !important;
-        font-weight: 650 !important;
-        color: var(--adm-text-3) !important;
-        text-transform: uppercase !important;
-        letter-spacing: 0.04em;
-        }
-
-        .tabulator .tabulator-header .tabulator-col .tabulator-col-content .tabulator-col-title {
-        white-space: nowrap;
-        }
-
-        .tabulator .tabulator-tableHolder .tabulator-table {
-        background: transparent !important;
-        color: var(--adm-text) !important;
-        }
-
-        .tabulator .tabulator-row {
-        border-bottom: 1px solid var(--adm-border) !important;
-        background: transparent !important;
-        transition: background var(--adm-transition);
-        }
-
-        .tabulator .tabulator-row:hover {
-        background: var(--adm-primary-bg) !important;
-        }
-
-        .tabulator .tabulator-row .tabulator-cell {
-        padding: 10px 12px !important;
-        border-right: none !important;
-        font-size: 13.5px;
-        vertical-align: middle;
-        }
-
-        /* ═══════════════════════════════════════════════
-        TABULATOR OVERRIDES — PAGINATION FOOTER
-        ═══════════════════════════════════════════════ */
-        .tabulator .tabulator-footer {
-        background: var(--adm-surface-2) !important;
-        border-top: 1px solid var(--adm-border) !important;
-        padding: 10px 16px !important;
-        font-family: inherit !important;
-        color: var(--adm-text-3) !important;
-        display: flex !important;
-        align-items: center;
-        justify-content: space-between;
-        min-height: 48px;
-        }
-
-        /* "Showing X–Y of Z" counter text */
-        .tabulator .tabulator-footer .tabulator-page-counter {
-        font-size: 12.5px !important;
-        color: var(--adm-text-3) !important;
-        font-weight: 500;
-        }
-
-        .tabulator .tabulator-footer .tabulator-page-counter strong {
-        color: var(--adm-text-2);
-        font-weight: 700;
-        }
-
-        /* Page button container */
-        .tabulator .tabulator-footer .tabulator-pages {
-        display: flex;
-        align-items: center;
-        gap: 4px;
-        margin: 0 !important;
-        }
-
-        /* Individual page buttons */
-        .tabulator .tabulator-footer .tabulator-page {
-        display: inline-flex !important;
-        align-items: center;
-        justify-content: center;
-        min-width: 34px;
-        height: 34px;
-        padding: 0 6px !important;
-        font-size: 12.5px !important;
-        font-weight: 600 !important;
-        font-family: inherit !important;
-        color: var(--adm-text-2) !important;
-        background: var(--adm-surface) !important;
-        border: 1px solid var(--adm-border) !important;
-        border-radius: var(--adm-radius-sm) !important;
-        cursor: pointer;
-        transition: all var(--adm-transition);
-        box-shadow: none !important;
-        line-height: 1 !important;
-        }
-
-        /* Hover state */
-        .tabulator .tabulator-footer .tabulator-page:hover {
-        color: var(--adm-primary) !important;
-        border-color: var(--adm-primary) !important;
-        background: var(--adm-primary-bg) !important;
-        }
-
-        /* Active page */
-        .tabulator .tabulator-footer .tabulator-page.active {
-        color: #fff !important;
-        background: var(--adm-primary) !important;
-        border-color: var(--adm-primary) !important;
-        box-shadow: 0 2px 6px rgba(15,118,110,0.25) !important;
-        }
-
-        /* Disabled (first/last when on edge) */
-        .tabulator .tabulator-footer .tabulator-page.disabled {
-        opacity: 0.35 !important;
-        cursor: not-allowed !important;
-        pointer-events: none;
-        }
-
-        /* ═══════════════════════════════════════════════
-        COLUMN-SPECIFIC STYLES
-        ═══════════════════════════════════════════════ */
-        .adm-col-photo {
-        text-align: center !important;
-        }
-
-        .adm-col-actions {
-        text-align: center !important;
-        }
-
-        .adm-avatar {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        overflow: hidden;
-        margin: 0 auto;
-        border: 2px solid var(--adm-border);
-        transition: border-color var(--adm-transition);
-        }
-
-        .tabulator-row:hover .adm-avatar {
-        border-color: var(--adm-primary-l);
-        }
-
-        .adm-avatar img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-        }
-
-        .adm-cell-mono {
-        font-family: 'SF Mono','Cascadia Code','Consolas',monospace;
-        font-size: 12.5px;
-        font-weight: 600;
-        color: var(--adm-primary);
-        letter-spacing: 0.01em;
-        }
-
-        .adm-cell-name {
-        font-weight: 600;
-        color: var(--adm-text);
-        }
-
-        .adm-cell-dob {
-        font-size: 12px;
-        color: var(--adm-text-2);
-        line-height: 1.4;
-        }
-
-        .adm-cell-dob strong {
-        color: var(--adm-text);
-        font-size: 13px;
-        }
-
-        .adm-cell-dob__date {
-        font-size: 11.5px;
-        color: var(--adm-text-3);
-        }
-
-        .adm-cell-gender {
-        font-size: 12.5px;
-        color: var(--adm-text-2);
-        }
-
-        .adm-cell-phone {
-        font-family: 'SF Mono','Cascadia Code','Consolas',monospace;
-        font-size: 12.5px;
-        color: var(--adm-text-2);
-        }
-
-        /* Status pills */
-        .adm-status {
-        display: inline-flex;
-        align-items: center;
-        padding: 3px 10px;
-        font-size: 11.5px;
-        font-weight: 650;
-        border-radius: 100px;
-        letter-spacing: 0.01em;
-        white-space: nowrap;
-        }
-
-        .adm-status--pending {
-        background: var(--adm-pending-bg);
-        color: var(--adm-pending);
-        }
-
-        .adm-status--converted {
-        background: var(--adm-converted-bg);
-        color: var(--adm-converted);
-        }
-
-        .adm-status--rejected {
-        background: var(--adm-rejected-bg);
-        color: var(--adm-rejected);
-        }
-
-        .adm-status--approved {
-        background: var(--adm-success-bg);
-        color: var(--adm-success);
-        }
-
-        .adm-status--neutral {
-        background: var(--adm-surface-2);
-        color: var(--adm-text-3);
-        }
-
-        /* Action buttons in rows */
-        .adm-actions {
-        display: inline-flex;
-        gap: 4px;
-        }
-
-        .adm-action {
-        width: 30px;
-        height: 30px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        border-radius: var(--adm-radius-sm);
-        border: 1px solid var(--adm-border);
-        background: var(--adm-surface);
-        color: var(--adm-text-3);
-        cursor: pointer;
-        transition: all var(--adm-transition);
-        text-decoration: none;
-        }
-
-        .adm-action--edit:hover {
-        background: var(--adm-primary-bg);
-        color: var(--adm-primary);
-        border-color: var(--adm-primary);
-        }
-
-        .adm-action--convert:hover {
-        background: var(--adm-success-bg);
-        color: var(--adm-success);
-        border-color: var(--adm-success);
-        }
-
-        .adm-action--reject:hover {
-        background: var(--adm-rejected-bg);
-        color: var(--adm-rejected);
-        border-color: var(--adm-rejected);
-        }
-
-        .adm-actions--done {
-        font-size: 11px;
-        color: var(--adm-text-3);
-        font-style: italic;
-        }
-
-        /* ═══════════════════════════════════════════════
-        MODAL
-        ═══════════════════════════════════════════════ */
-        .adm-modal-backdrop {
-        position: fixed;
-        inset: 0;
-        background: rgba(20,24,20,0.5);
-        backdrop-filter: blur(4px);
-        z-index: 1050;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-        animation: adm-fade-in 0.2s ease;
-        }
-        @@keyframes adm-fade-in {
-        from {
-        opacity: 0;
-        }
-
-        to {
-        opacity: 1;
-        }
-        }
-
-        .adm-modal {
-        background: var(--adm-surface);
-        border-radius: var(--adm-radius-lg);
-        box-shadow: var(--adm-shadow-lg);
-        width: 100%;
-        max-width: 460px;
-        border: 1px solid var(--adm-border);
-        animation: adm-slide-up 0.25s cubic-bezier(0.16,1,0.3,1);
-        }
-        @@keyframes adm-slide-up {
-        from {
-        opacity: 0;
-        transform: translateY(12px) scale(0.98);
-        }
-
-        to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-        }
-        }
-
-        .adm-modal__header {
-        display: flex;
-        align-items: flex-start;
-        justify-content: space-between;
-        padding: 20px 24px 16px;
-        }
-
-        .adm-modal__header-left {
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        }
-
-        .adm-modal__header-icon {
-        width: 42px;
-        height: 42px;
-        border-radius: var(--adm-radius);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-        }
-
-        .adm-modal__header-icon--success {
-        background: var(--adm-success-bg);
-        color: var(--adm-success);
-        }
-
-        .adm-modal__title {
-        font-size: 16px;
-        font-weight: 700;
-        color: var(--adm-text);
-        margin: 0;
-        }
-
-        .adm-modal__subtitle {
-        font-size: 12.5px;
-        color: var(--adm-text-3);
-        margin: 2px 0 0;
-        }
-
-        .adm-modal__close {
-        width: 32px;
-        height: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        border: none;
-        border-radius: var(--adm-radius-sm);
-        background: transparent;
-        color: var(--adm-text-3);
-        cursor: pointer;
-        transition: all var(--adm-transition);
-        }
-
-        .adm-modal__close:hover {
-        background: var(--adm-surface-2);
-        color: var(--adm-text);
-        }
-
-        .adm-modal__body {
-        padding: 0 24px 20px;
-        }
-
-        .adm-modal__footer {
-        display: flex;
-        justify-content: flex-end;
-        gap: 8px;
-        padding: 16px 24px;
-        border-top: 1px solid var(--adm-border);
-        background: var(--adm-surface-2);
-        border-radius: 0 0 var(--adm-radius-lg) var(--adm-radius-lg);
-        }
-
-        .adm-form-group {
-        margin-bottom: 4px;
-        }
-
-        .adm-form-label {
-        display: block;
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--adm-text);
-        margin-bottom: 8px;
-        }
-
-        .adm-required {
-        color: var(--adm-rejected);
-        }
-
-        .adm-select--full {
-        border-radius: var(--adm-radius) 0 0 var(--adm-radius);
-        }
-
-        .adm-capacity-info {
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        margin-top: 10px;
-        font-size: 12px;
-        color: var(--adm-text-3);
-        }
-
-        .adm-alert {
-        padding: 10px 14px;
-        border-radius: var(--adm-radius);
-        font-size: 13px;
-        margin-top: 12px;
-        }
-
-        .adm-alert--error {
-        background: var(--adm-rejected-bg);
-        color: var(--adm-rejected);
-        border: 1px solid rgba(220,38,38,0.15);
-        }
-
-        /* ═══════════════════════════════════════════════
-        RESPONSIVE
-        ═══════════════════════════════════════════════ */
-        @@media (max-width: 992px) {
-        .adm-filters__row {
-        flex-wrap: wrap;
-        }
-
-        .adm-filters__field--search {
-        flex: 1 1 100%;
-        }
-
-        .adm-filters__field {
-        flex: 1 1 calc(33% - 10px);
-        }
-
-        .adm-filters__field--actions {
-        flex: 1 1 100%;
-        }
-
-        .adm-btn-group {
-        width: 100%;
-        }
-
-        .adm-btn-group .adm-btn {
-        flex: 1;
-        justify-content: center;
-        }
-        }
-        @@media (max-width: 768px) {
-        .adm-page {
-        padding: 16px 12px 32px;
-        }
-
-        .adm-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 14px;
-        }
-
-        .adm-header__icon-wrap {
-        width: 44px;
-        height: 44px;
-        }
-
-        .adm-header__icon-wrap svg {
-        width: 22px;
-        height: 22px;
-        }
-
-        .adm-header__title {
-        font-size: 18px;
-        }
-
-        .adm-filters__field {
-        flex: 1 1 calc(50% - 8px);
-        }
-
-        .adm-tabs {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        }
-
-        .adm-tab {
-        font-size: 12px;
-        padding: 9px 12px;
-        }
-        /* Stack pagination footer on mobile */
-        .tabulator .tabulator-footer {
-        flex-direction: column !important;
-        gap: 10px !important;
-        text-align: center !important;
-        }
-        }
-        @@media (max-width: 480px) {
-        .adm-filters__field {
-        flex: 1 1 100%;
-        }
-        }
-
-        /* ═══════════════════════════════════════════════
-        ACCESSIBILITY
-        ═══════════════════════════════════════════════ */
-        @@media (prefers-reduced-motion: reduce) {
-        *, *::before, *::after {
-        animation-duration: 0.01ms !important;
-        transition-duration: 0.01ms !important;
-        }
-        }
-
-        .adm-tab:focus-visible,
-        .adm-btn:focus-visible,
-        .adm-select:focus-visible,
-        .adm-input:focus-visible,
-        .adm-action:focus-visible,
-        .tabulator .tabulator-footer .tabulator-page:focus-visible {
-        outline: 2px solid var(--adm-primary);
-        outline-offset: 2px;
-        }
-    </style>
 }

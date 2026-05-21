@@ -4,6 +4,8 @@ using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Models.Entities.Result;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
+using SchoolManagementSystem.Repositories.Interfaces.Result;
+using ExamEntity = SchoolManagementSystem.Models.Entities.Exam.Exam;
 
 namespace SchoolManagementSystem.Services.Implementations.Result;
 
@@ -14,17 +16,25 @@ namespace SchoolManagementSystem.Services.Implementations.Result;
 public class MeritCalculationService : IMeritCalculationService
 {
     private readonly IUnitOfWork _uow;
-    private readonly SchoolDbContext _db;
+    private readonly IStudentExamResultRepository _examResultRepository;
+    private readonly IMeritResultRepository _meritResultRepository;
+    private readonly IExamRepository _examRepository;
 
-    public MeritCalculationService(IUnitOfWork uow, SchoolDbContext db)
+    public MeritCalculationService(
+        IUnitOfWork uow,
+        IStudentExamResultRepository examResultRepository,
+        IMeritResultRepository meritResultRepository,
+        IExamRepository examRepository)
     {
         _uow = uow;
-        _db = db;
+        _examResultRepository = examResultRepository;
+        _meritResultRepository = meritResultRepository;
+        _examRepository = examRepository;
     }
 
     public async Task CalculateClassMeritPositionsAsync(int examId, int classId)
     {
-        var classResults = await _db.StudentExamResults
+        var classResults = await _examResultRepository.Query()
             .Include(r => r.Student)
             .Where(r => r.ExamId == examId && r.Student.ClassId == classId)
             .OrderByDescending(r => r.Gpa)
@@ -36,15 +46,15 @@ public class MeritCalculationService : IMeritCalculationService
         foreach (var result in classResults)
         {
             result.ClassPosition = position++;
+            _examResultRepository.Update(result);
         }
 
-        await _db.SaveChangesAsync();
+        await _uow.SaveChangesAsync();
     }
 
     public async Task CalculateSectionMeritPositionsAsync(int examId, int classId)
     {
-        // Fetch all results for the class at once
-        var allClassResults = await _db.StudentExamResults
+        var allClassResults = await _examResultRepository.Query()
             .Include(r => r.Student)
             .Where(r => r.ExamId == examId && r.Student.ClassId == classId)
             .OrderByDescending(r => r.Gpa)
@@ -57,19 +67,19 @@ public class MeritCalculationService : IMeritCalculationService
         foreach (var sectionGroup in sectionGroups)
         {
             int position = 1;
-            foreach (var result in sectionGroup) // Already sorted by class-wide sort, but could re-sort if needed
+            foreach (var result in sectionGroup)
             {
-                result.Position = position++; // Section position
+                result.Position = position++;
+                _examResultRepository.Update(result);
             }
         }
 
-        await _db.SaveChangesAsync();
+        await _uow.SaveChangesAsync();
     }
 
     public async Task CalculateGroupMeritPositionsAsync(int examId)
     {
-        // Get students with groups (Class 9-10)
-        var groupResults = await _db.StudentExamResults
+        var groupResults = await _examResultRepository.Query()
             .Include(r => r.Student)
             .ThenInclude(s => s.StudentGroup)
             .Where(r => r.ExamId == examId && r.Student.StudentGroupId != null)
@@ -89,15 +99,16 @@ public class MeritCalculationService : IMeritCalculationService
             foreach (var result in sortedResults)
             {
                 result.GroupPosition = position++;
+                _examResultRepository.Update(result);
             }
         }
 
-        await _db.SaveChangesAsync();
+        await _uow.SaveChangesAsync();
     }
 
     public async Task CalculateSchoolMeritPositionsAsync(int examId)
     {
-        var allResults = await _db.StudentExamResults
+        var allResults = await _examResultRepository.Query()
             .Include(r => r.Student)
             .Where(r => r.ExamId == examId)
             .OrderByDescending(r => r.Gpa)
@@ -105,8 +116,7 @@ public class MeritCalculationService : IMeritCalculationService
             .ThenBy(r => r.Student.RollNumber)
             .ToListAsync();
 
-        // Fetch all existing merit results to avoid N+1
-        var existingMeritResults = await _db.MeritResults
+        var existingMeritResults = await _meritResultRepository.Query()
             .Where(m => m.ExamId == examId)
             .ToDictionaryAsync(m => m.StudentId);
 
@@ -126,7 +136,7 @@ public class MeritCalculationService : IMeritCalculationService
                     Grade = result.Grade,
                     CalculatedAt = DateTime.Now
                 };
-                _db.MeritResults.Add(meritResult);
+                await _meritResultRepository.AddAsync(meritResult);
             }
             else
             {
@@ -135,34 +145,30 @@ public class MeritCalculationService : IMeritCalculationService
                 meritResult.TotalMarks = result.TotalMarks;
                 meritResult.Grade = result.Grade;
                 meritResult.CalculatedAt = DateTime.Now;
+                _meritResultRepository.Update(meritResult);
             }
-
             position++;
         }
 
-        await _db.SaveChangesAsync();
+        await _uow.SaveChangesAsync();
     }
 
     public async Task RecalculateMeritPositionsAsync(int examId)
     {
-        // Get exam to determine class
-        var exam = await _db.Exams
+        var exam = await _examRepository.Query()
             .Include(e => e.ExamSubjects)
             .ThenInclude(es => es.Subject)
             .FirstOrDefaultAsync(e => e.Id == examId);
 
         if (exam == null) return;
 
-        var classId = await _db.StudentExamResults
+        var classId = await _examResultRepository.Query()
             .Include(r => r.Student)
             .Where(r => r.ExamId == examId)
             .Select(r => r.Student.ClassId)
             .FirstOrDefaultAsync();
 
-        if (classId == 0)
-        {
-            return;
-        }
+        if (classId == 0) return;
 
         await CalculateClassMeritPositionsAsync(examId, classId);
         await CalculateSectionMeritPositionsAsync(examId, classId);
@@ -172,7 +178,7 @@ public class MeritCalculationService : IMeritCalculationService
 
     public async Task<IEnumerable<MeritListItem>> GetMeritListAsync(int examId, MeritCategory category)
     {
-        IQueryable<StudentExamResult> query = _db.StudentExamResults
+        IQueryable<StudentExamResult> query = _examResultRepository.Query()
             .Include(r => r.Student)
             .ThenInclude(s => s.Section)
             .Include(r => r.Student.StudentGroup)
@@ -191,8 +197,7 @@ public class MeritCalculationService : IMeritCalculationService
                             .OrderByDescending(r => r.GroupPosition);
                 break;
             case MeritCategory.School:
-                query = query.OrderByDescending(r => r.Gpa)
-                            .ThenByDescending(r => r.TotalMarks);
+                query = ApplyTieBreaking(query);
                 break;
         }
 
@@ -214,7 +219,7 @@ public class MeritCalculationService : IMeritCalculationService
 
     public async Task<IEnumerable<TopPerformer>> GetTopPerformersAsync(int examId, int count = 10)
     {
-        var topResults = await _db.StudentExamResults
+        var topResults = await _examResultRepository.Query()
             .Include(r => r.Student)
             .Where(r => r.ExamId == examId)
             .OrderByDescending(r => r.Gpa)
@@ -240,15 +245,11 @@ public class MeritCalculationService : IMeritCalculationService
             MeritCategory.Class => result.ClassPosition,
             MeritCategory.Section => result.Position,
             MeritCategory.Group => result.GroupPosition ?? 0,
-            MeritCategory.School => result.Position, // Assuming Position is used for school-wide
+            MeritCategory.School => result.Position,
             _ => 0
         };
     }
 
-    /// <summary>
-    /// Handles tie-breaking for merit positions
-    /// Rule: Higher GPA > Higher total marks > Lower roll number
-    /// </summary>
     private IOrderedQueryable<StudentExamResult> ApplyTieBreaking(IQueryable<StudentExamResult> query)
     {
         return query
@@ -257,3 +258,4 @@ public class MeritCalculationService : IMeritCalculationService
             .ThenBy(r => r.Student.RollNumber);
     }
 }
+

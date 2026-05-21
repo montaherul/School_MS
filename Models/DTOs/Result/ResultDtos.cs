@@ -1,7 +1,9 @@
-using System.ComponentModel.DataAnnotations;
+using SchoolManagementSystem.Models.Entities.Academic;
+using SchoolManagementSystem.Models.Entities.Exam;
 using SchoolManagementSystem.Models.Entities.Result;
 using SchoolManagementSystem.Models.Enums;
-
+using System.ComponentModel.DataAnnotations;
+using SchoolManagementSystem.Models.Entities.Student;
 namespace SchoolManagementSystem.Models.DTOs.Result;
 
 /// <summary>
@@ -361,4 +363,24 @@ public class StudentPortalResultViewModel
 
     public List<StudentExamResultDto> ExamResults { get; set; } = [];
     public StudentTranscriptDto? Transcript { get; set; }
+}
+public class ResultDashboardViewModel
+{
+    public AcademicYear? ActiveYear { get; set; }
+
+    public List<Exam> Exams { get; set; }
+        = new();
+
+    public ResultSummaryDto ResultStats { get; set; }
+        = new();
+}
+public class ResultPublicationDto
+{
+    public int Id { get; set; }
+
+    public string ExamName { get; set; } = "";
+
+    public DateTime PublishedAt { get; set; }
+
+    public bool IsPublished { get; set; }
 }

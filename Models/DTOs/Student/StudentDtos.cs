@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SchoolManagementSystem.Models.DTOs.Student;
 
@@ -9,6 +10,7 @@ public class StudentListItemDto
     public int Id { get; set; }
     public string StudentNo { get; set; } = string.Empty;
     public string FullName { get; set; } = string.Empty;
+    public string? FullNameBangla { get; set; }
     public int ClassId { get; set; }
     public int SectionId { get; set; }
     public string ClassName { get; set; } = string.Empty;
@@ -37,11 +39,10 @@ public class StudentListItemDto
     public string? Religion { get; set; }
     public string? Nationality { get; set; }
 
-    public string? NationalIdNo { get; set; }
     public string? BirthCertificateNo { get; set; }
-    public string? PassportNo { get; set; }
 
     public string? FatherOrGuardianMobileNo { get; set; }
+    [NotMapped]
     public IFormFile? ProfilePicture { get; set; }
     public string? ProfilePicturePath { get; set; }
     public int TotalRecords { get; set; }
@@ -109,11 +110,6 @@ public class StudentUpsertDto
     [MaxLength(10), Display(Name="Blood Group")]
     public string? BloodGroup { get; set; }
 
-    [MaxLength(50), Display(Name="Passport No (if any)")]
-    public string? PassportNo { get; set; }
-
-    [MaxLength(50), Display(Name="National ID No.")]
-    public string? NationalIdNo { get; set; }
 
     [MaxLength(50), Display(Name="Birth Certificate No.")]
     public string? BirthCertificateNo { get; set; }
@@ -145,6 +141,8 @@ public class StudentUpsertDto
     public string? PermanentDistrict { get; set; }
     // Navigation props mapped
     public string? ProfilePicturePath { get; set; }
+
+    [NotMapped]
     public IFormFile? ProfilePicture { get; set; }
     public int? UserId { get; set; }
     //sectionname

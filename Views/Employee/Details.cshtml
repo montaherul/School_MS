@@ -1,0 +1,490 @@
+@model SchoolManagementSystem.Models.DTOs.Employee.EmployeeDetailsDto
+@{
+    ViewData["Title"] = "Employee Profile: " + Model.FullName;
+}
+
+<div class="row g-4 mb-5">
+    <!-- Header Profile Card -->
+    <div class="col-12">
+        <div class="card border-0 shadow-sm rounded-4" style="background-color: var(--bs-card-bg, #fff);">
+            <div class="card-body p-4">
+                <div class="row align-items-center g-3">
+                    <div class="col-auto">
+                        <div class="avatar-xl rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center shadow-sm" style="width:100px; height:100px; overflow:hidden;">
+                            @if (!string.IsNullOrEmpty(Model.ProfilePicturePath))
+                            {
+                                <img src="@Model.ProfilePicturePath" class="w-100 h-100 object-fit-cover" alt="Profile" />
+                            }
+                            else
+                            {
+                                <span class="fs-1 fw-bold text-primary">@Model.FullName.Substring(0, 2).ToUpper()</span>
+                            }
+                        </div>
+                    </div>
+                    <div class="col">
+                        <h3 class="fw-bold mb-1">@Model.FullName</h3>
+                        <p class="text-muted mb-0 d-flex align-items-center flex-wrap gap-2">
+                            <span class="badge @(Model.Status == "Active" ? "bg-success" : "bg-danger") px-3 py-1">
+                                @Model.Status
+                            </span>
+                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-3 py-1">
+                                @Model.EmployeeCode
+                            </span>
+                            @if (Model.IsTeachingStaff)
+                            {
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1">
+                                    Teaching Staff
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-info-subtle text-info border border-info-subtle px-3 py-1">
+                                    Administration / Support Staff
+                                </span>
+                            }
+                        </p>
+                        <div class="text-secondary small mt-2">
+                            <i class="bi bi-briefcase me-1"></i> @Model.Designation in <strong>@Model.Department</strong>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <div class="d-flex align-items-center gap-2">
+                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary px-3 rounded-pill">
+                                <i class="bi bi-pencil me-1"></i> Edit Profile
+                            </a>
+                            <button onclick="window.print()" class="btn btn-outline-secondary px-3 rounded-pill">
+                                <i class="bi bi-printer me-1"></i> Print
+                            </button>
+                            @if (User.IsInRole("Super Admin") || User.HasClaim("Permission", "Users.Delete"))
+                            {
+                                <button type="button" class="btn btn-outline-danger px-3 rounded-pill" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                    <i class="bi bi-trash me-1"></i> Delete
+                                </button>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LEFT COLUMN: Key Details & Contact Info -->
+    <div class="col-lg-4 col-md-5">
+        <div class="card border-0 shadow-sm rounded-4 mb-4" style="background-color: var(--bs-card-bg, #fff);">
+            <div class="card-header bg-white border-0 p-4 pb-0">
+                <h5 class="fw-bold mb-0 text-primary"><i class="bi bi-person-lines-fill me-2"></i>Personal Info</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <label class="text-muted small text-uppercase fw-bold d-block">Gender</label>
+                        <span class="fw-medium">@Model.Gender</span>
+                    </div>
+                    <div class="col-6">
+                        <label class="text-muted small text-uppercase fw-bold d-block">Blood Group</label>
+                        <span class="fw-medium">@(Model.BloodGroup ?? "N/A")</span>
+                    </div>
+                    <div class="col-12">
+                        <label class="text-muted small text-uppercase fw-bold d-block">Date of Birth</label>
+                        <span class="fw-medium">@Model.DateOfBirth.ToString("dd MMM yyyy")</span>
+                    </div>
+                    <div class="col-6">
+                        <label class="text-muted small text-uppercase fw-bold d-block">Religion</label>
+                        <span class="fw-medium">@(Model.Religion ?? "N/A")</span>
+                    </div>
+                    <div class="col-6">
+                        <label class="text-muted small text-uppercase fw-bold d-block">Nationality</label>
+                        <span class="fw-medium">@(Model.Nationality ?? "N/A")</span>
+                    </div>
+                    <div class="col-12">
+                        <label class="text-muted small text-uppercase fw-bold d-block">NID / National ID</label>
+                        <span class="fw-medium">@(Model.NIDNumber ?? "N/A")</span>
+                    </div>
+                    <div class="col-12">
+                        <label class="text-muted small text-uppercase fw-bold d-block">Birth Certificate</label>
+                        <span class="fw-medium">@(Model.BirthCertificateNo ?? "N/A")</span>
+                    </div>
+                    <div class="col-12">
+                        <label class="text-muted small text-uppercase fw-bold d-block">Father's Name</label>
+                        <span class="fw-medium">@(Model.FatherName ?? "N/A")</span>
+                    </div>
+                    <div class="col-12">
+                        <label class="text-muted small text-uppercase fw-bold d-block">Mother's Name</label>
+                        <span class="fw-medium">@(Model.MotherName ?? "N/A")</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-4 mb-4" style="background-color: var(--bs-card-bg, #fff);">
+            <div class="card-header bg-white border-0 p-4 pb-0">
+                <h5 class="fw-bold mb-0 text-success"><i class="bi bi-envelope-fill me-2"></i>Contact Details</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="mb-3">
+                    <label class="text-muted small text-uppercase fw-bold d-block mb-1">Primary Phone</label>
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-telephone text-success me-2 fs-5"></i>
+                        <span class="fw-bold text-success">@Model.Phone</span>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small text-uppercase fw-bold d-block mb-1">Email Address</label>
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-envelope text-primary me-2 fs-5"></i>
+                        <span class="fw-medium">@(Model.Email ?? "N/A")</span>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="text-muted small text-uppercase fw-bold d-block mb-1">Present Address</label>
+                    <p class="small mb-0 text-secondary">@(Model.PresentAddress ?? "N/A")</p>
+                </div>
+                <div class="mb-0">
+                    <label class="text-muted small text-uppercase fw-bold d-block mb-1">Permanent Address</label>
+                    <p class="small mb-0 text-secondary">@(Model.PermanentAddress ?? "N/A")</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm rounded-4" style="background-color: var(--bs-card-bg, #fff);">
+            <div class="card-header bg-white border-0 p-4 pb-0">
+                <h5 class="fw-bold mb-0 text-danger"><i class="bi bi-telephone-outbound-fill me-2"></i>Emergency Contact</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="mb-2">
+                    <label class="text-muted small text-uppercase fw-bold d-block">Contact Name</label>
+                    <span class="fw-medium">@(Model.EmergencyContactName ?? "N/A")</span>
+                </div>
+                <div>
+                    <label class="text-muted small text-uppercase fw-bold d-block">Phone Number</label>
+                    <span class="fw-bold text-dark">@(Model.EmergencyContactPhone ?? "N/A")</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT COLUMN: Qualifications, Experience, User Acc & Docs -->
+    <div class="col-lg-8 col-md-7">
+        
+        <!-- Quick Status & Employment Summary -->
+        <div class="card border-0 shadow-sm rounded-4 mb-4" style="background-color: var(--bs-card-bg, #fff);">
+            <div class="card-body p-4">
+                <div class="row g-4 text-center">
+                    <div class="col-md-4 border-end">
+                        <label class="text-muted small text-uppercase fw-bold d-block mb-1">Employment Type</label>
+                        <h5 class="fw-bold text-dark mb-0">@Model.EmployeeType</h5>
+                    </div>
+                    <div class="col-md-4 border-end">
+                        <label class="text-muted small text-uppercase fw-bold d-block mb-1">Joining Date</label>
+                        <h5 class="fw-bold text-primary mb-0">@Model.JoiningDate.ToString("dd MMM yyyy")</h5>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="text-muted small text-uppercase fw-bold d-block mb-1">Years of Service</label>
+                        @{
+                            var serviceDays = (DateTime.Today - Model.JoiningDate).Days;
+                            var serviceYears = (double)serviceDays / 365;
+                        }
+                        <h5 class="fw-bold text-success mb-0">@serviceYears.ToString("0.0") Years</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detail Tabs -->
+        <ul class="nav nav-tabs nav-justified mb-3" id="detailsTabs" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="qual-tab" data-bs-toggle="tab" data-bs-target="#qualTabContent" type="button" role="tab"><i class="bi bi-mortarboard-fill me-1"></i> Qualifications</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="exp-tab" data-bs-toggle="tab" data-bs-target="#expTabContent" type="button" role="tab"><i class="bi bi-award-fill me-1"></i> Experience</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="user-tab" data-bs-toggle="tab" data-bs-target="#userTabContent" type="button" role="tab"><i class="bi bi-shield-lock-fill me-1"></i> System Account</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="docs-tab" data-bs-toggle="tab" data-bs-target="#docsTabContent" type="button" role="tab"><i class="bi bi-file-earmark-medical-fill me-1"></i> Documents</button>
+            </li>
+        </ul>
+
+        <div class="tab-content card border-0 shadow-sm p-4 rounded-4" style="background-color: var(--bs-card-bg, #fff);">
+            
+            <!-- 1. Qualifications Tab Content -->
+            <div class="tab-pane fade show active" id="qualTabContent" role="tabpanel">
+                <h5 class="fw-bold text-primary mb-3">Academic Achievements</h5>
+                @if (Model.Qualifications != null && Model.Qualifications.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Exam/Degree</th>
+                                    <th>Board/University</th>
+                                    <th>Institute Name</th>
+                                    <th>Subject</th>
+                                    <th class="text-center">Year</th>
+                                    <th class="text-center">Result</th>
+                                    <th class="text-center">Certificate</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var q in Model.Qualifications)
+                                {
+                                    <tr>
+                                        <td><strong>@q.ExamName</strong></td>
+                                        <td>@q.BoardOrUniversity</td>
+                                        <td>@q.InstituteName</td>
+                                        <td>@q.GroupOrSubject</td>
+                                        <td class="text-center">@q.PassingYear</td>
+                                        <td class="text-center"><span class="badge bg-secondary">@q.CGPAOrDivision</span></td>
+                                        <td class="text-center">
+                                            @if (!string.IsNullOrEmpty(q.CertificateFilePath))
+                                            {
+                                                <a href="@q.CertificateFilePath" target="_blank" class="btn btn-sm btn-outline-info"><i class="bi bi-download"></i> View</a>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted small">No File</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center p-4">
+                        <i class="bi bi-mortarboard text-muted fs-1 mb-2 d-block"></i>
+                        <span class="text-muted">No academic qualifications listed.</span>
+                    </div>
+                }
+            </div>
+
+            <!-- 2. Experience Tab Content -->
+            <div class="tab-pane fade" id="expTabContent" role="tabpanel">
+                <h5 class="fw-bold text-primary mb-3">Employment History</h5>
+                @if (Model.Experiences != null && Model.Experiences.Any())
+                {
+                    <div class="timeline-container">
+                        @foreach (var ex in Model.Experiences.OrderByDescending(x => x.StartDate))
+                        {
+                            <div class="border-start border-primary border-3 ps-3 mb-4">
+                                <h6 class="fw-bold mb-1 text-dark">@ex.Designation</h6>
+                                <div class="text-secondary small mb-2">
+                                    <i class="bi bi-building"></i> @ex.OrganizationName &nbsp;|&nbsp; 
+                                    <i class="bi bi-calendar"></i> @ex.StartDate.ToString("MMM yyyy") - @(ex.EndDate?.ToString("MMM yyyy") ?? "Present")
+                                </div>
+                                @if (!string.IsNullOrEmpty(ex.Remarks))
+                                {
+                                    <p class="mb-0 text-muted small bg-light p-2 rounded">@ex.Remarks</p>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center p-4">
+                        <i class="bi bi-briefcase text-muted fs-1 mb-2 d-block"></i>
+                        <span class="text-muted">No previous work history registered.</span>
+                    </div>
+                }
+            </div>
+
+            <!-- 3. System Account Tab Content -->
+            <div class="tab-pane fade" id="userTabContent" role="tabpanel">
+                <h5 class="fw-bold text-primary mb-3">Provisioned System Credentials</h5>
+                <div class="row g-3">
+                    <div class="col-md-6 border-end">
+                        <div class="p-3 bg-light rounded shadow-sm text-center">
+                            <i class="bi bi-shield-check text-primary fs-1 mb-2 d-block"></i>
+                            <label class="text-muted small text-uppercase d-block mb-1">Username</label>
+                            <h5 class="fw-bold text-primary mb-2">@(Model.Username ?? "Account Not Created")</h5>
+                            <span class="badge @(Model.Status == "Active" ? "bg-success" : "bg-danger")">
+                                Account @(Model.Status == "Active" ? "Active" : "Inactive")
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded shadow-sm">
+                            <h6 class="fw-bold text-dark mb-2">Access Control</h6>
+                            <p class="small text-secondary mb-3">Role permissions are dynamically generated based on the employee's workforce designation mapping.</p>
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="small text-muted">Role Level:</span>
+                                <span class="fw-bold">@Model.Designation</span>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <span class="small text-muted">Academic Access:</span>
+                                <span class="badge @(Model.IsTeachingStaff ? "bg-primary" : "bg-secondary")">
+                                    @(Model.IsTeachingStaff ? "Full Teaching Faculty" : "Staff Level")
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.Remarks) && Model.Remarks.Contains("Account Auto-Provisioned"))
+                    {
+                        <div class="col-12 mt-3">
+                            <div class="alert alert-info py-2 small mb-0">
+                                <i class="bi bi-info-circle-fill me-2"></i><strong>Credentials Notice:</strong> @Model.Remarks
+                            </div>
+                        </div>
+                    }
+                </div>
+                
+                <h5 class="fw-bold text-success border-top pt-4 mt-4 mb-3">Administrative Control</h5>
+                <form asp-action="UpdateStatus" method="post" class="d-flex align-items-center gap-3">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <div>
+                        <label class="form-label small fw-bold text-secondary">Change System Status:</label>
+                        <select name="status" class="form-select form-select-sm" style="width: 180px;">
+                            <option value="Active" selected="@(Model.Status == "Active")">Active</option>
+                            <option value="Inactive" selected="@(Model.Status == "Inactive")">Inactive</option>
+                            <option value="Resigned" selected="@(Model.Status == "Resigned")">Resigned</option>
+                            <option value="Retired" selected="@(Model.Status == "Retired")">Retired</option>
+                            <option value="On Leave" selected="@(Model.Status == "On Leave")">On Leave</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-success mt-4">Apply Status</button>
+                </form>
+            </div>
+
+            <!-- 4. Documents Tab Content -->
+            <div class="tab-pane fade" id="docsTabContent" role="tabpanel">
+                <h5 class="fw-bold text-primary mb-3">Legal Attachments & Signature</h5>
+                
+                <!-- Signature Preview -->
+                <div class="p-3 mb-4 bg-light rounded d-flex align-items-center justify-content-between border border-dashed">
+                    <div>
+                        <h6 class="fw-bold mb-1">Digital Signature</h6>
+                        <span class="text-muted small">Validated legal authorization signature</span>
+                    </div>
+                    <div>
+                        @if (!string.IsNullOrEmpty(Model.SignaturePath))
+                        {
+                            <img src="@Model.SignaturePath" style="max-height: 60px; object-fit: contain;" alt="Signature" />
+                        }
+                        else
+                        {
+                            <span class="text-muted small italic">Not uploaded</span>
+                        }
+                    </div>
+                </div>
+
+                @if (Model.Documents != null && Model.Documents.Any())
+                {
+                    <div class="row g-3">
+                        @foreach (var doc in Model.Documents)
+                        {
+                            <div class="col-md-6">
+                                <div class="p-3 bg-light border rounded d-flex align-items-center justify-content-between shadow-sm">
+                                    <div>
+                                        <h6 class="fw-bold mb-1">
+                                            @if (doc.DocumentType == "NID")
+                                            {
+                                                <i class="bi bi-card-heading text-primary me-2 fs-5"></i>
+                                            }
+                                            else if (doc.DocumentType == "Passport")
+                                            {
+                                                <i class="bi bi-globe text-success me-2 fs-5"></i>
+                                            }
+                                            else if (doc.DocumentType == "CV")
+                                            {
+                                                <i class="bi bi-file-earmark-person text-info me-2 fs-5"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="bi bi-file-earmark-text text-secondary me-2 fs-5"></i>
+                                            }
+                                            @doc.DocumentName
+                                        </h6>
+                                        <span class="badge bg-secondary-subtle text-secondary small">@doc.DocumentType</span>
+                                        @if (doc.ExpiryDate.HasValue)
+                                        {
+                                            <span class="text-muted small ms-2 d-block mt-1">Expiry: @doc.ExpiryDate.Value.ToString("dd MMM yyyy")</span>
+                                        }
+                                    </div>
+                                    <a href="@doc.FilePath" target="_blank" class="btn btn-primary btn-sm rounded-circle p-2" title="View Document">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center p-4">
+                        <i class="bi bi-file-earmark text-muted fs-1 mb-2 d-block"></i>
+                        <span class="text-muted">No legal documents attached.</span>
+                    </div>
+                }
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Soft Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Confirm Delete</h5>
+                <button type="button" class="btn-close" data-bs-dash="modal" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to soft-delete <strong>@Model.FullName</strong>?</p>
+                <p class="text-danger small mb-0"><i class="bi bi-info-circle me-1"></i>This will mark their employee records as deleted and immediately deactivate their system access credentials.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form asp-action="Delete" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <button type="submit" class="btn btn-danger px-4">Delete Records</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-xl {
+        border: 3px solid var(--adm-primary, #6f42c1);
+    }
+    .nav-tabs .nav-link {
+        font-weight: 600;
+        color: #6c757d;
+        border: none;
+        border-bottom: 3px solid transparent;
+        padding: 12px 16px;
+    }
+    .nav-tabs .nav-link.active {
+        color: var(--adm-primary, #6f42c1);
+        border: none;
+        border-bottom: 3px solid var(--adm-primary, #6f42c1);
+        background: transparent;
+    }
+    .nav-tabs .nav-link:hover {
+        border-color: transparent;
+        color: var(--adm-primary, #6f42c1);
+    }
+    @@media print {
+        .btn, .nav-tabs, .modal, .alert, form, .col-auto button {
+            display: none !important;
+        }
+        .tab-pane {
+            display: block !important;
+            opacity: 1 !important;
+            margin-bottom: 2rem !important;
+        }
+        .row {
+            display: block !important;
+        }
+        .col-md-5, .col-md-7, .col-lg-4, .col-lg-8 {
+            width: 100% !important;
+        }
+    }
+</style>

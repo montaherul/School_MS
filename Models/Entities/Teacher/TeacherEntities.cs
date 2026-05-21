@@ -1,6 +1,7 @@
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Models.Entities.Base;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using SchoolManagementSystem.Models.Entities.Auth;
 using SchoolManagementSystem.Models.Enums;
 
@@ -8,116 +9,85 @@ namespace SchoolManagementSystem.Models.Entities.Teachers;
 
 public class Teacher : BaseEntity
 {
-    [MaxLength(30)]
-    public string TeacherNo { get; set; } = string.Empty;
+    [Required]
+    public int EmployeeId { get; set; }
+    public SchoolManagementSystem.Models.Entities.Employee.Employee? Employee { get; set; }
 
-    [MaxLength(120)]
-    public string FullName { get; set; } = string.Empty;
-
-    [MaxLength(120)]
-    public string? FullNameBangla { get; set; }
-
-    public DateTime DateOfBirth { get; set; }
-
-    [MaxLength(20)]
-    public string Gender { get; set; } = string.Empty;
-
-    // ── Contact ──────────────────────────────────────────────────────────────
-    [MaxLength(30)]
-    public string MobileNumber { get; set; } = string.Empty;
-
-    [MaxLength(30)]
-    public string? AlternativeNumber { get; set; }
-
-    [MaxLength(160)]
-    public string? EmailAddress { get; set; }
-
-    // ── Demographics ──────────────────────────────────────────────────────────
+    [Required]
     [MaxLength(50)]
-    public string Nationality { get; set; } = "Bangladeshi";
+    public string TeacherCode { get; set; } = string.Empty;
 
-    [MaxLength(50)]
-    public string Country { get; set; } = "Bangladesh";
-
-    [MaxLength(30)]
-    public string MaritalStatus { get; set; } = string.Empty;
-
-    [MaxLength(30)]
-    public string Religion { get; set; } = string.Empty;
-
-    [MaxLength(10)]
-    public string? BloodGroup { get; set; }
-
-    // ── Identity ─────────────────────────────────────────────────────────────
-    [MaxLength(50)]
-    public string? PassportNo { get; set; }
-
-    [MaxLength(50)]
-    public string? NationalIdNo { get; set; }
-
-    // ── Professional ─────────────────────────────────────────────────────────
-    [MaxLength(100)]
-    public string Designation { get; set; } = string.Empty;
-
-    [MaxLength(100)]
-    public string? Department { get; set; }
+    // Compatibility Alias
+    [NotMapped]
+    public string TeacherNo
+    {
+        get => TeacherCode;
+        set => TeacherCode = value;
+    }
 
     [MaxLength(200)]
-    public string? Qualification { get; set; }
-
-    [MaxLength(200)]
-    public string? Specialization { get; set; }
-
-    public DateTime? JoiningDate { get; set; }
-
-    // ── Family ───────────────────────────────────────────────────────────────
-    [MaxLength(120)]
-    public string? FatherName { get; set; }
-
-    [MaxLength(120)]
-    public string? MotherName { get; set; }
-
-    [MaxLength(120)]
-    public string? SpouseName { get; set; }
-
-    // ── Address ───────────────────────────────────────────────────────────────
-    [MaxLength(150)]
-    public string? PresentVillage { get; set; }
-
-    [MaxLength(150)]
-    public string? PresentPostOffice { get; set; }
-
-    [MaxLength(150)]
-    public string? PresentThana { get; set; }
+    public string? SubjectSpecialization { get; set; }
 
     [MaxLength(100)]
-    public string? PresentDistrict { get; set; }
+    public string? TeachingLevel { get; set; } // Primary, Junior Secondary, Secondary
 
-    [MaxLength(150)]
-    public string? PermanentVillage { get; set; }
+    public bool IsClassTeacher { get; set; }
 
-    [MaxLength(150)]
-    public string? PermanentPostOffice { get; set; }
+    public bool IsExamController { get; set; }
 
-    [MaxLength(150)]
-    public string? PermanentThana { get; set; }
+    public bool IsRoutineCoordinator { get; set; }
 
-    [MaxLength(100)]
-    public string? PermanentDistrict { get; set; }
+    public int TeachingExperienceYears { get; set; }
 
-    // ── Media ─────────────────────────────────────────────────────────────────
-    [MaxLength(260)]
-    public string? ProfilePicturePath { get; set; }
+    [MaxLength(500)]
+    public string? Remarks { get; set; }
 
-    // ── Status & Auth link ────────────────────────────────────────────────────
-    public TeacherStatus Status { get; set; } = TeacherStatus.Active;
+    // Compatibility Alias for designation/department properties queried dynamically
+    [NotMapped]
+    public string FullName => Employee?.FullName ?? string.Empty;
 
-    public int? UserId { get; set; }
-    public ApplicationUser? User { get; set; }
+    [NotMapped]
+    public string? FullNameBangla => Employee?.FullName; // Dynamic fallback
+
+    [NotMapped]
+    public string MobileNumber => Employee?.Phone ?? string.Empty;
+
+    [NotMapped]
+    public string? EmailAddress => Employee?.Email;
+
+    [NotMapped]
+    public string Designation => Employee?.Designation?.Name ?? string.Empty;
+
+    [NotMapped]
+    public string? Department => Employee?.Department?.Name;
+
+    [NotMapped]
+    public string? Qualification => "Academic Post"; // Dynamically derived if needed
+
+    [NotMapped]
+    public DateTime? JoiningDate => Employee?.JoiningDate;
+
+    [NotMapped]
+    public string? ProfilePicturePath => Employee?.ProfilePicturePath;
+
+    [NotMapped]
+    public TeacherStatus Status
+    {
+        get => Employee != null && Employee.Status == "Active" ? TeacherStatus.Active : TeacherStatus.Inactive;
+        set { if (Employee != null) Employee.Status = value == TeacherStatus.Active ? "Active" : "Inactive"; }
+    }
+
+    [NotMapped]
+    public int? UserId => Employee?.UserId;
+
+    [NotMapped]
+    public ApplicationUser? User => Employee?.User;
 
     // ── Navigation ────────────────────────────────────────────────────────────
     public ICollection<TeacherDocument> Documents { get; set; } = new List<TeacherDocument>();
+
     public ICollection<TeacherClassAssignment> ClassAssignments { get; set; } = new List<TeacherClassAssignment>();
+
     public ICollection<TeacherSubjectAssignment> SubjectAssignments { get; set; } = new List<TeacherSubjectAssignment>();
 }
 

@@ -1,72 +1,92 @@
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using SchoolManagementSystem.Data;
 using SchoolManagementSystem.Models.Entities.Academic;
+using SchoolManagementSystem.UnitOfWork.Interfaces;
 
 namespace SchoolManagementSystem.Services.Implementations.Academic;
 
 public class ClassSubjectMappingSeeder
 {
     private readonly SchoolDbContext _db;
+    private readonly IUnitOfWork _uow;
+    private readonly ILogger<ClassSubjectMappingSeeder> _logger;
 
-    public ClassSubjectMappingSeeder(SchoolDbContext db)
+    public ClassSubjectMappingSeeder(
+        SchoolDbContext db,
+        IUnitOfWork uow,
+        ILogger<ClassSubjectMappingSeeder> logger)
     {
         _db = db;
+        _uow = uow;
+        _logger = logger;
     }
 
     public async Task SeedAsync(CancellationToken cancellationToken = default)
     {
-        var strategy = _db.Database.CreateExecutionStrategy();
-
-        await strategy.ExecuteAsync(async () =>
+        try
         {
-            await using var transaction =
-                await _db.Database.BeginTransactionAsync(cancellationToken);
+            var strategy = _db.Database.CreateExecutionStrategy();
 
-            var classLookup = await _db.Classes
-                .AsNoTracking()
-                .ToDictionaryAsync(
-                    c => c.SortOrder,
-                    c => c.Id,
-                    cancellationToken);
-
-            var subjectLookup = await _db.Subjects
-                .AsNoTracking()
-                .ToDictionaryAsync(
-                    s => s.Code.Trim().ToUpperInvariant(),
-                    s => s.Id,
-                    cancellationToken);
-
-            var groupLookup = await _db.StudentGroups
-                .AsNoTracking()
-                .ToDictionaryAsync(
-                    g => g.Name.Trim().ToUpperInvariant(),
-                    g => g.Id,
-                    cancellationToken);
-
-            var mappings = BuildMappings(
-                classLookup,
-                subjectLookup,
-                groupLookup);
-
-            foreach (var mapping in mappings)
+            await strategy.ExecuteAsync(async () =>
             {
-                var exists = await _db.ClassSubjects.AnyAsync(x =>
-                        !x.IsDeleted &&
-                        x.SchoolClassId == mapping.SchoolClassId &&
-                        x.SubjectId == mapping.SubjectId &&
-                        x.StudentGroupId == mapping.StudentGroupId,
-                    cancellationToken);
+                var classRepo = _uow.Repository<SchoolClass>();
+                var subjectRepo = _uow.Repository<Subject>();
+                var groupRepo = _uow.Repository<StudentGroup>();
 
-                if (!exists)
+                // 1. Safety Check: Ensure core data exists to prevent dictionary errors in BuildMappings
+                var classCount = await classRepo.CountAsync(x => !x.IsDeleted, cancellationToken);
+                var subjectCount = await subjectRepo.CountAsync(x => !x.IsDeleted, cancellationToken);
+
+                if (classCount == 0 || subjectCount == 0)
                 {
-                    _db.ClassSubjects.Add(mapping);
+                    _logger.LogWarning("Skipping ClassSubject mapping seed because Classes or Subjects are not yet seeded.");
+                    return;
                 }
-            }
 
-            await _db.SaveChangesAsync(cancellationToken);
+                await using var transaction = await _db.Database.BeginTransactionAsync(cancellationToken);
+                var classSubjectRepo = _uow.Repository<ClassSubject>();
 
-            await transaction.CommitAsync(cancellationToken);
-        });
+                // 2. Data Lookups
+                var classLookup = await classRepo.Query().AsNoTracking().ToDictionaryAsync(c => c.SortOrder, c => c.Id, cancellationToken);
+                var subjectLookup = await subjectRepo.Query().AsNoTracking().ToDictionaryAsync(s => s.Code.Trim().ToUpperInvariant(), s => s.Id, cancellationToken);
+                var groupLookup = await groupRepo.Query().AsNoTracking().ToDictionaryAsync(g => g.Name.Trim().ToUpperInvariant(), g => g.Id, cancellationToken);
+
+                var mappings = BuildMappings(classLookup, subjectLookup, groupLookup);
+
+                // 3. Optimization: Pre-fetch existing mappings to avoid N+1 AnyAsync calls
+                var existingSet = new HashSet<(int classId, int subjectId, int? groupId)>(
+                    await classSubjectRepo.Query()
+                        .AsNoTracking()
+                        .Where(x => !x.IsDeleted)
+                        .Select(x => new { x.SchoolClassId, x.SubjectId, x.StudentGroupId })
+                        .ToListAsync(cancellationToken)
+                        .ContinueWith(t => t.Result.Select(x => (x.SchoolClassId, x.SubjectId, x.StudentGroupId)))
+                );
+
+                bool added = false;
+                foreach (var mapping in mappings)
+                {
+                    if (!existingSet.Contains((mapping.SchoolClassId, mapping.SubjectId, mapping.StudentGroupId)))
+                    {
+                        await classSubjectRepo.AddAsync(mapping, cancellationToken);
+                        added = true;
+                    }
+                }
+
+                if (added)
+                {
+                    await _uow.SaveChangesAsync(cancellationToken);
+                }
+                
+                await transaction.CommitAsync(cancellationToken);
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Critical error during ClassSubject mapping seed.");
+        }
     }
 
     private static List<ClassSubject> BuildMappings(
@@ -93,11 +113,14 @@ public class ClassSubjectMappingSeeder
         // Religion Subjects
         // =========================================
         var religionSubjects = new[]
-        {
-    new { Code = "REL", ReligionType = "Islam" },
-    new { Code = "REL", ReligionType = "Hindu" },
-    new { Code = "REL", ReligionType = "Buddhist" },
-    new { Code = "REL", ReligionType = "Christian" }
+     {
+    new { Code = "IRE", ReligionType = "Islam" },
+
+    new { Code = "HRE", ReligionType = "Hindu" },
+
+    new { Code = "BRE", ReligionType = "Buddhist" },
+
+    new { Code = "CRE", ReligionType = "Christian" }
 };
 
         // =========================================
@@ -109,7 +132,7 @@ public class ClassSubjectMappingSeeder
             "BAN",       // বাংলা
             "ENG",       // ইংরেজি
             "MAT",       // গণিত
-            "SCI",   // প্রাথমিক বিজ্ঞান
+            "GSCI",   // প্রাথমিক বিজ্ঞান
             "SOC",       // বাংলাদেশ ও বিশ্ব পরিচয়
             "ICT",       // ICT
             "PE",        // শারীরিক শিক্ষা
@@ -152,7 +175,8 @@ public class ClassSubjectMappingSeeder
             "ICT",       // ICT
             "ART",       // চারু ও কারুকলা
             "CAREER",    // কর্ম ও জীবনমুখী শিক্ষা
-            "SOC"        // বাংলাদেশ ও বিশ্ব পরিচয়
+            "SOC",      // বাংলাদেশ ও বিশ্ব পরিচয়
+            "SCI"       // বিজ্ঞান (Class 6-8)
         };
 
         // =========================================

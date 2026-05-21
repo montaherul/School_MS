@@ -1,0 +1,116 @@
+@model SchoolManagementSystem.Models.Entities.Website.SchoolSetting
+@{
+    Layout = "~/Views/Shared/_PublicLayout.cshtml";
+    ViewData["Title"] = "Contact Us";
+}
+
+<!-- Header Hero -->
+<div class="py-5 text-white" style="background: linear-gradient(135deg, var(--edu-navy), var(--edu-dark));">
+    <div class="container text-center py-4">
+        <h1 class="display-4 fw-bold">Contact Us</h1>
+        <p class="lead text-white-50">Reach out to our administrative desk or find us on the map</p>
+    </div>
+</div>
+
+<section class="py-5 bg-white">
+    <div class="container py-3">
+        <div class="row g-5">
+            <!-- Contact Info -->
+            <div class="col-lg-5">
+                <h3 class="fw-bold text-dark mb-4">Get in Touch</h3>
+                
+                <div class="d-flex align-items-start gap-3 mb-4">
+                    <div class="p-3 bg-light rounded text-primary"><i class="bi bi-geo-alt-fill fs-4"></i></div>
+                    <div>
+                        <h5 class="fw-bold text-dark mb-1">Campus Address</h5>
+                        <p class="text-muted mb-0">@Model.Address</p>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-start gap-3 mb-4">
+                    <div class="p-3 bg-light rounded text-primary"><i class="bi bi-telephone-fill fs-4"></i></div>
+                    <div>
+                        <h5 class="fw-bold text-dark mb-1">Phone Contacts</h5>
+                        <p class="text-muted mb-0">@Model.Phone</p>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-start gap-3 mb-4">
+                    <div class="p-3 bg-light rounded text-primary"><i class="bi bi-envelope-fill fs-4"></i></div>
+                    <div>
+                        <h5 class="fw-bold text-dark mb-1">Email Helpline</h5>
+                        <p class="text-muted mb-0">@Model.Email</p>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-start gap-3 mb-4">
+                    <div class="p-3 bg-light rounded text-primary"><i class="bi bi-clock-fill fs-4"></i></div>
+                    <div>
+                        <h5 class="fw-bold text-dark mb-1">Office Hours</h5>
+                        <p class="text-muted mb-0">Saturday - Thursday: 8:00 AM - 2:00 PM</p>
+                        <p class="text-muted mb-0 small">Friday: Closed</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Form -->
+            <div class="col-lg-7">
+                <div class="card border-0 shadow-sm p-4 p-md-5 bg-light rounded" style="border-top: 4px solid var(--edu-gold);">
+                    <h3 class="fw-bold text-dark mb-3">Send a Message</h3>
+                    <p class="text-muted mb-4">Have an inquiry regarding admissions or classes? Fill out the form below and we will get back to you shortly.</p>
+                    
+                    <form action="#" method="post" id="contactForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Your Name</label>
+                                <input type="text" class="form-control" placeholder="Name" required/>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Your Email</label>
+                                <input type="email" class="form-control" placeholder="Email" required/>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">Subject</label>
+                                <input type="text" class="form-control" placeholder="Inquiry Subject" required/>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">Your Message</label>
+                                <textarea class="form-control" rows="5" placeholder="Write details here..." required></textarea>
+                            </div>
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-edu-navy w-100 py-3">Submit Inquiry <i class="bi bi-send ms-2"></i></button>
+                            </div>
+                        </div>
+                    </form>
+                    <div class="alert alert-success mt-3 d-none" id="successAlert">
+                        <i class="bi bi-check-circle-fill me-2"></i> Your message has been received! Our support desk will reply soon.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Embedded Map -->
+        @if (!string.IsNullOrEmpty(Model.GoogleMapEmbed))
+        {
+            <div class="mt-5 pt-3">
+                <h4 class="fw-bold text-dark mb-4 text-center"><i class="bi bi-map text-warning me-2"></i> Location Map</h4>
+                <div class="ratio ratio-21x9 shadow border rounded-lg overflow-hidden" style="border-radius:12px; height: 350px;">
+                    @Html.Raw(Model.GoogleMapEmbed)
+                </div>
+            </div>
+        }
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        document.getElementById('contactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            this.reset();
+            document.getElementById('successAlert').classList.remove('d-none');
+            setTimeout(() => {
+                document.getElementById('successAlert').classList.add('d-none');
+            }, 6000);
+        });
+    </script>
+}

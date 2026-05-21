@@ -69,6 +69,7 @@
                     else if (grade === "F") color = "bg-danger";
                     return `<span class="badge ${color}">${grade}</span>`;
                 }},
+                { title: "Entered By", field: "EnteredByTeacherName", width: 180, hozAlign: "left", cssClass: "small text-muted" },
                 { title: "Status", field: "IsLocked", width: 120, hozAlign: "center", formatter: function(cell) {
                     return cell.getValue() 
                         ? `<span class="text-warning small"><i class="bi bi-lock-fill me-1"></i>Locked</span>` 

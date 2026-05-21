@@ -1,0 +1,56 @@
+@model SchoolManagementSystem.Models.ViewModels.Admin.AuditLogIndexViewModel
+@{
+    ViewData["Title"] = "Audit Logs";
+}
+
+<div class="page-title">
+    <h1>Audit Logs</h1>
+</div>
+
+<form method="get" class="module-toolbar mb-3">
+    <input class="form-control" name="search" value="@Model.Search" placeholder="Search logs..." />
+    <button class="btn btn-outline-secondary" type="submit">Search</button>
+</form>
+
+@if (!Model.Items.Any())
+{
+    <div class="alert alert-info">No audit logs found.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>User</th>
+                    <th>Module</th>
+                    <th>Action</th>
+                    <th>IP</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var log in Model.Items)
+                {
+                    <tr>
+                        <td>@log.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>@(string.IsNullOrWhiteSpace(log.UserName) ? "System" : log.UserName)</td>
+                        <td>@log.Module</td>
+                        <td>@log.Action</td>
+                        <td>@log.IpAddress</td>
+                        <td>@log.Details</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center">
+        <span>Page @Model.Page of @Model.TotalPages (@Model.TotalItems total)</span>
+        <div>
+            <a class="btn btn-sm btn-outline-secondary @(Model.Page <= 1 ? "disabled" : "")" asp-route-page="@(Model.Page - 1)" asp-route-search="@Model.Search">Previous</a>
+            <a class="btn btn-sm btn-outline-secondary @(Model.Page >= Model.TotalPages ? "disabled" : "")" asp-route-page="@(Model.Page + 1)" asp-route-search="@Model.Search">Next</a>
+        </div>
+    </div>
+}

@@ -1,0 +1,61 @@
+@model SchoolManagementSystem.Models.ViewModels.Attendance.LeaveApplyVm
+
+@{
+    ViewData["Title"] = "Apply for Leave";
+}
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Leave Application Form</h6>
+    </div>
+    <div class="card-body">
+        <form asp-action="Apply" method="post" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="LeaveTypeId" class="form-label"></label>
+                    <select asp-for="LeaveTypeId" asp-items="Model.LeaveTypes" class="form-control">
+                        <option value="">-- Select Leave Type --</option>
+                    </select>
+                    <span asp-validation-for="LeaveTypeId" class="text-danger"></span>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Attachment" class="form-label"></label>
+                    <input asp-for="Attachment" type="file" class="form-control" />
+                    <span asp-validation-for="Attachment" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="FromDate" class="form-label"></label>
+                    <input asp-for="FromDate" type="date" class="form-control" />
+                    <span asp-validation-for="FromDate" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label asp-for="ToDate" class="form-label"></label>
+                    <input asp-for="ToDate" type="date" class="form-control" />
+                    <span asp-validation-for="ToDate" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Reason" class="form-label"></label>
+                <textarea asp-for="Reason" class="form-control" rows="4"></textarea>
+                <span asp-validation-for="Reason" class="text-danger"></span>
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">Submit Application</button>
+                <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

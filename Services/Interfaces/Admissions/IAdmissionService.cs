@@ -1,5 +1,4 @@
 using SchoolManagementSystem.Models.DTOs.Admission;
-using SchoolManagementSystem.Models.DTOs.Admission.StoredProcedures;
 
 namespace SchoolManagementSystem.Services.Interfaces.Admissions;
 
@@ -16,4 +15,10 @@ public interface IAdmissionService
         int classId = 0,
         CancellationToken cancellationToken = default,
         int? status = null);
+
+    // Metadata lookups
+    Task<SchoolManagementSystem.Models.Entities.Admission.AdmissionApplication?> GetByIdAsync(int id, CancellationToken ct = default);
+    Task DeleteAsync(int id, string updatedBy, CancellationToken ct = default);
+    Task<IEnumerable<dynamic>> GetAvailableClassesAsync(CancellationToken ct = default);
 }
+

@@ -5,12 +5,12 @@ using System.Linq.Expressions;
 
 namespace SchoolManagementSystem.Repositories.Implementations;
 
-public class GenericRepository<T> : IGenericRepository<T> where T : class
+public class BaseRepository<T> : IBaseRepository<T> where T : class
 {
     protected readonly SchoolDbContext _db;
     protected readonly DbSet<T> _set;
 
-    public GenericRepository(SchoolDbContext db)
+    public BaseRepository(SchoolDbContext db)
     {
         _db = db;
         _set = db.Set<T>();
@@ -30,10 +30,24 @@ public class GenericRepository<T> : IGenericRepository<T> where T : class
         return await query.ToListAsync(cancellationToken);
     }
 
+    public async Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)
+        => await _set.FirstOrDefaultAsync(predicate, cancellationToken);
+
+    public async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)
+        => await _set.AnyAsync(predicate, cancellationToken);
+
+    public async Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null, CancellationToken cancellationToken = default)
+        => predicate != null ? await _set.CountAsync(predicate, cancellationToken) : await _set.CountAsync(cancellationToken);
+
     public async Task AddAsync(T entity, CancellationToken cancellationToken = default)
         => await _set.AddAsync(entity, cancellationToken);
+
+    public async Task AddRangeAsync(IEnumerable<T> entities, CancellationToken cancellationToken = default)
+        => await _set.AddRangeAsync(entities, cancellationToken);
 
     public void Update(T entity) => _set.Update(entity);
 
     public void Remove(T entity) => _set.Remove(entity);
+
+    public void RemoveRange(IEnumerable<T> entities) => _set.RemoveRange(entities);
 }

@@ -1,0 +1,79 @@
+@model IReadOnlyList<SchoolManagementSystem.Models.Entities.Website.Event>
+@{
+    Layout = "~/Views/Shared/_PublicLayout.cshtml";
+    ViewData["Title"] = "Academic & Cultural Events";
+}
+
+<!-- Header Hero -->
+<div class="py-5 text-white" style="background: linear-gradient(135deg, var(--edu-navy), var(--edu-dark));">
+    <div class="container text-center py-4">
+        <h1 class="display-4 fw-bold">School Events Calendar</h1>
+        <p class="lead text-white-50">Join us in celebrating academic, cultural, and sports achievements</p>
+    </div>
+</div>
+
+<section class="py-5 bg-white">
+    <div class="container py-3">
+        <div class="row g-4">
+            @foreach (var ev in Model)
+            {
+                <div class="col-lg-4 col-md-6">
+                    <div class="card border-0 shadow-sm overflow-hidden h-100 transition-hover" style="border-radius: 10px; border-bottom: 4px solid var(--edu-navy);">
+                        <div style="height: 200px; overflow: hidden; position: relative;">
+                            @if (!string.IsNullOrEmpty(ev.CoverImagePath))
+                            {
+                                <img src="@ev.CoverImagePath" class="w-100 h-100" style="object-fit: cover;" alt="event cover"/>
+                            }
+                            else
+                            {
+                                <div class="bg-light w-100 h-100 d-flex align-items-center justify-content-center text-muted">
+                                    <i class="bi bi-calendar3 fs-1 text-black-50"></i>
+                                </div>
+                            }
+                            <div class="position-absolute top-0 end-0 m-3">
+                                @if (ev.IsUpcoming && ev.EventDate >= DateTime.UtcNow)
+                                {
+                                    <span class="badge bg-success px-3 py-2 shadow-sm text-uppercase fw-bold"><i class="bi bi-clock-fill me-1"></i> Upcoming</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary px-3 py-2 shadow-sm text-uppercase fw-bold"><i class="bi bi-check-circle-fill me-1"></i> Concluded</span>
+                                }
+                            </div>
+                        </div>
+                        <div class="card-body p-4 d-flex flex-column">
+                            <div class="d-flex align-items-center gap-2 mb-3 text-muted small">
+                                <span><i class="bi bi-calendar-event-fill text-warning me-1"></i> @ev.EventDate.ToString("dd MMM yyyy")</span>
+                                <span>•</span>
+                                <span><i class="bi bi-geo-alt-fill text-warning me-1"></i> @ev.EventLocation</span>
+                            </div>
+                            <h5 class="fw-bold text-dark mb-2">@ev.Title</h5>
+                            <p class="text-muted small mb-4" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.6;">
+                                @ev.Description
+                            </p>
+                            <a href="/event/details/@ev.Id" class="btn btn-sm btn-edu-navy mt-auto">View Details <i class="bi bi-arrow-right-short ms-1"></i></a>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @if (Model.Count == 0)
+            {
+                <div class="col-12 text-center p-5 text-muted bg-light rounded shadow-sm">
+                    <i class="bi bi-calendar-x fs-1 mb-3 d-block text-black-50"></i>
+                    No events are currently scheduled on the calendar.
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<style>
+    .transition-hover {
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .transition-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(11,37,69,0.12) !important;
+    }
+</style>

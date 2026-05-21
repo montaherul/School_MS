@@ -1,0 +1,81 @@
+@{
+    ViewData["Title"] = "Leave Applications";
+}
+
+<div class="card shadow mb-4">
+    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+        <h6 class="m-0 font-weight-bold text-primary">Pending Leave Applications</h6>
+        <a asp-action="Apply" class="btn btn-sm btn-primary">Apply Leave</a>
+    </div>
+    <div class="card-body">
+        <div id="leave-table"></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            var token = $('input[name="__RequestVerificationToken"]').val();
+
+            var table = new Tabulator("#leave-table", {
+                layout: "fitColumns",
+                pagination: true,
+                paginationMode: "remote",
+                paginationSize: 10,
+                ajaxURL: "/Leave/GetPendingData",
+                ajaxResponse: function(url, params, response) {
+                    console.log("Leave API Payload:", response);
+                    const rows = Array.isArray(response.data) ? response.data : [];
+                    return {
+                        last_page: response.last_page || 1,
+                        total_records: response.total_records || rows.length,
+                        data: rows
+                    };
+                },
+                columns: [
+                    { title: "Employee", field: "employeeName" },
+                    { title: "Type", field: "leaveTypeName" },
+                    { title: "From Date", field: "fromDate", formatter: "datetime", formatterParams: { outputFormat: "DD/MM/YYYY" } },
+                    { title: "To Date", field: "toDate", formatter: "datetime", formatterParams: { outputFormat: "DD/MM/YYYY" } },
+                    { title: "Days", field: "totalDays" },
+                    { title: "Reason", field: "reason" },
+                    { title: "Status", field: "approvalStatus" },
+                    { title: "Actions", formatter: function(cell, formatterParams, onRendered) {
+                        var id = cell.getRow().getData().id;
+                        return `<button class="btn btn-success btn-sm btn-approve" data-id="${id}">Approve</button>
+                                <button class="btn btn-danger btn-sm btn-reject" data-id="${id}">Reject</button>`;
+                    }}
+                ]
+            });
+
+            $('#leave-table').on('click', '.btn-approve', function() {
+                var id = $(this).data('id');
+                if (confirm("Are you sure you want to approve this leave?")) {
+                    $.post('/Leave/Approve', { id: id, remarks: 'Approved', __RequestVerificationToken: token }, function(res) {
+                        if (res.success) {
+                            toastr.success("Leave approved.");
+                            table.setData();
+                        } else {
+                            toastr.error(res.message);
+                        }
+                    });
+                }
+            });
+
+            $('#leave-table').on('click', '.btn-reject', function() {
+                var id = $(this).data('id');
+                if (confirm("Are you sure you want to reject this leave?")) {
+                    $.post('/Leave/Reject', { id: id, remarks: 'Rejected', __RequestVerificationToken: token }, function(res) {
+                        if (res.success) {
+                            toastr.success("Leave rejected.");
+                            table.setData();
+                        } else {
+                            toastr.error(res.message);
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}
+@Html.AntiForgeryToken()

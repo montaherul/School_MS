@@ -72,11 +72,18 @@
         var table = new Tabulator("#fee-table", {
             height: "calc(100vh - 300px)",
             layout: "fitColumns",
-            pagination: "remote",
+            pagination: true,
+            paginationMode: "remote",
             ajaxURL: '@Url.Action("GetList", "FeeStructure")',
             paginationSize: 10,
             ajaxResponse: function(url, params, response) {
-                return { data: response.data, last_page: response.last_page };
+                console.log("FeeStructure API Payload:", response);
+                const rows = Array.isArray(response.data) ? response.data : [];
+                return {
+                    last_page: response.last_page || 1,
+                    total_records: response.total_records || rows.length,
+                    data: rows
+                };
             },
             columns: [
                 { title: "Fee Item", field: "feeName", widthGrow: 2, formatter: function(cell) {

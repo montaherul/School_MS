@@ -24,3 +24,4 @@ public class FeeInvoiceListItemDto
     public SchoolManagementSystem.Models.Enums.PaymentStatus Status { get; set; }
     public int TotalRecords { get; set; }
 }
+

@@ -125,13 +125,11 @@
                          alt="Student QR Code"
                          title="@Model.StudentNo" />
                 </div>
-                <h6 class="fw-bold mb-1">Digital Identity</h6>
-                <p class="text-muted small mb-3">Scan for Attendance</p>
                 <div class="d-grid gap-2">
-                    <a href="/Student/PrintIdCard/@Model.Id" class="btn btn-primary btn-sm rounded-pill">
-                        <i class="bi bi-download me-1"></i> Download / Print ID Card
-                    </a>
-                    <small class="text-muted tiny"><i class="bi bi-info-circle me-1"></i> Open in new tab to save as PDF</small>
+                    <button onclick="window.print()" class="btn btn-primary btn-sm rounded-pill">
+                        <i class="bi bi-printer me-1"></i> Print ID Card
+                    </button>
+                    <small class="text-muted tiny"><i class="bi bi-info-circle me-1"></i> Open print dialog to save as PDF if needed</small>
                 </div>
             </div>
         </div>

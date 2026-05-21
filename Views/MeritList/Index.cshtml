@@ -1,0 +1,161 @@
+@model IEnumerable<SchoolManagementSystem.Services.Interfaces.Result.MeritListItem>
+@{
+    ViewData["Title"] = "Academic Merit Lists";
+    var exams = ViewBag.Exams as IEnumerable<SchoolManagementSystem.Models.Entities.Exam.Exam>;
+    var selectedCategory = (SchoolManagementSystem.Services.Interfaces.Result.MeritCategory)ViewBag.SelectedCategory;
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Academic Merit Rankings</h1>
+                <p class="adm-header__sub">View school-wide, class-wise, and section-wise student merit standings.</p>
+            </div>
+        </div>
+        @if (User.IsInRole("Admin") || User.IsInRole("Super Admin") || User.IsInRole("Principal") || User.IsInRole("Exam Controller"))
+        {
+            @if (ViewBag.SelectedExamId != null && ViewBag.SelectedExamId > 0)
+            {
+                <div class="adm-btn-group">
+                    <button type="button" id="btnRecalcMerit" class="adm-btn adm-btn--primary">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="me-2"><circle cx="12" cy="12" r="10" /><path d="M12 8v4l3 3" /></svg>
+                        Recalculate Merit Positions
+                    </button>
+                </div>
+            }
+        }
+    </div>
+
+    <!-- ── Filter Panel ── -->
+    <div class="adm-table-card" style="margin-bottom: 24px; padding: 20px; border-radius: var(--adm-radius-lg);">
+        <form method="get" action="@Url.Action("Index")" class="row g-3">
+            <div class="col-md-5">
+                <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Select Examination</label>
+                <select name="examId" class="form-select adm-select" required>
+                    <option value="">-- Choose Exam --</option>
+                    @if (exams != null)
+                    {
+                        foreach (var e in exams)
+                        {
+                            <!option value="@e.Id" @(ViewBag.SelectedExamId == e.Id ? "selected" : "")>@e.Name</!option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-5">
+                <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Ranking Category</label>
+                <select name="category" class="form-select adm-select">
+                    <!option value="Class" @(selectedCategory == SchoolManagementSystem.Services.Interfaces.Result.MeritCategory.Class ? "selected" : "")>Class-wise Ranking</!option>
+                    <!option value="Section" @(selectedCategory == SchoolManagementSystem.Services.Interfaces.Result.MeritCategory.Section ? "selected" : "")>Section-wise Ranking</!option>
+                    <!option value="Group" @(selectedCategory == SchoolManagementSystem.Services.Interfaces.Result.MeritCategory.Group ? "selected" : "")>Group-wise (Sci/Hum/Arts) Ranking</!option>
+                    <!option value="School" @(selectedCategory == SchoolManagementSystem.Services.Interfaces.Result.MeritCategory.School ? "selected" : "")>School-wide Overall Ranking</!option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="adm-btn adm-btn--primary w-100" style="height: 38px;">
+                    View Rankings
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- ── Merit List Table ── -->
+    <div class="adm-table-card" style="border-radius: var(--adm-radius-lg); border-top: 1px solid var(--adm-border);">
+        <div class="adm-table-card__body">
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive" style="border-radius: var(--adm-radius-lg);">
+                    <table class="dash-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 80px;">Rank</th>
+                                <th>Student ID</th>
+                                <th>Student Name</th>
+                                <th>Roll Number</th>
+                                <th>Section</th>
+                                <th>Group</th>
+                                <th>Total Marks</th>
+                                <th>GPA</th>
+                                <th>Letter Grade</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var m in Model)
+                            {
+                                <tr>
+                                    <td class="text-center font-weight-bold">
+                                        @if (m.Position == 1)
+                                        {
+                                            <span style="background: linear-gradient(135deg, #FFD700, #FFA500); color: black; padding: 4px 10px; border-radius: 50px; font-size: 0.85rem; font-weight: 700; box-shadow: 0 2px 6px rgba(255,215,0,0.4);">1st</span>
+                                        }
+                                        else if (m.Position == 2)
+                                        {
+                                            <span style="background: linear-gradient(135deg, #C0C0C0, #808080); color: white; padding: 4px 10px; border-radius: 50px; font-size: 0.85rem; font-weight: 700; box-shadow: 0 2px 6px rgba(192,192,192,0.4);">2nd</span>
+                                        }
+                                        else if (m.Position == 3)
+                                        {
+                                            <span style="background: linear-gradient(135deg, #CD7F32, #8B4513); color: white; padding: 4px 10px; border-radius: 50px; font-size: 0.85rem; font-weight: 700; box-shadow: 0 2px 6px rgba(205,127,50,0.4);">3rd</span>
+                                        }
+                                        else
+                                        {
+                                            <span style="color: var(--adm-text-2);">@m.Position</span>
+                                        }
+                                    </td>
+                                    <td><span style="color: var(--adm-text-3);">@m.StudentId</span></td>
+                                    <td><span class="adm-cell-name">@m.StudentName</span></td>
+                                    <td class="text-center">@m.RollNumber</td>
+                                    <td><span class="adm-status adm-status--neutral">@m.Section</span></td>
+                                    <td><span class="adm-status adm-status--neutral">@m.StudentGroup</span></td>
+                                    <td class="text-center font-weight-bold text-success">@m.TotalMarks.ToString("F2")</td>
+                                    <td class="text-center text-primary font-weight-bold">@m.GPA.ToString("F2")</td>
+                                    <td class="text-center font-weight-bold">@m.Grade</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="dash-empty">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
+                    <h3 class="dash-empty__title">No Merit Rankings Found</h3>
+                    <p class="dash-empty__sub">Please filter by exam and category above to load school standings.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('#btnRecalcMerit').click(function() {
+                var examId = parseInt('@ViewBag.SelectedExamId');
+                if (confirm('Recalculate all rankings for this exam? This may affect dashboard stats.')) {
+                    $('#btnRecalcMerit').prop('disabled', true).text('Recalculating...');
+                    $.ajax({
+                        url: '@Url.Action("Recalculate")',
+                        type: 'POST',
+                        data: { examId: examId },
+                        success: function(res) {
+                            alert(res.message);
+                            location.reload();
+                        },
+                        error: function() {
+                            alert('Fatal recalculation error.');
+                            $('#btnRecalcMerit').prop('disabled', false).text('Recalculate Merit Positions');
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}
+</style>

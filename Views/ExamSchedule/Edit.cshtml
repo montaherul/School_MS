@@ -1,0 +1,94 @@
+@model SchoolManagementSystem.Models.Entities.Exam.ExamSchedule
+@{
+    ViewData["Title"] = "Edit Exam Schedule";
+    var exams = ViewBag.Exams as IEnumerable<SchoolManagementSystem.Models.Entities.Exam.Exam>;
+    var subjects = ViewBag.Subjects as IEnumerable<SchoolManagementSystem.Models.Entities.Academic.ClassSubject>;
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Edit Exam Schedule</h1>
+                <p class="adm-header__sub">Modify time slot or room assignment details.</p>
+            </div>
+        </div>
+        <div class="adm-btn-group">
+            <a href="@Url.Action("Index")" class="adm-btn adm-btn--ghost">
+                Back to List
+            </a>
+        </div>
+    </div>
+
+    <div class="adm-table-card" style="border-radius: var(--adm-radius-lg); padding: 30px; border: 1px solid var(--adm-border);">
+        <form method="post" action="@Url.Action("Edit")">
+            @Html.AntiForgeryToken()
+            @Html.HiddenFor(m => m.Id)
+            @Html.ValidationSummary(true, "", new { @class = "text-danger mb-4" })
+
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Select Exam</label>
+                    <select name="ExamId" class="form-select adm-select" required>
+                        @if (exams != null)
+                        {
+                            foreach (var e in exams)
+                            {
+                                <!option value="@e.Id" @(Model.ExamId == e.Id ? "selected" : "")>@e.Name</!option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Select Subject</label>
+                    <select name="SubjectId" class="form-select adm-select" required>
+                        @if (subjects != null)
+                        {
+                            foreach (var s in subjects)
+                            {
+                                <!option value="@s.SubjectId" @(Model.SubjectId == s.SubjectId ? "selected" : "")>@s.Subject?.Name (@s.SchoolClass?.Name)</!option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Exam Date</label>
+                    <input type="date" name="ExamDate" class="form-control adm-select" value="@Model.ExamDate.ToString("yyyy-MM-dd")" required />
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Starts At</label>
+                    <input type="time" name="StartsAt" class="form-control adm-select" value="@Model.StartsAt.ToString("HH:mm")" required />
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Ends At</label>
+                    <input type="time" name="EndsAt" class="form-control adm-select" value="@Model.EndsAt.ToString("HH:mm")" required />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Room Number</label>
+                    <input type="text" name="RoomNo" class="form-control adm-select" value="@Model.RoomNo" required />
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Special Instructions</label>
+                    <input type="text" name="Instructions" class="form-control adm-select" value="@Model.Instructions" />
+                </div>
+
+                <div class="col-12 mt-5">
+                    <button type="submit" class="adm-btn adm-btn--primary px-5">
+                        Save Changes
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

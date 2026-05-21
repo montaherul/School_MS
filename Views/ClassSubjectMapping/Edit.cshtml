@@ -1,0 +1,269 @@
+@model SchoolManagementSystem.Models.DTOs.Academic.ClassSubjectUpsertDto
+@{
+    ViewData["Title"] = "Configure Class Subject Splits";
+}
+
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-xl-9 col-lg-11">
+            
+            <div class="d-flex align-items-center mb-4">
+                <a href="/ClassSubjectMapping/Index" class="btn btn-outline-secondary btn-sm me-3 border-2 rounded-pill px-3">
+                    <i class="bi bi-arrow-left me-1"></i> Back
+                </a>
+                <h2 class="mb-0 fw-bold text-dark">
+                    <i class="bi bi-gear-fill me-2 text-primary"></i>Configure Class Subject Splits
+                </h2>
+            </div>
+
+            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="card-header bg-gradient bg-primary py-3 px-4 text-white">
+                    <p class="mb-0 text-white-50 small">Subject Marks Split Adjuster</p>
+                    <h5 class="mb-0 fw-semibold text-white">Fine-tune Mark Distribution Rules</h5>
+                </div>
+                <div class="card-body p-4 bg-light-subtle">
+                    
+                    <form asp-action="Edit" method="post" id="editForm">
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="SchoolClassId" />
+                        <input type="hidden" asp-for="SubjectId" />
+                        <input type="hidden" asp-for="StudentGroupId" />
+
+                        <!-- Section 1: Subject Profile Details (Read Only) -->
+                        <h6 class="text-uppercase text-secondary fw-bold small tracking-wider mb-3">
+                            <i class="bi bi-info-circle-fill me-2 text-primary"></i>Subject Profile
+                        </h6>
+                        <div class="row g-3 mb-4 p-3 bg-white rounded-3 border">
+                            <div class="col-md-3">
+                                <label class="form-label text-muted small fw-semibold mb-1">Subject Code</label>
+                                <div class="fw-bold text-primary fs-5">BAN101</div>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-muted small fw-semibold mb-1">Subject Name (En)</label>
+                                <div class="fw-bold text-dark fs-5">Bangla 1st Paper</div>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-muted small fw-semibold mb-1">Stream Group</label>
+                                <div class="fw-semibold text-muted fs-6">@(string.IsNullOrEmpty(Model.GroupName) ? "General" : Model.GroupName)</div>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label text-muted small fw-semibold mb-1">Subject Attributes</label>
+                                <div>
+                                    @if (Model.IsReligionSubject)
+                                    {
+                                        <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill small">@Model.ReligionType</span>
+                                    }
+                                    @if (Model.IsOptional)
+                                    {
+                                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill small">Optional</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Section 2: Global Configuration -->
+                        <h6 class="text-uppercase text-secondary fw-bold small tracking-wider mb-3">
+                            <i class="bi bi-sliders me-2 text-primary"></i>1. Total Marks & Pass Score
+                        </h6>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label asp-for="FullMarks" class="form-label fw-bold text-muted">Full Marks <span class="text-danger">*</span></label>
+                                <input asp-for="FullMarks" class="form-control rounded-3 border-2" type="number" step="0.5" id="txtFullMarks" required />
+                                <span asp-validation-for="FullMarks" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="PassMarks" class="form-label fw-bold text-muted">Pass Marks <span class="text-danger">*</span></label>
+                                <input asp-for="PassMarks" class="form-control rounded-3 border-2" type="number" step="0.5" id="txtPassMarks" required />
+                                <span asp-validation-for="PassMarks" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <!-- Section 3: Component-wise Splits -->
+                        <h6 class="text-uppercase text-secondary fw-bold small tracking-wider mb-3">
+                            <i class="bi bi-pie-chart-fill me-2 text-primary"></i>2. Component-wise Mark Distribution Splits
+                        </h6>
+                        <p class="text-muted small mb-3">Configure mark splits. The sum of these splits should ideally equal the total Full Marks configured above.</p>
+                        
+                        <div class="row g-3 mb-4">
+                            <!-- Written Marks -->
+                            <div class="col-md-4">
+                                <div class="p-3 bg-white rounded-3 border">
+                                    <label asp-for="WrittenMarks" class="form-label fw-semibold text-dark">Written Marks (CQ/Description)</label>
+                                    <input asp-for="WrittenMarks" class="form-control rounded-3 border-2 component-mark" type="number" step="0.5" placeholder="0" />
+                                    <span asp-validation-for="WrittenMarks" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <!-- MCQ Marks -->
+                            <div class="col-md-4">
+                                <div class="p-3 bg-white rounded-3 border">
+                                    <label asp-for="MCQMarks" class="form-label fw-semibold text-dark">MCQ / Objective Marks</label>
+                                    <input asp-for="MCQMarks" class="form-control rounded-3 border-2 component-mark" type="number" step="0.5" placeholder="0" />
+                                    <span asp-validation-for="MCQMarks" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <!-- CQ Marks -->
+                            <div class="col-md-4">
+                                <div class="p-3 bg-white rounded-3 border">
+                                    <label asp-for="CQMarks" class="form-label fw-semibold text-dark">Creative Question (CQ) Marks</label>
+                                    <input asp-for="CQMarks" class="form-control rounded-3 border-2 component-mark" type="number" step="0.5" placeholder="0" />
+                                    <span asp-validation-for="CQMarks" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <!-- Practical Marks -->
+                            <div class="col-md-4">
+                                <div class="p-3 bg-white rounded-3 border">
+                                    <label asp-for="PracticalMarks" class="form-label fw-semibold text-dark">Practical / Lab Marks</label>
+                                    <input asp-for="PracticalMarks" class="form-control rounded-3 border-2 component-mark" type="number" step="0.5" placeholder="0" />
+                                    <span asp-validation-for="PracticalMarks" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <!-- Viva Marks -->
+                            <div class="col-md-4">
+                                <div class="p-3 bg-white rounded-3 border">
+                                    <label asp-for="VivaMarks" class="form-label fw-semibold text-dark">Viva Voce / Oral Marks</label>
+                                    <input asp-for="VivaMarks" class="form-control rounded-3 border-2 component-mark" type="number" step="0.5" placeholder="0" />
+                                    <span asp-validation-for="VivaMarks" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <!-- Lab Marks -->
+                            <div class="col-md-4">
+                                <div class="p-3 bg-white rounded-3 border">
+                                    <label asp-for="LabMarks" class="form-label fw-semibold text-dark">Lab Book / Notebook Marks</label>
+                                    <input asp-for="LabMarks" class="form-control rounded-3 border-2 component-mark" type="number" step="0.5" placeholder="0" />
+                                    <span asp-validation-for="LabMarks" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <!-- Continuous Assessment -->
+                            <div class="col-md-6">
+                                <div class="p-3 bg-white rounded-3 border">
+                                    <label asp-for="ContinuousAssessmentMarks" class="form-label fw-semibold text-dark">Continuous / Formative Assessment Marks</label>
+                                    <input asp-for="ContinuousAssessmentMarks" class="form-control rounded-3 border-2 component-mark" type="number" step="0.5" placeholder="0" />
+                                    <span asp-validation-for="ContinuousAssessmentMarks" class="text-danger small"></span>
+                                </div>
+                            </div>
+                            <!-- Assignment Marks -->
+                            <div class="col-md-6">
+                                <div class="p-3 bg-white rounded-3 border">
+                                    <label asp-for="AssignmentMarks" class="form-label fw-semibold text-dark">Project Assignment / Portfolio Marks</label>
+                                    <input asp-for="AssignmentMarks" class="form-control rounded-3 border-2 component-mark" type="number" step="0.5" placeholder="0" />
+                                    <span asp-validation-for="AssignmentMarks" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Calculation Warnings -->
+                        <div class="alert alert-warning border-0 rounded-3 shadow-sm py-3 px-4 d-flex align-items-center mb-4" id="splitSumAlert" style="display: none !important;">
+                            <i class="bi bi-exclamation-triangle-fill me-3 fs-4 text-warning"></i>
+                            <div>
+                                <span class="fw-bold d-block mb-1 text-dark">Marks Split Discrepancy</span>
+                                <span class="small text-muted" id="splitSumMessage">The sum of component marks does not equal Full Marks.</span>
+                            </div>
+                        </div>
+
+                        <!-- Section 4: Individual Attributes -->
+                        <h6 class="text-uppercase text-secondary fw-bold small tracking-wider mb-3">
+                            <i class="bi bi-tag-fill me-2 text-primary"></i>3. Subject Specifications
+                        </h6>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6 col-lg-3">
+                                <div class="p-3 bg-white rounded-3 border">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" asp-for="IsOptional" id="chkIsOptional" />
+                                        <label class="form-check-label fw-semibold text-dark" for="chkIsOptional">Is Optional Subject</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div class="p-3 bg-white rounded-3 border">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" asp-for="IsReligionSubject" id="chkIsReligion" />
+                                        <label class="form-check-label fw-semibold text-dark" for="chkIsReligion">Is Religion Specific</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-3">
+                                <div class="p-3 bg-white rounded-3 border">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" asp-for="IsActive" id="chkIsActive" />
+                                        <label class="form-check-label fw-semibold text-dark" for="chkIsActive">Mapping Status Active</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dynamic Religion select -->
+                        <div class="row g-3 mb-4" id="religionPanel" style="display: none;">
+                            <div class="col-md-12">
+                                <div class="alert alert-info border-0 rounded-3 shadow-sm py-3 px-4 d-flex align-items-center">
+                                    <i class="bi bi-info-circle-fill me-3 fs-4 text-info"></i>
+                                    <div>
+                                        <label asp-for="ReligionType" class="form-label fw-bold mb-1 text-dark">Religion Type</label>
+                                        <select asp-for="ReligionType" class="form-select rounded-3 border-0 bg-white" id="ddlReligionType">
+                                            <option value="">-- Choose Religion --</option>
+                                            <option value="Islam">Islam & Moral Education</option>
+                                            <option value="Hindu">Hindu Religion & Moral Education</option>
+                                            <option value="Buddhist">Buddhist Religion & Moral Education</option>
+                                            <option value="Christian">Christian Religion & Moral Education</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit Section -->
+                        <hr class="my-4 border-2 opacity-50" />
+                        <div class="d-flex justify-content-end gap-3">
+                            <a href="/ClassSubjectMapping/Index" class="btn btn-outline-secondary px-4 py-2 border-2 rounded-pill fw-semibold">
+                                <i class="bi bi-x-circle me-1"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary px-5 py-2 rounded-pill fw-semibold shadow-sm bg-gradient">
+                                <i class="bi bi-save me-1"></i> Update Configuration
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+
+    <script>
+        $(document).ready(function() {
+            // dynamic religion toggle
+            function toggleReligion() {
+                if ($('#chkIsReligion').is(':checked')) {
+                    $('#religionPanel').slideDown(300);
+                } else {
+                    $('#religionPanel').slideUp(200);
+                    $('#ddlReligionType').val('');
+                }
+            }
+
+            $('#chkIsReligion').on('change', toggleReligion);
+            toggleReligion();
+
+            // Validate component sums matches total marks
+            function validateSplitMarks() {
+                const totalFullMarks = parseFloat($('#txtFullMarks').val()) || 0;
+                let splitSum = 0;
+
+                $('.component-mark').each(function() {
+                    splitSum += parseFloat($(this).val()) || 0;
+                });
+
+                if (splitSum > 0 && Math.abs(splitSum - totalFullMarks) > 0.01) {
+                    $('#splitSumMessage').html(`The sum of components marks (<strong>${splitSum}</strong>) does not match total Full Marks (<strong>${totalFullMarks}</strong>). Please check distribution.`);
+                    $('#splitSumAlert').removeClass('d-none').show();
+                } else {
+                    $('#splitSumAlert').addClass('d-none').hide();
+                }
+            }
+
+            $('.component-mark, #txtFullMarks').on('input', validateSplitMarks);
+            validateSplitMarks();
+        });
+    </script>
+}
