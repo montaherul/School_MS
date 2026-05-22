@@ -69,9 +69,16 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.ExpireTimeSpan = TimeSpan.FromHours(2);
         options.Cookie.HttpOnly = true;
         //options.Cookie.SameSite = SameSiteMode.Strict;// by localhostlogin
-        options.Cookie.SameSite = SameSiteMode.Lax;//by ip login
-        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+      //  options.Cookie.SameSite = SameSiteMode.Lax;//by ip login
+        options.Cookie.SameSite = SameSiteMode.None;
+        /*  options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;*/
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     });
+
+builder.Services.Configure<CookiePolicyOptions>(options =>
+{
+    options.MinimumSameSitePolicy = SameSiteMode.None;
+});
 builder.Services.AddAuthorization();
 builder.Services.AddSession(options =>
 {
@@ -125,7 +132,12 @@ else
 
 app.UseStaticFiles();
 app.UseRouting();
+
+app.UseCookiePolicy();
+
 app.UseSession();
+app.UseAuthentication();
+app.UseAuthorization(); app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseMiddleware<AuditLoggingMiddleware>();
