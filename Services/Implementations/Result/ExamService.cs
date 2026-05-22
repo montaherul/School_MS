@@ -240,13 +240,23 @@ public class ExamService : IExamService
     /// <summary>
     /// Get subjects assigned to a class
     /// </summary>
-    public async Task<IEnumerable<object>> GetSubjectsByClassIdAsync(int classId, CancellationToken ct = default)
+    public async Task<IEnumerable<object>> GetSubjectsByClassIdAsync(int classId, int? groupId = null, int? sectionId = null, CancellationToken ct = default)
     {
-        return await _uow.Repository<ClassSubject>().Query()
+        var query = _uow.Repository<ClassSubject>().Query()
             .AsNoTracking()
             .Include(cs => cs.Subject)
-            .Where(cs => cs.SchoolClassId == classId && !cs.IsDeleted)
-            .Select(cs => new
+            .Where(cs => cs.SchoolClassId == classId && !cs.IsDeleted);
+
+        if (groupId.HasValue)
+        {
+            query = query.Where(cs => cs.StudentGroupId == groupId.Value);
+        }
+        if (sectionId.HasValue)
+        {
+            query = query.Where(cs => cs.SectionId == sectionId.Value);
+        }
+
+        return await query.Select(cs => new
             {
                 subjectId = cs.SubjectId,
                 subjectName = cs.Subject!.Name

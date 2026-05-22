@@ -54,17 +54,31 @@
 
                 @if (isTeacher && assignments != null && assignments.Any())
                 {
+                    var distinctClasses = assignments.Select(a => new { ClassId = a.ClassId, ClassName = a.Class?.Name }).DistinctBy(c => c.ClassId);
+
                     <div class="col-md-6">
-                        <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Assigned Class & Section</label>
-                        <select id="teacherAssignmentSelect" class="form-select adm-select" required>
-                            <option value="">-- Choose Assignment --</option>
-                            @foreach (var a in assignments)
+                        <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Select Class</label>
+                        <select name="classId" id="teacherClassSelect" class="form-select adm-select" required>
+                            <option value="">-- Choose Class --</option>
+                            @foreach (var c in distinctClasses)
                             {
-                                <option value="@a.ClassId" data-section="@a.SectionId">@(a.Class?.Name ?? "N/A") – @(a.Section?.Name ?? "N/A")</option>
+                                <option value="@c.ClassId">@c.ClassName</option>
                             }
                         </select>
-                        <input type="hidden" name="classId" id="classIdHidden" />
-                        <input type="hidden" name="sectionId" id="sectionIdHidden" />
+                    </div>
+
+                    <div class="col-md-6 d-none" id="teacherGroupContainer">
+                        <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Select Group</label>
+                        <select name="groupId" id="teacherGroupSelect" class="form-select adm-select">
+                            <option value="">-- Choose Group --</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Select Section</label>
+                        <select name="sectionId" id="teacherSectionSelect" class="form-select adm-select" required disabled>
+                            <option value="">-- Choose Section --</option>
+                        </select>
                     </div>
 
                     <div class="col-md-6">
@@ -87,6 +101,13 @@
                                     <option value="@c.Id">@c.Name</option>
                                 }
                             }
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 d-none" id="adminGroupContainer">
+                        <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Select Group</label>
+                        <select name="groupId" id="adminGroupSelect" class="form-select adm-select">
+                            <option value="">-- Choose Group --</option>
                         </select>
                     </div>
 
@@ -116,69 +137,34 @@
 </div>
 
 @section Scripts {
+    <script src="~/js/teacherAssignment.js"></script>
     <script>
         $(document).ready(function() {
-            // Teacher workflow: dynamic subjects based on class & section
-            $('#teacherAssignmentSelect').change(function() {
-                var classId = $(this).val();
-                var sectionId = $(this).find(':selected').data('section');
-                
-                $('#classIdHidden').val(classId);
-                $('#sectionIdHidden').val(sectionId);
-
-                if (classId && sectionId) {
-                    $.ajax({
-                        url: '@Url.Action("GetSubjectsForTeacher", "ResultManagement")',
-                        data: { classId: classId, sectionId: sectionId },
-                        success: function(subjects) {
-                            var $select = $('#teacherSubjectSelect');
-                            $select.empty().append('<option value="">-- Choose Subject --</option>');
-                            $.each(subjects, function(i, s) {
-                                $select.append($('<option>', { value: s.subjectId, text: s.subjectName }));
-                            });
-                            $select.prop('disabled', false);
-                        }
-                    });
-                } else {
-                    $('#teacherSubjectSelect').empty().append('<option value="">-- Choose Subject --</option>').prop('disabled', true);
-                }
-            });
-
-            // Admin workflow: Class -> Section -> Subject cascade
-            $('#adminClassSelect').change(function() {
-                var classId = $(this).val();
-                if (classId) {
-                    // Load Sections
-                    $.ajax({
-                        url: '/Academic/Section/GetByClass/' + classId,
-                        success: function(sections) {
-                            var $select = $('#adminSectionSelect');
-                            $select.empty().append('<option value="">-- Choose Section --</option>');
-                            $.each(sections, function(i, s) {
-                                $select.append($('<option>', { value: s.id, text: s.name }));
-                            });
-                            $select.prop('disabled', false);
-                        }
-                    });
-
-                    // Load Subjects
-                    $.ajax({
-                        url: '@Url.Action("GetSubjectsForClass", "ResultManagement")',
-                        data: { classId: classId },
-                        success: function(subjects) {
-                            var $select = $('#adminSubjectSelect');
-                            $select.empty().append('<option value="">-- Choose Subject --</option>');
-                            $.each(subjects, function(i, s) {
-                                $select.append($('<option>', { value: s.id, text: s.name }));
-                            });
-                            $select.prop('disabled', false);
-                        }
-                    });
-                } else {
-                    $('#adminSectionSelect').empty().append('<option value="">-- Choose Section --</option>').prop('disabled', true);
-                    $('#adminSubjectSelect').empty().append('<option value="">-- Choose Subject --</option>').prop('disabled', true);
-                }
-            });
+            @if (isTeacher)
+            {
+                <text>
+                window.TeacherAssignmentCascade.init({
+                    teacherId: '@ViewBag.TeacherId',
+                    classSelect: '#teacherClassSelect',
+                    groupSelect: '#teacherGroupSelect',
+                    groupContainer: '#teacherGroupContainer',
+                    sectionSelect: '#teacherSectionSelect',
+                    subjectSelect: '#teacherSubjectSelect'
+                });
+                </text>
+            }
+            else
+            {
+                <text>
+                window.TeacherAssignmentCascade.init({
+                    classSelect: '#adminClassSelect',
+                    groupSelect: '#adminGroupSelect',
+                    groupContainer: '#adminGroupContainer',
+                    sectionSelect: '#adminSectionSelect',
+                    subjectSelect: '#adminSubjectSelect'
+                });
+                </text>
+            }
         });
     </script>
 }

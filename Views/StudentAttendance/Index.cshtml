@@ -216,7 +216,8 @@
                     <option value="">Select section</option>
                 </select>
             </div>
-            <div class="col-lg-2 col-md-4">
+            <!-- Group filter container, hidden by default -->
+            <div id="filterGroupContainer" class="col-lg-2 col-md-4 d-none">
                 <label class="form-label fw-semibold">Student Group</label>
                 <select id="filterGroup" class="form-select">
                     <option value="">All groups</option>
@@ -309,6 +310,7 @@
         };
         const defaultClassId = @(defaultClassId?.ToString() ?? "null");
         const defaultSectionId = @(defaultSectionId?.ToString() ?? "null");
+        const defaultGroupId = @(ViewBag.DefaultGroupId?.ToString() ?? "null");
         let currentData = [];
         let tabulatorTable = null;
 
@@ -323,7 +325,7 @@
                 columns: [
                     { title: "Select", formatter: "rowSelection", hozAlign: "center", width: 40 },
                     { title: "Roll", field: "rollNumber", width: 60 },
-                    { title: "Student ID", field: "studentId", width: 100 },
+        { title: "Student ID", field: "studentCode", width: 100 },
                     { title: "Name", field: "studentName", width: 150 },
                     { title: "Class", field: "className", width: 80 },
                     { title: "Section", field: "sectionName", width: 80 },
@@ -370,17 +372,31 @@
             const sectionId = $('#filterSection').val();
             const studentGroupId = $('#filterGroup').val();
             const attendanceDate = $('#filterDate').val();
+            const classText = $('#filterClass option:selected').text();
+            const classNum = parseInt(classText.replace(/\D/g, '')) || 0;
 
             if (!classId || !sectionId) {
                 toastr.warning('Please select class and section');
                 return;
             }
 
+            // Enforce group selection for classes 9-10
+            if (classNum >= 9 && classNum <= 10 && !studentGroupId) {
+                toastr.warning('Please select a group for class 9-10');
+                return;
+            }
+
             try {
+               
                 const response = await fetch(`${routes.loadAttendance}?page=1&size=1000&attendanceDate=${attendanceDate}&classId=${classId}&sectionId=${sectionId}&studentGroupId=${studentGroupId || ''}`);
                 const result = await response.json();
 
                 if (result.data) {
+
+
+                     console.log(result.data);
+
+
                     currentData = result.data;
                     tabulatorTable.setData(result.data);
                     updateSummary(result.summary);
@@ -412,12 +428,22 @@
             const enableNotifications = $('#enableNotifications').is(':checked');
 
             const rows = tabulatorTable.getData();
-            const attendances = rows.map(row => ({
-                id: row.id,
-                studentId: row.studentId,
-                status: row.status,
-                remarks: row.remarks
-            }));
+        const attendances = rows.map(row => ({
+        studentId: parseInt(row.studentId),
+        status: parseInt(row.status),
+        remarks: row.remarks || ''
+        }));
+
+        console.log(JSON.stringify({
+        classId: parseInt(classId),
+        sectionId: parseInt(sectionId),
+        studentGroupId: studentGroupId ? parseInt(studentGroupId) : null,
+        attendanceDate: attendanceDate,
+        attendances: attendances,
+        sendNotifications: enableNotifications
+        }));
+
+
 
             if (!attendances.length) {
                 toastr.warning('No attendance data to save');
@@ -534,82 +560,76 @@
         $('#btnLoad').click(loadAttendance);
         $('#btnSave').click(saveAttendance);
 
-        // Load sections when class changes
-        $('#filterClass').change(async function() {
+        // Load sections (and groups) when class changes
+        $('#filterClass').change(async function () {
             const classId = $(this).val();
+            const classText = $('#filterClass option:selected').text();
+            const classNum = parseInt(classText.replace(/\D/g, '')) || 0;
+
+            // reset dropdowns
             $('#filterSection').html('<option value="">Select section</option>');
             $('#filterGroup').html('<option value="">All groups</option>');
+            $('#filterGroupContainer').addClass('d-none');
 
             if (!classId) return;
 
-            try {
-                const response = await fetch(`${routes.getSections}?classId=${classId}`);
-                const result = await response.json();
+            // If class is 9-10, load groups
+            if (classNum >= 9 && classNum <= 10) {
+                try {
+                    const grpResp = await fetch(`${routes.getGroups}?classId=${classId}`);
+                    const grpResult = await grpResp.json();
+                    if (grpResult.data && grpResult.data.length) {
+                        $('#filterGroupContainer').removeClass('d-none');
+                        grpResult.data.forEach(g => {
+                            $('#filterGroup').append(`<option value="${g.id}">${g.name}</option>`);
+                        });
+                        // set default group if any
+                        if (defaultGroupId) {
+                            $('#filterGroup').val(defaultGroupId);
+                        }
+                    }
+                } catch (e) { console.error(e); }
+            }
 
+            // Load sections (optionally filtered by selected group)
+            await loadSections(classId, $('#filterGroup').val());
+        });
+
+        // When group changes, reload sections
+        $('#filterGroup').change(async function () {
+            const classId = $('#filterClass').val();
+            const groupId = $(this).val();
+            await loadSections(classId, groupId);
+        });
+
+        // Helper to load sections based on class and optional group
+        async function loadSections(classId, groupId) {
+            if (!classId) return;
+            try {
+                let url = `${routes.getSections}?classId=${classId}`;
+                if (groupId) {
+                    url += `&groupId=${groupId}`;
+                }
+                const resp = await fetch(url);
+                const result = await resp.json();
+                $('#filterSection').empty().append('<option value="">Select section</option>');
                 if (result.data && result.data.length) {
                     result.data.forEach(section => {
                         $('#filterSection').append(`<option value="${section.id}">${section.name}</option>`);
                     });
+                    if (defaultSectionId) {
+                        $('#filterSection').val(defaultSectionId);
+                    }
                 }
-            } catch (error) {
-                console.error('Error loading sections:', error);
-            }
-        });
-
-        // Load groups when section changes
-        $('#filterSection').change(async function() {
-            const classId = $('#filterClass').val();
-            $('#filterGroup').html('<option value="">All groups</option>');
-
-            if (!classId) return;
-
-            try {
-                const response = await fetch(`${routes.getGroups}?classId=${classId}`);
-                const result = await response.json();
-
-                if (result.data && result.data.length) {
-                    result.data.forEach(group => {
-                        $('#filterGroup').append(`<option value="${group.id}">${group.name}</option>`);
-                    });
-                }
-            } catch (error) {
-                console.error('Error loading groups:', error);
-            }
-        });
+            } catch (e) { console.error(e); }
+        }
 
         // Initialize on page load
         $(document).ready(async function () {
-
-        initializeTable();
-
-        if (defaultClassId) {
-
-        $('#filterClass').val(defaultClassId);
-
-        // AUTO LOAD SECTIONS
-        const response = await fetch(
-        `${routes.getSections}?classId=${defaultClassId}`
-        );
-
-        const result = await response.json();
-
-        if (result.data && result.data.length) {
-
-        result.data.forEach(section => {
-
-        $('#filterSection').append(
-        `<option value="${section.id}">
-        ${section.name}
-        </option>`
-        );
-        });
-
-        // AUTO SELECT DEFAULT SECTION
-        if (defaultSectionId) {
-        $('#filterSection').val(defaultSectionId);
-        }
-        }
-        }
+            initializeTable();
+            if (defaultClassId) {
+                $('#filterClass').val(defaultClassId).trigger('change');
+            }
         });
 
         function updateTableSummary() {

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SchoolManagementSystem.Data;
 
@@ -11,9 +12,11 @@ using SchoolManagementSystem.Data;
 namespace SchoolManagementSystem.Migrations
 {
     [DbContext(typeof(SchoolDbContext))]
-    partial class SchoolDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260521060027_FixSectionGroupConflict")]
+    partial class FixSectionGroupConflict
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -25117,9 +25120,6 @@ namespace SchoolManagementSystem.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
 
-                    b.Property<int?>("GroupId")
-                        .HasColumnType("int");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
@@ -25149,8 +25149,6 @@ namespace SchoolManagementSystem.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("AcademicYearId");
-
-                    b.HasIndex("GroupId");
 
                     b.HasIndex("SectionId");
 
@@ -25435,9 +25433,6 @@ namespace SchoolManagementSystem.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
 
-                    b.Property<int?>("GroupId")
-                        .HasColumnType("int");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
@@ -25469,8 +25464,6 @@ namespace SchoolManagementSystem.Migrations
                     b.HasIndex("AcademicYearId");
 
                     b.HasIndex("ClassId");
-
-                    b.HasIndex("GroupId");
 
                     b.HasIndex("SectionId");
 
@@ -25510,9 +25503,6 @@ namespace SchoolManagementSystem.Migrations
                     b.Property<TimeSpan>("EndTime")
                         .HasColumnType("time");
 
-                    b.Property<int?>("GroupId")
-                        .HasColumnType("int");
-
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -25542,8 +25532,6 @@ namespace SchoolManagementSystem.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ClassId");
-
-                    b.HasIndex("GroupId");
 
                     b.HasIndex("SectionId");
 
@@ -27088,11 +27076,6 @@ namespace SchoolManagementSystem.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("SchoolManagementSystem.Models.Entities.Academic.StudentGroup", "Group")
-                        .WithMany()
-                        .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("SchoolManagementSystem.Models.Entities.Academic.Section", "Section")
                         .WithMany()
                         .HasForeignKey("SectionId")
@@ -27108,8 +27091,6 @@ namespace SchoolManagementSystem.Migrations
                     b.Navigation("AcademicYear");
 
                     b.Navigation("Class");
-
-                    b.Navigation("Group");
 
                     b.Navigation("Section");
 
@@ -27194,11 +27175,6 @@ namespace SchoolManagementSystem.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("SchoolManagementSystem.Models.Entities.Academic.StudentGroup", "Group")
-                        .WithMany()
-                        .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("SchoolManagementSystem.Models.Entities.Academic.Section", "Section")
                         .WithMany()
                         .HasForeignKey("SectionId")
@@ -27221,8 +27197,6 @@ namespace SchoolManagementSystem.Migrations
 
                     b.Navigation("Class");
 
-                    b.Navigation("Group");
-
                     b.Navigation("Section");
 
                     b.Navigation("Subject");
@@ -27237,11 +27211,6 @@ namespace SchoolManagementSystem.Migrations
                         .HasForeignKey("ClassId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.HasOne("SchoolManagementSystem.Models.Entities.Academic.StudentGroup", "Group")
-                        .WithMany()
-                        .HasForeignKey("GroupId")
-                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("SchoolManagementSystem.Models.Entities.Academic.Section", "Section")
                         .WithMany()
@@ -27262,8 +27231,6 @@ namespace SchoolManagementSystem.Migrations
                         .IsRequired();
 
                     b.Navigation("Class");
-
-                    b.Navigation("Group");
 
                     b.Navigation("Section");
 

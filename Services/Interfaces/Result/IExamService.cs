@@ -23,7 +23,7 @@ public interface IExamService
 
     // Helpers
     Task<IEnumerable<object>> GetSubjectsAsync(CancellationToken ct = default);
-    Task<IEnumerable<object>> GetSubjectsByClassIdAsync(int classId, CancellationToken ct = default);
+    Task<IEnumerable<object>> GetSubjectsByClassIdAsync(int classId, int? groupId = null, int? sectionId = null, CancellationToken ct = default);
     Task<IEnumerable<object>> GetClassesAsync(CancellationToken ct = default);
     Task<IEnumerable<object>> GetSectionsAsync(int? classId = null, CancellationToken ct = default);
 }

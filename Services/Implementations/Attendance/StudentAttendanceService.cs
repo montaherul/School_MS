@@ -199,6 +199,7 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
                         {
                             Id = att.Id,
                             StudentId = std.Id,
+                            StudentNo = std.StudentNo,
                             StudentName = std.FullName,
                             RollNumber = std.RollNumber.ToString(),
                             ClassId = classId.Value,
@@ -216,6 +217,7 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
                         {
                             Id = 0,
                             StudentId = std.Id,
+                            StudentNo = std.StudentNo,
                             StudentName = std.FullName,
                             RollNumber = std.RollNumber.ToString(),
                             ClassId = classId.Value,
@@ -249,6 +251,7 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
                                    {
                                        Id = a.Id,
                                        StudentId = a.StudentId,
+                                       StudentNo = a.Student.StudentNo,
                                        StudentName = a.Student!.FullName,
                                        RollNumber = a.Student.RollNumber.ToString(),
                                        ClassId = a.ClassId,

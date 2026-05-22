@@ -207,6 +207,17 @@ public class SchoolDbContext : DbContext
             .HasForeignKey(s => s.ParentSectionId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        modelBuilder.Entity<Section>()
+            .HasOne(s => s.StudentGroup)
+            .WithMany()
+            .HasForeignKey(s => s.StudentGroupId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Section>()
+            .HasIndex(x => new { x.SchoolClassId, x.StudentGroupId, x.Name })
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
+
         modelBuilder.Entity<TeacherClassAssignment>()
             .HasIndex(x => new { x.TeacherId, x.ClassId, x.SectionId, x.AcademicYearId })
             .IsUnique()

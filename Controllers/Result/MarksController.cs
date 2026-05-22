@@ -52,9 +52,11 @@ public class MarksController : Controller
 
         if (teacher != null)
         {
+            ViewBag.TeacherId = teacher.Id;
             var assignments = await _uow.Repository<SchoolManagementSystem.Models.Entities.Teachers.TeacherClassAssignment>().Query()
                 .Include(a => a.Class)
                 .Include(a => a.Section)
+                .Include(a => a.Group)
                 .Where(a => a.TeacherId == teacher.Id && !a.IsDeleted)
                 .ToListAsync(ct);
             ViewBag.Assignments = assignments;

@@ -32,6 +32,9 @@ public class Section : BaseEntity
     public int SchoolClassId { get; set; }
     public SchoolClass? SchoolClass { get; set; }
 
+    public int? StudentGroupId { get; set; }
+    public StudentGroup? StudentGroup { get; set; }
+
     [MaxLength(20)]
     public string Name { get; set; } = string.Empty;
 

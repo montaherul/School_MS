@@ -71,19 +71,20 @@ public class ResultManagementController : Controller
 
         ViewBag.Assignments = await _assignmentService.GetTeacherClassAssignmentsAsync(teacher.Id, ct);
         ViewBag.Exams = await _examService.GetExamsAsync(academicYearId);
+        ViewBag.TeacherId = teacher.Id;
         return View();
     }
 
     [HttpGet]
     [Authorize(Roles = "Teacher,Senior Lecturer,Lecturer")]
-    public async Task<IActionResult> GetSubjectsForTeacher(int classId, int sectionId, CancellationToken ct)
+    public async Task<IActionResult> GetSubjectsForTeacher(int classId, int? groupId, int? sectionId, CancellationToken ct)
     {
         var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
         var teacher = await _teacherService.GetByUserIdAsync(currentUserId, ct);
         if (teacher == null) return Json(new List<object>());
 
-        var subjects = await _assignmentService.GetTeacherSubjectAssignmentsAsync(teacher.Id, classId, sectionId, ct);
-        return Json(subjects.Select(s => new { subjectId = s.SubjectId, subjectName = s.SubjectName }));
+        var subjects = await _assignmentService.GetTeacherAssignedSubjectsAsync(teacher.Id, classId, groupId, sectionId, ct);
+        return Json(subjects.Select(s => new { subjectId = s.Id, subjectName = s.Name }));
     }
 
     [HttpGet]
@@ -129,9 +130,9 @@ public class ResultManagementController : Controller
 
     [HttpGet]
     [Authorize]
-    public async Task<IActionResult> GetSubjectsForClass(int classId, CancellationToken ct)
+    public async Task<IActionResult> GetSubjectsForClass(int classId, int? groupId, int? sectionId, CancellationToken ct)
     {
-        var subjects = await _examService.GetSubjectsByClassIdAsync(classId, ct);
+        var subjects = await _examService.GetSubjectsByClassIdAsync(classId, groupId, sectionId, ct);
         return Json(subjects);
     }
 

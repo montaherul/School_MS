@@ -53,12 +53,13 @@ namespace SchoolManagementSystem.Controllers.Attendance
             // Try to extract the numeric part from class name like "Class 10", "10", "X", etc.
             if (string.IsNullOrEmpty(className)) return 0;
 
-            // Remove "Class " prefix if present
+            // Remove common prefix
             var trimmed = className.Replace("Class ", "").Trim();
 
-            // Try to parse as integer
-            if (int.TryParse(trimmed, out var classNum))
-                return classNum;
+            // Use regex to find first number
+            var match = System.Text.RegularExpressions.Regex.Match(trimmed, "\\d+");
+            if (match.Success && int.TryParse(match.Value, out var num))
+                return num;
 
             // Handle Roman numerals
             return trimmed.ToUpper() switch
@@ -102,6 +103,29 @@ namespace SchoolManagementSystem.Controllers.Attendance
             ViewBag.Classes = new SelectList(classes, "Id", "Name", defaultClassId);
             ViewBag.DefaultClassId = defaultClassId;
             ViewBag.DefaultSectionId = defaultSectionId;
+
+            // Determine default group ID for class 9-10 based on curriculum rules
+            int? defaultGroupId = null;
+            if (defaultClassId.HasValue)
+            {
+                // Find class name from the list
+                var selectedClass = classes.FirstOrDefault(c => c.Id == defaultClassId.Value);
+                if (selectedClass != null)
+                {
+                    var classNumber = TryParseClassNumber(selectedClass.Name);
+                    if (classNumber >= 9 && classNumber <= 10)
+                    {
+                        var group = await _uow.Repository<SchoolManagementSystem.Models.Entities.Academic.StudentGroup>()
+                            .Query()
+                            .Where(g => g.IsActive && !g.IsDeleted && classNumber >= g.MinClass && classNumber <= g.MaxClass)
+                            .OrderBy(g => g.DisplayOrder)
+                            .FirstOrDefaultAsync();
+                        if (group != null)
+                            defaultGroupId = group.Id;
+                    }
+                }
+            }
+            ViewBag.DefaultGroupId = defaultGroupId;
             
             return View();
         }
@@ -311,7 +335,7 @@ namespace SchoolManagementSystem.Controllers.Attendance
                 return Json(new { success = false, message = ex.Message });
             }
         }
-        ///Rakib kire
+        ///Rakib kirek bulk mark er khetre teacher der jonno time lock and past date edit lock diye dite pari, jate kore tara raat e attendance mark na kore, ar past date er attendance edit na kore. Eta implementation er khetre amra check korte pari je current time 6 PM er beshi kina, jodi beshi hoy tahole attendance mark/edit kora jabe na. Ar past date er khetre check korte pari je attendance date aajker tarikh theke choto kina, jodi choto hoy tahole edit kora jabe na. Eivabe teacher der jonno attendance mark/edit er upor control rakha jabe.
         /// <summary>
         /// AJAX endpoint: Load students for attendance grid
         /// </summary>
@@ -397,7 +421,7 @@ namespace SchoolManagementSystem.Controllers.Attendance
         /// <summary>
         /// AJAX endpoint: Save bulk attendance with automatic notifications
         /// </summary>
-        [HttpPost]
+      
 
         [HttpPost]
         public async Task<IActionResult> SaveAttendance(
@@ -562,16 +586,21 @@ namespace SchoolManagementSystem.Controllers.Attendance
         /// Get sections for a class - AJAX support
         /// </summary>
         [HttpGet]
-        public async Task<IActionResult> GetSections(int classId, CancellationToken ct = default)
+        public async Task<IActionResult> GetSections(int classId, int? groupId = null, CancellationToken ct = default)
         {
             try
             {
                 if (classId <= 0)
                     return Json(new { data = new List<object>() });
 
-                // Get sections that belong to this class (where SchoolClassId matches)
-                var sections = await _uow.Repository<SchoolManagementSystem.Models.Entities.Academic.Section>().Query()
-                    .Where(s => s.SchoolClassId == classId && !s.IsDeleted)
+                // Get sections that belong to this class and optionally match the group
+                var query = _uow.Repository<SchoolManagementSystem.Models.Entities.Academic.Section>().Query()
+                    .Where(s => s.SchoolClassId == classId && !s.IsDeleted);
+
+                if (groupId.HasValue)
+                    query = query.Where(s => s.StudentGroupId == groupId.Value);
+
+                var sections = await query
                     .OrderBy(s => s.Name)
                     .Select(s => new { id = s.Id, name = s.Name })
                     .ToListAsync(ct);

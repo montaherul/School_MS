@@ -16,6 +16,10 @@ public class TeacherClassAssignment : BaseEntity
     public int ClassId { get; set; }
     public SchoolClass? Class { get; set; }
 
+    // New: Group association for secondary classes (9-10)
+    public int? GroupId { get; set; }
+    public StudentGroup? Group { get; set; }
+
     public int SectionId { get; set; }
     public Section? Section { get; set; }
 
@@ -49,6 +53,10 @@ public class TeacherSubjectAssignment : BaseEntity
 
     public int ClassId { get; set; }
     public SchoolClass? Class { get; set; }
+
+    // New: Group association for secondary classes (9-10)
+    public int? GroupId { get; set; }
+    public StudentGroup? Group { get; set; }
 
     public int SectionId { get; set; }
     public Section? Section { get; set; }
@@ -120,6 +128,10 @@ public class TeacherTimetable : BaseEntity
 
     public int ClassId { get; set; }
     public SchoolClass? Class { get; set; }
+
+    // New: Group association for secondary classes (9-10)
+    public int? GroupId { get; set; }
+    public StudentGroup? Group { get; set; }
 
     public int SectionId { get; set; }
     public Section? Section { get; set; }

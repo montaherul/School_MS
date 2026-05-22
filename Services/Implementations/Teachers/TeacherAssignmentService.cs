@@ -19,11 +19,14 @@ public class TeacherAssignmentService : ITeacherAssignmentService
             .AsNoTracking()
             .Include(a => a.Class)
             .Include(a => a.Section)
+            .Include(a => a.Group)
             .Where(a => a.TeacherId == teacherId && !a.IsDeleted)
             .Select(a => new TeacherClassAssignmentDto
             {
                 ClassId = a.ClassId,
                 ClassName = a.Class != null ? a.Class.Name : string.Empty,
+                GroupId = a.GroupId,
+                GroupName = a.Group != null ? a.Group.Name : null,
                 SectionId = a.SectionId,
                 SectionName = a.Section != null ? a.Section.Name : string.Empty
             })
@@ -35,6 +38,7 @@ public class TeacherAssignmentService : ITeacherAssignmentService
         return await _unitOfWork.Repository<TeacherSubjectAssignment>().Query()
             .AsNoTracking()
             .Include(a => a.Subject)
+            .Include(a => a.Group)
             .Where(a => a.TeacherId == teacherId 
                 && (classId == 0 || a.ClassId == classId) 
                 && (sectionId == 0 || a.SectionId == sectionId) 
@@ -44,7 +48,9 @@ public class TeacherAssignmentService : ITeacherAssignmentService
                 SubjectId = a.SubjectId,
                 SubjectName = a.Subject != null ? a.Subject.Name : string.Empty,
                 ClassId = a.ClassId,
-                SectionId = a.SectionId
+                SectionId = a.SectionId,
+                GroupId = a.GroupId,
+                GroupName = a.Group != null ? a.Group.Name : null
             })
             .ToListAsync(ct);
     }
@@ -58,6 +64,38 @@ public class TeacherAssignmentService : ITeacherAssignmentService
             .Select(a => a.Class!)
             .Distinct()
             .ToListAsync(ct);
+    }
+
+    public async Task<IEnumerable<StudentGroup>> GetTeacherAssignedGroupsAsync(int teacherId, int classId, CancellationToken ct = default)
+    {
+        return await _unitOfWork.Repository<TeacherSubjectAssignment>().Query()
+            .AsNoTracking()
+            .Where(a => a.TeacherId == teacherId && a.ClassId == classId && a.GroupId.HasValue && !a.IsDeleted)
+            .Select(a => a.Group!)
+            .Distinct()
+            .ToListAsync(ct);
+    }
+
+    public async Task<IEnumerable<Section>> GetTeacherAssignedSectionsAsync(int teacherId, int classId, int? groupId, CancellationToken ct = default)
+    {
+        var query = _unitOfWork.Repository<TeacherSubjectAssignment>().Query()
+            .AsNoTracking()
+            .Where(a => a.TeacherId == teacherId && a.ClassId == classId && !a.IsDeleted);
+        if (groupId.HasValue)
+            query = query.Where(a => a.GroupId == groupId.Value);
+        return await query.Select(a => a.Section!).Distinct().ToListAsync(ct);
+    }
+
+    public async Task<IEnumerable<Subject>> GetTeacherAssignedSubjectsAsync(int teacherId, int classId, int? groupId, int? sectionId, CancellationToken ct = default)
+    {
+        var query = _unitOfWork.Repository<TeacherSubjectAssignment>().Query()
+            .AsNoTracking()
+            .Where(a => a.TeacherId == teacherId && a.ClassId == classId && !a.IsDeleted);
+        if (groupId.HasValue)
+            query = query.Where(a => a.GroupId == groupId.Value);
+        if (sectionId.HasValue)
+            query = query.Where(a => a.SectionId == sectionId.Value);
+        return await query.Select(a => a.Subject!).Distinct().ToListAsync(ct);
     }
 
     public async Task<bool> AssignClassAsync(int teacherId, int classId, int sectionId, int academicYearId, string createdBy)

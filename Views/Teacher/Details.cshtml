@@ -343,6 +343,39 @@
                                     <i class="bi bi-plus-lg me-1"></i>Manage Assignments
                                 </a>
                             </div>
+
+                            <!-- Filter Controls -->
+                            <div class="card bg-light border-0 mb-4 shadow-none">
+                                <div class="card-body p-3">
+                                    <div class="row g-2 align-items-end">
+                                        <div class="col-md-3">
+                                            <label class="form-label small fw-semibold text-muted mb-1">Class</label>
+                                            <select id="filterClass" class="form-select form-select-sm" data-placeholder="All Classes">
+                                                <option value="">All Classes</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3 d-none" id="filterGroupContainer">
+                                            <label class="form-label small fw-semibold text-muted mb-1">Group</label>
+                                            <select id="filterGroup" class="form-select form-select-sm" data-placeholder="All Groups">
+                                                <option value="">All Groups</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label small fw-semibold text-muted mb-1">Section</label>
+                                            <select id="filterSection" class="form-select form-select-sm" disabled data-placeholder="All Sections">
+                                                <option value="">All Sections</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <label class="form-label small fw-semibold text-muted mb-1">Subject</label>
+                                            <select id="filterSubject" class="form-select form-select-sm" disabled data-placeholder="All Subjects">
+                                                <option value="">All Subjects</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div id="assignments-container">
                                 <div class="text-center py-5 text-muted">
                                     <i class="bi bi-hourglass-split fs-2 mb-2 d-block"></i>
@@ -377,6 +410,7 @@
 </style>
 
 @section Scripts {
+<script src="~/js/teacherAssignment.js"></script>
 <script>
     // Lazy-load assignments when that tab is clicked
     document.querySelector('[data-bs-target="#pane-assignments"]')?.addEventListener('shown.bs.tab', function () {
@@ -384,23 +418,66 @@
         if (container.dataset.loaded) return;
         container.dataset.loaded = true;
 
-        fetch('/TeacherAssignment/GetByTeacher/@Model.Id')
+        // 1. Populate Class dropdown
+        fetch('/TeacherAssignment/GetAssignedClasses/@Model.Id')
+            .then(r => r.json())
+            .then(classes => {
+                const classSelect = $('#filterClass');
+                classes.forEach(c => {
+                    classSelect.append($('<option>', { value: c.id, text: c.name }));
+                });
+            })
+            .catch(err => console.error("Error loading teacher classes:", err));
+
+        // 2. Initialize cascading filters
+        window.TeacherAssignmentCascade.init({
+            teacherId: '@Model.Id',
+            classSelect: '#filterClass',
+            groupSelect: '#filterGroup',
+            groupContainer: '#filterGroupContainer',
+            sectionSelect: '#filterSection',
+            subjectSelect: '#filterSubject',
+            onChanged: loadFilteredAssignments
+        });
+
+        // 3. Initial load of assignments list
+        loadFilteredAssignments();
+    });
+
+    function loadFilteredAssignments() {
+        const container = document.getElementById('assignments-container');
+        const classId = $('#filterClass').val() || '';
+        const groupId = $('#filterGroup').val() || '';
+        const sectionId = $('#filterSection').val() || '';
+        const subjectId = $('#filterSubject').val() || '';
+
+        container.innerHTML = `
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-hourglass-split fs-2 mb-2 d-block"></i>
+                Loading assignments...
+            </div>`;
+
+        let url = `/TeacherAssignment/GetByTeacher/@Model.Id?classId=${classId}&groupId=${groupId}&sectionId=${sectionId}&subjectId=${subjectId}`;
+
+        fetch(url)
             .then(r => r.ok ? r.json() : Promise.reject(r))
             .then(data => {
                 if (!data || data.length === 0) {
                     container.innerHTML = `
                         <div class="text-center py-5 text-muted">
                             <i class="bi bi-diagram-3 fs-2 mb-2 d-block"></i>
-                            <div>No class or subject assignments yet.</div>
-                            <a href="/TeacherAssignment/@Model.Id" class="adm-btn adm-btn--primary mt-3" style="font-size:.8rem">
-                                Assign Now
-                            </a>
+                            <div>No matching assignments found.</div>
                         </div>`;
                     return;
                 }
                 let rows = data.map(a => `
                     <tr>
-                        <td><div class="fw-bold">${a.className ?? '-'}</div><div class="text-muted" style="font-size:.75rem">${a.sectionName ?? ''}</div></td>
+                        <td>
+                            <div class="fw-bold">${a.className ?? '-'}</div>
+                            <div class="text-muted" style="font-size:.75rem">
+                                ${a.sectionName ?? ''} ${a.groupName ? `(${a.groupName})` : ''}
+                            </div>
+                        </td>
                         <td>${a.subjectName ?? '-'}</td>
                         <td><span class="badge bg-light text-primary border rounded-pill">${a.isClassTeacher ? 'Class Teacher' : 'Subject Teacher'}</span></td>
                     </tr>`).join('');
@@ -419,6 +496,6 @@
             .catch(() => {
                 container.innerHTML = `<div class="alert alert-warning">Could not load assignments. <a href="/TeacherAssignment/@Model.Id">Manage here</a>.</div>`;
             });
-    });
+    }
 </script>
 }

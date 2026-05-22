@@ -101,11 +101,15 @@ builder.Services.AddScoped<ClassSubjectMappingSeeder>();
 builder.Services.AddScoped<SchoolManagementSystem.Services.Implementations.Website.WebsiteSeeder>();
 builder.Services.AddScoped<IAttendanceRecordService, AttendanceRecordService>();
 
+var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
+
 builder.WebHost.ConfigureKestrel(serverOptions =>
 {
-    serverOptions.ListenAnyIP(5000); // 🔥 important
+    serverOptions.ListenAnyIP(int.Parse(port));
 });
+
 builder.Services.AddHttpContextAccessor();
+
 var app = builder.Build();
 
 app.UseStatusCodePagesWithReExecute("/Error/Index", "?statusCode={0}");
