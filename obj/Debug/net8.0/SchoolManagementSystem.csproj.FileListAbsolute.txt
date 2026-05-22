@@ -1144,4 +1144,3 @@ G:\PROJECT .NET\SchoolMS\SchoolMS (3)\SchoolMS\obj\Debug\net8.0\refint\SchoolMan
 G:\PROJECT .NET\SchoolMS\SchoolMS (3)\SchoolMS\obj\Debug\net8.0\SchoolManagementSystem.pdb
 G:\PROJECT .NET\SchoolMS\SchoolMS (3)\SchoolMS\obj\Debug\net8.0\SchoolManagementSystem.genruntimeconfig.cache
 G:\PROJECT .NET\SchoolMS\SchoolMS (3)\SchoolMS\obj\Debug\net8.0\ref\SchoolManagementSystem.dll
-G:\PROJECT .NET\SchoolMS\SchoolMS (3)\SchoolMS\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

@@ -204,14 +204,13 @@ namespace SchoolManagementSystem.Migrations
             migrationBuilder.Sql("UPDATE Teachers SET TeacherCode = 'MIG-' + CAST(Id AS VARCHAR(10))");
 
             migrationBuilder.AlterColumn<int>(
-                name: "EmployeeId",
-                table: "Teachers",
-                type: "int",
-                nullable: false,
-                defaultValue: 0,
-                oldClrType: typeof(int),
-                oldType: "int",
-                oldNullable: true);
+              name: "EmployeeId",
+              table: "Teachers",
+              type: "int",
+              nullable: true,
+              oldClrType: typeof(int),
+              oldType: "int",
+              oldNullable: true);
 
             migrationBuilder.AddColumn<bool>(
                 name: "IsClassTeacher",
