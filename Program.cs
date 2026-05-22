@@ -34,6 +34,7 @@ using SchoolManagementSystem.Services.Interfaces.Teachers;
 using SchoolManagementSystem.UnitOfWork.Implementations;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.IO;
 var builder = WebApplication.CreateBuilder(args);
 
 // Ensure app_data directory for data protection keys
@@ -47,7 +48,9 @@ if (!Directory.Exists(dataProtectionKeysPath))
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.AddDebug();
-
+builder.Services.AddDataProtection()
+    .PersistKeysToFileSystem(new DirectoryInfo("/tmp/keys"))
+    .SetApplicationName("SchoolManagementSystem");
 // Add services to the container.
 builder.Services.AddControllersWithViews(options =>
 {
