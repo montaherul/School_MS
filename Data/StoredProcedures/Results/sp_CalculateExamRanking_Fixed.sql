@@ -1,4 +1,4 @@
-ALTER PROCEDURE sp_CalculateExamRanking
+CREATE OR ALTER PROCEDURE sp_CalculateExamRanking
     @ExamId INT
 AS
 BEGIN

@@ -1,4 +1,4 @@
-ALTER PROCEDURE sp_GetMarkEntrySheet
+CREATE OR ALTER PROCEDURE sp_GetMarkEntrySheet
     @ExamId INT,
     @ClassId INT,
     @SectionId INT,

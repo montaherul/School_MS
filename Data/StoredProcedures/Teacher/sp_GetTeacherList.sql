@@ -18,47 +18,36 @@ BEGIN
 
     DECLARE @Offset INT = (@PageNumber - 1) * @PageSize;
 
-    -- Convert status string name to its integer enum value
-    -- TeacherStatus: Active=1, OnLeave=2, Resigned=3, Terminated=4, Inactive=5
-    DECLARE @StatusInt INT = NULL;
-    IF @Status IS NOT NULL
-    BEGIN
-        SET @StatusInt = CASE @Status
-            WHEN 'Active'     THEN 1
-            WHEN 'OnLeave'    THEN 2
-            WHEN 'Resigned'   THEN 3
-            WHEN 'Terminated' THEN 4
-            WHEN 'Inactive'   THEN 5
-            ELSE NULL
-        END;
-    END;
-
     WITH TeacherData AS (
         SELECT 
             t.Id,
-            t.TeacherNo,
-            t.FullName,
-            t.Designation,
-            t.Department,
-            t.MobileNumber,
-            t.[Status],
-            t.ProfilePicturePath,
+            t.TeacherCode AS TeacherNo,
+            e.FullName,
+            d.Name AS Designation,
+            dept.Name AS Department,
+            e.Phone AS MobileNumber,
+            e.[Status],
+            e.ProfilePicturePath,
             t.IsDeleted,
-            ROW_NUMBER() OVER (ORDER BY t.FullName ASC) AS RowNum,
+            ROW_NUMBER() OVER (ORDER BY e.FullName ASC) AS RowNum,
             COUNT(*) OVER () AS TotalCount
         FROM 
             Teachers t
+        LEFT JOIN Employees e ON t.EmployeeId = e.Id
+        LEFT JOIN Departments dept ON e.DepartmentId = dept.Id
+        LEFT JOIN Designations d ON e.DesignationId = d.Id
         WHERE 
             t.IsDeleted = 0
+            AND (e.IsDeleted = 0 OR e.Id IS NULL)
             AND (
                 @SearchTerm IS NULL 
-                OR t.FullName LIKE '%' + @SearchTerm + '%'
-                OR t.TeacherNo LIKE '%' + @SearchTerm + '%'
-                OR t.MobileNumber LIKE '%' + @SearchTerm + '%'
-                OR t.Designation LIKE '%' + @SearchTerm + '%'
+                OR e.FullName LIKE '%' + @SearchTerm + '%'
+                OR t.TeacherCode LIKE '%' + @SearchTerm + '%'
+                OR e.Phone LIKE '%' + @SearchTerm + '%'
+                OR d.Name LIKE '%' + @SearchTerm + '%'
             )
-            AND (@Department IS NULL OR t.Department = @Department)
-            AND (@StatusInt IS NULL OR t.[Status] = @StatusInt)
+            AND (@Department IS NULL OR dept.Name = @Department)
+            AND (@Status IS NULL OR e.[Status] = @Status)
     )
     SELECT 
         Id,

@@ -37,6 +37,26 @@ using Microsoft.EntityFrameworkCore;
 using System.IO;
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Configuration["Email:Host"] =
+    Environment.GetEnvironmentVariable("EMAIL_HOST");
+
+builder.Configuration["Email:Port"] =
+    Environment.GetEnvironmentVariable("EMAIL_PORT");
+
+builder.Configuration["Email:EnableSsl"] =
+    Environment.GetEnvironmentVariable("EMAIL_ENABLESSL");
+
+builder.Configuration["Email:UserName"] =
+    Environment.GetEnvironmentVariable("EMAIL_USERNAME");
+
+builder.Configuration["Email:Password"] =
+    Environment.GetEnvironmentVariable("EMAIL_PASSWORD");
+
+builder.Configuration["Email:From"] =
+    Environment.GetEnvironmentVariable("EMAIL_FROM");
+
+builder.Configuration["Email:BaseUrl"] =
+    Environment.GetEnvironmentVariable("EMAIL_BASEURL");
 // Ensure app_data directory for data protection keys
 var dataProtectionKeysPath = Path.Combine(builder.Environment.ContentRootPath, "App_Data", "DataProtectionKeys");
 if (!Directory.Exists(dataProtectionKeysPath))
@@ -140,9 +160,10 @@ app.UseCookiePolicy();
 
 app.UseSession();
 app.UseAuthentication();
-app.UseAuthorization(); app.UseSession();
-app.UseAuthentication();
-app.UseAuthorization();
+app.UseAuthorization(); 
+app.UseSession();
+
+
 app.UseMiddleware<AuditLoggingMiddleware>();
 
 app.MapControllerRoute(

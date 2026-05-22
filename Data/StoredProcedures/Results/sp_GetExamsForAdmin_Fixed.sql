@@ -3,7 +3,7 @@
 -- Purpose: Get active exams with summary stats
 -- ============================================================================
 
-ALTER PROCEDURE sp_GetExamsForAdmin
+CREATE OR ALTER PROCEDURE sp_GetExamsForAdmin
     @AcademicYearId INT
 AS
 BEGIN
