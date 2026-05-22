@@ -424,10 +424,40 @@ namespace SchoolManagementSystem.Controllers.Attendance
       
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> SaveAttendance(
-    [FromBody] StudentAttendanceBulkDto dto,
-    CancellationToken ct)
+            [FromBody] StudentAttendanceBulkDto dto,
+            CancellationToken ct)
         {
+            if (!IsAdminOrPrincipal())
+            {
+                // Lock time check (e.g., 6 PM)
+                var lockTime = new TimeSpan(18, 0, 0); // 6 PM
+                if (DateTime.Now.TimeOfDay > lockTime && dto.AttendanceDate.Date == DateTime.Today)
+                {
+                    return Json(new { success = false, message = "Attendance cannot be marked or edited after 6:00 PM." });
+                }
+
+                // Prevent editing past dates
+                if (dto.AttendanceDate.Date < DateTime.Today)
+                {
+                    return Json(new { success = false, message = "Teachers cannot edit attendance for past dates." });
+                }
+
+                var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (int.TryParse(userIdStr, out var userId))
+                {
+                    var teacher = await _teacherService.GetByUserIdAsync(userId, ct);
+                    if (teacher == null) return Forbid();
+
+                    var hasAccess = await _attendanceAuthService.IsAuthorizedToMarkAttendanceAsync(teacher.Id, dto.ClassId, dto.SectionId, 0, ct);
+                    if (!hasAccess) return Forbid();
+                }
+                else
+                {
+                    return Forbid();
+                }
+            }
             if (dto == null)
             {
                 return Json(new

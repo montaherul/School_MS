@@ -3119,6 +3119,48 @@ namespace SchoolManagementSystem.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("LeaveTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            IsActive = true,
+                            IsPaid = true,
+                            MaxDays = 14,
+                            Name = "Sick Leave"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            IsActive = true,
+                            IsPaid = true,
+                            MaxDays = 10,
+                            Name = "Casual Leave"
+                        },
+                        new
+                        {
+                            Id = 3,
+                            IsActive = true,
+                            IsPaid = true,
+                            MaxDays = 180,
+                            Name = "Maternity Leave"
+                        },
+                        new
+                        {
+                            Id = 4,
+                            IsActive = true,
+                            IsPaid = true,
+                            MaxDays = 15,
+                            Name = "Paternity Leave"
+                        },
+                        new
+                        {
+                            Id = 5,
+                            IsActive = true,
+                            IsPaid = false,
+                            MaxDays = 30,
+                            Name = "Unpaid Leave"
+                        });
                 });
 
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Attendance.StudentAttendance", b =>

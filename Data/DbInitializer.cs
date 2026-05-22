@@ -319,6 +319,14 @@ public static class DbInitializer
             new StudentGroup { Id = 3, Name = "Humanities", Code = "HUM", Description = "Humanities Group", MinClass = 9, MaxClass = 10, DisplayOrder = 3, IsActive = true, CreatedAt = createdAt }
         );
 
+        modelBuilder.Entity<LeaveType>().HasData(
+            new LeaveType { Id = 1, Name = "Sick Leave", MaxDays = 14, IsPaid = true, IsActive = true },
+            new LeaveType { Name = "Casual Leave", Id = 2, MaxDays = 10, IsPaid = true, IsActive = true },
+            new LeaveType { Name = "Maternity Leave", Id = 3, MaxDays = 180, IsPaid = true, IsActive = true },
+            new LeaveType { Name = "Paternity Leave", Id = 4, MaxDays = 15, IsPaid = true, IsActive = true },
+            new LeaveType { Name = "Unpaid Leave", Id = 5, MaxDays = 30, IsPaid = false, IsActive = true }
+        );
+
         modelBuilder.Entity<GradingRule>().HasData(
             new GradingRule { Id = 1, Grade = "A+", MinMarks = 80, MaxMarks = 100, GradePoint = 5.0m, CreatedAt = createdAt },
             new GradingRule { Id = 2, Grade = "A", MinMarks = 70, MaxMarks = 79, GradePoint = 4.0m, CreatedAt = createdAt },

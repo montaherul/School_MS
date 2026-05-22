@@ -1,6 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using SchoolManagementSystem.Filters;
+using SchoolManagementSystem.Models.Entities.Attendance;
+using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Models.ViewModels.Attendance;
 using SchoolManagementSystem.Services.Interfaces.Academic;
 using SchoolManagementSystem.Services.Interfaces.Attendance;
@@ -19,6 +24,9 @@ public class AttendanceRecordController : Controller
     private readonly ITeacherAssignmentService _teacherAssignmentService;
     private readonly ISchoolClassService       _classService;
     private readonly ISectionService           _sectionService;
+    private readonly IStudentAttendanceService  _studentAttendanceService;
+    private readonly ILogger<AttendanceRecordController> _logger;
+    private readonly SchoolManagementSystem.Repositories.Interfaces.Attendance.IAttendanceLogRepository _attendanceLogRepository;
 
     public AttendanceRecordController(
         IAttendanceRecordService  service,
@@ -26,7 +34,10 @@ public class AttendanceRecordController : Controller
         ITeacherService           teacherService,
         ITeacherAssignmentService teacherAssignmentService,
         ISchoolClassService       classService,
-        ISectionService           sectionService)
+        ISectionService           sectionService,
+        IStudentAttendanceService  studentAttendanceService,
+        ILogger<AttendanceRecordController> logger,
+        SchoolManagementSystem.Repositories.Interfaces.Attendance.IAttendanceLogRepository attendanceLogRepository)
     {
         _service                  = service;
         _studentService           = studentService;
@@ -34,27 +45,86 @@ public class AttendanceRecordController : Controller
         _teacherAssignmentService = teacherAssignmentService;
         _classService             = classService;
         _sectionService           = sectionService;
+        _studentAttendanceService = studentAttendanceService;
+        _logger                   = logger;
+        _attendanceLogRepository  = attendanceLogRepository;
     }
 
-    [RequirePermission("Attendance.View")]
+    private async Task<bool> HasPermissionAsync(string permissionCode, CancellationToken ct)
+    {
+        if (User.IsInRole("Super Admin")) return true;
+
+        var roles = User.Claims
+            .Where(x => x.Type == ClaimTypes.Role)
+            .Select(x => x.Value)
+            .ToArray();
+
+        var db = HttpContext.RequestServices.GetRequiredService<SchoolManagementSystem.Data.SchoolDbContext>();
+        return await db.RolePermissions
+            .AnyAsync(rp => rp.Permission != null && rp.Role != null && rp.Permission.Code == permissionCode && roles.Contains(rp.Role.Name), ct);
+    }
+
+    private async Task LogAttendanceActionAsync(string action, string entityName, int entityId, CancellationToken ct)
+    {
+        var username = User.Identity?.Name ?? "Anonymous";
+        var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+        
+        try
+        {
+            await _attendanceLogRepository.AddAsync(new AttendanceLog
+            {
+                UserId = username,
+                Action = action,
+                EntityName = entityName,
+                EntityId = entityId,
+                IPAddress = ip,
+                Timestamp = DateTime.UtcNow
+            }, ct);
+            
+            var uow = HttpContext.RequestServices.GetRequiredService<SchoolManagementSystem.UnitOfWork.Interfaces.IUnitOfWork>();
+            await uow.SaveChangesAsync(ct);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to write attendance audit log.");
+        }
+    }
+
     public async Task<IActionResult> Index(CancellationToken ct)
     {
+        if (User.IsInRole("Student"))
+        {
+            await LogAttendanceActionAsync("Access Student Attendance Dashboard", "StudentDashboard", 0, ct);
+            return RedirectToAction(nameof(MyAttendance));
+        }
+
+        if (!await HasPermissionAsync("Attendance.View", ct))
+        {
+            _logger.LogWarning("Unauthorized attempt to access Attendance Index by user {Username}", User.Identity?.Name);
+            await LogAttendanceActionAsync("Unauthorized Access Attempt - Index", "AttendanceRecord", 0, ct);
+            return Forbid();
+        }
+
         ViewBag.Classes = await _classService.GetAllAsync(ct);
         return View();
     }
 
     // AJAX: sections for a class (used by dropdown cascade)
     [HttpGet]
-    [RequirePermission("Attendance.View")]
     public async Task<IActionResult> GetSectionsByClass(int classId, CancellationToken ct)
     {
+        if (!await HasPermissionAsync("Attendance.View", ct))
+        {
+            _logger.LogWarning("Unauthorized attempt to access GetSectionsByClass by user {Username}", User.Identity?.Name);
+            await LogAttendanceActionAsync("Unauthorized Access Attempt - GetSectionsByClass", "AttendanceRecord", 0, ct);
+            return Forbid();
+        }
         var sections = await _sectionService.GetByClassIdAsync(classId, ct);
         return Json(sections.Select(s => new { id = s.Id, name = s.Name }));
     }
 
     // AJAX: Tabulator data endpoint
     [HttpGet]
-    [RequirePermission("Attendance.View")]
     public async Task<IActionResult> GetList(
         int     page            = 1,
         int     size            = 10,
@@ -64,8 +134,8 @@ public class AttendanceRecordController : Controller
         string? attendanceDate  = null,
         CancellationToken ct    = default)
     {
-        // Student users may only see their own records
         int? studentId = null;
+
         if (User.IsInRole("Student"))
         {
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -73,7 +143,20 @@ public class AttendanceRecordController : Controller
                 studentId = await _studentService.GetStudentIdByUserIdAsync(uid, ct);
 
             if (studentId == null)
+            {
+                _logger.LogWarning("Invalid student access attempt to GetList by user {Username}", User.Identity?.Name);
+                await LogAttendanceActionAsync("Invalid Student GetList Access Attempt", "AttendanceRecord", 0, ct);
                 return Json(new { data = Array.Empty<object>(), last_page = 1, total_records = 0 });
+            }
+        }
+        else
+        {
+            if (!await HasPermissionAsync("Attendance.View", ct))
+            {
+                _logger.LogWarning("Unauthorized attempt to access GetList by user {Username}", User.Identity?.Name);
+                await LogAttendanceActionAsync("Unauthorized Access Attempt - GetList", "AttendanceRecord", 0, ct);
+                return Forbid();
+            }
         }
 
         DateOnly? dateFilter = null;
@@ -170,7 +253,6 @@ public class AttendanceRecordController : Controller
         => CreateEdit(vm, ct);
 
     [HttpGet]
-    [RequirePermission("Attendance.View")]
     public async Task<IActionResult> Details(int id, CancellationToken ct)
     {
         var dto = await _service.GetForEditAsync(id, ct);
@@ -182,7 +264,25 @@ public class AttendanceRecordController : Controller
             if (int.TryParse(userIdStr, out var uid))
             {
                 var sid = await _studentService.GetStudentIdByUserIdAsync(uid, ct);
-                if (dto.StudentId != sid) return Forbid();
+                if (dto.StudentId != sid)
+                {
+                    _logger.LogWarning("Student {StudentId} tried to view details of student {TargetStudentId} for record {RecordId}", sid, dto.StudentId, id);
+                    await LogAttendanceActionAsync($"Unauthorized Record Access Attempt: Target student {dto.StudentId}", "AttendanceRecord", id, ct);
+                    return Forbid();
+                }
+            }
+            else
+            {
+                return Forbid();
+            }
+        }
+        else
+        {
+            if (!await HasPermissionAsync("Attendance.View", ct))
+            {
+                _logger.LogWarning("Unauthorized attempt to access Details by user {Username} for record {RecordId}", User.Identity?.Name, id);
+                await LogAttendanceActionAsync("Unauthorized Access Attempt - Details", "AttendanceRecord", id, ct);
+                return Forbid();
             }
         }
 
@@ -224,5 +324,68 @@ public class AttendanceRecordController : Controller
         await _service.DeleteAsync(id, userId, ct);
         TempData["SuccessMessage"] = "Attendance record deleted successfully.";
         return RedirectToAction(nameof(Index));
+    }
+
+    private async Task<int?> GetLoggedInStudentIdAsync(CancellationToken ct)
+    {
+        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (int.TryParse(userIdStr, out var userId))
+        {
+            return await _studentService.GetStudentIdByUserIdAsync(userId, ct);
+        }
+        return null;
+    }
+
+    [Authorize(Roles = "Student")]
+    public async Task<IActionResult> MyAttendance(CancellationToken ct)
+    {
+        var studentId = await GetLoggedInStudentIdAsync(ct);
+        if (studentId == null)
+        {
+            _logger.LogWarning("Student profile not found for user {Username}", User.Identity?.Name);
+            return NotFound("Student profile not found.");
+        }
+
+        var today = DateTime.Today;
+        var summary = await _studentAttendanceService.GetMonthlySummaryAsync(studentId.Value, today.Year, today.Month, ct);
+        
+        await LogAttendanceActionAsync("View Student Attendance Dashboard", "StudentDashboard", studentId.Value, ct);
+
+        return View(summary);
+    }
+
+    [HttpGet]
+    [Authorize(Roles = "Student")]
+    public async Task<IActionResult> GetMyAttendanceData(int? year = null, int? month = null, CancellationToken ct = default)
+    {
+        var studentId = await GetLoggedInStudentIdAsync(ct);
+        if (studentId == null)
+        {
+            return Json(new { success = false, message = "Student profile not found." });
+        }
+
+        var today = DateTime.Today;
+        var y = year ?? today.Year;
+        var m = month ?? today.Month;
+
+        var history = await _studentAttendanceService.GetAttendanceHistoryAsync(studentId.Value, y, m, ct);
+        var summary = await _studentAttendanceService.GetMonthlySummaryAsync(studentId.Value, y, m, ct);
+
+        // Check today's status
+        var todayRecord = history.FirstOrDefault(h => DateOnly.FromDateTime(h.AttendanceDate) == DateOnly.FromDateTime(today));
+        var todayStatus = todayRecord?.StatusName ?? "Not Marked";
+
+        return Json(new {
+            success = true,
+            summary,
+            history = history.Select(h => new {
+                date = h.AttendanceDate.ToString("yyyy-MM-dd"),
+                formattedDate = h.AttendanceDate.ToString("dd MMM yyyy"),
+                status = h.Status,
+                statusName = h.StatusName,
+                remarks = h.Remarks
+            }),
+            todayStatus
+        });
     }
 }
