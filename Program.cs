@@ -131,13 +131,15 @@ builder.Services.AddScoped<ClassSubjectMappingSeeder>();
 builder.Services.AddScoped<SchoolManagementSystem.Services.Implementations.Website.WebsiteSeeder>();
 builder.Services.AddScoped<IAttendanceRecordService, AttendanceRecordService>();
 
-var port = Environment.GetEnvironmentVariable("PORT") ?? "10000";
+var port = Environment.GetEnvironmentVariable("PORT");
 
-builder.WebHost.ConfigureKestrel(serverOptions =>
+if (!string.IsNullOrEmpty(port))
 {
-    serverOptions.ListenAnyIP(int.Parse(port));
-});
-
+    builder.WebHost.ConfigureKestrel(serverOptions =>
+    {
+        serverOptions.ListenAnyIP(int.Parse(port));
+    });
+}
 builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
