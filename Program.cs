@@ -134,7 +134,7 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-await using (var scope = app.Services.CreateAsyncScope())
+/*await using (var scope = app.Services.CreateAsyncScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<SchoolDbContext>();
 
@@ -152,5 +152,6 @@ await using (var scope = app.Services.CreateAsyncScope())
     await seederWebsite.SeedAsync();
 
     await FinanceRbacSeeder.SeedAsync(db);
-}
+}*/
+
 app.Run();
