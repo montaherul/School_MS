@@ -136,6 +136,12 @@ app.MapControllerRoute(
 
 await using (var scope = app.Services.CreateAsyncScope())
 {
+    var db = scope.ServiceProvider.GetRequiredService<SchoolDbContext>();
+
+    // FIRST create/update database tables
+    await db.Database.MigrateAsync();
+
+    // THEN run seeders
     var seeder = scope.ServiceProvider.GetRequiredService<ClassSubjectMappingSeeder>();
     await seeder.SeedAsync();
 
@@ -145,13 +151,6 @@ await using (var scope = app.Services.CreateAsyncScope())
     var seederWebsite = scope.ServiceProvider.GetRequiredService<SchoolManagementSystem.Services.Implementations.Website.WebsiteSeeder>();
     await seederWebsite.SeedAsync();
 
-    var db = scope.ServiceProvider.GetRequiredService<SchoolDbContext>();
     await FinanceRbacSeeder.SeedAsync(db);
-}
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<SchoolDbContext>();
-
-    db.Database.Migrate();
 }
 app.Run();
