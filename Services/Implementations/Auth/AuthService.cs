@@ -58,10 +58,18 @@ public class AuthService : IAuthService
         user.LockoutUntil = null;
         user.LastLoginAt = DateTime.UtcNow;
         await _unitOfWork.SaveChangesAsync(ct);
+        var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+                new Claim(ClaimTypes.Name, user.UserName ?? ""),
+                new Claim(ClaimTypes.Email, user.Email ?? "")
+            };
+        claims.AddRange(
+      user.UserRoles
+          .Where(x => x.Role != null && !string.IsNullOrWhiteSpace(x.Role.Name))
+          .Select(x => new Claim(ClaimTypes.Role, x.Role!.Name))
+  );
 
-        var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, user.Id.ToString()), new(ClaimTypes.Name, user.UserName), new(ClaimTypes.Email, user.Email) };
-        claims.AddRange(user.UserRoles.Where(x => x.Role is not null).Select(x => new Claim(ClaimTypes.Role, x.Role!.Name)));
-        
         var roleIds = user.UserRoles.Select(x => x.RoleId).ToArray();
         var permissions = await _unitOfWork.Repository<RolePermission>().Query()
             .Where(x => roleIds.Contains(x.RoleId) && x.Permission != null)
