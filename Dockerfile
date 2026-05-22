@@ -9,7 +9,7 @@ COPY . .
 
 RUN dotnet restore
 
-RUN dotnet publish -c Release -o /app/publish
+RUN dotnet publish SchoolManagementSystem.csproj -c Release -o /app/publish
 
 # =========================
 # RUNTIME STAGE
