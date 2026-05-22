@@ -154,4 +154,12 @@ app.MapControllerRoute(
     await FinanceRbacSeeder.SeedAsync(db);
 }*/
 
+await using (var scope = app.Services.CreateAsyncScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<SchoolDbContext>();
+
+    await db.Database.MigrateAsync();
+}
+
+
 app.Run();
