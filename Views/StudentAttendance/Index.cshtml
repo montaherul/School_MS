@@ -322,10 +322,11 @@
                 selectable: "highlight",
                 movableColumns: true,
                 selectableRangeMode: "click",
+                index: "studentId",
                 columns: [
                     { title: "Select", formatter: "rowSelection", hozAlign: "center", width: 40 },
                     { title: "Roll", field: "rollNumber", width: 60 },
-        { title: "Student ID", field: "studentCode", width: 100 },
+        { title: "Student ID", field: "studentNo", width: 100 },
                     { title: "Name", field: "studentName", width: 150 },
                     { title: "Class", field: "className", width: 80 },
                     { title: "Section", field: "sectionName", width: 80 },
@@ -337,18 +338,18 @@
                         editor: "select",
                         editorParams: {
                             values: {
-                                "0": "Present",
-                                "1": "Absent",
-                                "2": "Late",
-                                "3": "Leave"
+                                "1": "Present",
+                                "2": "Absent",
+                                "3": "Late",
+                                "4": "Leave"
                             }
                         },
                         formatter: function(cell) {
                            const statusMap = {
-                                0: "Present",
-                                1: "Absent",
-                                2: "Late",
-                                3: "Leave"
+                                1: "Present",
+                                2: "Absent",
+                                3: "Late",
+                                4: "Leave"
                             };
                             const statusValue = cell.getValue();
                             const statusName = statusMap[statusValue] || statusValue;
@@ -483,52 +484,37 @@
 
         // Bulk operations
         $('#btnMarkAllPresent').click(function () {
-
         tabulatorTable.getData().forEach(row => {
-
-        row.status = 0; // Present
+        row.status = 1; // Present
         tabulatorTable.updateData([row]);
         });
-
         updateTableSummary();
         });
 
         $('#btnSelectedAbsent').click(function () {
-
         const selected = tabulatorTable.getSelectedData();
-
         selected.forEach(row => {
-
-        row.status = 1; // Absent
+        row.status = 2; // Absent
         tabulatorTable.updateData([row]);
         });
-
         updateTableSummary();
         });
 
         $('#btnSelectedLate').click(function () {
-
         const selected = tabulatorTable.getSelectedData();
-
         selected.forEach(row => {
-
-        row.status = 2; // Late
+        row.status = 3; // Late
         tabulatorTable.updateData([row]);
         });
-
         updateTableSummary();
         });
 
         $('#btnApplyLeave').click(function () {
-
         const selected = tabulatorTable.getSelectedData();
-
         selected.forEach(row => {
-
-        row.status = 3; // Leave
+        row.status = 4; // Leave
         tabulatorTable.updateData([row]);
         });
-
         updateTableSummary();
         });
 
@@ -633,23 +619,15 @@
         });
 
         function updateTableSummary() {
-
-        const data = tabulatorTable.getData();
-
-        const summary = {
-
-        totalStudents: data.length,
-
-        present: data.filter(d => d.status == 0).length,
-
-        absent: data.filter(d => d.status == 1).length,
-
-        late: data.filter(d => d.status == 2).length,
-
-        leave: data.filter(d => d.status == 3).length
-        };
-
-        updateSummary(summary);
+            const data = tabulatorTable.getData();
+            const summary = {
+                totalStudents: data.length,
+                present: data.filter(d => d.status == 1).length,
+                absent:  data.filter(d => d.status == 2).length,
+                late:    data.filter(d => d.status == 3).length,
+                leave:   data.filter(d => d.status == 4).length
+            };
+            updateSummary(summary);
         }
     </script>
 }

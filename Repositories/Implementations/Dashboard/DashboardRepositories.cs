@@ -22,8 +22,8 @@ public class DashboardRepository : IDashboardRepository
         var approvedAdmissions = await _db.Admissions.Where(a => a.Status == AdmissionStatus.Approved).CountAsync(ct);
         var rejectedAdmissions = await _db.Admissions.Where(a => a.Status == AdmissionStatus.Rejected).CountAsync(ct);
         var convertedAdmissions = await _db.Admissions.Where(a => a.Status == AdmissionStatus.Converted).CountAsync(ct);
-        var totalAttendance = await _db.Attendance.CountAsync(ct);
-        var presentAttendance = await _db.Attendance.Where(a => (int)a.Status == 0).CountAsync(ct);
+        var totalAttendance = await _db.Attendance.Where(a => !a.IsDeleted).CountAsync(ct);
+        var presentAttendance = await _db.Attendance.Where(a => (a.Status == AttendanceStatus.Present || a.Status == AttendanceStatus.Late) && !a.IsDeleted).CountAsync(ct);
         var feesCollected = await _db.FeeInvoices.Where(f => (int)f.Status == 1).SumAsync(f => f.PaidAmount, ct);
         var feesTotal = await _db.FeeInvoices.SumAsync(f => f.TotalAmount, ct);
 
@@ -48,8 +48,8 @@ public class DashboardRepository : IDashboardRepository
 
     public async Task<(int totalAttendance, int presentAttendance, decimal totalInvoiced, decimal totalPaid, List<RecentActivityItem> recentNotices, List<AssignmentDashboardItem> upcomingAssignments)> GetStudentDashboardDataAsync(int studentId, int classId, int sectionId, CancellationToken ct)
     {
-        var totalAttendance = await _db.Attendance.Where(a => a.StudentId == studentId).CountAsync(ct);
-        var presentAttendance = await _db.Attendance.Where(a => a.StudentId == studentId && (int)a.Status == 0).CountAsync(ct);
+        var totalAttendance = await _db.Attendance.Where(a => a.StudentId == studentId && !a.IsDeleted).CountAsync(ct);
+        var presentAttendance = await _db.Attendance.Where(a => a.StudentId == studentId && (a.Status == AttendanceStatus.Present || a.Status == AttendanceStatus.Late) && !a.IsDeleted).CountAsync(ct);
         var totalInvoiced = await _db.FeeInvoices.Where(f => f.StudentId == studentId).SumAsync(f => f.TotalAmount, ct);
         var totalPaid = await _db.FeeInvoices.Where(f => f.StudentId == studentId && (int)f.Status == 1).SumAsync(f => f.PaidAmount, ct);
 
@@ -76,8 +76,8 @@ public class DashboardQueryRepository : IDashboardQueryRepository
         var approvedAdmissions = await _db.Admissions.Where(a => a.Status == AdmissionStatus.Approved).CountAsync(ct);
         var rejectedAdmissions = await _db.Admissions.Where(a => a.Status == AdmissionStatus.Rejected).CountAsync(ct);
         var convertedAdmissions = await _db.Admissions.Where(a => a.Status == AdmissionStatus.Converted).CountAsync(ct);
-        var totalAttendance = await _db.Attendance.CountAsync(ct);
-        var presentAttendance = await _db.Attendance.Where(a => (int)a.Status == 0).CountAsync(ct);
+        var totalAttendance = await _db.Attendance.Where(a => !a.IsDeleted).CountAsync(ct);
+        var presentAttendance = await _db.Attendance.Where(a => (a.Status == AttendanceStatus.Present || a.Status == AttendanceStatus.Late) && !a.IsDeleted).CountAsync(ct);
         var feesCollected = await _db.FeeInvoices.Where(f => (int)f.Status == 1).SumAsync(f => f.PaidAmount, ct);
         var feesTotal = await _db.FeeInvoices.SumAsync(f => f.TotalAmount, ct);
 
@@ -102,8 +102,8 @@ public class DashboardQueryRepository : IDashboardQueryRepository
 
     public async Task<(int totalAttendance, int presentAttendance, decimal totalInvoiced, decimal totalPaid, List<RecentActivityItem> recentNotices, List<AssignmentDashboardItem> upcomingAssignments)> GetStudentDashboardDataAsync(int studentId, int classId, int sectionId, CancellationToken ct)
     {
-        var totalAttendance = await _db.Attendance.Where(a => a.StudentId == studentId).CountAsync(ct);
-        var presentAttendance = await _db.Attendance.Where(a => a.StudentId == studentId && (int)a.Status == 0).CountAsync(ct);
+        var totalAttendance = await _db.Attendance.Where(a => a.StudentId == studentId && !a.IsDeleted).CountAsync(ct);
+        var presentAttendance = await _db.Attendance.Where(a => a.StudentId == studentId && (a.Status == AttendanceStatus.Present || a.Status == AttendanceStatus.Late) && !a.IsDeleted).CountAsync(ct);
         var totalInvoiced = await _db.FeeInvoices.Where(f => f.StudentId == studentId).SumAsync(f => f.TotalAmount, ct);
         var totalPaid = await _db.FeeInvoices.Where(f => f.StudentId == studentId && (int)f.Status == 1).SumAsync(f => f.PaidAmount, ct);
 

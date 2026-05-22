@@ -1306,10 +1306,10 @@ D:\final\obj\Debug\net8.0\staticwebassets.build.json.cache
 D:\final\obj\Debug\net8.0\staticwebassets.development.json
 D:\final\obj\Debug\net8.0\staticwebassets.build.endpoints.json
 D:\final\obj\Debug\net8.0\swae.build.ex.cache
-D:\final\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
 D:\final\obj\Debug\net8.0\SchoolMa.D9F7BBC0.Up2Date
 D:\final\obj\Debug\net8.0\SchoolManagementSystem.dll
 D:\final\obj\Debug\net8.0\refint\SchoolManagementSystem.dll
 D:\final\obj\Debug\net8.0\SchoolManagementSystem.pdb
 D:\final\obj\Debug\net8.0\SchoolManagementSystem.genruntimeconfig.cache
 D:\final\obj\Debug\net8.0\ref\SchoolManagementSystem.dll
+D:\final\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt

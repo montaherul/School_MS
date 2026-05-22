@@ -571,12 +571,16 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
         public async Task<StudentAttendanceMonthlySummaryDto> GetMonthlySummaryAsync(int studentId, int year, int month, CancellationToken ct = default)
         {
             var history = await GetAttendanceHistoryAsync(studentId, year, month, ct);
+            var student = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().GetByIdAsync(studentId, ct);
 
             if (!history.Any())
             {
                 return new StudentAttendanceMonthlySummaryDto
                 {
                     StudentId = studentId,
+                    StudentNo = student?.StudentNo ?? "",
+                    StudentName = student?.FullName ?? "",
+                    RollNumber = student?.RollNumber.ToString() ?? "",
                     Year = year,
                     Month = month,
                     TotalDays = 0,
@@ -595,9 +599,9 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
             return new StudentAttendanceMonthlySummaryDto
             {
                 StudentId = studentId,
-                StudentNo = firstRecord?.StudentNo ?? "",
-                StudentName = firstRecord?.StudentName ?? "",
-                RollNumber = firstRecord?.RollNumber ?? "",
+                StudentNo = student?.StudentNo ?? firstRecord?.StudentNo ?? "",
+                StudentName = student?.FullName ?? firstRecord?.StudentName ?? "",
+                RollNumber = student?.RollNumber.ToString() ?? firstRecord?.RollNumber ?? "",
                 Year = year,
                 Month = month,
                 TotalDays = totalDays,

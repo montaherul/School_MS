@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using SchoolManagementSystem.Models.Entities.Base;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SchoolManagementSystem.Models.Entities.Communication;
 
@@ -20,6 +21,15 @@ public class Notice : BaseEntity
     public string? AttachmentPath { get; set; }
 
     public bool IsPublished { get; set; } = true;
+
+    // Category for notice (Academic, Exam, Holiday, Emergency, Event, Admission, General)
+    [NotMapped]
+    [MaxLength(60)]
+    public string Category { get; set; } = "General";
+
+    // Mark important notices which should be highlighted and shown first for students
+    [NotMapped]
+    public bool IsImportant { get; set; } = false;
 }
 
 public class MessageThread : BaseEntity
