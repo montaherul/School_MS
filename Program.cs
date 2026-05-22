@@ -57,6 +57,19 @@ builder.Configuration["Email:From"] =
 
 builder.Configuration["Email:BaseUrl"] =
     Environment.GetEnvironmentVariable("EMAIL_BASEURL");
+
+// --- EMAIL CONFIGURATION VALIDATION ---
+var emailOptions = builder.Configuration.GetSection("Email").Get<EmailOptions>();
+if (emailOptions == null || string.IsNullOrEmpty(emailOptions.Host) || string.IsNullOrEmpty(emailOptions.UserName))
+{
+    Console.WriteLine("CRITICAL WARNING: Email configuration is missing or incomplete. Emails will likely fail.");
+}
+else
+{
+    Console.WriteLine($"Email Config Loaded: Host={emailOptions.Host}, Port={emailOptions.Port}, From={emailOptions.From}");
+}
+// --------------------------------------
+
 // Ensure app_data directory for data protection keys
 var dataProtectionKeysPath = Path.Combine(builder.Environment.ContentRootPath, "App_Data", "DataProtectionKeys");
 if (!Directory.Exists(dataProtectionKeysPath))
@@ -172,7 +185,7 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-/*await using (var scope = app.Services.CreateAsyncScope())
+await using (var scope = app.Services.CreateAsyncScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<SchoolDbContext>();
 
@@ -190,7 +203,8 @@ app.MapControllerRoute(
     await seederWebsite.SeedAsync();
 
     await FinanceRbacSeeder.SeedAsync(db);
-}*/
+}
+
 
 
 

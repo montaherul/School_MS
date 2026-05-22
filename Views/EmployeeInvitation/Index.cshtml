@@ -1,0 +1,147 @@
+@{
+    ViewData["Title"] = "Employee Invitations";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-envelope-paper-fill"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Onboarding Invitations</h1>
+                <p class="adm-header__sub">Manage and track self-onboarding invitations for staff</p>
+            </div>
+        </div>
+        <a asp-action="Create" class="adm-btn adm-btn--primary">
+            <i class="bi bi-plus-lg"></i>
+            <span>New Invitation</span>
+        </a>
+    </div>
+
+    <div class="adm-filters mt-4">
+        <div class="adm-filters__row">
+            <div class="adm-filters__field adm-filters__field--search">
+                <label class="adm-label">Search</label>
+                <div class="adm-input-wrap">
+                    <i class="bi bi-search adm-input-wrap__icon"></i>
+                    <input type="text" id="invitationSearch" class="adm-input" placeholder="Search by name or email..." />
+                </div>
+            </div>
+            <div class="adm-filters__field">
+                <button type="button" id="btnSearch" class="adm-btn adm-btn--ghost mt-4">
+                    <span>Search</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="adm-table-card mt-4">
+        <div class="adm-table-card__body">
+            <div id="loadingOverlay" class="adm-loading adm-loading--hidden">
+                <div class="adm-loading__spinner"></div>
+                <span class="adm-loading__text">Loading invitations...</span>
+            </div>
+            <div class="table-shell">
+                <div class="table-responsive">
+                    <div id="invitationTable"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link href="https://unpkg.com/tabulator-tables/dist/css/tabulator.min.css" rel="stylesheet">
+    <script type="text/javascript" src="https://unpkg.com/tabulator-tables/dist/js/tabulator.min.js"></script>
+
+    <script>
+        var table;
+
+        function initTable() {
+            table = new Tabulator("#invitationTable", {
+                ajaxURL: "/EmployeeInvitation/Index",
+                pagination: true,
+                paginationMode: "remote",
+                paginationSize: 10,
+                ajaxParams: function () {
+                    return {
+                        search: $("#invitationSearch").val()
+                    };
+                },
+                ajaxResponse: function (url, params, response) {
+                    return {
+                        data: response.data || [],
+                        last_page: response.last_page || 1
+                    };
+                },
+                layout: "fitColumns",
+                placeholder: "No invitations found",
+                columns: [
+                    { title: "Full Name", field: "fullName", widthGrow: 2 },
+                    { title: "Email", field: "email", widthGrow: 2 },
+                    { title: "Department", field: "departmentName" },
+                    { title: "Designation", field: "designationName" },
+                    { 
+                        title: "Status", 
+                        field: "invitationStatus", 
+                        formatter: function(cell) {
+                            var val = cell.getValue();
+                            var cls = "success";
+                            if (val === "Sent") cls = "primary";
+                            if (val === "Expired") cls = "danger";
+                            if (val === "Cancelled") cls = "warning";
+                            return `<span class="badge bg-${cls}">${val}</span>`;
+                        }
+                    },
+                    { 
+                        title: "Created At", 
+                        field: "createdAt", 
+                        formatter: function(cell) {
+                            return new Date(cell.getValue()).toLocaleDateString();
+                        }
+                    },
+                    {
+                        title: "Actions",
+                        headerSort: false,
+                        formatter: function(cell) {
+                            var id = cell.getData().id;
+                            var status = cell.getData().invitationStatus;
+                            var btnResend = status === "Sent" || status === "Expired" ? `<button class="btn btn-sm btn-outline-primary me-2" onclick="resendInvite(${id})"><i class="bi bi-arrow-clockwise"></i></button>` : "";
+                            var btnCancel = status === "Sent" ? `<button class="btn btn-sm btn-outline-danger" onclick="cancelInvite(${id})"><i class="bi bi-x-circle"></i></button>` : "";
+                            return btnResend + btnCancel;
+                        }
+                    }
+                ]
+            });
+        }
+
+        function resendInvite(id) {
+            if (confirm("Resend invitation email?")) {
+                $.post("/EmployeeInvitation/Resend", { id: id }, function(res) {
+                    if (res.success) table.setData();
+                    alert(res.message);
+                });
+            }
+        }
+
+        function cancelInvite(id) {
+            if (confirm("Cancel this invitation?")) {
+                $.post("/EmployeeInvitation/Cancel", { id: id }, function(res) {
+                    if (res.success) table.setData();
+                    alert(res.message);
+                });
+            }
+        }
+
+        $(document).ready(function() {
+            initTable();
+            $("#btnSearch").click(function() {
+                table.setData();
+            });
+            $("#invitationSearch").keypress(function(e) {
+                if (e.which === 13) $("#btnSearch").click();
+            });
+        });
+    </script>
+}

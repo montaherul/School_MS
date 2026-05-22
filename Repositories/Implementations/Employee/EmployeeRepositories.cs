@@ -322,3 +322,83 @@ public class EmployeeExperienceRepository : BaseRepository<EmployeeExperience>, 
 {
     public EmployeeExperienceRepository(SchoolDbContext db) : base(db) { }
 }
+
+public class EmployeeInvitationRepository : BaseRepository<EmployeeInvitation>, IEmployeeInvitationRepository
+{
+    public EmployeeInvitationRepository(SchoolDbContext db) : base(db) { }
+
+    public async Task<(List<EmployeeInvitationDto> items, int totalRecords)> GetPagedBySpAsync(
+        int page, int pageSize, string? search, CancellationToken ct)
+    {
+        using var command = _db.Database.GetDbConnection().CreateCommand();
+        command.CommandText = "sp_GetEmployeeInvitationList";
+        command.CommandType = System.Data.CommandType.StoredProcedure;
+
+        command.Parameters.Add(new Microsoft.Data.SqlClient.SqlParameter("@PageNumber", page));
+        command.Parameters.Add(new Microsoft.Data.SqlClient.SqlParameter("@PageSize", pageSize));
+        command.Parameters.Add(new Microsoft.Data.SqlClient.SqlParameter("@SearchTerm", (object?)search ?? DBNull.Value));
+
+        await _db.Database.OpenConnectionAsync(ct);
+        try
+        {
+            using var reader = await command.ExecuteReaderAsync(ct);
+            var items = new List<EmployeeInvitationDto>();
+            int totalRecords = 0;
+
+            var ordId = reader.GetOrdinal("Id");
+            var ordFullName = reader.GetOrdinal("FullName");
+            var ordEmail = reader.GetOrdinal("Email");
+            var ordMobile = reader.GetOrdinal("Mobile");
+            var ordToken = reader.GetOrdinal("InvitationToken");
+            var ordDeptId = reader.GetOrdinal("DepartmentId");
+            var ordDeptName = reader.GetOrdinal("DepartmentName");
+            var ordDesigId = reader.GetOrdinal("DesignationId");
+            var ordDesigName = reader.GetOrdinal("DesignationName");
+            var ordJoiningDate = reader.GetOrdinal("JoiningDate");
+            var ordEmpType = reader.GetOrdinal("EmploymentType");
+            var ordStatus = reader.GetOrdinal("Status");
+            var ordIsTeaching = reader.GetOrdinal("IsTeachingStaff");
+            var ordRemarks = reader.GetOrdinal("Remarks");
+            var ordExpiresAt = reader.GetOrdinal("ExpiresAt");
+            var ordIsUsed = reader.GetOrdinal("IsUsed");
+            var ordIsApproved = reader.GetOrdinal("IsApproved");
+            var ordInviteStatus = reader.GetOrdinal("InvitationStatus");
+            var ordCreatedAt = reader.GetOrdinal("CreatedAt");
+            var ordTotal = reader.GetOrdinal("TotalRecords");
+
+            while (await reader.ReadAsync(ct))
+            {
+                if (totalRecords == 0) totalRecords = reader.GetInt32(ordTotal);
+
+                items.Add(new EmployeeInvitationDto
+                {
+                    Id = reader.GetInt32(ordId),
+                    FullName = reader.GetString(ordFullName),
+                    Email = reader.GetString(ordEmail),
+                    Mobile = reader.GetString(ordMobile),
+                    InvitationToken = reader.GetString(ordToken),
+                    DepartmentId = reader.GetInt32(ordDeptId),
+                    DepartmentName = reader.IsDBNull(ordDeptName) ? null : reader.GetString(ordDeptName),
+                    DesignationId = reader.GetInt32(ordDesigId),
+                    DesignationName = reader.IsDBNull(ordDesigName) ? null : reader.GetString(ordDesigName),
+                    JoiningDate = reader.GetDateTime(ordJoiningDate),
+                    EmploymentType = reader.GetString(ordEmpType),
+                    Status = reader.GetString(ordStatus),
+                    IsTeachingStaff = reader.GetBoolean(ordIsTeaching),
+                    Remarks = reader.IsDBNull(ordRemarks) ? null : reader.GetString(ordRemarks),
+                    ExpiresAt = reader.GetDateTime(ordExpiresAt),
+                    IsUsed = reader.GetBoolean(ordIsUsed),
+                    IsApproved = reader.GetBoolean(ordIsApproved),
+                    InvitationStatus = reader.GetString(ordInviteStatus),
+                    CreatedAt = reader.GetDateTime(ordCreatedAt)
+                });
+            }
+
+            return (items, totalRecords);
+        }
+        finally
+        {
+            await _db.Database.CloseConnectionAsync();
+        }
+    }
+}

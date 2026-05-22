@@ -78,6 +78,7 @@ public static class ServiceRegistration
         services.AddScoped<IEmployeeQualificationRepository, EmployeeQualificationRepository>();
         services.AddScoped<IEmployeeDocumentRepository, EmployeeDocumentRepository>();
         services.AddScoped<IEmployeeExperienceRepository, EmployeeExperienceRepository>();
+        services.AddScoped<IEmployeeInvitationRepository, EmployeeInvitationRepository>();
 
         services.AddScoped<IAcademicYearRepository, AcademicYearRepository>();
         services.AddScoped<ISchoolClassRepository, SchoolClassRepository>();
@@ -120,6 +121,7 @@ public static class ServiceRegistration
 
         // Register Employee Services
         services.AddScoped<IEmployeeService, EmployeeService>();
+        services.AddScoped<IEmployeeInvitationService, EmployeeInvitationService>();
         services.AddScoped<IDepartmentService, DepartmentService>();
         services.AddScoped<IDesignationService, DesignationService>();
         services.AddScoped<IUserProvisionService, UserProvisionService>();

@@ -1,0 +1,32 @@
+@{
+    ViewData["Title"] = "Onboarding Complete";
+    Layout = "_AuthLayout";
+}
+
+<div class="text-center p-4">
+    <div class="mb-4">
+        <div class="bg-success bg-opacity-10 text-success rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+            <i class="bi bi-check-all fs-1"></i>
+        </div>
+    </div>
+
+    <h2 class="fw-bold mb-3">Onboarding Complete!</h2>
+    <p class="text-muted mb-4">
+        Thank you for completing your profile. Your information has been submitted successfully.
+        Our HR department will review your details and you will receive an update soon.
+    </p>
+
+    <div class="alert alert-success d-flex align-items-center mb-4 text-start">
+        <i class="bi bi-info-circle-fill fs-4 me-3"></i>
+        <div>
+            <strong>What's next?</strong><br/>
+            You can now use your email and the password you set to sign in to the portal once your account is fully activated.
+        </div>
+    </div>
+
+    <div class="d-grid gap-2">
+        <a asp-controller="Auth" asp-action="Login" class="btn btn-primary p-3 fw-bold">
+            Go to Login Portal
+        </a>
+    </div>
+</div>

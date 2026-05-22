@@ -168,6 +168,14 @@
                             {
                                 <a asp-controller="Teacher" asp-action="Index" data-title="Teachers"><i class="bi bi-person-badge"></i><span class="nav-text">Teachers</span></a>
                             }
+                            @if (Can("Employees.Invite"))
+                            {
+                                <a asp-controller="EmployeeInvitation" asp-action="Index" data-title="Onboarding"><i class="bi bi-envelope-paper"></i><span class="nav-text">Onboarding</span></a>
+                            }
+                            @if (Can("Employees.View"))
+                            {
+                                <a asp-controller="Employee" asp-action="Index" data-title="Employees"><i class="bi bi-person-badge"></i><span class="nav-text">Employees</span></a>
+                            }
                         }
 
                         @if (Can("Academic.View") || Can("Classes.View") || Can("Subjects.View") || Can("Attendance.View") || Can("Exams.View") || Can("Exam.View") || Can("Marks.View") || Can("Result.View") || Can("Assignments.View"))

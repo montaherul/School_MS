@@ -1,23 +1,23 @@
 {
   "format": 1,
   "restore": {
-    "D:\\final\\SchoolManagementSystem.csproj": {}
+    "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\SchoolManagementSystem.csproj": {}
   },
   "projects": {
-    "D:\\final\\SchoolManagementSystem.csproj": {
+    "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\SchoolManagementSystem.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\final\\SchoolManagementSystem.csproj",
+        "projectUniqueName": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\SchoolManagementSystem.csproj",
         "projectName": "SchoolManagementSystem",
-        "projectPath": "D:\\final\\SchoolManagementSystem.csproj",
-        "packagesPath": "C:\\Users\\Admin\\.nuget\\packages\\",
-        "outputPath": "D:\\final\\obj\\",
+        "projectPath": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\SchoolManagementSystem.csproj",
+        "packagesPath": "C:\\Users\\islam\\.nuget\\packages\\",
+        "outputPath": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\Admin\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\islam\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -30,6 +30,7 @@
         },
         "frameworks": {
           "net8.0": {
+            "framework": "net8.0",
             "targetAlias": "net8.0",
             "projectReferences": {}
           }
@@ -44,10 +45,11 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "10.0.200"
+        "SdkAnalysisLevel": "10.0.300"
       },
       "frameworks": {
         "net8.0": {
+          "framework": "net8.0",
           "targetAlias": "net8.0",
           "dependencies": {
             "MailKit": {
@@ -102,7 +104,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.200-preview.0.26103.119/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.300-preview.0.26177.108/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

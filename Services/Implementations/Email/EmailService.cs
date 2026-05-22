@@ -143,6 +143,44 @@ public class EmailService : IEmailService
             htmlBody: htmlBody,
             cancellationToken: cancellationToken);
     }
+
+    public async Task SendEmployeeInvitationAsync(
+        string toEmail,
+        string employeeName,
+        string invitationToken,
+        DateTime expiresAt,
+        CancellationToken cancellationToken = default)
+    {
+        var baseUrl = _options.BaseUrl?.TrimEnd('/');
+        var onboardingUrl = $"{baseUrl}/Onboarding/Welcome?token={invitationToken}";
+
+        var htmlBody = $@"
+<div style=""font-family: Arial, sans-serif; line-height: 1.6; color: #333;"">
+    <h2 style=""color: #1a56db;"">Welcome to Our School Team!</h2>
+    <p>Dear <strong>{employeeName}</strong>,</p>
+    <p>We are excited to invite you to join our team. To complete your onboarding process, please click the button below to fill out your employee profile and set up your account.</p>
+
+    <div style=""margin: 30px 0;"">
+        <a href=""{onboardingUrl}"" style=""background-color: #1a56db; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;"">
+            Start Onboarding
+        </a>
+    </div>
+
+    <p>Please note that this invitation link will expire on <strong>{expiresAt:dd MMM yyyy, hh:mm tt}</strong>.</p>
+
+    <p>If the button doesn't work, you can copy and paste the following link into your browser:</p>
+    <p style=""font-size: 0.9em; color: #666;"">{onboardingUrl}</p>
+
+    <hr style=""border: 0; border-top: 1px solid #eee; margin: 20px 0;"" />
+    <p>Regards,<br/>School Administration</p>
+</div>";
+
+        await _emailSender.SendAsync(
+            to: toEmail,
+            subject: "Invitation to Join Our School Team",
+            htmlBody: htmlBody,
+            cancellationToken: cancellationToken);
+    }
 }
 
 

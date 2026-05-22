@@ -1,0 +1,36 @@
+@model SchoolManagementSystem.Models.DTOs.Employee.EmployeeInvitationDto
+@{
+    ViewData["Title"] = "Welcome to Our Team";
+    Layout = "_AuthLayout";
+}
+
+<div class="text-center p-4">
+    <div class="mb-4">
+        <div class="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+            <i class="bi bi-person-check-fill fs-1"></i>
+        </div>
+    </div>
+
+    <h2 class="fw-bold mb-3">Welcome, @Model.FullName!</h2>
+    <p class="text-muted mb-4">
+        You have been invited to join the <strong>@Model.DepartmentName</strong> department as a <strong>@Model.DesignationName</strong>.
+        Please complete your profile to finalize the onboarding process.
+    </p>
+
+    <div class="bg-light p-3 rounded-3 mb-4 text-start">
+        <ul class="list-unstyled mb-0 small text-muted">
+            <li class="mb-2"><i class="bi bi-check2-circle text-success me-2"></i> Set up your official account</li>
+            <li class="mb-2"><i class="bi bi-check2-circle text-success me-2"></i> Provide personal and contact details</li>
+            <li class="mb-2"><i class="bi bi-check2-circle text-success me-2"></i> Upload educational & experience records</li>
+        </ul>
+    </div>
+
+    <div class="d-grid gap-2">
+        <a asp-action="Start" asp-route-token="@Model.InvitationToken" class="btn btn-primary p-3 fw-bold">
+            Get Started <i class="bi bi-arrow-right ms-2"></i>
+        </a>
+        <p class="mt-3 small text-muted">
+            Link expires: @Model.ExpiresAt.ToString("dd MMM yyyy, hh:mm tt")
+        </p>
+    </div>
+</div>

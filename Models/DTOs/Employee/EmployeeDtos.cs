@@ -229,3 +229,59 @@ public class DepartmentDto
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
 }
+
+public class EmployeeInvitationDto
+{
+    public int Id { get; set; }
+    public string FullName { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string Mobile { get; set; } = string.Empty;
+    public string InvitationToken { get; set; } = string.Empty;
+    public int DepartmentId { get; set; }
+    public string? DepartmentName { get; set; }
+    public int DesignationId { get; set; }
+    public string? DesignationName { get; set; }
+    public DateTime JoiningDate { get; set; }
+    public string EmploymentType { get; set; } = "Full-Time";
+    public string Status { get; set; } = "Active";
+    public bool IsTeachingStaff { get; set; }
+    public string? Remarks { get; set; }
+    public DateTime ExpiresAt { get; set; }
+    public bool IsUsed { get; set; }
+    public bool IsApproved { get; set; }
+    public string InvitationStatus { get; set; } = "Started";
+    public DateTime CreatedAt { get; set; }
+}
+
+public class EmployeeInvitationUpsertDto
+{
+    [Required, MaxLength(120), Display(Name = "Full Name")]
+    public string FullName { get; set; } = string.Empty;
+
+    [Required, EmailAddress, MaxLength(160)]
+    public string Email { get; set; } = string.Empty;
+
+    [Required, MaxLength(30)]
+    public string Mobile { get; set; } = string.Empty;
+
+    [Required, Display(Name = "Department")]
+    public int DepartmentId { get; set; }
+
+    [Required, Display(Name = "Designation")]
+    public int DesignationId { get; set; }
+
+    [Required, Display(Name = "Joining Date")]
+    public DateTime JoiningDate { get; set; } = DateTime.Today;
+
+    [Required, MaxLength(50), Display(Name = "Employment Type")]
+    public string EmploymentType { get; set; } = "Full-Time";
+
+    [Required, MaxLength(20)]
+    public string Status { get; set; } = "Active";
+
+    [Display(Name = "Is Teaching Staff?")]
+    public bool IsTeachingStaff { get; set; }
+
+    [MaxLength(500)]
+    public string? Remarks { get; set; }
+}

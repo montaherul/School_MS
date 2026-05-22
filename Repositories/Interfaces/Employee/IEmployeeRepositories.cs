@@ -30,3 +30,9 @@ public interface IEmployeeDocumentRepository : IBaseRepository<EmployeeDocument>
 public interface IEmployeeExperienceRepository : IBaseRepository<EmployeeExperience>
 {
 }
+
+public interface IEmployeeInvitationRepository : IBaseRepository<EmployeeInvitation>
+{
+    Task<(List<EmployeeInvitationDto> items, int totalRecords)> GetPagedBySpAsync(
+        int page, int pageSize, string? search, CancellationToken ct);
+}

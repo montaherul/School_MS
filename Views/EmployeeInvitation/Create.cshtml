@@ -1,0 +1,102 @@
+@model SchoolManagementSystem.Models.DTOs.Employee.EmployeeInvitationUpsertDto
+@{
+    ViewData["Title"] = "Create Employee Invitation";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-person-plus-fill"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Invite New Employee</h1>
+                <p class="adm-header__sub">Send secure onboarding invitation to potential staff</p>
+            </div>
+        </div>
+        <a asp-action="Index" class="adm-btn adm-btn--ghost">
+            <i class="bi bi-arrow-left"></i>
+            <span>Back to List</span>
+        </a>
+    </div>
+
+    <div class="adm-card mt-4">
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+            <div class="adm-card__body p-4">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label asp-for="FullName" class="adm-label">Full Name <span class="text-danger">*</span></label>
+                        <input asp-for="FullName" class="adm-input" placeholder="Enter Full Name" />
+                        <span asp-validation-for="FullName" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Email" class="adm-label">Email Address <span class="text-danger">*</span></label>
+                        <input asp-for="Email" class="adm-input" placeholder="employee@example.com" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="Mobile" class="adm-label">Mobile Number <span class="text-danger">*</span></label>
+                        <input asp-for="Mobile" class="adm-input" placeholder="01XXXXXXXXX" />
+                        <span asp-validation-for="Mobile" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="JoiningDate" class="adm-label">Planned Joining Date <span class="text-danger">*</span></label>
+                        <input asp-for="JoiningDate" type="date" class="adm-input" />
+                        <span asp-validation-for="JoiningDate" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="DepartmentId" class="adm-label">Department <span class="text-danger">*</span></label>
+                        <select asp-for="DepartmentId" class="adm-select" asp-items="@(new SelectList(ViewBag.Departments, "Id", "Name"))">
+                            <option value="">-- Select Department --</option>
+                        </select>
+                        <span asp-validation-for="DepartmentId" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="DesignationId" class="adm-label">Designation <span class="text-danger">*</span></label>
+                        <select asp-for="DesignationId" class="adm-select" asp-items="@(new SelectList(ViewBag.Designations, "Id", "Name"))">
+                            <option value="">-- Select Designation --</option>
+                        </select>
+                        <span asp-validation-for="DesignationId" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label asp-for="EmploymentType" class="adm-label">Employment Type <span class="text-danger">*</span></label>
+                        <select asp-for="EmploymentType" class="adm-select">
+                            <option value="">-- Select Type --</option>
+                            <option value="FullTime">Full Time</option>
+                            <option value="PartTime">Part Time</option>
+                            <option value="Contractual">Contractual</option>
+                        </select>
+                        <span asp-validation-for="EmploymentType" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-6 pt-4">
+                        <div class="adm-checkbox-wrap">
+                            <input asp-for="IsTeachingStaff" type="checkbox" class="adm-checkbox" id="chkTeaching" />
+                            <label for="chkTeaching" class="adm-label-inline">Is Teaching Staff?</label>
+                        </div>
+                    </div>
+
+                    <div class="col-12">
+                        <label asp-for="Remarks" class="adm-label">Internal Remarks</label>
+                        <textarea asp-for="Remarks" class="adm-input" rows="3" placeholder="Optional notes for HR"></textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="adm-card__footer p-4 border-top">
+                <button type="submit" class="adm-btn adm-btn--primary">
+                    <i class="bi bi-send-fill"></i>
+                    <span>Send Invitation</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

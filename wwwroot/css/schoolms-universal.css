@@ -2741,3 +2741,14 @@ body {
 .text-gradient { background: linear-gradient(135deg, var(--clr-primary), var(--clr-accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 .grayscale-filter i { filter: grayscale(100%); transition: filter 0.3s; cursor: pointer; }
 .grayscale-filter i:hover { filter: grayscale(0%); }
+
+/* ─────────────────────────────────────────────────────────────────
+   20. ONBOARDING WIZARD & DESIGN
+   ───────────────────────────────────────────────────────────────── */
+.onboarding-wizard { max-width: 800px; margin: 0 auto; background: var(--clr-card); padding: 40px; border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); border: 1px solid var(--clr-border); }
+.onboarding-steps { gap: 10px; }
+.upload-box { border: 2px dashed var(--clr-border) !important; background: var(--clr-canvas); transition: all 0.2s ease; cursor: pointer; }
+.upload-box:hover { border-color: var(--clr-primary) !important; background: var(--clr-primary-soft); color: var(--clr-primary); }
+.locked-field { background-color: var(--clr-canvas) !important; border-color: var(--clr-border) !important; color: var(--clr-text-muted) !important; cursor: not-allowed; font-weight: 600; }
+.step-dot { transition: all 0.3s ease; }
+.step-dot.active { transform: scale(1.2); }

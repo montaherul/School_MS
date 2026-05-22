@@ -122,6 +122,7 @@ public class SchoolDbContext : DbContext
     public DbSet<EmployeeAttendance> EmployeeAttendances => Set<EmployeeAttendance>();
     public DbSet<EmployeeSalary> EmployeeSalaries => Set<EmployeeSalary>();
     public DbSet<EmployeeAcademicAssignment> EmployeeAcademicAssignments => Set<EmployeeAcademicAssignment>();
+    public DbSet<EmployeeInvitation> EmployeeInvitations => Set<EmployeeInvitation>();
 
     // Public Website DbSets
     public DbSet<SchoolSetting> SchoolSettings => Set<SchoolSetting>();
