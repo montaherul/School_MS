@@ -36,7 +36,7 @@ public class SchoolWebsiteService : ISchoolWebsiteService
                 Address = "Dhaka, Bangladesh",
                 Phone = "+8801700000000",
                 Email = "info@school.gov.bd",
-                Website = "https://school.gov.bd",
+                Website = "https://school-ms-7l3e.onrender.com/",
                 PrincipalName = "Principal Name",
                 PrincipalMessage = "Welcome to our school. We strive for excellence in education and holistic development of our students.",
                 Mission = "To provide high quality education and build character.",

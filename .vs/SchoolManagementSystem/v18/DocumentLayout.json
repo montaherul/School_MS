@@ -3,12 +3,12 @@
   "WorkspaceRootPath": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|g:\\project .net\\schoolms\\schoolms (3)\\schoolms\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|g:\\project .net\\schoolms\\schoolms (3)\\schoolms\\appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}",
       "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:appsettings.json||{90A6B3A7-C1A3-4009-A288-E2FF89E96FA0}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|g:\\project .net\\schoolms\\schoolms (3)\\schoolms\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|g:\\project .net\\schoolms\\schoolms (3)\\schoolms\\data\\storedprocedures\\_runallsps.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}",
@@ -1041,82 +1041,6 @@
     {
       "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|g:\\project .net\\schoolms\\schoolms (3)\\schoolms\\models\\entities\\attendance\\attendanceentities.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:models\\entities\\attendance\\attendanceentities.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|g:\\project .net\\schoolms\\schoolms (3)\\schoolms\\data\\storedprocedures\\_runallsps.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame",
-      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:data\\storedprocedures\\_runallsps.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|g:\\project .net\\schoolms\\schoolms (3)\\schoolms\\data\\storedprocedures\\students\\sp_getstudentlist.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame",
-      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:data\\storedprocedures\\students\\sp_getstudentlist.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|g:\\project .net\\schoolms\\schoolms (3)\\schoolms\\data\\storedprocedures\\academic\\sp_assignstudenttosection.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame",
-      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:data\\storedprocedures\\academic\\sp_assignstudenttosection.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|g:\\project .net\\schoolms\\schoolms (3)\\schoolms\\data\\storedprocedures\\academic\\sp_getacademicyearlist.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame",
-      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:data\\storedprocedures\\academic\\sp_getacademicyearlist.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|g:\\project .net\\schoolms\\schoolms (3)\\schoolms\\data\\storedprocedures\\academic\\sp_getclasslist.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame",
-      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:data\\storedprocedures\\academic\\sp_getclasslist.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|g:\\project .net\\schoolms\\schoolms (3)\\schoolms\\data\\storedprocedures\\academic\\sp_getsectionlist.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame",
-      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:data\\storedprocedures\\academic\\sp_getsectionlist.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|g:\\project .net\\schoolms\\schoolms (3)\\schoolms\\data\\storedprocedures\\academic\\sp_getsubjectlist.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame",
-      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:data\\storedprocedures\\academic\\sp_getsubjectlist.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|g:\\project .net\\schoolms\\schoolms (3)\\schoolms\\data\\storedprocedures\\academic\\sp_seedclasssubjectmappings_bd.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame",
-      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:data\\storedprocedures\\academic\\sp_seedclasssubjectmappings_bd.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|g:\\project .net\\schoolms\\schoolms (3)\\schoolms\\data\\storedprocedures\\admission\\sp_getadmissionlist.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame",
-      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:data\\storedprocedures\\admission\\sp_getadmissionlist.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|g:\\project .net\\schoolms\\schoolms (3)\\schoolms\\data\\storedprocedures\\attendance\\sp_getattendancelist.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame",
-      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:data\\storedprocedures\\attendance\\sp_getattendancelist.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|g:\\project .net\\schoolms\\schoolms (3)\\schoolms\\data\\storedprocedures\\fees\\sp_getfeeinvoicelist.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame",
-      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:data\\storedprocedures\\fees\\sp_getfeeinvoicelist.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|g:\\project .net\\schoolms\\schoolms (3)\\schoolms\\data\\storedprocedures\\fees\\sp_getfeestructurelist.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame",
-      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:data\\storedprocedures\\fees\\sp_getfeestructurelist.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|g:\\project .net\\schoolms\\schoolms (3)\\schoolms\\data\\storedprocedures\\results\\sp_calculateexamranking_fixed.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame",
-      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:data\\storedprocedures\\results\\sp_calculateexamranking_fixed.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|g:\\project .net\\schoolms\\schoolms (3)\\schoolms\\data\\storedprocedures\\results\\sp_getexamsforadmin_fixed.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame",
-      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:data\\storedprocedures\\results\\sp_getexamsforadmin_fixed.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|g:\\project .net\\schoolms\\schoolms (3)\\schoolms\\data\\storedprocedures\\results\\sp_getmarkentrysheet_fixed.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame",
-      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:data\\storedprocedures\\results\\sp_getmarkentrysheet_fixed.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|g:\\project .net\\schoolms\\schoolms (3)\\schoolms\\data\\storedprocedures\\role\\sp_getrolelist.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame",
-      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:data\\storedprocedures\\role\\sp_getrolelist.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|g:\\project .net\\schoolms\\schoolms (3)\\schoolms\\data\\storedprocedures\\student\\sp_getstudentlist.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame",
-      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:data\\storedprocedures\\student\\sp_getstudentlist.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|g:\\project .net\\schoolms\\schoolms (3)\\schoolms\\data\\storedprocedures\\teacher\\sp_getteacherlist.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame",
-      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:data\\storedprocedures\\teacher\\sp_getteacherlist.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|g:\\project .net\\schoolms\\schoolms (3)\\schoolms\\data\\storedprocedures\\resultprocedures.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame",
-      "RelativeMoniker": "D:0:0:{A407C1DD-2F56-59BF-3018-EE463E14294C}|SchoolManagementSystem.csproj|solutionrelative:data\\storedprocedures\\resultprocedures.sql||{CC5D8DF0-88F4-4BB2-9DBB-B48CEE65C30A}|CodeFrame"
     }
   ],
   "DocumentGroupContainers": [
@@ -1126,7 +1050,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 5,
+          "SelectedChildIndex": 4,
           "Children": [
             {
               "$type": "Bookmark",
@@ -1143,244 +1067,225 @@
             {
               "$type": "Document",
               "DocumentIndex": 2,
-              "Title": "_RunAllSPs.sql ",
+              "Title": "_RunAllSPs.sql",
               "DocumentMoniker": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\Data\\StoredProcedures\\_RunAllSPs.sql",
               "RelativeDocumentMoniker": "Data\\StoredProcedures\\_RunAllSPs.sql",
               "ToolTip": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\Data\\StoredProcedures\\_RunAllSPs.sql",
               "RelativeToolTip": "Data\\StoredProcedures\\_RunAllSPs.sql",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
-              "WhenOpened": "2026-05-19T12:59:34.804Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-19T12:59:34.804Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "appsettings.json",
               "DocumentMoniker": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\appsettings.json",
               "RelativeDocumentMoniker": "appsettings.json",
-              "ToolTip": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\appsettings.json",
-              "RelativeToolTip": "appsettings.json",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABEAAAARAAAAAAAAAA==",
+              "ToolTip": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\appsettings.json*",
+              "RelativeToolTip": "appsettings.json*",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001642|",
               "WhenOpened": "2026-04-28T19:20:23.106Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "Program.cs",
               "DocumentMoniker": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\Program.cs",
               "RelativeDocumentMoniker": "Program.cs",
               "ToolTip": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\Program.cs",
               "RelativeToolTip": "Program.cs",
-              "ViewState": "AgIAAIgAAAAAAAAAAAAkwKQAAAAAAAAAAAAAAA==",
+              "ViewState": "AgIAALEAAAAAAAAAAAAAAI0AAAABAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-27T09:39:24.505Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-27T09:39:24.505Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 3,
-              "Title": "ResultProcedures.sql ",
+              "Title": "ResultProcedures.sql",
               "DocumentMoniker": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\Data\\StoredProcedures\\ResultProcedures.sql",
               "RelativeDocumentMoniker": "Data\\StoredProcedures\\ResultProcedures.sql",
               "ToolTip": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\Data\\StoredProcedures\\ResultProcedures.sql",
               "RelativeToolTip": "Data\\StoredProcedures\\ResultProcedures.sql",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
-              "WhenOpened": "2026-05-08T11:19:51.496Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-08T11:19:51.496Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 4,
-              "Title": "sp_GetTeacherList.sql ",
+              "Title": "sp_GetTeacherList.sql",
               "DocumentMoniker": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\Data\\StoredProcedures\\Teacher\\sp_GetTeacherList.sql",
               "RelativeDocumentMoniker": "Data\\StoredProcedures\\Teacher\\sp_GetTeacherList.sql",
               "ToolTip": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\Data\\StoredProcedures\\Teacher\\sp_GetTeacherList.sql",
               "RelativeToolTip": "Data\\StoredProcedures\\Teacher\\sp_GetTeacherList.sql",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
-              "WhenOpened": "2026-05-22T12:32:08.817Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-22T12:32:08.817Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 5,
-              "Title": "sp_GetStudentList.sql ",
+              "Title": "sp_GetStudentList.sql",
               "DocumentMoniker": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\Data\\StoredProcedures\\Student\\sp_GetStudentList.sql",
               "RelativeDocumentMoniker": "Data\\StoredProcedures\\Student\\sp_GetStudentList.sql",
               "ToolTip": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\Data\\StoredProcedures\\Student\\sp_GetStudentList.sql",
               "RelativeToolTip": "Data\\StoredProcedures\\Student\\sp_GetStudentList.sql",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
-              "WhenOpened": "2026-05-12T16:01:15.18Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-12T16:01:15.18Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 7,
-              "Title": "sp_GetRoleList.sql ",
+              "Title": "sp_GetRoleList.sql",
               "DocumentMoniker": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\Data\\StoredProcedures\\Role\\sp_GetRoleList.sql",
               "RelativeDocumentMoniker": "Data\\StoredProcedures\\Role\\sp_GetRoleList.sql",
               "ToolTip": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\Data\\StoredProcedures\\Role\\sp_GetRoleList.sql",
               "RelativeToolTip": "Data\\StoredProcedures\\Role\\sp_GetRoleList.sql",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
-              "WhenOpened": "2026-05-22T12:30:58.705Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-22T12:30:58.705Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 6,
-              "Title": "sp_GetStudentList.sql ",
+              "Title": "sp_GetStudentList.sql",
               "DocumentMoniker": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\Data\\StoredProcedures\\Students\\sp_GetStudentList.sql",
               "RelativeDocumentMoniker": "Data\\StoredProcedures\\Students\\sp_GetStudentList.sql",
               "ToolTip": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\Data\\StoredProcedures\\Students\\sp_GetStudentList.sql",
               "RelativeToolTip": "Data\\StoredProcedures\\Students\\sp_GetStudentList.sql",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
-              "WhenOpened": "2026-05-22T12:26:16.928Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-22T12:26:16.928Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 9,
-              "Title": "sp_GetExamsForAdmin_Fixed.sql ",
+              "Title": "sp_GetExamsForAdmin_Fixed.sql",
               "DocumentMoniker": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\Data\\StoredProcedures\\Results\\sp_GetExamsForAdmin_Fixed.sql",
               "RelativeDocumentMoniker": "Data\\StoredProcedures\\Results\\sp_GetExamsForAdmin_Fixed.sql",
               "ToolTip": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\Data\\StoredProcedures\\Results\\sp_GetExamsForAdmin_Fixed.sql",
               "RelativeToolTip": "Data\\StoredProcedures\\Results\\sp_GetExamsForAdmin_Fixed.sql",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
-              "WhenOpened": "2026-05-08T11:26:25.758Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-08T11:26:25.758Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 8,
-              "Title": "sp_GetMarkEntrySheet_Fixed.sql ",
+              "Title": "sp_GetMarkEntrySheet_Fixed.sql",
               "DocumentMoniker": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\Data\\StoredProcedures\\Results\\sp_GetMarkEntrySheet_Fixed.sql",
               "RelativeDocumentMoniker": "Data\\StoredProcedures\\Results\\sp_GetMarkEntrySheet_Fixed.sql",
               "ToolTip": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\Data\\StoredProcedures\\Results\\sp_GetMarkEntrySheet_Fixed.sql",
               "RelativeToolTip": "Data\\StoredProcedures\\Results\\sp_GetMarkEntrySheet_Fixed.sql",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
-              "WhenOpened": "2026-05-08T10:53:59.599Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-08T10:53:59.599Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 10,
-              "Title": "sp_CalculateExamRanking_Fixed.sql ",
+              "Title": "sp_CalculateExamRanking_Fixed.sql",
               "DocumentMoniker": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\Data\\StoredProcedures\\Results\\sp_CalculateExamRanking_Fixed.sql",
               "RelativeDocumentMoniker": "Data\\StoredProcedures\\Results\\sp_CalculateExamRanking_Fixed.sql",
               "ToolTip": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\Data\\StoredProcedures\\Results\\sp_CalculateExamRanking_Fixed.sql",
               "RelativeToolTip": "Data\\StoredProcedures\\Results\\sp_CalculateExamRanking_Fixed.sql",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
-              "WhenOpened": "2026-05-08T11:27:22.305Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-08T11:27:22.305Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 11,
-              "Title": "sp_GetFeeStructureList.sql ",
+              "Title": "sp_GetFeeStructureList.sql",
               "DocumentMoniker": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\Data\\StoredProcedures\\Fees\\sp_GetFeeStructureList.sql",
               "RelativeDocumentMoniker": "Data\\StoredProcedures\\Fees\\sp_GetFeeStructureList.sql",
               "ToolTip": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\Data\\StoredProcedures\\Fees\\sp_GetFeeStructureList.sql",
               "RelativeToolTip": "Data\\StoredProcedures\\Fees\\sp_GetFeeStructureList.sql",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
-              "WhenOpened": "2026-05-22T12:28:52.653Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-22T12:28:52.653Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 12,
-              "Title": "sp_GetFeeInvoiceList.sql ",
+              "Title": "sp_GetFeeInvoiceList.sql",
               "DocumentMoniker": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\Data\\StoredProcedures\\Fees\\sp_GetFeeInvoiceList.sql",
               "RelativeDocumentMoniker": "Data\\StoredProcedures\\Fees\\sp_GetFeeInvoiceList.sql",
               "ToolTip": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\Data\\StoredProcedures\\Fees\\sp_GetFeeInvoiceList.sql",
               "RelativeToolTip": "Data\\StoredProcedures\\Fees\\sp_GetFeeInvoiceList.sql",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
-              "WhenOpened": "2026-05-22T12:28:41.932Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-22T12:28:41.932Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 13,
-              "Title": "sp_GetAttendanceList.sql ",
+              "Title": "sp_GetAttendanceList.sql",
               "DocumentMoniker": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\Data\\StoredProcedures\\Attendance\\sp_GetAttendanceList.sql",
               "RelativeDocumentMoniker": "Data\\StoredProcedures\\Attendance\\sp_GetAttendanceList.sql",
               "ToolTip": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\Data\\StoredProcedures\\Attendance\\sp_GetAttendanceList.sql",
               "RelativeToolTip": "Data\\StoredProcedures\\Attendance\\sp_GetAttendanceList.sql",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
-              "WhenOpened": "2026-05-22T12:28:32.455Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-22T12:28:32.455Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 15,
-              "Title": "sp_SeedClassSubjectMappings_BD.sql ",
+              "Title": "sp_SeedClassSubjectMappings_BD.sql",
               "DocumentMoniker": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\Data\\StoredProcedures\\Academic\\sp_SeedClassSubjectMappings_BD.sql",
               "RelativeDocumentMoniker": "Data\\StoredProcedures\\Academic\\sp_SeedClassSubjectMappings_BD.sql",
               "ToolTip": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\Data\\StoredProcedures\\Academic\\sp_SeedClassSubjectMappings_BD.sql",
               "RelativeToolTip": "Data\\StoredProcedures\\Academic\\sp_SeedClassSubjectMappings_BD.sql",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
-              "WhenOpened": "2026-05-07T08:28:28.522Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-07T08:28:28.522Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 14,
-              "Title": "sp_GetAdmissionList.sql ",
+              "Title": "sp_GetAdmissionList.sql",
               "DocumentMoniker": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\Data\\StoredProcedures\\Admission\\sp_GetAdmissionList.sql",
               "RelativeDocumentMoniker": "Data\\StoredProcedures\\Admission\\sp_GetAdmissionList.sql",
               "ToolTip": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\Data\\StoredProcedures\\Admission\\sp_GetAdmissionList.sql",
               "RelativeToolTip": "Data\\StoredProcedures\\Admission\\sp_GetAdmissionList.sql",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
-              "WhenOpened": "2026-05-05T17:26:33.879Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-05T17:26:33.879Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 16,
-              "Title": "sp_GetSubjectList.sql ",
+              "Title": "sp_GetSubjectList.sql",
               "DocumentMoniker": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\Data\\StoredProcedures\\Academic\\sp_GetSubjectList.sql",
               "RelativeDocumentMoniker": "Data\\StoredProcedures\\Academic\\sp_GetSubjectList.sql",
               "ToolTip": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\Data\\StoredProcedures\\Academic\\sp_GetSubjectList.sql",
               "RelativeToolTip": "Data\\StoredProcedures\\Academic\\sp_GetSubjectList.sql",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
-              "WhenOpened": "2026-05-22T12:27:56.743Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-22T12:27:56.743Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 17,
-              "Title": "sp_GetSectionList.sql ",
+              "Title": "sp_GetSectionList.sql",
               "DocumentMoniker": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\Data\\StoredProcedures\\Academic\\sp_GetSectionList.sql",
               "RelativeDocumentMoniker": "Data\\StoredProcedures\\Academic\\sp_GetSectionList.sql",
               "ToolTip": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\Data\\StoredProcedures\\Academic\\sp_GetSectionList.sql",
               "RelativeToolTip": "Data\\StoredProcedures\\Academic\\sp_GetSectionList.sql",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
-              "WhenOpened": "2026-05-17T13:25:04.24Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-17T13:25:04.24Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 18,
-              "Title": "sp_GetClassList.sql ",
+              "Title": "sp_GetClassList.sql",
               "DocumentMoniker": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\Data\\StoredProcedures\\Academic\\sp_GetClassList.sql",
               "RelativeDocumentMoniker": "Data\\StoredProcedures\\Academic\\sp_GetClassList.sql",
               "ToolTip": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\Data\\StoredProcedures\\Academic\\sp_GetClassList.sql",
               "RelativeToolTip": "Data\\StoredProcedures\\Academic\\sp_GetClassList.sql",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
-              "WhenOpened": "2026-05-17T13:24:49.544Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-17T13:24:49.544Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 19,
-              "Title": "sp_GetAcademicYearList.sql ",
+              "Title": "sp_GetAcademicYearList.sql",
               "DocumentMoniker": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\Data\\StoredProcedures\\Academic\\sp_GetAcademicYearList.sql",
               "RelativeDocumentMoniker": "Data\\StoredProcedures\\Academic\\sp_GetAcademicYearList.sql",
               "ToolTip": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\Data\\StoredProcedures\\Academic\\sp_GetAcademicYearList.sql",
               "RelativeToolTip": "Data\\StoredProcedures\\Academic\\sp_GetAcademicYearList.sql",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
-              "WhenOpened": "2026-05-17T13:23:16.819Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-17T13:23:16.819Z"
             },
             {
               "$type": "Document",
@@ -1392,8 +1297,7 @@
               "RelativeToolTip": "Controllers\\Auth\\AuthController.cs",
               "ViewState": "AgIAAGwAAAAAAAAAAAAmwI8AAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-12T10:44:09.016Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-12T10:44:09.016Z"
             },
             {
               "$type": "Document",
@@ -1405,20 +1309,18 @@
               "RelativeToolTip": "Services\\Implementations\\Auth\\AuthService.cs",
               "ViewState": "AgIAACsAAAAAAAAAAADwv0YAAAAEAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-12T10:42:12.216Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-12T10:42:12.216Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 20,
-              "Title": "sp_AssignStudentToSection.sql ",
+              "Title": "sp_AssignStudentToSection.sql",
               "DocumentMoniker": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\Data\\StoredProcedures\\Academic\\sp_AssignStudentToSection.sql",
               "RelativeDocumentMoniker": "Data\\StoredProcedures\\Academic\\sp_AssignStudentToSection.sql",
               "ToolTip": "G:\\PROJECT .NET\\SchoolMS\\SchoolMS (3)\\SchoolMS\\Data\\StoredProcedures\\Academic\\sp_AssignStudentToSection.sql",
               "RelativeToolTip": "Data\\StoredProcedures\\Academic\\sp_AssignStudentToSection.sql",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000826|",
-              "WhenOpened": "2026-05-17T13:22:56.331Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-17T13:22:56.331Z"
             },
             {
               "$type": "Document",
@@ -1430,8 +1332,7 @@
               "RelativeToolTip": "Controllers\\Admin\\AuditLogController.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAACEAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-12T10:46:14.548Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-12T10:46:14.548Z"
             },
             {
               "$type": "Document",
@@ -1443,8 +1344,7 @@
               "RelativeToolTip": "Controllers\\Admin\\UserController.cs",
               "ViewState": "AgIAAK8AAAAAAAAAAAAwwBwAAABjAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-12T15:12:31.846Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-12T15:12:31.846Z"
             },
             {
               "$type": "Document",
@@ -1456,8 +1356,7 @@
               "RelativeToolTip": "Migrations\\20260518112609_RefactorTeacherToEmployeeExtension.cs",
               "ViewState": "AgIAALwAAAAAAAAAAADwv9QAAAAhAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-22T10:16:05.476Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-22T10:16:05.476Z"
             },
             {
               "$type": "Document",
@@ -1469,8 +1368,7 @@
               "RelativeToolTip": "Migrations\\20260518112609_RefactorTeacherToEmployeeExtension.Designer.cs",
               "ViewState": "AgIAAMcAAAAAAAAAAAAgwA4AAAAQAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-22T10:17:59.591Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-22T10:17:59.591Z"
             },
             {
               "$type": "Document",
@@ -1482,8 +1380,7 @@
               "RelativeToolTip": "Models\\DTOs\\Attendance\\EmployeeAttendanceDto.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAgAAAATAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-22T10:11:52.368Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-22T10:11:52.368Z"
             },
             {
               "$type": "Document",
@@ -1495,8 +1392,7 @@
               "RelativeToolTip": "Models\\DTOs\\Employee\\EmployeeDtos.cs",
               "ViewState": "AgIAAAwAAAAAAAAAAAA4wAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-22T10:11:00.763Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-22T10:11:00.763Z"
             },
             {
               "$type": "Document",
@@ -1508,8 +1404,7 @@
               "RelativeToolTip": "Models\\Entities\\Employee\\EmployeeEntities.cs",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-05-22T10:10:16.158Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-22T10:10:16.158Z"
             },
             {
               "$type": "Document",
@@ -1521,8 +1416,7 @@
               "RelativeToolTip": "Dockerfile",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAsAAABLAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2026-05-22T04:59:29.095Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-22T04:59:29.095Z"
             },
             {
               "$type": "Document",
@@ -1534,8 +1428,7 @@
               "RelativeToolTip": ".dockerignore",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAQAAAAIAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2026-05-22T05:00:05.936Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-05-22T05:00:05.936Z"
             },
             {
               "$type": "Document",
@@ -1547,8 +1440,7 @@
               "RelativeToolTip": "Models\\Entities\\Teacher\\TeacherEntities.cs",
               "ViewState": "AgIAAJoAAAAAAAAAAAAswLQAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-28T18:18:06.667Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-28T18:18:06.667Z"
             },
             {
               "$type": "Document",
@@ -1572,8 +1464,7 @@
               "RelativeToolTip": "Models\\DTOs\\Teacher\\TeacherDtos.cs",
               "ViewState": "AgIAAFQAAAAAAAAAAADwvwsAAAAvAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2026-04-30T11:49:52.979Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-04-30T11:49:52.979Z"
             },
             {
               "$type": "Document",
