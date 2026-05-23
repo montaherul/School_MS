@@ -53,7 +53,7 @@ public class TeacherSynchronizationService : ITeacherSynchronizationService
                     teacher = new Teacher
                     {
                         EmployeeId = employee.Id,
-                        TeacherCode = employee.EmployeeCode,
+                        TeacherCode = await GenerateTeacherCodeAsync(ct),
                         SubjectSpecialization = "General",
                         TeachingLevel = "Secondary",
                         IsClassTeacher = false,
@@ -71,8 +71,12 @@ public class TeacherSynchronizationService : ITeacherSynchronizationService
                 else
                 {
                     _logger.LogInformation("Updating synchronized Teacher profile for teaching employee: {Name} ({Code})", employee.FullName, employee.EmployeeCode);
-                    
-                    teacher.TeacherCode = employee.EmployeeCode;
+
+                    if (string.IsNullOrWhiteSpace(teacher.TeacherCode) || !teacher.TeacherCode.StartsWith("T-", StringComparison.OrdinalIgnoreCase))
+                    {
+                        teacher.TeacherCode = await GenerateTeacherCodeAsync(ct);
+                    }
+
                     teacher.IsDeleted = false; // Restore if it was soft-deleted
                     teacher.UpdatedBy = "system-sync";
                     teacher.UpdatedAt = DateTime.UtcNow;
@@ -97,6 +101,24 @@ public class TeacherSynchronizationService : ITeacherSynchronizationService
             _logger.LogError(ex, "Failed to synchronize Employee ID {EmployeeId} to Teacher record.", employeeId);
             throw;
         }
+    }
+
+    private async Task<string> GenerateTeacherCodeAsync(CancellationToken ct)
+    {
+        var prefix = $"T-{DateTime.UtcNow.Year}-";
+        var lastCode = await _unitOfWork.Repository<Teacher>().Query()
+            .Where(t => t.TeacherCode.StartsWith(prefix))
+            .OrderByDescending(t => t.TeacherCode)
+            .Select(t => t.TeacherCode)
+            .FirstOrDefaultAsync(ct);
+
+        var nextNumber = 1;
+        if (!string.IsNullOrEmpty(lastCode) && lastCode.Length > prefix.Length && int.TryParse(lastCode.Substring(prefix.Length), out var lastNumber))
+        {
+            nextNumber = lastNumber + 1;
+        }
+
+        return $"{prefix}{nextNumber:D4}";
     }
 
     public async Task SyncAllTeachingEmployeesAsync(CancellationToken ct = default)

@@ -1,0 +1,225 @@
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        syncValidationSummary();
+
+        const chkSame = document.getElementById("chkSameAddress");
+        const txtPresent = document.getElementById("PresentAddress");
+        const txtPermanent = document.getElementById("PermanentAddress");
+
+        if (chkSame && txtPresent && txtPermanent) {
+            chkSame.addEventListener("change", function () {
+                if (this.checked) {
+                    txtPermanent.value = txtPresent.value;
+                    txtPermanent.setAttribute("readonly", true);
+                } else {
+                    txtPermanent.removeAttribute("readonly");
+                }
+            });
+
+            if (isEditMode() && txtPresent.value === txtPermanent.value && txtPresent.value !== "") {
+                chkSame.checked = true;
+                txtPermanent.setAttribute("readonly", true);
+            }
+        }
+
+        const ddlDesignation = document.getElementById("DesignationId");
+        const switchTeaching = document.getElementById("chkIsTeaching");
+        if (ddlDesignation && switchTeaching) {
+            ddlDesignation.addEventListener("change", function () {
+                const selectedOpt = this.options[this.selectedIndex];
+                const isTeaching = selectedOpt.getAttribute("data-teaching");
+                if (isTeaching !== null) {
+                    switchTeaching.checked = (isTeaching === "true");
+                }
+            });
+        }
+
+        const inpProfile = document.getElementById("inputProfilePic");
+        const imgProfile = document.getElementById("imgPicPreview");
+        if (inpProfile && imgProfile) {
+            inpProfile.addEventListener("change", function (e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function () {
+                        imgProfile.src = reader.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        const inpSignature = document.getElementById("inputSignature");
+        const imgSignature = document.getElementById("imgSigPreview");
+        if (inpSignature && imgSignature) {
+            inpSignature.addEventListener("change", function (e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function () {
+                        imgSignature.src = reader.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        const btnAddQual = document.getElementById("btnAddQual");
+        const tblQual = document.getElementById("tblQualifications")?.querySelector("tbody");
+        if (btnAddQual && tblQual) {
+            btnAddQual.addEventListener("click", function () {
+                const index = tblQual.querySelectorAll("tr").length;
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>
+                        <input type="hidden" name="Qualifications[${index}].Id" value="0" />
+                        <input type="hidden" name="Qualifications[${index}].EmployeeId" value="0" />
+                        <input type="hidden" name="Qualifications[${index}].CertificateFilePath" value="" />
+                        <input name="Qualifications[${index}].ExamName" class="form-control form-control-sm" required placeholder="e.g. SSC, HSC, B.Sc" />
+                    </td>
+                    <td><input name="Qualifications[${index}].BoardOrUniversity" class="form-control form-control-sm" placeholder="e.g. Dhaka Board" /></td>
+                    <td><input name="Qualifications[${index}].InstituteName" class="form-control form-control-sm" placeholder="e.g. Dhaka College" /></td>
+                    <td><input name="Qualifications[${index}].GroupOrSubject" class="form-control form-control-sm" placeholder="e.g. Science, Physics" /></td>
+                    <td><input name="Qualifications[${index}].PassingYear" class="form-control form-control-sm text-center" placeholder="Year" /></td>
+                    <td><input name="Qualifications[${index}].CGPAOrDivision" class="form-control form-control-sm text-center" placeholder="GPA" /></td>
+                    <td><input type="file" name="Qualifications[${index}].CertificateFile" class="form-control form-control-sm" accept=".pdf,.jpg,.jpeg,.png" /></td>
+                    <td class="text-center"><button type="button" class="btn btn-outline-danger btn-sm btn-delete-row"><i class="bi bi-trash"></i></button></td>
+                `;
+                tblQual.appendChild(tr);
+                bindDeleteRowEvent(tr);
+            });
+        }
+
+        const btnAddExp = document.getElementById("btnAddExp");
+        const tblExp = document.getElementById("tblExperience")?.querySelector("tbody");
+        if (btnAddExp && tblExp) {
+            btnAddExp.addEventListener("click", function () {
+                const index = tblExp.querySelectorAll("tr").length;
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>
+                        <input type="hidden" name="Experiences[${index}].Id" value="0" />
+                        <input type="hidden" name="Experiences[${index}].EmployeeId" value="0" />
+                        <input name="Experiences[${index}].OrganizationName" class="form-control form-control-sm" required placeholder="e.g. High School Name" />
+                    </td>
+                    <td><input name="Experiences[${index}].Designation" class="form-control form-control-sm" required placeholder="e.g. Lecturer" /></td>
+                    <td><input name="Experiences[${index}].StartDate" type="date" class="form-control form-control-sm" required /></td>
+                    <td><input name="Experiences[${index}].EndDate" type="date" class="form-control form-control-sm" /></td>
+                    <td><input name="Experiences[${index}].Remarks" class="form-control form-control-sm" placeholder="Responsibilities" /></td>
+                    <td class="text-center"><button type="button" class="btn btn-outline-danger btn-sm btn-delete-row"><i class="bi bi-trash"></i></button></td>
+                `;
+                tblExp.appendChild(tr);
+                bindDeleteRowEvent(tr);
+            });
+        }
+
+        const btnAddDoc = document.getElementById("btnAddDoc");
+        const tblDoc = document.getElementById("tblDocuments")?.querySelector("tbody");
+        if (btnAddDoc && tblDoc) {
+            btnAddDoc.addEventListener("click", function () {
+                const index = tblDoc.querySelectorAll("tr").length;
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td>
+                        <input type="hidden" name="Documents[${index}].Id" value="0" />
+                        <input type="hidden" name="Documents[${index}].EmployeeId" value="0" />
+                        <input type="hidden" name="Documents[${index}].FilePath" value="" />
+                        <select name="Documents[${index}].DocumentType" class="form-select form-select-sm" required>
+                            <option value="NID">National ID Card</option>
+                            <option value="Passport">International Passport</option>
+                            <option value="Appointment">Appointment Letter</option>
+                            <option value="Joining">Joining Report</option>
+                            <option value="CV">Curriculum Vitae (CV)</option>
+                            <option value="Medical">Medical Fitness Report</option>
+                            <option value="Other" selected>Other Custom Document</option>
+                        </select>
+                    </td>
+                    <td><input name="Documents[${index}].DocumentName" class="form-control form-control-sm" required placeholder="Document Description Name" /></td>
+                    <td><input type="file" name="Documents[${index}].DocumentFile" class="form-control form-control-sm" required accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" /></td>
+                    <td><input name="Documents[${index}].ExpiryDate" type="date" class="form-control form-control-sm" /></td>
+                    <td><input name="Documents[${index}].Remarks" class="form-control form-control-sm" placeholder="Notes" /></td>
+                    <td class="text-center"><button type="button" class="btn btn-outline-danger btn-sm btn-delete-row"><i class="bi bi-trash"></i></button></td>
+                `;
+                tblDoc.appendChild(tr);
+                bindDeleteRowEvent(tr);
+            });
+        }
+
+        document.querySelectorAll("table tbody tr").forEach(function (tr) {
+            bindDeleteRowEvent(tr);
+        });
+
+        function bindDeleteRowEvent(row) {
+            const btn = row.querySelector(".btn-delete-row");
+            if (btn) {
+                btn.addEventListener("click", function () {
+                    if (confirm("Are you sure you want to remove this row?")) {
+                        const tableBody = row.parentElement;
+                        row.remove();
+                        reIndexTableInputs(tableBody);
+                    }
+                });
+            }
+        }
+
+        function reIndexTableInputs(tableBody) {
+            const trs = tableBody.querySelectorAll("tr");
+            trs.forEach(function (tr, index) {
+                const inputs = tr.querySelectorAll("input, select, textarea");
+                inputs.forEach(function (input) {
+                    const name = input.getAttribute("name");
+                    if (name) {
+                        const updatedName = name.replace(/\[\d+\]/, `[${index}]`);
+                        input.setAttribute("name", updatedName);
+                        const id = input.getAttribute("id");
+                        if (id) {
+                            const updatedId = id.replace(/_\d+__/, `_${index}__`);
+                            input.setAttribute("id", updatedId);
+                        }
+                    }
+                });
+            });
+        }
+
+        function isEditMode() {
+            const idVal = parseInt(document.getElementById("Id")?.value || "0");
+            return idVal > 0;
+        }
+
+        function syncValidationSummary() {
+            const summary = document.getElementById("validationSummary");
+            if (!summary) {
+                return;
+            }
+
+            if (summary.textContent && summary.textContent.trim().length > 0) {
+                summary.style.display = "block";
+            }
+        }
+    });
+</script>
+
+<style>
+    .text-gradient {
+        background: linear-gradient(45deg, var(--adm-primary, #6f42c1), #007bff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .nav-tabs .nav-link {
+        font-weight: 600;
+        color: #6c757d;
+        border: none;
+        border-bottom: 3px solid transparent;
+        padding: 12px 16px;
+    }
+    .nav-tabs .nav-link.active {
+        color: var(--adm-primary, #6f42c1);
+        border: none;
+        border-bottom: 3px solid var(--adm-primary, #6f42c1);
+        background: transparent;
+    }
+    .nav-tabs .nav-link:hover {
+        border-color: transparent;
+        color: var(--adm-primary, #6f42c1);
+    }
+</style>

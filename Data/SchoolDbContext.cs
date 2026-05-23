@@ -188,6 +188,9 @@ public class SchoolDbContext : DbContext
         modelBuilder.Entity<DesignationRoleMapping>().HasIndex(x => new { x.DesignationId, x.RoleId }).IsUnique();
         modelBuilder.Entity<EmployeeAttendance>().HasIndex(x => new { x.EmployeeId, x.AttendanceDate }).IsUnique();
 
+        modelBuilder.Entity<EmployeeInvitation>().HasIndex(x => x.InvitationCode).IsUnique();
+        modelBuilder.Entity<EmployeeInvitation>().HasIndex(x => x.InvitationToken).IsUnique();
+
         foreach (var entity in modelBuilder.Model.GetEntityTypes())
         {
             foreach (var property in entity.GetProperties().Where(p => p.ClrType == typeof(decimal) || p.ClrType == typeof(decimal?)))

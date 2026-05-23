@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using SchoolManagementSystem.Helpers.Files;
 using SchoolManagementSystem.Helpers.Security;
 using SchoolManagementSystem.Models.DTOs.Employee;
@@ -23,6 +24,7 @@ public class EmployeeInvitationService : IEmployeeInvitationService
     private readonly IPasswordHashService _passwordHashService;
     private readonly IUserProvisionService _userProvisionService;
     private readonly SchoolManagementSystem.Services.Interfaces.Teachers.ITeacherSynchronizationService _teacherSync;
+    private readonly ILogger<EmployeeInvitationService> _logger;
 
     public EmployeeInvitationService(
         IUnitOfWork uow,
@@ -30,7 +32,8 @@ public class EmployeeInvitationService : IEmployeeInvitationService
         IFileStorageService fileStorage,
         IPasswordHashService passwordHashService,
         IUserProvisionService userProvisionService,
-        SchoolManagementSystem.Services.Interfaces.Teachers.ITeacherSynchronizationService teacherSync)
+        SchoolManagementSystem.Services.Interfaces.Teachers.ITeacherSynchronizationService teacherSync,
+        ILogger<EmployeeInvitationService> logger)
     {
         _uow = uow;
         _emailService = emailService;
@@ -38,6 +41,7 @@ public class EmployeeInvitationService : IEmployeeInvitationService
         _passwordHashService = passwordHashService;
         _userProvisionService = userProvisionService;
         _teacherSync = teacherSync;
+        _logger = logger;
     }
 
     public async Task<(List<EmployeeInvitationDto> items, int totalRecords)> GetPagedInvitationsAsync(int page, int pageSize, string? search, CancellationToken ct)
@@ -85,7 +89,8 @@ public class EmployeeInvitationService : IEmployeeInvitationService
             FullName = dto.FullName,
             Email = dto.Email,
             Mobile = dto.Mobile,
-            InvitationToken = Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N"),
+            InvitationCode = await GenerateInvitationCodeAsync(ct),
+            InvitationToken = GenerateInvitationToken(),
             DepartmentId = dto.DepartmentId,
             DesignationId = dto.DesignationId,
             JoiningDate = dto.JoiningDate,
@@ -94,21 +99,29 @@ public class EmployeeInvitationService : IEmployeeInvitationService
             IsTeachingStaff = dto.IsTeachingStaff,
             Remarks = dto.Remarks,
             ExpiresAt = DateTime.UtcNow.AddHours(72),
-            InvitationStatus = "Sent",
+            InvitationStatus = "Pending",
             CreatedBy = createdByUserId.ToString()
         };
 
         await _uow.Repository<EmployeeInvitation>().AddAsync(invitation, ct);
         await _uow.SaveChangesAsync(ct);
 
-        // 3. Send Email (Extend existing service or use direct if not available)
-        // Note: We'll implement SendEmployeeInvitationAsync in IEmailService later
-        // For now, let's assume it works or use direct sender as fallback
-        try 
+        if (!string.IsNullOrWhiteSpace(invitation.Email))
         {
-             // TO BE IMPLEMENTED in IEmailService extension step
+            try
+            {
+                await _emailService.SendEmployeeInvitationAsync(invitation.Email, invitation.FullName, invitation.InvitationToken, invitation.ExpiresAt, ct);
+                invitation.InvitationStatus = "Sent";
+                invitation.SentAt = DateTime.UtcNow;
+                invitation.UpdatedAt = DateTime.UtcNow;
+                _uow.Repository<EmployeeInvitation>().Update(invitation);
+                await _uow.SaveChangesAsync(ct);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Employee invitation email failed for {Email}", invitation.Email);
+            }
         }
-        catch { /* Log error but invitation created */ }
 
         return invitation.Id;
     }
@@ -118,13 +131,28 @@ public class EmployeeInvitationService : IEmployeeInvitationService
         var invite = await _uow.Repository<EmployeeInvitation>().GetByIdAsync(id, ct);
         if (invite == null || invite.IsUsed || invite.IsDeleted) return false;
 
-        invite.InvitationToken = Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N");
+        invite.InvitationToken = GenerateInvitationToken();
         invite.ExpiresAt = DateTime.UtcNow.AddHours(72);
         invite.InvitationStatus = "Sent";
+        invite.SentAt = DateTime.UtcNow;
+        invite.OpenedAt = null;
         invite.UpdatedAt = DateTime.UtcNow;
 
         _uow.Repository<EmployeeInvitation>().Update(invite);
         await _uow.SaveChangesAsync(ct);
+
+        try
+        {
+            await _emailService.SendEmployeeInvitationAsync(invite.Email, invite.FullName, invite.InvitationToken, invite.ExpiresAt, ct);
+        }
+        catch (Exception ex)
+        {
+            invite.InvitationStatus = "EmailFailed";
+            invite.UpdatedAt = DateTime.UtcNow;
+            _uow.Repository<EmployeeInvitation>().Update(invite);
+            await _uow.SaveChangesAsync(ct);
+            _logger.LogError(ex, "Employee invitation resend failed for invitation {InvitationId}", id);
+        }
 
         return true;
     }
@@ -150,24 +178,40 @@ public class EmployeeInvitationService : IEmployeeInvitationService
             i.ExpiresAt > DateTime.UtcNow, ct);
     }
 
-    public async Task<(bool success, string message)> CompleteOnboardingAsync(EmployeeOnboardingViewModel model, CancellationToken ct)
+    public async Task<bool> MarkInvitationOpenedAsync(string token, CancellationToken ct)
+    {
+        var invite = await _uow.Repository<EmployeeInvitation>().FirstOrDefaultAsync(i => i.InvitationToken == token && !i.IsDeleted, ct);
+        if (invite == null) return false;
+
+        if (invite.InvitationStatus is "Pending" or "Sent")
+        {
+            invite.InvitationStatus = "Opened";
+            invite.OpenedAt ??= DateTime.UtcNow;
+            invite.UpdatedAt = DateTime.UtcNow;
+            _uow.Repository<EmployeeInvitation>().Update(invite);
+            await _uow.SaveChangesAsync(ct);
+        }
+
+        return true;
+    }
+
+    public async Task<(bool success, string message)> CompleteOnboardingAsync(EmployeeUpsertDto model, string token, string password, CancellationToken ct)
     {
         // 1. Validate Token
         var invite = await _uow.Repository<EmployeeInvitation>().Query()
             .Include(i => i.Department)
             .Include(i => i.Designation)
-            .FirstOrDefaultAsync(i => i.InvitationToken == model.Token && !i.IsUsed && !i.IsDeleted && i.ExpiresAt > DateTime.UtcNow, ct);
+            .FirstOrDefaultAsync(i => i.InvitationToken == token && !i.IsUsed && !i.IsDeleted && i.ExpiresAt > DateTime.UtcNow, ct);
 
         if (invite == null) return (false, "Invalid or expired invitation.");
 
         try
         {
-            // 2. Start Transaction implicitly via UoW or explicitly
-            // Standard Employee Logic usually generates a code. We'll use the existing EmployeeService logic if possible or replicate
+            // 2. Create the master HR identity first. Invitation metadata never owns the employee code.
 
             var employee = new SchoolManagementSystem.Models.Entities.Employee.Employee
             {
-                EmployeeCode = "PENDING-" + Guid.NewGuid().ToString("N").Substring(0, 8).ToUpper(), // Temporary code
+                EmployeeCode = await GenerateEmployeeCodeAsync(ct),
                 FullName = model.FullName,
                 FatherName = model.FatherName,
                 MotherName = model.MotherName,
@@ -178,8 +222,8 @@ public class EmployeeInvitationService : IEmployeeInvitationService
                 Nationality = model.Nationality,
                 NIDNumber = model.NIDNumber,
                 BirthCertificateNo = model.BirthCertificateNo,
-                Phone = model.MobileNumber,
-                Email = model.PersonalEmail,
+                Phone = model.Phone,
+                Email = model.Email,
                 PresentAddress = model.PresentAddress,
                 PermanentAddress = model.PermanentAddress,
                 EmergencyContactName = model.EmergencyContactName,
@@ -189,18 +233,18 @@ public class EmployeeInvitationService : IEmployeeInvitationService
                 JoiningDate = invite.JoiningDate,
                 DepartmentId = invite.DepartmentId,
                 DesignationId = invite.DesignationId,
-                EmployeeType = invite.EmploymentType,
+                EmployeeType = model.EmployeeType,
                 IsTeachingStaff = invite.IsTeachingStaff,
-                Status = invite.Status,
-                Remarks = invite.Remarks,
+                Status = model.Status,
+                Remarks = model.Remarks,
                 CreatedBy = "Onboarding"
             };
 
             // Handle Files
-            if (model.ProfilePhoto != null)
-                employee.ProfilePicturePath = await _fileStorage.SaveAsync(model.ProfilePhoto, "employees/photos", ct);
-            if (model.Signature != null)
-                employee.SignaturePath = await _fileStorage.SaveAsync(model.Signature, "employees/signatures", ct);
+            if (model.ProfilePictureFile != null)
+                employee.ProfilePicturePath = await _fileStorage.SaveAsync(model.ProfilePictureFile, "employees/photos", ct);
+            if (model.SignatureFile != null)
+                employee.SignaturePath = await _fileStorage.SaveAsync(model.SignatureFile, "employees/signatures", ct);
 
             await _uow.Repository<SchoolManagementSystem.Models.Entities.Employee.Employee>().AddAsync(employee, ct);
             await _uow.SaveChangesAsync(ct); // Get Employee ID
@@ -246,17 +290,34 @@ public class EmployeeInvitationService : IEmployeeInvitationService
             }
 
             // Create User & Assign Roles via Designation Mapping
+            var usernameBase = employee.EmployeeCode.Replace("-", string.Empty).Replace("_", string.Empty).ToLowerInvariant();
+            var username = usernameBase;
+            var usernameSuffix = 1;
+
+            while (await _uow.Repository<ApplicationUser>().AnyAsync(u => u.UserName == username && !u.IsDeleted, ct))
+            {
+                username = $"{usernameBase}{usernameSuffix++}";
+            }
+
             var user = new ApplicationUser
             {
-                UserName = employee.Email.Split('@')[0].ToLower() + employee.Id,
-                Email = employee.Email,
-                PasswordHash = _passwordHashService.HashPassword(model.Password),
+                UserName = username,
+                Email = employee.Email ?? $"{username}@school.local",
+                PhoneNumber = employee.Phone,
+                PasswordHash = _passwordHashService.HashPassword(password),
                 Status = AccountStatus.Active,
                 EmployeeId = employee.Id,
+                MustChangePassword = true,
+                IsEmailConfirmed = false,
                 CreatedBy = "Onboarding"
             };
 
             await _uow.Repository<ApplicationUser>().AddAsync(user, ct);
+            await _uow.SaveChangesAsync(ct);
+
+            employee.UserId = user.Id;
+            employee.UpdatedAt = DateTime.UtcNow;
+            _uow.Repository<SchoolManagementSystem.Models.Entities.Employee.Employee>().Update(employee);
             await _uow.SaveChangesAsync(ct);
 
             // RBAC Mapping
@@ -275,7 +336,9 @@ public class EmployeeInvitationService : IEmployeeInvitationService
             // Mark Invite Used
             invite.IsUsed = true;
             invite.InvitationStatus = "Completed";
+            invite.CompletedAt = DateTime.UtcNow;
             invite.OnboardedAt = DateTime.UtcNow;
+            invite.CreatedEmployeeId = employee.Id;
             _uow.Repository<EmployeeInvitation>().Update(invite);
 
             await _uow.SaveChangesAsync(ct);
@@ -283,7 +346,9 @@ public class EmployeeInvitationService : IEmployeeInvitationService
         }
         catch (Exception ex)
         {
-            return (false, "Error during onboarding: " + ex.Message);
+            _logger.LogError(ex, "Onboarding failed for invitation token {Token}", token);
+            var baseMsg = ex.GetBaseException()?.Message ?? ex.Message;
+            return (false, "Error during onboarding: " + baseMsg);
         }
     }
 
@@ -300,11 +365,51 @@ public class EmployeeInvitationService : IEmployeeInvitationService
         return true;
     }
 
+    private async Task<string> GenerateInvitationCodeAsync(CancellationToken ct)
+    {
+        var prefix = $"INV-{DateTime.UtcNow.Year}-";
+        var lastCode = await _uow.Repository<EmployeeInvitation>().Query()
+            .Where(i => i.InvitationCode.StartsWith(prefix))
+            .OrderByDescending(i => i.InvitationCode)
+            .Select(i => i.InvitationCode)
+            .FirstOrDefaultAsync(ct);
+
+        var nextNumber = 1;
+        if (!string.IsNullOrEmpty(lastCode) && lastCode.Length > prefix.Length && int.TryParse(lastCode.Substring(prefix.Length), out var lastNumber))
+        {
+            nextNumber = lastNumber + 1;
+        }
+
+        return $"{prefix}{nextNumber:D4}";
+    }
+
+    private static string GenerateInvitationToken()
+        => Guid.NewGuid().ToString("N") + Guid.NewGuid().ToString("N");
+
+    private async Task<string> GenerateEmployeeCodeAsync(CancellationToken ct)
+    {
+        var prefix = $"EMP-{DateTime.UtcNow.Year}-";
+        var lastCode = await _uow.Repository<SchoolManagementSystem.Models.Entities.Employee.Employee>().Query()
+            .Where(e => e.EmployeeCode.StartsWith(prefix))
+            .OrderByDescending(e => e.EmployeeCode)
+            .Select(e => e.EmployeeCode)
+            .FirstOrDefaultAsync(ct);
+
+        var nextNumber = 1;
+        if (!string.IsNullOrEmpty(lastCode) && lastCode.Length > prefix.Length && int.TryParse(lastCode.Substring(prefix.Length), out var lastNumber))
+        {
+            nextNumber = lastNumber + 1;
+        }
+
+        return $"{prefix}{nextNumber:D4}";
+    }
+
     private EmployeeInvitationDto MapToDto(EmployeeInvitation i)
     {
         return new EmployeeInvitationDto
         {
             Id = i.Id,
+            InvitationCode = i.InvitationCode,
             FullName = i.FullName,
             Email = i.Email,
             Mobile = i.Mobile,
@@ -319,6 +424,9 @@ public class EmployeeInvitationService : IEmployeeInvitationService
             IsTeachingStaff = i.IsTeachingStaff,
             Remarks = i.Remarks,
             ExpiresAt = i.ExpiresAt,
+            SentAt = i.SentAt,
+            OpenedAt = i.OpenedAt,
+            CompletedAt = i.CompletedAt ?? i.OnboardedAt,
             IsUsed = i.IsUsed,
             IsApproved = i.IsApproved,
             InvitationStatus = i.InvitationStatus,

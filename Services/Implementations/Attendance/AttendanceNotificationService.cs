@@ -1,9 +1,10 @@
 using System.Text.Encodings.Web;
 using Microsoft.EntityFrameworkCore;
-using SchoolManagementSystem.Helpers.Email;
+using Microsoft.Extensions.Logging;
 using SchoolManagementSystem.Models.Entities.Attendance;
 using SchoolManagementSystem.Models.Entities.Student;
 using SchoolManagementSystem.Models.Entities.System;
+using SchoolManagementSystem.Services.Interfaces.Email;
 using SchoolManagementSystem.Services.Interfaces.Attendance;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using StudentEntity = SchoolManagementSystem.Models.Entities.Student.Student;
@@ -16,12 +17,14 @@ public class AttendanceNotificationService : IAttendanceNotificationService
     private const string Channel = "Email";
 
     private readonly IUnitOfWork _uow;
-    private readonly IEmailSender _emailSender;
+    private readonly IEmailService _emailService;
+    private readonly ILogger<AttendanceNotificationService> _logger;
 
-    public AttendanceNotificationService(IUnitOfWork uow, IEmailSender emailSender)
+    public AttendanceNotificationService(IUnitOfWork uow, IEmailService emailService, ILogger<AttendanceNotificationService> logger)
     {
         _uow = uow;
-        _emailSender = emailSender;
+        _emailService = emailService;
+        _logger = logger;
     }
 
     public async Task SendAbsentNotificationsAsync(IEnumerable<int> studentIds, DateOnly attendanceDate, string createdBy, CancellationToken ct = default)
@@ -107,8 +110,15 @@ public class AttendanceNotificationService : IAttendanceNotificationService
 
         try
         {
-            var body = BuildAbsentEmailBody(student, attendanceDate, schoolName);
-            await _emailSender.SendAsync(email, "Student Absence Notification", body, ct);
+            await _emailService.SendAttendanceNotificationAsync(
+                email,
+                student.FullName,
+                student.RollNumber.ToString(),
+                student.Class?.Name ?? string.Empty,
+                student.Section?.Name ?? string.Empty,
+                attendanceDate,
+                schoolName,
+                ct);
 
             log.IsSent = true;
             log.SentAt = DateTime.UtcNow;
@@ -122,10 +132,11 @@ public class AttendanceNotificationService : IAttendanceNotificationService
         {
             log.IsSent = false;
             log.NotificationStatus = "Failed";
-            log.ErrorMessage = ex.Message;
+            log.ErrorMessage = ex.ToString();
             log.UpdatedAt = DateTime.UtcNow;
             log.UpdatedBy = createdBy;
             await _uow.SaveChangesAsync(ct);
+            _logger.LogError(ex, "Attendance email failed for student {StudentId} on {AttendanceDate}", studentId, attendanceDate);
         }
     }
 
@@ -149,22 +160,4 @@ public class AttendanceNotificationService : IAttendanceNotificationService
         return await query.OrderByDescending(x => x.Id).ToListAsync(ct);
     }
 
-    private static string BuildAbsentEmailBody(Student student, DateOnly attendanceDate, string schoolName)
-    {
-        var enc = HtmlEncoder.Default;
-        return $@"
-<p>Dear Guardian,</p>
-<p>Your child was marked absent today.</p>
-<table style=""border-collapse:collapse;width:100%;max-width:560px"">
-  <tr><td style=""padding:6px 0;font-weight:bold"">Student Name</td><td>{enc.Encode(student.FullName)}</td></tr>
-  <tr><td style=""padding:6px 0;font-weight:bold"">Roll Number</td><td>{student.RollNumber}</td></tr>
-  <tr><td style=""padding:6px 0;font-weight:bold"">Class</td><td>{enc.Encode(student.Class?.Name ?? string.Empty)}</td></tr>
-  <tr><td style=""padding:6px 0;font-weight:bold"">Section</td><td>{enc.Encode(student.Section?.Name ?? string.Empty)}</td></tr>
-  <tr><td style=""padding:6px 0;font-weight:bold"">Attendance Date</td><td>{attendanceDate:yyyy-MM-dd}</td></tr>
-  <tr><td style=""padding:6px 0;font-weight:bold"">Absence Status</td><td>Absent</td></tr>
-  <tr><td style=""padding:6px 0;font-weight:bold"">School</td><td>{enc.Encode(schoolName)}</td></tr>
-</table>
-<p>Please contact the school office if you believe this was recorded in error.</p>
-<p>Regards,<br/>{enc.Encode(schoolName)}</p>";
-    }
 }

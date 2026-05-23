@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using SchoolManagementSystem.Helpers.Email;
 using SchoolManagementSystem.Helpers.Security;
 using SchoolManagementSystem.Models.Entities.Auth;
 using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Models.ViewModels.Auth;
+using SchoolManagementSystem.Services.Interfaces.Email;
 using SchoolManagementSystem.Services.Interfaces.Auth;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using System.Security.Claims;
@@ -16,13 +18,15 @@ public class AuthService : IAuthService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IPasswordHashService _passwordHashService;
-    private readonly IEmailSender _emailSender;
+    private readonly IEmailService _emailService;
+    private readonly ILogger<AuthService> _logger;
 
-    public AuthService(IUnitOfWork unitOfWork, IPasswordHashService passwordHashService, IEmailSender emailSender)
+    public AuthService(IUnitOfWork unitOfWork, IPasswordHashService passwordHashService, IEmailService emailService, ILogger<AuthService> logger)
     {
         _unitOfWork = unitOfWork;
         _passwordHashService = passwordHashService;
-        _emailSender = emailSender;
+        _emailService = emailService;
+        _logger = logger;
     }
 
     public async Task<(bool success, string? message, ClaimsIdentity? identity)> LoginAsync(LoginViewModel model, CancellationToken ct = default)
@@ -94,7 +98,16 @@ public class AuthService : IAuthService
         await _unitOfWork.SaveChangesAsync(ct);
 
         var htmlBody = $@"<div style='font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;'><h2>Password Reset</h2><p>Hello,</p><p>You requested a password reset for your account.</p><div style='background: #f0f7ff; padding: 15px; text-align: center; border-radius: 8px; margin: 20px 0;'><span style='font-size: 24px; font-weight: bold; letter-spacing: 5px; color: #1a56db;'>{otp}</span></div><p>This code will expire in 10 minutes.</p></div>";
-        await _emailSender.SendAsync(user.Email, "Password Reset Code", htmlBody, ct);
+        try
+        {
+            await _emailService.SendPasswordResetAsync(user.Email ?? string.Empty, user.UserName ?? user.Email ?? "User", otp, ct);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Password reset email failed for user {UserId} and recipient {Recipient}", user.Id, user.Email);
+            return (false, $"Failed to send password reset email: {ex.Message}");
+        }
+
         return (true, successMsg);
     }
 

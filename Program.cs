@@ -33,30 +33,16 @@ using SchoolManagementSystem.Services.Interfaces.Students;
 using SchoolManagementSystem.Services.Interfaces.Teachers;
 using SchoolManagementSystem.UnitOfWork.Implementations;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
-using Microsoft.EntityFrameworkCore;
 using System.IO;
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Configuration["Email:Host"] =
-    Environment.GetEnvironmentVariable("EMAIL_HOST");
-
-builder.Configuration["Email:Port"] =
-    Environment.GetEnvironmentVariable("EMAIL_PORT");
-
-builder.Configuration["Email:EnableSsl"] =
-    Environment.GetEnvironmentVariable("EMAIL_ENABLESSL");
-
-builder.Configuration["Email:UserName"] =
-    Environment.GetEnvironmentVariable("EMAIL_USERNAME");
-
-builder.Configuration["Email:Password"] =
-    Environment.GetEnvironmentVariable("EMAIL_PASSWORD");
-
-builder.Configuration["Email:From"] =
-    Environment.GetEnvironmentVariable("EMAIL_FROM");
-
-builder.Configuration["Email:BaseUrl"] =
-    Environment.GetEnvironmentVariable("EMAIL_BASEURL");
+ApplyEmailConfigurationOverride(builder.Configuration, "Email:Host", Environment.GetEnvironmentVariable("EMAIL_HOST"));
+ApplyEmailConfigurationOverride(builder.Configuration, "Email:Port", Environment.GetEnvironmentVariable("EMAIL_PORT"));
+ApplyEmailConfigurationOverride(builder.Configuration, "Email:EnableSsl", Environment.GetEnvironmentVariable("EMAIL_ENABLESSL"));
+ApplyEmailConfigurationOverride(builder.Configuration, "Email:UserName", Environment.GetEnvironmentVariable("EMAIL_USERNAME"));
+ApplyEmailConfigurationOverride(builder.Configuration, "Email:Password", Environment.GetEnvironmentVariable("EMAIL_PASSWORD"));
+ApplyEmailConfigurationOverride(builder.Configuration, "Email:From", Environment.GetEnvironmentVariable("EMAIL_FROM"));
+ApplyEmailConfigurationOverride(builder.Configuration, "Email:BaseUrl", Environment.GetEnvironmentVariable("EMAIL_BASEURL"));
 
 // --- EMAIL CONFIGURATION VALIDATION ---
 var emailOptions = builder.Configuration.GetSection("Email").Get<EmailOptions>();
@@ -66,7 +52,7 @@ if (emailOptions == null || string.IsNullOrEmpty(emailOptions.Host) || string.Is
 }
 else
 {
-    Console.WriteLine($"Email Config Loaded: Host={emailOptions.Host}, Port={emailOptions.Port}, From={emailOptions.From}");
+    Console.WriteLine($"Email Config Loaded: Host={emailOptions.Host}, Port={emailOptions.Port}, EnableSsl={emailOptions.EnableSsl}, From={emailOptions.From}, UserName={emailOptions.UserName}, PasswordConfigured={!string.IsNullOrWhiteSpace(emailOptions.Password)}");
 }
 // --------------------------------------
 
@@ -157,6 +143,25 @@ builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 
+if (args.Any(arg => string.Equals(arg, "--email-test", StringComparison.OrdinalIgnoreCase)))
+{
+    using var scope = app.Services.CreateScope();
+    var diagnosticService = scope.ServiceProvider.GetRequiredService<SchoolManagementSystem.Helpers.Email.EmailDiagnosticsService>();
+    var recipient = GetArgumentValue(args, "--to") ?? "yamif16014@okcpress.com";
+
+    var diagnosticResult = await diagnosticService.RunAsync(
+        recipient,
+        "School Management System Email Test",
+        "This is a test email from the School Management System deployed on Render.");
+
+    Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(diagnosticResult, new System.Text.Json.JsonSerializerOptions
+    {
+        WriteIndented = true
+    }));
+
+    return;
+}
+
 app.UseStatusCodePagesWithReExecute("/Error/Index", "?statusCode={0}");
 if (app.Environment.IsDevelopment())
 {
@@ -180,6 +185,7 @@ app.UseAuthorization();
 
 app.UseMiddleware<AuditLoggingMiddleware>();
 
+app.MapControllers();
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
@@ -215,3 +221,24 @@ await using (var scope = app.Services.CreateAsyncScope())
 
 
 app.Run();
+
+static void ApplyEmailConfigurationOverride(IConfiguration configuration, string key, string? value)
+{
+    if (!string.IsNullOrWhiteSpace(value))
+    {
+        configuration[key] = value;
+    }
+}
+
+static string? GetArgumentValue(string[] args, string name)
+{
+    for (var index = 0; index < args.Length - 1; index++)
+    {
+        if (string.Equals(args[index], name, StringComparison.OrdinalIgnoreCase))
+        {
+            return args[index + 1];
+        }
+    }
+
+    return null;
+}

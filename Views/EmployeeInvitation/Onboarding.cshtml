@@ -1,0 +1,51 @@
+@model SchoolManagementSystem.Models.DTOs.Employee.EmployeeUpsertDto
+@{
+    ViewData["Title"] = "Employee Onboarding";
+    ViewData["IsOnboarding"] = true;
+    var token = ViewData["InvitationToken"] as string ?? string.Empty;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-11">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <div class="d-flex align-items-center">
+                <a asp-controller="Auth" asp-action="Login" class="btn btn-outline-secondary btn-sm me-3"><i class="bi bi-arrow-left"></i> Back to Login</a>
+                <h2 class="mb-0 text-gradient"><i class="bi bi-person-badge-fill me-2"></i>Complete Employee Onboarding</h2>
+            </div>
+            <span class="badge bg-secondary p-2 fs-6">Invitation</span>
+        </div>
+
+        <form asp-action="Submit" method="post" enctype="multipart/form-data" id="employeeForm">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="token" value="@token" />
+
+            <div class="card shadow-sm p-4 mb-4">
+                <h5 class="card-title text-primary border-bottom pb-2 mb-3"><i class="bi bi-shield-lock-fill me-2"></i>Account Security</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label for="password" class="form-label fw-bold">Password <span class="text-danger">*</span></label>
+                        <input name="password" id="password" type="password" class="form-control" required minlength="6" />
+                    </div>
+                    <div class="col-md-6">
+                        <label for="confirmPassword" class="form-label fw-bold">Confirm Password <span class="text-danger">*</span></label>
+                        <input name="confirmPassword" id="confirmPassword" type="password" class="form-control" required minlength="6" />
+                    </div>
+                </div>
+            </div>
+
+            @await Html.PartialAsync("~/Views/Shared/Employee/_EmployeeTabs.cshtml", Model)
+
+            <div class="d-flex justify-content-end gap-2 mt-3">
+                <a asp-controller="Auth" asp-action="Login" class="btn btn-outline-secondary">Back to Login</a>
+                <button type="submit" name="submitAction" value="save" class="btn btn-outline-primary">Save</button>
+                <button type="submit" name="submitAction" value="done" class="btn btn-primary">Complete Onboarding</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @await Html.PartialAsync("~/Views/Shared/Employee/_EmployeeScripts.cshtml")
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

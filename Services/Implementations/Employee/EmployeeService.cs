@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using SchoolManagementSystem.Models.DTOs.Employee;
 using SchoolManagementSystem.Models.Entities.Employee;
 using SchoolManagementSystem.Models.Entities.Auth;
@@ -15,17 +16,20 @@ public class EmployeeService : IEmployeeService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IUserProvisionService _userProvisionService;
     private readonly IEmailService _emailService;
+    private readonly ILogger<EmployeeService> _logger;
     private readonly SchoolManagementSystem.Services.Interfaces.Teachers.ITeacherSynchronizationService _teacherSynchronizationService;
 
     public EmployeeService(
         IUnitOfWork unitOfWork, 
         IUserProvisionService userProvisionService, 
         IEmailService emailService,
+        ILogger<EmployeeService> logger,
         SchoolManagementSystem.Services.Interfaces.Teachers.ITeacherSynchronizationService teacherSynchronizationService)
     {
         _unitOfWork = unitOfWork;
         _userProvisionService = userProvisionService;
         _emailService = emailService;
+        _logger = logger;
         _teacherSynchronizationService = teacherSynchronizationService;
     }
 
@@ -139,9 +143,9 @@ public class EmployeeService : IEmployeeService
                         {
                             await _emailService.SendEmployeeAccountAsync(employee.Email, employee.FullName, username, password, ct);
                         }
-                        catch
+                        catch (Exception ex)
                         {
-                            // Suppress email sending failures so employee saving still succeeds
+                            _logger.LogError(ex, "Employee account email failed for {EmployeeEmail}", employee.Email);
                         }
                     }
                 }
@@ -149,6 +153,7 @@ public class EmployeeService : IEmployeeService
             catch (Exception ex)
             {
                 // In a production system, we would log this, but let's complete saving employee
+                _logger.LogError(ex, "Employee provisioning failed for {EmployeeEmail}", dto.Email);
                 employee.Remarks = $"Employee saved but account provisioning failed: {ex.Message}";
                 await _unitOfWork.SaveChangesAsync(ct);
             }
@@ -233,9 +238,9 @@ public class EmployeeService : IEmployeeService
         {
             await _teacherSynchronizationService.SyncEmployeeToTeacherAsync(employee.Id, ct);
         }
-        catch
+        catch (Exception ex)
         {
-            // Suppress secondary sync errors to ensure the primary employee saving transaction is successful
+            _logger.LogError(ex, "Teacher sync failed after saving employee {EmployeeId}", employee.Id);
         }
 
         return employee.Id;
@@ -268,7 +273,10 @@ public class EmployeeService : IEmployeeService
         {
             await _teacherSynchronizationService.SyncEmployeeToTeacherAsync(id, ct);
         }
-        catch {}
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Teacher sync failed after deleting employee {EmployeeId}", id);
+        }
 
         return true;
     }
@@ -298,7 +306,10 @@ public class EmployeeService : IEmployeeService
         {
             await _teacherSynchronizationService.SyncEmployeeToTeacherAsync(id, ct);
         }
-        catch {}
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Teacher sync failed after updating employee status {EmployeeId}", id);
+        }
 
         return true;
     }
