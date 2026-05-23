@@ -233,6 +233,7 @@ public class DepartmentDto
 public class EmployeeInvitationDto
 {
     public int Id { get; set; }
+    public string InvitationCode { get; set; } = string.Empty;
     public string FullName { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string Mobile { get; set; } = string.Empty;
@@ -250,6 +251,9 @@ public class EmployeeInvitationDto
     public bool IsUsed { get; set; }
     public bool IsApproved { get; set; }
     public string InvitationStatus { get; set; } = "Started";
+    public DateTime? SentAt { get; set; }
+    public DateTime? OpenedAt { get; set; }
+    public DateTime? CompletedAt { get; set; }
     public DateTime CreatedAt { get; set; }
 }
 

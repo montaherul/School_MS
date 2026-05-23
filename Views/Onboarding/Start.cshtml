@@ -1,289 +1,399 @@
 @model SchoolManagementSystem.Models.ViewModels.Employee.EmployeeOnboardingViewModel
 @{
     ViewData["Title"] = "Employee Onboarding";
-    Layout = "_AuthLayout";
+    Layout = "_Layout";
 }
 
-<div class="onboarding-wizard">
-    <div class="text-center mb-5">
-        <h2 class="fw-bold">Complete Your Profile</h2>
-        <p class="text-muted">Step <span id="currentStepHeader">1</span> of 4: Identity & Security</p>
+<div class="row justify-content-center">
+    <div class="col-lg-11">
+        <div class="d-flex align-items-center justify-content-between mb-4">
+            <div class="d-flex align-items-center gap-3">
+                <a asp-controller="Auth" asp-action="Login" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> Back</a>
+                <div>
+                    <h2 class="mb-0 text-gradient"><i class="bi bi-person-check-fill me-2"></i>Complete Employee Onboarding</h2>
+                    <div class="text-muted small mt-1">Set your password and finish your profile to activate your staff account</div>
+                </div>
+            </div>
+            <span class="badge onboarding-badge">Invitation Link</span>
+        </div>
 
-        <div class="onboarding-steps d-flex justify-content-center mt-4">
-            <div class="step-dot active" data-step="1"></div>
-            <div class="step-line"></div>
-            <div class="step-dot" data-step="2"></div>
-            <div class="step-line"></div>
-            <div class="step-dot" data-step="3"></div>
-            <div class="step-line"></div>
-            <div class="step-dot" data-step="4"></div>
+        <div class="card shadow-sm border-0 onboarding-card">
+            <div class="card-body p-4">
+                <div class="alert alert-info d-flex align-items-center gap-2 mb-4 onboarding-note">
+                    <i class="bi bi-info-circle-fill"></i>
+                    <div>Complete the details below and set your password to activate your staff account.</div>
+                </div>
+
+                <form asp-action="Submit" method="post" enctype="multipart/form-data" id="employeeOnboardingForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="Token" />
+
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-4"></div>
+
+                    <ul class="nav nav-tabs nav-justified mb-4 onboarding-tabs" id="onboardingTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="security-tab" data-bs-toggle="tab" data-bs-target="#security" type="button" role="tab">1. Security</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="personal-tab" data-bs-toggle="tab" data-bs-target="#personal" type="button" role="tab">2. Personal Info</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact" type="button" role="tab">3. Contact</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="career-tab" data-bs-toggle="tab" data-bs-target="#career" type="button" role="tab">4. Career</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="documents-tab" data-bs-toggle="tab" data-bs-target="#documents" type="button" role="tab">5. Documents</button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content onboarding-panel mb-4" id="onboardingTabsContent">
+                        <div class="tab-pane fade show active" id="security" role="tabpanel">
+                            <h5 class="card-title text-primary border-bottom pb-2 mb-3"><i class="bi bi-shield-lock me-2"></i>Account Security</h5>
+                            <div class="row g-3 mb-4">
+                                <div class="col-md-6">
+                                    <label asp-for="Password" class="form-label fw-bold">Create Password <span class="text-danger">*</span></label>
+                                    <input asp-for="Password" class="form-control" placeholder="Min 6 characters" />
+                                    <span asp-validation-for="Password" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="ConfirmPassword" class="form-label fw-bold">Confirm Password <span class="text-danger">*</span></label>
+                                    <input asp-for="ConfirmPassword" class="form-control" placeholder="Repeat password" />
+                                    <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                                </div>
+                            </div>
+
+                            <h5 class="card-title text-primary border-bottom pb-2 mb-3"><i class="bi bi-building me-2"></i>Invitation Details</h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Department</label>
+                                    <input asp-for="DepartmentName" class="form-control" readonly />
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-bold">Designation</label>
+                                    <input asp-for="DesignationName" class="form-control" readonly />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold">Joining Date</label>
+                                    <input asp-for="JoiningDate" type="date" class="form-control" readonly />
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold">Employment Type</label>
+                                    <input asp-for="EmploymentType" class="form-control" readonly />
+                                </div>
+                                <div class="col-md-4 d-flex align-items-end">
+                                    <div class="form-check mt-2">
+                                        <input asp-for="IsTeachingStaff" class="form-check-input" type="checkbox" disabled />
+                                        <label class="form-check-label">Teaching Staff</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="personal" role="tabpanel">
+                            <h5 class="card-title text-primary border-bottom pb-2 mb-3"><i class="bi bi-person-vcard me-2"></i>Personal Particulars</h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label asp-for="FullName" class="form-label fw-bold">Full Name <span class="text-danger">*</span></label>
+                                    <input asp-for="FullName" class="form-control" readonly />
+                                </div>
+                                <div class="col-md-3">
+                                    <label asp-for="Gender" class="form-label fw-bold">Gender <span class="text-danger">*</span></label>
+                                    <select asp-for="Gender" class="form-select">
+                                        <option value="">Select Gender</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                    <span asp-validation-for="Gender" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-3">
+                                    <label asp-for="DateOfBirth" class="form-label fw-bold">Date of Birth <span class="text-danger">*</span></label>
+                                    <input asp-for="DateOfBirth" type="date" class="form-control" />
+                                    <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-4">
+                                    <label asp-for="FatherName" class="form-label fw-bold">Father's Name <span class="text-danger">*</span></label>
+                                    <input asp-for="FatherName" class="form-control" />
+                                    <span asp-validation-for="FatherName" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-4">
+                                    <label asp-for="MotherName" class="form-label fw-bold">Mother's Name <span class="text-danger">*</span></label>
+                                    <input asp-for="MotherName" class="form-control" />
+                                    <span asp-validation-for="MotherName" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-4">
+                                    <label asp-for="BloodGroup" class="form-label fw-bold">Blood Group</label>
+                                    <select asp-for="BloodGroup" class="form-select">
+                                        <option value="">Select</option>
+                                        <option value="A+">A+</option>
+                                        <option value="A-">A-</option>
+                                        <option value="B+">B+</option>
+                                        <option value="B-">B-</option>
+                                        <option value="O+">O+</option>
+                                        <option value="O-">O-</option>
+                                        <option value="AB+">AB+</option>
+                                        <option value="AB-">AB-</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label asp-for="Religion" class="form-label fw-bold">Religion</label>
+                                    <input asp-for="Religion" class="form-control" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label asp-for="Nationality" class="form-label fw-bold">Nationality</label>
+                                    <input asp-for="Nationality" class="form-control" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label asp-for="NIDNumber" class="form-label fw-bold">NID Number <span class="text-danger">*</span></label>
+                                    <input asp-for="NIDNumber" class="form-control" />
+                                    <span asp-validation-for="NIDNumber" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-4">
+                                    <label asp-for="BirthCertificateNo" class="form-label fw-bold">Birth Certificate No</label>
+                                    <input asp-for="BirthCertificateNo" class="form-control" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="contact" role="tabpanel">
+                            <h5 class="card-title text-primary border-bottom pb-2 mb-3"><i class="bi bi-telephone-forward me-2"></i>Contact Details</h5>
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label asp-for="MobileNumber" class="form-label fw-bold">Mobile Number <span class="text-danger">*</span></label>
+                                    <input asp-for="MobileNumber" class="form-control" readonly />
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="PersonalEmail" class="form-label fw-bold">Personal Email <span class="text-danger">*</span></label>
+                                    <input asp-for="PersonalEmail" class="form-control" readonly />
+                                </div>
+                                <div class="col-12">
+                                    <label asp-for="PresentAddress" class="form-label fw-bold">Present Address <span class="text-danger">*</span></label>
+                                    <textarea asp-for="PresentAddress" class="form-control" rows="2"></textarea>
+                                    <span asp-validation-for="PresentAddress" class="text-danger small"></span>
+                                </div>
+                                <div class="col-12">
+                                    <label asp-for="PermanentAddress" class="form-label fw-bold">Permanent Address <span class="text-danger">*</span></label>
+                                    <textarea asp-for="PermanentAddress" class="form-control" rows="2"></textarea>
+                                    <span asp-validation-for="PermanentAddress" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="EmergencyContactName" class="form-label fw-bold">Emergency Contact Name <span class="text-danger">*</span></label>
+                                    <input asp-for="EmergencyContactName" class="form-control" />
+                                    <span asp-validation-for="EmergencyContactName" class="text-danger small"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="EmergencyContactPhone" class="form-label fw-bold">Emergency Contact Phone <span class="text-danger">*</span></label>
+                                    <input asp-for="EmergencyContactPhone" class="form-control" />
+                                    <span asp-validation-for="EmergencyContactPhone" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="career" role="tabpanel">
+                            <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-3">
+                                <h5 class="card-title text-primary mb-0"><i class="bi bi-mortarboard me-2"></i>Qualifications & Experience</h5>
+                                <div>
+                                    <button type="button" class="btn btn-outline-primary btn-sm me-2" id="btnAddQual"><i class="bi bi-plus-lg me-1"></i>Add Qualification</button>
+                                    <button type="button" class="btn btn-outline-primary btn-sm" id="btnAddExp"><i class="bi bi-plus-lg me-1"></i>Add Experience</button>
+                                </div>
+                            </div>
+
+                            <div class="table-responsive mb-4">
+                                <table class="table table-sm align-middle" id="tblQuals">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Exam Name</th>
+                                            <th>Board/Uni</th>
+                                            <th>Institute</th>
+                                            <th>Year</th>
+                                            <th>Result</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table table-sm align-middle" id="tblExp">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Organization</th>
+                                            <th>Designation</th>
+                                            <th>Start</th>
+                                            <th>End</th>
+                                            <th>Remarks</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="tab-pane fade" id="documents" role="tabpanel">
+                            <h5 class="card-title text-primary border-bottom pb-2 mb-3"><i class="bi bi-file-earmark-arrow-up me-2"></i>Documents & Photo</h5>
+                            <div class="row g-4">
+                                <div class="col-md-6 text-center">
+                                    <label asp-for="ProfilePhoto" class="form-label d-block text-start fw-bold">Profile Photo</label>
+                                    <div class="border border-dashed rounded-3 bg-light p-4 upload-box" onclick="$('#ProfilePhoto').click()">
+                                        <i class="bi bi-cloud-arrow-up fs-1 text-primary"></i>
+                                        <p class="mb-0 small mt-2">Click to upload photo</p>
+                                    </div>
+                                    <input asp-for="ProfilePhoto" type="file" class="d-none" accept="image/*" />
+                                    <div id="photoPreview" class="mt-3 d-none">
+                                        <img src="" class="rounded-circle border" style="width: 110px; height: 110px; object-fit: cover;" />
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6 text-center">
+                                    <label asp-for="Signature" class="form-label d-block text-start fw-bold">Signature Scan</label>
+                                    <div class="border border-dashed rounded-3 bg-light p-4 upload-box" onclick="$('#Signature').click()">
+                                        <i class="bi bi-pen-fill fs-1 text-primary"></i>
+                                        <p class="mb-0 small mt-2">Click to upload signature</p>
+                                    </div>
+                                    <input asp-for="Signature" type="file" class="d-none" accept="image/*" />
+                                </div>
+                            </div>
+
+                            <div class="mt-4 p-3 bg-light rounded-3 small text-muted border">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="chkAgreed" required>
+                                    <label class="form-check-label" for="chkAgreed">
+                                        I confirm the details above are accurate and I am ready to activate my account.
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 mt-4">
+                        <a asp-action="Welcome" asp-route-token="@Model.Token" class="btn btn-outline-secondary px-4">Back</a>
+                        <button type="submit" class="btn btn-success px-5 fw-bold" id="btnSubmit"><i class="bi bi-check2-circle me-1"></i> Save & Activate</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
-
-    <form asp-action="Submit" method="post" enctype="multipart/form-data" id="onboardingForm">
-        @Html.AntiForgeryToken()
-        <input type="hidden" asp-for="Token" />
-
-        <!-- STEP 1: IDENTITY & SECURITY -->
-        <div class="onboarding-step" id="step1">
-            <h5 class="fw-bold mb-4 border-bottom pb-2">Account Security</h5>
-            <div class="row g-3 mb-4">
-                <div class="col-md-6">
-                    <label asp-for="Password" class="form-label">Create Password <span class="text-danger">*</span></label>
-                    <input asp-for="Password" class="form-control" placeholder="Min 6 characters" />
-                    <span asp-validation-for="Password" class="text-danger small"></span>
-                </div>
-                <div class="col-md-6">
-                    <label asp-for="ConfirmPassword" class="form-label">Confirm Password <span class="text-danger">*</span></label>
-                    <input asp-for="ConfirmPassword" class="form-control" />
-                    <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
-                </div>
-            </div>
-
-            <h5 class="fw-bold mb-4 border-bottom pb-2">Personal Information</h5>
-            <div class="row g-3">
-                <div class="col-md-12">
-                    <label asp-for="FullName" class="form-label">Full Name</label>
-                    <input asp-for="FullName" class="form-control" readonly />
-                </div>
-                <div class="col-md-6">
-                    <label asp-for="FatherName" class="form-label">Father's Name <span class="text-danger">*</span></label>
-                    <input asp-for="FatherName" class="form-control" />
-                    <span asp-validation-for="FatherName" class="text-danger small"></span>
-                </div>
-                <div class="col-md-6">
-                    <label asp-for="MotherName" class="form-label">Mother's Name <span class="text-danger">*</span></label>
-                    <input asp-for="MotherName" class="form-control" />
-                    <span asp-validation-for="MotherName" class="text-danger small"></span>
-                </div>
-                <div class="col-md-4">
-                    <label asp-for="Gender" class="form-label">Gender <span class="text-danger">*</span></label>
-                    <select asp-for="Gender" class="form-select">
-                        <option value="">Select</option>
-                        <option value="Male">Male</option>
-                        <option value="Female">Female</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label asp-for="DateOfBirth" class="form-label">Date of Birth <span class="text-danger">*</span></label>
-                    <input asp-for="DateOfBirth" type="date" class="form-control" />
-                </div>
-                <div class="col-md-4">
-                    <label asp-for="BloodGroup" class="form-label">Blood Group</label>
-                    <select asp-for="BloodGroup" class="form-select">
-                        <option value="">Select</option>
-                        <option value="A+">A+</option>
-                        <option value="A-">A-</option>
-                        <option value="B+">B+</option>
-                        <option value="B-">B-</option>
-                        <option value="O+">O+</option>
-                        <option value="O-">O-</option>
-                        <option value="AB+">AB+</option>
-                        <option value="AB-">AB-</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="d-flex justify-content-end mt-5">
-                <button type="button" class="btn btn-primary px-5 py-2 next-step">Next Step <i class="bi bi-arrow-right ms-2"></i></button>
-            </div>
-        </div>
-
-        <!-- STEP 2: CONTACT & IDENTITY -->
-        <div class="onboarding-step d-none" id="step2">
-            <h5 class="fw-bold mb-4 border-bottom pb-2">Identification</h5>
-            <div class="row g-3 mb-4">
-                <div class="col-md-6">
-                    <label asp-for="NIDNumber" class="form-label">NID Number <span class="text-danger">*</span></label>
-                    <input asp-for="NIDNumber" class="form-control" />
-                </div>
-                <div class="col-md-6">
-                    <label asp-for="BirthCertificateNo" class="form-label">Birth Certificate No</label>
-                    <input asp-for="BirthCertificateNo" class="form-control" />
-                </div>
-            </div>
-
-            <h5 class="fw-bold mb-4 border-bottom pb-2">Contact Details</h5>
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <label asp-for="MobileNumber" class="form-label">Mobile Number</label>
-                    <input asp-for="MobileNumber" class="form-control" readonly />
-                </div>
-                <div class="col-md-6">
-                    <label asp-for="PersonalEmail" class="form-label">Personal Email</label>
-                    <input asp-for="PersonalEmail" class="form-control" readonly />
-                </div>
-                <div class="col-12">
-                    <label asp-for="PresentAddress" class="form-label">Present Address <span class="text-danger">*</span></label>
-                    <textarea asp-for="PresentAddress" class="form-control" rows="2"></textarea>
-                </div>
-                <div class="col-12">
-                    <label asp-for="PermanentAddress" class="form-label">Permanent Address <span class="text-danger">*</span></label>
-                    <textarea asp-for="PermanentAddress" class="form-control" rows="2"></textarea>
-                </div>
-                <div class="col-md-6">
-                    <label asp-for="EmergencyContactName" class="form-label">Emergency Contact Name <span class="text-danger">*</span></label>
-                    <input asp-for="EmergencyContactName" class="form-control" />
-                </div>
-                <div class="col-md-6">
-                    <label asp-for="EmergencyContactPhone" class="form-label">Emergency Contact Phone <span class="text-danger">*</span></label>
-                    <input asp-for="EmergencyContactPhone" class="form-control" />
-                </div>
-            </div>
-
-            <div class="d-flex justify-content-between mt-5">
-                <button type="button" class="btn btn-outline-secondary px-4 prev-step">Back</button>
-                <button type="button" class="btn btn-primary px-5 py-2 next-step">Next Step <i class="bi bi-arrow-right ms-2"></i></button>
-            </div>
-        </div>
-
-        <!-- STEP 3: EDUCATION & EXPERIENCE -->
-        <div class="onboarding-step d-none" id="step3">
-            <h5 class="fw-bold mb-4 border-bottom pb-2">Educational Qualifications</h5>
-            <div id="qualificationsList">
-                <!-- Template for dynamic rows would go here -->
-                <p class="text-muted small">Please add your academic degrees starting from highest.</p>
-                <div class="table-responsive">
-                    <table class="table table-sm" id="tblQuals">
-                        <thead>
-                            <tr class="small fw-bold bg-light">
-                                <th>Exam Name</th>
-                                <th>Board/Uni</th>
-                                <th>Result</th>
-                                <th>Year</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-                <button type="button" class="btn btn-sm btn-outline-primary mb-4" id="btnAddQual"><i class="bi bi-plus"></i> Add Qualification</button>
-            </div>
-
-            <h5 class="fw-bold mb-4 border-bottom pb-2 mt-4">Work Experience</h5>
-            <div id="experienceList">
-                 <div class="table-responsive">
-                    <table class="table table-sm" id="tblExp">
-                        <thead>
-                            <tr class="small fw-bold bg-light">
-                                <th>Org Name</th>
-                                <th>Designation</th>
-                                <th>Period</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-                <button type="button" class="btn btn-sm btn-outline-primary" id="btnAddExp"><i class="bi bi-plus"></i> Add Experience</button>
-            </div>
-
-            <div class="d-flex justify-content-between mt-5">
-                <button type="button" class="btn btn-outline-secondary px-4 prev-step">Back</button>
-                <button type="button" class="btn btn-primary px-5 py-2 next-step">Next Step <i class="bi bi-arrow-right ms-2"></i></button>
-            </div>
-        </div>
-
-        <!-- STEP 4: DOCUMENTS & PHOTO -->
-        <div class="onboarding-step d-none" id="step4">
-            <div class="alert alert-info py-2">
-                <i class="bi bi-info-circle me-2"></i> Final step: Upload your profile photo and signature.
-            </div>
-
-            <div class="row g-4 mt-2">
-                <div class="col-md-6 text-center">
-                    <label asp-for="ProfilePhoto" class="form-label d-block text-start">Profile Photo (Max 2MB)</label>
-                    <div class="upload-box p-4 border border-dashed rounded-3 bg-light" onclick="$('#ProfilePhoto').click()">
-                        <i class="bi bi-cloud-arrow-up fs-1 text-primary"></i>
-                        <p class="mb-0 small mt-2">Click to upload photo</p>
-                    </div>
-                    <input asp-for="ProfilePhoto" type="file" class="d-none" accept="image/*" />
-                    <div id="photoPreview" class="mt-2 d-none">
-                        <img src="" class="rounded-circle border" style="width: 100px; height: 100px; object-fit: cover;" />
-                    </div>
-                </div>
-
-                <div class="col-md-6 text-center">
-                    <label asp-for="Signature" class="form-label d-block text-start">Signature Scan (Max 1MB)</label>
-                    <div class="upload-box p-4 border border-dashed rounded-3 bg-light" onclick="$('#Signature').click()">
-                        <i class="bi bi-pen-fill fs-1 text-primary"></i>
-                        <p class="mb-0 small mt-2">Click to upload signature</p>
-                    </div>
-                    <input asp-for="Signature" type="file" class="d-none" accept="image/*" />
-                </div>
-            </div>
-
-            <div class="mt-5 p-3 bg-light rounded-3 small text-muted border">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="chkAgreed" required>
-                    <label class="form-check-label" for="chkAgreed">
-                        I hereby declare that all the information provided above is true and correct to the best of my knowledge and belief.
-                    </label>
-                </div>
-            </div>
-
-            <div class="d-flex justify-content-between mt-5">
-                <button type="button" class="btn btn-outline-secondary px-4 prev-step">Back</button>
-                <button type="submit" class="btn btn-success px-5 py-2 fw-bold" id="btnSubmit">Finalize Onboarding <i class="bi bi-check-lg ms-2"></i></button>
-            </div>
-        </div>
-    </form>
-</div>
+    </div>
 
 <style>
-    .step-dot { width: 15px; height: 15px; border-radius: 50%; background: #dee2e6; margin: 0 5px; }
-    .step-dot.active { background: #1a56db; box-shadow: 0 0 0 4px rgba(26, 86, 219, 0.2); }
-    .step-line { width: 40px; height: 2px; background: #dee2e6; margin-top: 6px; }
-    .onboarding-step { animation: fadeIn 0.4s ease-out; }
-    @@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    .upload-box { cursor: pointer; transition: background 0.2s; border-style: dashed !important; }
+    .onboarding-card {
+        width: 100%;
+        border-radius: 16px;
+    }
+
+    .auth-icon-wrap {
+        width: 64px;
+        height: 64px;
+        background: #1a56db;
+        color: #fff;
+        border-radius: 16px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        box-shadow: 0 4px 12px rgba(26, 86, 219, 0.2);
+    }
+
+    .auth-title {
+        font-size: 26px;
+        font-weight: 700;
+        color: #1e293b;
+        margin-bottom: 8px;
+    }
+
+    .auth-subtitle {
+        font-size: 14px;
+    }
+
+    .onboarding-badge {
+        background: rgba(26, 86, 219, 0.08);
+        color: #1a56db;
+        border: 1px solid rgba(26, 86, 219, 0.18);
+        font-weight: 700;
+        padding: 0.55rem 0.85rem;
+        border-radius: 999px;
+    }
+
+    .onboarding-note {
+        border-radius: 12px;
+    }
+
+    .onboarding-panel {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 28px;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+    }
+
+    .onboarding-tabs .nav-link {
+        font-weight: 600;
+    }
+
+    .upload-box { cursor: pointer; transition: background 0.2s ease; border-style: dashed !important; }
     .upload-box:hover { background-color: #e9ecef !important; }
 </style>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
-        $(function() {
-            var currentStep = 1;
+        $(function () {
+            let qualIndex = 0;
+            let expIndex = 0;
 
-            $(".next-step").click(function() {
-                // Basic validation for step could go here
-                $("#step" + currentStep).addClass("d-none");
-                currentStep++;
-                $("#step" + currentStep).removeClass("d-none");
-                $("#currentStepHeader").text(currentStep);
-                updateStepDots();
-            });
-
-            $(".prev-step").click(function() {
-                $("#step" + currentStep).addClass("d-none");
-                currentStep--;
-                $("#step" + currentStep).removeClass("d-none");
-                $("#currentStepHeader").text(currentStep);
-                updateStepDots();
-            });
-
-            function updateStepDots() {
-                $(".step-dot").removeClass("active");
-                $(".step-dot[data-step='" + currentStep + "']").addClass("active");
+            function addQualificationRow() {
+                const row = `
+                    <tr>
+                        <td><input class="form-control form-control-sm" name="Qualifications[${qualIndex}].ExamName" /></td>
+                        <td><input class="form-control form-control-sm" name="Qualifications[${qualIndex}].BoardOrUniversity" /></td>
+                        <td><input class="form-control form-control-sm" name="Qualifications[${qualIndex}].InstituteName" /></td>
+                        <td><input class="form-control form-control-sm" name="Qualifications[${qualIndex}].PassingYear" /></td>
+                        <td><input class="form-control form-control-sm" name="Qualifications[${qualIndex}].Result" /></td>
+                        <td><button type="button" class="btn btn-sm btn-outline-danger remove-row">Remove</button></td>
+                    </tr>`;
+                $("#tblQuals tbody").append(row);
+                qualIndex++;
             }
 
-            // Photo Preview
-            $("#ProfilePhoto").change(function() {
-                const file = this.files[0];
-                if (file) {
-                    let reader = new FileReader();
-                    reader.onload = function(event) {
-                        $("#photoPreview img").attr("src", event.target.result);
-                        $("#photoPreview").removeClass("d-none");
-                    }
-                    reader.readAsDataURL(file);
-                }
+            function addExperienceRow() {
+                const row = `
+                    <tr>
+                        <td><input class="form-control form-control-sm" name="Experiences[${expIndex}].OrganizationName" /></td>
+                        <td><input class="form-control form-control-sm" name="Experiences[${expIndex}].Designation" /></td>
+                        <td><input type="date" class="form-control form-control-sm" name="Experiences[${expIndex}].StartDate" /></td>
+                        <td><input type="date" class="form-control form-control-sm" name="Experiences[${expIndex}].EndDate" /></td>
+                        <td><input class="form-control form-control-sm" name="Experiences[${expIndex}].Remarks" /></td>
+                        <td><button type="button" class="btn btn-sm btn-outline-danger remove-row">Remove</button></td>
+                    </tr>`;
+                $("#tblExp tbody").append(row);
+                expIndex++;
+            }
+
+            $("#btnAddQual").on("click", addQualificationRow);
+            $("#btnAddExp").on("click", addExperienceRow);
+
+            $(document).on("click", ".remove-row", function () {
+                $(this).closest("tr").remove();
             });
 
-            // Dynamic Rows for Quals/Exp would be implemented here in a production app
-            // For this implementation, we assume basic row addition logic is handled via JS
+            $("#ProfilePhoto").on("change", function () {
+                const file = this.files && this.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    $("#photoPreview img").attr("src", event.target.result);
+                    $("#photoPreview").removeClass("d-none");
+                };
+                reader.readAsDataURL(file);
+            });
+
+            addQualificationRow();
+            addExperienceRow();
         });
     </script>
 }

@@ -346,6 +346,7 @@ public class EmployeeInvitationRepository : BaseRepository<EmployeeInvitation>, 
             int totalRecords = 0;
 
             var ordId = reader.GetOrdinal("Id");
+            var ordInvitationCode = reader.GetOrdinal("InvitationCode");
             var ordFullName = reader.GetOrdinal("FullName");
             var ordEmail = reader.GetOrdinal("Email");
             var ordMobile = reader.GetOrdinal("Mobile");
@@ -360,6 +361,8 @@ public class EmployeeInvitationRepository : BaseRepository<EmployeeInvitation>, 
             var ordIsTeaching = reader.GetOrdinal("IsTeachingStaff");
             var ordRemarks = reader.GetOrdinal("Remarks");
             var ordExpiresAt = reader.GetOrdinal("ExpiresAt");
+            var ordSentAt = reader.GetOrdinal("SentAt");
+            var ordCompletedAt = reader.GetOrdinal("CompletedAt");
             var ordIsUsed = reader.GetOrdinal("IsUsed");
             var ordIsApproved = reader.GetOrdinal("IsApproved");
             var ordInviteStatus = reader.GetOrdinal("InvitationStatus");
@@ -373,6 +376,7 @@ public class EmployeeInvitationRepository : BaseRepository<EmployeeInvitation>, 
                 items.Add(new EmployeeInvitationDto
                 {
                     Id = reader.GetInt32(ordId),
+                    InvitationCode = reader.GetString(ordInvitationCode),
                     FullName = reader.GetString(ordFullName),
                     Email = reader.GetString(ordEmail),
                     Mobile = reader.GetString(ordMobile),
@@ -387,6 +391,8 @@ public class EmployeeInvitationRepository : BaseRepository<EmployeeInvitation>, 
                     IsTeachingStaff = reader.GetBoolean(ordIsTeaching),
                     Remarks = reader.IsDBNull(ordRemarks) ? null : reader.GetString(ordRemarks),
                     ExpiresAt = reader.GetDateTime(ordExpiresAt),
+                    SentAt = reader.IsDBNull(ordSentAt) ? null : reader.GetDateTime(ordSentAt),
+                    CompletedAt = reader.IsDBNull(ordCompletedAt) ? null : reader.GetDateTime(ordCompletedAt),
                     IsUsed = reader.GetBoolean(ordIsUsed),
                     IsApproved = reader.GetBoolean(ordIsApproved),
                     InvitationStatus = reader.GetString(ordInviteStatus),

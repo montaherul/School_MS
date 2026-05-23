@@ -7,5 +7,7 @@ public interface IEmailService
     Task SendTeacherAccountAsync(string toEmail, string teacherName, string userName, string password, CancellationToken cancellationToken = default);
     Task SendEmployeeAccountAsync(string toEmail, string employeeName, string userName, string password, CancellationToken cancellationToken = default);
     Task SendEmployeeInvitationAsync(string toEmail, string employeeName, string invitationToken, DateTime expiresAt, CancellationToken cancellationToken = default);
+    Task SendPasswordResetAsync(string toEmail, string userName, string otp, CancellationToken cancellationToken = default);
+    Task SendAttendanceNotificationAsync(string toEmail, string studentName, string rollNumber, string className, string sectionName, DateOnly attendanceDate, string schoolName, CancellationToken cancellationToken = default);
 }
 

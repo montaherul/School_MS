@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using SchoolManagementSystem.Models.ViewModels.Employee;
+using SchoolManagementSystem.Models.DTOs.Employee;
 using SchoolManagementSystem.Services.Interfaces.Employee;
 
 namespace SchoolManagementSystem.Controllers.Employee;
@@ -9,10 +9,17 @@ namespace SchoolManagementSystem.Controllers.Employee;
 public class OnboardingController : Controller
 {
     private readonly IEmployeeInvitationService _invitationService;
+    private readonly IDepartmentService _departmentService;
+    private readonly IDesignationService _designationService;
 
-    public OnboardingController(IEmployeeInvitationService invitationService)
+    public OnboardingController(
+        IEmployeeInvitationService invitationService,
+        IDepartmentService departmentService,
+        IDesignationService designationService)
     {
         _invitationService = invitationService;
+        _departmentService = departmentService;
+        _designationService = designationService;
     }
 
     public async Task<IActionResult> Welcome(string token, CancellationToken ct)
@@ -26,7 +33,7 @@ public class OnboardingController : Controller
             return RedirectToAction("Login", "Auth");
         }
 
-        return View(invitation);
+        return RedirectToAction(nameof(Start), new { token });
     }
 
     public async Task<IActionResult> Start(string token, CancellationToken ct)
@@ -37,38 +44,54 @@ public class OnboardingController : Controller
             return RedirectToAction(nameof(Welcome), new { token });
         }
 
-        var model = new EmployeeOnboardingViewModel
+        ViewBag.Departments = await _departmentService.GetAllAsync(ct);
+        ViewBag.Designations = await _designationService.GetAllAsync(ct);
+        ViewData["InvitationToken"] = token;
+        ViewData["IsOnboarding"] = true;
+
+        await _invitationService.MarkInvitationOpenedAsync(token, ct);
+
+        var model = new EmployeeUpsertDto
         {
-            Token = token,
             FullName = invitation.FullName,
-            PersonalEmail = invitation.Email,
-            MobileNumber = invitation.Mobile,
-            DepartmentName = invitation.DepartmentName,
-            DesignationName = invitation.DesignationName,
+            Email = invitation.Email,
+            Phone = invitation.Mobile,
+            DepartmentId = invitation.DepartmentId,
+            DesignationId = invitation.DesignationId,
             JoiningDate = invitation.JoiningDate,
-            EmploymentType = invitation.EmploymentType,
+            EmployeeType = invitation.EmploymentType,
+            Status = invitation.Status,
             IsTeachingStaff = invitation.IsTeachingStaff
         };
 
-        return View(model);
+        return View("~/Views/EmployeeInvitation/Onboarding.cshtml", model);
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Submit(EmployeeOnboardingViewModel model, CancellationToken ct)
+    public async Task<IActionResult> Submit(EmployeeUpsertDto model, string token, string password, string confirmPassword, CancellationToken ct)
     {
-        if (!ModelState.IsValid)
+        if (!string.Equals(password, confirmPassword, StringComparison.Ordinal))
         {
-            return View("Start", model);
+            ModelState.AddModelError(string.Empty, "Password and confirmation password do not match.");
         }
 
-        var (success, message) = await _invitationService.CompleteOnboardingAsync(model, ct);
+        if (!ModelState.IsValid)
+        {
+            ViewData["InvitationToken"] = token;
+            ViewData["IsOnboarding"] = true;
+            return View("~/Views/EmployeeInvitation/Onboarding.cshtml", model);
+        }
+
+        var (success, message) = await _invitationService.CompleteOnboardingAsync(model, token, password, ct);
         if (success)
         {
             return View("Success");
         }
 
         ModelState.AddModelError("", message);
-        return View("Start", model);
+        ViewData["InvitationToken"] = token;
+        ViewData["IsOnboarding"] = true;
+        return View("~/Views/EmployeeInvitation/Onboarding.cshtml", model);
     }
 }

@@ -18,6 +18,7 @@ BEGIN
 	WITH InvitationData AS (
 		SELECT 
 			i.Id,
+			i.InvitationCode,
 			i.FullName,
 			i.Email,
 			i.Mobile,
@@ -32,6 +33,8 @@ BEGIN
 			i.IsTeachingStaff,
 			i.Remarks,
 			i.ExpiresAt,
+			i.SentAt,
+			COALESCE(i.CompletedAt, i.OnboardedAt) AS CompletedAt,
 			i.IsUsed,
 			i.IsApproved,
 			i.InvitationStatus,

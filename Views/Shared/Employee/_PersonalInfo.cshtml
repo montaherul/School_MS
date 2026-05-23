@@ -1,0 +1,90 @@
+@model SchoolManagementSystem.Models.DTOs.Employee.EmployeeUpsertDto
+
+<div class="tab-pane fade show active" id="personal" role="tabpanel">
+    <h5 class="card-title text-primary border-bottom pb-2 mb-3"><i class="bi bi-person-badge me-2"></i>Personal Particulars</h5>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label asp-for="FullName" class="form-label fw-bold">Full Name (English) <span class="text-danger">*</span></label>
+            <input asp-for="FullName" class="form-control" placeholder="Enter Full Name" required />
+            <span asp-validation-for="FullName" class="text-danger small"></span>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="Gender" class="form-label fw-bold">Gender <span class="text-danger">*</span></label>
+            <select asp-for="Gender" class="form-select" required>
+                <option value="">Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+            </select>
+            <span asp-validation-for="Gender" class="text-danger small"></span>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="DateOfBirth" class="form-label fw-bold">Date of Birth <span class="text-danger">*</span></label>
+            <input asp-for="DateOfBirth" type="date" class="form-control" required />
+            <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
+        </div>
+
+        <div class="col-md-6">
+            <label asp-for="FatherName" class="form-label">Father's Name</label>
+            <input asp-for="FatherName" class="form-control" placeholder="Father's Name" />
+            <span asp-validation-for="FatherName" class="text-danger small"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="MotherName" class="form-label">Mother's Name</label>
+            <input asp-for="MotherName" class="form-control" placeholder="Mother's Name" />
+            <span asp-validation-for="MotherName" class="text-danger small"></span>
+        </div>
+
+        <div class="col-md-3">
+            <label asp-for="BloodGroup" class="form-label">Blood Group</label>
+            <select asp-for="BloodGroup" class="form-select">
+                <option value="">Select</option>
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label asp-for="Religion" class="form-label">Religion</label>
+            <input asp-for="Religion" class="form-control" placeholder="e.g. Islam, Hinduism" />
+        </div>
+        <div class="col-md-3">
+            <label asp-for="Nationality" class="form-label">Nationality</label>
+            <input asp-for="Nationality" class="form-control" />
+        </div>
+        <div class="col-md-3">
+            <label asp-for="NIDNumber" class="form-label">NID/National ID Number</label>
+            <input asp-for="NIDNumber" class="form-control" placeholder="10 or 17 digit NID" />
+            <span asp-validation-for="NIDNumber" class="text-danger small"></span>
+        </div>
+        <div class="col-md-4">
+            <label asp-for="BirthCertificateNo" class="form-label">Birth Certificate Number</label>
+            <input asp-for="BirthCertificateNo" class="form-control" placeholder="Birth Reg Number" />
+        </div>
+
+        <div class="col-md-12 mt-4">
+            <h6 class="fw-bold text-success border-bottom pb-2 mb-3"><i class="bi bi-geo-alt-fill me-2"></i>Residential Addresses</h6>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="PresentAddress" class="form-label fw-bold">Present Address</label>
+                    <textarea asp-for="PresentAddress" class="form-control" rows="3" placeholder="Village, Post, Thana, District"></textarea>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <label asp-for="PermanentAddress" class="form-label fw-bold mb-0">Permanent Address</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="chkSameAddress">
+                            <label class="form-check-label small" for="chkSameAddress">Same as Present</label>
+                        </div>
+                    </div>
+                    <textarea asp-for="PermanentAddress" class="form-control" rows="3" placeholder="Village, Post, Thana, District"></textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

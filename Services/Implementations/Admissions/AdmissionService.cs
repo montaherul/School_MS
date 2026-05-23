@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Logging;
 using SchoolManagementSystem.Models.DTOs.Admission;
 using SchoolManagementSystem.Models.DTOs.Student;
 using SchoolManagementSystem.Models.Entities.Admission;
@@ -29,6 +30,7 @@ public class AdmissionService : IAdmissionService
     private readonly IUserRoleRepository _userRoleRepository;
     private readonly ISchoolClassRepository _classRepository;
     private readonly IStudentRepository _studentRepository;
+    private readonly ILogger<AdmissionService> _logger;
 
     public AdmissionService(
         IUnitOfWork unitOfWork, 
@@ -39,7 +41,8 @@ public class AdmissionService : IAdmissionService
         IRoleRepository roleRepository,
         IUserRoleRepository userRoleRepository,
         ISchoolClassRepository classRepository,
-        IStudentRepository studentRepository)
+        IStudentRepository studentRepository,
+        ILogger<AdmissionService> logger)
     {
         _unitOfWork = unitOfWork;
         _admissionRepository = admissionRepository;
@@ -50,6 +53,7 @@ public class AdmissionService : IAdmissionService
         _userRoleRepository = userRoleRepository;
         _classRepository = classRepository;
         _studentRepository = studentRepository;
+        _logger = logger;
     }
 
     public async Task<(List<AdmissionListResultDto> items, int totalRecords, object counts)> GetListByStoredProcedureAsync(
@@ -150,7 +154,8 @@ public class AdmissionService : IAdmissionService
 
         if (!string.IsNullOrWhiteSpace(application.ApplicantEmail))
         {
-            try { await _emailService.SendAdmissionReceivedAsync(application.ApplicantEmail, application.ApplicantName, application.ApplicationNo, cancellationToken); } catch { }
+            try { await _emailService.SendAdmissionReceivedAsync(application.ApplicantEmail, application.ApplicantName, application.ApplicationNo, cancellationToken); }
+            catch (Exception ex) { _logger.LogError(ex, "Admission confirmation email failed for application {ApplicationNo}", application.ApplicationNo); }
         }
 
         return application.ApplicationNo;
@@ -236,7 +241,8 @@ public class AdmissionService : IAdmissionService
         application.UpdatedAt = DateTime.UtcNow;
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        try { await _emailService.SendStudentActivationAsync(studentEmail, application.ApplicantName, pendingUser.UserName, activationToken, cancellationToken); } catch { }
+        try { await _emailService.SendStudentActivationAsync(studentEmail, application.ApplicantName, pendingUser.UserName, activationToken, cancellationToken); }
+        catch (Exception ex) { _logger.LogError(ex, "Student activation email failed for application {ApplicationNo}", application.ApplicationNo); }
 
         return studentId;
     }

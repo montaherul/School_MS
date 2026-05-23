@@ -3,6 +3,8 @@
 }
 
 <div class="adm-page">
+    @Html.AntiForgeryToken()
+
     <div class="adm-header">
         <div class="adm-header__left">
             <div class="adm-header__icon-wrap">
@@ -58,6 +60,10 @@
     <script>
         var table;
 
+        function getAntiForgeryToken() {
+            return $('input[name="__RequestVerificationToken"]').val();
+        }
+
         function initTable() {
             table = new Tabulator("#invitationTable", {
                 ajaxURL: "/EmployeeInvitation/Index",
@@ -78,6 +84,7 @@
                 layout: "fitColumns",
                 placeholder: "No invitations found",
                 columns: [
+                    { title: "Invitation Code", field: "invitationCode", width: 170 },
                     { title: "Full Name", field: "fullName", widthGrow: 2 },
                     { title: "Email", field: "email", widthGrow: 2 },
                     { title: "Department", field: "departmentName" },
@@ -95,10 +102,19 @@
                         }
                     },
                     { 
-                        title: "Created At", 
-                        field: "createdAt", 
+                        title: "Sent At", 
+                        field: "sentAt", 
                         formatter: function(cell) {
-                            return new Date(cell.getValue()).toLocaleDateString();
+                            var value = cell.getValue();
+                            return value ? new Date(value).toLocaleString() : "-";
+                        }
+                    },
+                    { 
+                        title: "Completed At", 
+                        field: "completedAt", 
+                        formatter: function(cell) {
+                            var value = cell.getValue();
+                            return value ? new Date(value).toLocaleString() : "-";
                         }
                     },
                     {
@@ -118,18 +134,28 @@
 
         function resendInvite(id) {
             if (confirm("Resend invitation email?")) {
-                $.post("/EmployeeInvitation/Resend", { id: id }, function(res) {
+                $.post("/EmployeeInvitation/Resend", {
+                    id: id,
+                    __RequestVerificationToken: getAntiForgeryToken()
+                }, function(res) {
                     if (res.success) table.setData();
                     alert(res.message);
+                }).fail(function(xhr) {
+                    alert(xhr.responseJSON?.message || "Failed to resend invitation.");
                 });
             }
         }
 
         function cancelInvite(id) {
             if (confirm("Cancel this invitation?")) {
-                $.post("/EmployeeInvitation/Cancel", { id: id }, function(res) {
+                $.post("/EmployeeInvitation/Cancel", {
+                    id: id,
+                    __RequestVerificationToken: getAntiForgeryToken()
+                }, function(res) {
                     if (res.success) table.setData();
                     alert(res.message);
+                }).fail(function(xhr) {
+                    alert(xhr.responseJSON?.message || "Failed to cancel invitation.");
                 });
             }
         }

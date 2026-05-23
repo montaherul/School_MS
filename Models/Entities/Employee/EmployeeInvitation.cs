@@ -11,6 +11,10 @@ public class EmployeeInvitation : BaseEntity
     public string FullName { get; set; } = string.Empty;
 
     [Required]
+    [MaxLength(30)]
+    public string InvitationCode { get; set; } = string.Empty;
+
+    [Required]
     [EmailAddress]
     [MaxLength(160)]
     public string Email { get; set; } = string.Empty;
@@ -43,6 +47,9 @@ public class EmployeeInvitation : BaseEntity
     public string? Remarks { get; set; }
 
     public DateTime ExpiresAt { get; set; }
+    public DateTime? SentAt { get; set; }
+    public DateTime? OpenedAt { get; set; }
+    public DateTime? CompletedAt { get; set; }
     public bool IsUsed { get; set; }
     public bool IsApproved { get; set; }
 

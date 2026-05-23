@@ -1,5 +1,4 @@
 using SchoolManagementSystem.Models.DTOs.Employee;
-using SchoolManagementSystem.Models.ViewModels.Employee;
 
 namespace SchoolManagementSystem.Services.Interfaces.Employee;
 
@@ -12,6 +11,7 @@ public interface IEmployeeInvitationService
     Task<bool> ResendInvitationAsync(int id, CancellationToken ct);
     Task<bool> CancelInvitationAsync(int id, CancellationToken ct);
     Task<bool> ValidateTokenAsync(string token, CancellationToken ct);
-    Task<(bool success, string message)> CompleteOnboardingAsync(EmployeeOnboardingViewModel model, CancellationToken ct);
+    Task<bool> MarkInvitationOpenedAsync(string token, CancellationToken ct);
+    Task<(bool success, string message)> CompleteOnboardingAsync(EmployeeUpsertDto model, string token, string password, CancellationToken ct);
     Task<bool> ApproveOnboardingAsync(int id, int approvedByUserId, CancellationToken ct);
 }
