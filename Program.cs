@@ -176,7 +176,6 @@ app.UseCookiePolicy();
 app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization(); 
-app.UseSession();
 
 
 app.UseMiddleware<AuditLoggingMiddleware>();
@@ -190,8 +189,15 @@ await using (var scope = app.Services.CreateAsyncScope())
     var db = scope.ServiceProvider.GetRequiredService<SchoolDbContext>();
 
     // FIRST create/update database tables
-    await db.Database.MigrateAsync();
-
+    try
+    {
+        await db.Database.MigrateAsync();
+        Console.WriteLine("Database migration successful");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Migration failed: {ex.Message}");
+    }
     // THEN run seeders
     var seeder = scope.ServiceProvider.GetRequiredService<ClassSubjectMappingSeeder>();
     await seeder.SeedAsync();
