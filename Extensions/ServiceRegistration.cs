@@ -149,7 +149,6 @@ public static class ServiceRegistration
         services.AddScoped<IFileStorageService, LocalFileStorageService>();
         services.AddScoped<IEmailSender, SmtpEmailSender>();
         services.AddScoped<IEmailService, EmailService>();
-        services.AddScoped<SchoolManagementSystem.Helpers.Email.EmailDiagnosticsService>();
         services.AddScoped<IPdfGenerator, PlainPdfGenerator>();
 
         // Attendance & Leave Management Modules

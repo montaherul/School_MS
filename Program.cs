@@ -143,24 +143,7 @@ builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 
-if (args.Any(arg => string.Equals(arg, "--email-test", StringComparison.OrdinalIgnoreCase)))
-{
-    using var scope = app.Services.CreateScope();
-    var diagnosticService = scope.ServiceProvider.GetRequiredService<SchoolManagementSystem.Helpers.Email.EmailDiagnosticsService>();
-    var recipient = GetArgumentValue(args, "--to") ?? "yamif16014@okcpress.com";
-
-    var diagnosticResult = await diagnosticService.RunAsync(
-        recipient,
-        "School Management System Email Test",
-        "This is a test email from the School Management System deployed on Render.");
-
-    Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(diagnosticResult, new System.Text.Json.JsonSerializerOptions
-    {
-        WriteIndented = true
-    }));
-
-    return;
-}
+// Email diagnostic CLI flag removed from main branch. Use development tools or run the diagnostics locally when needed.
 
 app.UseStatusCodePagesWithReExecute("/Error/Index", "?statusCode={0}");
 if (app.Environment.IsDevelopment())
