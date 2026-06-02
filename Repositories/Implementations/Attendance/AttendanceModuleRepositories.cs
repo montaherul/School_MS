@@ -6,6 +6,7 @@ using SchoolManagementSystem.Models.DTOs.Attendance;
 using SchoolManagementSystem.Models.Entities.Attendance;
 using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Repositories.Interfaces.Attendance;
+using System.Linq;
 
 namespace SchoolManagementSystem.Repositories.Implementations.Attendance
 {
@@ -185,7 +186,7 @@ namespace SchoolManagementSystem.Repositories.Implementations.Attendance
 
         public async Task<bool> IsAttendanceExistsAsync(int employeeId, System.DateTime date, CancellationToken cancellationToken = default)
         {
-            return await _set.AnyAsync(a => a.EmployeeId == employeeId && a.AttendanceDate.Date == date.Date, cancellationToken);
+            return await _set.AnyAsync(a => a.EmployeeId == employeeId && a.AttendanceDate.Date == date.Date && !a.IsDeleted, cancellationToken);
         }
 
         public async Task<(List<EmployeeAttendanceDto> Items, int TotalRecords)> GetAttendanceGridAsync(
@@ -368,5 +369,10 @@ namespace SchoolManagementSystem.Repositories.Implementations.Attendance
     public class AttendanceLogRepository : BaseRepository<AttendanceLog>, IAttendanceLogRepository
     {
         public AttendanceLogRepository(SchoolDbContext context) : base(context) { }
+    }
+
+    public class AttendanceRevisionRepository : BaseRepository<AttendanceRevision>
+    {
+        public AttendanceRevisionRepository(SchoolDbContext context) : base(context) { }
     }
 }

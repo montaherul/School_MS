@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using SchoolManagementSystem.Models.ViewModels.Attendance;
 using SchoolManagementSystem.Services.Interfaces.Attendance;
+using SchoolManagementSystem.Services.Interfaces.Employee;
 
 namespace SchoolManagementSystem.Controllers.Attendance
 {
@@ -15,11 +17,13 @@ namespace SchoolManagementSystem.Controllers.Attendance
     public class LeaveController : Controller
     {
         private readonly ILeaveService _service;
+        private readonly IEmployeeService _employeeService;
         private readonly IWebHostEnvironment _env;
 
-        public LeaveController(ILeaveService service, IWebHostEnvironment env)
+        public LeaveController(ILeaveService service, IEmployeeService employeeService, IWebHostEnvironment env)
         {
             _service = service;
+            _employeeService = employeeService;
             _env = env;
         }
 
@@ -65,9 +69,22 @@ namespace SchoolManagementSystem.Controllers.Attendance
                     attachmentPath = "/uploads/leaves/" + uniqueFileName;
                 }
 
-                // In a real scenario, we'd get the actual EmployeeId from the logged-in User's claims. 
-                // Using 1 as a placeholder for now since we are just scaffolding.
-                int employeeId = 1; 
+                var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (!int.TryParse(userIdStr, out var userId))
+                {
+                    return Challenge();
+                }
+
+                var employee = await _employeeService.GetByUserIdAsync(userId, ct);
+                if (employee == null)
+                {
+                    ModelState.AddModelError("", "Your account is not linked to any Employee profile. Cannot apply for leave.");
+                    var types = await _service.GetActiveLeaveTypesAsync(ct);
+                    vm.LeaveTypes = new SelectList(types, "Id", "Name");
+                    return View(vm);
+                }
+
+                int employeeId = employee.Id;
                 
                 await _service.ApplyLeaveAsync(vm, employeeId, attachmentPath, ct);
                 TempData["SuccessMessage"] = "Leave application submitted successfully.";

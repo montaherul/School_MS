@@ -129,6 +129,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ClassSubjectMappingSeeder>();
 builder.Services.AddScoped<SchoolManagementSystem.Services.Implementations.Website.WebsiteSeeder>();
 builder.Services.AddScoped<IAttendanceRecordService, AttendanceRecordService>();
+builder.Services.AddScoped<IStudentAttendanceService, StudentAttendanceService>();
 
 var port = Environment.GetEnvironmentVariable("PORT");
 

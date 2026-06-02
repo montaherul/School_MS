@@ -10,6 +10,26 @@ public class DashboardViewModel
     public IReadOnlyList<ChartPoint> StudentsByClass { get; set; } = [];
     public IReadOnlyList<ChartPoint> MonthlyCollections { get; set; } = [];
     public IReadOnlyList<RecentActivityItem> RecentActivities { get; set; } = [];
+    // Attendance KPIs - Students
+    public int StudentPresentToday { get; set; }
+    public int StudentAbsentToday { get; set; }
+    public int StudentLateToday { get; set; }
+    public decimal StudentAttendancePercentageToday { get; set; }
+
+    // Attendance KPIs - Employees
+    public int EmployeePresentToday { get; set; }
+    public int EmployeeAbsentToday { get; set; }
+    public int EmployeeLateToday { get; set; }
+
+    // Alerts
+    public int ClassesMissingAttendance { get; set; }
+    public int LockedSessionsPendingApproval { get; set; }
+    public int TeachersNotSubmittedToday { get; set; }
+
+    // Attendance charts
+    public IReadOnlyList<ChartPoint> AttendanceDailyTrend { get; set; } = [];
+    public IReadOnlyList<ChartPoint> AttendanceMonthlyTrend { get; set; } = [];
+    public IReadOnlyList<ChartPoint> ClassWiseAttendance { get; set; } = [];
     
     // Employee Workforce Metrics
     public int TotalEmployees { get; set; }

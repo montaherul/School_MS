@@ -29,7 +29,7 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
 
         public async Task<int> CheckInAsync(int employeeId, DateTime date, TimeSpan time, string recordedBy, CancellationToken ct = default)
         {
-            var entity = await _repo.Query().FirstOrDefaultAsync(a => a.EmployeeId == employeeId && a.AttendanceDate == date.Date, ct);
+            var entity = await _repo.Query().FirstOrDefaultAsync(a => a.EmployeeId == employeeId && a.AttendanceDate == date.Date && !a.IsDeleted, ct);
             if (entity != null) throw new InvalidOperationException("Check-in already exists for today.");
 
             entity = new EmployeeAttendance
@@ -38,7 +38,7 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
                 AttendanceDate = date.Date,
                 CheckInTime = time,
                 Status = SchoolManagementSystem.Models.Enums.AttendanceStatus.Present,
-                RecordedBy = recordedBy,
+                CreatedBy = recordedBy,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -52,10 +52,12 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
 
         public async Task<int> CheckOutAsync(int employeeId, DateTime date, TimeSpan time, string recordedBy, CancellationToken ct = default)
         {
-            var entity = await _repo.Query().FirstOrDefaultAsync(a => a.EmployeeId == employeeId && a.AttendanceDate == date.Date, ct);
+            var entity = await _repo.Query().FirstOrDefaultAsync(a => a.EmployeeId == employeeId && a.AttendanceDate == date.Date && !a.IsDeleted, ct);
             if (entity == null) throw new InvalidOperationException("No check-in found for today.");
 
             entity.CheckOutTime = time;
+            entity.UpdatedBy = recordedBy;
+            entity.UpdatedAt = DateTime.UtcNow;
             _repo.Update(entity);
             await _auditLog.AddAsync(new AttendanceLog { UserId = recordedBy, Action = "Employee Check-Out", EntityName = "EmployeeAttendance", EntityId = entity.Id }, ct);
             await _uow.SaveChangesAsync(ct);
@@ -74,7 +76,7 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
                 AttendanceDate = date.Date,
                 Status = status,
                 Remarks = remarks,
-                RecordedBy = recordedBy,
+                CreatedBy = recordedBy,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -94,6 +96,8 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
             entity.CheckInTime = checkIn;
             entity.CheckOutTime = checkOut;
             entity.Remarks = remarks;
+            entity.UpdatedBy = updatedBy;
+            entity.UpdatedAt = DateTime.UtcNow;
             
             _repo.Update(entity);
             await _auditLog.AddAsync(new AttendanceLog { UserId = updatedBy, Action = "Updated Employee Attendance", EntityName = "EmployeeAttendance", EntityId = id }, ct);
@@ -158,7 +162,8 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
                     att.CheckInTime = item.CheckInTime;
                     att.CheckOutTime = item.CheckOutTime;
                     att.Remarks = item.Remarks;
-                    att.RecordedBy = recordedBy;
+                    att.UpdatedBy = recordedBy;
+                    att.UpdatedAt = DateTime.UtcNow;
                     _repo.Update(att);
                     updated++;
                 }
@@ -172,7 +177,7 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
                         CheckInTime = item.CheckInTime,
                         CheckOutTime = item.CheckOutTime,
                         Remarks = item.Remarks,
-                        RecordedBy = recordedBy,
+                        CreatedBy = recordedBy,
                         CreatedAt = DateTime.UtcNow
                     }, ct);
                     created++;

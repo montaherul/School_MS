@@ -1,0 +1,106 @@
+@{
+    ViewData["Title"] = "Attendance Sessions";
+}
+
+<div class="container-fluid">
+    <h2>Attendance Session Management</h2>
+
+    <div class="row mb-3">
+        <div class="col-md-3">
+            <input type="date" id="filterDate" class="form-control" />
+        </div>
+        <div class="col-md-3">
+            <select id="filterClass" class="form-select">
+                <option value="">All Classes</option>
+                @foreach (var c in (IEnumerable<dynamic>)ViewBag.Classes)
+                {
+                    <option value="@c.Id">@c.Name</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select id="filterStatus" class="form-select">
+                <option value="">All Status</option>
+                <option value="1">Draft</option>
+                <option value="2">Submitted</option>
+                <option value="3">Locked</option>
+                <option value="4">Revised</option>
+                <option value="5">Approved</option>
+            </select>
+        </div>
+        <div class="col-md-3 text-end">
+            <button id="btnFilter" class="btn btn-primary">Filter</button>
+        </div>
+    </div>
+
+    <div id="sessionGrid"></div>
+</div>
+
+@section Scripts {
+    <script src="https://unpkg.com/tabulator-tables@5.4.4/dist/js/tabulator.min.js"></script>
+    <link href="https://unpkg.com/tabulator-tables@5.4.4/dist/css/tabulator.min.css" rel="stylesheet" />
+
+    <script>
+        const table = new Tabulator("#sessionGrid", {
+            layout: "fitDataStretch",
+            ajaxURL: '/AttendanceSession/GetSessions',
+            ajaxParams: getParams,
+            ajaxConfig: 'GET',
+            pagination: 'remote',
+            paginationSize: 25,
+            placeholder: 'No sessions found',
+            columns: [
+                { title: 'Date', field: 'AttendanceDate', formatter: 'datetime', formatterParams: { inputFormat: 'iso', outputFormat: 'yyyy-MM-dd' } },
+                { title: 'Class', field: 'ClassName' },
+                { title: 'Section', field: 'SectionName' },
+                { title: 'Group', field: 'StudentGroupName' },
+                { title: 'Status', field: 'Status', formatter: statusBadge },
+                { title: 'Submitted By', field: 'SubmittedBy' },
+                { title: 'Submitted At', field: 'SubmittedAt', formatter: 'datetime', formatterParams: { inputFormat: 'iso', outputFormat: 'yyyy-MM-dd HH:mm' } },
+                { title: 'Locked By', field: 'LockedBy' },
+                { title: 'Last Modified', field: 'UpdatedAt', formatter: 'datetime', formatterParams: { inputFormat: 'iso', outputFormat: 'yyyy-MM-dd HH:mm' } },
+                { title: 'Total', field: 'TotalStudents' },
+                { title: 'Present', field: 'Present' },
+                { title: 'Absent', field: 'Absent' }
+            ]
+        });
+
+        document.getElementById('btnFilter').addEventListener('click', function () {
+            table.setData('/AttendanceSession/GetSessions', getParams());
+        });
+
+        function getParams() {
+            return {
+                date: document.getElementById('filterDate').value,
+                classId: document.getElementById('filterClass').value,
+                status: document.getElementById('filterStatus').value
+            };
+        }
+
+        function statusBadge(cell, formatterParams) {
+            const value = cell.getValue();
+            let cls = 'badge bg-secondary';
+            if (value === 'Draft') cls = 'badge bg-secondary';
+            if (value === 'Submitted') cls = 'badge bg-primary';
+            if (value === 'Locked') cls = 'badge bg-danger';
+            if (value === 'Revised') cls = 'badge bg-warning text-dark';
+            if (value === 'Approved') cls = 'badge bg-success';
+            return `<span class="${cls}">${value}</span>`;
+        }
+
+        // Prevent double submissions globally
+        document.addEventListener('click', function (e) {
+            const btn = e.target.closest('.prevent-double');
+            if (!btn) return;
+            if (btn.dataset.saving === '1') {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                return false;
+            }
+            btn.dataset.saving = '1';
+            const spinner = document.createElement('span');
+            spinner.className = 'spinner-border spinner-border-sm ms-2';
+            btn.appendChild(spinner);
+        }, true);
+    </script>
+}

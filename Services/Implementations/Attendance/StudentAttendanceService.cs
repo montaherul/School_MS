@@ -10,6 +10,9 @@ using SchoolManagementSystem.Repositories.Interfaces.Attendance;
 using SchoolManagementSystem.Services.Interfaces.Attendance;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using SchoolManagementSystem.Services.Interfaces.Admin;
+using System.Reflection;
+using SchoolManagementSystem.Data;
+using SchoolManagementSystem.Models.Enums;
 
 namespace SchoolManagementSystem.Services.Implementations.Attendance
 {
@@ -275,6 +278,23 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
             var response = new BulkAttendanceSaveResponse { Success = true };
             var date = DateOnly.FromDateTime(dto.AttendanceDate);
             var repo = _uow.Repository<AttendanceRecord>();
+            var sessionRepo = _uow.Repository<AttendanceSession>();
+
+            // Ensure an attendance session exists or is checked for locking
+            var existingSession = await sessionRepo.Query()
+                .Where(s => s.SchoolClassId == dto.ClassId 
+                    && s.SectionId == dto.SectionId 
+                    && s.StudentGroupId == dto.StudentGroupId 
+                    && s.AttendanceDate == date 
+                    && !s.IsDeleted)
+                .FirstOrDefaultAsync(ct);
+
+            if (existingSession != null && existingSession.Status == AttendanceSessionStatus.Locked)
+            {
+                response.Success = false;
+                response.Message = "Attendance already submitted for this class and date.";
+                return response;
+            }
 
             try
             {
@@ -355,21 +375,91 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
                     }
                 }
 
-                // Save changes
-                if (recordsToAdd.Any())
-                {
-                    await repo.AddRangeAsync(recordsToAdd, ct);
-                }
 
-                if (recordsToUpdate.Any())
+                // Use UnitOfWork transaction methods now exposed on IUnitOfWork
+                await _uow.BeginTransactionAsync(ct);
+                try
                 {
-                    foreach (var record in recordsToUpdate)
+                    if (recordsToAdd.Any())
                     {
-                        repo.Update(record);
+                        await repo.AddRangeAsync(recordsToAdd, ct);
                     }
-                }
 
-                await _uow.SaveChangesAsync(ct);
+                    if (recordsToUpdate.Any())
+                    {
+                        foreach (var record in recordsToUpdate)
+                        {
+                            // Create revision entries for any status changes
+                            var trackedOld = record; // existing record already modified in-memory
+                            // Note: we captured status changes earlier in statusChanges list
+                            repo.Update(record);
+                        }
+                    }
+
+                    await _uow.SaveChangesAsync(ct);
+
+                    // Create or update attendance session and lock it as Submitted->Locked
+                    if (existingSession == null)
+                    {
+                        existingSession = new AttendanceSession
+                        {
+                            SchoolClassId = dto.ClassId,
+                            SectionId = dto.SectionId,
+                            StudentGroupId = dto.StudentGroupId,
+                            AttendanceDate = date,
+                            Status = AttendanceSessionStatus.Submitted,
+                            CreatedBy = recordedBy,
+                            CreatedAt = DateTime.UtcNow
+                        };
+                        await sessionRepo.AddAsync(existingSession, ct);
+                    }
+                    else
+                    {
+                        existingSession.Status = AttendanceSessionStatus.Submitted;
+                        existingSession.UpdatedBy = recordedBy;
+                        existingSession.UpdatedAt = DateTime.UtcNow;
+                        sessionRepo.Update(existingSession);
+                    }
+
+                    await _uow.SaveChangesAsync(ct);
+
+                    // Immediately lock the session to prevent further submissions
+                    existingSession.Status = AttendanceSessionStatus.Locked;
+                    existingSession.LockedBy = recordedBy;
+                    existingSession.LockedAt = DateTime.UtcNow;
+                    existingSession.UpdatedBy = recordedBy;
+                    existingSession.UpdatedAt = DateTime.UtcNow;
+                    sessionRepo.Update(existingSession);
+                    await _uow.SaveChangesAsync(ct);
+
+                    // Create attendance revision logs for changed statuses
+                    var revisionRepo = _uow.Repository<AttendanceRevision>();
+                    foreach (var sc in statusChanges)
+                    {
+                        var rev = new AttendanceRevision
+                        {
+                            AttendanceRecordId = existingDict.ContainsKey(sc.StudentId) ? existingDict[sc.StudentId].Id : 0,
+                            StudentId = sc.StudentId,
+                            AttendanceDate = date,
+                            OldStatus = sc.OldStatus.ToString(),
+                            NewStatus = sc.NewStatus.ToString(),
+                            Reason = null,
+                            ChangedBy = recordedBy,
+                            ChangedAt = DateTime.UtcNow,
+                            CreatedBy = recordedBy,
+                            CreatedAt = DateTime.UtcNow
+                        };
+                        await revisionRepo.AddAsync(rev, ct);
+                    }
+
+                    await _uow.SaveChangesAsync(ct);
+                    await _uow.CommitTransactionAsync(ct);
+                }
+                catch (Exception)
+                {
+                    await _uow.RollbackTransactionAsync(ct);
+                    throw;
+                }
 
                 response.RecordsSaved = recordsToAdd.Count + recordsToUpdate.Count;
 
@@ -502,6 +592,64 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
             }).ToList();
 
             return (dtos, totalStudents);
+        }
+
+        public async Task UnlockAttendanceSessionAsync(int classId, int sectionId, DateTime attendanceDate, string unlockedBy, string reason, CancellationToken ct = default)
+        {
+            var dateOnly = DateOnly.FromDateTime(attendanceDate.Date);
+            var sessionRepo = _uow.Repository<AttendanceSession>();
+            var session = await sessionRepo.FirstOrDefaultAsync(s => s.SchoolClassId == classId && s.SectionId == sectionId && s.AttendanceDate == dateOnly && !s.IsDeleted, ct)
+                ?? throw new KeyNotFoundException("Attendance session not found.");
+
+            if (session.Status != AttendanceSessionStatus.Locked)
+                throw new InvalidOperationException("Only locked sessions can be unlocked.");
+
+            session.Status = AttendanceSessionStatus.Revised;
+            session.UpdatedBy = unlockedBy;
+            session.UpdatedAt = DateTime.UtcNow;
+            session.LockedBy = null;
+            session.LockedAt = null;
+            session.Notes = reason;
+            sessionRepo.Update(session);
+            await _uow.SaveChangesAsync(ct);
+
+            await _auditLog.AddAsync(new AttendanceLog { UserId = unlockedBy, Action = "Unlocked Attendance Session", EntityName = "AttendanceSession", EntityId = session.Id }, ct);
+            await _uow.SaveChangesAsync(ct);
+        }
+
+        public async Task ReviseAttendanceSessionAsync(int classId, int sectionId, DateTime attendanceDate, string revisedBy, string? notes, CancellationToken ct = default)
+        {
+            var dateOnly = DateOnly.FromDateTime(attendanceDate.Date);
+            var sessionRepo = _uow.Repository<AttendanceSession>();
+            var session = await sessionRepo.FirstOrDefaultAsync(s => s.SchoolClassId == classId && s.SectionId == sectionId && s.AttendanceDate == dateOnly && !s.IsDeleted, ct)
+                ?? throw new KeyNotFoundException("Attendance session not found.");
+
+            session.Status = AttendanceSessionStatus.Revised;
+            session.UpdatedBy = revisedBy;
+            session.UpdatedAt = DateTime.UtcNow;
+            session.Notes = notes;
+            sessionRepo.Update(session);
+            await _uow.SaveChangesAsync(ct);
+
+            await _auditLog.AddAsync(new AttendanceLog { UserId = revisedBy, Action = "Revised Attendance Session", EntityName = "AttendanceSession", EntityId = session.Id }, ct);
+            await _uow.SaveChangesAsync(ct);
+        }
+
+        public async Task ApproveAttendanceSessionAsync(int classId, int sectionId, DateTime attendanceDate, string approvedBy, CancellationToken ct = default)
+        {
+            var dateOnly = DateOnly.FromDateTime(attendanceDate.Date);
+            var sessionRepo = _uow.Repository<AttendanceSession>();
+            var session = await sessionRepo.FirstOrDefaultAsync(s => s.SchoolClassId == classId && s.SectionId == sectionId && s.AttendanceDate == dateOnly && !s.IsDeleted, ct)
+                ?? throw new KeyNotFoundException("Attendance session not found.");
+
+            session.Status = AttendanceSessionStatus.Approved;
+            session.UpdatedBy = approvedBy;
+            session.UpdatedAt = DateTime.UtcNow;
+            sessionRepo.Update(session);
+            await _uow.SaveChangesAsync(ct);
+
+            await _auditLog.AddAsync(new AttendanceLog { UserId = approvedBy, Action = "Approved Attendance Session", EntityName = "AttendanceSession", EntityId = session.Id }, ct);
+            await _uow.SaveChangesAsync(ct);
         }
 
         /// <summary>

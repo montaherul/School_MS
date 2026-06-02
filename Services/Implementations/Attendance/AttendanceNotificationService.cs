@@ -38,19 +38,7 @@ public class AttendanceNotificationService : IAttendanceNotificationService
     public async Task SendAbsentNotificationAsync(int studentId, DateOnly attendanceDate, string createdBy, CancellationToken ct = default)
     {
         var logRepo = _uow.Repository<AttendanceNotificationLog>();
-        var existingSent = await logRepo.AnyAsync(x =>
-            x.StudentId == studentId &&
-            x.AttendanceDate == attendanceDate &&
-            x.NotificationType == NotificationType &&
-            x.NotificationChannel == Channel &&
-            x.IsSent &&
-            !x.IsDeleted, ct);
-
-        if (existingSent)
-        {
-            return;
-        }
-
+        // Enqueue notification: ensure a notification log exists and mark it as queued.
         var student = await _uow.Repository<Student>().Query()
             .AsNoTracking()
             .Include(s => s.Class)
@@ -83,61 +71,33 @@ public class AttendanceNotificationService : IAttendanceNotificationService
                 AttendanceDate = attendanceDate,
                 NotificationType = NotificationType,
                 NotificationChannel = Channel,
-                NotificationStatus = "Pending",
+                NotificationStatus = "Queued",
                 CreatedAt = DateTime.UtcNow,
-                CreatedBy = createdBy
+                CreatedBy = createdBy,
+                Email = email ?? string.Empty
             };
             await logRepo.AddAsync(log, ct);
         }
-
-        log.Email = email ?? string.Empty;
-
-        if (string.IsNullOrWhiteSpace(email))
+        else
         {
-            log.IsSent = false;
-            log.NotificationStatus = "Failed";
-            log.ErrorMessage = "Guardian email is missing.";
+            // Do not re-queue if already sent or queued
+            if (log.IsSent || log.NotificationStatus == "Sent" || log.NotificationStatus == "Queued")
+                return;
+
+            log.Email = email ?? string.Empty;
+            log.NotificationStatus = "Queued";
             log.UpdatedAt = DateTime.UtcNow;
             log.UpdatedBy = createdBy;
-            await _uow.SaveChangesAsync(ct);
-            return;
-        }
-
-        var schoolName = await _uow.Repository<SchoolProfile>().Query()
-            .AsNoTracking()
-            .Select(s => s.Name)
-            .FirstOrDefaultAsync(ct) ?? "School";
-
-        try
-        {
-            await _emailService.SendAttendanceNotificationAsync(
-                email,
-                student.FullName,
-                student.RollNumber.ToString(),
-                student.Class?.Name ?? string.Empty,
-                student.Section?.Name ?? string.Empty,
-                attendanceDate,
-                schoolName,
-                ct);
-
-            log.IsSent = true;
-            log.SentAt = DateTime.UtcNow;
-            log.NotificationStatus = "Sent";
+            log.IsSent = false;
             log.ErrorMessage = null;
-            log.UpdatedAt = DateTime.UtcNow;
-            log.UpdatedBy = createdBy;
-            await _uow.SaveChangesAsync(ct);
+            log.SentAt = null;
+            log.NotificationType = NotificationType;
+            log.NotificationChannel = Channel;
+            // Update existing entry
+            logRepo.Update(log);
         }
-        catch (Exception ex)
-        {
-            log.IsSent = false;
-            log.NotificationStatus = "Failed";
-            log.ErrorMessage = ex.ToString();
-            log.UpdatedAt = DateTime.UtcNow;
-            log.UpdatedBy = createdBy;
-            await _uow.SaveChangesAsync(ct);
-            _logger.LogError(ex, "Attendance email failed for student {StudentId} on {AttendanceDate}", studentId, attendanceDate);
-        }
+
+        await _uow.SaveChangesAsync(ct);
     }
 
     public async Task<IReadOnlyList<AttendanceNotificationLog>> GetLogsAsync(DateOnly attendanceDate, int? classId = null, int? sectionId = null, CancellationToken ct = default)

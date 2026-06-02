@@ -64,7 +64,9 @@ public class SchoolDbContext : DbContext
     public DbSet<LeaveType> LeaveTypes => Set<LeaveType>();
     public DbSet<AttendanceSetting> AttendanceSettings => Set<AttendanceSetting>();
     public DbSet<AttendanceLog> AttendanceLogs => Set<AttendanceLog>();
+    public DbSet<AttendanceSession> AttendanceSessions => Set<AttendanceSession>();
     public DbSet<AttendanceNotificationLog> AttendanceNotificationLogs => Set<AttendanceNotificationLog>();
+    public DbSet<AttendanceRevision> AttendanceRevisions => Set<AttendanceRevision>();
     public DbSet<Exam> Exams => Set<Exam>();
     public DbSet<ExamSubject> ExamSubjects => Set<ExamSubject>();
     public DbSet<ExamSchedule> ExamSchedules => Set<ExamSchedule>();
@@ -174,6 +176,7 @@ public class SchoolDbContext : DbContext
         modelBuilder.Entity<ReEvaluationRequest>().HasIndex(x => new { x.ExamId, x.StudentId, x.SubjectId }).IsUnique();
         modelBuilder.Entity<RollNumberAssignment>().HasIndex(x => new { x.AcademicYearId, x.StudentId, x.ToClassId }).IsUnique();
         modelBuilder.Entity<AttendanceRecord>().HasIndex(x => new { x.StudentId, x.AttendanceDate }).IsUnique().HasFilter("[IsDeleted] = 0");
+        modelBuilder.Entity<AttendanceSession>().HasIndex(x => new { x.SchoolClassId, x.SectionId, x.StudentGroupId, x.AttendanceDate }).IsUnique().HasFilter("[IsDeleted] = 0");
         modelBuilder.Entity<AttendanceNotificationLog>().HasIndex(x => new { x.StudentId, x.AttendanceDate, x.NotificationType, x.NotificationChannel }).IsUnique().HasFilter("[IsDeleted] = 0");
         modelBuilder.Entity<Subject>().HasIndex(x => x.Code).IsUnique();
         modelBuilder.Entity<Teacher>().HasIndex(x => x.TeacherCode).IsUnique();

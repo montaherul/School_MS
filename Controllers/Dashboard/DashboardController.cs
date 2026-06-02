@@ -27,6 +27,16 @@ public class DashboardController : Controller
             }
         }
 
+        if (User.IsInRole("Guardian"))
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (int.TryParse(userIdStr, out var userId))
+            {
+                var guardianData = await _service.GetGuardianDashboardAsync(userId);
+                return View("GuardianIndex", guardianData);
+            }
+        }
+
         if (User.IsInRole("Teacher") || User.IsInRole("Senior Lecturer") || User.IsInRole("Lecturer") || 
             User.IsInRole("Assistant Head") || User.IsInRole("Principal") || User.IsInRole("Office Staff"))
         {

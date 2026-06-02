@@ -53,6 +53,22 @@ public class UnitOfWork : IUnitOfWork
 
     public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) => _db.SaveChangesAsync(cancellationToken);
     public Task<int> ExecuteSqlRawAsync(string sql, params object[] parameters) => _db.Database.ExecuteSqlRawAsync(sql, parameters);
+    public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
+    {
+        await _db.Database.BeginTransactionAsync(cancellationToken);
+    }
+
+    public async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
+    {
+        if (_db.Database.CurrentTransaction != null)
+            await _db.Database.CommitTransactionAsync(cancellationToken);
+    }
+
+    public async Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
+    {
+        if (_db.Database.CurrentTransaction != null)
+            await _db.Database.RollbackTransactionAsync(cancellationToken);
+    }
 
     private static bool IsApplicationAssembly(Assembly assembly)
     {

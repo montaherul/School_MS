@@ -50,5 +50,10 @@ namespace SchoolManagementSystem.Services.Interfaces.Attendance
             int page = 1,
             int pageSize = 50,
             CancellationToken ct = default);
+
+        // Session workflow operations
+        Task UnlockAttendanceSessionAsync(int classId, int sectionId, DateTime attendanceDate, string unlockedBy, string reason, CancellationToken ct = default);
+        Task ReviseAttendanceSessionAsync(int classId, int sectionId, DateTime attendanceDate, string revisedBy, string? notes, CancellationToken ct = default);
+        Task ApproveAttendanceSessionAsync(int classId, int sectionId, DateTime attendanceDate, string approvedBy, CancellationToken ct = default);
     }
 }

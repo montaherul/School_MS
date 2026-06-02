@@ -25,3 +25,4 @@ public enum ExamTerm
 public enum ResultWorkflowStatus { Draft = 1, Submitted = 2, Approved = 3, Published = 4, Locked = 5 }
 public enum ReEvaluationStatus { Requested = 1, Approved = 2, Rejected = 3, Revised = 4 }
 public enum PromotionStatus { Pending = 1, Promoted = 2, Repeat = 3, Failed = 4 }
+public enum AttendanceSessionStatus { Draft = 1, Submitted = 2, Locked = 3, Revised = 4, Approved = 5 }
