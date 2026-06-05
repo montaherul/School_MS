@@ -70,9 +70,12 @@ namespace SchoolManagementSystem.Models.DTOs.Attendance
     public class StudentAttendanceFilterDto
     {
         public DateTime AttendanceDate { get; set; } = DateTime.Today;
+        public int? StudentId { get; set; }
         public int? ClassId { get; set; }
         public int? SectionId { get; set; }
         public int? StudentGroupId { get; set; }
+        public string? SearchTerm { get; set; }
+        public int? Status { get; set; }
         public int Page { get; set; } = 1;
         public int PageSize { get; set; } = 50;
     }

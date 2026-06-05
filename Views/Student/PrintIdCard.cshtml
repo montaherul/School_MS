@@ -54,9 +54,48 @@
         .emergency-contact { font-size: 1.1rem; color: #134e4a; }
 
         @@media print {
+    body { background: white; padding: 0; margin: 0; }
+    .id-card-container {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        gap: 0;
+        padding: 0;
+        margin: 0;
+        page-break-inside: avoid;
+    }
+    .id-card {
+        width: 48%;
+        height: auto;
+        box-shadow: none;
+        border: 1px solid #ddd;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        page-break-inside: avoid;
+    }
+    .no-print { display: none !important; }
+    @@page { size: landscape; margin: 0; }
+}
+
             body { background: white; padding: 0; margin: 0; }
-            .id-card-container { min-height: auto; padding: 20px; }
-            .id-card { box-shadow: none; border: 1px solid #ddd; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .id-card-container {
+                display: flex;
+                flex-direction: row;
+                justify-content: center;
+                gap: 0;
+                padding: 0;
+                margin: 0;
+                page-break-inside: avoid;
+            }
+            .id-card {
+                width: 49%;
+                height: auto;
+                box-shadow: none;
+                border: 1px solid #ddd;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                page-break-inside: avoid;
+            }
             .no-print { display: none !important; }
             @@page { size: landscape; margin: 0; }
         }

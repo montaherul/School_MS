@@ -31,5 +31,7 @@ public class AttendanceRecordUpsertDto
     [Required]
     [StringLength(240)]
     public string Remarks { get; set; } = string.Empty;
+
+    public DateOnly AttendanceDate { get; set; } = DateOnly.FromDateTime(DateTime.Today);
 }
 

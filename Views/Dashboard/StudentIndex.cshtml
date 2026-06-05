@@ -184,6 +184,49 @@
 
     </div>
 
+    <!-- ATTENDANCE CALENDAR -->
+    <div class="adm-table-card mb-4" style="border-radius:var(--adm-radius-lg); overflow:hidden; border:1px solid var(--adm-border);">
+        <div style="padding:20px 24px; background:var(--adm-bg-sub); border-bottom:1px solid var(--adm-border);">
+            <h5 class="dash-section__title" style="margin:0;">
+                <i class="bi bi-calendar3 me-2"></i> Attendance Calendar - @DateTime.Now.ToString("MMMM yyyy")
+            </h5>
+        </div>
+        <div class="p-4">
+            <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px;">
+                @for (int i = 1; i <= DateTime.DaysInMonth(DateTime.Now.Year, DateTime.Now.Month); i++)
+                {
+                    var date = new DateTime(DateTime.Now.Year, DateTime.Now.Month, i);
+                    var att = Model.AttendanceCalendar.FirstOrDefault(a => a.Date.Date == date.Date);
+                    var color = att?.StatusColor ?? "light";
+                    var status = att?.Status ?? "No Record";
+
+                    <div style="
+                        padding:12px;
+                        border-radius:var(--adm-radius-md);
+                        border:1px solid var(--adm-border);
+                        background:var(--adm-bg-2);
+                        text-align:center;
+                        min-height:80px;
+                        display:flex;
+                        flex-direction:column;
+                        justify-content:space-between;">
+                        
+                        <div style="font-size:12px; font-weight:600; color:var(--adm-text-3);">@i</div>
+                        
+                        @if (att != null)
+                        {
+                            <div class="badge bg-@color" style="font-size:10px;">@status</div>
+                        }
+                        else
+                        {
+                            <div style="font-size:10px; color:var(--adm-text-3);">--</div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
     <!-- TABLE SECTION -->
     <div class="row g-4">
 

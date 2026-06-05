@@ -38,6 +38,8 @@ public class AdmissionCreateDto
         [MaxLength(100)]
         public string? GuardianOccupation { get; set; }
 
+        public int? LinkedGuardianId { get; set; }
+
         // Contact
         [Required, MaxLength(30)]
         public string FatherOrGuardianMobileNo { get; set; } = string.Empty;

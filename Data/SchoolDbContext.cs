@@ -14,6 +14,7 @@ using SchoolManagementSystem.Models.Entities.Library;
 using SchoolManagementSystem.Models.Entities.Notification;
 using SchoolManagementSystem.Models.Entities.Result;
 using SchoolManagementSystem.Models.Entities.Student;
+using SchoolManagementSystem.Models.Entities.Guardian;
 using SchoolManagementSystem.Models.Entities.System;
 using SchoolManagementSystem.Models.Entities.Teachers;
 using SchoolManagementSystem.Models.Entities.Transport;
@@ -40,6 +41,9 @@ public class SchoolDbContext : DbContext
     public DbSet<AdmissionListResultDto> AdmissionListResults => Set<AdmissionListResultDto>();
     public DbSet<Student> Students => Set<Student>();
     public DbSet<Guardian> Guardians => Set<Guardian>();
+    public DbSet<StudentGuardian> StudentGuardians => Set<StudentGuardian>();
+    public DbSet<GuardianNotification> GuardianNotifications => Set<GuardianNotification>();
+    public DbSet<GuardianNotificationLog> GuardianNotificationLogs => Set<GuardianNotificationLog>();
     public DbSet<StudentDocument> StudentDocuments => Set<StudentDocument>();
     public DbSet<StudentPromotion> StudentPromotions => Set<StudentPromotion>();
     public DbSet<TransferCertificate> TransferCertificates => Set<TransferCertificate>();
@@ -60,6 +64,7 @@ public class SchoolDbContext : DbContext
     public DbSet<StudyMaterial> StudyMaterials => Set<StudyMaterial>();
     public DbSet<AttendanceRecord> Attendance => Set<AttendanceRecord>();
     public DbSet<LeaveApplication> LeaveApplications => Set<LeaveApplication>();
+    public DbSet<StudentLeaveApplication> StudentLeaveApplications => Set<StudentLeaveApplication>();
     public DbSet<StudentAttendance> StudentAttendances => Set<StudentAttendance>();
     public DbSet<LeaveType> LeaveTypes => Set<LeaveType>();
     public DbSet<AttendanceSetting> AttendanceSettings => Set<AttendanceSetting>();
@@ -105,6 +110,7 @@ public class SchoolDbContext : DbContext
     public DbSet<SystemLog> SystemLogs => Set<SystemLog>();
     public DbSet<BackupRecord> BackupRecords => Set<BackupRecord>();
     public DbSet<ActivityLog> ActivityLogs => Set<ActivityLog>();
+    public DbSet<StoredProcedureDeploymentHistory> StoredProcedureDeploymentHistories => Set<StoredProcedureDeploymentHistory>();
     public DbSet<StudentGroup> StudentGroups => Set<StudentGroup>();
 
     public DbSet<TeacherClassAssignment> TeacherClassAssignments => Set<TeacherClassAssignment>();
@@ -167,7 +173,12 @@ public class SchoolDbContext : DbContext
         modelBuilder.Entity<ApplicationUser>().HasIndex(x => x.Email).IsUnique();
         modelBuilder.Entity<UserSession>().HasIndex(x => x.SessionId).IsUnique();
         modelBuilder.Entity<AdmissionApplication>().HasIndex(x => x.ApplicationNo).IsUnique();
+        modelBuilder.Entity<AdmissionApplication>().HasIndex(x => x.LinkedGuardianId);
+        modelBuilder.Entity<AttendanceNotificationLog>().HasIndex(x => x.GuardianId);
         modelBuilder.Entity<Student>().HasIndex(x => x.StudentNo).IsUnique();
+        modelBuilder.Entity<Guardian>().HasIndex(x => x.GuardianCode).IsUnique();
+        modelBuilder.Entity<Guardian>().HasIndex(x => x.MobileNumber).IsUnique();
+        modelBuilder.Entity<StudentGuardian>().HasIndex(x => new { x.StudentId, x.GuardianId }).IsUnique();
         modelBuilder.Entity<Student>().HasIndex(x => new { x.ClassId, x.SectionId, x.RollNumber }).IsUnique();
         modelBuilder.Entity<MarkEntry>().HasIndex(x => new { x.ExamId, x.StudentId, x.SubjectId }).IsUnique();
         modelBuilder.Entity<StudentSubjectResult>().HasIndex(x => new { x.ExamId, x.StudentId, x.SubjectId }).IsUnique();
@@ -177,7 +188,14 @@ public class SchoolDbContext : DbContext
         modelBuilder.Entity<RollNumberAssignment>().HasIndex(x => new { x.AcademicYearId, x.StudentId, x.ToClassId }).IsUnique();
         modelBuilder.Entity<AttendanceRecord>().HasIndex(x => new { x.StudentId, x.AttendanceDate }).IsUnique().HasFilter("[IsDeleted] = 0");
         modelBuilder.Entity<AttendanceSession>().HasIndex(x => new { x.SchoolClassId, x.SectionId, x.StudentGroupId, x.AttendanceDate }).IsUnique().HasFilter("[IsDeleted] = 0");
-        modelBuilder.Entity<AttendanceNotificationLog>().HasIndex(x => new { x.StudentId, x.AttendanceDate, x.NotificationType, x.NotificationChannel }).IsUnique().HasFilter("[IsDeleted] = 0");
+        modelBuilder.Entity<AttendanceNotificationLog>()
+            .HasIndex(x => new { x.StudentId, x.AttendanceDate, x.NotificationType, x.NotificationChannel })
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0 AND [EmployeeId] IS NULL");
+        modelBuilder.Entity<AttendanceNotificationLog>()
+            .HasIndex(x => new { x.EmployeeId, x.AttendanceDate, x.NotificationType, x.NotificationChannel })
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0 AND [EmployeeId] IS NOT NULL");
         modelBuilder.Entity<Subject>().HasIndex(x => x.Code).IsUnique();
         modelBuilder.Entity<Teacher>().HasIndex(x => x.TeacherCode).IsUnique();
         modelBuilder.Entity<FeeInvoice>().HasIndex(x => x.InvoiceNo).IsUnique();
@@ -226,18 +244,18 @@ public class SchoolDbContext : DbContext
             .HasFilter("[IsDeleted] = 0");
 
         modelBuilder.Entity<TeacherClassAssignment>()
-            .HasIndex(x => new { x.TeacherId, x.ClassId, x.SectionId, x.AcademicYearId })
+            .HasIndex(x => new { x.TeacherId, x.ClassId, x.SectionId, x.GroupId, x.AcademicYearId })
             .IsUnique()
             .HasFilter("[IsDeleted] = 0");
         
-        // Enforce only one active Class Teacher per Class, Section, and Academic Year
+        // Enforce only one active class teacher per class, section, group, and academic year.
         modelBuilder.Entity<TeacherClassAssignment>()
-            .HasIndex(x => new { x.ClassId, x.SectionId, x.AcademicYearId })
+            .HasIndex(x => new { x.ClassId, x.SectionId, x.GroupId, x.AcademicYearId })
             .IsUnique()
             .HasFilter("[IsActive] = 1 AND [IsDeleted] = 0");
 
         modelBuilder.Entity<TeacherSubjectAssignment>()
-            .HasIndex(x => new { x.TeacherId, x.SubjectId, x.ClassId, x.SectionId, x.AcademicYearId })
+            .HasIndex(x => new { x.TeacherId, x.SubjectId, x.ClassId, x.SectionId, x.GroupId, x.AcademicYearId })
             .IsUnique()
             .HasFilter("[IsDeleted] = 0");
         modelBuilder.Entity<TeacherTimetable>().HasIndex(x => new { x.TeacherId, x.DayOfWeek, x.StartTime }).IsUnique();
@@ -315,7 +333,19 @@ public class SchoolDbContext : DbContext
             .HasForeignKey(s => s.ClassSubjectId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        DbInitializer.Seed(modelBuilder);
+        modelBuilder.Entity<StudentLeaveApplication>(entity =>
+{
+    entity.HasOne(s => s.Student)
+          .WithMany()
+          .HasForeignKey(s => s.StudentId)
+          .OnDelete(DeleteBehavior.Restrict);
+    entity.HasOne(s => s.Guardian)
+          .WithMany()
+          .HasForeignKey(s => s.GuardianId)
+          .OnDelete(DeleteBehavior.Restrict);
+});
+
+DbInitializer.Seed(modelBuilder);
     }
 }
  

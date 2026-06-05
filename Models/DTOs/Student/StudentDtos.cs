@@ -83,6 +83,8 @@ public class StudentUpsertDto
     [MaxLength(100), Display(Name="Guardian's Occupation")]
     public string? GuardianOccupation { get; set; }
 
+    public int? LinkedGuardianId { get; set; }
+
     [MaxLength(30), Display(Name="Father/Guardian Mobile No.")]
     public string FatherOrGuardianMobileNo { get; set; } = string.Empty;
 

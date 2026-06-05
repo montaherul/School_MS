@@ -91,6 +91,20 @@ public class Employee : BaseEntity
     [MaxLength(500)]
     public string? Remarks { get; set; }
 
+    [MaxLength(50)]
+    public string? EmployeeCardNumber { get; set; }
+
+    public DateTime? CardIssueDate { get; set; }
+
+    public DateTime? CardExpiryDate { get; set; }
+
+    public DateTime? CardPrintedAt { get; set; }
+
+    public int CardVersion { get; set; } = 1;
+
+    [MaxLength(100)]
+    public string? QRVerificationCode { get; set; }
+
     // Navigations
     public ICollection<EmployeeQualification> Qualifications { get; set; } = new List<EmployeeQualification>();
     public ICollection<EmployeeDocument> Documents { get; set; } = new List<EmployeeDocument>();

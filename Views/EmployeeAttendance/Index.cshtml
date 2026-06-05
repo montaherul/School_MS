@@ -384,6 +384,8 @@
 
     function filters() {
         return {
+            page: 1,
+            size: 2000,
             attendanceDate: el('filterDate').value,
             departmentId: el('filterDepartment').value || null,
             designationId: el('filterDesignation').value || null,
@@ -449,7 +451,7 @@
         responsiveLayout: 'collapse',
         selectableRows: true,
         pagination: true,
-        paginationMode: 'remote',
+        paginationMode: 'local',
         paginationSize: 25,
         paginationSizeSelector: [10, 25, 50, 100],
         ajaxURL: LOAD_URL,
@@ -463,11 +465,16 @@
         ajaxResponse: function (url, params, response) {
             var rows = response && Array.isArray(response.data) ? response.data : [];
             updateSummary(response.summary);
-            return {
-                data: rows,
-                last_page: response.last_page || 1,
-                total_records: response.total_records || rows.length
-            };
+            if (!response.summary || !(response.summary.totalEmployees > 0)) {
+                updateSummary({
+                    totalEmployees: response.total_records || rows.length,
+                    present: rows.filter(function (row) { return row.statusName === 'Present'; }).length,
+                    absent: rows.filter(function (row) { return row.statusName === 'Absent'; }).length,
+                    late: rows.filter(function (row) { return row.statusName === 'Late'; }).length,
+                    leave: rows.filter(function (row) { return row.statusName === 'Leave'; }).length
+                });
+            }
+            return rows;
         },
         ajaxError: function () {
             showToast('Attendance data could not be loaded.', 'error');
@@ -553,7 +560,7 @@
     var historyModal = new bootstrap.Modal(el('historyModal'));
 
     function loadGrid() {
-        table.setData(LOAD_URL);
+        table.setData(LOAD_URL + '?' + new URLSearchParams(filters()).toString());
     }
 
     function openHistory(employeeId, employeeName) {
@@ -593,7 +600,10 @@
     }
 
     function saveAttendance() {
-        var rows = table.getData();
+        var rows = table.getData('active');
+        if (!rows.length) {
+            rows = table.getData();
+        }
         if (!rows.length) {
             showToast('Load employees before saving attendance.', 'error');
             return;

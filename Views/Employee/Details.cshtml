@@ -52,9 +52,7 @@
                             <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary px-3 rounded-pill">
                                 <i class="bi bi-pencil me-1"></i> Edit Profile
                             </a>
-                            <button onclick="window.print()" class="btn btn-outline-secondary px-3 rounded-pill">
-                                <i class="bi bi-printer me-1"></i> Print
-                            </button>
+
                             @if (User.IsInRole("Super Admin") || User.HasClaim("Permission", "Users.Delete"))
                             {
                                 <button type="button" class="btn btn-outline-danger px-3 rounded-pill" data-bs-toggle="modal" data-bs-target="#deleteModal">
@@ -70,6 +68,130 @@
 
     <!-- LEFT COLUMN: Key Details & Contact Info -->
     <div class="col-lg-4 col-md-5">
+        <!-- Identity Card Section -->
+        <div class="card border-0 shadow-sm rounded-4 mb-4" style="background-color: var(--bs-card-bg, #fff);">
+            <div class="card-header bg-white border-0 p-4 pb-0 d-flex justify-content-between align-items-center">
+                <h5 class="fw-bold mb-0 text-primary"><i class="bi bi-card-image me-2"></i>Identity Card</h5>
+                <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-2 py-0" onclick="flipCard()">
+                    <i class="bi bi-arrow-repeat me-1"></i> Flip
+                </button>
+            </div>
+            <div class="card-body p-4 text-center">
+                
+                <!-- ID Card 3D Flip Container -->
+              @*   <div class="id-card-scene mb-3 mx-auto">
+                    <div class="id-card-container" id="idCard" onclick="flipCard()">
+                        
+                        <!-- Front Side -->
+                        <div class="id-card-face id-card-front" style="border-color: @GetThemeColor(Model.Designation);">
+                            <!-- Front Header Band -->
+                            <div class="id-card-header" style="background-color: @GetThemeColor(Model.Designation);">
+                                <h6 class="school-name mb-0 text-white">@(ViewBag.SchoolSetting?.SchoolName ?? "SCHOOL MANAGEMENT ERP")</h6>
+                                <span class="eiin-text text-white-50">EIIN: @(ViewBag.SchoolSetting?.EIIN ?? "123456")</span>
+                            </div>
+                            
+                            <!-- Front Body -->
+                            <div class="id-card-body d-flex">
+                                <!-- Photo -->
+                                <div class="id-card-photo-wrapper">
+                                    @if (!string.IsNullOrEmpty(Model.ProfilePicturePath))
+                                    {
+                                        <img src="@Model.ProfilePicturePath" class="id-card-photo" alt="Photo" />
+                                    }
+                                    else
+                                    {
+                                        <div class="id-card-photo-placeholder" style="color: @GetThemeColor(Model.Designation); line-height: 90px;">
+                                            PHOTO
+                                        </div>
+                                    }
+                                </div>
+                                <!-- Details -->
+                                <div class="id-card-details text-start">
+                                    <h5 class="emp-name mb-1">@Model.FullName</h5>
+                                    <p class="emp-code mb-0 fw-bold">Code: @Model.EmployeeCode</p>
+                                    <p class="emp-meta mb-0"><strong>Desig:</strong> @Model.Designation</p>
+                                    <p class="emp-meta mb-0"><strong>Dept:</strong> @Model.Department</p>
+                                    <p class="emp-meta mb-0"><strong>Blood:</strong> @(Model.BloodGroup ?? "N/A")</p>
+                                    <p class="emp-valid mb-0 text-danger font-monospace"><strong>Valid:</strong> @(Model.CardExpiryDate?.ToString("yyyy-MM-dd") ?? DateTime.Today.AddYears(2).ToString("yyyy-MM-dd"))</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Front Footer Band -->
+                            <div class="id-card-footer" style="background-color: @GetThemeColor(Model.Designation);">
+                                <span class="footer-label text-white">EMPLOYEE IDENTITY CARD</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Back Side -->
+                        <div class="id-card-face id-card-back" style="border-color: @GetThemeColor(Model.Designation);">
+                            <!-- Back Header -->
+                            <div class="id-card-back-header">
+                                <h6 class="back-header-text mb-0 text-secondary">INSTRUCTIONS</h6>
+                            </div>
+                            
+                            <!-- Back Body -->
+                            <div class="id-card-back-body d-flex">
+                                <!-- Instructions & Details -->
+                                <div class="id-card-back-rules text-start">
+                                    <p class="rules-text mb-1">This card remains the property of the institution. If found, please return to:</p>
+                                    <p class="school-info-text mb-1 fw-bold">@(ViewBag.SchoolSetting?.SchoolName ?? "School Management ERP")</p>
+                                    <p class="school-info-text mb-2">Ph: @(ViewBag.SchoolSetting?.Phone ?? "N/A")</p>
+                                    @if (!string.IsNullOrEmpty(Model.EmergencyContactPhone))
+                                    {
+                                        <p class="emergency-text mb-0 text-danger"><strong>Emergency:</strong> @Model.EmergencyContactPhone</p>
+                                    }
+                                </div>
+                                <!-- QR and Sign -->
+                                <div class="id-card-back-qr-sign">
+                                    @{
+                                        var currentScheme = Context.Request.Scheme;
+                                        var currentHost = Context.Request.Host;
+                                        var verificationUrl = $"{currentScheme}://{currentHost}/Employee/Verify/{Model.Id}";
+                                        var qrData = $"ID: {Model.Id}\nCode: {Model.EmployeeCode}\nName: {Model.FullName}\nDesignation: {Model.Designation}\nDept: {Model.Department}\nVerify: {verificationUrl}";
+                                    }
+                                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=@(Uri.EscapeDataString(qrData))" class="id-card-qr" alt="QR Verification" />
+                                    <div class="signature-line mt-1">
+                                        Principal
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Back Footer Band -->
+                            <div class="id-card-footer" style="background-color: @GetThemeColor(Model.Designation);">
+                                <span class="footer-label text-white">@(ViewBag.SchoolSetting?.Website ?? "www.school.com")</span>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+ *@
+
+                <!-- Actions -->
+                <div class="d-flex flex-wrap gap-2 justify-content-center">
+                    <a asp-action="DownloadIdCardPdf" asp-route-id="@Model.Id" class="btn btn-sm btn-success rounded-pill px-3">
+                        <i class="bi bi-file-earmark-pdf me-1"></i> Download PDF
+                    </a>
+                    @if (User.IsInRole("Super Admin") || User.IsInRole("Admin") || User.IsInRole("HR") || User.IsInRole("Principal"))
+                    {
+                        <form asp-action="ReissueCard" asp-route-id="@Model.Id" method="post" style="display:inline;">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-sm btn-warning rounded-pill px-3">
+                                <i class="bi bi-arrow-repeat me-1"></i> Reissue Card
+                            </button>
+                        </form>
+                    }
+                </div>
+                
+                <div class="text-secondary small mt-3 border-top pt-2">
+                    <span class="d-block"><i class="bi bi-shield-check me-1"></i>Card Version: <strong>@Model.CardVersion</strong></span>
+                    @if (Model.CardPrintedAt.HasValue)
+                    {
+                        <span class="d-block"><i class="bi bi-printer me-1"></i>Printed At: @Model.CardPrintedAt.Value.ToString("dd MMM yyyy HH:mm")</span>
+                    }
+                </div>
+            </div>
+        </div>
+
         <div class="card border-0 shadow-sm rounded-4 mb-4" style="background-color: var(--bs-card-bg, #fff);">
             <div class="card-header bg-white border-0 p-4 pb-0">
                 <h5 class="fw-bold mb-0 text-primary"><i class="bi bi-person-lines-fill me-2"></i>Personal Info</h5>

@@ -13,7 +13,9 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance;
 
 public class AttendanceNotificationService : IAttendanceNotificationService
 {
-    private const string NotificationType = "Absent";
+    private const string AbsentNotificationType = "Absent";
+    private const string LateStudentNotificationType = "LateStudent";
+    private const string LateEmployeeNotificationType = "LateEmployee";
     private const string Channel = "Email";
 
     private readonly IUnitOfWork _uow;
@@ -35,15 +37,33 @@ public class AttendanceNotificationService : IAttendanceNotificationService
         }
     }
 
-    public async Task SendAbsentNotificationAsync(int studentId, DateOnly attendanceDate, string createdBy, CancellationToken ct = default)
+    public async Task SendLateStudentNotificationsAsync(IEnumerable<int> studentIds, DateOnly attendanceDate, string createdBy, CancellationToken ct = default)
     {
-        var logRepo = _uow.Repository<AttendanceNotificationLog>();
-        // Enqueue notification: ensure a notification log exists and mark it as queued.
-        var student = await _uow.Repository<Student>().Query()
+        foreach (var studentId in studentIds.Distinct())
+        {
+            await QueueStudentNotificationAsync(studentId, attendanceDate, LateStudentNotificationType, createdBy, ct);
+        }
+    }
+
+    public async Task SendLateEmployeeNotificationsAsync(IEnumerable<int> employeeIds, DateOnly attendanceDate, string createdBy, CancellationToken ct = default)
+    {
+        foreach (var employeeId in employeeIds.Distinct())
+        {
+            await QueueEmployeeNotificationAsync(employeeId, attendanceDate, LateEmployeeNotificationType, createdBy, ct);
+        }
+
+        await _uow.SaveChangesAsync(ct);
+    }
+
+    public async Task SendAbsentNotificationAsync(int studentId, DateOnly attendanceDate, string createdBy, CancellationToken ct = default)
+        => await QueueStudentNotificationAsync(studentId, attendanceDate, AbsentNotificationType, createdBy, ct);
+
+    private async Task QueueStudentNotificationAsync(int studentId, DateOnly attendanceDate, string notificationType, string createdBy, CancellationToken ct)
+    {
+        var student = await _uow.Repository<StudentEntity>().Query()
             .AsNoTracking()
-            .Include(s => s.Class)
-            .Include(s => s.Section)
-            .Include(s => s.Guardians)
+            .Include(s => s.StudentGuardians)
+                .ThenInclude(sg => sg.Guardian)
             .FirstOrDefaultAsync(s => s.Id == studentId && !s.IsDeleted, ct);
 
         if (student is null)
@@ -51,16 +71,53 @@ public class AttendanceNotificationService : IAttendanceNotificationService
             return;
         }
 
-        var email = student.Guardians
-            .Select(g => g.Email)
-            .FirstOrDefault(e => !string.IsNullOrWhiteSpace(e))
-            ?? student.EmailAddress;
+        var guardiansToNotify = student.StudentGuardians
+            .Where(sg => sg.ReceivesAttendanceNotifications && sg.Guardian != null && !sg.Guardian.IsDeleted)
+            .ToList();
 
+        // If no guardians opted in, fall back to student email if available? 
+        // User didn't specify, but for now let's focus on guardians.
+
+        foreach (var mapping in guardiansToNotify)
+        {
+            if (mapping.ReceivesEmail && !string.IsNullOrWhiteSpace(mapping.Guardian!.Email))
+            {
+                await EnqueueStudentLog(studentId, mapping.GuardianId, mapping.Guardian.Email, attendanceDate, notificationType, "Email", createdBy, ct);
+            }
+            
+            if (mapping.ReceivesSMS && !string.IsNullOrWhiteSpace(mapping.Guardian.MobileNumber))
+            {
+                await EnqueueStudentLog(studentId, mapping.GuardianId, mapping.Guardian.MobileNumber, attendanceDate, notificationType, "SMS", createdBy, ct);
+            }
+        }
+
+        await _uow.SaveChangesAsync(ct);
+    }
+
+    private async Task QueueEmployeeNotificationAsync(int employeeId, DateOnly attendanceDate, string notificationType, string createdBy, CancellationToken ct)
+    {
+        var employee = await _uow.Repository<SchoolManagementSystem.Models.Entities.Employee.Employee>().Query()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(e => e.Id == employeeId && !e.IsDeleted, ct);
+
+        if (employee == null || string.IsNullOrWhiteSpace(employee.Email))
+        {
+            return;
+        }
+
+        await EnqueueEmployeeLog(employeeId, employee.Email, attendanceDate, notificationType, Channel, createdBy, ct);
+    }
+
+    private async Task EnqueueStudentLog(int studentId, int guardianId, string target, DateOnly date, string notificationType, string channel, string createdBy, CancellationToken ct)
+    {
+        var logRepo = _uow.Repository<AttendanceNotificationLog>();
+        
         var log = await logRepo.FirstOrDefaultAsync(x =>
             x.StudentId == studentId &&
-            x.AttendanceDate == attendanceDate &&
-            x.NotificationType == NotificationType &&
-            x.NotificationChannel == Channel &&
+            x.GuardianId == guardianId &&
+            x.AttendanceDate == date &&
+            x.NotificationType == notificationType &&
+            x.NotificationChannel == channel &&
             !x.IsDeleted, ct);
 
         if (log is null)
@@ -68,36 +125,60 @@ public class AttendanceNotificationService : IAttendanceNotificationService
             log = new AttendanceNotificationLog
             {
                 StudentId = studentId,
-                AttendanceDate = attendanceDate,
-                NotificationType = NotificationType,
-                NotificationChannel = Channel,
+                GuardianId = guardianId,
+                AttendanceDate = date,
+                NotificationType = notificationType,
+                NotificationChannel = channel,
                 NotificationStatus = "Queued",
                 CreatedAt = DateTime.UtcNow,
                 CreatedBy = createdBy,
-                Email = email ?? string.Empty
+                Email = target,
             };
             await logRepo.AddAsync(log, ct);
         }
-        else
+        else if (!log.IsSent && log.NotificationStatus != "Queued")
         {
-            // Do not re-queue if already sent or queued
-            if (log.IsSent || log.NotificationStatus == "Sent" || log.NotificationStatus == "Queued")
-                return;
-
-            log.Email = email ?? string.Empty;
             log.NotificationStatus = "Queued";
             log.UpdatedAt = DateTime.UtcNow;
             log.UpdatedBy = createdBy;
-            log.IsSent = false;
-            log.ErrorMessage = null;
-            log.SentAt = null;
-            log.NotificationType = NotificationType;
-            log.NotificationChannel = Channel;
-            // Update existing entry
             logRepo.Update(log);
         }
+    }
 
-        await _uow.SaveChangesAsync(ct);
+    private async Task EnqueueEmployeeLog(int employeeId, string target, DateOnly date, string notificationType, string channel, string createdBy, CancellationToken ct)
+    {
+        var logRepo = _uow.Repository<AttendanceNotificationLog>();
+
+        var log = await logRepo.FirstOrDefaultAsync(x =>
+            x.EmployeeId == employeeId &&
+            x.AttendanceDate == date &&
+            x.NotificationType == notificationType &&
+            x.NotificationChannel == channel &&
+            !x.IsDeleted, ct);
+
+        if (log is null)
+        {
+            log = new AttendanceNotificationLog
+            {
+                StudentId = 0,
+                EmployeeId = employeeId,
+                AttendanceDate = date,
+                NotificationType = notificationType,
+                NotificationChannel = channel,
+                NotificationStatus = "Queued",
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = createdBy,
+                Email = target,
+            };
+            await logRepo.AddAsync(log, ct);
+        }
+        else if (!log.IsSent && log.NotificationStatus != "Queued")
+        {
+            log.NotificationStatus = "Queued";
+            log.UpdatedAt = DateTime.UtcNow;
+            log.UpdatedBy = createdBy;
+            logRepo.Update(log);
+        }
     }
 
     public async Task<IReadOnlyList<AttendanceNotificationLog>> GetLogsAsync(DateOnly attendanceDate, int? classId = null, int? sectionId = null, CancellationToken ct = default)

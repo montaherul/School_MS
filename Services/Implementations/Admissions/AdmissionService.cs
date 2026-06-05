@@ -145,6 +145,7 @@ public class AdmissionService : IAdmissionService
             PermanentDistrict = dto.PermanentDistrict?.Trim(),
             ProfilePicturePath = dto.ProfilePicturePath,
             AppliedClassId = dto.AppliedClassId,
+            LinkedGuardianId = dto.LinkedGuardianId,
             Status = AdmissionStatus.Pending,
             CreatedBy = createdBy
         };
@@ -299,6 +300,7 @@ public class AdmissionService : IAdmissionService
         application.PaymentMethod = dto.PaymentMethod?.Trim();
         application.TransactionDetails = dto.TransactionDetails?.Trim();
         application.AppliedClassId = dto.AppliedClassId;
+        application.LinkedGuardianId = dto.LinkedGuardianId;
         application.UpdatedAt = DateTime.UtcNow;
         application.UpdatedBy = updatedBy;
 

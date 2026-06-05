@@ -261,7 +261,7 @@
             responsiveLayout: "collapse",
             pagination: true,
             paginationMode: "remote",
-            ajaxURL: '@Url.Action("Index", "Student")',
+            ajaxURL: '@Url.Action("GetList", "Student")',
             paginationSize: 10,
             ajaxParams: function() { return getFilters(); },
             ajaxResponse: function (url, params, response) {

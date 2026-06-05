@@ -19,25 +19,32 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
         private readonly IUnitOfWork _uow;
         private readonly IEmployeeAttendanceRepository _repo;
         private readonly IAttendanceLogRepository _auditLog;
+        private readonly IAttendanceNotificationService _notificationService;
 
-        public EmployeeAttendanceService(IUnitOfWork uow, IEmployeeAttendanceRepository repo, IAttendanceLogRepository auditLog)
+        public EmployeeAttendanceService(
+            IUnitOfWork uow,
+            IEmployeeAttendanceRepository repo,
+            IAttendanceLogRepository auditLog,
+            IAttendanceNotificationService notificationService)
         {
             _uow = uow;
             _repo = repo;
             _auditLog = auditLog;
+            _notificationService = notificationService;
         }
 
         public async Task<int> CheckInAsync(int employeeId, DateTime date, TimeSpan time, string recordedBy, CancellationToken ct = default)
         {
             var entity = await _repo.Query().FirstOrDefaultAsync(a => a.EmployeeId == employeeId && a.AttendanceDate == date.Date && !a.IsDeleted, ct);
             if (entity != null) throw new InvalidOperationException("Check-in already exists for today.");
+            var settings = await GetAttendanceSettingsAsync(ct);
 
             entity = new EmployeeAttendance
             {
                 EmployeeId = employeeId,
                 AttendanceDate = date.Date,
                 CheckInTime = time,
-                Status = SchoolManagementSystem.Models.Enums.AttendanceStatus.Present,
+                Status = ResolveStatusFromSettings(SchoolManagementSystem.Models.Enums.AttendanceStatus.Present, time, settings),
                 CreatedBy = recordedBy,
                 CreatedAt = DateTime.UtcNow
             };
@@ -83,6 +90,10 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
             await _repo.AddAsync(entity, ct);
             await _uow.SaveChangesAsync(ct);
             await _auditLog.AddAsync(new AttendanceLog { UserId = recordedBy, Action = "Marked Employee Attendance", EntityName = "EmployeeAttendance", EntityId = entity.Id }, ct);
+            if (status == AttendanceStatus.Late)
+            {
+                await _notificationService.SendLateEmployeeNotificationsAsync(new[] { employeeId }, DateOnly.FromDateTime(date), recordedBy, ct);
+            }
             await _uow.SaveChangesAsync(ct);
             
             return entity.Id;
@@ -101,6 +112,10 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
             
             _repo.Update(entity);
             await _auditLog.AddAsync(new AttendanceLog { UserId = updatedBy, Action = "Updated Employee Attendance", EntityName = "EmployeeAttendance", EntityId = id }, ct);
+            if (status == AttendanceStatus.Late)
+            {
+                await _notificationService.SendLateEmployeeNotificationsAsync(new[] { entity.EmployeeId }, DateOnly.FromDateTime(entity.AttendanceDate), updatedBy, ct);
+            }
             await _uow.SaveChangesAsync(ct);
         }
 
@@ -144,16 +159,18 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
                 throw new InvalidOperationException("One or more selected employees are inactive or invalid.");
 
             var existingRecords = await _repo.Query()
-                .Where(a => a.AttendanceDate == date && employeeIds.Contains(a.EmployeeId))
+                .Where(a => a.AttendanceDate == date && employeeIds.Contains(a.EmployeeId) && !a.IsDeleted)
                 .ToListAsync(ct);
+            var settings = await GetAttendanceSettingsAsync(ct);
 
             var existingDict = existingRecords.ToDictionary(a => a.EmployeeId);
             var created = 0;
             var updated = 0;
+            var lateEmployeeIds = new List<int>();
 
             foreach (var item in dto.Attendances)
             {
-                var status = ResolveStatus(item);
+                var status = ResolveStatus(item, settings);
                 ValidateTimes(item.CheckInTime, item.CheckOutTime);
 
                 if (existingDict.TryGetValue(item.EmployeeId, out var att))
@@ -182,6 +199,11 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
                     }, ct);
                     created++;
                 }
+
+                if (status == AttendanceStatus.Late)
+                {
+                    lateEmployeeIds.Add(item.EmployeeId);
+                }
             }
             
             await _auditLog.AddAsync(new AttendanceLog
@@ -191,6 +213,10 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
                 EntityName = "EmployeeAttendance",
                 EntityId = 0
             }, ct);
+            if (lateEmployeeIds.Any())
+            {
+                await _notificationService.SendLateEmployeeNotificationsAsync(lateEmployeeIds, DateOnly.FromDateTime(date), recordedBy, ct);
+            }
             await _uow.SaveChangesAsync(ct);
             
             return true;
@@ -203,7 +229,7 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
             CancellationToken ct = default)
         {
             page = Math.Max(page, 1);
-            size = Math.Clamp(size, 5, 100);
+            size = Math.Clamp(size, 5, 10000);
             filter.AttendanceDate = filter.AttendanceDate.Date;
 
             var (items, totalRecords) = await _repo.GetAttendanceGridAsync(filter, page, size, ct);
@@ -214,69 +240,14 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
 
         public async Task<(List<EmployeeAttendanceDto> Data, int TotalRecords)> GetPagedAsync(int page, int size, DateTime? date, CancellationToken ct = default)
         {
-            var searchDate = date ?? DateTime.Today;
-
-            var allEmployees = await _uow.Repository<SchoolManagementSystem.Models.Entities.Employee.Employee>().Query()
-                .Include(e => e.Department)
-                .Include(e => e.Designation)
-                .Where(e => e.Status == "Active" && !e.IsDeleted)
-                .ToListAsync(ct);
-
-            var existingAttendances = await _repo.Query()
-                .Where(a => a.AttendanceDate == searchDate.Date)
-                .ToListAsync(ct);
-
-            var list = new List<EmployeeAttendanceDto>();
-            foreach (var emp in allEmployees)
+            var filter = new EmployeeAttendanceFilterDto
             {
-                var att = existingAttendances.FirstOrDefault(a => a.EmployeeId == emp.Id);
-                if (att != null)
-                {
-                    list.Add(new EmployeeAttendanceDto
-                    {
-                        Id = att.Id,
-                        EmployeeId = emp.Id,
-                        EmployeeCode = emp.EmployeeCode,
-                        EmployeeName = emp.FullName,
-                        Department = emp.Department != null ? emp.Department.Name : string.Empty,
-                        Designation = emp.Designation != null ? emp.Designation.Name : string.Empty,
-                        EmployeeType = emp.EmployeeType,
-                        IsTeachingStaff = emp.IsTeachingStaff,
-                        AttendanceDate = searchDate.Date,
-                        CheckInTime = att.CheckInTime,
-                        CheckOutTime = att.CheckOutTime,
-                        Status = att.Status,
-                        StatusName = att.Status.ToString(),
-                        Remarks = att.Remarks
-                    });
-                }
-                else
-                {
-                    list.Add(new EmployeeAttendanceDto
-                    {
-                        Id = 0,
-                        EmployeeId = emp.Id,
-                        EmployeeCode = emp.EmployeeCode,
-                        EmployeeName = emp.FullName,
-                        Department = emp.Department != null ? emp.Department.Name : string.Empty,
-                        Designation = emp.Designation != null ? emp.Designation.Name : string.Empty,
-                        EmployeeType = emp.EmployeeType,
-                        IsTeachingStaff = emp.IsTeachingStaff,
-                        AttendanceDate = searchDate.Date,
-                        CheckInTime = null,
-                        CheckOutTime = null,
-                        Status = SchoolManagementSystem.Models.Enums.AttendanceStatus.Present,
-                        StatusName = SchoolManagementSystem.Models.Enums.AttendanceStatus.Present.ToString(),
-                        Remarks = string.Empty
-                    });
-                }
-            }
+                AttendanceDate = date ?? DateTime.Today,
+                Page = page,
+                PageSize = size
+            };
 
-            var totalCount = list.Count;
-            var pagedData = list.OrderBy(e => e.EmployeeName)
-                                .Skip((page - 1) * size).Take(size).ToList();
-
-            return (pagedData, totalCount);
+            return await _repo.GetAttendanceGridAsync(filter, page, size, ct);
         }
 
         public async Task<List<EmployeeAttendanceDto>> GetAttendanceHistoryAsync(int employeeId, int year, int month, CancellationToken ct = default)
@@ -330,20 +301,43 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
             return Math.Round(((double)presentDays / totalDays) * 100, 2);
         }
 
-        private static AttendanceStatus ResolveStatus(EmployeeAttendanceItemDto item)
+        private async Task<AttendanceSetting> GetAttendanceSettingsAsync(CancellationToken ct)
+        {
+            return await _uow.Repository<AttendanceSetting>().Query()
+                .AsNoTracking()
+                .FirstOrDefaultAsync(ct) ?? new AttendanceSetting();
+        }
+
+        private static AttendanceStatus ResolveStatus(EmployeeAttendanceItemDto item, AttendanceSetting settings)
         {
             if (!string.IsNullOrWhiteSpace(item.StatusName) &&
                 Enum.TryParse<AttendanceStatus>(item.StatusName.Trim(), true, out var statusFromName))
             {
-                return statusFromName;
+                return ResolveStatusFromSettings(statusFromName, item.CheckInTime, settings);
             }
 
             if (Enum.IsDefined(typeof(AttendanceStatus), item.Status))
             {
-                return item.Status;
+                return ResolveStatusFromSettings(item.Status, item.CheckInTime, settings);
             }
 
             throw new InvalidOperationException("Invalid attendance status.");
+        }
+
+        private static AttendanceStatus ResolveStatusFromSettings(AttendanceStatus requestedStatus, TimeSpan? checkInTime, AttendanceSetting settings)
+        {
+            if (requestedStatus != AttendanceStatus.Present || !checkInTime.HasValue)
+            {
+                return requestedStatus;
+            }
+
+            var lateAt = settings.SchoolStartTime.Add(TimeSpan.FromMinutes(settings.LateAfterMinutes));
+            if (checkInTime.Value > lateAt)
+            {
+                return AttendanceStatus.Late;
+            }
+
+            return requestedStatus;
         }
 
         private static void ValidateTimes(TimeSpan? checkIn, TimeSpan? checkOut)

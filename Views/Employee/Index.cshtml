@@ -186,27 +186,35 @@
                             return `<span class="adm-status ${statusClass}">${value || "Unknown"}</span>`;
                         }
                     },
-                    {
-                        title: "Actions",
-                        hozAlign: "center",
-                        headerSort: false,
-                        width: 150,
-                        minWidth: 150,
-                        cssClass: "adm-col-actions",
-                        formatter: function (cell) {
-                            const data = cell.getData();
-                            return `
-                                <div class="actions-cell">
-                                    <a href="@Url.Action("Details")/${data.id}" class="adm-action" title="View Details">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    <a href="@Url.Action("Edit")/${data.id}" class="adm-action adm-action--edit" title="Edit Records">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
-                                </div>
-                            `;
-                        }
+                {
+                    title: "Actions",
+                    hozAlign: "center",
+                    headerSort: false,
+                    width: 300,
+                    minWidth: 300,
+                    cssClass: "adm-col-actions",
+                    formatter: function (cell) {
+                        const data = cell.getData();
+                        const baseUrl = "@Url.Action("Details")";
+                        return `
+                            <div class="actions-cell">
+                                <a href="${baseUrl}/${data.id}" class="adm-action" title="View Details">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="@Url.Action("Edit")/${data.id}" class="adm-action adm-action--edit" title="Edit Records">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+
+                                <a href="@Url.Action("DownloadIdCardPdf")/${data.id}" class="adm-action" title="Download PDF" target="_blank">
+                                    <i class="bi bi-download"></i>
+                                </a>
+                                <a href="@Url.Action("Details")/${data.id}#card-preview" class="adm-action" title="Card Preview" onclick="flipCard(); return false;">
+                                    <i class="bi bi-eye-fill"></i>
+                                </a>
+                            </div>
+                        `;
                     }
+                }
                 ]
             });
 
@@ -232,6 +240,16 @@
             designationInput.addEventListener('change', reloadTable);
             staffTypeInput.addEventListener('change', reloadTable);
             statusInput.addEventListener('change', reloadTable);
+
+            // Card flip function for preview in Details page
+            function flipCard() {
+                const card = document.querySelector('.id-card-container');
+                if (!card) return;
+                card.classList.toggle('flipped');
+            }
+            // Add theme color helper to Details view via a small script injection
+            // This script expects a server-side helper GetThemeColor(designation) defined in the view.
+            // No further changes needed here.
 
             document.getElementById('btn-reset').addEventListener('click', function () {
                 searchInput.value = "";

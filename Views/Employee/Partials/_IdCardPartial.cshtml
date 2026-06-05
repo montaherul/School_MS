@@ -1,0 +1,51 @@
+@model SchoolManagementSystem.Models.DTOs.Employee.EmployeeDetailsDto
+
+<div class="id-card-wrap">
+    <!-- Front Side -->
+    <div class="id-card-front">
+        <div class="id-card-header">
+            <img src="~/images/school-logo.png" alt="School Logo" class="logo" />
+            <div class="school-name">Your School Name</div>
+            <div class="motto">Excellence in Education</div>
+        </div>
+        <div class="id-card-photo">
+            <img src="@Url.Content(Model.PhotoPath ?? "~/images/placeholder-profile.png")" alt="Employee Photo" />
+        </div>
+        <div class="id-card-details">
+            <div class="name">@Model.FullName</div>
+            <div class="code">@Model.EmployeeCode</div>
+            <div class="meta">@Model.Designation • @Model.Department</div>
+        </div>
+        <div class="id-card-badge" style="background:@(Model.Role == "Principal" ? "#FFD700" : Model.Role == "Vice Principal" ? "#C0C0C0" : Model.Role == "Teacher" ? "#3A7BD5" : Model.Role == "Accountant" ? "#4CAF50" : Model.Role == "Librarian" ? "#9C27B0" : "#777777")">
+            @Model.Role
+        </div>
+        <div class="id-card-footer">
+            <div class="signature">Authorized</div>
+            <div class="card-number">#@Model.Id</div>
+        </div>
+    </div>
+
+    <!-- Back Side -->
+    <div class="id-card-back">
+        <div class="branding">
+            <img src="~/images/school-logo.png" alt="School Logo" class="logo" style="height:20px;" />
+            <div class="school-name">Your School Name</div>
+        </div>
+        <div class="info-grid">
+            <div>Address:</div><div>123 Education St, City</div>
+            <div>Phone:</div><div>+1 (555) 123‑4567</div>
+            <div>Email:</div><div>info@yourschool.edu</div>
+            <div>Emergency:</div><div>+1 (555) 987‑6543</div>
+            <div>Blood Group:</div><div>@Model.BloodGroup</div>
+            <div>National ID:</div><div>@Model.NationalId</div>
+            <div>Valid Until:</div><div>@Model.CardValidUntil?.ToString("yyyy-MM-dd")</div>
+        </div>
+        <div class="qr-section">
+            <img src="@Url.Action("QrCode", "Employee", new { id = Model.Id })" alt="QR Code" class="qr-code" />
+            <div style="font-size:0.45rem; margin-top:0.1rem;">Scan QR to verify identity</div>
+        </div>
+        <div class="notice">
+            This card is the property of the institution. If found, please return to the school office.
+        </div>
+    </div>
+</div>

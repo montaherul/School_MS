@@ -1,0 +1,89 @@
+@model SchoolManagementSystem.Models.DTOs.Guardian.GuardianDetailsDto
+@{
+    ViewData["Title"] = "Guardian Details";
+}
+
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-1 text-gray-800">@Model.FullName</h1>
+            <div class="text-muted">Guardian Code: @Model.GuardianCode</div>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary btn-sm">Edit</a>
+            <a asp-action="Index" class="btn btn-outline-secondary btn-sm">Back to List</a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-5">
+            <div class="card shadow h-100">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Guardian Profile</h6>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-5">Relation</dt>
+                        <dd class="col-sm-7">@Model.RelationType</dd>
+                        <dt class="col-sm-5">Gender</dt>
+                        <dd class="col-sm-7">@Model.Gender</dd>
+                        <dt class="col-sm-5">Mobile</dt>
+                        <dd class="col-sm-7">@Model.MobileNumber</dd>
+                        <dt class="col-sm-5">Email</dt>
+                        <dd class="col-sm-7">@(Model.Email ?? "N/A")</dd>
+                        <dt class="col-sm-5">National ID</dt>
+                        <dd class="col-sm-7">@(Model.NationalId ?? "N/A")</dd>
+                        <dt class="col-sm-5">Occupation</dt>
+                        <dd class="col-sm-7">@(Model.Occupation ?? "N/A")</dd>
+                        <dt class="col-sm-5">Portal Access</dt>
+                        <dd class="col-sm-7">@(Model.PortalAccessEnabled ? "Enabled" : "Disabled")</dd>
+                        <dt class="col-sm-5">Status</dt>
+                        <dd class="col-sm-7">@Model.Status</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-7">
+            <div class="card shadow h-100">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Linked Children</h6>
+                </div>
+                <div class="card-body">
+                    @if (Model.Children.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Student ID</th>
+                                        <th>Name</th>
+                                        <th>Class</th>
+                                        <th>Section</th>
+                                        <th>Roll</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                @foreach (var child in Model.Children)
+                                {
+                                    <tr>
+                                        <td>@child.StudentNo</td>
+                                        <td>@child.FullName</td>
+                                        <td>@child.ClassName</td>
+                                        <td>@child.SectionName</td>
+                                        <td>@child.RollNumber</td>
+                                    </tr>
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-muted">No students are linked to this guardian yet.</div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

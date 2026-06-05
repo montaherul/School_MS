@@ -11,7 +11,7 @@ using SchoolManagementSystem.Models.Entities.Attendance;
 
 namespace SchoolManagementSystem.Controllers.Attendance
 {
-    [Authorize]
+    [Authorize(Roles = "Super Admin,Admin,Principal,Assistant Head,Senior Lecturer,Lecturer,Teacher")]
     public class AttendanceSessionController : Controller
     {
         private readonly IUnitOfWork _uow;
@@ -23,6 +23,11 @@ namespace SchoolManagementSystem.Controllers.Attendance
         {
             _uow = uow;
             _attendanceService = attendanceService;
+        }
+
+        private bool IsAdminOrPrincipal()
+        {
+            return User.IsInRole("Super Admin") || User.IsInRole("Admin") || User.IsInRole("Principal") || User.IsInRole("Assistant Head");
         }
 
         [HttpGet]
@@ -85,94 +90,90 @@ namespace SchoolManagementSystem.Controllers.Attendance
                 return new
                 {
                     s.Id,
-                    AttendanceDate = s.AttendanceDate.ToDateTime(TimeOnly.MinValue),
-                    ClassId = s.SchoolClassId,
-                    ClassName = className ?? string.Empty,
-                    SectionId = s.SectionId,
-                    SectionName = sectionName ?? string.Empty,
-                    StudentGroupId = s.StudentGroupId,
-                    StudentGroupName = groupName ?? string.Empty,
-                    Status = s.Status.ToString(),
-                    StatusValue = (int)s.Status,
-                    SubmittedBy = s.CreatedBy,
-                    SubmittedAt = s.CreatedAt,
-                    LockedBy = s.LockedBy,
-                    LockedAt = s.LockedAt,
-                    UpdatedAt = s.UpdatedAt,
-                    TotalStudents = totalStudents,
-                    Present = present,
-                    Absent = absent
+                    attendanceDate = s.AttendanceDate.ToDateTime(TimeOnly.MinValue),
+                    classId = s.SchoolClassId,
+                    className = className ?? string.Empty,
+                    sectionId = s.SectionId,
+                    sectionName = sectionName ?? string.Empty,
+                    studentGroupId = s.StudentGroupId,
+                    studentGroupName = groupName ?? string.Empty,
+                    status = s.Status.ToString(),
+                    statusValue = (int)s.Status,
+                    submittedBy = s.SubmittedBy ?? s.CreatedBy,
+                    submittedAt = s.SubmittedAt ?? s.CreatedAt,
+                    lockedBy = s.LockedBy,
+                    lockedAt = s.LockedAt,
+                    updatedAt = s.UpdatedAt,
+                    totalStudents,
+                    present,
+                    absent
                 };
             }).ToList();
 
-            return Json(new { data = rows, totalRecords = total, page, pageSize = size });
+            var lastPage = Math.Max(1, (int)Math.Ceiling((double)total / size));
+            return Json(new { data = rows, totalRecords = total, last_page = lastPage, total_records = total, page, pageSize = size });
         }
 
         [HttpGet]
         public async Task<IActionResult> GetSessionStatus(int classId, int sectionId, DateTime date, int? groupId = null, CancellationToken ct = default)
         {
             var d = DateOnly.FromDateTime(date.Date);
-            var session = await _uow.Repository<AttendanceSession>().Query().FirstOrDefaultAsync(s => s.SchoolClassId == classId && s.SectionId == sectionId && s.AttendanceDate == d && s.StudentGroupId == groupId && !s.IsDeleted, ct);
+            var query = _uow.Repository<AttendanceSession>().Query()
+                .Where(s => s.SchoolClassId == classId && s.SectionId == sectionId && s.AttendanceDate == d && !s.IsDeleted);
+
+            query = groupId.HasValue
+                ? query.Where(s => s.StudentGroupId == groupId)
+                : query.Where(s => s.StudentGroupId == null);
+
+            var session = await query.FirstOrDefaultAsync(ct);
             if (session == null) return Json(new { exists = false });
-            return Json(new { exists = true, status = session.Status.ToString(), submittedBy = session.CreatedBy, submittedAt = session.CreatedAt, lockedBy = session.LockedBy, lockedAt = session.LockedAt });
+            return Json(new { exists = true, status = session.Status.ToString(), submittedBy = session.SubmittedBy ?? session.CreatedBy, submittedAt = session.SubmittedAt ?? session.CreatedAt, lockedBy = session.LockedBy, lockedAt = session.LockedAt });
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin,Super Admin")]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Super Admin,Admin,Principal,Assistant Head")]
         public async Task<IActionResult> Unlock([FromBody] UnlockRequest dto, CancellationToken ct)
         {
             if (dto == null) return BadRequest();
-            var dt = dto.AttendanceDate;
-            var d = DateOnly.FromDateTime(dto.AttendanceDate.Date);
-            await _attendanceService.UnlockAttendanceSessionAsync(dto.ClassId, dto.SectionId, dt, User.Identity?.Name ?? "system", dto.Reason, ct);
-
-            var revisionRepo = _uow.Repository<AttendanceRevision>();
-            var rev = new AttendanceRevision
-            {
-                AttendanceRecordId = 0,
-                StudentId = 0,
-                AttendanceDate = d,
-                OldStatus = "Locked",
-                NewStatus = "Revised",
-                Reason = dto.Reason,
-                ChangedBy = User.Identity?.Name ?? "system",
-                ChangedAt = DateTime.UtcNow,
-                CreatedBy = User.Identity?.Name ?? "system",
-                CreatedAt = DateTime.UtcNow
-            };
-            await revisionRepo.AddAsync(rev, ct);
-            await _uow.SaveChangesAsync(ct);
-
+            await _attendanceService.UnlockAttendanceSessionAsync(dto.ClassId, dto.SectionId, dto.StudentGroupId, dto.AttendanceDate, User.Identity?.Name ?? "system", dto.Reason, ct);
             return Json(new { success = true });
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin,Super Admin")]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Super Admin,Admin,Principal,Assistant Head")]
         public async Task<IActionResult> Revise([FromBody] ReviseRequest dto, CancellationToken ct)
         {
             if (dto == null) return BadRequest();
-            var dtRev = dto.AttendanceDate;
-            var dRev = DateOnly.FromDateTime(dto.AttendanceDate.Date);
-            await _attendanceService.ReviseAttendanceSessionAsync(dto.ClassId, dto.SectionId, dtRev, User.Identity?.Name ?? "system", dto.Notes, ct);
+            await _attendanceService.ReviseAttendanceSessionAsync(dto.ClassId, dto.SectionId, dto.StudentGroupId, dto.AttendanceDate, User.Identity?.Name ?? "system", dto.Notes, ct);
             return Json(new { success = true });
         }
 
         [HttpPost]
-        [Authorize(Roles = "Super Admin,Admin")]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Super Admin,Admin,Principal,Assistant Head")]
         public async Task<IActionResult> Approve([FromBody] ApproveRequest dto, CancellationToken ct)
         {
             if (dto == null) return BadRequest();
-            var dt = dto.AttendanceDate;
-            await _attendanceService.ApproveAttendanceSessionAsync(dto.ClassId, dto.SectionId, dt, User.Identity?.Name ?? "system", ct);
+            await _attendanceService.ApproveAttendanceSessionAsync(dto.ClassId, dto.SectionId, dto.StudentGroupId, dto.AttendanceDate, User.Identity?.Name ?? "system", ct);
             return Json(new { success = true });
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetRevisions(int classId, int sectionId, DateTime date, CancellationToken ct)
+        public async Task<IActionResult> GetRevisions(int classId, int sectionId, DateTime date, int? groupId = null, CancellationToken ct = default)
         {
+            if (!IsAdminOrPrincipal()) return Forbid();
+
             var d = DateOnly.FromDateTime(date.Date);
+            var studentIds = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query()
+                .Where(s => s.ClassId == classId && s.SectionId == sectionId && !s.IsDeleted)
+                .Where(s => !groupId.HasValue || s.StudentGroupId == groupId)
+                .Select(s => s.Id)
+                .ToListAsync(ct);
+
             var revs = await _uow.Repository<AttendanceRevision>().Query()
-                .Where(r => r.AttendanceDate == d && !r.IsDeleted)
+                .Where(r => r.AttendanceDate == d && !r.IsDeleted && studentIds.Contains(r.StudentId))
                 .OrderByDescending(r => r.ChangedAt)
                 .ToListAsync(ct);
 
@@ -183,6 +184,7 @@ namespace SchoolManagementSystem.Controllers.Attendance
         {
             public int ClassId { get; set; }
             public int SectionId { get; set; }
+            public int? StudentGroupId { get; set; }
             public DateTime AttendanceDate { get; set; }
             public string Reason { get; set; } = string.Empty;
         }
@@ -191,6 +193,7 @@ namespace SchoolManagementSystem.Controllers.Attendance
         {
             public int ClassId { get; set; }
             public int SectionId { get; set; }
+            public int? StudentGroupId { get; set; }
             public DateTime AttendanceDate { get; set; }
             public string? Notes { get; set; }
         }
@@ -199,6 +202,7 @@ namespace SchoolManagementSystem.Controllers.Attendance
         {
             public int ClassId { get; set; }
             public int SectionId { get; set; }
+            public int? StudentGroupId { get; set; }
             public DateTime AttendanceDate { get; set; }
         }
     }

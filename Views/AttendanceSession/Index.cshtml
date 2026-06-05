@@ -1,15 +1,16 @@
 @{
     ViewData["Title"] = "Attendance Sessions";
+    var sessionsUrl = Url.Action("GetSessions", "AttendanceSession");
 }
 
 <div class="container-fluid">
     <h2>Attendance Session Management</h2>
 
     <div class="row mb-3">
-        <div class="col-md-3">
+        <div class="col-md-2">
             <input type="date" id="filterDate" class="form-control" />
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
             <select id="filterClass" class="form-select">
                 <option value="">All Classes</option>
                 @foreach (var c in (IEnumerable<dynamic>)ViewBag.Classes)
@@ -18,7 +19,17 @@
                 }
             </select>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-2">
+            <select id="filterSection" class="form-select">
+                <option value="">All Sections</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select id="filterGroup" class="form-select">
+                <option value="">All Groups</option>
+            </select>
+        </div>
+        <div class="col-md-2">
             <select id="filterStatus" class="form-select">
                 <option value="">All Status</option>
                 <option value="1">Draft</option>
@@ -28,7 +39,7 @@
                 <option value="5">Approved</option>
             </select>
         </div>
-        <div class="col-md-3 text-end">
+        <div class="col-md-2 text-end">
             <button id="btnFilter" class="btn btn-primary">Filter</button>
         </div>
     </div>
@@ -41,43 +52,66 @@
     <link href="https://unpkg.com/tabulator-tables@5.4.4/dist/css/tabulator.min.css" rel="stylesheet" />
 
     <script>
+        const sessionsUrl = '@sessionsUrl';
+
         const table = new Tabulator("#sessionGrid", {
             layout: "fitDataStretch",
-            ajaxURL: '/AttendanceSession/GetSessions',
+            ajaxURL: sessionsUrl,
             ajaxParams: getParams,
             ajaxConfig: 'GET',
             pagination: 'remote',
             paginationSize: 25,
             placeholder: 'No sessions found',
+            ajaxResponse: function(url, params, response) {
+                return {
+                    data: response.data || [],
+                    last_page: response.last_page || 1,
+                    total_records: response.total_records || 0
+                };
+            },
             columns: [
-                { title: 'Date', field: 'AttendanceDate', formatter: 'datetime', formatterParams: { inputFormat: 'iso', outputFormat: 'yyyy-MM-dd' } },
-                { title: 'Class', field: 'ClassName' },
-                { title: 'Section', field: 'SectionName' },
-                { title: 'Group', field: 'StudentGroupName' },
-                { title: 'Status', field: 'Status', formatter: statusBadge },
-                { title: 'Submitted By', field: 'SubmittedBy' },
-                { title: 'Submitted At', field: 'SubmittedAt', formatter: 'datetime', formatterParams: { inputFormat: 'iso', outputFormat: 'yyyy-MM-dd HH:mm' } },
-                { title: 'Locked By', field: 'LockedBy' },
-                { title: 'Last Modified', field: 'UpdatedAt', formatter: 'datetime', formatterParams: { inputFormat: 'iso', outputFormat: 'yyyy-MM-dd HH:mm' } },
-                { title: 'Total', field: 'TotalStudents' },
-                { title: 'Present', field: 'Present' },
-                { title: 'Absent', field: 'Absent' }
+                { title: 'Date', field: 'attendanceDate', formatter: 'datetime', formatterParams: { inputFormat: 'iso', outputFormat: 'yyyy-MM-dd' } },
+                { title: 'Class', field: 'className' },
+                { title: 'Section', field: 'sectionName' },
+                { title: 'Group', field: 'studentGroupName' },
+                { title: 'Status', field: 'status', formatter: statusBadge },
+                { title: 'Submitted By', field: 'submittedBy' },
+                { title: 'Submitted At', field: 'submittedAt', formatter: 'datetime', formatterParams: { inputFormat: 'iso', outputFormat: 'yyyy-MM-dd HH:mm' } },
+                { title: 'Locked By', field: 'lockedBy' },
+                { title: 'Last Modified', field: 'updatedAt', formatter: 'datetime', formatterParams: { inputFormat: 'iso', outputFormat: 'yyyy-MM-dd HH:mm' } },
+                { title: 'Total', field: 'totalStudents' },
+                { title: 'Present', field: 'present' },
+                { title: 'Absent', field: 'absent' }
             ]
         });
 
         document.getElementById('btnFilter').addEventListener('click', function () {
-            table.setData('/AttendanceSession/GetSessions', getParams());
+            table.setData(sessionsUrl, getParams());
+        });
+
+        document.getElementById('filterClass').addEventListener('change', async function () {
+            const classId = this.value;
+            const sectionSelect = document.getElementById('filterSection');
+            sectionSelect.innerHTML = '<option value="">All Sections</option>';
+            if (!classId) return;
+            const res = await fetch(`/StudentAttendance/GetSections?classId=${classId}`);
+            const json = await res.json();
+            (json.data || []).forEach(s => {
+                sectionSelect.innerHTML += `<option value="${s.id}">${s.name}</option>`;
+            });
         });
 
         function getParams() {
             return {
                 date: document.getElementById('filterDate').value,
                 classId: document.getElementById('filterClass').value,
+                sectionId: document.getElementById('filterSection').value,
+                groupId: document.getElementById('filterGroup').value,
                 status: document.getElementById('filterStatus').value
             };
         }
 
-        function statusBadge(cell, formatterParams) {
+        function statusBadge(cell) {
             const value = cell.getValue();
             let cls = 'badge bg-secondary';
             if (value === 'Draft') cls = 'badge bg-secondary';
@@ -87,20 +121,5 @@
             if (value === 'Approved') cls = 'badge bg-success';
             return `<span class="${cls}">${value}</span>`;
         }
-
-        // Prevent double submissions globally
-        document.addEventListener('click', function (e) {
-            const btn = e.target.closest('.prevent-double');
-            if (!btn) return;
-            if (btn.dataset.saving === '1') {
-                e.preventDefault();
-                e.stopImmediatePropagation();
-                return false;
-            }
-            btn.dataset.saving = '1';
-            const spinner = document.createElement('span');
-            spinner.className = 'spinner-border spinner-border-sm ms-2';
-            btn.appendChild(spinner);
-        }, true);
     </script>
 }

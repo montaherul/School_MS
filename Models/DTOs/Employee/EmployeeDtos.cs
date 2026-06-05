@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Http;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace SchoolManagementSystem.Models.DTOs.Employee;
@@ -16,6 +18,34 @@ public class EmployeeListItemDto
     public bool IsTeachingStaff { get; set; }
     public DateTime JoiningDate { get; set; }
     public string? ProfilePicturePath { get; set; }
+    public string? NIDNumber { get; set; }
+    public string? EmergencyContactName { get; set; }
+    public string? EmergencyContactPhone { get; set; }
+    public string? Remarks { get; set; }
+    public string? Username { get; set; }
+
+    // Additional properties for ID card views
+    public string? EmployeeCardNumber { get; set; }
+    public DateTime? CardIssueDate { get; set; }
+    public DateTime? CardExpiryDate { get; set; }
+    public DateTime? CardPrintedAt { get; set; }
+    public int CardVersion { get; set; }
+    public string? QRVerificationCode { get; set; }
+
+    // Computed/alias properties for the Razor views
+    public string PhotoPath => ProfilePicturePath ?? string.Empty; // used by front card
+    public string Role => Designation; // used for role badge colour
+    public string SchoolAddress => "[School Address]";
+    public string SchoolPhone => "[School Phone]";
+    public string SchoolEmail => "[School Email]";
+    public string EmergencyContact => $"{EmergencyContactName ?? ""} {EmergencyContactPhone ?? ""}".Trim();
+    public string NationalId => NIDNumber ?? string.Empty;
+    public DateTime? ValidUntil => CardExpiryDate;
+
+
+    public List<EmployeeQualificationDto> Qualifications { get; set; } = new();
+    public List<EmployeeDocumentDto> Documents { get; set; } = new();
+    public List<EmployeeExperienceDto> Experiences { get; set; } = new();
 }
 
 public class EmployeeUpsertDto
@@ -126,6 +156,7 @@ public class EmployeeDetailsDto
     public string? PresentAddress { get; set; }
     public string? PermanentAddress { get; set; }
     public DateTime JoiningDate { get; set; }
+
     public string Department { get; set; } = string.Empty;
     public string Designation { get; set; } = string.Empty;
     public string EmployeeType { get; set; } = "Full-Time";
@@ -137,6 +168,25 @@ public class EmployeeDetailsDto
     public string? EmergencyContactPhone { get; set; }
     public string? Remarks { get; set; }
     public string? Username { get; set; }
+
+    // ID Card specific fields
+    public string? EmployeeCardNumber { get; set; }
+    public DateTime? CardIssueDate { get; set; }
+    public DateTime? CardExpiryDate { get; set; }
+    public DateTime? CardValidUntil { get => CardExpiryDate; set => CardExpiryDate = value; }
+    public DateTime? CardPrintedAt { get; set; }
+    public int CardVersion { get; set; }
+    public string? QRVerificationCode { get; set; }
+
+    // Computed/alias properties for Razor views
+    public string PhotoPath => ProfilePicturePath ?? string.Empty; // used by front card
+    public string Role => Designation; // used for role badge colour
+    public string SchoolAddress => "[School Address]";
+    public string SchoolPhone => "[School Phone]";
+    public string SchoolEmail => "[School Email]";
+    public string EmergencyContact => $"{EmergencyContactName ?? ""} {EmergencyContactPhone ?? ""}".Trim();
+    public string NationalId => NIDNumber ?? string.Empty;
+    public DateTime? ValidUntil => CardExpiryDate;
 
     public List<EmployeeQualificationDto> Qualifications { get; set; } = new();
     public List<EmployeeDocumentDto> Documents { get; set; } = new();

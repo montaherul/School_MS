@@ -10,6 +10,12 @@ public class AttendanceNotificationLog : BaseEntity
     public int StudentId { get; set; }
     public StudentEntity? Student { get; set; }
 
+    public int? EmployeeId { get; set; }
+    public SchoolManagementSystem.Models.Entities.Employee.Employee? Employee { get; set; }
+
+    public int? GuardianId { get; set; }
+    public SchoolManagementSystem.Models.Entities.Guardian.Guardian? Guardian { get; set; }
+
     public DateOnly AttendanceDate { get; set; }
 
     [MaxLength(160)]

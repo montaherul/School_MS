@@ -34,13 +34,15 @@ public class StudentRepository : BaseRepository<Student>, IStudentRepository
     public async Task<StudentUpsertDto?> GetForEditAsync(int id, CancellationToken ct)
     {
         var student = await _db.Students.AsNoTracking()
-            .Include(s => s.Guardians)
+            .Include(s => s.StudentGuardians)
+                .ThenInclude(sg => sg.Guardian)
             .Include(s => s.Section)
             .FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted, ct);
 
         if (student == null) return null;
 
-        var guardian = student.Guardians.FirstOrDefault();
+        var sg = student.StudentGuardians.FirstOrDefault(x => x.IsPrimaryGuardian);
+        var guardian = sg?.Guardian;
         return new StudentUpsertDto
         {
             Id = student.Id,
@@ -77,22 +79,24 @@ public class StudentRepository : BaseRepository<Student>, IStudentRepository
             SectionId = student.SectionId,
             RollNumber = student.RollNumber,
             SectionName = student.Section?.Name ?? "N/A",
-            GuardianName = guardian?.Relation == "Guardian" ? guardian.Name : null,
+            GuardianName = sg?.Relationship == SchoolManagementSystem.Models.Entities.Guardian.GuardianRelationshipType.LegalGuardian ? guardian?.FirstName : null,
             GuardianOccupation = guardian?.Occupation,
-            FatherOrGuardianMobileNo = guardian?.Phone ?? string.Empty
+            FatherOrGuardianMobileNo = guardian?.MobileNumber ?? string.Empty
         };
     }
 
     public async Task<StudentUpsertDto?> GetByStudentNoAsync(string studentNo, CancellationToken ct)
     {
         var student = await _db.Students.AsNoTracking()
-            .Include(s => s.Guardians)
+            .Include(s => s.StudentGuardians)
+                .ThenInclude(sg => sg.Guardian)
             .Include(s => s.Section)
             .FirstOrDefaultAsync(s => s.StudentNo == studentNo && !s.IsDeleted, ct);
 
         if (student == null) return null;
 
-        var guardian = student.Guardians.FirstOrDefault();
+        var sg = student.StudentGuardians.FirstOrDefault(x => x.IsPrimaryGuardian);
+        var guardian = sg?.Guardian;
         return new StudentUpsertDto
         {
             Id = student.Id,
@@ -129,9 +133,9 @@ public class StudentRepository : BaseRepository<Student>, IStudentRepository
             SectionId = student.SectionId,
             RollNumber = student.RollNumber,
             SectionName = student.Section?.Name ?? "N/A",
-            GuardianName = guardian?.Relation == "Guardian" ? guardian.Name : null,
+            GuardianName = sg?.Relationship == SchoolManagementSystem.Models.Entities.Guardian.GuardianRelationshipType.LegalGuardian ? guardian?.FirstName : null,
             GuardianOccupation = guardian?.Occupation,
-            FatherOrGuardianMobileNo = guardian?.Phone ?? string.Empty
+            FatherOrGuardianMobileNo = guardian?.MobileNumber ?? string.Empty
         };
     }
 }

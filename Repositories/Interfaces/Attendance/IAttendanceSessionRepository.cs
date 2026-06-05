@@ -8,5 +8,9 @@ namespace SchoolManagementSystem.Repositories.Interfaces.Attendance
     {
         Task<AttendanceSession?> GetSessionAsync(int classId, int sectionId, DateOnly date, int? groupId = null, CancellationToken ct = default);
         Task<bool> IsLockedAsync(int classId, int sectionId, DateOnly date, int? groupId = null, CancellationToken ct = default);
+        Task<(List<AttendanceSession> Items, int TotalRecords)> GetListByStoredProcedureAsync(
+            int pageNumber, int pageSize, string? searchTerm,
+            int classId, int sectionId, int studentGroupId, int status,
+            DateOnly? attendanceDate, CancellationToken ct = default);
     }
 }

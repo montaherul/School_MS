@@ -48,6 +48,10 @@ using SchoolManagementSystem.Repositories.Interfaces.Employee;
 using SchoolManagementSystem.Repositories.Implementations.Employee;
 using SchoolManagementSystem.Services.Interfaces.Employee;
 using SchoolManagementSystem.Services.Implementations.Employee;
+using SchoolManagementSystem.Repositories.Guardian;
+using SchoolManagementSystem.Repositories.Implementations.Guardian;
+using SchoolManagementSystem.Services.Guardian;
+using SchoolManagementSystem.Services.Implementations.Guardian;
 
 namespace SchoolManagementSystem.Extensions;
 
@@ -70,6 +74,9 @@ public static class ServiceRegistration
         services.AddScoped<ITeacherRepository, TeacherRepository>();
         services.AddScoped<ITeacherClassAssignmentRepository, TeacherClassAssignmentRepository>();
         services.AddScoped<ITeacherSubjectAssignmentRepository, TeacherSubjectAssignmentRepository>();
+        
+        // Register Guardian Repositories
+        services.AddScoped<IGuardianRepository, GuardianRepository>();
         
         // Register Employee Repositories
         services.AddScoped<IEmployeeRepository, EmployeeRepository>();
@@ -110,6 +117,7 @@ public static class ServiceRegistration
         services.AddScoped<IDashboardService, DashboardService>();
         services.AddScoped<IStudentService, StudentService>();
         services.AddScoped<IAdmissionService, AdmissionService>();
+        services.AddScoped<IGuardianService, GuardianService>();
         services.AddScoped<IFeeStructureService, FeeStructureService>();
         services.AddScoped<IFeeInvoiceService, FeeInvoiceService>();
         services.AddScoped<ITeacherService, TeacherService>();
@@ -158,6 +166,7 @@ public static class ServiceRegistration
         services.AddScoped<SchoolManagementSystem.Repositories.Interfaces.Attendance.ILeaveApplicationRepository, SchoolManagementSystem.Repositories.Implementations.Attendance.LeaveApplicationRepository>();
         services.AddScoped<SchoolManagementSystem.Repositories.Interfaces.Attendance.IAttendanceSettingRepository, SchoolManagementSystem.Repositories.Implementations.Attendance.AttendanceSettingRepository>();
         services.AddScoped<SchoolManagementSystem.Repositories.Interfaces.Attendance.IAttendanceLogRepository, SchoolManagementSystem.Repositories.Implementations.Attendance.AttendanceLogRepository>();
+        services.AddScoped<SchoolManagementSystem.Repositories.Interfaces.Attendance.IAttendanceSessionRepository, SchoolManagementSystem.Repositories.Implementations.Attendance.AttendanceSessionRepository>();
 
         services.AddScoped<SchoolManagementSystem.Services.Interfaces.Attendance.IAttendanceNotificationService, SchoolManagementSystem.Services.Implementations.Attendance.AttendanceNotificationService>();
         services.AddScoped<SchoolManagementSystem.Services.Interfaces.Attendance.IStudentAttendanceService, SchoolManagementSystem.Services.Implementations.Attendance.StudentAttendanceService>();

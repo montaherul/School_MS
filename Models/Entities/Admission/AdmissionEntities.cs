@@ -47,6 +47,9 @@ public class AdmissionApplication : BaseEntity
     [MaxLength(100)]
     public string? GuardianOccupation { get; set; }
 
+    public int? LinkedGuardianId { get; set; }
+    public SchoolManagementSystem.Models.Entities.Guardian.Guardian? LinkedGuardian { get; set; }
+
     // 🔹 Contact
     [Required]
     [MaxLength(30)]

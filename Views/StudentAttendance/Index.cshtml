@@ -306,7 +306,8 @@
         saveAttendance: '@Url.Action("SaveAttendance", "StudentAttendance")',
         getSections: '@Url.Action("GetSections", "StudentAttendance")',
         getGroups: '@Url.Action("GetGroups", "StudentAttendance")',
-        export: '@Url.Action("ExportAttendanceCSV", "StudentAttendance")'
+        export: '@Url.Action("ExportAttendanceCSV", "StudentAttendance")',
+        exportPdf: '@Url.Action("ExportAttendancePDF", "StudentAttendance")'
         };
         const defaultClassId = @(defaultClassId?.ToString() ?? "null");
         const defaultSectionId = @(defaultSectionId?.ToString() ?? "null");
@@ -319,14 +320,14 @@
             tabulatorTable = new Tabulator("#studentAttendanceTable", {
                 height: 500,
                 layout: "fitColumns",
-                selectable: "highlight",
+                selectable: true,
                 movableColumns: true,
                 selectableRangeMode: "click",
                 index: "studentId",
                 columns: [
                     { title: "Select", formatter: "rowSelection", hozAlign: "center", width: 40 },
                     { title: "Roll", field: "rollNumber", width: 60 },
-        { title: "Student ID", field: "studentNo", width: 100 },
+                    { title: "Student ID", field: "studentNo", width: 100 },
                     { title: "Name", field: "studentName", width: 150 },
                     { title: "Class", field: "className", width: 80 },
                     { title: "Section", field: "sectionName", width: 80 },
@@ -389,7 +390,7 @@
 
             try {
                
-                const response = await fetch(`${routes.loadAttendance}?page=1&size=1000&attendanceDate=${attendanceDate}&classId=${classId}&sectionId=${sectionId}&studentGroupId=${studentGroupId || ''}`);
+                const response = await fetch(`${routes.loadAttendance}?page=1&size=10000&attendanceDate=${attendanceDate}&classId=${classId}&sectionId=${sectionId}&studentGroupId=${studentGroupId || ''}`);
                 const result = await response.json();
 
                 if (result.data) {

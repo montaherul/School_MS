@@ -1,0 +1,156 @@
+/* wwwroot/css/idcard-print.css */
+/* Premium employee ID card print stylesheet */
+@page {
+    size: 85.6mm 53.98mm; /* CR80 dimensions */
+    margin: 0;
+}
+
+/* Reset default margins for printing */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+.id-card-print-document {
+    width: 100%;
+    height: 100vh; /* full page for preview, will be cut to card size when printed */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #f5f5f5; /* light page background */
+    padding: 1rem;
+}
+
+.id-card-wrap {
+    width: 85.6mm;
+    height: 53.98mm;
+    border-radius: 6mm;
+    overflow: hidden;
+    position: relative;
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(135deg, #1B4D8C, #3A7BD5);
+    color: #fff;
+    box-shadow: 0 4px 8px rgba(0,0,0,.15);
+}
+
+.id-card-header {
+    text-align: center;
+    padding: 0.4rem 0.2rem;
+}
+.id-card-header img.logo {
+    height: 24px;
+    margin-bottom: 0.2rem;
+}
+.id-card-header .school-name {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+.id-card-header .motto {
+    font-size: 0.6rem;
+    font-style: italic;
+    opacity: 0.85;
+}
+
+.id-card-photo {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 3px solid #fff;
+    overflow: hidden;
+    box-shadow: 0 2px 6px rgba(0,0,0,.2);
+    margin: 0.4rem auto;
+    background: #e8f1ff; /* fallback */
+}
+.id-card-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.id-card-details {
+    text-align: center;
+    padding: 0 0.4rem;
+}
+.id-card-details .name {
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-top: 0.2rem;
+}
+.id-card-details .code {
+    font-size: 0.55rem;
+    opacity: 0.9;
+}
+.id-card-details .meta {
+    font-size: 0.5rem;
+    margin-top: 0.1rem;
+}
+
+.id-card-badge {
+    position: absolute;
+    top: 0.4rem;
+    right: 0.4rem;
+    background: #ffd700; /* default gold, will be overridden inline */
+    color: #000;
+    padding: 0.12rem 0.3rem;
+    border-radius: 0.3rem;
+    font-size: 0.45rem;
+    font-weight: 600;
+}
+
+.id-card-footer {
+    position: absolute;
+    bottom: 0.3rem;
+    left: 0.4rem;
+    right: 0.4rem;
+    font-size: 0.45rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.id-card-footer .signature {
+    border-top: 1px solid #fff;
+    width: 45%;
+    text-align: center;
+    padding-top: 0.1rem;
+}
+.id-card-footer .card-number {
+    text-align: right;
+    width: 45%;
+}
+
+/* Back side layout */
+.id-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #3A7BD5, #1B4D8C);
+    color: #fff;
+    padding: 0.6rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    font-size: 0.55rem;
+}
+.id-card-back .branding {
+    text-align: center;
+    font-size: 0.7rem;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+}
+.id-card-back .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.25rem;
+}
+.id-card-back .qr-section {
+    text-align: center;
+    margin-top: 0.3rem;
+}
+.id-card-back .qr-section img {
+    width: 35px;
+    height: 35px;
+    margin-bottom: 0.1rem;
+}
+.id-card-back .notice {
+    font-size: 0.45rem;
+    text-align: center;
+    margin-top: 0.3rem;
+    opacity: 0.9;
+}

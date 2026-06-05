@@ -5,6 +5,7 @@ using SchoolManagementSystem.Models.DTOs.Student;
 using SchoolManagementSystem.Services.Interfaces.Academic;
 using SchoolManagementSystem.Services.Interfaces.Students;
 using SchoolManagementSystem.Services.Interfaces.Teachers;
+using SchoolManagementSystem.Services.Interfaces.Website;
 using System.Security.Claims;
 
 namespace SchoolManagementSystem.Controllers.Student;
@@ -15,15 +16,19 @@ public class StudentController : Controller
     private readonly IStudentService _studentService;
     private readonly ITeacherService _teacherService;
     private readonly ISectionService _sectionService;
+    private readonly  ISchoolWebsiteService _websiteService;
 
     public StudentController(
         IStudentService studentService,
         ITeacherService teacherService,
-        ISectionService sectionService)
+        ISectionService sectionService,
+        ISchoolWebsiteService websiteService
+           )
     {
         _studentService = studentService;
         _teacherService = teacherService;
         _sectionService = sectionService;
+        _websiteService = websiteService;
     }
 
     [RequirePermission("Student.View")]
@@ -50,6 +55,16 @@ public class StudentController : Controller
 
         ViewBag.Classes = await _sectionService.GetAvailableClassesAsync(ct);
         return View();
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetList(int page = 1, int pageSize = 10, string? search = null, int? classId = null, int? sectionId = null, CancellationToken ct = default)
+    {
+        var result = await _studentService.GetPagedAsync(page, pageSize, search, classId, sectionId, null, ct);
+        return Json(new {
+            data = result.Items,
+            last_page = Math.Ceiling((double)result.TotalItems / pageSize)
+        });
     }
 
     [HttpGet]
@@ -143,8 +158,9 @@ public class StudentController : Controller
         {
             return Forbid();
         }
+        var school = await _websiteService.GetSettingsAsync(ct);
 
-        var pdfBytes = pdfGenerator.GenerateStudentIdCard(dto);
+        var pdfBytes = pdfGenerator.GenerateStudentIdCard(dto, school);
         return File(pdfBytes, "application/pdf", $"ID_Card_{dto.StudentNo}.pdf");
     }
 

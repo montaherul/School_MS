@@ -106,10 +106,20 @@
 
             @* ── Section 2: Family Information ── *@
             <div class="card shadow-sm mb-4">
-                <div class="card-header bg-success bg-opacity-10">
+                <div class="card-header bg-success bg-opacity-10 d-flex justify-content-between align-items-center">
                     <h5 class="mb-0"><i class="bi bi-people-fill me-2"></i>Family Information</h5>
+                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#guardianSearchModal">
+                        <i class="bi bi-search me-1"></i> Link Existing Guardian
+                    </button>
                 </div>
                 <div class="card-body p-4">
+                    <input type="hidden" asp-for="LinkedGuardianId" id="hfLinkedGuardianId" />
+                    <div id="linkedGuardianAlert" class="alert alert-info d-none mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span><i class="bi bi-link-45deg me-2"></i>Linked to Guardian: <strong id="lblLinkedGuardianName"></strong></span>
+                            <button type="button" class="btn-close" onclick="unlinkGuardian()"></button>
+                        </div>
+                    </div>
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label asp-for="FatherName" class="form-label">Father's Name <span class="text-danger">*</span></label>
@@ -404,5 +414,87 @@
 
         if (classDropdown.value) updateGroups(parseInt(classDropdown.value));
     });
+
+    function searchGuardians() {
+        const term = document.getElementById('txtGuardianSearch').value;
+        if (term.length < 3) {
+            alert('Please enter at least 3 characters');
+            return;
+        }
+
+        fetch(`/admin/guardians/search?term=${encodeURIComponent(term)}`)
+            .then(res => res.json())
+            .then(data => {
+                const resultsContainer = document.getElementById('guardianSearchResults');
+                resultsContainer.innerHTML = '';
+                
+                if (data.length === 0) {
+                    resultsContainer.innerHTML = '<div class="list-group-item text-center">No guardians found</div>';
+                    return;
+                }
+
+                data.forEach(g => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'list-group-item list-group-item-action';
+                    btn.innerHTML = `
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-0">${g.name}</h6>
+                                <small class="text-muted">Code: ${g.code} | Phone: ${g.phone}</small>
+                            </div>
+                            <i class="bi bi-plus-circle text-primary"></i>
+                        </div>
+                    `;
+                    btn.onclick = () => linkGuardian(g);
+                    resultsContainer.appendChild(btn);
+                });
+            });
+    }
+
+    function linkGuardian(g) {
+        document.getElementById('hfLinkedGuardianId').value = g.id;
+        document.getElementById('lblLinkedGuardianName').innerText = `${g.name} (${g.code})`;
+        document.getElementById('linkedGuardianAlert').classList.remove('d-none');
+        
+        // Auto-fill some fields if they are empty
+        const guardianNameInput = document.querySelector('[name="GuardianName"]');
+        if (guardianNameInput && !guardianNameInput.value) {
+            guardianNameInput.value = g.name;
+        }
+        
+        const guardianPhoneInput = document.querySelector('[name="FatherOrGuardianMobileNo"]');
+        if (guardianPhoneInput && !guardianPhoneInput.value) {
+            guardianPhoneInput.value = g.phone;
+        }
+
+        bootstrap.Modal.getInstance(document.getElementById('guardianSearchModal')).hide();
+    }
+
+    function unlinkGuardian() {
+        document.getElementById('hfLinkedGuardianId').value = '';
+        document.getElementById('linkedGuardianAlert').classList.add('d-none');
+    }
 </script>
+
+<!-- Guardian Search Modal -->
+<div class="modal fade" id="guardianSearchModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Search Existing Guardian</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group mb-3">
+                    <input type="text" id="txtGuardianSearch" class="form-control" placeholder="Search by name, code or phone...">
+                    <button class="btn btn-primary" type="button" onclick="searchGuardians()">Search</button>
+                </div>
+                <div id="guardianSearchResults" class="list-group">
+                    <!-- Search results here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 @section Scripts { @{await Html.RenderPartialAsync("_ValidationScriptsPartial");} }

@@ -25,6 +25,9 @@ public class AttendanceRecordController : Controller
     private readonly ISchoolClassService       _classService;
     private readonly ISectionService           _sectionService;
     private readonly IStudentAttendanceService  _studentAttendanceService;
+    private readonly ITeacherScopeService       _teacherScopeService;
+    private readonly IAttendanceAuthorizationService _attendanceAuthorizationService;
+    private readonly SchoolManagementSystem.UnitOfWork.Interfaces.IUnitOfWork _unitOfWork;
     private readonly ILogger<AttendanceRecordController> _logger;
     private readonly SchoolManagementSystem.Repositories.Interfaces.Attendance.IAttendanceLogRepository _attendanceLogRepository;
 
@@ -36,6 +39,9 @@ public class AttendanceRecordController : Controller
         ISchoolClassService       classService,
         ISectionService           sectionService,
         IStudentAttendanceService  studentAttendanceService,
+        ITeacherScopeService       teacherScopeService,
+        IAttendanceAuthorizationService attendanceAuthorizationService,
+        SchoolManagementSystem.UnitOfWork.Interfaces.IUnitOfWork unitOfWork,
         ILogger<AttendanceRecordController> logger,
         SchoolManagementSystem.Repositories.Interfaces.Attendance.IAttendanceLogRepository attendanceLogRepository)
     {
@@ -46,6 +52,9 @@ public class AttendanceRecordController : Controller
         _classService             = classService;
         _sectionService           = sectionService;
         _studentAttendanceService = studentAttendanceService;
+        _teacherScopeService      = teacherScopeService;
+        _attendanceAuthorizationService = attendanceAuthorizationService;
+        _unitOfWork               = unitOfWork;
         _logger                   = logger;
         _attendanceLogRepository  = attendanceLogRepository;
     }
@@ -90,6 +99,46 @@ public class AttendanceRecordController : Controller
         }
     }
 
+    private bool IsAdminOrPrincipal()
+    {
+        return User.IsInRole("Super Admin") ||
+               User.IsInRole("Admin") ||
+               User.IsInRole("Principal") ||
+               User.IsInRole("Assistant Head");
+    }
+
+    private async Task<bool> CanManageStudentAttendanceAsync(
+        int studentId,
+        int classId,
+        int sectionId,
+        CancellationToken ct)
+    {
+        if (IsAdminOrPrincipal()) return true;
+
+        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (!int.TryParse(userIdStr, out var userId)) return false;
+
+        var teacher = await _teacherService.GetByUserIdAsync(userId, ct);
+        if (teacher == null) return false;
+
+        var student = await _unitOfWork.Repository<SchoolManagementSystem.Models.Entities.Student.Student>()
+            .Query()
+            .AsNoTracking()
+            .Where(s => s.Id == studentId && !s.IsDeleted)
+            .Select(s => new { s.StudentGroupId })
+            .FirstOrDefaultAsync(ct);
+
+        if (student == null) return false;
+
+        return await _attendanceAuthorizationService.IsAuthorizedToMarkAttendanceAsync(
+            teacher.Id,
+            classId,
+            sectionId,
+            student.StudentGroupId,
+            0,
+            ct);
+    }
+
     public async Task<IActionResult> Index(CancellationToken ct)
     {
         if (User.IsInRole("Student"))
@@ -131,6 +180,7 @@ public class AttendanceRecordController : Controller
         string? search          = null,
         int?    classId         = null,
         int?    sectionId       = null,
+        int?    studentGroupId  = null,
         string? attendanceDate  = null,
         CancellationToken ct    = default)
     {
@@ -155,7 +205,7 @@ public class AttendanceRecordController : Controller
             {
                 _logger.LogWarning("Unauthorized attempt to access GetList by user {Username}", User.Identity?.Name);
                 await LogAttendanceActionAsync("Unauthorized Access Attempt - GetList", "AttendanceRecord", 0, ct);
-                return Forbid();
+                return Json(new { data = Array.Empty<object>(), last_page = 1, total_records = 0 });
             }
         }
 
@@ -171,6 +221,7 @@ public class AttendanceRecordController : Controller
             studentId,
             classId,
             sectionId,
+            studentGroupId,
             dateFilter,
             ct);
 
@@ -197,7 +248,7 @@ public class AttendanceRecordController : Controller
         var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
         if (!int.TryParse(userIdStr, out var userId)) return RedirectToAction("Index", "Home");
 
-        bool isStaff = User.IsInRole("Super Admin") || User.IsInRole("Principal") || User.IsInRole("Assistant Head");
+        bool isStaff = IsAdminOrPrincipal();
 
         if (!isStaff)
         {
@@ -232,15 +283,30 @@ public class AttendanceRecordController : Controller
         if (!ModelState.IsValid) return View(vm);
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
 
-        if (vm.IsEditMode)
+        bool isStaff = IsAdminOrPrincipal();
+        if (!isStaff)
         {
-            await _service.UpdateAsync(vm, userId, ct);
-            TempData["SuccessMessage"] = "Attendance record updated successfully.";
+            var hasAccess = await CanManageStudentAttendanceAsync(vm.StudentId, vm.SchoolClassId, vm.SectionId, ct);
+            if (!hasAccess) return Forbid();
         }
-        else
+
+        try
         {
-            await _service.CreateAsync(vm, userId, ct);
-            TempData["SuccessMessage"] = "Attendance record created successfully.";
+            if (vm.IsEditMode)
+            {
+                await _service.UpdateAsync(vm, userId, ct);
+                TempData["SuccessMessage"] = "Attendance record updated successfully.";
+            }
+            else
+            {
+                await _service.CreateAsync(vm, userId, ct);
+                TempData["SuccessMessage"] = "Attendance record created successfully.";
+            }
+        }
+        catch (InvalidOperationException ex)
+        {
+            ModelState.AddModelError(string.Empty, ex.Message);
+            return View(vm);
         }
 
         return RedirectToAction(nameof(Index));
@@ -304,6 +370,8 @@ public class AttendanceRecordController : Controller
         var dto = await _service.GetForEditAsync(id, ct);
         if (dto == null) return NotFound();
 
+        if (!await CanManageStudentAttendanceAsync(dto.StudentId, dto.SchoolClassId, dto.SectionId, ct)) return Forbid();
+
         return View(new AttendanceRecordViewModel
         {
             Id            = dto.Id,
@@ -321,6 +389,10 @@ public class AttendanceRecordController : Controller
     public async Task<IActionResult> DeleteConfirmed(int id, CancellationToken ct)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
+        var dto = await _service.GetForEditAsync(id, ct);
+        if (dto == null) return NotFound();
+        if (!await CanManageStudentAttendanceAsync(dto.StudentId, dto.SchoolClassId, dto.SectionId, ct)) return Forbid();
+
         await _service.DeleteAsync(id, userId, ct);
         TempData["SuccessMessage"] = "Attendance record deleted successfully.";
         return RedirectToAction(nameof(Index));

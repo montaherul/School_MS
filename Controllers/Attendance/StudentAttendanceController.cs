@@ -24,14 +24,16 @@ namespace SchoolManagementSystem.Controllers.Attendance
         private readonly ISchoolClassService _classService;
         private readonly ITeacherScopeService _teacherScopeService;
         private readonly SchoolManagementSystem.Services.Interfaces.Attendance.IAttendanceAuthorizationService _attendanceAuthService;
+        private readonly IAttendanceReportService _attendanceReportService;
         private readonly ITeacherService _teacherService;
         private readonly IUnitOfWork _uow;
 
         public StudentAttendanceController(
-            IStudentAttendanceService service, 
+            IStudentAttendanceService service,
             ISchoolClassService classService,
             ITeacherScopeService teacherScopeService,
             SchoolManagementSystem.Services.Interfaces.Attendance.IAttendanceAuthorizationService attendanceAuthService,
+            IAttendanceReportService attendanceReportService,
             ITeacherService teacherService,
             IUnitOfWork uow)
         {
@@ -39,6 +41,7 @@ namespace SchoolManagementSystem.Controllers.Attendance
             _classService = classService;
             _teacherScopeService = teacherScopeService;
             _attendanceAuthService = attendanceAuthService;
+            _attendanceReportService = attendanceReportService;
             _teacherService = teacherService;
             _uow = uow;
         }
@@ -46,6 +49,71 @@ namespace SchoolManagementSystem.Controllers.Attendance
         private bool IsAdminOrPrincipal()
         {
             return User.IsInRole("Super Admin") || User.IsInRole("Admin") || User.IsInRole("Principal") || User.IsInRole("Assistant Head");
+        }
+
+        private async Task<bool> CanViewStudentAttendanceAsync(int studentId, CancellationToken ct)
+        {
+            if (IsAdminOrPrincipal()) return true;
+
+            if (User.IsInRole("Student"))
+            {
+                var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (int.TryParse(userIdStr, out var userId))
+                {
+                    var loggedInStudent = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>()
+                        .Query()
+                        .FirstOrDefaultAsync(s => s.UserId == userId && !s.IsDeleted, ct);
+                    return loggedInStudent?.Id == studentId;
+                }
+                return false;
+            }
+
+            var teacherUserIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(teacherUserIdStr, out var teacherUserId)) return false;
+
+            var teacher = await _teacherService.GetByUserIdAsync(teacherUserId, ct);
+            if (teacher == null) return false;
+
+            var student = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>()
+                .Query()
+                .FirstOrDefaultAsync(s => s.Id == studentId && !s.IsDeleted, ct);
+            if (student == null) return false;
+
+            return await _attendanceAuthService.IsAuthorizedToMarkAttendanceAsync(
+                teacher.Id, student.ClassId, student.SectionId, student.StudentGroupId, 0, ct);
+        }
+
+        private async Task<bool> TeacherCanManageAttendanceAsync(int classId, int sectionId, int? studentGroupId, CancellationToken ct)
+        {
+            var teacher = await GetCurrentTeacherAsync(ct);
+            if (teacher == null) return false;
+
+            return await _attendanceAuthService.IsAuthorizedToMarkAttendanceAsync(
+                teacher.Id,
+                classId,
+                sectionId,
+                studentGroupId,
+                0,
+                ct);
+        }
+
+        private async Task<SchoolManagementSystem.Models.DTOs.Teacher.TeacherUpsertDto?> GetCurrentTeacherAsync(CancellationToken ct)
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdStr, out var userId)) return null;
+            return await _teacherService.GetByUserIdAsync(userId, ct);
+        }
+
+        private async Task<bool> IsTeacherLockedOutAsync(DateTime attendanceDate, CancellationToken ct)
+        {
+            var settings = await _uow.Repository<SchoolManagementSystem.Models.Entities.Attendance.AttendanceSetting>()
+                .Query()
+                .AsNoTracking()
+                .FirstOrDefaultAsync(ct);
+
+            var lockAfterHours = settings?.AttendanceLockAfterHours ?? 24;
+            var lockAt = attendanceDate.Date.AddHours(lockAfterHours);
+            return DateTime.Now > lockAt;
         }
 
         private int TryParseClassNumber(string className)
@@ -83,7 +151,7 @@ namespace SchoolManagementSystem.Controllers.Attendance
                 {
                     var assignedClassIds = await _teacherScopeService.GetAssignedClassIdsAsync(userId, ct);
                     classes = classes.Where(c => assignedClassIds.Contains(c.Id)).ToList();
-                    
+
                     if (classes.Any())
                     {
                         defaultClassId = classes.First().Id;
@@ -126,12 +194,12 @@ namespace SchoolManagementSystem.Controllers.Attendance
                 }
             }
             ViewBag.DefaultGroupId = defaultGroupId;
-            
+
             return View();
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetPagedData(int page = 1, int size = 10, int? classId = null, int? sectionId = null, string? date = null, CancellationToken ct = default)
+        public async Task<IActionResult> GetPagedData(int page = 1, int size = 10, int? classId = null, int? sectionId = null, int? studentGroupId = null, string? date = null, CancellationToken ct = default)
         {
             if (!IsAdminOrPrincipal())
             {
@@ -140,25 +208,13 @@ namespace SchoolManagementSystem.Controllers.Attendance
                     return Json(new { data = new List<object>(), last_page = 1, total_records = 0 });
                 }
 
-                var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (int.TryParse(userIdStr, out var userId))
-                {
-                    var teacher = await _teacherService.GetByUserIdAsync(userId, ct);
-                    if (teacher == null) return Forbid();
-
-                    var hasAccess = await _attendanceAuthService.IsAuthorizedToMarkAttendanceAsync(teacher.Id, classId.Value, sectionId.Value, 0, ct);
-                    if (!hasAccess) return Forbid();
-                }
-                else
-                {
-                    return Forbid();
-                }
+                if (!await TeacherCanManageAttendanceAsync(classId.Value, sectionId.Value, studentGroupId, ct)) return Forbid();
             }
 
             DateTime? parsedDate = null;
             if (DateTime.TryParse(date, out var d)) parsedDate = d;
 
-            var result = await _service.GetPagedAsync(page, size, classId, sectionId, null, parsedDate, ct);
+            var result = await _service.GetPagedAsync(page, size, classId, sectionId, studentGroupId, parsedDate, ct);
             return Json(new { data = result.Data, last_page = Math.Ceiling((double)result.TotalRecords / size), total_records = result.TotalRecords });
         }
 
@@ -193,31 +249,7 @@ namespace SchoolManagementSystem.Controllers.Attendance
                         });
                     }
 
-                    var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-                    if (int.TryParse(userIdStr, out var userId))
-                    {
-                        var teacher = await _teacherService.GetByUserIdAsync(userId, ct);
-
-                        if (teacher == null)
-                            return Forbid();
-
-                        var hasAccess =
-                            await _attendanceAuthService
-                            .IsAuthorizedToMarkAttendanceAsync(
-                                teacher.Id,
-                                classId.Value,
-                                sectionId.Value,
-                                0,
-                                ct);
-
-                        if (!hasAccess)
-                            return Forbid();
-                    }
-                    else
-                    {
-                        return Forbid();
-                    }
+                    if (!await TeacherCanManageAttendanceAsync(classId.Value, sectionId.Value, studentGroupId, ct)) return Forbid();
                 }
 
                 var filter = new StudentAttendanceFilterDto
@@ -260,21 +292,32 @@ namespace SchoolManagementSystem.Controllers.Attendance
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Mark([FromBody] StudentAttendanceItemDto dto, int classId, int sectionId, string date, CancellationToken ct)
         {
+            if (dto == null)
+            {
+                return Json(new { success = false, message = "DTO is null" });
+            }
+
             if (!IsAdminOrPrincipal())
             {
-                var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (int.TryParse(userIdStr, out var userId))
+                if (DateTime.TryParse(date, out var parsedLockDate) &&
+                    await IsTeacherLockedOutAsync(parsedLockDate.Date, ct))
                 {
-                    var teacher = await _teacherService.GetByUserIdAsync(userId, ct);
-                    if (teacher == null) return Forbid();
+                    return Json(new { success = false, message = "Attendance cannot be marked or edited after the configured lock time." });
+                }
 
-                    var hasAccess = await _attendanceAuthService.IsAuthorizedToMarkAttendanceAsync(teacher.Id, classId, sectionId, 0, ct);
-                    if (!hasAccess) return Forbid();
-                }
-                else
+                if (DateTime.TryParse(date, out var parsedPastDate) && parsedPastDate.Date < DateTime.Today)
                 {
-                    return Forbid();
+                    return Json(new { success = false, message = "Teachers cannot edit attendance for past dates." });
                 }
+
+                var studentGroupId = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>()
+                    .Query()
+                    .AsNoTracking()
+                    .Where(s => s.Id == dto.StudentId && !s.IsDeleted)
+                    .Select(s => s.StudentGroupId)
+                    .FirstOrDefaultAsync(ct);
+
+                if (!await TeacherCanManageAttendanceAsync(classId, sectionId, studentGroupId, ct)) return Forbid();
             }
 
             try
@@ -291,16 +334,19 @@ namespace SchoolManagementSystem.Controllers.Attendance
         }
 
         [HttpPost]
-      
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> BulkMark([FromBody] StudentAttendanceBulkDto dto, CancellationToken ct)
         {
+            if (dto == null)
+            {
+                return Json(new { success = false, message = "DTO is null" });
+            }
+
             if (!IsAdminOrPrincipal())
             {
-                // Lock time check (e.g., 6 PM)
-                var lockTime = new TimeSpan(18, 0, 0); // 6 PM
-                if (DateTime.Now.TimeOfDay > lockTime && dto.AttendanceDate.Date == DateTime.Today)
+                if (await IsTeacherLockedOutAsync(dto.AttendanceDate.Date, ct))
                 {
-                    return Json(new { success = false, message = "Attendance cannot be marked or edited after 6:00 PM." });
+                    return Json(new { success = false, message = "Attendance cannot be marked or edited after the configured lock time." });
                 }
 
                 // Prevent editing past dates
@@ -309,19 +355,7 @@ namespace SchoolManagementSystem.Controllers.Attendance
                     return Json(new { success = false, message = "Teachers cannot edit attendance for past dates." });
                 }
 
-                var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (int.TryParse(userIdStr, out var userId))
-                {
-                    var teacher = await _teacherService.GetByUserIdAsync(userId, ct);
-                    if (teacher == null) return Forbid();
-
-                    var hasAccess = await _attendanceAuthService.IsAuthorizedToMarkAttendanceAsync(teacher.Id, dto.ClassId, dto.SectionId, 0, ct);
-                    if (!hasAccess) return Forbid();
-                }
-                else
-                {
-                    return Forbid();
-                }
+                if (!await TeacherCanManageAttendanceAsync(dto.ClassId, dto.SectionId, dto.StudentGroupId, ct)) return Forbid();
             }
 
             try
@@ -335,7 +369,7 @@ namespace SchoolManagementSystem.Controllers.Attendance
                 return Json(new { success = false, message = ex.Message });
             }
         }
-        ///Rakib kirek bulk mark er khetre teacher der jonno time lock and past date edit lock diye dite pari, jate kore tara raat e attendance mark na kore, ar past date er attendance edit na kore. Eta implementation er khetre amra check korte pari je current time 6 PM er beshi kina, jodi beshi hoy tahole attendance mark/edit kora jabe na. Ar past date er khetre check korte pari je attendance date aajker tarikh theke choto kina, jodi choto hoy tahole edit kora jabe na. Eivabe teacher der jonno attendance mark/edit er upor control rakha jabe.
+
         /// <summary>
         /// AJAX endpoint: Load students for attendance grid
         /// </summary>
@@ -365,16 +399,7 @@ namespace SchoolManagementSystem.Controllers.Attendance
                         if (teacher == null)
                             return Forbid();
 
-                        var hasAccess =
-                            await _attendanceAuthService
-                            .IsAuthorizedToMarkAttendanceAsync(
-                                teacher.Id,
-                                classId,
-                                sectionId,
-                                0,
-                                ct);
-
-                        if (!hasAccess)
+                        if (!await TeacherCanManageAttendanceAsync(classId, sectionId, studentGroupId, ct))
                             return Forbid();
                     }
                     else
@@ -421,7 +446,7 @@ namespace SchoolManagementSystem.Controllers.Attendance
         /// <summary>
         /// AJAX endpoint: Save bulk attendance with automatic notifications
         /// </summary>
-      
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -429,35 +454,6 @@ namespace SchoolManagementSystem.Controllers.Attendance
             [FromBody] StudentAttendanceBulkDto dto,
             CancellationToken ct)
         {
-            if (!IsAdminOrPrincipal())
-            {
-                // Lock time check (e.g., 6 PM)
-                var lockTime = new TimeSpan(18, 0, 0); // 6 PM
-                if (DateTime.Now.TimeOfDay > lockTime && dto.AttendanceDate.Date == DateTime.Today)
-                {
-                    return Json(new { success = false, message = "Attendance cannot be marked or edited after 6:00 PM." });
-                }
-
-                // Prevent editing past dates
-                if (dto.AttendanceDate.Date < DateTime.Today)
-                {
-                    return Json(new { success = false, message = "Teachers cannot edit attendance for past dates." });
-                }
-
-                var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (int.TryParse(userIdStr, out var userId))
-                {
-                    var teacher = await _teacherService.GetByUserIdAsync(userId, ct);
-                    if (teacher == null) return Forbid();
-
-                    var hasAccess = await _attendanceAuthService.IsAuthorizedToMarkAttendanceAsync(teacher.Id, dto.ClassId, dto.SectionId, 0, ct);
-                    if (!hasAccess) return Forbid();
-                }
-                else
-                {
-                    return Forbid();
-                }
-            }
             if (dto == null)
             {
                 return Json(new
@@ -467,6 +463,21 @@ namespace SchoolManagementSystem.Controllers.Attendance
                 });
             }
 
+            if (!IsAdminOrPrincipal())
+            {
+                if (await IsTeacherLockedOutAsync(dto.AttendanceDate.Date, ct))
+                {
+                    return Json(new { success = false, message = "Attendance cannot be marked or edited after the configured lock time." });
+                }
+
+                // Prevent editing past dates
+                if (dto.AttendanceDate.Date < DateTime.Today)
+                {
+                    return Json(new { success = false, message = "Teachers cannot edit attendance for past dates." });
+                }
+
+                if (!await TeacherCanManageAttendanceAsync(dto.ClassId, dto.SectionId, dto.StudentGroupId, ct)) return Forbid();
+            }
             if (!ModelState.IsValid)
             {
                 return Json(new
@@ -510,40 +521,25 @@ namespace SchoolManagementSystem.Controllers.Attendance
             {
                 if (!IsAdminOrPrincipal())
                 {
-                    var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                    if (int.TryParse(userIdStr, out var userId))
-                    {
-                        var teacher = await _teacherService.GetByUserIdAsync(userId, ct);
-                        if (teacher == null) return Forbid();
-
-                        var hasAccess = await _attendanceAuthService.IsAuthorizedToMarkAttendanceAsync(teacher.Id, classId, sectionId, 0, ct);
-                        if (!hasAccess) return Forbid();
-                    }
-                    else
-                    {
-                        return Forbid();
-                    }
+                    if (!await TeacherCanManageAttendanceAsync(classId, sectionId, studentGroupId, ct)) return Forbid();
                 }
 
-                var filter = new StudentAttendanceFilterDto 
-                { 
-                    AttendanceDate = attendanceDate, 
-                    ClassId = classId, 
-                    SectionId = sectionId, 
-                    StudentGroupId = studentGroupId 
+                var filter = new StudentAttendanceFilterDto
+                {
+                    AttendanceDate = attendanceDate,
+                    ClassId = classId,
+                    SectionId = sectionId,
+                    StudentGroupId = studentGroupId
                 };
 
-                // Get students
-                var (students, _) = await _service.GetStudentsForAttendanceAsync(classId, sectionId, studentGroupId, attendanceDate, 1, 1000, ct);
-
-                // Calculate summary
-                var summary = new 
+                var result = await _service.LoadAttendanceAsync(filter, 1, 1, ct);
+                var summary = new
                 {
-                    totalStudents = students.Count,
-                    present = students.Count(s => s.Status == Models.Enums.AttendanceStatus.Present),
-                    absent = students.Count(s => s.Status == Models.Enums.AttendanceStatus.Absent),
-                    late = students.Count(s => s.Status == Models.Enums.AttendanceStatus.Late),
-                    leave = students.Count(s => s.Status == Models.Enums.AttendanceStatus.Leave)
+                    totalStudents = result.Summary.TotalStudents,
+                    present = result.Summary.Present,
+                    absent = result.Summary.Absent,
+                    late = result.Summary.Late,
+                    leave = result.Summary.Leave
                 };
 
                 return Json(new { success = true, summary });
@@ -562,6 +558,8 @@ namespace SchoolManagementSystem.Controllers.Attendance
         {
             try
             {
+                if (!await CanViewStudentAttendanceAsync(studentId, ct)) return Forbid();
+
                 var today = DateTime.Today;
                 var y = year ?? today.Year;
                 var m = month ?? today.Month;
@@ -583,6 +581,8 @@ namespace SchoolManagementSystem.Controllers.Attendance
         {
             try
             {
+                if (!await CanViewStudentAttendanceAsync(studentId, ct)) return Forbid();
+
                 var today = DateTime.Today;
                 var summary = await _service.GetMonthlySummaryAsync(studentId, year ?? today.Year, month ?? today.Month, ct);
                 return Json(summary);
@@ -601,10 +601,12 @@ namespace SchoolManagementSystem.Controllers.Attendance
         {
             try
             {
+                if (!await CanViewStudentAttendanceAsync(studentId, ct)) return Forbid();
+
                 var rows = await _service.GetAttendanceHistoryAsync(studentId, year, month, ct);
                 var summary = await _service.GetMonthlySummaryAsync(studentId, year, month, ct);
 
-                return Json(new { success = true, data = summary });
+                return Json(new { success = true, data = rows, summary });
             }
             catch (Exception ex)
             {
@@ -623,12 +625,46 @@ namespace SchoolManagementSystem.Controllers.Attendance
                 if (classId <= 0)
                     return Json(new { data = new List<object>() });
 
+                if (!IsAdminOrPrincipal())
+                {
+                    var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                    if (int.TryParse(userIdStr, out var userId))
+                    {
+                        var assignedClassIds = await _teacherScopeService.GetAssignedClassIdsAsync(userId, ct);
+                        if (!assignedClassIds.Contains(classId)) return Forbid();
+                    }
+                    else return Forbid();
+                }
+
                 // Get sections that belong to this class and optionally match the group
                 var query = _uow.Repository<SchoolManagementSystem.Models.Entities.Academic.Section>().Query()
                     .Where(s => s.SchoolClassId == classId && !s.IsDeleted);
 
                 if (groupId.HasValue)
                     query = query.Where(s => s.StudentGroupId == groupId.Value);
+
+                if (!IsAdminOrPrincipal())
+                {
+                    var teacher = await GetCurrentTeacherAsync(ct);
+                    if (teacher == null) return Forbid();
+
+                    var assignmentQuery = _uow.Repository<SchoolManagementSystem.Models.Entities.Teachers.TeacherClassAssignment>().Query()
+                        .Where(a => a.TeacherId == teacher.Id
+                            && a.ClassId == classId
+                            && a.IsActive
+                            && !a.IsDeleted);
+
+                    assignmentQuery = groupId.HasValue
+                        ? assignmentQuery.Where(a => a.GroupId == groupId.Value)
+                        : assignmentQuery.Where(a => a.GroupId == null);
+
+                    var assignedSectionIds = await assignmentQuery
+                        .Select(a => a.SectionId)
+                        .Distinct()
+                        .ToListAsync(ct);
+
+                    query = query.Where(s => assignedSectionIds.Contains(s.Id));
+                }
 
                 var sections = await query
                     .OrderBy(s => s.Name)
@@ -655,6 +691,17 @@ namespace SchoolManagementSystem.Controllers.Attendance
                 if (classId <= 0)
                     return Json(new { data = new List<object>() });
 
+                if (!IsAdminOrPrincipal())
+                {
+                    var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                    if (int.TryParse(userIdStr, out var userId))
+                    {
+                        var assignedClassIds = await _teacherScopeService.GetAssignedClassIdsAsync(userId, ct);
+                        if (!assignedClassIds.Contains(classId)) return Forbid();
+                    }
+                    else return Forbid();
+                }
+
                 // Get the class to determine if groups apply to it
                 var schoolClass = await _uow.Repository<SchoolManagementSystem.Models.Entities.Academic.SchoolClass>().Query()
                     .FirstOrDefaultAsync(c => c.Id == classId && !c.IsDeleted, ct);
@@ -667,10 +714,27 @@ namespace SchoolManagementSystem.Controllers.Attendance
                 var groups = await _uow.Repository<SchoolManagementSystem.Models.Entities.Academic.StudentGroup>().Query()
                     .Where(g => g.IsActive && !g.IsDeleted && classNumber >= g.MinClass && classNumber <= g.MaxClass)
                     .OrderBy(g => g.DisplayOrder)
-                    .Select(g => new { id = g.Id, name = g.Name })
                     .ToListAsync(ct);
 
-                return Json(new { data = groups });
+                if (!IsAdminOrPrincipal())
+                {
+                    var teacher = await GetCurrentTeacherAsync(ct);
+                    if (teacher == null) return Forbid();
+
+                    var assignedGroupIds = await _uow.Repository<SchoolManagementSystem.Models.Entities.Teachers.TeacherClassAssignment>().Query()
+                        .Where(a => a.TeacherId == teacher.Id
+                            && a.ClassId == classId
+                            && a.GroupId.HasValue
+                            && a.IsActive
+                            && !a.IsDeleted)
+                        .Select(a => a.GroupId!.Value)
+                        .Distinct()
+                        .ToListAsync(ct);
+
+                    groups = groups.Where(g => assignedGroupIds.Contains(g.Id)).ToList();
+                }
+
+                return Json(new { data = groups.Select(g => new { id = g.Id, name = g.Name }) });
             }
             catch (Exception ex)
             {
@@ -689,23 +753,11 @@ namespace SchoolManagementSystem.Controllers.Attendance
                 // Authorization check
                 if (!IsAdminOrPrincipal())
                 {
-                    var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                    if (int.TryParse(userIdStr, out var userId))
-                    {
-                        var teacher = await _teacherService.GetByUserIdAsync(userId, ct);
-                        if (teacher == null) return Forbid();
-
-                        var hasAccess = await _attendanceAuthService.IsAuthorizedToMarkAttendanceAsync(teacher.Id, classId, sectionId, 0, ct);
-                        if (!hasAccess) return Forbid();
-                    }
-                    else
-                    {
-                        return Forbid();
-                    }
+                    if (!await TeacherCanManageAttendanceAsync(classId, sectionId, studentGroupId, ct)) return Forbid();
                 }
 
-                // Get students for attendance
-                var (students, _) = await _service.GetStudentsForAttendanceAsync(classId, sectionId, studentGroupId, fromDate, 1, 1000, ct);
+                var (_, totalStudents) = await _service.GetStudentsForAttendanceAsync(classId, sectionId, studentGroupId, fromDate, 1, 1, ct);
+                var (students, _) = await _service.GetStudentsForAttendanceAsync(classId, sectionId, studentGroupId, fromDate, 1, Math.Max(totalStudents, 1), ct);
 
                 // Build CSV
                 var csv = new System.Text.StringBuilder();
@@ -737,42 +789,24 @@ namespace SchoolManagementSystem.Controllers.Attendance
                 // Authorization check
                 if (!IsAdminOrPrincipal())
                 {
-                    var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                    if (int.TryParse(userIdStr, out var userId))
-                    {
-                        var teacher = await _teacherService.GetByUserIdAsync(userId, ct);
-                        if (teacher == null) return Forbid();
-
-                        var hasAccess = await _attendanceAuthService.IsAuthorizedToMarkAttendanceAsync(teacher.Id, classId, sectionId, 0, ct);
-                        if (!hasAccess) return Forbid();
-                    }
-                    else
-                    {
-                        return Forbid();
-                    }
+                    if (!await TeacherCanManageAttendanceAsync(classId, sectionId, studentGroupId, ct)) return Forbid();
                 }
 
-                // Get students for attendance
-                var (students, _) = await _service.GetStudentsForAttendanceAsync(classId, sectionId, studentGroupId, fromDate, 1, 1000, ct);
+                var pdf = await _attendanceReportService.GenerateStudentAttendancePdfAsync(
+                    classId,
+                    sectionId,
+                    fromDate,
+                    toDate,
+                    ct,
+                    studentGroupId);
 
-                // Note: PDF generation would require a library like iText or SelectPdf
-                // For now, return CSV as a fallback
-                var csv = new System.Text.StringBuilder();
-                csv.AppendLine("Roll,StudentId,StudentName,Class,Section,AttendanceDate,Status,Remarks");
-
-                foreach (var student in students)
-                {
-                    csv.AppendLine($"{student.RollNumber},\"{student.StudentId}\",\"{student.StudentName}\",\"{student.ClassName}\",\"{student.SectionName}\"," +
-                        $"{student.AttendanceDate:yyyy-MM-dd},{student.StatusName},\"{student.Remarks}\"");
-                }
-
-                var bytes = System.Text.Encoding.UTF8.GetBytes(csv.ToString());
-                return File(bytes, "text/plain", $"attendance_{fromDate:yyyyMMdd}_{toDate:yyyyMMdd}.txt");
+                return File(pdf, "application/pdf", $"attendance_{fromDate:yyyyMMdd}_{toDate:yyyyMMdd}.pdf");
             }
             catch (Exception ex)
             {
                 return BadRequest(new { success = false, message = ex.Message });
             }
+
         }
     }
 }

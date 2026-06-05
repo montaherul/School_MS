@@ -12,6 +12,7 @@ using SchoolManagementSystem.Models.Entities.Student;
 using SchoolManagementSystem.Models.Entities.System;
 using SchoolManagementSystem.Models.Entities.Teachers;
 using SchoolManagementSystem.Models.Enums;
+using SchoolManagementSystem.Models.Entities.Guardian;
 
 namespace SchoolManagementSystem.Data;
 
@@ -140,9 +141,8 @@ public static class DbInitializer
                     "Invoices.View" or "Invoices.Read" or "Payments.View" or "Payments.Read" or "StudentDues.View" or "StudentDues.Read" or
                     "Receipts.View" or "Receipts.Read" or "Receipts.Print" or "Receipts.Export")
             .Select(p => new RolePermission { RoleId = 7, PermissionId = p.Id });
-        var accountantRolePermissions = permissions
-            .Where(p => financeModules.Contains(p.ModuleName) || p.Code is "Dashboard.View" or "Dashboard.Read")
-            .Select(p => new RolePermission { RoleId = 20, PermissionId = p.Id });
+        var accountantRolePermissions = permissions.Where(p => financeModules.Contains(p.ModuleName) || p.Code is "Dashboard.View" or "Dashboard.Read").Select(p => new RolePermission { RoleId = 20, PermissionId = p.Id });
+        var guardianRolePermissions = permissions.Select(p => new RolePermission { RoleId = 25, PermissionId = p.Id });
         var applicationAdminRolePermissions = permissions.Select(p => new RolePermission { RoleId = 26, PermissionId = p.Id });
         modelBuilder.Entity<RolePermission>().HasData(
             adminRolePermissions
@@ -152,6 +152,7 @@ public static class DbInitializer
             .Concat(officeRolePermissions)
             .Concat(studentRolePermissions)
             .Concat(accountantRolePermissions)
+            .Concat(guardianRolePermissions)
             .Concat(applicationAdminRolePermissions));
 
         modelBuilder.Entity<AcademicYear>().HasData(new AcademicYear { Id = 1, Name = "2026", StartsOn = new DateTime(2026, 1, 1), EndsOn = new DateTime(2026, 12, 31), IsActive = true, CreatedAt = createdAt });
@@ -288,9 +289,38 @@ public static class DbInitializer
         modelBuilder.Entity<Student>().HasData(
             new Student { Id = 1, StudentNo = "STU-2026-0001", FullName = "Sample Student One", DateOfBirth = new DateTime(2018, 2, 1), Gender = "Male", FatherName = "Father One", MotherName = "Mother One", MobileNumber = "01700000010", Nationality = "Bangladeshi", Country = "Bangladesh", MaritalStatus = "Single", Religion = "Islam", ClassId = 1, SectionId = 1, RollNumber = 1, Status = StudentStatus.Active, CreatedAt = createdAt },
             new Student { Id = 2, StudentNo = "STU-2026-0002", FullName = "Sample Student Two", DateOfBirth = new DateTime(2018, 5, 11), Gender = "Female", FatherName = "Father Two", MotherName = "Mother Two", MobileNumber = "01700000020", Nationality = "Bangladeshi", Country = "Bangladesh", MaritalStatus = "Single", Religion = "Islam", ClassId = 1, SectionId = 1, RollNumber = 2, Status = StudentStatus.Active, CreatedAt = createdAt });
-        modelBuilder.Entity<Guardian>().HasData(
-            new Guardian { Id = 1, StudentId = 1, Name = "Guardian One", Relation = "Father", Phone = "01700000001", CreatedAt = createdAt },
-            new Guardian { Id = 2, StudentId = 2, Name = "Guardian Two", Relation = "Mother", Phone = "01700000002", CreatedAt = createdAt });
+
+        modelBuilder.Entity<SchoolManagementSystem.Models.Entities.Guardian.Guardian>().HasData(
+            new SchoolManagementSystem.Models.Entities.Guardian.Guardian 
+            { 
+                Id = 1, 
+                GuardianCode = "GRD-00001",
+                FirstName = "Guardian", 
+                LastName = "One",
+                FullName = "Guardian One",
+                Gender = "Male",
+                RelationType = SchoolManagementSystem.Models.Entities.Guardian.GuardianRelationshipType.Father, 
+                MobileNumber = "01700000001", 
+                Status = SchoolManagementSystem.Models.Entities.Guardian.GuardianStatus.Active,
+                CreatedAt = createdAt 
+            },
+            new SchoolManagementSystem.Models.Entities.Guardian.Guardian 
+            { 
+                Id = 2, 
+                GuardianCode = "GRD-00002",
+                FirstName = "Guardian", 
+                LastName = "Two",
+                FullName = "Guardian Two",
+                Gender = "Female",
+                RelationType = SchoolManagementSystem.Models.Entities.Guardian.GuardianRelationshipType.Mother, 
+                MobileNumber = "01700000002", 
+                Status = SchoolManagementSystem.Models.Entities.Guardian.GuardianStatus.Active,
+                CreatedAt = createdAt 
+            });
+
+        modelBuilder.Entity<StudentGuardian>().HasData(
+            new StudentGuardian { Id = 1, StudentId = 1, GuardianId = 1, Relationship = SchoolManagementSystem.Models.Entities.Guardian.GuardianRelationshipType.Father, IsPrimaryGuardian = true, CreatedAt = createdAt },
+            new StudentGuardian { Id = 2, StudentId = 2, GuardianId = 2, Relationship = SchoolManagementSystem.Models.Entities.Guardian.GuardianRelationshipType.Mother, IsPrimaryGuardian = true, CreatedAt = createdAt });
 
         modelBuilder.Entity<AdmissionApplication>().HasData(
             new AdmissionApplication { Id = 1, ApplicationNo = "APP-2026-0001", ApplicantName = "Pending Applicant", DateOfBirth = new DateTime(2019, 4, 1), Gender = "Female", FatherName = "Applicant Father", MotherName = "Applicant Mother", GuardianName = "Applicant Guardian", ApplicantMobileNumber = "01800000010", FatherOrGuardianMobileNo = "01800000001", Nationality = "Bangladeshi", Country = "Bangladesh", MaritalStatus = "Single", Religion = "Islam", AppliedClassId = 1, Status = AdmissionStatus.Pending, AdmissionFee = 1500, CreatedAt = createdAt });

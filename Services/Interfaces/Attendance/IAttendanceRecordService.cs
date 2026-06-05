@@ -7,9 +7,10 @@ public interface IAttendanceRecordService
 {
     Task<PagedResult<AttendanceRecordListItemDto>> GetPagedAsync(
         int page, int pageSize, string? search,
-        int? studentId = null,
-        int? classId   = null,
-        int? sectionId = null,
+        int? studentId       = null,
+        int? classId         = null,
+        int? sectionId       = null,
+        int? studentGroupId  = null,
         DateOnly? attendanceDate = null,
         CancellationToken cancellationToken = default);
 

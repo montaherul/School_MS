@@ -14,21 +14,29 @@ public class AttendanceRepository : BaseRepository<AttendanceRecord>, IAttendanc
 
     public async Task<(List<AttendanceRecordListItemDto> items, int totalRecords)> GetListByStoredProcedureAsync(
         int pageNumber, int pageSize, string? searchTerm,
-        int studentId, int classId, int sectionId, DateOnly? attendanceDate,
+        int studentId, int classId, int sectionId,
+        int studentGroupId, int status,
+        DateOnly? attendanceDate, string? sortColumn, string? sortDirection,
         CancellationToken ct)
     {
         using var command = _db.Database.GetDbConnection().CreateCommand();
         command.CommandText = "sp_GetAttendanceList";
         command.CommandType = CommandType.StoredProcedure;
 
-        command.Parameters.Add(new SqlParameter("@PageNumber",     pageNumber));
-        command.Parameters.Add(new SqlParameter("@PageSize",       pageSize));
-        command.Parameters.Add(new SqlParameter("@SearchTerm",     (object?)searchTerm   ?? DBNull.Value));
-        command.Parameters.Add(new SqlParameter("@StudentId",      studentId));
-        command.Parameters.Add(new SqlParameter("@ClassId",        classId));
-        command.Parameters.Add(new SqlParameter("@SectionId",      sectionId));
+        command.Parameters.Add(new SqlParameter("@PageNumber",      pageNumber));
+        command.Parameters.Add(new SqlParameter("@PageSize",        pageSize));
+        command.Parameters.Add(new SqlParameter("@SearchTerm",      (object?)searchTerm    ?? DBNull.Value));
+        command.Parameters.Add(new SqlParameter("@StudentId",       studentId));
+        command.Parameters.Add(new SqlParameter("@ClassId",         classId));
+        command.Parameters.Add(new SqlParameter("@SectionId",       sectionId));
+        command.Parameters.Add(new SqlParameter("@StudentGroupId",  studentGroupId));
+        command.Parameters.Add(new SqlParameter("@Status",          status));
         command.Parameters.Add(new SqlParameter("@AttendanceDate",
-            attendanceDate.HasValue ? (object)attendanceDate.Value.ToDateTime(TimeOnly.MinValue).Date : DBNull.Value));
+            attendanceDate.HasValue
+                ? (object)attendanceDate.Value.ToDateTime(TimeOnly.MinValue).Date
+                : DBNull.Value));
+        command.Parameters.Add(new SqlParameter("@SortColumn",      (object?)sortColumn    ?? DBNull.Value));
+        command.Parameters.Add(new SqlParameter("@SortDirection",   (object?)sortDirection ?? DBNull.Value));
 
         await _db.Database.OpenConnectionAsync(ct);
         try
@@ -49,8 +57,9 @@ public class AttendanceRepository : BaseRepository<AttendanceRecord>, IAttendanc
                     SectionName    = reader.IsDBNull(6)  ? "" : reader.GetString(6),
                     Status         = (SchoolManagementSystem.Models.Enums.AttendanceStatus)reader.GetInt32(7),
                     Remarks        = reader.IsDBNull(8)  ? "" : reader.GetString(8),
-                    AttendanceDate = reader.IsDBNull(9)  ? DateOnly.MinValue : DateOnly.FromDateTime(reader.GetDateTime(9)),
-                    TotalRecords   = reader.IsDBNull(10) ? 0  : reader.GetInt32(10)
+                    AttendanceDate = reader.IsDBNull(9)  ? DateOnly.MinValue
+                                                         : DateOnly.FromDateTime(reader.GetDateTime(9)),
+                    TotalRecords   = reader.IsDBNull(10) ? 0 : reader.GetInt32(10)
                 });
             }
 

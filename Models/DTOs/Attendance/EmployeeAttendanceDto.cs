@@ -41,10 +41,15 @@ namespace SchoolManagementSystem.Models.DTOs.Attendance
     public class EmployeeAttendanceFilterDto
     {
         public DateTime AttendanceDate { get; set; } = DateTime.Today;
+        public int? EmployeeId { get; set; }
         public int? DepartmentId { get; set; }
         public int? DesignationId { get; set; }
         public string? EmployeeType { get; set; }
         public bool? IsTeachingStaff { get; set; }
+        public string? SearchTerm { get; set; }
+        public int? Status { get; set; }
+        public int Page { get; set; } = 1;
+        public int PageSize { get; set; } = 50;
     }
 
     public class EmployeeAttendanceSummaryDto

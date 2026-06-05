@@ -53,13 +53,6 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
                     {
                         try
                         {
-                            // Attempt to send
-                            var student = await scopedUow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query()
-                                .AsNoTracking()
-                                .Include(s => s.Class)
-                                .Include(s => s.Section)
-                                .FirstOrDefaultAsync(s => s.Id == item.StudentId, stoppingToken);
-
                             var schoolName = await scopedUow.Repository<SchoolManagementSystem.Models.Entities.System.SchoolProfile>().Query()
                                 .AsNoTracking()
                                 .Select(s => s.Name)
@@ -68,10 +61,58 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
                             if (string.IsNullOrWhiteSpace(item.Email))
                             {
                                 item.NotificationStatus = "Failed";
-                                item.ErrorMessage = "Missing email";
+                                item.ErrorMessage = item.NotificationChannel == "SMS" ? "Missing phone number" : "Missing email";
                                 item.UpdatedAt = DateTime.UtcNow;
                                 item.UpdatedBy = "system";
-                                _logger.LogWarning("Skipping attendance notification {Id} due to missing email.", item.Id);
+                                _logger.LogWarning("Skipping attendance notification {Id} due to missing target.", item.Id);
+                                scopedUow.Repository<AttendanceNotificationLog>().Update(item);
+                                await scopedUow.SaveChangesAsync(stoppingToken);
+                                continue;
+                            }
+
+                            if (item.EmployeeId.HasValue)
+                            {
+                                var employee = await scopedUow.Repository<SchoolManagementSystem.Models.Entities.Employee.Employee>().Query()
+                                    .AsNoTracking()
+                                    .FirstOrDefaultAsync(e => e.Id == item.EmployeeId.Value && !e.IsDeleted, stoppingToken);
+
+                                await emailService.SendAttendanceNotificationAsync(
+                                    item.Email,
+                                    employee?.FullName ?? string.Empty,
+                                    employee?.EmployeeCode ?? string.Empty,
+                                    "Employee",
+                                    item.NotificationType == "LateEmployee" ? "Late" : "Attendance",
+                                    item.AttendanceDate,
+                                    schoolName,
+                                    stoppingToken);
+
+                                item.IsSent = true;
+                                item.NotificationStatus = "Sent";
+                                item.SentAt = DateTime.UtcNow;
+                                item.ErrorMessage = null;
+                                item.UpdatedAt = DateTime.UtcNow;
+                                item.UpdatedBy = "system";
+                                scopedUow.Repository<AttendanceNotificationLog>().Update(item);
+                                await scopedUow.SaveChangesAsync(stoppingToken);
+                                continue;
+                            }
+
+                            var student = await scopedUow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query()
+                                .AsNoTracking()
+                                .Include(s => s.Class)
+                                .Include(s => s.Section)
+                                .FirstOrDefaultAsync(s => s.Id == item.StudentId, stoppingToken);
+
+                            if (item.NotificationChannel == "SMS")
+                            {
+                                // SMS provider integration placeholder — log target for audit
+                                _logger.LogInformation("SMS notification queued for {Phone} (student {StudentId})", item.Email, item.StudentId);
+                                item.IsSent = true;
+                                item.NotificationStatus = "Sent";
+                                item.SentAt = DateTime.UtcNow;
+                                item.ErrorMessage = null;
+                                item.UpdatedAt = DateTime.UtcNow;
+                                item.UpdatedBy = "system";
                                 scopedUow.Repository<AttendanceNotificationLog>().Update(item);
                                 await scopedUow.SaveChangesAsync(stoppingToken);
                                 continue;

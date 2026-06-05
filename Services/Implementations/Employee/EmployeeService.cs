@@ -705,6 +705,12 @@ public static class EmployeeExtensions
             EmergencyContactPhone = employee.EmergencyContactPhone,
             Remarks = employee.Remarks,
             Username = employee.User != null ? employee.User.UserName : null,
+            EmployeeCardNumber = employee.EmployeeCardNumber,
+            CardIssueDate = employee.CardIssueDate,
+            CardExpiryDate = employee.CardExpiryDate,
+            CardPrintedAt = employee.CardPrintedAt,
+            CardVersion = employee.CardVersion,
+            QRVerificationCode = employee.QRVerificationCode,
             Qualifications = employee.Qualifications.Select(q => new EmployeeQualificationDto
             {
                 Id = q.Id,

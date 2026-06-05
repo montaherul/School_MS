@@ -4,9 +4,13 @@
     bool isStudent = User.IsInRole("Student");
 }
 
+<link rel="stylesheet" href="~/css/idcard-print.css" />
+
+<!-- ===== PROFILE HEADER ===== -->
 <div class="row g-4 mb-4 align-items-center">
     <div class="col-auto">
-        <div class="profile-pic-container border rounded-circle overflow-hidden shadow-sm" style="width: 120px; height: 120px; background: #f8f9fa;">
+        <div class="profile-pic-container border rounded-circle overflow-hidden shadow-sm"
+             style="width:120px; height:120px; background:#f8f9fa;">
             @if (!string.IsNullOrEmpty(Model.ProfilePicturePath))
             {
                 <img src="@Model.ProfilePicturePath" class="w-100 h-100 object-fit-cover" alt="Profile Picture" />
@@ -14,7 +18,7 @@
             else
             {
                 <div class="w-100 h-100 d-flex align-items-center justify-content-center text-muted">
-                    <i class="bi bi-person-fill" style="font-size: 4rem;"></i>
+                    <i class="bi bi-person-fill" style="font-size:4rem;"></i>
                 </div>
             }
         </div>
@@ -33,11 +37,21 @@
     }
 </div>
 
+<!-- ===== MAIN CONTENT ===== -->
 <div class="row g-4">
+
+    <!-- LEFT COLUMN -->
     <div class="col-md-8">
+
+        <!-- Personal Information -->
         <div class="card border-0 shadow-sm rounded-4 mb-4">
             <div class="card-header bg-white border-0 p-4 pb-0">
-                <h5 class="fw-bold mb-0">Personal Information</h5>
+                <h5 class="fw-bold mb-0">
+                    <span class="badge bg-primary bg-opacity-10 text-primary me-2 p-2 rounded-3">
+                        <i class="bi bi-person-lines-fill"></i>
+                    </span>
+                    Personal Information
+                </h5>
             </div>
             <div class="card-body p-4">
                 <div class="row g-3">
@@ -50,16 +64,26 @@
                         <p class="mb-0 fw-medium">@Model.DateOfBirth.ToString("dd MMM yyyy")</p>
                     </div>
                     <div class="col-sm-6">
-                        <label class="text-muted small text-uppercase fw-bold">Gender</label>
-                        <p class="mb-0 fw-medium">@Model.Gender</p>
+                        <label class="text-muted small text-uppercase fw-bold">Gender / Religion</label>
+                        <p class="mb-0 fw-medium">@Model.Gender &bull; @Model.Religion</p>
                     </div>
                     <div class="col-sm-6">
-                        <label class="text-muted small text-uppercase fw-bold">Religion</label>
-                        <p class="mb-0 fw-medium">@Model.Religion</p>
+                        <label class="text-muted small text-uppercase fw-bold">Nationality</label>
+                        <p class="mb-0 fw-medium">@Model.Nationality</p>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="text-muted small text-uppercase fw-bold">Blood Group</label>
+                        <p class="mb-0 fw-medium">@(string.IsNullOrEmpty(Model.BloodGroup) ? "Not Provided" : Model.BloodGroup)</p>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="text-muted small text-uppercase fw-bold">Birth Certificate No</label>
+                        <p class="mb-0 fw-medium">@Model.BirthCertificateNo</p>
                     </div>
                     <div class="col-sm-6">
                         <label class="text-muted small text-uppercase fw-bold">Mobile Number</label>
-                        <p class="mb-0 fw-medium">@Model.MobileNumber</p>
+                        <p class="mb-0 fw-medium">
+                            <i class="bi bi-telephone-fill text-muted me-1"></i>@Model.MobileNumber
+                        </p>
                     </div>
                     <div class="col-sm-6">
                         <label class="text-muted small text-uppercase fw-bold">Email Address</label>
@@ -69,22 +93,34 @@
             </div>
         </div>
 
+        <!-- Guardian & Parents Info -->
         <div class="card border-0 shadow-sm rounded-4">
             <div class="card-header bg-white border-0 p-4 pb-0">
-                <h5 class="fw-bold mb-0">Guardian Details</h5>
+                <h5 class="fw-bold mb-0">
+                    <span class="badge bg-warning bg-opacity-10 text-warning me-2 p-2 rounded-3">
+                        <i class="bi bi-people-fill"></i>
+                    </span>
+                    Guardian &amp; Parents Info
+                </h5>
             </div>
             <div class="card-body p-4">
                 <div class="row g-3">
                     <div class="col-sm-6">
-                        <label class="text-muted small text-uppercase fw-bold">Father's Name</label>
-                        <p class="mb-0 fw-medium">@Model.FatherName</p>
+                        <p class="text-muted small text-uppercase fw-bold mb-2">Father Details</p>
+                        <label class="text-muted small fw-bold">Father's Name</label>
+                        <p class="mb-1 fw-medium">@Model.FatherName</p>
+                        <label class="text-muted small fw-bold">Father's Occupation</label>
+                        <p class="mb-0 fw-medium">@Model.FatherOccupation</p>
                     </div>
                     <div class="col-sm-6">
-                        <label class="text-muted small text-uppercase fw-bold">Mother's Name</label>
-                        <p class="mb-0 fw-medium">@Model.MotherName</p>
+                        <p class="text-muted small text-uppercase fw-bold mb-2">Mother Details</p>
+                        <label class="text-muted small fw-bold">Mother's Name</label>
+                        <p class="mb-1 fw-medium">@Model.MotherName</p>
+                        <label class="text-muted small fw-bold">Mother's Occupation</label>
+                        <p class="mb-0 fw-medium">@Model.MotherOccupation</p>
                     </div>
                     <div class="col-sm-6">
-                        <label class="text-muted small text-uppercase fw-bold">Guardian Name</label>
+                        <label class="text-muted small text-uppercase fw-bold">Active Guardian Name</label>
                         <p class="mb-0 fw-medium">@Model.GuardianName</p>
                     </div>
                     <div class="col-sm-6">
@@ -96,197 +132,171 @@
         </div>
     </div>
 
+    <!-- RIGHT COLUMN -->
     <div class="col-md-4">
+
         <!-- Academic Info -->
-        <div class="card border-0 shadow-sm rounded-4 bg-light mb-4">
-            <div class="card-body p-4">
-                <h5 class="fw-bold mb-3">Academic Info</h5>
-                <div class="mb-3">
-                    <label class="text-muted small text-uppercase fw-bold">Current Class</label>
-                    <p class="mb-0 fw-bold text-primary" style="font-size: 1.2rem;">Class @Model.ClassId</p>
+        <div class="card border-0 shadow-sm rounded-4 mb-4 card-academic">
+            <div class="card-body p-4 text-white">
+                <h5 class="fw-bold mb-3">
+                    <i class="bi bi-mortarboard-fill me-2"></i>Academic Info
+                </h5>
+                <div class="mb-3 p-3 rounded-3 academic-block">
+                    <label class="small text-uppercase fw-bold opacity-75">Current Class</label>
+                    <p class="mb-0 fw-bold fs-4">Class @Model.ClassId</p>
                 </div>
-                <div class="mb-3">
-                    <label class="text-muted small text-uppercase fw-bold">Section</label>
-                    <p class="mb-0 fw-medium">Section @Model.SectionName</p>
-                </div>
-                <div class="mb-0">
-                    <label class="text-muted small text-uppercase fw-bold">Roll Number</label>
-                    <p class="mb-0 fw-medium">@Model.RollNumber</p>
+                <div class="row g-2">
+                    <div class="col-6">
+                        <div class="p-3 rounded-3 academic-block">
+                            <label class="small text-uppercase fw-bold opacity-75 d-block">Section</label>
+                            <p class="mb-0 fw-bold">Section @Model.SectionName</p>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="p-3 rounded-3 academic-block">
+                            <label class="small text-uppercase fw-bold opacity-75 d-block">Roll Number</label>
+                            <p class="mb-0 fw-bold">@Model.RollNumber.ToString("D2")</p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-        
-        <!-- ID Card Preview & Print -->
-        <div class="card border-0 shadow-sm rounded-4 mb-4">
+
+        <!-- QR + Print -->
+        <div class="card border-0 shadow-sm rounded-4">
             <div class="card-body p-4 text-center">
-                <div class="mb-3">
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=@Model.StudentNo"
-                         class="img-fluid border p-2 bg-white rounded shadow-sm"
-                         alt="Student QR Code"
-                         title="@Model.StudentNo" />
+                <div class="mb-3 p-3 border rounded-3 bg-white d-inline-block">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=@Model.StudentNo"
+                         alt="Student ID Barcode"
+                         style="width:160px;height:160px;display:block;" />
                 </div>
-                <div class="d-grid gap-2">
-                    <button onclick="window.print()" class="btn btn-primary btn-sm rounded-pill">
-                        <i class="bi bi-printer me-1"></i> Print ID Card
+                <p class="text-muted small mb-3">STUDENT ID BARCODE</p>
+                <div class="d-grid">
+                    <button type="button" id="btnPrintIdCard"
+                            class="btn btn-primary rounded-pill fw-bold py-2">
+                        <i class="bi bi-printer-fill me-2"></i>Print ID Card
                     </button>
-                    <small class="text-muted tiny"><i class="bi bi-info-circle me-1"></i> Open print dialog to save as PDF if needed</small>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Premium ID Card (Hidden from main UI, visible for print) -->
-<div id="idCardPrintArea" class="id-card-print-container">
-    <div class="id-card-container">
-        <!-- Front Side -->
+
+<!-- =================================================
+     PRINT DATA — Hidden on screen, read by JS
+     ================================================= -->
+<div id="idCardPrintArea">
+    <div class="id-card-wrap">
+
+        <!-- FRONT -->
         <div class="id-card front">
-            <div class="card-bg-shapes"></div>
-            <div class="card-header text-center pt-3">
-                <div class="school-logo mb-1">
-                    <i class="bi bi-mortarboard-fill text-primary" style="font-size: 1.5rem;"></i>
-                </div>
-                <h6 class="school-name fw-bold mb-0">SCHOOL MANAGEMENT SYSTEM</h6>
-                <p class="card-title-label text-uppercase mb-0">Student Identity Card</p>
+            <div class="card-bg-blob"></div>
+            <div class="card-top">
+                <i class="bi bi-mortarboard-fill" style="font-size:1.4rem;color:#134e4a;"></i>
+                <div class="school-name">SCHOOL MANAGEMENT SYSTEM</div>
+                <div class="card-sub">Student Identity Card</div>
             </div>
-            <div class="card-content text-center px-3">
-                <div class="student-photo-container my-2 mx-auto">
-                    @if (!string.IsNullOrEmpty(Model.ProfilePicturePath)) { <img src="@Model.ProfilePicturePath" /> }
-                    else { <i class="bi bi-person-fill"></i> }
+            <div class="card-mid">
+                <div class="photo-box">
+                    @if (!string.IsNullOrEmpty(Model.ProfilePicturePath))
+                    {
+                        <img src="@Model.ProfilePicturePath" alt="Photo" />
+                    }
+                    else
+                    {
+                        <i class="bi bi-person-fill"></i>
+                    }
                 </div>
-                <h5 class="student-name fw-bold mb-1">@Model.FullName</h5>
-                <div class="student-details mt-2">
-                    <div class="detail-row"><span>ID No</span><strong>@Model.StudentNo</strong></div>
-                    <div class="detail-row"><span>Class</span><strong>Class @Model.ClassId</strong></div>
-                    <div class="detail-row"><span>Roll</span><strong>@Model.RollNumber.ToString("D4")</strong></div>
-                    <div class="detail-row"><span>Father</span><strong>@Model.FatherName</strong></div>
+                <div class="s-name">@Model.FullName</div>
+                <div class="s-info">
+                    <div class="s-row"><span>ID No</span><b>@Model.StudentNo</b></div>
+                    <div class="s-row"><span>Class</span><b>Class @Model.ClassId</b></div>
+                    <div class="s-row"><span>Roll</span><b>@Model.RollNumber.ToString("D4")</b></div>
+                    <div class="s-row"><span>Father</span><b>@Model.FatherName</b></div>
                 </div>
             </div>
-            <div class="card-footer-accent"></div>
+            <div class="card-bar"></div>
         </div>
 
-        <!-- Back Side -->
+        <!-- BACK -->
         <div class="id-card back">
-            <div class="card-bg-shapes-back"></div>
-            <div class="card-header-back text-center pt-4">
-                <h6 class="fw-bold text-white mb-0">IMPORTANT INFORMATION</h6>
+            <div class="back-top">
+                <div class="back-title">IMPORTANT INFORMATION</div>
             </div>
-            <div class="card-content-back text-center px-4 pt-3">
-                <div class="help-label text-orange fw-bold small">FOR HELP</div>
-                <div class="emergency-contact fw-bold mb-3">+880 1875989022</div>
-                
-                <div class="qr-container my-3 p-2 bg-white rounded-3 shadow-sm mx-auto" style="width: 100px;">
-                    <img src="https://chart.googleapis.com/chart?chs=100x100&cht=qr&chl=@Model.StudentNo&choe=UTF-8" />
-                    <div class="small fw-bold text-muted mt-1" style="font-size: 0.5rem;">Scan for Attendance</div>
+            <div class="back-body">
+                <div class="help-lbl">FOR HELP</div>
+                <div class="help-no">+880 1875989022</div>
+                <div class="qr-box">
+                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=@Model.StudentNo"
+                         alt="QR" style="width:90px;height:90px;" />
+                    <div class="qr-lbl">Scan for Attendance</div>
                 </div>
-
-                <div class="school-address text-muted small mt-2">
-                    Chattogarm,Bangladesh<br/>
-                    info@schoolms.com
+                <div class="addr">
+                    Chittagong, Bangladesh<br />
+                    info@@schoolms.com
                 </div>
-
-                <div class="principal-sign-area mt-4">
-                    <div class="sign-line mx-auto" style="width: 100px; border-top: 1px solid #ccc;"></div>
-                    <div class="principal-label small text-muted">Principal Signature</div>
+                <div class="sign-area">
+                    <div class="sign-line"></div>
+                    <div class="sign-lbl">Principal Signature</div>
                 </div>
             </div>
         </div>
+
     </div>
 </div>
 
-<style>
-    /* ID Card UI Preview Styles */
-    .id-card-print-container { display: none; }
-    
-    .id-card-container { display: flex; gap: 20px; justify-content: center; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    .id-card { 
-        width: 320px; height: 500px; 
-        background: white; border-radius: 18px; 
-        overflow: hidden; position: relative; 
-        border: 1px solid #eee;
-        background-image: radial-gradient(#f1f1f1 1px, transparent 1px);
-        background-size: 20px 20px;
-    }
-    
-    .text-orange { color: #fd7e14; }
-    .card-footer-accent { position: absolute; bottom: 0; left: 0; right: 0; height: 10px; background: linear-gradient(90deg, #134e4a, #fd7e14); }
-    .card-bg-shapes { 
-        position: absolute; top: -50px; right: -50px; width: 200px; height: 200px; 
-        background: linear-gradient(135deg, rgba(19, 78, 74, 0.05), rgba(253, 126, 20, 0.05)); 
-        border-radius: 50%; z-index: 0;
-    }
+@section Scripts {
+    <script>
+        document.getElementById('btnPrintIdCard').addEventListener('click', async function () {
+            const pw = window.open('', '_blank', 'width=850,height=350');
+            if (!pw) return;
 
-    .school-name { font-size: 0.9rem; color: #134e4a; letter-spacing: 0.5px; }
-    .card-title-label { font-size: 0.6rem; color: #fd7e14; font-weight: bold; letter-spacing: 2px; }
-    
-    .student-photo-container { 
-        width: 140px; height: 160px; 
-        background: #f8f9fa; border: 4px solid white; 
-        border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-        overflow: hidden; display: flex; align-items: center; justify-content: center;
-        position: relative; z-index: 1;
-    }
-    .student-photo-container img { width: 100%; height: 100%; object-fit: cover; }
-    .student-photo-container i { font-size: 5rem; color: #ddd; }
+            const iconCss = pw.document.createElement('link');
+            iconCss.rel = 'stylesheet';
+            iconCss.href = 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css';
+            pw.document.head.appendChild(iconCss);
 
-    .student-name { font-size: 1.4rem; color: #134e4a; }
-    .student-details { text-align: left; background: rgba(19, 78, 74, 0.03); padding: 15px; border-radius: 12px; }
-    .detail-row { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.85rem; }
-    .detail-row span { color: #666; }
-    .detail-row strong { color: #333; }
+            const printCss = pw.document.createElement('link');
+            printCss.rel = 'stylesheet';
+            printCss.href = new URL('@Url.Content("~/css/idcard-print.css")?v=idcard-vertical-2', window.location.origin).href;
+            pw.document.head.appendChild(printCss);
 
-    .back { background: #fff; }
-    .card-header-back { background: #134e4a; height: 80px; border-radius: 0 0 50% 50% / 0 0 20px 20px; }
-    .emergency-contact { font-size: 1.1rem; color: #134e4a; }
+            pw.document.title = 'Student ID Card';
+            pw.document.documentElement.className = 'id-card-print-root';
+            pw.document.body.className = 'id-card-print-document';
+            pw.document.body.appendChild(
+                pw.document.importNode(document.querySelector('#idCardPrintArea .id-card-wrap'), true)
+            );
+            pw.document.close();
 
-    /* CRITICAL PRINT LOGIC */
-    @@media print {
-        /* Hide everything */
-        body * { visibility: hidden; }
-        
-        /* Show only card container */
-        .id-card-print-container, .id-card-print-container * { 
-            visibility: visible; 
-            display: block !important;
-        }
-        
-        .id-card-print-container {
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: 100vw;
-            height: 100vh;
-            background: white !important;
-            z-index: 9999;
-            display: flex !important;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
+            pw.addEventListener('afterprint', function () {
+                pw.close();
+            });
 
-        .id-card-container {
-            display: flex !important;
-            flex-direction: row !important;
-            gap: 40px !important;
-        }
+            await new Promise(function (resolve) {
+                if (printCss.sheet) {
+                    resolve();
+                    return;
+                }
 
-        .id-card { 
-            box-shadow: none !important; 
-            border: 1px solid #ddd !important;
-            -webkit-print-color-adjust: exact !important; 
-            print-color-adjust: exact !important; 
-        }
-        
-        /* Optimization for Card Size */
-        @@page {
-            size: landscape;
-            margin: 0;
-        }
-    }
-</style>
+                printCss.onload = resolve;
+                printCss.onerror = resolve;
+                setTimeout(resolve, 1200);
+            });
 
-<script>
-    function printIdCard() {
-        window.print();
-    }
-</script>
+            await Promise.all(Array.from(pw.document.images).map(function (img) {
+                if (img.complete) return Promise.resolve();
+
+                return new Promise(function (resolve) {
+                    img.onload = resolve;
+                    img.onerror = resolve;
+                    setTimeout(resolve, 1200);
+                });
+            }));
+
+            pw.focus();
+            pw.print();
+        });
+    </script>
+}

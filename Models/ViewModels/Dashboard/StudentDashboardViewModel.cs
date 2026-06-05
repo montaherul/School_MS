@@ -17,6 +17,14 @@ public class StudentDashboardViewModel
     public List<AssignmentDashboardItem> UpcomingAssignments { get; set; } = new();
     public List<AssignmentDashboardItem> Assignments { get; set; } = new();
     public List<StudentResultViewModel> Results { get; set; } = new();
+    public List<AttendanceCalendarDto> AttendanceCalendar { get; set; } = new();
+}
+
+public class AttendanceCalendarDto
+{
+    public DateTime Date { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public string StatusColor { get; set; } = string.Empty;
 }
 
 public record AssignmentDashboardItem(string Subject, string Title, DateTime Deadline);

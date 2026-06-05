@@ -1,12 +1,16 @@
 using System;
+using System.Linq;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Models.DTOs.Attendance;
 using SchoolManagementSystem.Services.Interfaces.Employee;
 using SchoolManagementSystem.Services.Interfaces.Attendance;
+using SchoolManagementSystem.UnitOfWork.Interfaces;
 
 namespace SchoolManagementSystem.Controllers.Attendance
 {
@@ -16,15 +20,51 @@ namespace SchoolManagementSystem.Controllers.Attendance
         private readonly IEmployeeAttendanceService _service;
         private readonly IDepartmentService _departmentService;
         private readonly IDesignationService _designationService;
+        private readonly IUnitOfWork _uow;
 
         public EmployeeAttendanceController(
             IEmployeeAttendanceService service,
             IDepartmentService departmentService,
-            IDesignationService designationService)
+            IDesignationService designationService,
+            IUnitOfWork uow)
         {
             _service = service;
             _departmentService = departmentService;
             _designationService = designationService;
+            _uow = uow;
+        }
+
+        private bool IsAdminOrPrincipal()
+        {
+            return User.IsInRole("Super Admin") || User.IsInRole("Admin") || User.IsInRole("Principal") || User.IsInRole("Assistant Head");
+        }
+
+        private async Task<bool> CanAccessEmployeeAsync(int employeeId, CancellationToken ct)
+        {
+            if (IsAdminOrPrincipal()) return true;
+
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdStr, out var userId)) return false;
+
+            var ownEmployeeId = await _uow.Repository<SchoolManagementSystem.Models.Entities.Employee.Employee>().Query()
+                .Where(e => e.UserId == userId && !e.IsDeleted)
+                .Select(e => e.Id)
+                .FirstOrDefaultAsync(ct);
+
+            return ownEmployeeId > 0 && ownEmployeeId == employeeId;
+        }
+
+        private async Task<int?> GetLoggedInEmployeeIdAsync(CancellationToken ct)
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!int.TryParse(userIdStr, out var userId)) return null;
+
+            var employeeId = await _uow.Repository<SchoolManagementSystem.Models.Entities.Employee.Employee>().Query()
+                .Where(e => e.UserId == userId && !e.IsDeleted)
+                .Select(e => e.Id)
+                .FirstOrDefaultAsync(ct);
+
+            return employeeId > 0 ? employeeId : null;
         }
 
         [RequirePermission("Attendance.View")]
@@ -47,6 +87,8 @@ namespace SchoolManagementSystem.Controllers.Attendance
             bool? isTeachingStaff = null,
             CancellationToken ct = default)
         {
+            if (!IsAdminOrPrincipal()) return Forbid();
+
             var filter = new EmployeeAttendanceFilterDto
             {
                 AttendanceDate = (attendanceDate ?? DateTime.Today).Date,
@@ -70,6 +112,8 @@ namespace SchoolManagementSystem.Controllers.Attendance
         [RequirePermission("Attendance.View")]
         public async Task<IActionResult> GetPagedData(int page = 1, int size = 10, string? date = null, CancellationToken ct = default)
         {
+            if (!IsAdminOrPrincipal()) return Forbid();
+
             DateTime? parsedDate = null;
             if (DateTime.TryParse(date, out var d)) parsedDate = d;
 
@@ -83,6 +127,8 @@ namespace SchoolManagementSystem.Controllers.Attendance
         [RequirePermission("Attendance.Create")]
         public async Task<IActionResult> SaveAttendance([FromBody] EmployeeAttendanceBulkDto dto, CancellationToken ct)
         {
+            if (!IsAdminOrPrincipal()) return Forbid();
+
             try
             {
                 var userName = User.Identity?.Name ?? "Unknown";
@@ -101,6 +147,8 @@ namespace SchoolManagementSystem.Controllers.Attendance
         [RequirePermission("Attendance.Create")]
         public async Task<IActionResult> Mark([FromBody] EmployeeAttendanceDto dto, CancellationToken ct)
         {
+            if (!await CanAccessEmployeeAsync(dto.EmployeeId, ct)) return Forbid();
+
             try
             {
                 var userName = User.Identity?.Name ?? "Unknown";
@@ -118,6 +166,8 @@ namespace SchoolManagementSystem.Controllers.Attendance
         [RequirePermission("Attendance.Create")]
         public async Task<IActionResult> BulkMark([FromBody] EmployeeAttendanceBulkDto dto, CancellationToken ct)
         {
+            if (!IsAdminOrPrincipal()) return Forbid();
+
             try
             {
                 var userName = User.Identity?.Name ?? "Unknown";
@@ -135,6 +185,8 @@ namespace SchoolManagementSystem.Controllers.Attendance
         [RequirePermission("Attendance.View")]
         public async Task<IActionResult> AttendanceHistory(int employeeId, int? year = null, int? month = null, CancellationToken ct = default)
         {
+            if (!await CanAccessEmployeeAsync(employeeId, ct)) return Forbid();
+
             var today = DateTime.Today;
             var y = year ?? today.Year;
             var m = month ?? today.Month;
@@ -147,9 +199,59 @@ namespace SchoolManagementSystem.Controllers.Attendance
         [RequirePermission("Attendance.View")]
         public async Task<IActionResult> MonthlySummary(int employeeId, int? year = null, int? month = null, CancellationToken ct = default)
         {
+            if (!await CanAccessEmployeeAsync(employeeId, ct)) return Forbid();
+
             var today = DateTime.Today;
             var summary = await _service.GetMonthlySummaryAsync(employeeId, year ?? today.Year, month ?? today.Month, ct);
             return Json(summary);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> MyAttendance(CancellationToken ct)
+        {
+            var employeeId = await GetLoggedInEmployeeIdAsync(ct);
+            if (employeeId == null)
+            {
+                return NotFound("Employee profile not found.");
+            }
+
+            var today = DateTime.Today;
+            var summary = await _service.GetMonthlySummaryAsync(employeeId.Value, today.Year, today.Month, ct);
+            return View(summary);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetMyAttendanceData(int? year = null, int? month = null, CancellationToken ct = default)
+        {
+            var employeeId = await GetLoggedInEmployeeIdAsync(ct);
+            if (employeeId == null)
+            {
+                return Json(new { success = false, message = "Employee profile not found." });
+            }
+
+            var today = DateTime.Today;
+            var y = year ?? today.Year;
+            var m = month ?? today.Month;
+            var history = await _service.GetAttendanceHistoryAsync(employeeId.Value, y, m, ct);
+            var summary = await _service.GetMonthlySummaryAsync(employeeId.Value, y, m, ct);
+            var todayRecord = history.FirstOrDefault(h => h.AttendanceDate.Date == today);
+
+            return Json(new
+            {
+                success = true,
+                summary,
+                history = history.Select(h => new
+                {
+                    date = h.AttendanceDate.ToString("yyyy-MM-dd"),
+                    formattedDate = h.AttendanceDate.ToString("dd MMM yyyy"),
+                    status = h.Status,
+                    statusName = h.StatusName,
+                    checkInTime = h.CheckInTime?.ToString(@"hh\:mm") ?? "",
+                    checkOutTime = h.CheckOutTime?.ToString(@"hh\:mm") ?? "",
+                    remarks = h.Remarks
+                }),
+                todayStatus = todayRecord?.StatusName ?? "Not Marked"
+            });
         }
 
         [HttpPost]
@@ -157,6 +259,8 @@ namespace SchoolManagementSystem.Controllers.Attendance
         [RequirePermission("Attendance.Create")]
         public async Task<IActionResult> CheckIn([FromBody] EmployeeAttendanceDto dto, CancellationToken ct)
         {
+            if (!await CanAccessEmployeeAsync(dto.EmployeeId, ct)) return Forbid();
+
             try
             {
                 var userName = User.Identity?.Name ?? "Unknown";
@@ -175,6 +279,8 @@ namespace SchoolManagementSystem.Controllers.Attendance
         [RequirePermission("Attendance.Create")]
         public async Task<IActionResult> CheckOut([FromBody] EmployeeAttendanceDto dto, CancellationToken ct)
         {
+            if (!await CanAccessEmployeeAsync(dto.EmployeeId, ct)) return Forbid();
+
             try
             {
                 var userName = User.Identity?.Name ?? "Unknown";

@@ -1,0 +1,95 @@
+@model SchoolManagementSystem.Models.DTOs.Attendance.EmployeeAttendanceMonthlySummaryDto
+
+@{
+    ViewData["Title"] = "My Attendance";
+    var now = DateTime.Today;
+    var months = System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.MonthNames
+        .Take(12)
+        .Select((name, i) => new { Value = i + 1, Name = name })
+        .ToList();
+    var years = Enumerable.Range(now.Year - 3, 5).ToList();
+}
+
+<section class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-3">
+        <div>
+            <h1 class="h3 fw-bold mb-1">My Attendance</h1>
+            <div class="text-muted">@Model.EmployeeName (@Model.EmployeeCode)</div>
+        </div>
+        <div class="d-flex gap-2">
+            <select id="selMonth" class="form-select">
+                @foreach (var month in months)
+                {
+                    <option value="@month.Value" selected="@(month.Value == now.Month)">@month.Name</option>
+                }
+            </select>
+            <select id="selYear" class="form-select">
+                @foreach (var year in years)
+                {
+                    <option value="@year" selected="@(year == now.Year)">@year</option>
+                }
+            </select>
+            <button type="button" id="btnRefresh" class="btn btn-primary">Refresh</button>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-2"><div class="border rounded p-3 bg-white"><div class="text-muted small">Attendance %</div><div id="pct" class="h3 mb-0">@Model.AttendancePercentage%</div></div></div>
+        <div class="col-md-2"><div class="border rounded p-3 bg-white"><div class="text-muted small">Recorded Days</div><div id="recorded" class="h3 mb-0">@Model.RecordedDays</div></div></div>
+        <div class="col-md-2"><div class="border rounded p-3 bg-white"><div class="text-muted small">Present</div><div id="present" class="h3 mb-0 text-success">@Model.Present</div></div></div>
+        <div class="col-md-2"><div class="border rounded p-3 bg-white"><div class="text-muted small">Late</div><div id="late" class="h3 mb-0 text-warning">@Model.Late</div></div></div>
+        <div class="col-md-2"><div class="border rounded p-3 bg-white"><div class="text-muted small">Absent</div><div id="absent" class="h3 mb-0 text-danger">@Model.Absent</div></div></div>
+        <div class="col-md-2"><div class="border rounded p-3 bg-white"><div class="text-muted small">Leave</div><div id="leave" class="h3 mb-0 text-primary">@Model.Leave</div></div></div>
+    </div>
+
+    <div class="border rounded bg-white">
+        <div class="p-3 border-bottom fw-semibold">Attendance Calendar</div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Check In</th>
+                        <th>Check Out</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody id="historyBody"></tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+<script>
+    async function loadMyAttendance() {
+        const year = document.getElementById('selYear').value;
+        const month = document.getElementById('selMonth').value;
+        const response = await fetch(`/EmployeeAttendance/GetMyAttendanceData?year=${year}&month=${month}`, {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            credentials: 'same-origin'
+        });
+        const data = await response.json();
+        if (!data.success) return;
+
+        const s = data.summary;
+        document.getElementById('pct').textContent = `${Number(s.attendancePercentage || 0).toFixed(1)}%`;
+        document.getElementById('recorded').textContent = s.recordedDays || 0;
+        document.getElementById('present').textContent = s.present || 0;
+        document.getElementById('late').textContent = s.late || 0;
+        document.getElementById('absent').textContent = s.absent || 0;
+        document.getElementById('leave').textContent = s.leave || 0;
+
+        const rows = data.history || [];
+        document.getElementById('historyBody').innerHTML = rows.length
+            ? rows.map(row => `<tr><td>${row.formattedDate}</td><td>${row.statusName}</td><td>${row.checkInTime || ''}</td><td>${row.checkOutTime || ''}</td><td>${row.remarks || ''}</td></tr>`).join('')
+            : '<tr><td colspan="5" class="text-center text-muted py-4">No attendance records found.</td></tr>';
+    }
+
+    document.getElementById('btnRefresh').addEventListener('click', loadMyAttendance);
+    document.getElementById('selMonth').addEventListener('change', loadMyAttendance);
+    document.getElementById('selYear').addEventListener('change', loadMyAttendance);
+    document.addEventListener('DOMContentLoaded', loadMyAttendance);
+</script>
+}

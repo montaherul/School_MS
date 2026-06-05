@@ -1,9 +1,7 @@
 -- ============================================================================
 -- Stored Procedure: sp_GetTeacherList
 -- Purpose: Get paginated teacher list with filtering and count
--- Author: School Management System
--- Created: May 6, 2026
--- Updated: May 6, 2026 - Fixed status string-to-int conversion
+-- Updated to match current Employees schema (EmployeeCode, DepartmentId, DesignationId)
 -- ============================================================================
 
 CREATE OR ALTER PROCEDURE sp_GetTeacherList
@@ -19,9 +17,9 @@ BEGIN
     DECLARE @Offset INT = (@PageNumber - 1) * @PageSize;
 
     WITH TeacherData AS (
-        SELECT 
+        SELECT
             t.Id,
-            t.TeacherCode AS TeacherNo,
+            e.EmployeeCode AS TeacherNo,
             e.FullName,
             d.Name AS Designation,
             dept.Name AS Department,
@@ -31,16 +29,16 @@ BEGIN
             t.IsDeleted,
             ROW_NUMBER() OVER (ORDER BY e.FullName ASC) AS RowNum,
             COUNT(*) OVER () AS TotalCount
-        FROM 
+        FROM
             Teachers t
         LEFT JOIN Employees e ON t.EmployeeId = e.Id
         LEFT JOIN Departments dept ON e.DepartmentId = dept.Id
         LEFT JOIN Designations d ON e.DesignationId = d.Id
-        WHERE 
+        WHERE
             t.IsDeleted = 0
             AND (e.IsDeleted = 0 OR e.Id IS NULL)
             AND (
-                @SearchTerm IS NULL 
+                @SearchTerm IS NULL
                 OR e.FullName LIKE '%' + @SearchTerm + '%'
                 OR t.TeacherCode LIKE '%' + @SearchTerm + '%'
                 OR e.Phone LIKE '%' + @SearchTerm + '%'
@@ -49,7 +47,7 @@ BEGIN
             AND (@Department IS NULL OR dept.Name = @Department)
             AND (@Status IS NULL OR e.[Status] = @Status)
     )
-    SELECT 
+    SELECT
         Id,
         TeacherNo,
         FullName,
@@ -59,12 +57,12 @@ BEGIN
         [Status],
         ProfilePicturePath,
         TotalCount AS TotalRecords
-    FROM 
+    FROM
         TeacherData
-    WHERE 
-        RowNum > @Offset 
+    WHERE
+        RowNum > @Offset
         AND RowNum <= @Offset + @PageSize
-    ORDER BY 
+    ORDER BY
         RowNum;
 END;
 GO

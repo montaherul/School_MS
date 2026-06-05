@@ -53,6 +53,26 @@ public class UnitOfWork : IUnitOfWork
 
     public Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) => _db.SaveChangesAsync(cancellationToken);
     public Task<int> ExecuteSqlRawAsync(string sql, params object[] parameters) => _db.Database.ExecuteSqlRawAsync(sql, parameters);
+    public async Task ExecuteInTransactionAsync(Func<Task> operation, CancellationToken cancellationToken = default)
+    {
+        var strategy = _db.Database.CreateExecutionStrategy();
+
+        await strategy.ExecuteAsync(async () =>
+        {
+            await BeginTransactionAsync(cancellationToken);
+
+            try
+            {
+                await operation();
+            }
+            catch
+            {
+                await RollbackTransactionAsync(cancellationToken);
+                throw;
+            }
+        });
+    }
+
     public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
     {
         await _db.Database.BeginTransactionAsync(cancellationToken);

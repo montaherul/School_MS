@@ -111,30 +111,9 @@ public class Student : BaseEntity
     public int? StudentGroupId { get; set; }
     public StudentGroup? StudentGroup { get; set; }
 
-    public ICollection<Guardian> Guardians { get; set; } = new List<Guardian>();
+    public ICollection<SchoolManagementSystem.Models.Entities.Guardian.StudentGuardian> StudentGuardians { get; set; } = new List<SchoolManagementSystem.Models.Entities.Guardian.StudentGuardian>();
     public ICollection<StudentDocument> Documents { get; set; } = new List<StudentDocument>();
     public ICollection<StudentGroupAssignment> GroupAssignments { get; set; } = [];
-}
-
-public class Guardian : BaseEntity
-{
-    public int StudentId { get; set; }
-    public Student? Student { get; set; }
-
-    [MaxLength(120)]
-    public string Name { get; set; } = string.Empty;
-
-    [MaxLength(40)]
-    public string Relation { get; set; } = string.Empty;
-
-    [MaxLength(30)]
-    public string Phone { get; set; } = string.Empty;
-
-    [MaxLength(100)]
-    public string? Occupation { get; set; }
-
-    [MaxLength(160)]
-    public string? Email { get; set; }
 }
 
 public class StudentDocument : BaseEntity

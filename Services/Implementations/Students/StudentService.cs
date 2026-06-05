@@ -78,15 +78,40 @@ public class StudentService : IStudentService
             CreatedBy = createdBy
         };
 
-        if (!string.IsNullOrWhiteSpace(dto.FatherOrGuardianMobileNo))
+        if (dto.LinkedGuardianId.HasValue && dto.LinkedGuardianId > 0)
+        {
+            student.StudentGuardians.Add(new SchoolManagementSystem.Models.Entities.Guardian.StudentGuardian
+            {
+                GuardianId = dto.LinkedGuardianId.Value,
+                Relationship = !string.IsNullOrWhiteSpace(dto.GuardianName) 
+                    ? SchoolManagementSystem.Models.Entities.Guardian.GuardianRelationshipType.LegalGuardian 
+                    : SchoolManagementSystem.Models.Entities.Guardian.GuardianRelationshipType.Father,
+                IsPrimaryGuardian = true,
+                CreatedAt = DateTime.UtcNow,
+                CreatedBy = createdBy
+            });
+        }
+        else if (!string.IsNullOrWhiteSpace(dto.FatherOrGuardianMobileNo))
         {
             var isGuardian = !string.IsNullOrWhiteSpace(dto.GuardianName);
-            student.Guardians.Add(new Guardian
+            student.StudentGuardians.Add(new SchoolManagementSystem.Models.Entities.Guardian.StudentGuardian
             {
-                Name = isGuardian ? dto.GuardianName!.Trim() : dto.FatherName.Trim(),
-                Phone = dto.FatherOrGuardianMobileNo.Trim(),
-                Occupation = dto.GuardianOccupation?.Trim(),
-                Relation = isGuardian ? "Guardian" : "Father",
+                Guardian = new SchoolManagementSystem.Models.Entities.Guardian.Guardian
+                {
+                    FirstName = isGuardian ? dto.GuardianName!.Trim() : dto.FatherName.Trim(),
+                    LastName = "",
+                    FullName = isGuardian ? dto.GuardianName!.Trim() : dto.FatherName.Trim(),
+                    MobileNumber = dto.FatherOrGuardianMobileNo.Trim(),
+                    Occupation = dto.GuardianOccupation?.Trim(),
+                    RelationType = isGuardian ? SchoolManagementSystem.Models.Entities.Guardian.GuardianRelationshipType.LegalGuardian : SchoolManagementSystem.Models.Entities.Guardian.GuardianRelationshipType.Father,
+                    Status = SchoolManagementSystem.Models.Entities.Guardian.GuardianStatus.Active,
+                    CreatedAt = DateTime.UtcNow,
+                    CreatedBy = createdBy
+                },
+                Relationship = isGuardian 
+                    ? SchoolManagementSystem.Models.Entities.Guardian.GuardianRelationshipType.LegalGuardian 
+                    : SchoolManagementSystem.Models.Entities.Guardian.GuardianRelationshipType.Father,
+                IsPrimaryGuardian = true,
                 CreatedAt = DateTime.UtcNow,
                 CreatedBy = createdBy
             });
@@ -100,7 +125,8 @@ public class StudentService : IStudentService
     public async Task UpdateAsync(StudentUpsertDto dto, string updatedBy, CancellationToken cancellationToken = default)
     {
         var student = await _studentRepository.Query()
-            .Include(s => s.Guardians)
+            .Include(s => s.StudentGuardians)
+                .ThenInclude(sg => sg.Guardian)
             .FirstOrDefaultAsync(s => s.Id == dto.Id && !s.IsDeleted, cancellationToken)
             ?? throw new Exception("Student not found");
 
@@ -146,16 +172,22 @@ public class StudentService : IStudentService
         student.UpdatedAt = DateTime.UtcNow;
         student.UpdatedBy = updatedBy;
 
-        var guardian = student.Guardians.FirstOrDefault();
-        if (guardian != null)
+        var sg = student.StudentGuardians.FirstOrDefault(x => x.IsPrimaryGuardian);
+        if (sg != null && sg.Guardian != null)
         {
             var isGuardian = !string.IsNullOrWhiteSpace(dto.GuardianName);
-            guardian.Name = isGuardian ? dto.GuardianName!.Trim() : dto.FatherName.Trim();
-            guardian.Phone = (dto.FatherOrGuardianMobileNo ?? "").Trim();
-            guardian.Occupation = dto.GuardianOccupation?.Trim();
-            guardian.Relation = isGuardian ? "Guardian" : "Father";
-            guardian.UpdatedAt = DateTime.UtcNow;
-            guardian.UpdatedBy = updatedBy;
+            sg.Guardian.FirstName = isGuardian ? dto.GuardianName!.Trim() : dto.FatherName.Trim();
+            sg.Guardian.LastName = "";
+            sg.Guardian.FullName = sg.Guardian.FirstName;
+            sg.Guardian.MobileNumber = (dto.FatherOrGuardianMobileNo ?? "").Trim();
+            sg.Guardian.Occupation = dto.GuardianOccupation?.Trim();
+            sg.Guardian.RelationType = isGuardian 
+                ? SchoolManagementSystem.Models.Entities.Guardian.GuardianRelationshipType.LegalGuardian 
+                : SchoolManagementSystem.Models.Entities.Guardian.GuardianRelationshipType.Father;
+            
+            sg.Relationship = sg.Guardian.RelationType;
+            sg.UpdatedAt = DateTime.UtcNow;
+            sg.UpdatedBy = updatedBy;
         }
         
         await _unitOfWork.SaveChangesAsync(cancellationToken);

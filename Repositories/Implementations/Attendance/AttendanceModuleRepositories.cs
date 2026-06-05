@@ -1,5 +1,7 @@
+using System.Data;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Data;
 using SchoolManagementSystem.Models.DTOs.Attendance;
@@ -25,94 +27,100 @@ namespace SchoolManagementSystem.Repositories.Implementations.Attendance
             int pageSize,
             CancellationToken cancellationToken = default)
         {
-            var date = DateOnly.FromDateTime(filter.AttendanceDate.Date);
-            var students = BuildFilteredStudents(filter);
-            var totalRecords = await students.CountAsync(cancellationToken);
+            var items = new List<StudentAttendanceDto>();
+            int totalRecords = 0;
 
-            var pagedStudents = await students
-                .OrderBy(s => s.RollNumber)
-                .ThenBy(s => s.FullName)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .Select(s => new
-                {
-                    s.Id,
-                    s.StudentNo,
-                    s.FullName,
-                    s.RollNumber,
-                    s.ClassId,
-                    ClassName = s.Class != null ? s.Class.Name : string.Empty,
-                    s.SectionId,
-                    SectionName = s.Section != null ? s.Section.Name : string.Empty,
-                    s.StudentGroupId,
-                    StudentGroupName = s.StudentGroup != null ? s.StudentGroup.Name : string.Empty
-                })
-                .ToListAsync(cancellationToken);
-
-            var studentIds = pagedStudents.Select(s => s.Id).ToArray();
-            var attendanceByStudent = await _db.Attendance
-                .AsNoTracking()
-                .Where(a => a.AttendanceDate == date && studentIds.Contains(a.StudentId) && !a.IsDeleted)
-                .ToDictionaryAsync(a => a.StudentId, cancellationToken);
-
-            var rows = pagedStudents.Select(student =>
+            using (var command = _db.Database.GetDbConnection().CreateCommand())
             {
-                attendanceByStudent.TryGetValue(student.Id, out var attendance);
-                var status = attendance?.Status ?? AttendanceStatus.Present;
+                command.CommandText = "sp_GetStudentAttendanceList";
+                command.CommandType = CommandType.StoredProcedure;
 
-                return new StudentAttendanceDto
+                command.Parameters.Add(new SqlParameter("@PageNumber", page));
+                command.Parameters.Add(new SqlParameter("@PageSize", pageSize));
+                command.Parameters.Add(new SqlParameter("@SearchTerm", (object?)filter.SearchTerm ?? DBNull.Value));
+                command.Parameters.Add(new SqlParameter("@ClassId", filter.ClassId ?? 0));
+                command.Parameters.Add(new SqlParameter("@SectionId", filter.SectionId ?? 0));
+                command.Parameters.Add(new SqlParameter("@StudentGroupId", filter.StudentGroupId ?? 0));
+                command.Parameters.Add(new SqlParameter("@AttendanceDate", filter.AttendanceDate.Date));
+                command.Parameters.Add(new SqlParameter("@Status", filter.Status ?? 0));
+
+                if (command.Connection!.State != ConnectionState.Open)
+                    await _db.Database.OpenConnectionAsync(cancellationToken);
+
+                using (var reader = await command.ExecuteReaderAsync(cancellationToken))
                 {
-                    Id = attendance?.Id ?? 0,
-                    StudentId = student.Id,
-                    StudentNo = student.StudentNo,
-                    StudentName = student.FullName,
-                    RollNumber = student.RollNumber.ToString(),
-                    ClassId = student.ClassId,
-                    ClassName = student.ClassName,
-                    SectionId = student.SectionId,
-                    SectionName = student.SectionName,
-                    StudentGroupId = student.StudentGroupId,
-                    StudentGroupName = student.StudentGroupName,
-                    AttendanceDate = filter.AttendanceDate.Date,
-                    Status = status,
-                    StatusName = status.ToString(),
-                    Remarks = attendance?.Remarks
-                };
-            }).ToList();
+                    while (await reader.ReadAsync(cancellationToken))
+                    {
+                        var dto = new StudentAttendanceDto
+                        {
+                            Id = reader.GetInt32(0),
+                            StudentId = reader.GetInt32(1),
+                            StudentNo = reader.IsDBNull(2) ? "" : reader.GetValue(2).ToString(),
+                            StudentName = reader.IsDBNull(3) ? "" : reader.GetValue(3).ToString(),
+                            RollNumber = reader.IsDBNull(4) ? "" : reader.GetValue(4).ToString(),
+                            ClassId = reader.GetInt32(5),
+                            ClassName = reader.IsDBNull(6) ? "" : reader.GetString(6),
+                            SectionId = reader.GetInt32(7),
+                            SectionName = reader.IsDBNull(8) ? "" : reader.GetString(8),
+                            StudentGroupId = reader.IsDBNull(9) ? null : (int?)reader.GetInt32(9),
+                            StudentGroupName = reader.IsDBNull(10) ? "" : reader.GetString(10),
+                            AttendanceDate = reader.GetDateTime(11),
+                            Status = (AttendanceStatus)reader.GetInt32(12),
+                            Remarks = reader.IsDBNull(13) ? "" : reader.GetString(13)
+                        };
+                        dto.StatusName = dto.Status.ToString();
+                        items.Add(dto);
+                        totalRecords = reader.GetInt32(reader.FieldCount - 1); // TotalRecords is the last column
+                    }
+                }
+            }
 
-            return (rows, totalRecords);
+            return (items, totalRecords);
         }
 
         public async Task<StudentAttendanceSummaryDto> GetAttendanceSummaryAsync(
             StudentAttendanceFilterDto filter,
             CancellationToken cancellationToken = default)
         {
-            var date = DateOnly.FromDateTime(filter.AttendanceDate.Date);
-            var studentIds = await BuildFilteredStudents(filter)
-                .Select(s => s.Id)
-                .ToArrayAsync(cancellationToken);
+            var summary = new StudentAttendanceSummaryDto();
 
-            var records = await _db.Attendance
-                .AsNoTracking()
-                .Where(a => a.AttendanceDate == date && studentIds.Contains(a.StudentId) && !a.IsDeleted)
-                .GroupBy(a => a.Status)
-                .Select(g => new { Status = g.Key, Count = g.Count() })
-                .ToListAsync(cancellationToken);
-
-            var present = records.FirstOrDefault(x => x.Status == AttendanceStatus.Present)?.Count ?? 0;
-            var absent = records.FirstOrDefault(x => x.Status == AttendanceStatus.Absent)?.Count ?? 0;
-            var late = records.FirstOrDefault(x => x.Status == AttendanceStatus.Late)?.Count ?? 0;
-            var leave = records.FirstOrDefault(x => x.Status == AttendanceStatus.Leave)?.Count ?? 0;
-            var unmarked = Math.Max(studentIds.Length - records.Sum(x => x.Count), 0);
-
-            return new StudentAttendanceSummaryDto
+            using (var command = _db.Database.GetDbConnection().CreateCommand())
             {
-                TotalStudents = studentIds.Length,
-                Present = present + unmarked,
-                Absent = absent,
-                Late = late,
-                Leave = leave
-            };
+                command.CommandText = "sp_GetAttendanceSummary";
+                command.CommandType = CommandType.StoredProcedure;
+
+                command.Parameters.Add(new SqlParameter("@StudentId", filter.StudentId ?? 0));
+                command.Parameters.Add(new SqlParameter("@EmployeeId", 0));
+                command.Parameters.Add(new SqlParameter("@ClassId", filter.ClassId ?? 0));
+                command.Parameters.Add(new SqlParameter("@SectionId", filter.SectionId ?? 0));
+                command.Parameters.Add(new SqlParameter("@StudentGroupId", filter.StudentGroupId ?? 0));
+                command.Parameters.Add(new SqlParameter("@AttendanceDate", filter.AttendanceDate.Date));
+                command.Parameters.Add(new SqlParameter("@Year", filter.AttendanceDate.Year));
+                command.Parameters.Add(new SqlParameter("@Month", filter.AttendanceDate.Month));
+
+                if (command.Connection!.State != ConnectionState.Open)
+                    await _db.Database.OpenConnectionAsync(cancellationToken);
+
+                using (var reader = await command.ExecuteReaderAsync(cancellationToken))
+                {
+                    while (await reader.ReadAsync(cancellationToken))
+                    {
+                        var statusId = reader.GetInt32(0);
+                        var count = reader.GetInt32(1);
+
+                        switch (statusId)
+                        {
+                            case (int)AttendanceStatus.Present: summary.Present = count; break;
+                            case (int)AttendanceStatus.Absent: summary.Absent = count; break;
+                            case (int)AttendanceStatus.Late: summary.Late = count; break;
+                            case (int)AttendanceStatus.Leave: summary.Leave = count; break;
+                        }
+                    }
+                }
+            }
+
+            summary.TotalStudents = summary.Present + summary.Absent + summary.Late + summary.Leave;
+            return summary;
         }
 
         public async Task<List<StudentAttendanceDto>> GetStudentHistoryAsync(
@@ -135,7 +143,7 @@ namespace SchoolManagementSystem.Repositories.Implementations.Attendance
                 {
                     Id = a.Id,
                     StudentId = a.StudentId,
-                    StudentNo = a.Student != null ? a.Student.StudentNo : string.Empty,
+                    StudentNo = a.Student != null ? a.Student.StudentNo.ToString() : string.Empty,
                     StudentName = a.Student != null ? a.Student.FullName : string.Empty,
                     RollNumber = a.Student != null ? a.Student.RollNumber.ToString() : string.Empty,
                     ClassId = a.SchoolClassId,
@@ -195,89 +203,100 @@ namespace SchoolManagementSystem.Repositories.Implementations.Attendance
             int pageSize,
             CancellationToken cancellationToken = default)
         {
-            var date = filter.AttendanceDate.Date;
-            var employees = BuildFilteredEmployees(filter);
-            var totalRecords = await employees.CountAsync(cancellationToken);
+            var items = new List<EmployeeAttendanceDto>();
+            int totalRecords = 0;
 
-            var pagedEmployees = await employees
-                .OrderBy(e => e.FullName)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .Select(e => new
-                {
-                    e.Id,
-                    e.EmployeeCode,
-                    e.FullName,
-                    e.EmployeeType,
-                    e.IsTeachingStaff,
-                    Department = e.Department != null ? e.Department.Name : string.Empty,
-                    Designation = e.Designation != null ? e.Designation.Name : string.Empty
-                })
-                .ToListAsync(cancellationToken);
-
-            var employeeIds = pagedEmployees.Select(e => e.Id).ToArray();
-            var attendanceByEmployee = await _set
-                .AsNoTracking()
-                .Where(a => a.AttendanceDate.Date == date && employeeIds.Contains(a.EmployeeId))
-                .ToDictionaryAsync(a => a.EmployeeId, cancellationToken);
-
-            var rows = pagedEmployees.Select(employee =>
+            using (var command = _db.Database.GetDbConnection().CreateCommand())
             {
-                attendanceByEmployee.TryGetValue(employee.Id, out var attendance);
-                var status = attendance?.Status ?? AttendanceStatus.Present;
+                command.CommandText = "sp_GetEmployeeAttendanceList";
+                command.CommandType = CommandType.StoredProcedure;
 
-                return new EmployeeAttendanceDto
+                command.Parameters.Add(new SqlParameter("@PageNumber", page));
+                command.Parameters.Add(new SqlParameter("@PageSize", pageSize));
+                command.Parameters.Add(new SqlParameter("@SearchTerm", (object?)filter.SearchTerm ?? DBNull.Value));
+                command.Parameters.Add(new SqlParameter("@DepartmentId", filter.DepartmentId ?? 0));
+                command.Parameters.Add(new SqlParameter("@DesignationId", filter.DesignationId ?? 0));
+                command.Parameters.Add(new SqlParameter("@EmployeeType", (object?)filter.EmployeeType ?? DBNull.Value));
+                command.Parameters.Add(new SqlParameter("@IsTeachingStaff", (object?)filter.IsTeachingStaff ?? DBNull.Value));
+                command.Parameters.Add(new SqlParameter("@AttendanceDate", filter.AttendanceDate.Date));
+                command.Parameters.Add(new SqlParameter("@Status", filter.Status ?? 0));
+
+                if (command.Connection!.State != ConnectionState.Open)
+                    await _db.Database.OpenConnectionAsync(cancellationToken);
+
+                using (var reader = await command.ExecuteReaderAsync(cancellationToken))
                 {
-                    Id = attendance?.Id ?? 0,
-                    EmployeeId = employee.Id,
-                    EmployeeCode = employee.EmployeeCode,
-                    EmployeeName = employee.FullName,
-                    Department = employee.Department,
-                    Designation = employee.Designation,
-                    EmployeeType = employee.EmployeeType,
-                    IsTeachingStaff = employee.IsTeachingStaff,
-                    AttendanceDate = date,
-                    CheckInTime = attendance?.CheckInTime,
-                    CheckOutTime = attendance?.CheckOutTime,
-                    Status = status,
-                    StatusName = status.ToString(),
-                    Remarks = attendance?.Remarks
-                };
-            }).ToList();
+                    while (await reader.ReadAsync(cancellationToken))
+                    {
+                        var dto = new EmployeeAttendanceDto
+                        {
+                            Id = reader.GetInt32(0),
+                            EmployeeId = reader.GetInt32(1),
+                            EmployeeCode = reader.IsDBNull(2) ? "" : reader.GetString(2),
+                            EmployeeName = reader.IsDBNull(3) ? "" : reader.GetString(3),
+                            Department = reader.IsDBNull(5) ? "" : reader.GetString(5),
+                            Designation = reader.IsDBNull(7) ? "" : reader.GetString(7),
+                            EmployeeType = reader.IsDBNull(8) ? "" : reader.GetString(8),
+                            IsTeachingStaff = !reader.IsDBNull(9) && reader.GetBoolean(9),
+                            AttendanceDate = reader.GetDateTime(10),
+                            CheckInTime = reader.IsDBNull(11) ? null : reader.GetFieldValue<TimeSpan>(11),
+                            CheckOutTime = reader.IsDBNull(12) ? null : reader.GetFieldValue<TimeSpan>(12),
+                            Status = (AttendanceStatus)reader.GetInt32(13),
+                            Remarks = reader.IsDBNull(14) ? "" : reader.GetString(14),
+                        };
+                        dto.StatusName = dto.Status.ToString();
+                        items.Add(dto);
+                        totalRecords = reader.GetInt32(reader.FieldCount - 1);
+                    }
+                }
+            }
 
-            return (rows, totalRecords);
+            return (items, totalRecords);
         }
 
         public async Task<EmployeeAttendanceSummaryDto> GetAttendanceSummaryAsync(
             EmployeeAttendanceFilterDto filter,
             CancellationToken cancellationToken = default)
         {
-            var date = filter.AttendanceDate.Date;
-            var employeeIds = await BuildFilteredEmployees(filter)
-                .Select(e => e.Id)
-                .ToArrayAsync(cancellationToken);
+            var summary = new EmployeeAttendanceSummaryDto();
 
-            var records = await _set
-                .AsNoTracking()
-                .Where(a => a.AttendanceDate.Date == date && employeeIds.Contains(a.EmployeeId))
-                .GroupBy(a => a.Status)
-                .Select(g => new { Status = g.Key, Count = g.Count() })
-                .ToListAsync(cancellationToken);
-
-            var present = records.FirstOrDefault(x => x.Status == AttendanceStatus.Present)?.Count ?? 0;
-            var absent = records.FirstOrDefault(x => x.Status == AttendanceStatus.Absent)?.Count ?? 0;
-            var late = records.FirstOrDefault(x => x.Status == AttendanceStatus.Late)?.Count ?? 0;
-            var leave = records.FirstOrDefault(x => x.Status == AttendanceStatus.Leave)?.Count ?? 0;
-            var unmarked = Math.Max(employeeIds.Length - records.Sum(x => x.Count), 0);
-
-            return new EmployeeAttendanceSummaryDto
+            using (var command = _db.Database.GetDbConnection().CreateCommand())
             {
-                TotalEmployees = employeeIds.Length,
-                Present = present + unmarked,
-                Absent = absent,
-                Late = late,
-                Leave = leave
-            };
+                command.CommandText = "sp_GetAttendanceSummary";
+                command.CommandType = CommandType.StoredProcedure;
+
+                command.Parameters.Add(new SqlParameter("@StudentId", 0));
+                command.Parameters.Add(new SqlParameter("@EmployeeId", filter.EmployeeId ?? -1));
+                command.Parameters.Add(new SqlParameter("@ClassId", 0));
+                command.Parameters.Add(new SqlParameter("@SectionId", 0));
+                command.Parameters.Add(new SqlParameter("@StudentGroupId", 0));
+                command.Parameters.Add(new SqlParameter("@AttendanceDate", filter.AttendanceDate.Date));
+                command.Parameters.Add(new SqlParameter("@Year", filter.AttendanceDate.Year));
+                command.Parameters.Add(new SqlParameter("@Month", filter.AttendanceDate.Month));
+
+                if (command.Connection!.State != ConnectionState.Open)
+                    await _db.Database.OpenConnectionAsync(cancellationToken);
+
+                using (var reader = await command.ExecuteReaderAsync(cancellationToken))
+                {
+                    while (await reader.ReadAsync(cancellationToken))
+                    {
+                        var status = (AttendanceStatus)reader.GetInt32(0);
+                        var count = reader.GetInt32(1);
+
+                        switch (status)
+                        {
+                            case AttendanceStatus.Present: summary.Present = count; break;
+                            case AttendanceStatus.Absent: summary.Absent = count; break;
+                            case AttendanceStatus.Late: summary.Late = count; break;
+                            case AttendanceStatus.Leave: summary.Leave = count; break;
+                        }
+                    }
+                }
+            }
+
+            summary.TotalEmployees = summary.Present + summary.Absent + summary.Late + summary.Leave;
+            return summary;
         }
 
         public async Task<List<EmployeeAttendanceDto>> GetEmployeeHistoryAsync(

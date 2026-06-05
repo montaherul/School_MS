@@ -10,6 +10,7 @@ using SchoolManagementSystem.Helpers.Security;
 using SchoolManagementSystem.Middleware;
 using SchoolManagementSystem.Repositories.Implementations;
 using SchoolManagementSystem.Repositories.Interfaces;
+using SchoolManagementSystem.Services.Implementations;
 using SchoolManagementSystem.Service.Implementations.Dashboard;
 using SchoolManagementSystem.Service.Interfaces.Dashboard;
 using SchoolManagementSystem.Services.Implementations.Academic;
@@ -81,6 +82,9 @@ builder.Services.AddDbContext<SchoolDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("SchoolDb"),
         sql => sql.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null)));
+
+
+builder.Services.AddHostedService<StoredProcedureInstaller>();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
