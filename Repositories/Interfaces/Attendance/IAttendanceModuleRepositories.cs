@@ -48,6 +48,7 @@ namespace SchoolManagementSystem.Repositories.Interfaces.Attendance
 
     public interface ILeaveApplicationRepository : IBaseRepository<LeaveApplication>
     {
+        Task<bool> HasOverlappingLeaveAsync( int employeeId,DateTime fromDate,DateTime toDate,CancellationToken ct = default);
     }
 
     public interface IAttendanceSettingRepository : IBaseRepository<AttendanceSetting>

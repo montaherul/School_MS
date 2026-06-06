@@ -51,7 +51,7 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
                      a.Status == SchoolManagementSystem.Models.Enums.AttendanceStatus.Absent, ct);
 
             var pendingLeaves = await _leaveRepo.Query().CountAsync(
-                l => l.ApprovalStatus == SchoolManagementSystem.Models.Entities.Attendance.LeaveApplication.ApprovalStatusEnum.Pending, ct);
+                l => l.ApprovalStatus == SchoolManagementSystem.Models.Enums.LeaveStatus.Pending, ct);
 
             var studentTotal = await _db.Attendance.CountAsync(a => a.AttendanceDate == today && !a.IsDeleted, ct);
             var employeeTotal = await _db.EmployeeAttendances.CountAsync(a => a.AttendanceDate.Date == today.ToDateTime(TimeOnly.MinValue).Date && !a.IsDeleted, ct);

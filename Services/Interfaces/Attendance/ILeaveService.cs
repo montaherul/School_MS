@@ -9,6 +9,7 @@ namespace SchoolManagementSystem.Services.Interfaces.Attendance
     public interface ILeaveService
     {
         Task<int> ApplyLeaveAsync(LeaveApplyVm vm, int employeeId, string attachmentPath, CancellationToken ct = default);
+        Task<int> GetLeaveBalanceAsync(int employeeId,int leaveTypeId,CancellationToken ct = default);
         Task ApproveLeaveAsync(int id, string approvedBy, string? remarks, CancellationToken ct = default);
         Task RejectLeaveAsync(int id, string rejectedBy, string? remarks, CancellationToken ct = default);
         Task CancelLeaveAsync(int id, int employeeId, CancellationToken ct = default);

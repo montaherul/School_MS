@@ -1,6 +1,4 @@
-using System.Data;
-using System.Threading;
-using System.Threading.Tasks;
+using iText.Commons.Actions.Contexts;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Data;
@@ -8,7 +6,10 @@ using SchoolManagementSystem.Models.DTOs.Attendance;
 using SchoolManagementSystem.Models.Entities.Attendance;
 using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Repositories.Interfaces.Attendance;
+using System.Data;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SchoolManagementSystem.Repositories.Implementations.Attendance
 {
@@ -362,11 +363,26 @@ namespace SchoolManagementSystem.Repositories.Implementations.Attendance
     public class LeaveTypeRepository : BaseRepository<LeaveType>, ILeaveTypeRepository
     {
         public LeaveTypeRepository(SchoolDbContext context) : base(context) { }
+
     }
 
     public class LeaveApplicationRepository : BaseRepository<LeaveApplication>, ILeaveApplicationRepository
     {
         public LeaveApplicationRepository(SchoolDbContext context) : base(context) { }
+        public async Task<bool> HasOverlappingLeaveAsync(
+int employeeId,
+DateTime fromDate,
+DateTime toDate,
+CancellationToken ct = default)
+        {
+            return await _db.LeaveApplications
+                .AnyAsync(x =>
+                    x.EmployeeId == employeeId &&
+                    x.ApprovalStatus != LeaveStatus.Rejected &&
+                    fromDate <= x.ToDate &&
+                    toDate >= x.FromDate,
+                    ct);
+        }
     }
 
     public class AttendanceSettingRepository : BaseRepository<AttendanceSetting>, IAttendanceSettingRepository

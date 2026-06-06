@@ -1,16 +1,18 @@
+using Microsoft.EntityFrameworkCore;
+using SchoolManagementSystem.Models.DTOs.Attendance;
+using SchoolManagementSystem.Models.Entities.Attendance;
+using SchoolManagementSystem.Models.Enums;
+using SchoolManagementSystem.Models.ViewModels.Attendance;
+using SchoolManagementSystem.Repositories.Interfaces.Attendance;
+using SchoolManagementSystem.Services.Interfaces.Admin;
+using SchoolManagementSystem.Services.Interfaces.Attendance;
+using SchoolManagementSystem.UnitOfWork.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using SchoolManagementSystem.Models.DTOs.Attendance;
-using SchoolManagementSystem.Models.Entities.Attendance;
-using SchoolManagementSystem.Repositories.Interfaces.Attendance;
-using SchoolManagementSystem.Services.Interfaces.Attendance;
-using SchoolManagementSystem.UnitOfWork.Interfaces;
-using SchoolManagementSystem.Services.Interfaces.Admin;
-using SchoolManagementSystem.Models.ViewModels.Attendance;
+
 
 namespace SchoolManagementSystem.Services.Implementations.Attendance
 {
@@ -20,61 +22,163 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
         private readonly ILeaveApplicationRepository _leaveRepo;
         private readonly ILeaveTypeRepository _typeRepo;
         private readonly IAttendanceLogRepository _auditLog;
+        private readonly IEmployeeAttendanceRepository _employeeAttendanceRepo;
 
-        public LeaveService(IUnitOfWork uow, ILeaveApplicationRepository leaveRepo, ILeaveTypeRepository typeRepo, IAttendanceLogRepository auditLog)
+        public LeaveService(IUnitOfWork uow,ILeaveApplicationRepository leaveRepo,ILeaveTypeRepository typeRepo,IAttendanceLogRepository auditLog,IEmployeeAttendanceRepository employeeAttendanceRepo)
         {
             _uow = uow;
             _leaveRepo = leaveRepo;
             _typeRepo = typeRepo;
             _auditLog = auditLog;
+            _employeeAttendanceRepo = employeeAttendanceRepo;
         }
 
-        public async Task<int> ApplyLeaveAsync(LeaveApplyVm vm, int employeeId, string attachmentPath, CancellationToken ct = default)
+        public async Task<int> ApplyLeaveAsync(
+            LeaveApplyVm vm,
+            int employeeId,
+            string attachmentPath,
+            CancellationToken ct = default)
         {
-            var totalDays = (int)(vm.ToDate - vm.FromDate).TotalDays + 1;
-            if (totalDays <= 0) throw new InvalidOperationException("Invalid date range.");
+            // Date validation
+            if (vm.FromDate > vm.ToDate)
+                throw new InvalidOperationException(
+                    "From Date cannot be greater than To Date.");
 
+            var totalDays =
+                (vm.ToDate.Date - vm.FromDate.Date).Days + 1;
+
+            if (totalDays <= 0)
+                throw new InvalidOperationException(
+                    "Invalid leave duration.");
+
+            // Leave Type Validation
+            var leaveType =
+                await _typeRepo.GetByIdAsync(vm.LeaveTypeId, ct);
+
+            if (leaveType == null)
+                throw new InvalidOperationException(
+                    "Invalid Leave Type.");
+
+            // Overlapping Leave Validation
+            var overlap =
+       await _leaveRepo.HasOverlappingLeaveAsync(
+           employeeId,
+           vm.FromDate.Date,
+           vm.ToDate.Date,
+           ct);
+
+            if (overlap)
+                throw new InvalidOperationException(
+                    "You already have a leave application during this period.");
+
+            // Leave Balance Validation
+            var remainingDays =await GetLeaveBalanceAsync( employeeId,vm.LeaveTypeId,ct);
+
+            if (totalDays > remainingDays)
+                throw new InvalidOperationException(
+                    $"Only {remainingDays} leave days remaining.");
+
+            // Create Leave Application
             var entity = new LeaveApplication
             {
                 EmployeeId = employeeId,
                 LeaveTypeId = vm.LeaveTypeId,
-                FromDate = vm.FromDate,
-                ToDate = vm.ToDate,
+                FromDate = vm.FromDate.Date,
+                ToDate = vm.ToDate.Date,
                 TotalDays = totalDays,
                 Reason = vm.Reason,
                 AttachmentPath = attachmentPath,
-                ApprovalStatus = LeaveApplication.ApprovalStatusEnum.Pending,
+                ApprovalStatus = LeaveStatus.Pending,
                 CreatedAt = DateTime.UtcNow
             };
 
             await _leaveRepo.AddAsync(entity, ct);
+
             await _uow.SaveChangesAsync(ct);
-            await _auditLog.AddAsync(new AttendanceLog { UserId = employeeId.ToString(), Action = "Applied for Leave", EntityName = "LeaveApplication", EntityId = entity.Id }, ct);
+
+            await _auditLog.AddAsync(
+                new AttendanceLog
+                {
+                    UserId = employeeId.ToString(),
+                    Action = "Applied Leave",
+                    EntityName = nameof(LeaveApplication),
+                    EntityId = entity.Id
+                },
+                ct);
+
             await _uow.SaveChangesAsync(ct);
-            
+
             return entity.Id;
         }
 
         public async Task ApproveLeaveAsync(int id, string approvedBy, string? remarks, CancellationToken ct = default)
         {
-            var entity = await _leaveRepo.GetByIdAsync(id, ct) ?? throw new KeyNotFoundException("Leave application not found.");
-            
-            entity.ApprovalStatus = LeaveApplication.ApprovalStatusEnum.Approved;
+            var entity = await _leaveRepo.GetByIdAsync(id, ct)
+                ?? throw new KeyNotFoundException("Leave application not found.");
+
+            if (entity.ApprovalStatus != LeaveStatus.Pending)
+            {
+                throw new InvalidOperationException("Leave already processed.");
+            }
+
+            entity.ApprovalStatus = LeaveStatus.Approved;
             entity.ApprovedBy = approvedBy;
             entity.ApprovedAt = DateTime.UtcNow;
             entity.Remarks = remarks;
-            
+
+            for (
+                var date = entity.FromDate.Date;
+                date <= entity.ToDate.Date;
+                date = date.AddDays(1))
+            {
+                var attendanceExists =
+                    await _employeeAttendanceRepo
+                        .IsAttendanceExistsAsync(
+                            entity.EmployeeId,
+                            date,
+                            ct);
+
+                if (!attendanceExists)
+                {
+                    await _employeeAttendanceRepo.AddAsync(
+                        new EmployeeAttendance
+                        {
+                            EmployeeId = entity.EmployeeId,
+                            AttendanceDate = date,
+                            Status = AttendanceStatus.Leave,
+                            Remarks = $"Auto generated from Leave #{entity.Id}"
+                        },
+                        ct);
+                }
+            }
+
             _leaveRepo.Update(entity);
+
             await _uow.SaveChangesAsync(ct);
-            await _auditLog.AddAsync(new AttendanceLog { UserId = approvedBy, Action = "Approved Leave", EntityName = "LeaveApplication", EntityId = id }, ct);
+
+            await _auditLog.AddAsync(
+                new AttendanceLog
+                {
+                    UserId = approvedBy,
+                    Action = "Approved Leave",
+                    EntityName = nameof(LeaveApplication),
+                    EntityId = id
+                },
+                ct);
+
             await _uow.SaveChangesAsync(ct);
         }
 
         public async Task RejectLeaveAsync(int id, string rejectedBy, string? remarks, CancellationToken ct = default)
         {
             var entity = await _leaveRepo.GetByIdAsync(id, ct) ?? throw new KeyNotFoundException("Leave application not found.");
-            
-            entity.ApprovalStatus = LeaveApplication.ApprovalStatusEnum.Rejected;
+           
+            if (entity.ApprovalStatus != LeaveStatus.Pending)
+            {
+                throw new InvalidOperationException(
+                    "Leave already processed.");
+            }
+            entity.ApprovalStatus = LeaveStatus.Rejected;
             entity.ApprovedBy = rejectedBy;
             entity.ApprovedAt = DateTime.UtcNow;
             entity.Remarks = remarks;
@@ -89,7 +193,7 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
         {
             var entity = await _leaveRepo.GetByIdAsync(id, ct) ?? throw new KeyNotFoundException("Leave application not found.");
             if (entity.EmployeeId != employeeId) throw new UnauthorizedAccessException("Not authorized to cancel this leave.");
-            if (entity.ApprovalStatus != LeaveApplication.ApprovalStatusEnum.Pending) throw new InvalidOperationException("Can only cancel pending leave.");
+            if (entity.ApprovalStatus != LeaveStatus.Pending) throw new InvalidOperationException("Can only cancel pending leave.");
             
             _leaveRepo.Remove(entity);
             await _uow.SaveChangesAsync(ct);
@@ -129,7 +233,7 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
 
         public async Task<(List<LeaveApplicationDto> Data, int TotalRecords)> GetPendingLeavesAsync(int page, int size, CancellationToken ct = default)
         {
-            var query = _leaveRepo.Query().Where(l => l.ApprovalStatus == LeaveApplication.ApprovalStatusEnum.Pending);
+            var query = _leaveRepo.Query().Where(l => l.ApprovalStatus == LeaveStatus.Pending);
             var total = await query.CountAsync(ct);
             var items = await MapToDto(query).OrderByDescending(l => l.CreatedAt).Skip((page - 1) * size).Take(size).ToListAsync(ct);
             return (items, total);
@@ -139,7 +243,7 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
         {
             var query = _leaveRepo.Query();
             
-            if (!string.IsNullOrEmpty(status) && Enum.TryParse<LeaveApplication.ApprovalStatusEnum>(status, out var statusEnum))
+            if (!string.IsNullOrEmpty(status) && Enum.TryParse<LeaveStatus>(status, out var statusEnum))
             {
                 query = query.Where(l => l.ApprovalStatus == statusEnum);
             }
@@ -159,6 +263,23 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
                 IsPaid = t.IsPaid,
                 IsActive = t.IsActive
             }).ToListAsync(ct);
+        }
+        public async Task<int> GetLeaveBalanceAsync(int employeeId,int leaveTypeId,CancellationToken ct = default)
+        {
+            var leaveType = await _typeRepo.GetByIdAsync(leaveTypeId, ct);
+
+            if (leaveType == null)
+                return 0;
+
+            var usedDays = await _leaveRepo.Query()
+                .Where(x =>
+                    x.EmployeeId == employeeId &&
+                    x.LeaveTypeId == leaveTypeId &&
+                    x.ApprovalStatus == LeaveStatus.Approved &&
+                    x.FromDate.Year == DateTime.UtcNow.Year)
+                .SumAsync(x => x.TotalDays, ct);
+
+            return leaveType.MaxDays - usedDays;
         }
     }
 }
