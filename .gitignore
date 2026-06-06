@@ -2,6 +2,7 @@
 bin/
 obj/
 
+App_Data/
 build-clean-arch/
 build-validation/
 
