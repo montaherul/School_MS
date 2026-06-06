@@ -156,6 +156,8 @@ public class SchoolDbContext : DbContext
     public DbSet<PromotionHistory> PromotionHistories => Set<PromotionHistory>();
     public DbSet<MeritResult> MeritResults => Set<MeritResult>();
     public DbSet<RollNumberAssignment> RollNumberAssignments => Set<RollNumberAssignment>();
+    public DbSet<AcademicCalendar> AcademicCalendars { get; set; }
+    public DbSet<AcademicCalendarEvent> AcademicCalendarEvents { get; set; }
 
     // Student Group DbSet
     public DbSet<StudentGroupAssignment> StudentGroupAssignments => Set<StudentGroupAssignment>();
@@ -332,6 +334,28 @@ public class SchoolDbContext : DbContext
             .WithMany(c => c.SubjectComponents)
             .HasForeignKey(s => s.ClassSubjectId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<AcademicCalendar>()
+            .HasOne(x => x.AcademicYear)
+            .WithMany()
+            .HasForeignKey(x => x.AcademicYearId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<AcademicCalendar>()
+            .HasIndex(x => x.Date)
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
+
+        modelBuilder.Entity<AttendanceSetting>()
+            .HasIndex(x => x.IsActive)
+            .IsUnique()
+            .HasFilter("[IsActive] = 1");
+
+        modelBuilder.Entity<AcademicCalendarEvent>()
+                    .HasOne(x => x.AcademicCalendar)
+                    .WithMany()
+                    .HasForeignKey(x => x.AcademicCalendarId)
+                    .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<StudentLeaveApplication>(entity =>
 {

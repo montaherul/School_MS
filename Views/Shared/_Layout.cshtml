@@ -194,7 +194,13 @@
                                 <a asp-controller="StudentAttendance" asp-action="Index" data-title="Student Attendance"><i class="bi bi-calendar-check"></i><span class="nav-text">Student Attendance</span></a>
                                 <a asp-controller="EmployeeAttendance" asp-action="Index" data-title="Employee Attendance"><i class="bi bi-person-lines-fill"></i><span class="nav-text">Employee Attendance</span></a>
                                 <a asp-controller="Leave" asp-action="Index" data-title="Leave Applications"><i class="bi bi-file-earmark-medical"></i><span class="nav-text">Leave Applications</span></a>
+                                <a asp-controller="AcademicCalendar" asp-action="Index" data-title="Academic Calendar"><i class="bi bi-calendar3"></i><span class="nav-text">Academic Calendar</span></a>
                             }
+                            @if (IsAdmin() || User.IsInRole("Admin") || User.IsInRole("Principal"))
+                            {
+                                <a asp-controller="AttendanceSetting" asp-action="Index" data-title="Attendance Settings"><i class="bi bi-sliders2"></i><span class="nav-text">Attendance Settings</span></a>
+                            }
+
                             @if (Can("Exams.View") || Can("Exam.View"))
                             {
                                 <a asp-controller="Exam" asp-action="Index" data-title="Exams"><i class="bi bi-pencil-square"></i><span class="nav-text">Exams</span></a>

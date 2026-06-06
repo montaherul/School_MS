@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SchoolManagementSystem.Data;
 
@@ -11,9 +12,11 @@ using SchoolManagementSystem.Data;
 namespace SchoolManagementSystem.Migrations
 {
     [DbContext(typeof(SchoolDbContext))]
-    partial class SchoolDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260606113851_AddAcademicCalendarModule")]
+    partial class AddAcademicCalendarModule
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -278,44 +281,16 @@ namespace SchoolManagementSystem.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
 
-                    b.Property<DateOnly>("Date")
-                        .HasColumnType("date");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("HolidayType")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
-                    b.Property<bool>("IsEventDay")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsExamDay")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsHoliday")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsWorkingDay")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("Remarks")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<string>("Title")
+                    b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -3270,31 +3245,14 @@ namespace SchoolManagementSystem.Migrations
                     b.Property<bool>("AutoAbsentEnabled")
                         .HasColumnType("bit");
 
-                    b.Property<TimeOnly>("AutoAbsentTime")
-                        .HasColumnType("time");
-
                     b.Property<bool>("CountLateAsPresent")
                         .HasColumnType("bit");
 
                     b.Property<bool>("CountLeaveAsPresent")
                         .HasColumnType("bit");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("CreatedBy")
-                        .IsRequired()
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
-
                     b.Property<int>("HalfDayAfterMinutes")
                         .HasColumnType("int");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
 
                     b.Property<int>("LateAfterMinutes")
                         .HasColumnType("int");
@@ -3302,15 +3260,8 @@ namespace SchoolManagementSystem.Migrations
                     b.Property<int>("RevisionWindowHours")
                         .HasColumnType("int");
 
-                    b.Property<TimeOnly>("SchoolStartTime")
+                    b.Property<TimeSpan>("SchoolStartTime")
                         .HasColumnType("time");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasMaxLength(64)
-                        .HasColumnType("nvarchar(64)");
 
                     b.Property<string>("WorkingDays")
                         .IsRequired()
@@ -29679,7 +29630,7 @@ namespace SchoolManagementSystem.Migrations
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Academic.AcademicCalendarEvent", b =>
                 {
                     b.HasOne("SchoolManagementSystem.Models.Entities.Academic.AcademicCalendar", "AcademicCalendar")
-                        .WithMany()
+                        .WithMany("Events")
                         .HasForeignKey("AcademicCalendarId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -30928,6 +30879,11 @@ namespace SchoolManagementSystem.Migrations
                         .IsRequired();
 
                     b.Navigation("Gallery");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Academic.AcademicCalendar", b =>
+                {
+                    b.Navigation("Events");
                 });
 
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Academic.ClassSubject", b =>

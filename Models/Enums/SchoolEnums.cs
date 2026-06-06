@@ -22,6 +22,14 @@ public enum ExamTerm
     Test = 7,               // Class 10
     Other = 8
 }
+public enum AcademicEventType
+{
+    Holiday = 1,
+    WeeklyOff = 2,
+    Exam = 3,
+    Vacation = 4,
+    Event = 5
+}
 public enum ResultWorkflowStatus { Draft = 1, Submitted = 2, Approved = 3, Published = 4, Locked = 5 }
 public enum ReEvaluationStatus { Requested = 1, Approved = 2, Rejected = 3, Revised = 4 }
 public enum PromotionStatus { Pending = 1, Promoted = 2, Repeat = 3, Failed = 4 }

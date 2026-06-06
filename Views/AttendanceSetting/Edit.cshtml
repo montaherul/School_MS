@@ -1,0 +1,248 @@
+@model SchoolManagementSystem.Models.Entities.Attendance.AttendanceSetting
+@{
+    ViewData["Title"] = "Edit Attendance Settings";
+    var workingDaysList = new[] { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
+    var selectedDays = (Model.WorkingDays ?? "Sun,Mon,Tue,Wed,Thu").Split(',', System.StringSplitOptions.RemoveEmptyEntries);
+}
+
+<style>
+    .as-page { display: grid; gap: 20px; }
+    .as-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+    .as-title { margin: 0; font-size: 26px; font-weight: 800; color: #111827; }
+    .as-subtitle { margin: 4px 0 0; color: #64748b; font-size: 14px; }
+    .as-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        box-shadow: 0 4px 24px rgba(15,23,42,.06);
+        overflow: hidden;
+    }
+    .as-card-header {
+        padding: 18px 24px;
+        border-bottom: 1px solid #f1f5f9;
+        background: linear-gradient(135deg,#f8fafc 0%,#f1f5f9 100%);
+        display: flex; align-items: center; gap: 12px;
+    }
+    .as-card-icon {
+        width: 40px; height: 40px; border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 18px; color: #fff;
+    }
+    .as-card-icon.blue  { background: linear-gradient(135deg,#3b82f6,#2563eb); }
+    .as-card-icon.green { background: linear-gradient(135deg,#10b981,#059669); }
+    .as-card-icon.amber { background: linear-gradient(135deg,#f59e0b,#d97706); }
+    .as-card-icon.purple{ background: linear-gradient(135deg,#8b5cf6,#7c3aed); }
+    .as-card-title { font-size: 15px; font-weight: 700; color: #1e293b; margin: 0; }
+    .as-card-desc  { font-size: 12px; color: #64748b; margin: 2px 0 0; }
+    .as-card-body  { padding: 24px; }
+    .as-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+    
+    .form-group-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        background: #f8fafc;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .form-group-checkbox:hover {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+    }
+    .day-selector-checkbox {
+        display: none;
+    }
+    .day-selector-label {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #cbd5e1;
+        background: #fff;
+        font-weight: 700;
+        color: #475569;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-align: center;
+    }
+    .day-selector-checkbox:checked + .day-selector-label {
+        background: #d1fae5;
+        border-color: #10b981;
+        color: #065f46;
+        box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+    }
+</style>
+
+<div class="as-page">
+    <form asp-action="Edit" method="post" id="settingsForm">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
+        <input type="hidden" asp-for="CreatedAt" />
+        <input type="hidden" asp-for="CreatedBy" />
+        <input type="hidden" id="WorkingDaysHidden" asp-for="WorkingDays" />
+
+        <div class="as-header mb-4">
+            <div>
+                <h1 class="as-title"><i class="bi bi-pencil-square me-2 text-primary"></i>Edit Attendance Settings</h1>
+                <p class="as-subtitle">Modify rules, day boundaries, policies, and locks for student and employee attendance.</p>
+            </div>
+            <div class="d-flex gap-2">
+                <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-cloud-arrow-up me-1"></i> Save Changes
+                </button>
+            </div>
+        </div>
+
+        <div class="d-flex flex-column gap-4">
+            <!-- Timing Settings -->
+            <div class="as-card">
+                <div class="as-card-header">
+                    <div class="as-card-icon blue"><i class="bi bi-clock-fill"></i></div>
+                    <div>
+                        <p class="as-card-title">Time Rules</p>
+                        <p class="as-card-desc">School start time and late/half-day thresholds</p>
+                    </div>
+                </div>
+                <div class="as-card-body">
+                    <div class="as-grid">
+                        <div class="form-group">
+                            <label class="form-label fw-semibold">School Start Time</label>
+                            <input type="time" asp-for="SchoolStartTime" class="form-control" required step="60" />
+                            <span asp-validation-for="SchoolStartTime" class="text-danger small"></span>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label fw-semibold">Marked Late After (minutes)</label>
+                            <input type="number" asp-for="LateAfterMinutes" class="form-control" min="0" required />
+                            <span asp-validation-for="LateAfterMinutes" class="text-danger small"></span>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label fw-semibold">Half-Day After (minutes)</label>
+                            <input type="number" asp-for="HalfDayAfterMinutes" class="form-control" min="0" required />
+                            <span asp-validation-for="HalfDayAfterMinutes" class="text-danger small"></span>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label fw-semibold">Auto-Absent Time</label>
+                            <input type="time" asp-for="AutoAbsentTime" class="form-control" required step="60" />
+                            <span asp-validation-for="AutoAbsentTime" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Working Days -->
+            <div class="as-card">
+                <div class="as-card-header">
+                    <div class="as-card-icon green"><i class="bi bi-calendar-week-fill"></i></div>
+                    <div>
+                        <p class="as-card-title">Working Days</p>
+                        <p class="as-card-desc">Configure days of the week on which attendance can be recorded</p>
+                    </div>
+                </div>
+                <div class="as-card-body">
+                    <div class="row g-2">
+                        @foreach (var day in workingDaysList)
+                        {
+                            var isChecked = selectedDays.Contains(day, System.StringComparer.OrdinalIgnoreCase);
+                            <div class="col-6 col-sm-3 col-md-1-7">
+                                <input type="checkbox" id="chk_@day" class="day-selector-checkbox" value="@day" @(isChecked ? "checked" : "") />
+                                <label for="chk_@day" class="day-selector-label">@day</label>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Policies -->
+            <div class="as-card">
+                <div class="as-card-header">
+                    <div class="as-card-icon amber"><i class="bi bi-shield-check"></i></div>
+                    <div>
+                        <p class="as-card-title">Attendance Policies</p>
+                        <p class="as-card-desc">Define calculations and automated processing rules</p>
+                    </div>
+                </div>
+                <div class="as-card-body">
+                    <div class="as-grid">
+                        <div class="form-group-checkbox" onclick="toggleCheckbox('CountLateAsPresent')">
+                            <input type="checkbox" asp-for="CountLateAsPresent" class="form-check-input" id="CountLateAsPresent" />
+                            <div>
+                                <label class="form-check-label fw-semibold mb-0" for="CountLateAsPresent">Count Late as Present</label>
+                                <div class="text-muted small">Late status will count toward overall present percentage.</div>
+                            </div>
+                        </div>
+                        <div class="form-group-checkbox" onclick="toggleCheckbox('CountLeaveAsPresent')">
+                            <input type="checkbox" asp-for="CountLeaveAsPresent" class="form-check-input" id="CountLeaveAsPresent" />
+                            <div>
+                                <label class="form-check-label fw-semibold mb-0" for="CountLeaveAsPresent">Count Leave as Present</label>
+                                <div class="text-muted small">Leave status will count toward overall present percentage.</div>
+                            </div>
+                        </div>
+                        <div class="form-group-checkbox" onclick="toggleCheckbox('AutoAbsentEnabled')">
+                            <input type="checkbox" asp-for="AutoAbsentEnabled" class="form-check-input" id="AutoAbsentEnabled" />
+                            <div>
+                                <label class="form-check-label fw-semibold mb-0" for="AutoAbsentEnabled">Auto-Absent Scheduler</label>
+                                <div class="text-muted small">Automatically mark missing attendance as Absent at end of day.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Locks -->
+            <div class="as-card">
+                <div class="as-card-header">
+                    <div class="as-card-icon purple"><i class="bi bi-lock-fill"></i></div>
+                    <div>
+                        <p class="as-card-title">Lock & Revision Window</p>
+                        <p class="as-card-desc">Lock and revision boundaries</p>
+                    </div>
+                </div>
+                <div class="as-card-body">
+                    <div class="as-grid">
+                        <div class="form-group">
+                            <label class="form-label fw-semibold">Revision Window (hours)</label>
+                            <input type="number" asp-for="RevisionWindowHours" class="form-control" min="0" required />
+                            <span asp-validation-for="RevisionWindowHours" class="text-danger small"></span>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label fw-semibold">Attendance Lock After (hours)</label>
+                            <input type="number" asp-for="AttendanceLockAfterHours" class="form-control" min="0" required />
+                            <span asp-validation-for="AttendanceLockAfterHours" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        function toggleCheckbox(id) {
+            const cb = document.getElementById(id);
+            if (cb) {
+                // Prevent double toggling if checkbox itself was clicked
+                if (event.target !== cb && event.target.tagName !== 'LABEL') {
+                    cb.checked = !cb.checked;
+                }
+            }
+        }
+
+        document.getElementById('settingsForm').addEventListener('submit', function (e) {
+            const checkedBoxes = document.querySelectorAll('.day-selector-checkbox:checked');
+            const dayValues = Array.from(checkedBoxes).map(cb => cb.value);
+            if (dayValues.length === 0) {
+                e.preventDefault();
+                alert('Please select at least one working day.');
+                return;
+            }
+            document.getElementById('WorkingDaysHidden').value = dayValues.join(',');
+        });
+    </script>
+}

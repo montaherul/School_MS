@@ -20,21 +20,28 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
         private readonly IEmployeeAttendanceRepository _repo;
         private readonly IAttendanceLogRepository _auditLog;
         private readonly IAttendanceNotificationService _notificationService;
+        private readonly IAttendanceValidationService _validationService;
 
         public EmployeeAttendanceService(
             IUnitOfWork uow,
             IEmployeeAttendanceRepository repo,
             IAttendanceLogRepository auditLog,
-            IAttendanceNotificationService notificationService)
+            IAttendanceNotificationService notificationService,
+            IAttendanceValidationService validationService)
         {
             _uow = uow;
             _repo = repo;
             _auditLog = auditLog;
             _notificationService = notificationService;
+            _validationService = validationService;
         }
 
         public async Task<int> CheckInAsync(int employeeId, DateTime date, TimeSpan time, string recordedBy, CancellationToken ct = default)
         {
+            var validationError = await _validationService.ValidateAttendanceDateAsync(DateOnly.FromDateTime(date), ct);
+            if (validationError != null)
+                throw new InvalidOperationException(validationError);
+
             var entity = await _repo.Query().FirstOrDefaultAsync(a => a.EmployeeId == employeeId && a.AttendanceDate == date.Date && !a.IsDeleted, ct);
             if (entity != null) throw new InvalidOperationException("Check-in already exists for today.");
             var settings = await GetAttendanceSettingsAsync(ct);
@@ -74,6 +81,10 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
 
         public async Task<int> MarkStatusAsync(int employeeId, DateTime date, SchoolManagementSystem.Models.Enums.AttendanceStatus status, string? remarks, string recordedBy, CancellationToken ct = default)
         {
+            var validationError = await _validationService.ValidateAttendanceDateAsync(DateOnly.FromDateTime(date), ct);
+            if (validationError != null)
+                throw new InvalidOperationException(validationError);
+
             if (await _repo.IsAttendanceExistsAsync(employeeId, date, ct))
                 throw new InvalidOperationException("Attendance already exists for this date.");
 
@@ -137,6 +148,10 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
         public async Task<bool> SaveAttendanceAsync(EmployeeAttendanceBulkDto dto, string recordedBy, CancellationToken ct = default)
         {
             var date = dto.AttendanceDate.Date;
+            var validationError = await _validationService.ValidateAttendanceDateAsync(DateOnly.FromDateTime(date), ct);
+            if (validationError != null)
+                throw new InvalidOperationException(validationError);
+
             if (dto.Attendances.Count == 0)
                 throw new InvalidOperationException("No attendance rows were submitted.");
 
@@ -331,8 +346,9 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
                 return requestedStatus;
             }
 
-            var lateAt = settings.SchoolStartTime.Add(TimeSpan.FromMinutes(settings.LateAfterMinutes));
-            if (checkInTime.Value > lateAt)
+            var checkInTimeOnly = TimeOnly.FromTimeSpan(checkInTime.Value);
+            var lateAt = settings.SchoolStartTime.AddMinutes(settings.LateAfterMinutes);
+            if (checkInTimeOnly > lateAt)
             {
                 return AttendanceStatus.Late;
             }

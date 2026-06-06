@@ -1,0 +1,208 @@
+@model SchoolManagementSystem.Models.Entities.Attendance.AttendanceSetting
+@{
+    ViewData["Title"] = "Attendance Settings";
+    bool canEdit = User.IsInRole("Super Admin") || User.IsInRole("Admin") || User.IsInRole("Principal");
+    var days = (Model.WorkingDays ?? "Sun,Mon,Tue,Wed,Thu").Split(',', System.StringSplitOptions.RemoveEmptyEntries);
+}
+
+<style>
+    .as-page { display: grid; gap: 20px; }
+    .as-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+    .as-title { margin: 0; font-size: 26px; font-weight: 800; color: #111827; }
+    .as-subtitle { margin: 4px 0 0; color: #64748b; font-size: 14px; }
+    .as-card {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        box-shadow: 0 4px 24px rgba(15,23,42,.06);
+        overflow: hidden;
+    }
+    .as-card-header {
+        padding: 18px 24px;
+        border-bottom: 1px solid #f1f5f9;
+        background: linear-gradient(135deg,#f8fafc 0%,#f1f5f9 100%);
+        display: flex; align-items: center; gap: 12px;
+    }
+    .as-card-icon {
+        width: 40px; height: 40px; border-radius: 10px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 18px; color: #fff;
+    }
+    .as-card-icon.blue  { background: linear-gradient(135deg,#3b82f6,#2563eb); }
+    .as-card-icon.green { background: linear-gradient(135deg,#10b981,#059669); }
+    .as-card-icon.amber { background: linear-gradient(135deg,#f59e0b,#d97706); }
+    .as-card-icon.purple{ background: linear-gradient(135deg,#8b5cf6,#7c3aed); }
+    .as-card-title { font-size: 15px; font-weight: 700; color: #1e293b; margin: 0; }
+    .as-card-desc  { font-size: 12px; color: #64748b; margin: 2px 0 0; }
+    .as-card-body  { padding: 24px; }
+    .as-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 20px; }
+    .as-field label { font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; display: block; }
+    .as-field .field-val {
+        font-size: 18px; font-weight: 700; color: #1e293b;
+        background: #f8fafc; border: 1px solid #e5e7eb;
+        border-radius: 8px; padding: 10px 14px; min-height: 44px;
+    }
+    .as-field .field-val.mono { font-family: 'Courier New', monospace; font-size: 16px; }
+    .days-wrap { display: flex; gap: 8px; flex-wrap: wrap; }
+    .day-badge {
+        padding: 5px 14px; border-radius: 999px; font-size: 12px; font-weight: 700;
+        border: 1px solid;
+    }
+    .day-badge.active  { background: #d1fae5; color: #047857; border-color: #a7f3d0; }
+    .day-badge.inactive{ background: #f1f5f9; color: #94a3b8; border-color: #e2e8f0; }
+    .bool-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 700; }
+    .bool-badge.yes { color: #047857; }
+    .bool-badge.no  { color: #b91c1c; }
+    .as-alert-success {
+        background: #d1fae5; border: 1px solid #a7f3d0; color: #065f46;
+        border-radius: 10px; padding: 14px 18px;
+        display: flex; align-items: center; gap: 10px;
+        font-size: 14px; font-weight: 600;
+    }
+    @@media (max-width: 575px) {
+        .as-title { font-size: 22px; }
+        .as-grid { grid-template-columns: 1fr; }
+    }
+</style>
+
+<div class="as-page">
+    <div class="as-header">
+        <div>
+            <h1 class="as-title"><i class="bi bi-sliders2 me-2 text-primary"></i>Attendance Settings</h1>
+            <p class="as-subtitle">System-wide configuration for attendance rules, working days, and automation.</p>
+        </div>
+        @if (canEdit)
+        {
+            <a asp-action="Edit" class="btn btn-primary">
+                <i class="bi bi-pencil-square me-1"></i> Edit Settings
+            </a>
+        }
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="as-alert-success">
+            <i class="bi bi-check-circle-fill fs-5"></i>
+            @TempData["Success"]
+        </div>
+    }
+
+    <!-- Timing Settings -->
+    <div class="as-card">
+        <div class="as-card-header">
+            <div class="as-card-icon blue"><i class="bi bi-clock-fill"></i></div>
+            <div>
+                <p class="as-card-title">Time Rules</p>
+                <p class="as-card-desc">School start time and late/half-day thresholds</p>
+            </div>
+        </div>
+        <div class="as-card-body">
+            <div class="as-grid">
+                <div class="as-field">
+                    <label><i class="bi bi-sunrise me-1"></i> School Start Time</label>
+                    <div class="field-val mono">@Model.SchoolStartTime.ToString("hh:mm tt")</div>
+                </div>
+                <div class="as-field">
+                    <label><i class="bi bi-clock-history me-1"></i> Marked Late After (minutes)</label>
+                    <div class="field-val">@Model.LateAfterMinutes mins</div>
+                </div>
+                <div class="as-field">
+                    <label><i class="bi bi-hourglass-split me-1"></i> Half-Day After (minutes)</label>
+                    <div class="field-val">@Model.HalfDayAfterMinutes mins</div>
+                </div>
+                <div class="as-field">
+                    <label><i class="bi bi-robot me-1"></i> Auto-Absent Time</label>
+                    <div class="field-val mono">@Model.AutoAbsentTime.ToString("hh:mm tt")</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Working Days -->
+    <div class="as-card">
+        <div class="as-card-header">
+            <div class="as-card-icon green"><i class="bi bi-calendar-week-fill"></i></div>
+            <div>
+                <p class="as-card-title">Working Days</p>
+                <p class="as-card-desc">Days on which attendance can be recorded</p>
+            </div>
+        </div>
+        <div class="as-card-body">
+            <div class="days-wrap">
+                @foreach (var d in new[] { "Sun","Mon","Tue","Wed","Thu","Fri","Sat" })
+                {
+                    var active = days.Contains(d, System.StringComparer.OrdinalIgnoreCase);
+                    <span class="day-badge @(active ? "active" : "inactive")">
+                        @if (active) { <i class="bi bi-check-lg me-1"></i> }
+                        @d
+                    </span>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Policy Settings -->
+    <div class="as-card">
+        <div class="as-card-header">
+            <div class="as-card-icon amber"><i class="bi bi-shield-check"></i></div>
+            <div>
+                <p class="as-card-title">Attendance Policies</p>
+                <p class="as-card-desc">Rules applied when calculating attendance percentages</p>
+            </div>
+        </div>
+        <div class="as-card-body">
+            <div class="as-grid">
+                <div class="as-field">
+                    <label><i class="bi bi-question-circle me-1"></i> Count Late as Present</label>
+                    <div class="field-val">
+                        <span class="bool-badge @(Model.CountLateAsPresent ? "yes" : "no")">
+                            <i class="bi @(Model.CountLateAsPresent ? "bi-check-circle-fill" : "bi-x-circle-fill")"></i>
+                            @(Model.CountLateAsPresent ? "Yes" : "No")
+                        </span>
+                    </div>
+                </div>
+                <div class="as-field">
+                    <label><i class="bi bi-file-earmark-medical me-1"></i> Count Leave as Present</label>
+                    <div class="field-val">
+                        <span class="bool-badge @(Model.CountLeaveAsPresent ? "yes" : "no")">
+                            <i class="bi @(Model.CountLeaveAsPresent ? "bi-check-circle-fill" : "bi-x-circle-fill")"></i>
+                            @(Model.CountLeaveAsPresent ? "Yes" : "No")
+                        </span>
+                    </div>
+                </div>
+                <div class="as-field">
+                    <label><i class="bi bi-robot me-1"></i> Auto-Absent Enabled</label>
+                    <div class="field-val">
+                        <span class="bool-badge @(Model.AutoAbsentEnabled ? "yes" : "no")">
+                            <i class="bi @(Model.AutoAbsentEnabled ? "bi-check-circle-fill" : "bi-x-circle-fill")"></i>
+                            @(Model.AutoAbsentEnabled ? "Enabled" : "Disabled")
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lock & Revision -->
+    <div class="as-card">
+        <div class="as-card-header">
+            <div class="as-card-icon purple"><i class="bi bi-lock-fill"></i></div>
+            <div>
+                <p class="as-card-title">Lock & Revision Window</p>
+                <p class="as-card-desc">Controls how long attendance can be edited after the date</p>
+            </div>
+        </div>
+        <div class="as-card-body">
+            <div class="as-grid">
+                <div class="as-field">
+                    <label><i class="bi bi-pencil me-1"></i> Revision Window</label>
+                    <div class="field-val">@Model.RevisionWindowHours hours</div>
+                </div>
+                <div class="as-field">
+                    <label><i class="bi bi-lock me-1"></i> Lock Attendance After</label>
+                    <div class="field-val">@Model.AttendanceLockAfterHours hours</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

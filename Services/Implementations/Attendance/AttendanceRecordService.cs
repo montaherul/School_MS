@@ -14,15 +14,18 @@ public class AttendanceRecordService : IAttendanceRecordService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IAttendanceRepository _attendanceRepository;
     private readonly IAttendanceAuthorizationService _authorizationService;
+    private readonly IAttendanceValidationService _validationService;
 
     public AttendanceRecordService(
         IUnitOfWork unitOfWork,
         IAttendanceRepository attendanceRepository,
-        IAttendanceAuthorizationService authorizationService)
+        IAttendanceAuthorizationService authorizationService,
+        IAttendanceValidationService validationService)
     {
         _unitOfWork            = unitOfWork;
         _attendanceRepository  = attendanceRepository;
         _authorizationService  = authorizationService;
+        _validationService     = validationService;
     }
 
     public async Task<PagedResult<AttendanceRecordListItemDto>> GetPagedAsync(
@@ -82,6 +85,10 @@ public class AttendanceRecordService : IAttendanceRecordService
         var repo = _unitOfWork.Repository<AttendanceRecord>();
         var attendanceDate = dto.AttendanceDate == default ? DateOnly.FromDateTime(DateTime.Today) : dto.AttendanceDate;
 
+        var validationError = await _validationService.ValidateAttendanceDateAsync(attendanceDate, cancellationToken);
+        if (validationError != null)
+            throw new InvalidOperationException(validationError);
+
         var studentGroupId = await _unitOfWork.Repository<SchoolManagementSystem.Models.Entities.Student.Student>()
             .Query()
             .Where(s => s.Id == dto.StudentId && !s.IsDeleted)
@@ -121,6 +128,10 @@ public class AttendanceRecordService : IAttendanceRecordService
             ?? throw new InvalidOperationException("AttendanceRecord not found.");
 
         var attendanceDate = dto.AttendanceDate == default ? entity.AttendanceDate : dto.AttendanceDate;
+
+        var validationError = await _validationService.ValidateAttendanceDateAsync(attendanceDate, cancellationToken);
+        if (validationError != null)
+            throw new InvalidOperationException(validationError);
 
         var studentGroupId = await _unitOfWork.Repository<SchoolManagementSystem.Models.Entities.Student.Student>()
             .Query()

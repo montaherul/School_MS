@@ -15,6 +15,23 @@ using SchoolManagementSystem.Data;
 using SchoolManagementSystem.Models.Enums;
 
 using SchoolManagementSystem.Models.Entities.Academic;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using SchoolManagementSystem.Models.DTOs.Attendance;
+using SchoolManagementSystem.Models.Entities.Attendance;
+using SchoolManagementSystem.Repositories.Interfaces.Attendance;
+using SchoolManagementSystem.Services.Interfaces.Attendance;
+using SchoolManagementSystem.UnitOfWork.Interfaces;
+using SchoolManagementSystem.Services.Interfaces.Admin;
+using System.Reflection;
+using SchoolManagementSystem.Data;
+using SchoolManagementSystem.Models.Enums;
+
+using SchoolManagementSystem.Models.Entities.Academic;
 using Microsoft.Extensions.Logging;
 
 namespace SchoolManagementSystem.Services.Implementations.Attendance
@@ -26,6 +43,7 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
         private readonly IAttendanceLogRepository _auditLog;
         private readonly IAttendanceNotificationService _notificationService;
         private readonly IAttendanceAuthorizationService _authorizationService;
+        private readonly IAttendanceValidationService _validationService;
         private readonly ILogger<StudentAttendanceService> _logger;
 
         public StudentAttendanceService(
@@ -34,6 +52,7 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
             IAttendanceLogRepository auditLog,
             IAttendanceNotificationService notificationService,
             IAttendanceAuthorizationService authorizationService,
+            IAttendanceValidationService validationService,
             ILogger<StudentAttendanceService> logger)
         {
             _uow = uow;
@@ -41,6 +60,7 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
             _auditLog = auditLog;
             _notificationService = notificationService;
             _authorizationService = authorizationService;
+            _validationService = validationService;
             _logger = logger;
         }
 
@@ -159,6 +179,14 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
             var date = DateOnly.FromDateTime(dto.AttendanceDate);
             var repo = _uow.Repository<AttendanceRecord>();
             var sessionRepo = _uow.Repository<AttendanceSession>();
+
+            var validationError = await _validationService.ValidateAttendanceDateAsync(date, ct);
+            if (validationError != null)
+            {
+                response.Success = false;
+                response.Message = validationError;
+                return response;
+            }
 
             // Ensure an attendance session exists or is checked for locking
             await EnsureNoDuplicateSessionsAsync(dto.ClassId, dto.SectionId, dto.StudentGroupId, date, ct);

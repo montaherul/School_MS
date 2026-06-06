@@ -2,56 +2,58 @@ using SchoolManagementSystem.Helpers.Email;
 using SchoolManagementSystem.Helpers.Files;
 using SchoolManagementSystem.Helpers.Pdf;
 using SchoolManagementSystem.Helpers.Security;
-using SchoolManagementSystem.Repositories.Interfaces.Website;
-using SchoolManagementSystem.Repositories.Implementations.Website;
-using SchoolManagementSystem.Services.Interfaces.Website;
-using SchoolManagementSystem.Services.Implementations.Website;
+using SchoolManagementSystem.Repositories.Guardian;
 using SchoolManagementSystem.Repositories.Implementations;
 using SchoolManagementSystem.Repositories.Implementations.Academic;
 using SchoolManagementSystem.Repositories.Implementations.Admission;
 using SchoolManagementSystem.Repositories.Implementations.Attendance;
+using SchoolManagementSystem.Repositories.Implementations.Auth;
+using SchoolManagementSystem.Repositories.Implementations.Dashboard;
+using SchoolManagementSystem.Repositories.Implementations.Employee;
 using SchoolManagementSystem.Repositories.Implementations.Fees;
+using SchoolManagementSystem.Repositories.Implementations.Guardian;
+using SchoolManagementSystem.Repositories.Implementations.Result;
 using SchoolManagementSystem.Repositories.Implementations.Students;
 using SchoolManagementSystem.Repositories.Implementations.Teachers;
-using SchoolManagementSystem.Repositories.Implementations.Result;
-using SchoolManagementSystem.Repositories.Implementations.Dashboard;
-using SchoolManagementSystem.Repositories.Implementations.Auth;
+using SchoolManagementSystem.Repositories.Implementations.Website;
 using SchoolManagementSystem.Repositories.Interfaces;
 using SchoolManagementSystem.Repositories.Interfaces.Academic;
 using SchoolManagementSystem.Repositories.Interfaces.Admission;
 using SchoolManagementSystem.Repositories.Interfaces.Attendance;
-using SchoolManagementSystem.Repositories.Interfaces.Fees;
-using SchoolManagementSystem.Repositories.Interfaces.Students;
-using SchoolManagementSystem.Repositories.Interfaces.Teachers;
-using SchoolManagementSystem.Repositories.Interfaces.Result;
 using SchoolManagementSystem.Repositories.Interfaces.Auth;
 using SchoolManagementSystem.Repositories.Interfaces.Dashboard;
+using SchoolManagementSystem.Repositories.Interfaces.Employee;
+using SchoolManagementSystem.Repositories.Interfaces.Fees;
+using SchoolManagementSystem.Repositories.Interfaces.Result;
+using SchoolManagementSystem.Repositories.Interfaces.Students;
+using SchoolManagementSystem.Repositories.Interfaces.Teachers;
+using SchoolManagementSystem.Repositories.Interfaces.Website;
 using SchoolManagementSystem.Service.Implementations.Dashboard;
 using SchoolManagementSystem.Service.Interfaces.Dashboard;
-using SchoolManagementSystem.Services.Implementations.Admissions;
+using SchoolManagementSystem.Services.Guardian;
+using SchoolManagementSystem.Services.Implementations.Academic;
 using SchoolManagementSystem.Services.Implementations.Admin;
+using SchoolManagementSystem.Services.Implementations.Admissions;
 using SchoolManagementSystem.Services.Implementations.Email;
+using SchoolManagementSystem.Services.Implementations.Employee;
 using SchoolManagementSystem.Services.Implementations.Fees;
+using SchoolManagementSystem.Services.Implementations.Guardian;
 using SchoolManagementSystem.Services.Implementations.Result;
 using SchoolManagementSystem.Services.Implementations.Students;
 using SchoolManagementSystem.Services.Implementations.Teachers;
-using SchoolManagementSystem.Services.Interfaces.Admissions;
+using SchoolManagementSystem.Services.Implementations.Website;
+using SchoolManagementSystem.Services.Interfaces.Academic;
 using SchoolManagementSystem.Services.Interfaces.Admin;
+using SchoolManagementSystem.Services.Interfaces.Admissions;
 using SchoolManagementSystem.Services.Interfaces.Email;
+using SchoolManagementSystem.Services.Interfaces.Employee;
 using SchoolManagementSystem.Services.Interfaces.Fees;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.Services.Interfaces.Students;
 using SchoolManagementSystem.Services.Interfaces.Teachers;
+using SchoolManagementSystem.Services.Interfaces.Website;
 using SchoolManagementSystem.UnitOfWork.Implementations;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
-using SchoolManagementSystem.Repositories.Interfaces.Employee;
-using SchoolManagementSystem.Repositories.Implementations.Employee;
-using SchoolManagementSystem.Services.Interfaces.Employee;
-using SchoolManagementSystem.Services.Implementations.Employee;
-using SchoolManagementSystem.Repositories.Guardian;
-using SchoolManagementSystem.Repositories.Implementations.Guardian;
-using SchoolManagementSystem.Services.Guardian;
-using SchoolManagementSystem.Services.Implementations.Guardian;
 
 namespace SchoolManagementSystem.Extensions;
 
@@ -104,7 +106,8 @@ public static class ServiceRegistration
         services.AddScoped<IPromotionHistoryRepository, PromotionHistoryRepository>();
         services.AddScoped<IDashboardRepository, DashboardRepository>();
         services.AddScoped<IDashboardQueryRepository, DashboardQueryRepository>();
-
+        services.AddScoped<IAcademicCalendarRepository, AcademicCalendarRepository>();
+        services.AddScoped<IAcademicCalendarEventRepository, AcademicCalendarEventRepository>();
         // Register Public Website Repositories
         services.AddScoped<ISchoolSettingRepository, SchoolSettingRepository>();
         services.AddScoped<IWebsitePageRepository, WebsitePageRepository>();
@@ -126,7 +129,7 @@ public static class ServiceRegistration
         services.AddScoped<ITeacherAssignmentService, TeacherAssignmentService>();
         services.AddScoped<SchoolManagementSystem.Services.Interfaces.Attendance.IAttendanceAuthorizationService, SchoolManagementSystem.Services.Implementations.Attendance.AttendanceAuthorizationService>();
         services.AddScoped<SchoolManagementSystem.Services.Interfaces.Result.IResultAuthorizationService, SchoolManagementSystem.Services.Implementations.Result.ResultAuthorizationService>();
-
+        services.AddScoped<IAcademicCalendarService,AcademicCalendarService>();
         // Register Employee Services
         services.AddScoped<IEmployeeService, EmployeeService>();
         services.AddScoped<IEmployeeInvitationService, EmployeeInvitationService>();
@@ -173,8 +176,11 @@ public static class ServiceRegistration
         services.AddScoped<SchoolManagementSystem.Services.Interfaces.Attendance.IEmployeeAttendanceService, SchoolManagementSystem.Services.Implementations.Attendance.EmployeeAttendanceService>();
         services.AddScoped<SchoolManagementSystem.Services.Interfaces.Attendance.ILeaveService, SchoolManagementSystem.Services.Implementations.Attendance.LeaveService>();
         services.AddScoped<SchoolManagementSystem.Services.Interfaces.Attendance.IAttendanceReportService, SchoolManagementSystem.Services.Implementations.Attendance.AttendanceReportService>();
+        services.AddScoped<SchoolManagementSystem.Services.Interfaces.Attendance.IAttendanceSettingService, SchoolManagementSystem.Services.Implementations.Attendance.AttendanceSettingService>();
+        services.AddScoped<SchoolManagementSystem.Services.Interfaces.Attendance.IAttendanceValidationService, SchoolManagementSystem.Services.Implementations.Attendance.AttendanceValidationService>();
         services.AddHostedService<SchoolManagementSystem.Services.Implementations.Attendance.AttendanceNotificationWorker>();
 
+       
         return services;
     }
 }
