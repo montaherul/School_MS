@@ -188,6 +188,9 @@ namespace SchoolManagementSystem.Repositories.Implementations.Attendance
         }
     }
 
+
+
+
     public class EmployeeAttendanceRepository : BaseRepository<EmployeeAttendance>, IEmployeeAttendanceRepository
     {
         public EmployeeAttendanceRepository(SchoolDbContext context) : base(context) { }
@@ -206,49 +209,46 @@ namespace SchoolManagementSystem.Repositories.Implementations.Attendance
             var items = new List<EmployeeAttendanceDto>();
             int totalRecords = 0;
 
-            using (var command = _db.Database.GetDbConnection().CreateCommand())
+            using var connection = new SqlConnection(_db.Database.GetConnectionString());
+            await connection.OpenAsync(cancellationToken);
+
+            using var command = new SqlCommand("sp_GetEmployeeAttendanceList", connection);
+            command.CommandType = CommandType.StoredProcedure;
+            command.CommandTimeout = 60;
+
+            command.Parameters.AddWithValue("@PageNumber", page);
+            command.Parameters.AddWithValue("@PageSize", pageSize);
+            command.Parameters.AddWithValue("@SearchTerm", (object?)filter.SearchTerm ?? DBNull.Value);
+            command.Parameters.AddWithValue("@DepartmentId", filter.DepartmentId ?? 0);
+            command.Parameters.AddWithValue("@DesignationId", filter.DesignationId ?? 0);
+            command.Parameters.AddWithValue("@EmployeeType", (object?)filter.EmployeeType ?? DBNull.Value);
+            command.Parameters.AddWithValue("@IsTeachingStaff", (object?)filter.IsTeachingStaff ?? DBNull.Value);
+            command.Parameters.Add(new SqlParameter("@AttendanceDate", System.Data.SqlDbType.Date)
+            { Value = filter.AttendanceDate.Date });
+            command.Parameters.AddWithValue("@Status", filter.Status ?? 0);
+
+            using var reader = await command.ExecuteReaderAsync(cancellationToken);
+            while (await reader.ReadAsync(cancellationToken))
             {
-                command.CommandText = "sp_GetEmployeeAttendanceList";
-                command.CommandType = CommandType.StoredProcedure;
-
-                command.Parameters.Add(new SqlParameter("@PageNumber", page));
-                command.Parameters.Add(new SqlParameter("@PageSize", pageSize));
-                command.Parameters.Add(new SqlParameter("@SearchTerm", (object?)filter.SearchTerm ?? DBNull.Value));
-                command.Parameters.Add(new SqlParameter("@DepartmentId", filter.DepartmentId ?? 0));
-                command.Parameters.Add(new SqlParameter("@DesignationId", filter.DesignationId ?? 0));
-                command.Parameters.Add(new SqlParameter("@EmployeeType", (object?)filter.EmployeeType ?? DBNull.Value));
-                command.Parameters.Add(new SqlParameter("@IsTeachingStaff", (object?)filter.IsTeachingStaff ?? DBNull.Value));
-                command.Parameters.Add(new SqlParameter("@AttendanceDate", filter.AttendanceDate.Date));
-                command.Parameters.Add(new SqlParameter("@Status", filter.Status ?? 0));
-
-                if (command.Connection!.State != ConnectionState.Open)
-                    await _db.Database.OpenConnectionAsync(cancellationToken);
-
-                using (var reader = await command.ExecuteReaderAsync(cancellationToken))
+                var dto = new EmployeeAttendanceDto
                 {
-                    while (await reader.ReadAsync(cancellationToken))
-                    {
-                        var dto = new EmployeeAttendanceDto
-                        {
-                            Id = reader.GetInt32(0),
-                            EmployeeId = reader.GetInt32(1),
-                            EmployeeCode = reader.IsDBNull(2) ? "" : reader.GetString(2),
-                            EmployeeName = reader.IsDBNull(3) ? "" : reader.GetString(3),
-                            Department = reader.IsDBNull(5) ? "" : reader.GetString(5),
-                            Designation = reader.IsDBNull(7) ? "" : reader.GetString(7),
-                            EmployeeType = reader.IsDBNull(8) ? "" : reader.GetString(8),
-                            IsTeachingStaff = !reader.IsDBNull(9) && reader.GetBoolean(9),
-                            AttendanceDate = reader.GetDateTime(10),
-                            CheckInTime = reader.IsDBNull(11) ? null : reader.GetFieldValue<TimeSpan>(11),
-                            CheckOutTime = reader.IsDBNull(12) ? null : reader.GetFieldValue<TimeSpan>(12),
-                            Status = (AttendanceStatus)reader.GetInt32(13),
-                            Remarks = reader.IsDBNull(14) ? "" : reader.GetString(14),
-                        };
-                        dto.StatusName = dto.Status.ToString();
-                        items.Add(dto);
-                        totalRecords = reader.GetInt32(reader.FieldCount - 1);
-                    }
-                }
+                    Id = reader.GetInt32(0),
+                    EmployeeId = reader.GetInt32(1),
+                    EmployeeCode = reader.IsDBNull(2) ? "" : reader.GetString(2),
+                    EmployeeName = reader.IsDBNull(3) ? "" : reader.GetString(3),
+                    Department = reader.IsDBNull(5) ? "" : reader.GetString(5),
+                    Designation = reader.IsDBNull(7) ? "" : reader.GetString(7),
+                    EmployeeType = reader.IsDBNull(8) ? "" : reader.GetString(8),
+                    IsTeachingStaff = !reader.IsDBNull(9) && reader.GetBoolean(9),
+                    AttendanceDate = reader.GetDateTime(10),
+                    CheckInTime = reader.IsDBNull(11) ? null : reader.GetFieldValue<TimeSpan>(11),
+                    CheckOutTime = reader.IsDBNull(12) ? null : reader.GetFieldValue<TimeSpan>(12),
+                    Status = (AttendanceStatus)reader.GetInt32(13),
+                    Remarks = reader.IsDBNull(15) ? "" : reader.GetString(15),
+                };
+                dto.StatusName = reader.IsDBNull(14) ? dto.Status.ToString() : reader.GetString(14);
+                items.Add(dto);
+                totalRecords = reader.GetInt32(17);
             }
 
             return (items, totalRecords);
@@ -260,45 +260,39 @@ namespace SchoolManagementSystem.Repositories.Implementations.Attendance
         {
             var summary = new EmployeeAttendanceSummaryDto();
 
-            using (var command = _db.Database.GetDbConnection().CreateCommand())
+            using var connection = new SqlConnection(_db.Database.GetConnectionString());
+            await connection.OpenAsync(cancellationToken);
+
+            using var command = new SqlCommand("sp_GetAttendanceSummary", connection);
+            command.CommandType = CommandType.StoredProcedure;
+            command.CommandTimeout = 60;
+
+            command.Parameters.AddWithValue("@StudentId", 0);
+            command.Parameters.AddWithValue("@EmployeeId", filter.EmployeeId ?? -1);
+            command.Parameters.AddWithValue("@ClassId", 0);
+            command.Parameters.AddWithValue("@SectionId", 0);
+            command.Parameters.AddWithValue("@StudentGroupId", 0);
+            command.Parameters.AddWithValue("@AttendanceDate", filter.AttendanceDate.Date);
+            command.Parameters.AddWithValue("@Year", filter.AttendanceDate.Year);
+            command.Parameters.AddWithValue("@Month", filter.AttendanceDate.Month);
+
+            using var reader = await command.ExecuteReaderAsync(cancellationToken);
+            while (await reader.ReadAsync(cancellationToken))
             {
-                command.CommandText = "sp_GetAttendanceSummary";
-                command.CommandType = CommandType.StoredProcedure;
-
-                command.Parameters.Add(new SqlParameter("@StudentId", 0));
-                command.Parameters.Add(new SqlParameter("@EmployeeId", filter.EmployeeId ?? -1));
-                command.Parameters.Add(new SqlParameter("@ClassId", 0));
-                command.Parameters.Add(new SqlParameter("@SectionId", 0));
-                command.Parameters.Add(new SqlParameter("@StudentGroupId", 0));
-                command.Parameters.Add(new SqlParameter("@AttendanceDate", filter.AttendanceDate.Date));
-                command.Parameters.Add(new SqlParameter("@Year", filter.AttendanceDate.Year));
-                command.Parameters.Add(new SqlParameter("@Month", filter.AttendanceDate.Month));
-
-                if (command.Connection!.State != ConnectionState.Open)
-                    await _db.Database.OpenConnectionAsync(cancellationToken);
-
-                using (var reader = await command.ExecuteReaderAsync(cancellationToken))
+                var status = (AttendanceStatus)reader.GetInt32(0);
+                var count = reader.GetInt32(1);
+                switch (status)
                 {
-                    while (await reader.ReadAsync(cancellationToken))
-                    {
-                        var status = (AttendanceStatus)reader.GetInt32(0);
-                        var count = reader.GetInt32(1);
-
-                        switch (status)
-                        {
-                            case AttendanceStatus.Present: summary.Present = count; break;
-                            case AttendanceStatus.Absent: summary.Absent = count; break;
-                            case AttendanceStatus.Late: summary.Late = count; break;
-                            case AttendanceStatus.Leave: summary.Leave = count; break;
-                        }
-                    }
+                    case AttendanceStatus.Present: summary.Present = count; break;
+                    case AttendanceStatus.Absent: summary.Absent = count; break;
+                    case AttendanceStatus.Late: summary.Late = count; break;
+                    case AttendanceStatus.Leave: summary.Leave = count; break;
                 }
             }
 
             summary.TotalEmployees = summary.Present + summary.Absent + summary.Late + summary.Leave;
             return summary;
         }
-
         public async Task<List<EmployeeAttendanceDto>> GetEmployeeHistoryAsync(
             int employeeId,
             int year,

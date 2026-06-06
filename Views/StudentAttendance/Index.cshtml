@@ -316,57 +316,43 @@
         let tabulatorTable = null;
 
         // Initialize Tabulator
-        function initializeTable() {
-            tabulatorTable = new Tabulator("#studentAttendanceTable", {
-                height: 500,
-                layout: "fitColumns",
-                selectable: true,
-                movableColumns: true,
-                selectableRangeMode: "click",
-                index: "studentId",
-                columns: [
-                    { title: "Select", formatter: "rowSelection", hozAlign: "center", width: 40 },
-                    { title: "Roll", field: "rollNumber", width: 60 },
-                    { title: "Student ID", field: "studentNo", width: 100 },
-                    { title: "Name", field: "studentName", width: 150 },
-                    { title: "Class", field: "className", width: 80 },
-                    { title: "Section", field: "sectionName", width: 80 },
-                    {
-                        title: "Status",
-                        field: "status",
-                        width: 100,
-                        hozAlign: "center",
-                        editor: "select",
-                        editorParams: {
-                            values: {
-                                "1": "Present",
-                                "2": "Absent",
-                                "3": "Late",
-                                "4": "Leave"
-                            }
-                        },
-                        formatter: function(cell) {
-                           const statusMap = {
-                                1: "Present",
-                                2: "Absent",
-                                3: "Late",
-                                4: "Leave"
-                            };
-                            const statusValue = cell.getValue();
-                            const statusName = statusMap[statusValue] || statusValue;
-                            return `<span class="sa-status-badge sa-status-${statusName}">${statusName}</span>`;
-                        }
-                    },
-                    { title: "Remarks", field: "remarks", width: 150, editor: "textarea" }
-                ],
-                data: [],
-                pagination: "local",
-                paginationSize: 25,
-                rowClick: function(e, row) {
-                    row.toggleSelect();
+function initializeTable() {
+    tabulatorTable = new Tabulator("#studentAttendanceTable", {
+        height: 500,
+        layout: "fitColumns",
+        selectableRows: true,          // FIXED: was "selectable"
+        movableColumns: true,
+        index: "studentId",
+        columns: [
+            { formatter: "rowSelection", titleFormatter: "rowSelection", hozAlign: "center", headerSort: false, width: 52 },
+            { title: "Roll", field: "rollNumber", width: 70 },
+            { title: "Student ID", field: "studentNo", minWidth: 120 },
+            { title: "Name", field: "studentName", minWidth: 200 },  // FIXED: minWidth
+            { title: "Class", field: "className", minWidth: 120 },   // FIXED: minWidth
+            { title: "Section", field: "sectionName", minWidth: 100 }, // FIXED: minWidth
+            {
+                title: "Status",
+                field: "status",
+                minWidth: 120,
+                hozAlign: "center",
+                editor: "list",                // FIXED: "list" not "select" in Tabulator v5
+                editorParams: {
+                    values: ["Present", "Absent", "Late", "Leave"]
+                },
+                formatter: function(cell) {
+                    const statusMap = { 1: "Present", 2: "Absent", 3: "Late", 4: "Leave" };
+                    const val = cell.getValue();
+                    const name = statusMap[val] || val || "Present";
+                    return `<span class="sa-status-badge sa-status-${name}">${name}</span>`;
                 }
-            });
-        }
+            },
+            { title: "Remarks", field: "remarks", minWidth: 180, editor: "input" }
+        ],
+        data: [],
+        pagination: "local",
+        paginationSize: 25
+    });
+}
 
         // Load attendance data
         async function loadAttendance() {
@@ -484,40 +470,33 @@
         }
 
         // Bulk operations
-        $('#btnMarkAllPresent').click(function () {
-        tabulatorTable.getData().forEach(row => {
-        row.status = 1; // Present
-        tabulatorTable.updateData([row]);
-        });
-        updateTableSummary();
-        });
+     $('#btnMarkAllPresent').click(function () {
+    tabulatorTable.getRows().forEach(row => {
+        row.update({ status: 1 });
+    });
+    updateTableSummary();
+    });
 
-        $('#btnSelectedAbsent').click(function () {
-        const selected = tabulatorTable.getSelectedData();
-        selected.forEach(row => {
-        row.status = 2; // Absent
-        tabulatorTable.updateData([row]);
-        });
+    $('#btnSelectedAbsent').click(function () {
+        const selected = tabulatorTable.getSelectedRows();
+        if (!selected.length) { toastr.warning('Select at least one student.'); return; }
+        selected.forEach(row => row.update({ status: 2 }));
         updateTableSummary();
-        });
+    });
 
-        $('#btnSelectedLate').click(function () {
-        const selected = tabulatorTable.getSelectedData();
-        selected.forEach(row => {
-        row.status = 3; // Late
-        tabulatorTable.updateData([row]);
-        });
+    $('#btnSelectedLate').click(function () {
+        const selected = tabulatorTable.getSelectedRows();
+        if (!selected.length) { toastr.warning('Select at least one student.'); return; }
+        selected.forEach(row => row.update({ status: 3 }));
         updateTableSummary();
-        });
+    });
 
-        $('#btnApplyLeave').click(function () {
-        const selected = tabulatorTable.getSelectedData();
-        selected.forEach(row => {
-        row.status = 4; // Leave
-        tabulatorTable.updateData([row]);
-        });
+    $('#btnApplyLeave').click(function () {
+        const selected = tabulatorTable.getSelectedRows();
+        if (!selected.length) { toastr.warning('Select at least one student.'); return; }
+        selected.forEach(row => row.update({ status: 4 }));
         updateTableSummary();
-        });
+    });
 
         $('#btnResetSelection').click(function() {
             tabulatorTable.deselectRow();

@@ -74,17 +74,16 @@ namespace SchoolManagementSystem.Controllers.Attendance
             ViewBag.Designations = await _designationService.GetAllAsync(ct);
             return View();
         }
-
         [HttpGet]
         [RequirePermission("Attendance.View")]
         public async Task<IActionResult> LoadAttendance(
             int page = 1,
             int size = 25,
             DateTime? attendanceDate = null,
-            int? departmentId = null,
-            int? designationId = null,
+            string? departmentId = null,
+            string? designationId = null,
             string? employeeType = null,
-            bool? isTeachingStaff = null,
+            string? isTeachingStaff = null,
             CancellationToken ct = default)
         {
             if (!IsAdminOrPrincipal()) return Forbid();
@@ -92,22 +91,28 @@ namespace SchoolManagementSystem.Controllers.Attendance
             var filter = new EmployeeAttendanceFilterDto
             {
                 AttendanceDate = (attendanceDate ?? DateTime.Today).Date,
-                DepartmentId = departmentId,
-                DesignationId = designationId,
-                EmployeeType = employeeType,
-                IsTeachingStaff = isTeachingStaff
+                DepartmentId = int.TryParse(departmentId, out var dId) ? dId : null,
+                DesignationId = int.TryParse(designationId, out var desId) ? desId : null,
+                EmployeeType = string.IsNullOrEmpty(employeeType) || employeeType == "null" ? null : employeeType,
+                IsTeachingStaff = bool.TryParse(isTeachingStaff, out var its) ? its : null
             };
 
-            var result = await _service.LoadAttendanceAsync(filter, page, size, ct);
-            return Json(new
+            try
             {
-                data = result.Data,
-                last_page = Math.Max(1, (int)Math.Ceiling((double)result.TotalRecords / size)),
-                total_records = result.TotalRecords,
-                summary = result.Summary
-            });
+                var result = await _service.LoadAttendanceAsync(filter, page, size, ct);
+                return Json(new
+                {
+                    data = result.Data,
+                    last_page = Math.Max(1, (int)Math.Ceiling((double)result.TotalRecords / size)),
+                    total_records = result.TotalRecords,
+                    summary = result.Summary
+                });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { error = ex.Message, inner = ex.InnerException?.Message });
+            }
         }
-
         [HttpGet]
         [RequirePermission("Attendance.View")]
         public async Task<IActionResult> GetPagedData(int page = 1, int size = 10, string? date = null, CancellationToken ct = default)
