@@ -16,13 +16,11 @@
         margin: 0 auto;
     }
 
-    /* ── Hero Banner ─────────────────────────────────── */
     .g-hero {
         background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #334155 100%);
         border-radius: 20px;
         padding: 32px 40px;
         color: #fff;
-        display: flex;
         align-items: center;
         justify-content: space-between;
         flex-wrap: wrap;
@@ -53,9 +51,6 @@
         margin: 0;
         opacity: .8;
         font-size: 14px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
     }
 
     .g-hero-badge {
@@ -81,18 +76,13 @@
         font-weight: 800;
     }
 
-    /* ── Alerts & Warnings ───────────────────────────── */
-    .alerts-container {
-        margin-bottom: 28px;
-    }
-
+    .alerts-container { margin-bottom: 28px; }
     .alert-card {
         background: #fff5f5;
         border-left: 5px solid #ef4444;
         border-radius: 8px;
         padding: 16px 20px;
         margin-bottom: 12px;
-        display: flex;
         align-items: center;
         gap: 16px;
         color: #b91c1c;
@@ -100,16 +90,11 @@
         font-weight: 500;
         box-shadow: 0 2px 8px rgba(239, 68, 68, 0.08);
     }
+    .alert-card i { font-size: 20px; color: #ef4444; }
 
-    .alert-card i {
-        font-size: 20px;
-        color: #ef4444;
-    }
-
-    /* ── Stat Cards ─────────────────────────────────── */
     .g-cards {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
         gap: 18px;
         margin-bottom: 28px;
     }
@@ -119,62 +104,49 @@
         border: 1px solid var(--adm-border, #e5e7eb);
         border-radius: 16px;
         padding: 22px 20px;
-        display: flex;
-        flex-direction: column;
         gap: 10px;
         transition: transform .2s, box-shadow .2s;
         cursor: default;
     }
-
     .g-card:hover {
         transform: translateY(-4px);
         box-shadow: 0 12px 32px rgba(0,0,0,.06);
     }
-
     .g-card-icon {
-        width: 44px;
-        height: 44px;
+        width: 44px; height: 44px;
         border-radius: 12px;
-        display: flex;
         align-items: center;
         justify-content: center;
         font-size: 20px;
     }
-
     .g-card-label {
-        font-size: 12px;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: .7px;
+        font-size: 12px; font-weight: 600;
+        text-transform: uppercase; letter-spacing: .7px;
         color: var(--adm-text-muted, #6b7280);
     }
-
     .g-card-value {
-        font-size: 32px;
-        font-weight: 800;
-        line-height: 1;
+        font-size: 28px; font-weight: 800; line-height: 1;
     }
 
-    /* colour tokens */
     .token-present { background: #dcfce7; color: #16a34a; }
     .token-absent  { background: #fee2e2; color: #dc2626; }
     .token-late    { background: #fef9c3; color: #ca8a04; }
     .token-leave   { background: #ede9fe; color: #7c3aed; }
     .token-total   { background: #dbeafe; color: #2563eb; }
     .token-pct     { background: linear-gradient(135deg,#f8fafc,#f1f5f9); color: #0f172a; border: 1px solid #e2e8f0; }
+    .token-fee     { background: #f0fdf4; color: #15803d; }
+    .token-result  { background: #fff7ed; color: #c2410c; }
+    .token-notice  { background: #f0f9ff; color: #0369a1; }
+    .token-notif   { background: #faf5ff; color: #7e22ce; }
 
-    /* ── Two Column Layout ──────────────────────────── */
     .g-grid {
         display: grid;
         grid-template-columns: 360px 1fr;
         gap: 24px;
         align-items: start;
     }
-
     @@media (max-width: 1024px) {
-        .g-grid {
-            grid-template-columns: 1fr;
-        }
+        .g-grid { grid-template-columns: 1fr; }
     }
 
     .g-panel {
@@ -184,140 +156,150 @@
         overflow: hidden;
         box-shadow: 0 4px 12px rgba(0,0,0,.03);
     }
-
     .g-panel-header {
         padding: 18px 22px;
         border-bottom: 1px solid var(--adm-border, #e5e7eb);
         font-size: 15px;
         font-weight: 700;
-        display: flex;
         align-items: center;
         justify-content: space-between;
     }
-
-    .g-panel-header-title {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
+    .g-panel-header-title { align-items: center; gap: 8px; }
     .g-chart-wrap {
         padding: 24px;
-        display: flex;
         justify-content: center;
         align-items: center;
         min-height: 260px;
     }
 
-    /* ── History Table ──────────────────────────────── */
-    .g-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 14px;
-    }
-
+    .g-table { width: 100%; border-collapse: collapse; font-size: 14px; }
     .g-table thead th {
-        padding: 12px 18px;
-        text-align: left;
-        font-size: 11px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: .6px;
+        padding: 12px 18px; text-align: left;
+        font-size: 11px; font-weight: 700;
+        text-transform: uppercase; letter-spacing: .6px;
         color: var(--adm-text-muted,#6b7280);
         background: var(--adm-hover-bg, #f8fafc);
         border-bottom: 1px solid var(--adm-border, #e5e7eb);
     }
-
-    .g-table tbody tr {
-        border-bottom: 1px solid var(--adm-border, #e5e7eb);
-        transition: background .15s;
-    }
-
+    .g-table tbody tr { border-bottom: 1px solid var(--adm-border, #e5e7eb); transition: background .15s; }
     .g-table tbody tr:last-child { border-bottom: none; }
     .g-table tbody tr:hover { background: var(--adm-hover-bg, #f8fafc); }
-
-    .g-table tbody td {
-        padding: 12px 18px;
-        vertical-align: middle;
-    }
+    .g-table tbody td { padding: 12px 18px; vertical-align: middle; }
 
     .status-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        padding: 3px 10px;
-        border-radius: 100px;
-        font-size: 12px;
-        font-weight: 600;
+        display: inline-flex; align-items: center; gap: 5px;
+        padding: 3px 10px; border-radius: 100px;
+        font-size: 12px; font-weight: 600;
     }
-
     .status-pill.Present { background: #dcfce7; color: #15803d; }
     .status-pill.Absent  { background: #fee2e2; color: #b91c1c; }
     .status-pill.Late    { background: #fef9c3; color: #a16207; }
     .status-pill.Leave   { background: #ede9fe; color: #6d28d9; }
 
-    .g-empty {
-        text-align: center;
-        padding: 48px 24px;
-        color: var(--adm-text-muted,#6b7280);
-        font-size: 14px;
-    }
-
+    .g-empty { text-align: center; padding: 48px 24px; color: var(--adm-text-muted,#6b7280); font-size: 14px; }
     .g-empty i { font-size: 40px; opacity: .35; margin-bottom: 12px; display: block; }
 
-    /* ── Gauge ──────────────────────────────────────── */
-    .gauge-wrap {
-        position: relative;
-        width: 200px;
-        height: 200px;
-        margin: 0 auto;
-    }
-
+    .gauge-wrap { position: relative; width: 200px; height: 200px; margin: 0 auto; }
     .gauge-label {
-        position: absolute;
-        inset: 0;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
+        position: absolute; inset: 0;
+        flex-direction: column; align-items: center; justify-content: center;
         pointer-events: none;
     }
-
     .gauge-pct  { font-size: 32px; font-weight: 800; color: #0f172a; line-height: 1; }
     .gauge-sub  { font-size: 11px; color: #6b7280; margin-top: 4px; }
+
+    .child-switcher {
+        display: flex; gap: 12px; flex-wrap: wrap;
+        margin-bottom: 28px;
+    }
+    .child-card {
+        background: #fff; border: 2px solid #e5e7eb; border-radius: 14px;
+        padding: 16px 20px; cursor: pointer; transition: all .2s;
+        min-width: 200px; flex: 1 1 auto;
+    }
+    .child-card:hover { border-color: #2563eb; box-shadow: 0 4px 12px rgba(37,99,235,.1); }
+    .child-card.active { border-color: #2563eb; background: #eff6ff; }
+    .child-card .child-name { font-weight: 700; font-size: 15px; }
+    .child-card .child-info { font-size: 12px; color: #6b7280; }
+
+    .widget-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 18px;
+        margin-bottom: 28px;
+    }
+    .widget {
+        background: #fff; border: 1px solid #e5e7eb; border-radius: 16px;
+        padding: 20px; transition: transform .2s, box-shadow .2s;
+    }
+    .widget:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 32px rgba(0,0,0,.06);
+    }
+    .widget-icon {
+        width: 48px; height: 48px; border-radius: 12px;
+        align-items: center; justify-content: center; font-size: 22px;
+        margin-bottom: 12px;
+    }
+    .widget-title { font-size: 13px; font-weight: 600; color: #6b7280; margin-bottom: 8px; }
+    .widget-value { font-size: 24px; font-weight: 800; line-height: 1; }
+    .widget-sub { font-size: 12px; color: #9ca3af; margin-top: 4px; }
+
+    .notice-list { list-style: none; padding: 0; margin: 0; }
+    .notice-item {
+        padding: 14px 22px; border-bottom: 1px solid #f3f4f6;
+        font-size: 14px;
+    }
+    .notice-item:last-child { border-bottom: none; }
+    .notice-item .title { font-weight: 600; }
+    .notice-item .date { font-size: 12px; color: #9ca3af; }
+
+    @@media (max-width: 768px) {
+        .guardian-root { padding: 12px; }
+        .g-hero { padding: 20px; }
+        .g-hero-badge { min-width: 100px; }
+        .g-card-value { font-size: 22px; }
+        .widget-grid { grid-template-columns: 1fr; }
+        .child-card { min-width: 140px; }
+    }
+    @@media (max-width: 375px) {
+        .g-hero-info h1 { font-size: 20px; }
+        .g-cards { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .g-card { padding: 14px; }
+        .g-card-value { font-size: 18px; }
+        .gauge-wrap { width: 140px; height: 140px; }
+        .gauge-pct { font-size: 24px; }
+        .g-panel-header { padding: 12px 16px; font-size: 13px; }
+        .g-table thead th { padding: 8px 10px; font-size: 10px; }
+        .g-table tbody td { padding: 8px 10px; }
+    }
 </style>
 
 <div class="guardian-root">
 
-    <!-- ── Hero Banner ───────────────────────────────── -->
     <div class="g-hero">
         <div class="g-hero-info">
             <h1><i class="bi bi-shield-check me-2"></i>Guardian Portal</h1>
-            <p>
-                <i class="bi bi-people-fill"></i>
-                Guardian: <strong>@Model.GuardianName</strong> &nbsp;|&nbsp; 
-                Child: <strong>@Model.StudentName</strong>
-            </p>
+            <p><i class="bi bi-people-fill"></i> Guardian: <strong>@Model.GuardianName</strong></p>
         </div>
         <div style="display:flex;gap:12px;flex-wrap:wrap;">
             <div class="g-hero-badge">
-                <div class="badge-label">Class & Section</div>
-                <div class="badge-value">@Model.ClassName (@Model.SectionName)</div>
+                <div class="badge-label">Unread Notifications</div>
+                <div class="badge-value">@Model.UnreadNotifications</div>
             </div>
             <div class="g-hero-badge">
-                <div class="badge-label">Roll Number</div>
-                <div class="badge-value">@Model.RollNumber</div>
+                <div class="badge-label">Total Outstanding</div>
+                <div class="badge-value">৳@Model.TotalOutstandingFees.ToString("N0")</div>
             </div>
         </div>
     </div>
 
-    <!-- ── Alerts Section ────────────────────────────── -->
     @if (Model.Alerts.Any())
     {
         <div class="alerts-container">
             @foreach (var alert in Model.Alerts)
             {
-                <div class="alert-card animate__animated animate__fadeIn">
+                <div class="alert-card">
                     <i class="bi bi-exclamation-triangle-fill"></i>
                     <div>@alert</div>
                 </div>
@@ -325,50 +307,108 @@
         </div>
     }
 
-    <!-- ── Stat Cards ────────────────────────────────── -->
-    <div class="g-cards">
-        <div class="g-card">
-            <div class="g-card-icon token-total"><i class="bi bi-calendar-range"></i></div>
-            <div class="g-card-label">Total Days</div>
-            <div class="g-card-value">@Model.AttendanceHistory.Count</div>
+    @if (Model.ChildSwitcher.Any())
+    {
+        <div class="child-switcher">
+            @foreach (var child in Model.ChildSwitcher)
+            {
+                var isActive = child.StudentId == Model.SelectedChildId || (!Model.SelectedChildId.HasValue && child.IsPrimaryGuardian);
+                <a href="@Url.Action("Dashboard", new { studentId = child.StudentId })" class="child-card @(isActive ? "active" : "")" style="text-decoration:none;color:inherit;">
+                    <div class="child-name">@child.FullName</div>
+                    <div class="child-info">@child.ClassName - @child.SectionName | Roll: @child.RollNumber</div>
+                    <div class="child-info">Attendance: @child.AttendancePercentage%</div>
+                    @if (child.OutstandingFees > 0)
+                    {
+                        <div class="child-info" style="color:#dc2626;">Due: ৳@child.OutstandingFees.ToString("N2")</div>
+                    }
+                </a>
+            }
         </div>
-        <div class="g-card">
-            <div class="g-card-icon token-present"><i class="bi bi-check-circle"></i></div>
-            <div class="g-card-label">Present</div>
-            <div class="g-card-value" style="color:#16a34a;">@Model.PresentCount</div>
+    }
+
+    @if (!string.IsNullOrEmpty(Model.StudentName))
+    {
+        <div class="g-hero" style="background:linear-gradient(135deg,#1e3a5f 0%,#2d5a87 100%);padding:20px 32px;margin-bottom:28px;">
+            <div>
+                <div style="font-size:20px;font-weight:700;">@Model.StudentName</div>
+                <div style="opacity:.8;font-size:13px;">@Model.ClassName (@Model.SectionName) | Roll: @Model.RollNumber</div>
+            </div>
         </div>
-        <div class="g-card">
-            <div class="g-card-icon token-absent"><i class="bi bi-x-circle"></i></div>
-            <div class="g-card-label">Absent</div>
-            <div class="g-card-value" style="color:#dc2626;">@Model.AbsentCount</div>
+    }
+
+    <div class="widget-grid">
+        <div class="widget">
+            <div class="widget-icon token-present" style="display:flex;"><i class="bi bi-check-circle"></i></div>
+            <div class="widget-title">Present (This Month)</div>
+            <div class="widget-value" style="color:#16a34a;">@Model.PresentCount</div>
         </div>
-        <div class="g-card">
-            <div class="g-card-icon token-late"><i class="bi bi-clock"></i></div>
-            <div class="g-card-label">Late</div>
-            <div class="g-card-value" style="color:#ca8a04;">@Model.LateCount</div>
+        <div class="widget">
+            <div class="widget-icon token-absent" style="display:flex;"><i class="bi bi-x-circle"></i></div>
+            <div class="widget-title">Absent (This Month)</div>
+            <div class="widget-value" style="color:#dc2626;">@Model.AbsentCount</div>
         </div>
-        <div class="g-card">
-            <div class="g-card-icon token-leave"><i class="bi bi-calendar2-x"></i></div>
-            <div class="g-card-label">Leave</div>
-            <div class="g-card-value" style="color:#7c3aed;">@Model.LeaveCount</div>
+        <div class="widget">
+            <div class="widget-icon token-late" style="display:flex;"><i class="bi bi-clock"></i></div>
+            <div class="widget-title">Late (This Month)</div>
+            <div class="widget-value" style="color:#ca8a04;">@Model.LateCount</div>
         </div>
-        <div class="g-card">
-            <div class="g-card-icon token-pct"><i class="bi bi-graph-up-arrow"></i></div>
-            <div class="g-card-label">Attendance %</div>
-            <div class="g-card-value" style="color:#0f172a;">@Model.AttendancePercentage%</div>
+        <div class="widget">
+            <div class="widget-icon token-fee" style="display:flex;"><i class="bi bi-cash-coin"></i></div>
+            <div class="widget-title">Outstanding Fees</div>
+            <div class="widget-value" style="color:#15803d;">৳@Model.SelectedChildOutstandingFees.ToString("N2")</div>
+            <div class="widget-sub">@Model.SelectedChildInvoiceCount invoice(s) | Paid: ৳@Model.SelectedChildTotalPaid.ToString("N2")</div>
+        </div>
+        <div class="widget">
+            <div class="widget-icon token-result" style="display:flex;"><i class="bi bi-bar-chart-line"></i></div>
+            <div class="widget-title">Latest Result</div>
+            @if (Model.SelectedChildLatestGPA.HasValue)
+            {
+                <div class="widget-value" style="color:#c2410c;">GPA: @Model.SelectedChildLatestGPA.Value.ToString("F2")</div>
+                <div class="widget-sub">Grade: @Model.SelectedChildLatestGrade | @(Model.SelectedChildLatestPassed ? "Passed" : "Failed")</div>
+            }
+            else
+            {
+                <div class="widget-value" style="color:#9ca3af;">No Result</div>
+            }
+        </div>
+        <div class="widget">
+            <div class="widget-icon token-leave" style="display:flex;"><i class="bi bi-calendar2-x"></i></div>
+            <div class="widget-title">Leave Applications</div>
+            <div class="widget-value" style="color:#7c3aed;">@Model.SelectedChildLeaveCount</div>
+            <div class="widget-sub">@Model.SelectedChildPendingLeaveCount pending</div>
+        </div>
+        <div class="widget">
+            <div class="widget-icon token-notif" style="display:flex;"><i class="bi bi-bell"></i></div>
+            <div class="widget-title">Notifications</div>
+            <div class="widget-value" style="color:#7e22ce;">@Model.UnreadNotifications</div>
+            <div class="widget-sub">unread <a asp-action="Notifications" asp-controller="GuardianPortalPages" style="color:#7e22ce;">View all</a></div>
+        </div>
+        <div class="widget">
+            <div class="widget-icon token-notice" style="display:flex;"><i class="bi bi-megaphone"></i></div>
+            <div class="widget-title">Recent Notices</div>
+            <div class="widget-value" style="color:#0369a1;font-size:18px;">@Model.RecentNotices.Count</div>
+            <div class="widget-sub"><a asp-action="Notices" asp-controller="GuardianPortalPages" style="color:#0369a1;">View notices</a></div>
         </div>
     </div>
 
-    <!-- ── Main Grid ─────────────────────────────────── -->
-    <div class="g-grid">
+    @if (Model.ChildSwitcher.Any())
+    {
+        <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px;">
+            <a asp-action="Attendance" asp-controller="GuardianPortalPages" asp-route-studentId="@Model.SelectedChildId" class="btn btn-outline-primary btn-sm"><i class="bi bi-calendar-check me-1"></i>Attendance</a>
+            <a asp-action="Results" asp-controller="GuardianPortalPages" asp-route-studentId="@Model.SelectedChildId" class="btn btn-outline-primary btn-sm"><i class="bi bi-bar-chart me-1"></i>Results</a>
+            <a asp-action="Fees" asp-controller="GuardianPortalPages" asp-route-studentId="@Model.SelectedChildId" class="btn btn-outline-primary btn-sm"><i class="bi bi-cash me-1"></i>Fees</a>
+            <a asp-action="Leaves" asp-controller="GuardianPortalPages" asp-route-studentId="@Model.SelectedChildId" class="btn btn-outline-primary btn-sm"><i class="bi bi-calendar2-x me-1"></i>Leave</a>
+            <a asp-action="Notices" asp-controller="GuardianPortalPages" class="btn btn-outline-primary btn-sm"><i class="bi bi-megaphone me-1"></i>Notices</a>
+            <a asp-action="Calendar" asp-controller="GuardianPortalPages" class="btn btn-outline-primary btn-sm"><i class="bi bi-calendar3 me-1"></i>Calendar</a>
+            <a asp-action="Notifications" asp-controller="GuardianPortalPages" class="btn btn-outline-primary btn-sm"><i class="bi bi-bell me-1"></i>Notifications</a>
+            <a asp-action="Profile" asp-controller="GuardianPortalPages" class="btn btn-outline-secondary btn-sm"><i class="bi bi-person me-1"></i>Profile</a>
+        </div>
+    }
 
-        <!-- Left: Breakdown Chart -->
+    <div class="g-grid">
         <div class="g-panel">
             <div class="g-panel-header">
-                <span class="g-panel-header-title">
-                    <i class="bi bi-pie-chart" style="color:#0f172a;"></i>
-                    Attendance Rate
-                </span>
+                <span class="g-panel-header-title"><i class="bi bi-pie-chart" style="color:#0f172a;"></i> Attendance Rate</span>
             </div>
             <div class="g-chart-wrap">
                 <div class="gauge-wrap">
@@ -381,13 +421,9 @@
             </div>
         </div>
 
-        <!-- Right: Recent Attendance History -->
         <div class="g-panel">
             <div class="g-panel-header">
-                <span class="g-panel-header-title">
-                    <i class="bi bi-list-check" style="color:#0f172a;"></i>
-                    Recent Attendance History
-                </span>
+                <span class="g-panel-header-title"><i class="bi bi-list-check" style="color:#0f172a;"></i> Recent Attendance History</span>
                 <span style="font-size:12px;color:var(--adm-text-muted,#6b7280);">Showing last 10 days</span>
             </div>
             <div style="overflow-x:auto;">
@@ -423,10 +459,7 @@
                         {
                             <tr>
                                 <td colspan="4">
-                                    <div class="g-empty">
-                                        <i class="bi bi-calendar-x"></i>
-                                        No recent attendance records found.
-                                    </div>
+                                    <div class="g-empty"><i class="bi bi-calendar-x"></i> No recent attendance records found.</div>
                                 </td>
                             </tr>
                         }
@@ -434,16 +467,30 @@
                 </table>
             </div>
         </div>
-
     </div>
 
-    <!-- ── Attendance Calendar ────────────────────────── -->
+    @if (Model.RecentNotices.Any())
+    {
+        <div class="g-panel mt-4">
+            <div class="g-panel-header">
+                <span class="g-panel-header-title"><i class="bi bi-megaphone" style="color:#0f172a;"></i> Recent Notices</span>
+                <a asp-action="Notices" asp-controller="GuardianPortalPages" style="font-size:12px;">View all</a>
+            </div>
+            <ul class="notice-list">
+                @foreach (var notice in Model.RecentNotices.Take(5))
+                {
+                    <li class="notice-item">
+                        <div class="title">@notice.Title</div>
+                        <div class="date">@notice.Date.ToString("dd MMM yyyy") @(!string.IsNullOrEmpty(notice.Category) ? "· " + notice.Category : "")</div>
+                    </li>
+                }
+            </ul>
+        </div>
+    }
+
     <div class="g-panel mt-4">
         <div class="g-panel-header">
-            <span class="g-panel-header-title">
-                <i class="bi bi-calendar3" style="color:#0f172a;"></i>
-                Monthly Attendance Calendar - @DateTime.Now.ToString("MMMM yyyy")
-            </span>
+            <span class="g-panel-header-title"><i class="bi bi-calendar3" style="color:#0f172a;"></i> Monthly Attendance Calendar - @DateTime.Now.ToString("MMMM yyyy")</span>
         </div>
         <div class="p-4">
             <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px;">
@@ -453,27 +500,15 @@
                     var att = Model.AttendanceCalendar.FirstOrDefault(a => a.Date.Date == date.Date);
                     var status = att?.Status ?? "No Record";
 
-                    <div style="
-                        padding:12px;
-                        border-radius:12px;
-                        border:1px solid #e5e7eb;
-                        background:#fff;
-                        text-align:center;
-                        min-height:90px;
-                        display:flex;
-                        flex-direction:column;
-                        justify-content:space-between;
-                        transition: all .2s;">
-                        
+                    <div style="padding:12px;border-radius:12px;border:1px solid #e5e7eb;background:#fff;text-align:center;min-height:90px;flex-direction:column;justify-content:space-between;transition: all .2s;">
                         <div style="font-size:12px; font-weight:700; color:#64748b;">@i</div>
-                        
                         @if (att != null)
                         {
                             <div class="status-pill @status" style="font-size:10px; padding: 2px 8px;">@status</div>
                         }
                         else
                         {
-                            <div style="font-size:10px; color:#94a3b8; font-style:italic;">---</div>
+                            <div style="font-size:10px; color:#94a3b8; font-style:italic;">—</div>
                         }
                     </div>
                 }

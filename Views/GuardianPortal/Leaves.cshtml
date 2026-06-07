@@ -1,0 +1,114 @@
+@model IEnumerable<SchoolManagementSystem.Models.Entities.Attendance.StudentLeaveApplication>
+@using SchoolManagementSystem.Models.Entities.Attendance
+@{
+    ViewData["Title"] = "Leave";
+    var childName = ViewBag.StudentName as string;
+    var studentId = (int)(ViewBag.StudentId ?? 0);
+    var leaveTypes = ViewBag.LeaveTypes as List<LeaveType> ?? new();
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold">Leave Applications</h2>
+            <p class="text-muted mb-0">@childName</p>
+        </div>
+        <a asp-action="Dashboard" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+        </a>
+    </div>
+
+    @if (TempData["SuccessMessage"] is string success)
+    {
+        <div class="alert alert-success">@success</div>
+    }
+    @if (TempData["ErrorMessage"] is string err)
+    {
+        <div class="alert alert-danger">@err</div>
+    }
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h5 class="mb-0 fw-bold">Apply for Leave</h5>
+        </div>
+        <div class="card-body">
+            <form asp-action="ApplyLeave" method="post" class="row g-3">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="studentId" value="@studentId" />
+                <div class="col-md-3">
+                    <label class="form-label">Leave Type</label>
+                    <select name="leaveTypeId" class="form-select" required>
+                        <option value="">Select...</option>
+                        @foreach (var lt in leaveTypes)
+                        {
+                            <option value="@lt.Id">@lt.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">From</label>
+                    <input type="date" name="fromDate" class="form-control" required />
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label">To</label>
+                    <input type="date" name="toDate" class="form-control" required />
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Reason</label>
+                    <input type="text" name="reason" class="form-control" placeholder="Brief reason" required />
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white">
+            <h5 class="mb-0 fw-bold">Leave History</h5>
+        </div>
+        <div class="card-body">
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>Type</th>
+                                <th>From</th>
+                                <th>To</th>
+                                <th>Reason</th>
+                                <th>Status</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var l in Model)
+                            {
+                                <tr>
+                                    <td>@(l.LeaveType?.Name ?? "N/A")</td>
+                                    <td>@l.FromDate.ToString("dd MMM yyyy")</td>
+                                    <td>@l.ToDate.ToString("dd MMM yyyy")</td>
+                                    <td>@l.Reason</td>
+                                    <td>
+                                        <span class="badge bg-@(l.ApprovalStatus == StudentLeaveApplication.ApprovalStatusEnum.Approved ? "success" : l.ApprovalStatus == StudentLeaveApplication.ApprovalStatusEnum.Rejected ? "danger" : "warning text-dark")">
+                                            @l.ApprovalStatus
+                                        </span>
+                                    </td>
+                                    <td>@l.Remarks</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-4">
+                    <p class="text-muted">No leave applications yet.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>

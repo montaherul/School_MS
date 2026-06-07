@@ -37,6 +37,7 @@
     bool isStudent = User.IsInRole("Student");
     bool isAccountant = User.IsInRole("Accountant");
     bool isApplicationAdmin = User.IsInRole("Admin");
+    bool isGuardian = User.IsInRole("Guardian");
     bool isTeacherLike = User.IsInRole("Teacher") || User.IsInRole("Senior Lecturer") ||
                            User.IsInRole("Lecturer") || User.IsInRole("Assistant Head") ||
                            User.IsInRole("Principal") || User.IsInRole("Office Staff");
@@ -47,6 +48,7 @@
     string roleBadgeClass = IsAdmin() ? "admin"
                           : isTeacherLike ? "teacher"
                           : isStudent ? "student"
+                          : isGuardian ? "guardian"
                           : "staff";
 
     string roleLabel =
@@ -54,6 +56,7 @@
      isStudent ? "Student" :
      isApplicationAdmin ? "Admin" :
      isAccountant ? "Accountant" :
+     isGuardian ? "Guardian" :
      User.IsInRole("Principal") ? "Principal" :
      User.IsInRole("Teacher") ? "Teacher" :
      User.IsInRole("Senior Lecturer") ? "Senior Lecturer" :
@@ -114,14 +117,27 @@
                 </div>
 
                 <nav class="sidebar-nav" id="sidebarNav">
-                    @if (isStudent)
+                    @if (isGuardian)
+                    {
+                        <span class="nav-section-label"><span class="nav-text">Guardian Portal</span></span>
+                        <a href="/Guardian/Portal/Dashboard" data-title="Dashboard"><i class="bi bi-grid-1x2"></i><span class="nav-text">My Dashboard</span></a>
+                        <a href="/Guardian/Portal/Attendance" data-title="Attendance"><i class="bi bi-calendar-check"></i><span class="nav-text">Attendance</span></a>
+                        <a href="/Guardian/Portal/Results" data-title="Results"><i class="bi bi-bar-chart-line"></i><span class="nav-text">Results</span></a>
+                        <a href="/Guardian/Portal/Fees" data-title="Fees"><i class="bi bi-cash-coin"></i><span class="nav-text">Fees</span></a>
+                        <a href="/Guardian/Portal/Leaves" data-title="Leave"><i class="bi bi-file-earmark-medical"></i><span class="nav-text">Leave</span></a>
+                        <a href="/Guardian/Portal/Notices" data-title="Notices"><i class="bi bi-megaphone"></i><span class="nav-text">Notices</span></a>
+                        <a href="/Guardian/Portal/Calendar" data-title="Calendar"><i class="bi bi-calendar3"></i><span class="nav-text">Calendar</span></a>
+                        <a href="/Guardian/Portal/Notifications" data-title="Notifications"><i class="bi bi-bell"></i><span class="nav-text">Notifications</span></a>
+                        <a href="/Guardian/Portal/Profile" data-title="Profile"><i class="bi bi-person-circle"></i><span class="nav-text">My Profile</span></a>
+                    }
+                    else if (isStudent)
                     {
                         <span class="nav-section-label"><span class="nav-text">Main</span></span>
                         <a href="/Details" data-title="My Profile"><i class="bi bi-person-circle"></i><span class="nav-text">My Profile</span></a>
                         <a asp-controller="Dashboard" asp-action="Index" data-title="Dashboard"><i class="bi bi-grid-1x2"></i><span class="nav-text">My Dashboard</span></a>
 
                         <span class="nav-section-label"><span class="nav-text">Academics</span></span>
-                        <a href="/ResultManagement/StudentIndex" data-title="Results"><i class="bi bi-bar-chart-line"></i><span class="nav-text">My Results</span></a>
+                        <a href="/ResultManagement/StudentDashboard" data-title="Results"><i class="bi bi-bar-chart-line"></i><span class="nav-text">My Results</span></a>
                         <a href="/AttendanceRecord" data-title="Attendance"><i class="bi bi-calendar-check"></i><span class="nav-text">Attendance</span></a>
                         <a asp-controller="StudentClassAssignment" asp-action="Index" data-title="Assignments"><i class="bi bi-journal-text"></i><span class="nav-text">Assignments</span></a>
 
@@ -370,14 +386,14 @@
                             <i class="bi bi-search"></i>
                             <input type="text" placeholder="Search anything..." aria-label="Search">
                         </div>
-                        @if (Can("Notifications.View") || isStudent || isTeacherLike)
+                        @if (Can("Notifications.View") || isGuardian || isStudent || isTeacherLike)
                         {
-                            <a class="topbar-icon-btn" asp-controller="Notification" asp-action="Index" title="Notifications">
+                            <a class="topbar-icon-btn" href="@(isGuardian ? "/Guardian/Portal/Notifications" : Url.Action("Index", "Notification"))" title="Notifications">
                                 <i class="bi bi-bell"></i>
                                 <span class="notif-dot"></span>
                             </a>
                         }
-                        <a class="topbar-icon-btn" href="/Details" title="My Profile">
+                        <a class="topbar-icon-btn" href="@(isGuardian ? "/Guardian/Portal/Profile" : "/Details")" title="My Profile">
                             @if (!string.IsNullOrEmpty(profilePicture))
                             {
                                 <img src="@profilePicture" alt="@userName" />

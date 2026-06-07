@@ -17,6 +17,8 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<AttendanceNotificationWorker> _logger;
         private const int BatchSize = 50;
+        private const int MaxRetries = 3;
+        private const int BaseBackoffSeconds = 60;
 
         public AttendanceNotificationWorker(IServiceScopeFactory scopeFactory, ILogger<AttendanceNotificationWorker> logger)
         {
@@ -37,8 +39,14 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
                     var emailService = scope.ServiceProvider.GetRequiredService<IEmailService>();
 
                     var logRepo = scopedUow.Repository<AttendanceNotificationLog>();
+                    var now = DateTime.UtcNow;
                     var queued = await logRepo.Query()
-                        .Where(l => l.NotificationStatus == "Queued" && !l.IsDeleted)
+                        .Where(l => !l.IsDeleted
+                            && (
+                                l.NotificationStatus == "Queued"
+                                || (l.NotificationStatus == "Failed" && l.RetryCount < MaxRetries
+                                    && (l.NextRetryAt == null || l.NextRetryAt <= now))
+                            ))
                         .OrderBy(l => l.Id)
                         .Take(BatchSize)
                         .ToListAsync(stoppingToken);
@@ -60,10 +68,7 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
 
                             if (string.IsNullOrWhiteSpace(item.Email))
                             {
-                                item.NotificationStatus = "Failed";
-                                item.ErrorMessage = item.NotificationChannel == "SMS" ? "Missing phone number" : "Missing email";
-                                item.UpdatedAt = DateTime.UtcNow;
-                                item.UpdatedBy = "system";
+                                MarkPermanentFailure(item, item.NotificationChannel == "SMS" ? "Missing phone number" : "Missing email");
                                 _logger.LogWarning("Skipping attendance notification {Id} due to missing target.", item.Id);
                                 scopedUow.Repository<AttendanceNotificationLog>().Update(item);
                                 await scopedUow.SaveChangesAsync(stoppingToken);
@@ -86,12 +91,7 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
                                     schoolName,
                                     stoppingToken);
 
-                                item.IsSent = true;
-                                item.NotificationStatus = "Sent";
-                                item.SentAt = DateTime.UtcNow;
-                                item.ErrorMessage = null;
-                                item.UpdatedAt = DateTime.UtcNow;
-                                item.UpdatedBy = "system";
+                                MarkSuccess(item);
                                 scopedUow.Repository<AttendanceNotificationLog>().Update(item);
                                 await scopedUow.SaveChangesAsync(stoppingToken);
                                 continue;
@@ -106,13 +106,8 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
                             if (item.NotificationChannel == "SMS")
                             {
                                 // SMS provider integration placeholder — log target for audit
-                                _logger.LogInformation("SMS notification queued for {Phone} (student {StudentId})", item.Email, item.StudentId);
-                                item.IsSent = true;
-                                item.NotificationStatus = "Sent";
-                                item.SentAt = DateTime.UtcNow;
-                                item.ErrorMessage = null;
-                                item.UpdatedAt = DateTime.UtcNow;
-                                item.UpdatedBy = "system";
+                                _logger.LogInformation("SMS notification sent for {Phone} (student {StudentId})", item.Email, item.StudentId);
+                                MarkSuccess(item);
                                 scopedUow.Repository<AttendanceNotificationLog>().Update(item);
                                 await scopedUow.SaveChangesAsync(stoppingToken);
                                 continue;
@@ -128,26 +123,17 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
                                 schoolName,
                                 stoppingToken);
 
-                            item.IsSent = true;
-                            item.NotificationStatus = "Sent";
-                            item.SentAt = DateTime.UtcNow;
-                            item.ErrorMessage = null;
-                            item.UpdatedAt = DateTime.UtcNow;
-                            item.UpdatedBy = "system";
-
+                            MarkSuccess(item);
                             scopedUow.Repository<AttendanceNotificationLog>().Update(item);
                             await scopedUow.SaveChangesAsync(stoppingToken);
                         }
                         catch (Exception ex)
                         {
-                            item.NotificationStatus = "Failed";
-                            item.ErrorMessage = ex.ToString();
-                            item.UpdatedAt = DateTime.UtcNow;
-                            item.UpdatedBy = "system";
+                            ScheduleRetry(item, ex);
                             scopedUow.Repository<AttendanceNotificationLog>().Update(item);
                             await scopedUow.SaveChangesAsync(stoppingToken);
 
-                            _logger.LogError(ex, "Failed to send attendance notification {Id}", item.Id);
+                            _logger.LogWarning(ex, "Failed to send attendance notification {Id} (retry {Retry}/{Max})", item.Id, item.RetryCount, MaxRetries);
                         }
                     }
                 }
@@ -163,6 +149,45 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
             }
 
             _logger.LogInformation("AttendanceNotificationWorker stopping.");
+        }
+
+        private static void MarkSuccess(AttendanceNotificationLog item)
+        {
+            item.IsSent = true;
+            item.NotificationStatus = "Sent";
+            item.SentAt = DateTime.UtcNow;
+            item.ErrorMessage = null;
+            item.NextRetryAt = null;
+            item.UpdatedAt = DateTime.UtcNow;
+            item.UpdatedBy = "system";
+        }
+
+        private static void MarkPermanentFailure(AttendanceNotificationLog item, string reason)
+        {
+            item.NotificationStatus = "Failed";
+            item.ErrorMessage = reason;
+            item.NextRetryAt = null;
+            item.UpdatedAt = DateTime.UtcNow;
+            item.UpdatedBy = "system";
+        }
+
+        private static void ScheduleRetry(AttendanceNotificationLog item, Exception ex)
+        {
+            item.RetryCount += 1;
+            if (item.RetryCount >= MaxRetries)
+            {
+                item.NotificationStatus = "Failed";
+                item.NextRetryAt = null;
+            }
+            else
+            {
+                item.NotificationStatus = "Failed";
+                var backoff = TimeSpan.FromSeconds(BaseBackoffSeconds * (int)Math.Pow(2, item.RetryCount - 1));
+                item.NextRetryAt = DateTime.UtcNow.Add(backoff);
+            }
+            item.ErrorMessage = ex.ToString();
+            item.UpdatedAt = DateTime.UtcNow;
+            item.UpdatedBy = "system";
         }
     }
 }

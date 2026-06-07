@@ -1,0 +1,346 @@
+@model IEnumerable<SchoolManagementSystem.Models.Entities.Result.StudentExamResult>
+@using SchoolManagementSystem.Models.Entities.Result
+@using SchoolManagementSystem.Models.Enums
+@inject SchoolManagementSystem.Services.Guardian.IGuardianService GuardianSvc
+@{
+    ViewData["Title"] = "Results";
+    var studentId = (int)(ViewBag.StudentId ?? 0);
+    var childName = ViewBag.StudentName as string ?? "";
+    var subjectResults = ViewBag.SubjectResults as List<StudentSubjectResult> ?? new();
+
+    var userId = int.TryParse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value, out var uid) ? uid : 0;
+    var children = userId > 0 ? (await GuardianSvc.GetChildrenByUserIdAsync(userId)) : new();
+    var currentChild = children.FirstOrDefault(c => c.StudentId == studentId) ?? children.FirstOrDefault();
+    var resultList = Model?.ToList() ?? new();
+
+    var totalExams = resultList.Count;
+    var passedExams = resultList.Count(r => r.IsPassed);
+    var currentGpa = resultList.Any() ? resultList.Max(r => r.Gpa) : 0m;
+    var currentPosition = resultList.Any() ? resultList.Min(r => r.Position) : 0;
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold">Academic Results</h2>
+            <p class="text-muted mb-0">@childName</p>
+        </div>
+        <a asp-action="Dashboard" asp-controller="GuardianPortal" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+        </a>
+    </div>
+
+    @if (children.Count > 1 || currentChild != null)
+    {
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body py-3">
+                <div class="row align-items-center">
+                    <div class="col-md-auto mb-2 mb-md-0">
+                        <span class="fw-bold me-2">Select Child:</span>
+                    </div>
+                    <div class="col-md-4 mb-2 mb-md-0">
+                        <select id="childSelect" class="form-select" onchange="switchChild(this.value)">
+                            @foreach (var c in children)
+                            {
+                                <option value="@c.StudentId" selected="@(c.StudentId == studentId)">
+                                    @c.FullName — @c.ClassName @c.SectionName (Roll: @c.RollNumber)
+                                </option>
+                            }
+                        </select>
+                    </div>
+                    @if (currentChild != null)
+                    {
+                        <div class="col-md-auto text-muted small">
+                            <i class="bi bi-person-badge me-1"></i>@currentChild.FullName
+                            <span class="mx-1">|</span>
+                            <i class="bi bi-book me-1"></i>@currentChild.ClassName
+                            <span class="mx-1">|</span>
+                            <i class="bi bi-layers me-1"></i>@currentChild.SectionName
+                            <span class="mx-1">|</span>
+                            <i class="bi bi-hash me-1"></i>Roll @currentChild.RollNumber
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
+    @if (resultList.Any())
+    {
+        <div class="row mb-4 g-3">
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm border-start border-4 border-primary h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0 bg-primary bg-opacity-10 p-3 rounded">
+                                <i class="bi bi-journal-check text-primary fs-4"></i>
+                            </div>
+                            <div class="ms-3">
+                                <h6 class="card-subtitle mb-1 text-muted">Total Exams Taken</h6>
+                                <h4 class="card-title mb-0 fw-bold">@totalExams</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm border-start border-4 border-success h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0 bg-success bg-opacity-10 p-3 rounded">
+                                <i class="bi bi-check-circle text-success fs-4"></i>
+                            </div>
+                            <div class="ms-3">
+                                <h6 class="card-subtitle mb-1 text-muted">Passed Exams</h6>
+                                <h4 class="card-title mb-0 fw-bold text-success">@passedExams <span class="fs-6 text-muted fw-normal">/ @totalExams</span></h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm border-start border-4 border-info h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0 bg-info bg-opacity-10 p-3 rounded">
+                                <i class="bi bi-cpu text-info fs-4"></i>
+                            </div>
+                            <div class="ms-3">
+                                <h6 class="card-subtitle mb-1 text-muted">Best GPA</h6>
+                                <h4 class="card-title mb-0 fw-bold text-info">@currentGpa.ToString("F2")</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card border-0 shadow-sm border-start border-4 border-warning h-100">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center">
+                            <div class="flex-shrink-0 bg-warning bg-opacity-10 p-3 rounded">
+                                <i class="bi bi-trophy text-warning fs-4"></i>
+                            </div>
+                            <div class="ms-3">
+                                <h6 class="card-subtitle mb-1 text-muted">Best Position</h6>
+                                <h4 class="card-title mb-0 fw-bold text-warning">
+                                    @if (currentPosition > 0)
+                                    {
+                                        @currentPosition<sup>th</sup>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">N/A</span>
+                                    }
+                                </h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0 fw-bold"><i class="bi bi-table me-2 text-primary"></i>Exam Results</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>Exam</th>
+                                <th>Term</th>
+                                <th>Total</th>
+                                <th>GPA</th>
+                                <th>Grade</th>
+                                <th>Position</th>
+                                <th>Status</th>
+                                <th class="text-center">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var r in resultList)
+                            {
+                                <tr>
+                                    <td class="fw-semibold">@r.Exam?.Name</td>
+                                    <td><span class="badge bg-light text-dark">@(r.Exam?.Term ?? ExamTerm.Other)</span></td>
+                                    <td class="font-monospace">@r.TotalMarks.ToString("F0") / @r.TotalFullMarks.ToString("F0")</td>
+                                    <td class="fw-bold text-primary">@r.Gpa.ToString("F2")</td>
+                                    <td><span class="badge bg-secondary">@r.Grade</span></td>
+                                    <td class="text-center">
+                                        @if (r.Position > 0)
+                                        {
+                                            <span>@r.Position</span>
+                                            if (r.ClassPosition > 0 && r.ClassPosition != r.Position)
+                                            {
+                                                <small class="text-muted d-block">Class: @r.ClassPosition</small>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-@(r.IsPassed ? "success" : "danger")">
+                                            @(r.IsPassed ? "Pass" : "Fail")
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="@Url.Action("ReportCard", "GuardianPortalPages", new { examId = r.ExamId, studentId = r.StudentId })"
+                                               class="btn btn-outline-primary" title="Download Report Card PDF">
+                                                <i class="bi bi-file-earmark-pdf"></i>
+                                            </a>
+                                            <a href="@Url.Action("ReportCard", "GuardianPortalPages", new { examId = r.ExamId, studentId = r.StudentId })"
+                                               class="btn btn-outline-info" title="View Report Card">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            <a href="@Url.Action("Transcript", "GuardianPortalPages", new { studentId = r.StudentId })"
+                                               class="btn btn-outline-secondary" title="Download Transcript">
+                                                <i class="bi bi-journal-text"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        @if (resultList.Count > 1)
+        {
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-graph-up me-2 text-success"></i>GPA Trend</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="gpaTrendChart" height="100"></canvas>
+                </div>
+            </div>
+        }
+
+        if (subjectResults.Any())
+        {
+            var latestSubjects = subjectResults
+                .GroupBy(s => s.SubjectId)
+                .Select(g => g.OrderByDescending(s => s.Id).First())
+                .ToList();
+
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-bar-chart me-2 text-info"></i>Subject-wise Performance (Latest)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered align-middle">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>Subject</th>
+                                    <th>Marks</th>
+                                    <th>Full Marks</th>
+                                    <th>Grade</th>
+                                    <th>Grade Point</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var s in latestSubjects.OrderBy(x => x.Subject?.Name))
+                                {
+                                    <tr>
+                                        <td class="fw-semibold">@s.Subject?.Name</td>
+                                        <td class="font-monospace">@s.MarksObtained.ToString("F0")</td>
+                                        <td class="font-monospace">@s.FullMarks.ToString("F0")</td>
+                                        <td>@s.Grade</td>
+                                        <td class="fw-bold">@s.GradePoint.ToString("F2")</td>
+                                        <td>
+                                            <span class="badge bg-@(s.IsPassed ? "success" : "danger")">
+                                                @(s.IsPassed ? "Pass" : "Fail")
+                                            </span>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <div class="d-flex flex-wrap gap-2">
+            <a href="@Url.Action("ExamComparison", "GuardianPortalPages", new { studentId })" class="btn btn-outline-primary">
+                <i class="bi bi-bar-chart-steps me-1"></i>Compare Exams
+            </a>
+            <a href="@Url.Action("Transcript", "GuardianPortalPages", new { studentId })" class="btn btn-outline-secondary">
+                <i class="bi bi-journal-text me-1"></i>Full Transcript
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-bar-chart fs-1 text-muted"></i>
+                <p class="text-muted mt-2">No published results yet.</p>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function switchChild(studentId) {
+            window.location.href = '@Url.Action("Results", "GuardianPortalPages")?studentId=' + studentId;
+        }
+
+        @if (resultList.Count > 1)
+        {
+            <text>
+            document.addEventListener('DOMContentLoaded', function () {
+                var ctx = document.getElementById('gpaTrendChart');
+                if (!ctx) return;
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: [@Html.Raw(string.Join(",", resultList.OrderBy(r => r.ExamId).Select(r => $"'{r.Exam?.Name?.Replace("'","\\'")}'")))]],
+                        datasets: [{
+                            label: 'GPA',
+                            data: [@string.Join(",", resultList.OrderBy(r => r.ExamId).Select(r => r.Gpa.ToString("F2", System.Globalization.CultureInfo.InvariantCulture)))],
+                            borderColor: '#0d6efd',
+                            backgroundColor: 'rgba(13,110,253,0.1)',
+                            fill: true,
+                            tension: 0.3,
+                            pointBackgroundColor: '#0d6efd',
+                            pointRadius: 5,
+                            pointHoverRadius: 7
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: true,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function (ctx) {
+                                        return 'GPA: ' + ctx.parsed.y.toFixed(2);
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 5,
+                                ticks: { stepSize: 0.5 }
+                            }
+                        }
+                    }
+                });
+            });
+            </text>
+        }
+    </script>
+}

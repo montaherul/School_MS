@@ -134,7 +134,58 @@
                         </div>
                     </div>
 
-                    @* ── Section 3: Contact Details ── *@
+                    @* ── Section 3: Guardian Information ── *@
+                    <div class="card shadow-sm mb-4 border-0" style="border-radius: var(--radius-lg);">
+                        <div class="card-header" style="background-color:#6f42c1;color:#fff;border-radius: var(--radius-lg) var(--radius-lg) 0 0;">
+                            <h5 class="mb-0"><i class="bi bi-shield-fill me-2"></i>Guardian Information</h5>
+                        </div>
+                        <div class="card-body p-4">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label asp-for="GuardianEmail" class="form-label">Guardian Email</label>
+                                    <input asp-for="GuardianEmail" type="email" class="form-control" placeholder="guardian@mail.com" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label asp-for="GuardianMobileNumber" class="form-label">Guardian Mobile Number</label>
+                                    <input asp-for="GuardianMobileNumber" class="form-control" placeholder="01XXXXXXXXX" />
+                                </div>
+                                <div class="col-md-4">
+                                    <label asp-for="GuardianRelationship" class="form-label">Guardian Relationship</label>
+                                    <select asp-for="GuardianRelationship" class="form-select">
+                                        <option value="">Select</option>
+                                        <option value="Father">Father</option>
+                                        <option value="Mother">Mother</option>
+                                        <option value="LegalGuardian">Legal Guardian</option>
+                                        <option value="Grandfather">Grandfather</option>
+                                        <option value="Grandmother">Grandmother</option>
+                                        <option value="Uncle">Uncle</option>
+                                        <option value="Aunt">Aunt</option>
+                                        <option value="Brother">Brother</option>
+                                        <option value="Sister">Sister</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="GuardianNationalId" class="form-label">Guardian National ID</label>
+                                    <input asp-for="GuardianNationalId" class="form-control" placeholder="National ID / NID number" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="GuardianAddress" class="form-label">Guardian Address</label>
+                                    <textarea asp-for="GuardianAddress" class="form-control" rows="2" placeholder="Full address of guardian"></textarea>
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="GuardianPhoto" class="form-label">Guardian Photo</label>
+                                    <input asp-for="GuardianPhoto" type="file" class="form-control" accept="image/*" />
+                                </div>
+                                <div class="col-md-6">
+                                    <label asp-for="GuardianRemarks" class="form-label">Guardian Remarks</label>
+                                    <textarea asp-for="GuardianRemarks" class="form-control" rows="2" placeholder="Additional notes about guardian"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @* ── Section 4: Contact Details ── *@
                     <div class="card shadow-sm mb-4 border-0" style="border-radius: var(--radius-lg);">
                         <div class="card-header bg-info text-white py-3" style="border-radius: var(--radius-lg) var(--radius-lg) 0 0;">
                             <h5 class="mb-0"><i class="bi bi-telephone-fill me-2"></i>Contact Details</h5>

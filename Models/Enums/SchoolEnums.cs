@@ -30,7 +30,11 @@ public enum AcademicEventType
     Vacation = 4,
     Event = 5
 }
-public enum ResultWorkflowStatus { Draft = 1, Submitted = 2, Approved = 3, Published = 4, Locked = 5 }
+public enum ResultWorkflowStatus { Draft = 1, Submitted = 2, Reviewed = 3, Approved = 4, Published = 5, Locked = 6, Unpublished = 7 }
+
+public enum OptionalSubjectMode { Disabled = 0, ExcludeFromGPA = 1, BonusGPA = 2, BestOf = 3, Custom = 4 }
+
+public enum FailSubjectMode { StrictFail = 0, ExcludeFail = 1, Custom = 2 }
 public enum ReEvaluationStatus { Requested = 1, Approved = 2, Rejected = 3, Revised = 4 }
 public enum PromotionStatus { Pending = 1, Promoted = 2, Repeat = 3, Failed = 4 }
 public enum AttendanceSessionStatus { Draft = 1, Submitted = 2, Locked = 3, Revised = 4, Approved = 5 }

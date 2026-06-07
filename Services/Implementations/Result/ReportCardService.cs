@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Helpers.Pdf;
 using SchoolManagementSystem.Models.Entities.Result;
+using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Repositories.Interfaces.Result;
 using SchoolManagementSystem.Repositories.Interfaces.Website;
 using SchoolManagementSystem.Services.Interfaces.Result;
@@ -37,7 +38,8 @@ public class ReportCardService : IReportCardService
         var result = await _examResultRepository.Query()
             .Include(r => r.Student)
             .Include(r => r.Exam)
-            .FirstOrDefaultAsync(r => r.ExamId == examId && r.StudentId == studentId && !r.IsDeleted, ct);
+            .FirstOrDefaultAsync(r => r.ExamId == examId && r.StudentId == studentId && !r.IsDeleted
+                && (r.Status == ResultWorkflowStatus.Published || r.Status == ResultWorkflowStatus.Locked), ct);
 
         if (result == null) return null;
 

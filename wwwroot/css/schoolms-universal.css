@@ -284,6 +284,11 @@ body {
         color: var(--role-student);
     }
 
+    .role-badge.guardian {
+        background: linear-gradient(135deg, rgba(168, 85, 247, 0.18), rgba(236, 72, 153, 0.18));
+        color: #a21caf;
+    }
+
     .role-badge.staff {
         background: var(--role-staff-bg);
         color: var(--role-staff);

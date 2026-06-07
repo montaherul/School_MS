@@ -1,0 +1,408 @@
+@model IEnumerable<SchoolManagementSystem.Models.DTOs.Result.ResultListItemDto>
+@{
+    ViewData["Title"] = "Review Results";
+    var examName = ViewBag.ExamName as string;
+    var examId = ViewBag.ExamId as int?;
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Review Results</h1>
+                <p class="adm-header__sub">
+                    @if (!string.IsNullOrEmpty(ViewBag.AcademicYearName as string))
+                    {
+                        <span>@ViewBag.AcademicYearName &middot; </span>
+                    }
+                    @examName
+                </p>
+            </div>
+        </div>
+        @if (Model != null && Model.Any())
+        {
+            <div class="adm-btn-group">
+                <button class="adm-btn adm-btn--primary" onclick="approveAll(@examId)" id="approveAllBtn">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12" /></svg>
+                    Approve All
+                </button>
+                <button class="adm-btn adm-btn--outline-danger" onclick="rejectAll(@examId)" id="rejectAllBtn">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                    Reject All
+                </button>
+                <a href="@Url.Action("Dashboard", "AdminResult")" class="adm-btn adm-btn--ghost">
+                    Back to Dashboard
+                </a>
+            </div>
+        }
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        var total = Model.Count();
+        var passed = Model.Count(r => r.IsPassed);
+        var failed = Model.Count(r => !r.IsPassed);
+        var pending = Model.Count(r => r.Status == 0 || r.Status == 1);
+
+        <div class="row g-3 mb-3">
+            <div class="col-md-12">
+                <div class="adm-table-card" style="border-radius: var(--adm-radius-lg);">
+                    <div class="adm-table-card__body d-flex align-items-center gap-4 flex-wrap py-2 px-3">
+                        <div><strong>Total Students:</strong> <span class="badge bg-secondary">@total</span></div>
+                        <div><strong>Passed:</strong> <span class="badge bg-success">@passed</span></div>
+                        <div><strong>Failed:</strong> <span class="badge bg-danger">@failed</span></div>
+                        <div><strong>Pending Review:</strong> <span class="badge bg-warning text-dark">@pending</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-md-12">
+                <div class="adm-table-card" style="border-radius: var(--adm-radius-lg);">
+                    <div class="adm-table-card__body d-flex align-items-center gap-3 flex-wrap py-2 px-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <label class="form-label mb-0 text-nowrap">Search:</label>
+                            <input type="text" id="filterSearch" class="form-control form-control-sm" style="width:200px;" placeholder="Name or Roll..." />
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <label class="form-label mb-0 text-nowrap">Status:</label>
+                            <select id="filterStatus" class="form-select form-select-sm" style="width:140px;">
+                                <option value="">All</option>
+                                <option value="0">Draft</option>
+                                <option value="1">Submitted</option>
+                                <option value="2">Reviewed</option>
+                                <option value="3">Approved</option>
+                            </select>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <label class="form-label mb-0 text-nowrap">Result:</label>
+                            <select id="filterPassFail" class="form-select form-select-sm" style="width:120px;">
+                                <option value="">All</option>
+                                <option value="pass">Pass</option>
+                                <option value="fail">Fail</option>
+                            </select>
+                        </div>
+                        <button class="adm-btn adm-btn--primary adm-btn--sm" onclick="applyFilters()">Apply Filter</button>
+                        <button class="adm-btn adm-btn--ghost adm-btn--sm" onclick="clearFilters()">Clear</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="adm-table-card" style="border-radius: var(--adm-radius-lg); position:relative;">
+        <div class="loading-overlay" id="loadingOverlay" style="display:none; position:absolute; inset:0; background:rgba(255,255,255,0.7); z-index:999; display:none; align-items:center; justify-content:center; border-radius:var(--adm-radius-lg);">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+        <div class="adm-table-card__body">
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="dash-table" id="reviewTable">
+                        <thead>
+                            <tr>
+                                <th style="width:40px;">
+                                    <input type="checkbox" id="selectAll" onchange="toggleAll(this)" class="form-check-input">
+                                </th>
+                                <th>Student</th>
+                                <th>Roll</th>
+                                <th>Class</th>
+                                <th>Section</th>
+                                <th>Group</th>
+                                <th>Total</th>
+                                <th>GPA</th>
+                                <th>Grade</th>
+                                <th>Pass/Fail</th>
+                                <th>Failed Subjects</th>
+                                <th>Subject Count</th>
+                                <th>Status</th>
+                                <th style="width:160px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var r in Model)
+                            {
+                                <tr data-student-id="@r.StudentId" data-status="@r.Status" data-pass="@(r.IsPassed ? "pass" : "fail")" data-name="@r.StudentName.ToLower()" data-roll="@r.RollNumber.ToLower()">
+                                    <td><input type="checkbox" class="form-check-input row-check" value="@r.StudentId"></td>
+                                    <td><span class="adm-cell-name">@r.StudentName</span></td>
+                                    <td>@r.RollNumber</td>
+                                    <td>@r.ClassName</td>
+                                    <td>@r.SectionName</td>
+                                    <td>@r.GroupName</td>
+                                    <td class="fw-bold">@r.TotalMarks.ToString("F1")</td>
+                                    <td class="text-primary fw-bold">@r.Gpa.ToString("F2")</td>
+                                    <td><span class="adm-status adm-status--neutral">@r.Grade</span></td>
+                                    <td>
+                                        @if (r.IsPassed)
+                                        {
+                                            <span class="adm-status adm-status--converted">Pass</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="adm-status adm-status--rejected">Fail</span>
+                                        }
+                                    </td>
+                                    <td>@r.FailedSubjectCount</td>
+                                    <td>@(r.PassedSubjectCount + r.FailedSubjectCount)</td>
+                                    <td>
+                                        @if (r.Status == 3)
+                                        {
+                                            <span class="adm-status adm-status--approved">Approved</span>
+                                        }
+                                        else if (r.Status == 2)
+                                        {
+                                            <span class="adm-status adm-status--approved">Reviewed</span>
+                                        }
+                                        else if (r.Status == 1)
+                                        {
+                                            <span class="adm-status adm-status--pending">Submitted</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="adm-status adm-status--neutral">Draft</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="d-flex gap-1">
+                                            <button class="adm-btn adm-btn--sm adm-btn--primary" onclick="openReviewModal(@r.StudentId, 'review')" title="Review">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
+                                                Review
+                                            </button>
+                                            <button class="adm-btn adm-btn--sm adm-btn--outline-danger" onclick="openReviewModal(@r.StudentId, 'reject')" title="Reject">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                                                Reject
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="dash-empty">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                    <h3 class="dash-empty__title">No Results to Review</h3>
+                    <p class="dash-empty__sub">All results have been reviewed or no submissions exist yet.</p>
+                    <a href="@Url.Action("Dashboard", "AdminResult")" class="adm-btn adm-btn--ghost">Back to Dashboard</a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
+
+<!-- Reviewer Notes Modal -->
+<div class="modal fade" id="reviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="reviewModalTitle">Review Notes</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="reviewStudentId" value="" />
+                <input type="hidden" id="reviewAction" value="" />
+                <div class="mb-3">
+                    <label for="reviewNotes" class="form-label">Notes / Remarks</label>
+                    <textarea class="form-control" id="reviewNotes" rows="4" placeholder="Enter your review notes..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="adm-btn adm-btn--ghost" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="adm-btn adm-btn--primary" id="confirmReviewBtn" onclick="confirmReview()">
+                    Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function toggleAll(source) {
+            document.querySelectorAll('.row-check').forEach(c => c.checked = source.checked);
+        }
+
+        function showToast(message, type) {
+            const bg = type === 'success' ? 'bg-success' : 'bg-danger';
+            const c = document.getElementById('toastContainer');
+            const t = document.createElement('div');
+            t.className = 'toast align-items-center text-white border-0 ' + bg;
+            t.innerHTML = '<div class="d-flex"><div class="toast-body">' + message + '</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>';
+            c.appendChild(t);
+            const bs = new bootstrap.Toast(t, { delay: 4000 });
+            bs.show();
+            t.addEventListener('hidden.bs.toast', () => t.remove());
+        }
+
+        function setLoading(show) {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                overlay.style.display = show ? 'flex' : 'none';
+            }
+        }
+
+        function disableButtons(disable) {
+            document.querySelectorAll('.adm-btn--primary, .adm-btn--outline-danger').forEach(b => {
+                if (b.id !== 'confirmReviewBtn') {
+                    b.disabled = disable;
+                }
+            });
+        }
+
+        function withLoading(btn, promise) {
+            const orig = btn.innerHTML;
+            btn.disabled = true;
+            const w = btn.querySelector('.spinner-border');
+            if (!w) {
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> ' + btn.textContent.trim();
+            }
+            btn.classList.add('pe-none');
+            setLoading(true);
+            return promise.finally(() => {
+                btn.disabled = false;
+                btn.classList.remove('pe-none');
+                setLoading(false);
+            });
+        }
+
+        function approveAll(examId) {
+            const btn = document.getElementById('approveAllBtn');
+            withLoading(btn,
+                fetch('@Url.Action("ApproveResults", "AdminResult")', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ examId: examId })
+                })
+                .then(r => r.json())
+                .then(r => {
+                    if (r.success) {
+                        showToast('All results approved successfully!', 'success');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        showToast(r.message || 'Approval failed', 'error');
+                    }
+                })
+                .catch(() => showToast('Network error', 'error'))
+            );
+        }
+
+        function rejectAll(examId) {
+            const btn = document.getElementById('rejectAllBtn');
+            withLoading(btn,
+                fetch('@Url.Action("RejectResults", "AdminResult")', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ examId: examId })
+                })
+                .then(r => r.json())
+                .then(r => {
+                    if (r.success) {
+                        showToast('All results rejected successfully!', 'success');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        showToast(r.message || 'Rejection failed', 'error');
+                    }
+                })
+                .catch(() => showToast('Network error', 'error'))
+            );
+        }
+
+        function openReviewModal(studentId, action) {
+            document.getElementById('reviewStudentId').value = studentId;
+            document.getElementById('reviewAction').value = action;
+            document.getElementById('reviewNotes').value = '';
+            const title = document.getElementById('reviewModalTitle');
+            title.textContent = action === 'review' ? 'Review Student Result' : 'Reject Student Result';
+            const confirmBtn = document.getElementById('confirmReviewBtn');
+            confirmBtn.className = action === 'review' ? 'adm-btn adm-btn--primary' : 'adm-btn adm-btn--outline-danger';
+            confirmBtn.textContent = action === 'review' ? 'Confirm Review' : 'Confirm Reject';
+            const modal = new bootstrap.Modal(document.getElementById('reviewModal'));
+            modal.show();
+        }
+
+        function confirmReview() {
+            const studentId = document.getElementById('reviewStudentId').value;
+            const action = document.getElementById('reviewAction').value;
+            const notes = document.getElementById('reviewNotes').value;
+            const btn = document.getElementById('confirmReviewBtn');
+            const modalEl = document.getElementById('reviewModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+
+            const url = action === 'review'
+                ? '@Url.Action("ReviewStudentResult", "AdminResult")'
+                : '@Url.Action("RejectStudentResult", "AdminResult")';
+
+            withLoading(btn,
+                fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ examId: @(examId ?? 0), studentId: parseInt(studentId), notes: notes })
+                })
+                .then(r => r.json())
+                .then(r => {
+                    modal.hide();
+                    if (r.success) {
+                        showToast(action === 'review' ? 'Student reviewed successfully!' : 'Student rejected successfully!', 'success');
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        showToast(r.message || 'Action failed', 'error');
+                    }
+                })
+                .catch(() => {
+                    modal.hide();
+                    showToast('Network error', 'error');
+                })
+            );
+        }
+
+        function applyFilters() {
+            const search = document.getElementById('filterSearch').value.toLowerCase().trim();
+            const status = document.getElementById('filterStatus').value;
+            const passFail = document.getElementById('filterPassFail').value;
+            const rows = document.querySelectorAll('#reviewTable tbody tr');
+
+            rows.forEach(row => {
+                const name = (row.getAttribute('data-name') || '').toLowerCase();
+                const roll = (row.getAttribute('data-roll') || '').toLowerCase();
+                const rowStatus = row.getAttribute('data-status') || '';
+                const rowPass = row.getAttribute('data-pass') || '';
+
+                const matchSearch = !search || name.includes(search) || roll.includes(search);
+                const matchStatus = !status || rowStatus === status;
+                const matchPassFail = !passFail || rowPass === passFail;
+
+                row.style.display = matchSearch && matchStatus && matchPassFail ? '' : 'none';
+            });
+        }
+
+        function clearFilters() {
+            document.getElementById('filterSearch').value = '';
+            document.getElementById('filterStatus').value = '';
+            document.getElementById('filterPassFail').value = '';
+            document.querySelectorAll('#reviewTable tbody tr').forEach(r => r.style.display = '');
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchInput = document.getElementById('filterSearch');
+            if (searchInput) {
+                searchInput.addEventListener('keyup', function (e) {
+                    if (e.key === 'Enter') applyFilters();
+                });
+            }
+        });
+    </script>
+}

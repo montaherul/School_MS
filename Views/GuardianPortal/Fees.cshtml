@@ -1,0 +1,137 @@
+@model IEnumerable<SchoolManagementSystem.Models.Entities.Fees.FeeInvoice>
+@using SchoolManagementSystem.Models.Entities.Fees
+@{
+    ViewData["Title"] = "Fees";
+    var childName = ViewBag.StudentName as string;
+    var studentId = (int)(ViewBag.StudentId ?? 0);
+    var payments = ViewBag.Payments as List<Payment> ?? new();
+    var totalDue = (decimal)(ViewBag.TotalDue ?? 0m);
+    var totalPaid = (decimal)(ViewBag.TotalPaid ?? 0m);
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold">Fees</h2>
+            <p class="text-muted mb-0">@childName</p>
+        </div>
+        <a asp-action="Dashboard" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+        </a>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm border-start border-4 border-danger">
+                <div class="card-body">
+                    <small class="text-muted">Outstanding</small>
+                    <h3 class="fw-bold text-danger">৳@totalDue.ToString("N2")</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm border-start border-4 border-success">
+                <div class="card-body">
+                    <small class="text-muted">Total Paid</small>
+                    <h3 class="fw-bold text-success">৳@totalPaid.ToString("N2")</h3>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card border-0 shadow-sm border-start border-4 border-info">
+                <div class="card-body">
+                    <small class="text-muted">Invoices</small>
+                    <h3 class="fw-bold text-info">@Model.Count()</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h5 class="mb-0 fw-bold">Invoices</h5>
+        </div>
+        <div class="card-body">
+            @if (Model != null && Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>Invoice #</th>
+                                <th>Due Date</th>
+                                <th>Total</th>
+                                <th>Paid</th>
+                                <th>Due</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var inv in Model)
+                            {
+                                <tr>
+                                    <td>@inv.InvoiceNo</td>
+                                    <td>@inv.DueDate.ToString("dd MMM yyyy")</td>
+                                    <td>৳@inv.TotalAmount.ToString("N2")</td>
+                                    <td>৳@inv.PaidAmount.ToString("N2")</td>
+                                    <td>৳@((inv.TotalAmount - inv.PaidAmount).ToString("N2"))</td>
+                                    <td>
+                                        <span class="badge bg-@((int)inv.Status == 3 ? "success" : (int)inv.Status == 2 ? "warning text-dark" : "info")">
+                                            @inv.Status
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-4">
+                    <p class="text-muted">No invoices found.</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white">
+            <h5 class="mb-0 fw-bold">Recent Payments</h5>
+        </div>
+        <div class="card-body">
+            @if (payments.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>Date</th>
+                                <th>Reference</th>
+                                <th>Amount</th>
+                                <th>Method</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var p in payments.Take(15))
+                            {
+                                <tr>
+                                    <td>@p.PaidAt.ToString("dd MMM yyyy")</td>
+                                    <td>@(p.ReferenceNo ?? "N/A")</td>
+                                    <td>৳@p.Amount.ToString("N2")</td>
+                                    <td>@p.Method</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-4">
+                    <p class="text-muted">No payments yet.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>

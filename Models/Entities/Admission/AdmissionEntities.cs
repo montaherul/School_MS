@@ -47,6 +47,28 @@ public class AdmissionApplication : BaseEntity
     [MaxLength(100)]
     public string? GuardianOccupation { get; set; }
 
+    // Dedicated Guardian identity (PHASE 2 – separate from Applicant identity)
+    [MaxLength(160)]
+    public string? GuardianEmail { get; set; }
+
+    [MaxLength(30)]
+    public string? GuardianMobileNumber { get; set; }
+
+    [MaxLength(30)]
+    public string? GuardianRelationship { get; set; }
+
+    [MaxLength(50)]
+    public string? GuardianNationalId { get; set; }
+
+    [MaxLength(500)]
+    public string? GuardianAddress { get; set; }
+
+    [MaxLength(260)]
+    public string? GuardianPhoto { get; set; }
+
+    [MaxLength(500)]
+    public string? GuardianRemarks { get; set; }
+
     public int? LinkedGuardianId { get; set; }
     public SchoolManagementSystem.Models.Entities.Guardian.Guardian? LinkedGuardian { get; set; }
 

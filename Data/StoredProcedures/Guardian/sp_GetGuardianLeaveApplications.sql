@@ -3,16 +3,34 @@
    Description: Retrieves leave applications submitted by a guardian for their children.
    Parameters:
      @GuardianId INT - ID of the guardian.
+     @StudentId INT = NULL - Filter by student.
+     @Status INT = NULL - Filter by approval status (0=Pending,1=Approved,2=Rejected).
+     @PageNumber INT = 1
+     @PageSize INT = 20
 */
-CREATE PROCEDURE [dbo].[sp_GetGuardianLeaveApplications]
-    @GuardianId INT
+CREATE OR ALTER PROCEDURE [dbo].[sp_GetGuardianLeaveApplications]
+    @GuardianId INT,
+    @StudentId INT = NULL,
+    @Status INT = NULL,
+    @PageNumber INT = 1,
+    @PageSize INT = 20
 AS
 BEGIN
     SET NOCOUNT ON;
+
+    SELECT COUNT(*)
+    FROM dbo.StudentLeaveApplication sla
+    INNER JOIN dbo.StudentGuardian sg ON sg.StudentId = sla.StudentId
+    WHERE sg.GuardianId = @GuardianId
+      AND (@StudentId IS NULL OR sla.StudentId = @StudentId)
+      AND (@Status IS NULL OR sla.ApprovalStatus = @Status);
+
     SELECT sla.Id,
            sla.StudentId,
+           s.FullName AS StudentName,
            sla.GuardianId,
            sla.LeaveTypeId,
+           lt.Name AS LeaveTypeName,
            sla.FromDate,
            sla.ToDate,
            sla.TotalDays,
@@ -25,5 +43,12 @@ BEGIN
            sla.CreatedAt
     FROM dbo.StudentLeaveApplication sla
     INNER JOIN dbo.StudentGuardian sg ON sg.StudentId = sla.StudentId
-    WHERE sg.GuardianId = @GuardianId;
+    LEFT JOIN dbo.Students s ON sla.StudentId = s.Id
+    LEFT JOIN dbo.LeaveTypes lt ON sla.LeaveTypeId = lt.Id
+    WHERE sg.GuardianId = @GuardianId
+      AND (@StudentId IS NULL OR sla.StudentId = @StudentId)
+      AND (@Status IS NULL OR sla.ApprovalStatus = @Status)
+    ORDER BY sla.Id DESC
+    OFFSET (@PageNumber - 1) * @PageSize ROWS
+    FETCH NEXT @PageSize ROWS ONLY;
 END

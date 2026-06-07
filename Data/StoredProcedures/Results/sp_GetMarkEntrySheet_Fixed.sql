@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE sp_GetMarkEntrySheet
+CREATE OR ALTER PROCEDURE [dbo].[sp_GetMarkEntrySheet]
     @ExamId INT,
     @ClassId INT,
     @SectionId INT,

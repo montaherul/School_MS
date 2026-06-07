@@ -14,6 +14,8 @@ using SchoolManagementSystem.Models.Entities.Student;
 using SchoolManagementSystem.Models.DTOs.Attendance;
 using SchoolManagementSystem.Services.Guardian;
 using SchoolManagementSystem.Models.Entities.Guardian;
+using SchoolManagementSystem.Models.Entities.Fees;
+using SchoolManagementSystem.Models.Entities.Result;
 
 namespace SchoolManagementSystem.Service.Implementations.Dashboard;
 
@@ -298,7 +300,7 @@ public class DashboardService : IDashboardService
             }).ToList()
         };
 
-        // Populate detailed child info for the first child to satisfy view compiler
+        // Populate detailed child info for the first/selected child
         var studentGuardians = await _uow.Repository<StudentGuardian>().Query()
             .Include(sg => sg.Student).ThenInclude(s => s.Class)
             .Include(sg => sg.Student).ThenInclude(s => s.Section)
@@ -364,6 +366,32 @@ public class DashboardService : IDashboardService
                 {
                     model.Alerts.Add($"Absent Notification: {selectedStudent.FullName} was marked absent on {recentAbsent.AttendanceDate:dd MMM yyyy}.");
                 }
+
+                // -- Fee widget --
+                var invoices = await _uow.Repository<FeeInvoice>().Query()
+                    .Where(fi => fi.StudentId == selectedStudent.Id && !fi.IsDeleted)
+                    .ToListAsync(cancellationToken);
+                model.SelectedChildOutstandingFees = invoices.Where(i => (int)i.Status != 3).Sum(i => i.TotalAmount - i.PaidAmount);
+                model.SelectedChildTotalPaid = invoices.Sum(i => i.PaidAmount);
+                model.SelectedChildInvoiceCount = invoices.Count;
+
+                // -- Result widget --
+                var latestResult = await _uow.Repository<StudentExamResult>().Query()
+                    .Where(r => r.StudentId == selectedStudent.Id && !r.IsDeleted)
+                    .OrderByDescending(r => r.ExamId)
+                    .FirstOrDefaultAsync(cancellationToken);
+                if (latestResult != null)
+                {
+                    model.SelectedChildLatestGPA = latestResult.Gpa;
+                    model.SelectedChildLatestGrade = latestResult.Grade ?? string.Empty;
+                    model.SelectedChildLatestPassed = latestResult.IsPassed;
+                }
+
+                // -- Leave widget --
+                model.SelectedChildLeaveCount = await _uow.Repository<StudentLeaveApplication>().Query()
+                    .CountAsync(l => l.StudentId == selectedStudent.Id, cancellationToken);
+                model.SelectedChildPendingLeaveCount = await _uow.Repository<StudentLeaveApplication>().Query()
+                    .CountAsync(l => l.StudentId == selectedStudent.Id && l.ApprovalStatus == StudentLeaveApplication.ApprovalStatusEnum.Pending, cancellationToken);
             }
         }
 

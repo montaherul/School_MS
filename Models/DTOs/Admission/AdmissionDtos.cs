@@ -38,6 +38,28 @@ public class AdmissionCreateDto
         [MaxLength(100)]
         public string? GuardianOccupation { get; set; }
 
+        // Dedicated Guardian identity (PHASE 2 – separate from Applicant identity)
+        [EmailAddress, MaxLength(160)]
+        public string? GuardianEmail { get; set; }
+
+        [MaxLength(30)]
+        public string? GuardianMobileNumber { get; set; }
+
+        [MaxLength(30)]
+        public string? GuardianRelationship { get; set; }
+
+        [MaxLength(50)]
+        public string? GuardianNationalId { get; set; }
+
+        [MaxLength(500)]
+        public string? GuardianAddress { get; set; }
+
+        [MaxLength(500)]
+        public string? GuardianRemarks { get; set; }
+
+        public IFormFile? GuardianPhoto { get; set; }
+        public string? GuardianPhotoPath { get; set; }
+
         public int? LinkedGuardianId { get; set; }
 
         // Contact
@@ -121,6 +143,14 @@ public class AdmissionListResultDto
     public string? MotherOccupation { get; set; }
     public string? GuardianName { get; set; }
     public string? GuardianOccupation { get; set; }
+    public string? GuardianEmail { get; set; }
+    public string? GuardianMobileNumber { get; set; }
+    public string? GuardianRelationship { get; set; }
+    public string? GuardianNationalId { get; set; }
+    public string? GuardianAddress { get; set; }
+    public string? GuardianPhoto { get; set; }
+    public string? GuardianRemarks { get; set; }
+    public int? LinkedGuardianId { get; set; }
     public string Nationality { get; set; } = string.Empty;
     public string Religion { get; set; } = string.Empty;
     public string? BloodGroup { get; set; }

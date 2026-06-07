@@ -6,10 +6,12 @@ using SchoolManagementSystem.Models.DTOs.Student;
 using SchoolManagementSystem.Models.Entities.Admission;
 using SchoolManagementSystem.Models.Entities.Auth;
 using SchoolManagementSystem.Models.Entities.Academic;
+using SchoolManagementSystem.Models.Entities.Guardian;
 using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Services.Interfaces.Email;
 using SchoolManagementSystem.Services.Interfaces.Admissions;
 using SchoolManagementSystem.Services.Interfaces.Students;
+using SchoolManagementSystem.Services.Guardian;
 using SchoolManagementSystem.Repositories.Interfaces.Auth;
 using SchoolManagementSystem.Repositories.Interfaces.Academic;
 using SchoolManagementSystem.Repositories.Interfaces.Students;
@@ -30,18 +32,20 @@ public class AdmissionService : IAdmissionService
     private readonly IUserRoleRepository _userRoleRepository;
     private readonly ISchoolClassRepository _classRepository;
     private readonly IStudentRepository _studentRepository;
+    private readonly IGuardianService _guardianService;
     private readonly ILogger<AdmissionService> _logger;
 
     public AdmissionService(
-        IUnitOfWork unitOfWork, 
-        IAdmissionRepository admissionRepository, 
-        IStudentService studentService, 
+        IUnitOfWork unitOfWork,
+        IAdmissionRepository admissionRepository,
+        IStudentService studentService,
         IEmailService emailService,
         IUserRepository userRepository,
         IRoleRepository roleRepository,
         IUserRoleRepository userRoleRepository,
         ISchoolClassRepository classRepository,
         IStudentRepository studentRepository,
+        IGuardianService guardianService,
         ILogger<AdmissionService> logger)
     {
         _unitOfWork = unitOfWork;
@@ -53,6 +57,7 @@ public class AdmissionService : IAdmissionService
         _userRoleRepository = userRoleRepository;
         _classRepository = classRepository;
         _studentRepository = studentRepository;
+        _guardianService = guardianService;
         _logger = logger;
     }
 
@@ -105,6 +110,10 @@ public class AdmissionService : IAdmissionService
         {
             dto.PaymentSlipPath = await SaveFileAsync(dto.PaymentSlipFile, "admissions/payments", cancellationToken);
         }
+        if (dto.GuardianPhoto != null && dto.GuardianPhoto.Length > 0)
+        {
+            dto.GuardianPhotoPath = await SaveFileAsync(dto.GuardianPhoto, "admissions/guardians", cancellationToken);
+        }
 
         var count = await _admissionRepository.CountAsync(x => x.CreatedAt.Year == DateTime.UtcNow.Year, cancellationToken) + 1;
 
@@ -121,6 +130,13 @@ public class AdmissionService : IAdmissionService
             MotherOccupation = dto.MotherOccupation?.Trim(),
             GuardianName = dto.GuardianName?.Trim(),
             GuardianOccupation = dto.GuardianOccupation?.Trim(),
+            GuardianEmail = dto.GuardianEmail?.Trim(),
+            GuardianMobileNumber = dto.GuardianMobileNumber?.Trim(),
+            GuardianRelationship = dto.GuardianRelationship?.Trim(),
+            GuardianNationalId = dto.GuardianNationalId?.Trim(),
+            GuardianAddress = dto.GuardianAddress?.Trim(),
+            GuardianPhoto = dto.GuardianPhotoPath,
+            GuardianRemarks = dto.GuardianRemarks?.Trim(),
             ApplicantMobileNumber = dto.ApplicantMobileNumber.Trim(),
             AlternativeNumber = dto.AlternativeNumber?.Trim(),
             FatherOrGuardianMobileNo = dto.FatherOrGuardianMobileNo.Trim(),
@@ -164,88 +180,142 @@ public class AdmissionService : IAdmissionService
 
     public async Task<int> ApproveAndConvertAsync(int applicationId, int sectionId, string approvedBy, CancellationToken cancellationToken = default)
     {
-
-        var application = await _admissionRepository.FirstOrDefaultAsync(x => x.Id == applicationId && !x.IsDeleted, cancellationToken)
-            ?? throw new InvalidOperationException("Admission application not found.");
-
-        if (application.Status == AdmissionStatus.Converted)
-            throw new InvalidOperationException("Application has already been converted.");
-
-        var studentEmail = application.ApplicantEmail?.Trim();
-        if (string.IsNullOrWhiteSpace(studentEmail))
+        await _unitOfWork.BeginTransactionAsync(cancellationToken);
+        try
         {
-            var sanitizedName = application.ApplicantName.Replace(" ", ".").ToLower();
-            studentEmail = $"{sanitizedName}.{application.Id}@school.com";
+            var application = await _admissionRepository.FirstOrDefaultAsync(x => x.Id == applicationId && !x.IsDeleted, cancellationToken)
+                ?? throw new InvalidOperationException("Admission application not found.");
+
+            if (application.Status == AdmissionStatus.Converted)
+                throw new InvalidOperationException("Application has already been converted.");
+
+            // Inner idempotency check: re-read status within the transaction to prevent race conditions
+            var currentStatus = await _admissionRepository.Query()
+                .Where(x => x.Id == applicationId)
+                .Select(x => x.Status)
+                .FirstOrDefaultAsync(cancellationToken);
+            if (currentStatus == AdmissionStatus.Converted)
+                throw new InvalidOperationException("Application was already converted by another admin.");
+
+            var studentEmail = application.ApplicantEmail?.Trim();
+            if (string.IsNullOrWhiteSpace(studentEmail))
+            {
+                var sanitizedName = application.ApplicantName.Replace(" ", ".").ToLower();
+                studentEmail = $"{sanitizedName}.{application.Id}@school.com";
+            }
+
+            if (await _userRepository.AnyAsync(u => u.Email == studentEmail, cancellationToken))
+                throw new InvalidOperationException($"A user account already exists for '{studentEmail}'.");
+
+            var studentRole = await _roleRepository.FirstOrDefaultAsync(r => !r.IsDeleted && r.Name == "Student", cancellationToken)
+                ?? throw new InvalidOperationException("Student role not found.");
+
+            var year = DateTime.UtcNow.Year;
+            var count = await _studentRepository.CountAsync(x => x.CreatedAt.Year == year, cancellationToken) + 1;
+            var candidateUserName = $"STU-{year}{count:D3}";
+
+            while (await _userRepository.AnyAsync(u => u.UserName == candidateUserName, cancellationToken))
+            {
+                count++;
+                candidateUserName = $"STU-{year}{count:D3}";
+            }
+
+            var activationToken = Guid.NewGuid().ToString("N");
+            var pendingUser = new ApplicationUser
+            {
+                UserName = candidateUserName,
+                Email = studentEmail,
+                PhoneNumber = application.ApplicantMobileNumber?.Trim(),
+                Status = AccountStatus.Pending,
+                PasswordHash = string.Empty,
+                IsEmailConfirmed = false,
+                ActivationToken = activationToken,
+                ActivationTokenExpiry = DateTime.UtcNow.AddHours(24),
+                CreatedBy = approvedBy,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _userRepository.AddAsync(pendingUser, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            await _userRoleRepository.AddAsync(new UserRole { UserId = pendingUser.Id, RoleId = studentRole.Id }, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            var rollNumber = await NextRollAsync(application.AppliedClassId, sectionId, cancellationToken);
+
+            // PHASE 6: Ensure Guardian (auto-create or auto-link) BEFORE student creation
+            // so the student can be linked to a valid guardian.
+            var guardian = await _guardianService.EnsureGuardianFromAdmissionAsync(application, cancellationToken);
+            application.LinkedGuardianId = guardian.Id;
+
+            var studentId = await _studentService.CreateAsync(new StudentUpsertDto
+            {
+                StudentNo = candidateUserName, FullName = application.ApplicantName, FullNameBangla = application.ApplicantNameBangla,
+                DateOfBirth = application.DateOfBirth, Gender = application.Gender, FatherName = application.FatherName,
+                FatherOccupation = application.FatherOccupation, MotherName = application.MotherName, MotherOccupation = application.MotherOccupation,
+                GuardianName = application.GuardianName, GuardianOccupation = application.GuardianOccupation,
+                MobileNumber = application.ApplicantMobileNumber ?? string.Empty, AlternativeNumber = application.AlternativeNumber,
+                FatherOrGuardianMobileNo = application.FatherOrGuardianMobileNo, EmailAddress = studentEmail,
+                Nationality = application.Nationality, Country = application.Country, MaritalStatus = application.MaritalStatus,
+                Religion = application.Religion, BloodGroup = application.BloodGroup,
+                BirthCertificateNo = application.BirthCertificateNo,
+                ProfilePicturePath = application.ProfilePicturePath, PresentVillage = application.PresentVillage,
+                PresentPostOffice = application.PresentPostOffice, PresentThana = application.PresentThana,
+                PresentDistrict = application.PresentDistrict, PermanentVillage = application.PermanentVillage,
+                PermanentPostOffice = application.PermanentPostOffice, PermanentThana = application.PermanentThana,
+                PermanentDistrict = application.PermanentDistrict, ClassId = application.AppliedClassId,
+                SectionId = sectionId, RollNumber = rollNumber, UserId = pendingUser.Id,
+                LinkedGuardianId = guardian.Id
+            }, approvedBy, cancellationToken);
+
+            // PHASE 6/7: Create a Guardian portal user (gdn-{Code}) + activation link
+            string? guardianActivationToken = null;
+            try
+            {
+                guardianActivationToken = await _guardianService.EnsureGuardianUserAsync(guardian.Id, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Guardian user provisioning failed for admission {ApplicationNo}", application.ApplicationNo);
+            }
+
+            application.Status = AdmissionStatus.Converted;
+            application.ReviewedAt = DateTime.UtcNow;
+            application.UpdatedBy = approvedBy;
+            application.UpdatedAt = DateTime.UtcNow;
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+
+            try { await _emailService.SendStudentActivationAsync(studentEmail, application.ApplicantName, pendingUser.UserName, activationToken, cancellationToken); }
+            catch (Exception ex) { _logger.LogError(ex, "Student activation email failed for application {ApplicationNo}", application.ApplicationNo); }
+
+            if (!string.IsNullOrEmpty(guardianActivationToken) && !string.IsNullOrWhiteSpace(guardian.Email))
+            {
+                try
+                {
+                    // The EmailService falls back to its own configured BaseUrl/LocalUrl when an empty string is passed.
+                    await _emailService.SendGuardianActivationAsync(
+                        guardian.Email,
+                        guardian.FullName,
+                        $"gdn-{(guardian.GuardianCode ?? "guardian").Replace("-", string.Empty)}",
+                        guardianActivationToken,
+                        string.Empty,
+                        cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Guardian activation email failed for admission {ApplicationNo}", application.ApplicationNo);
+                }
+            }
+
+            return studentId;
         }
-
-        if (await _userRepository.AnyAsync(u => u.Email == studentEmail, cancellationToken))
-            throw new InvalidOperationException($"A user account already exists for '{studentEmail}'.");
-
-        var studentRole = await _roleRepository.FirstOrDefaultAsync(r => !r.IsDeleted && r.Name == "Student", cancellationToken)
-            ?? throw new InvalidOperationException("Student role not found.");
-
-        var year = DateTime.UtcNow.Year;
-        var count = await _studentRepository.CountAsync(x => x.CreatedAt.Year == year, cancellationToken) + 1;
-        var candidateUserName = $"STU-{year}{count:D3}";
-
-        while (await _userRepository.AnyAsync(u => u.UserName == candidateUserName, cancellationToken))
+        catch
         {
-            count++;
-            candidateUserName = $"STU-{year}{count:D3}";
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            throw;
         }
-
-        var activationToken = Guid.NewGuid().ToString("N");
-        var pendingUser = new ApplicationUser
-        {
-            UserName = candidateUserName,
-            Email = studentEmail,
-            PhoneNumber = application.ApplicantMobileNumber?.Trim(),
-            Status = AccountStatus.Pending,
-            PasswordHash = string.Empty,
-            IsEmailConfirmed = false,
-            ActivationToken = activationToken,
-            ActivationTokenExpiry = DateTime.UtcNow.AddHours(24),
-            CreatedBy = approvedBy,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        await _userRepository.AddAsync(pendingUser, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-        await _userRoleRepository.AddAsync(new UserRole { UserId = pendingUser.Id, RoleId = studentRole.Id }, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-        var rollNumber = await NextRollAsync(application.AppliedClassId, sectionId, cancellationToken);
-
-        var studentId = await _studentService.CreateAsync(new StudentUpsertDto
-        {
-            StudentNo = candidateUserName, FullName = application.ApplicantName, FullNameBangla = application.ApplicantNameBangla,
-            DateOfBirth = application.DateOfBirth, Gender = application.Gender, FatherName = application.FatherName,
-            FatherOccupation = application.FatherOccupation, MotherName = application.MotherName, MotherOccupation = application.MotherOccupation,
-            GuardianName = application.GuardianName, GuardianOccupation = application.GuardianOccupation,
-            MobileNumber = application.ApplicantMobileNumber ?? string.Empty, AlternativeNumber = application.AlternativeNumber,
-            FatherOrGuardianMobileNo = application.FatherOrGuardianMobileNo, EmailAddress = studentEmail,
-            Nationality = application.Nationality, Country = application.Country, MaritalStatus = application.MaritalStatus,
-            Religion = application.Religion, BloodGroup = application.BloodGroup,
-            BirthCertificateNo = application.BirthCertificateNo,
-            ProfilePicturePath = application.ProfilePicturePath, PresentVillage = application.PresentVillage,
-            PresentPostOffice = application.PresentPostOffice, PresentThana = application.PresentThana,
-            PresentDistrict = application.PresentDistrict, PermanentVillage = application.PermanentVillage,
-            PermanentPostOffice = application.PermanentPostOffice, PermanentThana = application.PermanentThana,
-            PermanentDistrict = application.PermanentDistrict, ClassId = application.AppliedClassId,
-            SectionId = sectionId, RollNumber = rollNumber, UserId = pendingUser.Id
-        }, approvedBy, cancellationToken);
-
-        application.Status = AdmissionStatus.Converted;
-        application.ReviewedAt = DateTime.UtcNow;
-        application.UpdatedBy = approvedBy;
-        application.UpdatedAt = DateTime.UtcNow;
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-        try { await _emailService.SendStudentActivationAsync(studentEmail, application.ApplicantName, pendingUser.UserName, activationToken, cancellationToken); }
-        catch (Exception ex) { _logger.LogError(ex, "Student activation email failed for application {ApplicationNo}", application.ApplicationNo); }
-
-        return studentId;
     }
 
     public async Task UpdateAsync(int id, AdmissionCreateDto dto, string updatedBy, CancellationToken cancellationToken)
@@ -268,6 +338,11 @@ public class AdmissionService : IAdmissionService
             if (!string.IsNullOrEmpty(application.PaymentSlipPath)) DeleteFile(application.PaymentSlipPath);
             application.PaymentSlipPath = await SaveFileAsync(dto.PaymentSlipFile, "admissions/payments", cancellationToken);
         }
+        if (dto.GuardianPhoto != null && dto.GuardianPhoto.Length > 0)
+        {
+            if (!string.IsNullOrEmpty(application.GuardianPhoto)) DeleteFile(application.GuardianPhoto);
+            dto.GuardianPhotoPath = await SaveFileAsync(dto.GuardianPhoto, "admissions/guardians", cancellationToken);
+        }
 
         application.ApplicantName = dto.ApplicantName?.Trim() ?? string.Empty;
         application.ApplicantNameBangla = dto.ApplicantNameBangla?.Trim();
@@ -279,6 +354,13 @@ public class AdmissionService : IAdmissionService
         application.MotherOccupation = dto.MotherOccupation?.Trim();
         application.GuardianName = dto.GuardianName?.Trim();
         application.GuardianOccupation = dto.GuardianOccupation?.Trim();
+        application.GuardianEmail = dto.GuardianEmail?.Trim();
+        application.GuardianMobileNumber = dto.GuardianMobileNumber?.Trim();
+        application.GuardianRelationship = dto.GuardianRelationship?.Trim();
+        application.GuardianNationalId = dto.GuardianNationalId?.Trim();
+        application.GuardianAddress = dto.GuardianAddress?.Trim();
+        application.GuardianPhoto = dto.GuardianPhotoPath ?? application.GuardianPhoto;
+        application.GuardianRemarks = dto.GuardianRemarks?.Trim();
         application.ApplicantMobileNumber = dto.ApplicantMobileNumber?.Trim() ?? string.Empty;
         application.AlternativeNumber = dto.AlternativeNumber?.Trim();
         application.FatherOrGuardianMobileNo = dto.FatherOrGuardianMobileNo?.Trim() ?? string.Empty;

@@ -35,4 +35,8 @@ public class AttendanceNotificationLog : BaseEntity
 
     [MaxLength(40)]
     public string NotificationStatus { get; set; } = "Pending";
+
+    public int RetryCount { get; set; }
+
+    public DateTime? NextRetryAt { get; set; }
 }

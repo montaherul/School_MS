@@ -1,0 +1,10 @@
+@{
+    ViewData["Title"] = ViewBag.Title?.ToString() ?? "Notice";
+}
+<div class="container-fluid py-5">
+    <div class="text-center">
+        <i class="bi bi-info-circle fs-1 text-muted"></i>
+        <p class="text-muted mt-3">@ViewBag.Message</p>
+        <a asp-action="Dashboard" class="btn btn-primary mt-3">Back to Dashboard</a>
+    </div>
+</div>

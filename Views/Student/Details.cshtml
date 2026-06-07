@@ -121,12 +121,58 @@
                     </div>
                     <div class="col-sm-6">
                         <label class="text-muted small text-uppercase fw-bold">Active Guardian Name</label>
-                        <p class="mb-0 fw-medium">@Model.GuardianName</p>
+                        <p class="mb-0 fw-medium">@(Model.GuardianName ?? "N/A")</p>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="text-muted small text-uppercase fw-bold">Guardian Relationship</label>
+                        <p class="mb-0 fw-medium">@(Model.GuardianRelationship ?? "N/A")</p>
                     </div>
                     <div class="col-sm-6">
                         <label class="text-muted small text-uppercase fw-bold">Guardian Mobile</label>
-                        <p class="mb-0 fw-medium">@Model.FatherOrGuardianMobileNo</p>
+                        <p class="mb-0 fw-medium">@(Model.GuardianMobileNumber ?? Model.FatherOrGuardianMobileNo ?? "N/A")</p>
                     </div>
+                    <div class="col-sm-6">
+                        <label class="text-muted small text-uppercase fw-bold">Guardian Email</label>
+                        <p class="mb-0 fw-medium">
+                            <i class="bi bi-envelope me-1 text-muted small"></i>
+                            @(Model.GuardianEmail ?? "N/A")
+                        </p>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="text-muted small text-uppercase fw-bold">Guardian National ID</label>
+                        <p class="mb-0 fw-medium">@(Model.GuardianNationalId ?? "N/A")</p>
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="text-muted small text-uppercase fw-bold">Guardian Address</label>
+                        <p class="mb-0 fw-medium small">@(Model.GuardianAddress ?? "N/A")</p>
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.GuardianCode))
+                    {
+                        <div class="col-12">
+                            <hr class="my-2 opacity-50" />
+                            <div class="d-flex flex-wrap align-items-center gap-3">
+                                <span class="badge bg-info bg-opacity-10 text-info px-3 py-2 rounded-pill">
+                                    <i class="bi bi-person-badge me-1"></i> @Model.GuardianCode
+                                </span>
+                                <span class="badge @(Model.GuardianUserCreated == true ? "bg-success" : "bg-secondary") bg-opacity-10 px-3 py-2 rounded-pill @(Model.GuardianUserCreated == true ? "text-success" : "text-secondary")">
+                                    <i class="bi @(Model.GuardianUserCreated == true ? "bi-check-circle" : "bi-x-circle") me-1"></i>
+                                    @(Model.GuardianUserCreated == true ? "User Active" : "No User")
+                                </span>
+                                @if (Model.LinkedChildrenCount > 0)
+                                {
+                                    <span class="badge bg-purple bg-opacity-10 text-purple px-3 py-2 rounded-pill" style="background-color:rgba(111,66,193,0.08);color:#6f42c1;">
+                                        <i class="bi bi-people me-1"></i> @Model.LinkedChildrenCount linked children
+                                    </span>
+                                }
+                                @if (Model.GuardianUserCreated == true)
+                                {
+                                    <a href="/Guardian/Dashboard" class="btn btn-sm btn-outline-purple rounded-pill" style="border-color:#6f42c1;color:#6f42c1;" target="_blank">
+                                        <i class="bi bi-box-arrow-up-right me-1"></i> Guardian Dashboard
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    }
                 </div>
             </div>
         </div>

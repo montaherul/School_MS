@@ -37,6 +37,7 @@ public class ExamConfiguration : BaseEntity
 {
     public int ExamTypeId { get; set; }
     public int ClassId { get; set; }
+    public int? StudentGroupId { get; set; }
 
     [MaxLength(100)]
     public string DisplayName { get; set; } = string.Empty;
@@ -104,6 +105,7 @@ public class Exam : BaseEntity
     public ResultWorkflowStatus Status { get; set; } = ResultWorkflowStatus.Draft;
 
     public int AcademicYearId { get; set; }
+    public int? StudentGroupId { get; set; }
     public DateOnly StartsOn { get; set; }
     public DateOnly EndsOn { get; set; }
 
@@ -114,6 +116,7 @@ public class Exam : BaseEntity
     // Navigation
     public virtual ICollection<ExamSubject> ExamSubjects { get; set; } = [];
     public virtual ICollection<ExamSchedule> ExamSchedules { get; set; } = [];
+    public virtual Academic.StudentGroup? StudentGroup { get; set; }
 }
 
 /// <summary>

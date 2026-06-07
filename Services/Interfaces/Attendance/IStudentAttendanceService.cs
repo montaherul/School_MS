@@ -52,6 +52,8 @@ namespace SchoolManagementSystem.Services.Interfaces.Attendance
             CancellationToken ct = default);
 
         // Session workflow operations
+        Task SubmitAttendanceSessionAsync(int classId, int sectionId, int? studentGroupId, DateTime attendanceDate, string submittedBy, string? notes, CancellationToken ct = default);
+        Task LockAttendanceSessionAsync(int classId, int sectionId, int? studentGroupId, DateTime attendanceDate, string lockedBy, string? notes, CancellationToken ct = default);
         Task UnlockAttendanceSessionAsync(int classId, int sectionId, int? studentGroupId, DateTime attendanceDate, string unlockedBy, string reason, CancellationToken ct = default);
         Task ReviseAttendanceSessionAsync(int classId, int sectionId, int? studentGroupId, DateTime attendanceDate, string revisedBy, string? notes, CancellationToken ct = default);
         Task ApproveAttendanceSessionAsync(int classId, int sectionId, int? studentGroupId, DateTime attendanceDate, string approvedBy, CancellationToken ct = default);

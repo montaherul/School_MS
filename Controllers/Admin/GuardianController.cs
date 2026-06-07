@@ -33,7 +33,7 @@ public class GuardianController : Controller
     public async Task<IActionResult> Search(string term)
     {
         var (items, _) = await _guardianService.GetGuardianListAsync(term, null, 1, 10);
-        return Json(items.Select(i => new { id = i.Id, code = i.GuardianCode, name = i.FullName, phone = i.MobileNumber }));
+        return Json(items.Select(i => new { id = i.Id, code = i.GuardianCode, name = i.FullName, phone = i.MobileNumber, email = i.Email ?? "" }));
     }
 
     [HttpGet("{id}")]

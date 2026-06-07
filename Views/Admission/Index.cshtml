@@ -261,6 +261,23 @@
         title: "Phone", field: "applicantMobileNumber", width: 160, minWidth: 160, sorter: false, headerSort: false,
         formatter: function (c) { return '<span class="adm-cell-phone">' + c.getValue() + '</span>'; }
         },
+        {
+        title: "Guardian", field: "guardianName", width: 160, minWidth: 120, sorter: false, headerSort: false,
+        formatter: function (c) {
+        const g = c.getValue();
+        if (!g) return '<span class="text-muted small">—</span>';
+        return '<span class="fw-medium">' + g + '</span>';
+        }
+        },
+        { title: "G. Phone", field: "guardianMobileNumber", width: 140, minWidth: 120, sorter: false, headerSort: false,
+        formatter: function (c) { return c.getValue() ? '<span class="adm-cell-phone">' + c.getValue() + '</span>' : '<span class="text-muted small">—</span>'; }
+        },
+        { title: "G. Email", field: "guardianEmail", width: 180, minWidth: 140, sorter: false, headerSort: false,
+        formatter: function (c) { return c.getValue() ? '<span class="small">' + c.getValue() + '</span>' : '<span class="text-muted small">—</span>'; }
+        },
+        { title: "Linked ID", field: "linkedGuardianId", width: 110, minWidth: 90, sorter: false, headerSort: false,
+        formatter: function (c) { return c.getValue() ? '<span class="badge bg-info bg-opacity-10 text-info">#' + c.getValue() + '</span>' : '<span class="text-muted small">—</span>'; }
+        },
         { title: "Status", field: "status", width: 140, minWidth: 140, sorter: false, headerSort: false, formatter: statusFormatter },
         { title: "", field: "id", width: 180, minWidth: 180, sorter: false, headerSort: false, formatter: actionFormatter, cssClass: "adm-col-actions" }
         ];

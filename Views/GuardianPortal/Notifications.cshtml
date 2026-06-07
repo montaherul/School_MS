@@ -1,0 +1,47 @@
+@model IEnumerable<SchoolManagementSystem.Models.Entities.Guardian.GuardianNotification>
+@{
+    ViewData["Title"] = "Notifications";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">My Notifications</h2>
+        <a asp-action="Dashboard" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+        </a>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        @foreach (var n in Model)
+        {
+            <div class="card border-0 shadow-sm mb-2 @(n.IsRead ? "" : "border-start border-4 border-primary")">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <h6 class="mb-1 fw-bold @(n.IsRead ? "" : "text-primary")">@n.Title</h6>
+                            <p class="mb-1 text-muted">@n.Message</p>
+                            <small class="text-muted">@n.CreatedAt.ToString("dd MMM yyyy HH:mm") @(!string.IsNullOrEmpty(n.Category) ? $"· {n.Category}" : "")</small>
+                        </div>
+                        @if (!n.IsRead)
+                        {
+                            <form asp-action="MarkRead" asp-route-id="@n.Id" method="post" class="ms-3">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-sm btn-outline-primary">Mark Read</button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-bell-slash fs-1 text-muted"></i>
+                <p class="text-muted mt-2">No notifications yet.</p>
+            </div>
+        </div>
+    }
+</div>

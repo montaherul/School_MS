@@ -21,19 +21,22 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
         private readonly IAttendanceLogRepository _auditLog;
         private readonly IAttendanceNotificationService _notificationService;
         private readonly IAttendanceValidationService _validationService;
+        private readonly IAttendancePercentageService _percentageService;
 
         public EmployeeAttendanceService(
             IUnitOfWork uow,
             IEmployeeAttendanceRepository repo,
             IAttendanceLogRepository auditLog,
             IAttendanceNotificationService notificationService,
-            IAttendanceValidationService validationService)
+            IAttendanceValidationService validationService,
+            IAttendancePercentageService percentageService)
         {
             _uow = uow;
             _repo = repo;
             _auditLog = auditLog;
             _notificationService = notificationService;
             _validationService = validationService;
+            _percentageService = percentageService;
         }
 
         public async Task<int> CheckInAsync(int employeeId, DateTime date, TimeSpan time, string recordedBy, CancellationToken ct = default)
@@ -307,13 +310,7 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
 
         public async Task<double> GetAttendancePercentageAsync(int employeeId, int year, int month, CancellationToken ct = default)
         {
-            var records = await _repo.Query().Where(a => a.EmployeeId == employeeId && a.AttendanceDate.Year == year && a.AttendanceDate.Month == month).ToListAsync(ct);
-            if (!records.Any()) return 0;
-
-            int totalDays = records.Count;
-            int presentDays = records.Count(a => a.Status == SchoolManagementSystem.Models.Enums.AttendanceStatus.Present || a.Status == SchoolManagementSystem.Models.Enums.AttendanceStatus.Late);
-
-            return Math.Round(((double)presentDays / totalDays) * 100, 2);
+            return await _percentageService.GetEmployeeAttendancePercentageAsync(employeeId, year, month, ct);
         }
 
         private async Task<AttendanceSetting> GetAttendanceSettingsAsync(CancellationToken ct)

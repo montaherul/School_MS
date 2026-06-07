@@ -1,0 +1,10 @@
+@{
+    ViewData["Title"] = "Activation Link Expired";
+    Layout = "_AuthLayout";
+}
+
+<div class="auth-panel">
+    <h1>Activation link expired</h1>
+    <p class="text-muted">The activation link is invalid or has expired. Please contact the school to receive a new one.</p>
+    <a asp-action="Login" asp-controller="Auth" class="btn btn-primary w-100">Back to login</a>
+</div>

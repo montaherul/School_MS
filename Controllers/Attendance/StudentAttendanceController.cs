@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Models.DTOs.Academic;
 using SchoolManagementSystem.Models.DTOs.Attendance;
+using SchoolManagementSystem.Helpers.Reports;
 using SchoolManagementSystem.Services.Interfaces.Academic;
 using SchoolManagementSystem.Services.Interfaces.Attendance;
 using SchoolManagementSystem.Services.Interfaces.Teachers;
@@ -807,6 +808,52 @@ namespace SchoolManagementSystem.Controllers.Attendance
                 return BadRequest(new { success = false, message = ex.Message });
             }
 
+        }
+
+        /// <summary>
+        /// Export attendance to Excel (XLSX)
+        /// </summary>
+        [HttpGet]
+        public async Task<IActionResult> ExportAttendanceExcel(int classId, int sectionId, int? studentGroupId, DateTime fromDate, DateTime toDate, CancellationToken ct = default)
+        {
+            try
+            {
+                if (!IsAdminOrPrincipal())
+                {
+                    if (!await TeacherCanManageAttendanceAsync(classId, sectionId, studentGroupId, ct)) return Forbid();
+                }
+
+                var (_, totalStudents) = await _service.GetStudentsForAttendanceAsync(classId, sectionId, studentGroupId, fromDate, 1, 1, ct);
+                var (students, _) = await _service.GetStudentsForAttendanceAsync(classId, sectionId, studentGroupId, fromDate, 1, Math.Max(totalStudents, 1), ct);
+
+                var rows = new List<string[]>
+                {
+                    new[] { "Roll", "Student No", "Student Name", "Class", "Section", "Group", "Date", "Status", "Remarks" }
+                };
+                foreach (var s in students)
+                {
+                    rows.Add(new[]
+                    {
+                        s.RollNumber,
+                        s.StudentId.ToString(),
+                        s.StudentName,
+                        s.ClassName,
+                        s.SectionName,
+                        s.StudentGroupName,
+                        s.AttendanceDate.ToString("yyyy-MM-dd"),
+                        s.StatusName,
+                        s.Remarks ?? string.Empty
+                    });
+                }
+
+                var xlsx = SimpleExcelWriter.WriteWorkbook("Attendance", rows);
+                return File(xlsx, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    $"attendance_{fromDate:yyyyMMdd}_{toDate:yyyyMMdd}.xlsx");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { success = false, message = ex.Message });
+            }
         }
     }
 }

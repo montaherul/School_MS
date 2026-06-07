@@ -1,11 +1,20 @@
 using SchoolManagementSystem.Models.DTOs.Result;
+using SchoolManagementSystem.Models.DTOs.Exam;
 
 namespace SchoolManagementSystem.Services.Interfaces.Result;
 
 public interface IExamService
 {
-    // Exam CRUD
-    Task<IEnumerable<ExamUpsertDto>> GetExamsAsync(int academicYearId);
+    // Exam read operations
+    Task<IEnumerable<ExamListDto>> GetExamsAsync(int academicYearId, CancellationToken ct = default);
+    Task<(IEnumerable<ExamListDto> Items, int TotalCount)> GetPagedExamsAsync(
+        int academicYearId, string? searchTerm, int? status,
+        int pageNumber, int pageSize, string sortColumn, string sortDirection,
+        CancellationToken ct = default);
+    Task<ExamDetailsDto?> GetExamDetailsAsync(int examId, CancellationToken ct = default);
+    Task<ExamUpsertDto?> GetExamForEditAsync(int examId, CancellationToken ct = default);
+
+    // Exam write operations (upsert DTO only)
     Task<object?> CreateExamAsync(ExamUpsertDto dto, CancellationToken ct = default);
     Task<object?> UpdateExamAsync(int examId, ExamUpsertDto dto, CancellationToken ct = default);
     Task DeleteExamAsync(int examId, CancellationToken ct = default);

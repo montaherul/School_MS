@@ -192,6 +192,47 @@ public class EmailService : IEmailService
         await SendWorkflowEmailAsync("Attendance notification", toEmail, "Student Absence Notification", htmlBody, cancellationToken);
     }
 
+    public async Task SendGuardianActivationAsync(
+      string toEmail,
+      string guardianName,
+      string userName,
+      string token,
+      string activationBaseUrl,
+      CancellationToken cancellationToken = default)
+    {
+        var baseUrl = string.IsNullOrWhiteSpace(activationBaseUrl)
+            ? ResolveBaseUrl()
+            : activationBaseUrl.TrimEnd('/');
+
+        var activationUrl = $"{baseUrl}/Guardian/Activate?token={Uri.EscapeDataString(token)}";
+
+        var enc = HtmlEncoder.Default;
+        var safeName = enc.Encode(guardianName);
+        var safeUser = enc.Encode(userName);
+
+        var htmlBody = $@"
+<div style=""font-family: Arial, sans-serif; line-height: 1.6; color: #333;"">
+    <h2 style=""color: #1a56db;"">Welcome to Our School Portal</h2>
+    <p>Dear <strong>{safeName}</strong>,</p>
+    <p>Your Guardian portal account has been created. You can now view your child's attendance, results, fees, and more.</p>
+    <table style=""border-collapse:collapse;width:100%;max-width:520px;margin:14px 0"">
+        <tr><td style=""padding:6px 0;font-weight:bold;width:140px"">Username</td><td>{safeUser}</td></tr>
+        <tr><td style=""padding:6px 0;font-weight:bold"">Account</td><td>Guardian</td></tr>
+    </table>
+    <p>
+        <a href=""{activationUrl}"" style=""background-color:#1a56db;color:white;padding:12px 25px;text-decoration:none;border-radius:5px;font-weight:bold;display:inline-block"">
+            Activate Account
+        </a>
+    </p>
+    <p>Or copy this link: <br/><span style=""font-size:0.9em;color:#666;word-break:break-all"">{activationUrl}</span></p>
+    <p>This activation link expires in 24 hours.</p>
+    <hr style=""border:0;border-top:1px solid #eee;margin:20px 0"" />
+    <p>Regards,<br/>School Administration</p>
+</div>";
+
+        await SendWorkflowEmailAsync("Guardian activation", toEmail, "Guardian Portal - Activate Your Account", htmlBody, cancellationToken);
+    }
+
     private async Task SendWorkflowEmailAsync(string workflowName, string toEmail, string subject, string htmlBody, CancellationToken cancellationToken)
     {
         ValidateEmailConfiguration();

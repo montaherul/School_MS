@@ -151,7 +151,65 @@
                 </div>
             </div>
 
-            @* ── Section 3: Contact Details ── *@
+            @* ── Section 3: Guardian Information ── *@
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-purple bg-opacity-10" style="background-color:rgba(111,66,193,0.08);">
+                    <h5 class="mb-0"><i class="bi bi-shield-fill me-2" style="color:#6f42c1;"></i>Guardian Information</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label asp-for="GuardianEmail" class="form-label">Guardian Email</label>
+                            <input asp-for="GuardianEmail" type="email" class="form-control" placeholder="guardian@mail.com" />
+                            <span asp-validation-for="GuardianEmail" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="GuardianMobileNumber" class="form-label">Guardian Mobile Number</label>
+                            <input asp-for="GuardianMobileNumber" class="form-control" placeholder="01XXXXXXXXX" />
+                            <span asp-validation-for="GuardianMobileNumber" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label asp-for="GuardianRelationship" class="form-label">Guardian Relationship</label>
+                            <select asp-for="GuardianRelationship" class="form-select">
+                                <option value="">Select</option>
+                                <option value="Father">Father</option>
+                                <option value="Mother">Mother</option>
+                                <option value="LegalGuardian">Legal Guardian</option>
+                                <option value="Grandfather">Grandfather</option>
+                                <option value="Grandmother">Grandmother</option>
+                                <option value="Uncle">Uncle</option>
+                                <option value="Aunt">Aunt</option>
+                                <option value="Brother">Brother</option>
+                                <option value="Sister">Sister</option>
+                                <option value="Other">Other</option>
+                            </select>
+                            <span asp-validation-for="GuardianRelationship" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="GuardianNationalId" class="form-label">Guardian National ID</label>
+                            <input asp-for="GuardianNationalId" class="form-control" placeholder="National ID / NID number" />
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="GuardianAddress" class="form-label">Guardian Address</label>
+                            <textarea asp-for="GuardianAddress" class="form-control" rows="2" placeholder="Full address of guardian"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="GuardianPhoto" class="form-label">Guardian Photo</label>
+                            <input asp-for="GuardianPhoto" type="file" class="form-control" accept="image/*" />
+                            @if (!string.IsNullOrEmpty(Model.GuardianPhotoPath))
+                            {
+                                <div class="mt-1"><img src="@Model.GuardianPhotoPath" style="width:60px;height:60px;border-radius:50%;object-fit:cover;" /></div>
+                            }
+                        </div>
+                        <div class="col-md-6">
+                            <label asp-for="GuardianRemarks" class="form-label">Guardian Remarks</label>
+                            <textarea asp-for="GuardianRemarks" class="form-control" rows="2" placeholder="Additional notes about guardian"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* ── Section 4: Contact Details ── *@
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-info bg-opacity-10">
                     <h5 class="mb-0"><i class="bi bi-telephone-fill me-2"></i>Contact Details</h5>
@@ -457,7 +515,7 @@
         document.getElementById('lblLinkedGuardianName').innerText = `${g.name} (${g.code})`;
         document.getElementById('linkedGuardianAlert').classList.remove('d-none');
         
-        // Auto-fill some fields if they are empty
+        // Auto-fill fields if they are empty
         const guardianNameInput = document.querySelector('[name="GuardianName"]');
         if (guardianNameInput && !guardianNameInput.value) {
             guardianNameInput.value = g.name;
@@ -466,6 +524,16 @@
         const guardianPhoneInput = document.querySelector('[name="FatherOrGuardianMobileNo"]');
         if (guardianPhoneInput && !guardianPhoneInput.value) {
             guardianPhoneInput.value = g.phone;
+        }
+
+        const guardianEmailInput = document.querySelector('[name="GuardianEmail"]');
+        if (guardianEmailInput && !guardianEmailInput.value && g.email) {
+            guardianEmailInput.value = g.email;
+        }
+
+        const guardianMobileInput = document.querySelector('[name="GuardianMobileNumber"]');
+        if (guardianMobileInput && !guardianMobileInput.value && g.phone) {
+            guardianMobileInput.value = g.phone;
         }
 
         bootstrap.Modal.getInstance(document.getElementById('guardianSearchModal')).hide();

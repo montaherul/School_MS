@@ -278,6 +278,72 @@ public class ExamAdminController : ControllerBase
         }
     }
 
+    [HttpPost("review-results/{examId}")]
+    public async Task<IActionResult> ReviewResults(int examId, CancellationToken ct = default)
+    {
+        try
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            await _publicationService.ReviewExamResultsAsync(examId, userId);
+            _logger.LogInformation($"Results reviewed for exam: {examId} by user {userId}");
+            return Ok(new { success = true, message = "Results reviewed successfully" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error reviewing results");
+            return BadRequest(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpPost("approve-results/{examId}")]
+    public async Task<IActionResult> ApproveResults(int examId, CancellationToken ct = default)
+    {
+        try
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            await _publicationService.ApproveReviewedResultsAsync(examId, userId);
+            _logger.LogInformation($"Results approved for exam: {examId} by user {userId}");
+            return Ok(new { success = true, message = "Results approved successfully" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error approving results");
+            return BadRequest(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpPost("unpublish-results/{examId}")]
+    public async Task<IActionResult> UnpublishResults(int examId, CancellationToken ct = default)
+    {
+        try
+        {
+            await _publicationService.UnpublishResultsAsync(examId);
+            _logger.LogInformation($"Results unpublished for exam: {examId}");
+            return Ok(new { success = true, message = "Results unpublished successfully" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error unpublishing results");
+            return BadRequest(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpPost("republish-results/{examId}")]
+    public async Task<IActionResult> RepublishResults(int examId, CancellationToken ct = default)
+    {
+        try
+        {
+            await _publicationService.RepublishResultsAsync(examId);
+            _logger.LogInformation($"Results republished for exam: {examId}");
+            return Ok(new { success = true, message = "Results republished successfully" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error republishing results");
+            return BadRequest(new { success = false, message = ex.Message });
+        }
+    }
+
     /// <summary>
     /// Get subjects for exam configuration
     /// </summary>

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Models.DTOs.Attendance;
+using SchoolManagementSystem.Helpers.Reports;
 using SchoolManagementSystem.Services.Interfaces.Employee;
 using SchoolManagementSystem.Services.Interfaces.Attendance;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
@@ -297,6 +299,46 @@ namespace SchoolManagementSystem.Controllers.Attendance
             {
                 return Json(new { success = false, message = ex.Message });
             }
+        }
+
+        [HttpGet]
+        [RequirePermission("Attendance.View")]
+        public async Task<IActionResult> ExportEmployeeAttendanceExcel(DateTime fromDate, DateTime toDate, CancellationToken ct = default)
+        {
+            if (!IsAdminOrPrincipal()) return Forbid();
+
+            var filter = new EmployeeAttendanceFilterDto
+            {
+                AttendanceDate = fromDate.Date,
+                Page = 1,
+                PageSize = 10000
+            };
+            var result = await _service.LoadAttendanceAsync(filter, 1, 10000, ct);
+            var data = result.Data;
+
+            var rows = new List<string[]>
+            {
+                new[] { "Employee Code", "Name", "Department", "Designation", "Date", "Check-In", "Check-Out", "Status", "Remarks" }
+            };
+            foreach (var a in data)
+            {
+                rows.Add(new[]
+                {
+                    a.EmployeeCode,
+                    a.EmployeeName,
+                    a.Department,
+                    a.Designation,
+                    a.AttendanceDate.ToString("yyyy-MM-dd"),
+                    a.CheckInTime?.ToString(@"hh\:mm") ?? string.Empty,
+                    a.CheckOutTime?.ToString(@"hh\:mm") ?? string.Empty,
+                    a.StatusName,
+                    a.Remarks ?? string.Empty
+                });
+            }
+
+            var xlsx = SimpleExcelWriter.WriteWorkbook("Employee Attendance", rows);
+            return File(xlsx, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                $"employee_attendance_{fromDate:yyyyMMdd}_{toDate:yyyyMMdd}.xlsx");
         }
     }
 }

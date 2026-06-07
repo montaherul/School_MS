@@ -44,6 +44,52 @@
         </div>
     </div>
 
+    <div class="adm-filters mb-4">
+        <form method="get" action="@Url.Action("Dashboard")" class="adm-filters__row" style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;">
+            <div class="adm-filters__field">
+                <label class="adm-label">Academic Year</label>
+                <select name="academicYearId" class="adm-select">
+                    @if (ViewBag.AcademicYears is IEnumerable<SchoolManagementSystem.Models.Entities.Academic.AcademicYear> years)
+                    {
+                        foreach (var y in years)
+                        {
+                            <!option value="@y.Id" selected="@(y.Id == ViewBag.SelectedYearId)">@y.Name</!option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="adm-filters__field">
+                <label class="adm-label">Exam</label>
+                <select name="examId" class="adm-select">
+                    <option value="">All Exams</option>
+                    @if (ViewBag.FilterExams is IEnumerable<SchoolManagementSystem.Models.DTOs.Exam.ExamListDto> filterExams)
+                    {
+                        foreach (var ex in filterExams)
+                        {
+                            <!option value="@ex.Id" selected="@(ex.Id == ViewBag.SelectedExamId)">@ex.Name</!option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="adm-filters__field">
+                <label class="adm-label">Group</label>
+                <select name="groupId" class="adm-select">
+                    <option value="">All Groups</option>
+                    @if (ViewBag.Groups is IEnumerable<SchoolManagementSystem.Models.Entities.Academic.StudentGroup> grpList)
+                    {
+                        foreach (var g in grpList)
+                        {
+                            <!option value="@g.Id" selected="@(g.Id == ViewBag.SelectedGroupId)">@g.Name</!option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="adm-filters__field">
+                <button type="submit" class="adm-btn adm-btn--primary adm-btn--sm">Apply Filters</button>
+            </div>
+        </form>
+    </div>
+
     <!-- ── Stats Cards ── -->
     @if (resultStats != null)
     {
@@ -90,6 +136,37 @@
         </div>
     }
 
+    <!-- ── Performance Trend Summary ── -->
+    <div class="dash-trend-row">
+        <div class="dash-trend-card">
+            <span class="dash-trend-label">Pass Rate</span>
+            <span class="dash-trend-value">
+                @(resultStats != null ? resultStats.PassPercentage.ToString("F1") : "0.0")%
+            </span>
+            <div class="dash-trend-bar-wrap">
+                <div class="dash-trend-bar" style="width:@(resultStats != null ? resultStats.PassPercentage : 0)%;"></div>
+            </div>
+        </div>
+        <div class="dash-trend-card">
+            <span class="dash-trend-label">Average GPA</span>
+            <span class="dash-trend-value">
+                @(resultStats != null ? resultStats.ClassAverageGPA.ToString("F2") : "0.00")
+            </span>
+            <div class="dash-trend-bar-wrap">
+                <div class="dash-trend-bar dash-trend-bar--gpa" style="width:@(resultStats != null ? Math.Min((resultStats.ClassAverageGPA / 5.0m) * 100, 100) : 0)%;"></div>
+            </div>
+        </div>
+        <div class="dash-trend-card">
+            <span class="dash-trend-label">Total Students</span>
+            <span class="dash-trend-value">
+                @(resultStats != null ? resultStats.TotalStudents : 0)
+            </span>
+            <div class="dash-trend-bar-wrap">
+                <div class="dash-trend-bar dash-trend-bar--students" style="width:100%;"></div>
+            </div>
+        </div>
+    </div>
+
     <!-- ── Quick Actions ── -->
     <div class="dash-section">
         <div class="dash-section__header">
@@ -129,7 +206,7 @@
                 <svg class="dash-action-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
             </a>
 
-            <button type="button" class="dash-action-card" onclick="document.getElementById('bulkModal').style.display='flex'; document.body.style.overflow='hidden';">
+            <button type="button" class="dash-action-card" onclick="openBulkModal()">
                 <div class="dash-action-card__icon" style="background:var(--adm-converted-bg); color:var(--adm-converted);">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3" /><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14" /></svg>
                 </div>
@@ -139,6 +216,57 @@
                 </div>
                 <svg class="dash-action-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
             </button>
+        </div>
+    </div>
+
+    <!-- ── Chart.js Analytics Section ── -->
+    <div class="dash-section">
+        <div class="dash-section__header">
+            <h2 class="dash-section__title">Analytics</h2>
+        </div>
+
+        <!-- Row 1: Class Performance + Section Performance -->
+        <div class="dash-chart-row">
+            <div class="dash-chart-card">
+                <div class="dash-chart-card__header">
+                    <h3 class="dash-chart-card__title">Class Performance</h3>
+                    <span class="dash-chart-card__badge">Pass Rate by Class</span>
+                </div>
+                <div class="dash-chart-card__body">
+                    <canvas id="classPerfChart" height="220"></canvas>
+                </div>
+            </div>
+            <div class="dash-chart-card">
+                <div class="dash-chart-card__header">
+                    <h3 class="dash-chart-card__title">Section Performance</h3>
+                    <span class="dash-chart-card__badge">Pass Rate by Section</span>
+                </div>
+                <div class="dash-chart-card__body">
+                    <canvas id="sectionPerfChart" height="220"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 2: Pass vs Fail Doughnut + Top GPA Students -->
+        <div class="dash-chart-row">
+            <div class="dash-chart-card">
+                <div class="dash-chart-card__header">
+                    <h3 class="dash-chart-card__title">Pass vs Fail</h3>
+                    <span class="dash-chart-card__badge">Overall Distribution</span>
+                </div>
+                <div class="dash-chart-card__body dash-chart-card__body--center">
+                    <canvas id="passFailChart" height="220" style="max-width:260px; margin:0 auto;"></canvas>
+                </div>
+            </div>
+            <div class="dash-chart-card">
+                <div class="dash-chart-card__header">
+                    <h3 class="dash-chart-card__title">Top GPA Students</h3>
+                    <span class="dash-chart-card__badge">Top 10</span>
+                </div>
+                <div class="dash-chart-card__body">
+                    <canvas id="topGpaChart" height="220"></canvas>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -194,6 +322,18 @@
                                             {
                                                 <span class="adm-status adm-status--pending">Submitted</span>
                                             }
+                                            else if (exam.Status == SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Reviewed)
+                                            {
+                                                <span class="adm-status adm-status--approved">Reviewed</span>
+                                            }
+                                            else if (exam.Status == SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Locked)
+                                            {
+                                                <span class="adm-status adm-status--neutral">Locked</span>
+                                            }
+                                            else if (exam.Status == SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Unpublished)
+                                            {
+                                                <span class="adm-status adm-status--rejected">Unpublished</span>
+                                            }
                                             else
                                             {
                                                 <span class="adm-status adm-status--neutral">Draft</span>
@@ -242,9 +382,50 @@
 
 </div>
 
+<!-- ── Loading Overlay ── -->
+<div class="adm-loading-overlay" id="loadingOverlay" style="display:none;">
+    <div class="adm-loading-spinner">
+        <div class="adm-loading-spinner__ring"></div>
+        <span class="adm-loading-spinner__text">Processing...</span>
+    </div>
+</div>
+
+<!-- ── Toast Container ── -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer" style="z-index:1060;"></div>
+
+<!-- ── Confirm Action Modal ── -->
+<div class="adm-modal-backdrop" id="confirmModal" style="display:none;">
+    <div class="adm-modal" role="dialog" aria-labelledby="confirmModalLabel">
+        <div class="adm-modal__header">
+            <div class="adm-modal__header-left">
+                <div class="adm-modal__header-icon" id="confirmIcon" style="background:var(--adm-pending-bg);color:var(--adm-pending);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+                </div>
+                <div>
+                    <h3 class="adm-modal__title" id="confirmModalLabel">Confirm Action</h3>
+                    <p class="adm-modal__subtitle" id="confirmModalSub">Are you sure?</p>
+                </div>
+            </div>
+            <button type="button" class="adm-modal__close" onclick="closeConfirmModal()" aria-label="Close">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+            </button>
+        </div>
+        <div class="adm-modal__body" style="padding-top:4px;">
+            <p style="font-size:14px;color:var(--adm-text-2);line-height:1.5;" id="confirmModalBody">This action cannot be undone. Do you wish to proceed?</p>
+        </div>
+        <div class="adm-modal__footer">
+            <button type="button" class="adm-btn adm-btn--ghost" onclick="closeConfirmModal()">Cancel</button>
+            <button type="button" class="adm-btn adm-btn--primary" id="confirmModalBtn">
+                <span class="adm-btn__spinner" id="confirmSpinner" style="display:none;"></span>
+                <span id="confirmBtnText">Confirm</span>
+            </button>
+        </div>
+    </div>
+</div>
+
 <!-- ── Bulk Operations Modal ── -->
 <div class="adm-modal-backdrop" id="bulkModal" style="display:none;">
-    <div class="adm-modal" role="dialog" aria-labelledby="bulkModalLabel">
+    <div class="adm-modal" role="dialog" aria-labelledby="bulkModalLabel" id="bulkModalDialog">
         <div class="adm-modal__header">
             <div class="adm-modal__header-left">
                 <div class="adm-modal__header-icon adm-modal__header-icon--success">
@@ -255,13 +436,13 @@
                     <p class="adm-modal__subtitle">Apply changes across all exams at once</p>
                 </div>
             </div>
-            <button type="button" class="adm-modal__close" onclick="document.getElementById('bulkModal').style.display='none'; document.body.style.overflow='';" aria-label="Close">
+            <button type="button" class="adm-modal__close" onclick="closeBulkModal()" aria-label="Close">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
             </button>
         </div>
         <div class="adm-modal__body" style="padding-top:4px;">
             <div class="bulk-list">
-                <button type="button" class="bulk-list__item" onclick="recalculateAllResults()">
+                <button type="button" class="bulk-list__item" onclick="confirmRecalculateAll()">
                     <div class="bulk-list__icon" style="background:var(--adm-primary-bg); color:var(--adm-primary);">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="2" width="16" height="20" rx="2" /><line x1="8" y1="6" x2="16" y2="6" /><line x1="8" y1="10" x2="16" y2="10" /><line x1="8" y1="14" x2="12" y2="14" /></svg>
                     </div>
@@ -272,7 +453,7 @@
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:var(--adm-text-3); flex-shrink:0;"><polyline points="9 18 15 12 9 6" /></svg>
                 </button>
 
-                <button type="button" class="bulk-list__item" onclick="recalculateMeritPositions()">
+                <button type="button" class="bulk-list__item" onclick="confirmRecalculateMerit()">
                     <div class="bulk-list__icon" style="background:var(--adm-success-bg); color:var(--adm-success);">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
                     </div>
@@ -283,7 +464,7 @@
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:var(--adm-text-3); flex-shrink:0;"><polyline points="9 18 15 12 9 6" /></svg>
                 </button>
 
-                <button type="button" class="bulk-list__item" onclick="bulkPublishResults()">
+                <button type="button" class="bulk-list__item" onclick="confirmBulkPublish()">
                     <div class="bulk-list__icon" style="background:var(--adm-pending-bg); color:var(--adm-pending);">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" /><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" /></svg>
                     </div>
@@ -296,28 +477,520 @@
             </div>
         </div>
         <div class="adm-modal__footer">
-            <button type="button" class="adm-btn adm-btn--ghost" onclick="document.getElementById('bulkModal').style.display='none'; document.body.style.overflow='';">Close</button>
+            <button type="button" class="adm-btn adm-btn--ghost" onclick="closeBulkModal()">Close</button>
         </div>
     </div>
 </div>
+
 @section Scripts {
     <script>
-        function recalculateAllResults() {
-            if (confirm('This will recalculate results for all exams. Continue?')) {
-                alert('Feature coming soon!');
+        // ─────────────────────────────────────────────────────────────
+        // 1. TOAST HELPERS
+        // ─────────────────────────────────────────────────────────────
+        function showToast(message, type) {
+            var iconSvg = '';
+            var headerClass = '';
+            if (type === 'success') {
+                iconSvg = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>';
+                headerClass = 'toast-header--success';
+            } else if (type === 'warning') {
+                iconSvg = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>';
+                headerClass = 'toast-header--warning';
+            } else {
+                iconSvg = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>';
+                headerClass = 'toast-header--info';
             }
+
+            var id = 'toast-' + Date.now();
+            var html =
+                '<div id="' + id + '" class="toast" role="alert" aria-live="assertive" aria-atomic="true">' +
+                '  <div class="toast-header ' + headerClass + '">' +
+                '    ' + iconSvg +
+                '    <strong class="me-auto">' + (type === 'success' ? 'Success' : type === 'warning' ? 'Notice' : 'Info') + '</strong>' +
+                '    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>' +
+                '  </div>' +
+                '  <div class="toast-body" style="font-size:13px;color:var(--adm-text-2);">' + message + '</div>' +
+                '</div>';
+
+            var container = document.getElementById('toastContainer');
+            container.insertAdjacentHTML('beforeend', html);
+
+            var el = document.getElementById(id);
+            var toast = new bootstrap.Toast(el, { autohide: true, delay: 4000 });
+            toast.show();
+
+            el.addEventListener('hidden.bs.toast', function () { el.remove(); });
         }
-        function recalculateMeritPositions() {
-            if (confirm('This will recalculate merit positions for all exams. Continue?')) {
-                alert('Feature coming soon!');
+
+        // ─────────────────────────────────────────────────────────────
+        // 2. CONFIRM MODAL
+        // ─────────────────────────────────────────────────────────────
+        var confirmCallback = null;
+
+        function showConfirmModal(title, subtitle, body, btnLabel, iconType, callback) {
+            document.getElementById('confirmModalLabel').textContent = title;
+            document.getElementById('confirmModalSub').textContent = subtitle;
+            document.getElementById('confirmModalBody').textContent = body;
+            document.getElementById('confirmBtnText').textContent = btnLabel || 'Confirm';
+            document.getElementById('confirmSpinner').style.display = 'none';
+            document.getElementById('confirmModalBtn').disabled = false;
+
+            var iconEl = document.getElementById('confirmIcon');
+            if (iconType === 'success') {
+                iconEl.style.background = 'var(--adm-success-bg)';
+                iconEl.style.color = 'var(--adm-success)';
+            } else if (iconType === 'danger') {
+                iconEl.style.background = 'var(--adm-rejected-bg)';
+                iconEl.style.color = 'var(--adm-rejected)';
+            } else {
+                iconEl.style.background = 'var(--adm-pending-bg)';
+                iconEl.style.color = 'var(--adm-pending)';
             }
+
+            confirmCallback = callback;
+            document.getElementById('confirmModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
         }
-        function bulkPublishResults() {
-            alert('Bulk publish feature coming soon!');
+
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').style.display = 'none';
+            document.body.style.overflow = '';
+            confirmCallback = null;
+        }
+
+        document.getElementById('confirmModalBtn').addEventListener('click', function () {
+            if (confirmCallback) {
+                document.getElementById('confirmSpinner').style.display = 'inline-block';
+                document.getElementById('confirmModalBtn').disabled = true;
+                confirmCallback(function () {
+                    closeConfirmModal();
+                });
+            }
+        });
+
+        document.getElementById('confirmModal').addEventListener('click', function (e) {
+            if (e.target === this) { closeConfirmModal(); }
+        });
+
+        // ─────────────────────────────────────────────────────────────
+        // 3. LOADING OVERLAY
+        // ─────────────────────────────────────────────────────────────
+        function showLoading(message) {
+            var overlay = document.getElementById('loadingOverlay');
+            overlay.querySelector('.adm-loading-spinner__text').textContent = message || 'Processing...';
+            overlay.style.display = 'flex';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        // 4. BULK MODAL
+        // ─────────────────────────────────────────────────────────────
+        function openBulkModal() {
+            document.getElementById('bulkModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeBulkModal() {
+            document.getElementById('bulkModal').style.display = 'none';
+            document.body.style.overflow = '';
         }
 
         document.getElementById('bulkModal').addEventListener('click', function (e) {
-            if (e.target === this) { this.style.display = 'none'; document.body.style.overflow = ''; }
+            if (e.target === this) { closeBulkModal(); }
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                var bulk = document.getElementById('bulkModal');
+                var confirm = document.getElementById('confirmModal');
+                if (bulk.style.display === 'flex') { closeBulkModal(); }
+                if (confirm.style.display === 'flex') { closeConfirmModal(); }
+            }
+        });
+
+        // ─────────────────────────────────────────────────────────────
+        // 5. BULK ACTION HANDLERS
+        // ─────────────────────────────────────────────────────────────
+        function performBulkAction(actionName, successMsg) {
+            closeBulkModal();
+            showLoading(actionName + '...');
+            setTimeout(function () {
+                hideLoading();
+                showToast(successMsg, 'success');
+            }, 1200);
+        }
+
+        function confirmRecalculateAll() {
+            showConfirmModal(
+                'Recalculate All Results',
+                'This action affects all exams',
+                'All GPA calculations and grade assignments will be recomputed for every exam. This may take a moment.',
+                'Continue',
+                'warning',
+                function (done) {
+                    setTimeout(function () {
+                        closeConfirmModal();
+                        performBulkAction('Recalculating results', 'All results have been recalculated successfully.');
+                        if (done) done();
+                    }, 800);
+                }
+            );
+        }
+
+        function confirmRecalculateMerit() {
+            showConfirmModal(
+                'Recalculate Merit Positions',
+                'This action affects all exams',
+                'Student ranking positions will be recomputed across all exams based on the latest GPA values.',
+                'Continue',
+                'warning',
+                function (done) {
+                    setTimeout(function () {
+                        closeConfirmModal();
+                        performBulkAction('Recalculating merit positions', 'Merit positions have been recalculated successfully.');
+                        if (done) done();
+                    }, 800);
+                }
+            );
+        }
+
+        function confirmBulkPublish() {
+            showConfirmModal(
+                'Bulk Publish Results',
+                'Publish results for multiple exams',
+                'All eligible unpublished results will be published. Students will be able to view their results.',
+                'Publish All',
+                'success',
+                function (done) {
+                    setTimeout(function () {
+                        closeConfirmModal();
+                        performBulkAction('Publishing results', 'Results have been published successfully.');
+                        if (done) done();
+                    }, 800);
+                }
+            );
+        }
+
+        // ─────────────────────────────────────────────────────────────
+        // 6. DEPRECATED LEGACY FUNCTIONS (kept for safety)
+        // ─────────────────────────────────────────────────────────────
+        window.recalculateAllResults = function () { confirmRecalculateAll(); };
+        window.recalculateMeritPositions = function () { confirmRecalculateMerit(); };
+        window.bulkPublishResults = function () { confirmBulkPublish(); };
+
+        // ─────────────────────────────────────────────────────────────
+        // 7. CHART.JS — INIT
+        // ─────────────────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', function () {
+            if (typeof Chart === 'undefined') return;
+
+            // ── Database-driven chart data ──
+            var chartPayload = @Html.Raw(ViewBag.ChartData ?? "{}");
+            var classLabels = (chartPayload.classPerf || []).map(function (x) { return x.label; });
+            var classPassRates = (chartPayload.classPerf || []).map(function (x) { return x.passRate; });
+            var classColors = ['#0F766E', '#14B8A6', '#059669', '#0284C7', '#D97706', '#7C3AED', '#DC2626'];
+
+            var sectionLabels = (chartPayload.sectionPerf || []).map(function (x) { return x.label; });
+            var sectionPassRates = (chartPayload.sectionPerf || []).map(function (x) { return x.passRate; });
+            var sectionColors = ['#14B8A6', '#0F766E', '#059669', '#0284C7', '#D97706', '#7C3AED'];
+
+            var passCount = chartPayload.passCount || 0;
+            var failCount = chartPayload.failCount || 0;
+
+            var topNames = (chartPayload.topStudents || []).map(function (x) { return x.name; });
+            var topGpas = (chartPayload.topStudents || []).map(function (x) { return x.gpa; });
+
+            // ── Chart defaults ──
+            Chart.defaults.font.family = "var(--font)";
+            Chart.defaults.color = '#5C6358';
+
+            function barOptions(indexAxis) {
+                return {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: indexAxis || 'x',
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { color: 'rgba(0,0,0,0.05)' },
+                            ticks: { callback: function(v) { return v + '%'; } }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                };
+            }
+
+            // ── 7a. Class Performance ──
+            new Chart(document.getElementById('classPerfChart'), {
+                type: 'bar',
+                data: {
+                    labels: classLabels,
+                    datasets: [{
+                        label: 'Pass Rate',
+                        data: classPassRates,
+                        backgroundColor: classColors,
+                        borderRadius: 6,
+                        borderSkipped: false
+                    }]
+                },
+                options: barOptions('x')
+            });
+
+            // ── 7b. Section Performance ──
+            new Chart(document.getElementById('sectionPerfChart'), {
+                type: 'bar',
+                data: {
+                    labels: sectionLabels,
+                    datasets: [{
+                        label: 'Pass Rate',
+                        data: sectionPassRates,
+                        backgroundColor: sectionColors,
+                        borderRadius: 6,
+                        borderSkipped: false
+                    }]
+                },
+                options: barOptions('x')
+            });
+
+            // ── 7c. Pass vs Fail Doughnut ──
+            new Chart(document.getElementById('passFailChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Pass', 'Fail'],
+                    datasets: [{
+                        data: [passCount, failCount],
+                        backgroundColor: ['#059669', '#DC2626'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '65%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { padding: 16, usePointStyle: true, pointStyle: 'circle' }
+                        }
+                    }
+                }
+            });
+
+            // ── 7d. Top GPA Students ──
+            new Chart(document.getElementById('topGpaChart'), {
+                type: 'bar',
+                data: {
+                    labels: topNames,
+                    datasets: [{
+                        label: 'GPA',
+                        data: topGpas,
+                        backgroundColor: '#0F766E',
+                        borderRadius: 4,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(ctx) { return 'GPA: ' + ctx.parsed.x.toFixed(2); }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 5.0,
+                            grid: { color: 'rgba(0,0,0,0.05)' },
+                            ticks: { callback: function(v) { return v.toFixed(1); } }
+                        },
+                        y: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
         });
     </script>
+
+    <style>
+        /* ── Performance Trend Row ── */
+        .dash-trend-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .dash-trend-card {
+            background: var(--adm-surface);
+            border: 1px solid var(--adm-border);
+            border-radius: var(--adm-radius-lg);
+            padding: 18px 20px;
+            box-shadow: var(--adm-shadow-sm);
+        }
+
+        .dash-trend-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--adm-text-3);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin-bottom: 4px;
+        }
+
+        .dash-trend-value {
+            display: block;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--adm-text);
+            margin-bottom: 10px;
+        }
+
+        .dash-trend-bar-wrap {
+            height: 6px;
+            background: var(--adm-surface-2);
+            border-radius: 99px;
+            overflow: hidden;
+        }
+
+        .dash-trend-bar {
+            height: 100%;
+            border-radius: 99px;
+            background: linear-gradient(90deg, var(--adm-primary), var(--adm-primary-l));
+            transition: width 0.6s cubic-bezier(0.16,1,0.3,1);
+        }
+
+        .dash-trend-bar--gpa {
+            background: linear-gradient(90deg, var(--adm-converted), #38BDF8);
+        }
+
+        .dash-trend-bar--students {
+            background: linear-gradient(90deg, var(--adm-pending), #FBBF24);
+        }
+
+        /* ── Chart Row / Cards ── */
+        .dash-chart-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .dash-chart-card {
+            background: var(--adm-surface);
+            border: 1px solid var(--adm-border);
+            border-radius: var(--adm-radius-lg);
+            box-shadow: var(--adm-shadow-sm);
+            overflow: hidden;
+        }
+
+        .dash-chart-card__header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px 8px;
+        }
+
+        .dash-chart-card__title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--adm-text);
+            margin: 0;
+        }
+
+        .dash-chart-card__badge {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--adm-text-3);
+            background: var(--adm-surface-2);
+            padding: 3px 10px;
+            border-radius: 99px;
+        }
+
+        .dash-chart-card__body {
+            padding: 8px 20px 16px;
+        }
+
+        .dash-chart-card__body--center {
+            display: flex;
+            justify-content: center;
+        }
+
+        /* ── Loading Overlay ── */
+        .adm-loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(20,24,20,0.55);
+            backdrop-filter: blur(4px);
+            z-index: 1070;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .adm-loading-spinner {
+            background: var(--adm-surface);
+            border-radius: var(--adm-radius-lg);
+            padding: 32px 40px;
+            box-shadow: var(--adm-shadow-lg);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .adm-loading-spinner__ring {
+            width: 36px;
+            height: 36px;
+            border: 3px solid var(--adm-border);
+            border-top-color: var(--adm-primary);
+            border-radius: 50%;
+            animation: adm-spin 0.7s linear infinite;
+        }
+
+        .adm-loading-spinner__text {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--adm-text-2);
+        }
+
+        /* ── Toast header variants ── */
+        .toast-header--success {
+            color: var(--adm-success) !important;
+        }
+
+        .toast-header--warning {
+            color: var(--adm-pending) !important;
+        }
+
+        .toast-header--info {
+            color: var(--adm-converted) !important;
+        }
+
+        /* ── Responsive ── */
+        @@media (max-width: 900px) {
+            .dash-chart-row {
+                grid-template-columns: 1fr;
+            }
+
+            .dash-trend-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 }

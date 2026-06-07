@@ -125,7 +125,13 @@
                         </div>
                         <div class="col-md-6">
                             <label asp-for="GuardianName" class="form-label">Guardian's Name</label>
-                            <input asp-for="GuardianName" class="form-control" placeholder="If different from parents" />
+                            <div class="input-group">
+                                <input asp-for="GuardianName" id="guardianNameInput" class="form-control" placeholder="If different from parents" />
+                                <button type="button" class="btn btn-outline-purple" style="border-color:#6f42c1;color:#6f42c1;" data-bs-toggle="modal" data-bs-target="#guardianSearchModal">
+                                    <i class="bi bi-search"></i>
+                                </button>
+                            </div>
+                            <input asp-for="LinkedGuardianId" id="linkedGuardianId" type="hidden" />
                         </div>
                         <div class="col-md-6">
                             <label asp-for="GuardianOccupation" class="form-label">Guardian's Occupation</label>
@@ -292,6 +298,44 @@
                 <a asp-action="Index" class="btn btn-outline-secondary px-4">Cancel</a>
             </div>
         </form>
+
+        @* ── Guardian Search Modal ── *@
+        <div class="modal fade" id="guardianSearchModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header bg-purple text-white" style="background-color:#6f42c1;">
+                        <h5 class="modal-title"><i class="bi bi-search me-2"></i>Search Existing Guardian</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="input-group mb-3">
+                            <input type="text" id="guardianSearchInput" class="form-control" placeholder="Search by name, phone, or code..." autofocus />
+                            <button type="button" id="guardianSearchBtn" class="btn btn-purple" style="background-color:#6f42c1;color:#fff;">
+                                <i class="bi bi-search"></i> Search
+                            </button>
+                        </div>
+                        <div id="guardianSearchResults" class="table-responsive" style="max-height:400px;overflow-y:auto;">
+                            <table class="table table-hover table-bordered mb-0" id="guardianResultsTable">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width:80px;">Code</th>
+                                        <th>Name</th>
+                                        <th style="width:150px;">Phone</th>
+                                        <th style="width:100px;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="guardianResultsBody">
+                                    <tr><td colspan="4" class="text-center text-muted py-4">Type a search term and click Search</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -333,7 +377,38 @@
 
             reader.readAsDataURL(event.target.files[0]);
         }
- 
 
+        // ── Guardian Search ──
+        function doGuardianSearch() {
+            const term = document.getElementById('guardianSearchInput').value.trim();
+            const tbody = document.getElementById('guardianResultsBody');
+            if (!term) { tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">Please enter a search term</td></tr>'; return; }
+            tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4"><span class="spinner-border spinner-border-sm me-2"></span>Searching...</td></tr>';
+            fetch('/admin/guardians/search?term=' + encodeURIComponent(term))
+                .then(r => r.json())
+                .then(data => {
+                    if (!data || data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4">No guardians found</td></tr>';
+                        return;
+                    }
+                    tbody.innerHTML = data.map(g => '<tr>' +
+                        '<td><span class="badge bg-info bg-opacity-10 text-info">' + (g.code || '—') + '</span></td>' +
+                        '<td class="fw-medium">' + g.name + '</td>' +
+                        '<td>' + (g.phone || '—') + '</td>' +
+                        '<td><button type="button" class="btn btn-sm btn-purple" style="background-color:#6f42c1;color:#fff;" onclick="selectGuardian(' + g.id + ',\'' + g.name.replace(/'/g,"\\'") + '\',\'' + (g.phone || '') + '\')"><i class="bi bi-check-lg"></i> Select</button></td>' +
+                        '</tr>').join('');
+                });
+        }
+
+        function selectGuardian(id, name, phone) {
+            document.getElementById('linkedGuardianId').value = id;
+            document.getElementById('guardianNameInput').value = name;
+            if (phone) document.getElementById('FatherOrGuardianMobileNo').value = phone;
+            var modal = bootstrap.Modal.getInstance(document.getElementById('guardianSearchModal'));
+            if (modal) modal.hide();
+        }
+
+        document.getElementById('guardianSearchBtn').addEventListener('click', doGuardianSearch);
+        document.getElementById('guardianSearchInput').addEventListener('keydown', function(e) { if (e.key === 'Enter') { e.preventDefault(); doGuardianSearch(); } });
     </script>
 }

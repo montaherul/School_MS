@@ -154,6 +154,69 @@ public class ResultPublicationService : IResultPublicationService
         await _uow.SaveChangesAsync();
     }
 
+    public async Task ReviewExamResultsAsync(int examId, int reviewerUserId)
+    {
+        var marks = await _markEntryRepository.ListAsync(x => x.ExamId == examId);
+        foreach (var mark in marks)
+        {
+            mark.Status = ResultWorkflowStatus.Reviewed;
+            _markEntryRepository.Update(mark);
+        }
+        await _uow.SaveChangesAsync();
+    }
+
+    public async Task ApproveReviewedResultsAsync(int examId, int approverUserId)
+    {
+        var marks = await _markEntryRepository.ListAsync(x => x.ExamId == examId);
+        foreach (var mark in marks)
+        {
+            mark.Status = ResultWorkflowStatus.Approved;
+            _markEntryRepository.Update(mark);
+        }
+        await _uow.SaveChangesAsync();
+    }
+
+    public async Task UnpublishResultsAsync(int examId)
+    {
+        var exam = await _examRepository.GetByIdAsync(examId);
+        if (exam == null) return;
+        
+        exam.Status = ResultWorkflowStatus.Unpublished;
+        _examRepository.Update(exam);
+        
+        var publication = await _resultPublicationRepository.FirstOrDefaultAsync(p => p.ExamId == examId && !p.IsDeleted);
+        if (publication != null)
+        {
+            publication.Status = ResultWorkflowStatus.Unpublished;
+            _resultPublicationRepository.Update(publication);
+        }
+        
+        await _uow.SaveChangesAsync();
+    }
+
+    public async Task RepublishResultsAsync(int examId)
+    {
+        var exam = await _examRepository.GetByIdAsync(examId);
+        if (exam == null) return;
+        
+        var dto = new ResultPublishDto { ExamId = examId, LockResults = true };
+        await PublishResultsAsync(dto);
+    }
+
+    public async Task<ResultPublicationDto> GetPublicationStatusAsync(int examId)
+    {
+        var publication = await _resultPublicationRepository.FirstOrDefaultAsync(p => p.ExamId == examId && !p.IsDeleted);
+        if (publication == null) return new ResultPublicationDto { ExamName = "Not Published" };
+        
+        return new ResultPublicationDto
+        {
+            Id = publication.Id,
+            ExamName = publication.Exam?.Name ?? "",
+            PublishedAt = publication.PublishedAt ?? publication.CreatedAt,
+            IsPublished = publication.Status == ResultWorkflowStatus.Published
+        };
+    }
+
     public async Task<IEnumerable<ResultPublicationDto>> GetResultPublicationsAsync()
     {
         var activeYear = await _uow.Repository<AcademicYear>().FirstOrDefaultAsync(x => x.IsActive);
@@ -243,7 +306,11 @@ public class ResultPublicationService : IResultPublicationService
             {
                 "published" => ResultWorkflowStatus.Published,
                 "approved" => ResultWorkflowStatus.Approved,
+                "reviewed" => ResultWorkflowStatus.Reviewed,
+                "submitted" => ResultWorkflowStatus.Submitted,
                 "draft" => ResultWorkflowStatus.Draft,
+                "locked" => ResultWorkflowStatus.Locked,
+                "unpublished" => ResultWorkflowStatus.Unpublished,
                 _ => (ResultWorkflowStatus?)null
             };
             if (statusFilter.HasValue) query = query.Where(r => r.Status == statusFilter.Value);

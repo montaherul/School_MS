@@ -18,6 +18,32 @@ namespace SchoolManagementSystem.Data;
 
 public static class DbInitializer
 {
+    /// <summary>
+    /// Guardian role ID (single source of truth).
+    /// </summary>
+    public const int GuardianRoleId = 25;
+
+    /// <summary>
+    /// EXACT permission codes the Guardian role is allowed to have.
+    /// This is the single source of truth — both the EF seed AND the runtime
+    /// enforcer (<see cref="GuardianRbacEnforcer"/>) read from this set.
+    /// Any Guardian permission not in this set must be removed.
+    /// DO NOT add Create/Edit/Update/Delete/Approve/Assign/Publish/Manage/Generate
+    /// actions here — Guardian is strictly read-only on its own children.
+    /// </summary>
+    public static readonly IReadOnlySet<string> GuardianPermissionCodes = new HashSet<string>(StringComparer.Ordinal)
+    {
+        "Dashboard.View",
+        "Attendance.View",
+        "Results.View",
+        "Fees.View",
+        "Leave.View",
+        "Notice.View",
+        "Calendar.View",
+        "Profile.View",
+        "Notification.View"
+    };
+
     private static string GetClassName(int i)
     {
         return i switch
@@ -80,7 +106,9 @@ public static class DbInitializer
             "Library", "Transport", "Health", "Notifications", "Reports", "Settings", "Academic",
             "Admission", "Student", "Exam", "Result", "Communication", "System", "AuditLogs",
             "FeeStructures", "Invoices", "Scholarships", "Waivers", "StudentDues", "FinancialTransactions",
-            "FinanceReports", "FinanceConfiguration", "FinanceDashboard", "Receipts"
+            "FinanceReports", "FinanceConfiguration", "FinanceDashboard", "Receipts",
+            // Guardian portal modules (added for Guardian Management System)
+            "Results", "Leave", "Notice", "Calendar", "Profile", "Notification"
         };
         var actions = new[]
         {
@@ -101,7 +129,22 @@ public static class DbInitializer
                 CanDelete = action is "Delete" or "Manage",
                 CreatedAt = createdAt
             })).ToArray();
-        modelBuilder.Entity<Permission>().HasData(permissions);
+        // Custom permissions appended at fixed IDs (no longer part of matrix to avoid
+        // sequential ID shifts). These are for module/action combos needed by specific
+        // roles but absent from the 46x13 matrix above.
+        var customPermissions = new Permission[]
+        {
+            new() { Id = 599, Module = "Library", ModuleName = "Library", Action = "Issue", Code = "Library.Issue",
+                CanCreate = false, CanRead = true, CanUpdate = true, CanDelete = false, CreatedAt = createdAt },
+            new() { Id = 600, Module = "Library", ModuleName = "Library", Action = "Return", Code = "Library.Return",
+                CanCreate = false, CanRead = true, CanUpdate = true, CanDelete = false, CreatedAt = createdAt },
+            new() { Id = 601, Module = "Laboratory", ModuleName = "Laboratory", Action = "View", Code = "Laboratory.View",
+                CanCreate = false, CanRead = true, CanUpdate = false, CanDelete = false, CreatedAt = createdAt },
+            new() { Id = 602, Module = "Laboratory", ModuleName = "Laboratory", Action = "Manage", Code = "Laboratory.Manage",
+                CanCreate = true, CanRead = true, CanUpdate = true, CanDelete = true, CreatedAt = createdAt },
+        };
+        var allPermissions = permissions.Concat(customPermissions).ToArray();
+        modelBuilder.Entity<Permission>().HasData(allPermissions);
 
         var financeModules = new HashSet<string>
         {
@@ -109,8 +152,8 @@ public static class DbInitializer
             "FinancialTransactions", "FinanceReports", "FinanceConfiguration", "FinanceDashboard", "Receipts"
         };
 
-        var adminRolePermissions = permissions.Select(p => new RolePermission { RoleId = 1, PermissionId = p.Id });
-        var principalRolePermissions = permissions
+        var adminRolePermissions = allPermissions.Select(p => new RolePermission { RoleId = 1, PermissionId = p.Id });
+        var principalRolePermissions = allPermissions
             .Where(p => !financeModules.Contains(p.ModuleName) ||
                 p.Code is
                     "FinanceDashboard.View" or "FinanceDashboard.Read" or
@@ -121,37 +164,76 @@ public static class DbInitializer
                     "Scholarships.View" or "Scholarships.Read" or "Scholarships.Approve" or
                     "Waivers.View" or "Waivers.Read" or "Waivers.Approve")
             .Select(p => new RolePermission { RoleId = 2, PermissionId = p.Id });
-        var assistantHeadRolePermissions = permissions
+        var assistantHeadRolePermissions = allPermissions
             .Where(p =>
                 p.ModuleName is "Dashboard" or "Academic" or "Classes" or "Sections" or "Subjects" or "Admissions" or "Admission" or "Students" or "Student" or "Attendance" or "Exams" or "Exam" or "Marks" or "Result" or "Communication" or "Reports")
             .Select(p => new RolePermission { RoleId = 3, PermissionId = p.Id });
-        var teacherRolePermissions = permissions
+        // Senior Lecturer: senior teaching role — full attendance/marks/results authority
+        var seniorLecturerRolePermissions = allPermissions
+            .Where(p => p.Code is
+                "Dashboard.View" or
+                "Attendance.View" or "Attendance.Create" or "Attendance.Edit" or
+                "Marks.View" or "Marks.Create" or "Marks.Edit" or
+                "Results.View" or "Result.View" or
+                "Assignments.View" or "Assignments.Create" or
+                "Reports.View" or
+                "Exams.View" or "Exam.View")
+            .Select(p => new RolePermission { RoleId = 4, PermissionId = p.Id });
+        var teacherRolePermissions = allPermissions
             .Where(p =>
                 p.Code is "Dashboard.View" or "Classes.View" or "Students.View" or "Attendance.View" or "Attendance.Create" or "Marks.View" or "Marks.Create" or "Assignments.View" or "Assignments.Create" ||
                 p.Code is "Reports.View" or "Exam.View" or "Exams.View")
             .Select(p => new RolePermission { RoleId = 5, PermissionId = p.Id });
-        var officeRolePermissions = permissions
+        var officeRolePermissions = allPermissions
             .Where(p =>
                 p.ModuleName is "Dashboard" or "Admissions" or "Admission" or "Students" or "Student" or "Fees" or "Payments" or "Reports" &&
                 p.Action is not "Delete")
             .Select(p => new RolePermission { RoleId = 6, PermissionId = p.Id });
-        var studentRolePermissions = permissions
+        var studentRolePermissions = allPermissions
             .Where(p =>
                 p.Code is "Dashboard.View" or "Dashboard.Read" or "Students.View" or "Student.View" or "Attendance.View" or "Marks.View" or "Assignments.View" or "Assignments.Create" or "Notifications.View" or "Fees.View" or
                     "Invoices.View" or "Invoices.Read" or "Payments.View" or "Payments.Read" or "StudentDues.View" or "StudentDues.Read" or
                     "Receipts.View" or "Receipts.Read" or "Receipts.Print" or "Receipts.Export")
             .Select(p => new RolePermission { RoleId = 7, PermissionId = p.Id });
-        var accountantRolePermissions = permissions.Where(p => financeModules.Contains(p.ModuleName) || p.Code is "Dashboard.View" or "Dashboard.Read").Select(p => new RolePermission { RoleId = 20, PermissionId = p.Id });
-        var guardianRolePermissions = permissions.Select(p => new RolePermission { RoleId = 25, PermissionId = p.Id });
-        var applicationAdminRolePermissions = permissions.Select(p => new RolePermission { RoleId = 26, PermissionId = p.Id });
+        var accountantRolePermissions = allPermissions.Where(p => financeModules.Contains(p.ModuleName) || p.Code is "Dashboard.View" or "Dashboard.Read").Select(p => new RolePermission { RoleId = 20, PermissionId = p.Id });
+        // Librarian: library management (catalog + issue/return books)
+        var librarianRolePermissions = allPermissions
+            .Where(p => p.Code is
+                "Library.View" or "Library.Create" or "Library.Edit" or "Library.Delete" or
+                "Library.Issue" or "Library.Return" or
+                "Reports.View")
+            .Select(p => new RolePermission { RoleId = 21, PermissionId = p.Id });
+        // LabAssistant: manage lab equipment
+        var labAssistantRolePermissions = allPermissions
+            .Where(p => p.Code is "Laboratory.View" or "Laboratory.Manage")
+            .Select(p => new RolePermission { RoleId = 22, PermissionId = p.Id });
+        // TransportStaff: manage transport routes
+        var transportStaffRolePermissions = allPermissions
+            .Where(p => p.Code is "Transport.View" or "Transport.Edit")
+            .Select(p => new RolePermission { RoleId = 23, PermissionId = p.Id });
+        // SupportStaff: minimal dashboard access
+        var supportStaffRolePermissions = allPermissions
+            .Where(p => p.Code is "Dashboard.View")
+            .Select(p => new RolePermission { RoleId = 24, PermissionId = p.Id });
+        // Guardian Management System: grant Guardian role ONLY the 9 portal-specific
+        // permissions declared in GuardianPermissionCodes (source of truth).
+        var guardianRolePermissions = allPermissions
+            .Where(p => GuardianPermissionCodes.Contains(p.Code))
+            .Select(p => new RolePermission { RoleId = GuardianRoleId, PermissionId = p.Id });
+        var applicationAdminRolePermissions = allPermissions.Select(p => new RolePermission { RoleId = 26, PermissionId = p.Id });
         modelBuilder.Entity<RolePermission>().HasData(
             adminRolePermissions
             .Concat(principalRolePermissions)
             .Concat(assistantHeadRolePermissions)
+            .Concat(seniorLecturerRolePermissions)
             .Concat(teacherRolePermissions)
             .Concat(officeRolePermissions)
             .Concat(studentRolePermissions)
             .Concat(accountantRolePermissions)
+            .Concat(librarianRolePermissions)
+            .Concat(labAssistantRolePermissions)
+            .Concat(transportStaffRolePermissions)
+            .Concat(supportStaffRolePermissions)
             .Concat(guardianRolePermissions)
             .Concat(applicationAdminRolePermissions));
 

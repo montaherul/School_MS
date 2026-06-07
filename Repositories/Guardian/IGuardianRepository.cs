@@ -13,4 +13,5 @@ public interface IGuardianRepository : IBaseRepository<SchoolManagementSystem.Mo
     Task<bool> IsMobileUniqueAsync(string mobile);
     Task<int> GetStudentCountAsync(int guardianId);
     Task LinkStudentAsync(int guardianId, int studentId, string relation);
+    Task<List<GuardianChildCardDto>> GetChildrenAsync(int guardianId, CancellationToken ct = default);
 }

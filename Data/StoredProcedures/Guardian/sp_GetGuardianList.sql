@@ -13,7 +13,8 @@ BEGIN
            g.FirstName LIKE '%' + @SearchTerm + '%' OR 
            g.LastName LIKE '%' + @SearchTerm + '%' OR 
            g.GuardianCode LIKE '%' + @SearchTerm + '%' OR 
-           g.MobileNumber LIKE '%' + @SearchTerm + '%')
+           g.MobileNumber LIKE '%' + @SearchTerm + '%' OR
+           g.Email LIKE '%' + @SearchTerm + '%')
       AND (@Status IS NULL OR
            CASE g.Status
                 WHEN 1 THEN 'Active'
@@ -55,7 +56,8 @@ BEGIN
            g.FirstName LIKE '%' + @SearchTerm + '%' OR 
            g.LastName LIKE '%' + @SearchTerm + '%' OR 
            g.GuardianCode LIKE '%' + @SearchTerm + '%' OR 
-           g.MobileNumber LIKE '%' + @SearchTerm + '%')
+           g.MobileNumber LIKE '%' + @SearchTerm + '%' OR
+           g.Email LIKE '%' + @SearchTerm + '%')
       AND (@Status IS NULL OR
            CASE g.Status
                 WHEN 1 THEN 'Active'

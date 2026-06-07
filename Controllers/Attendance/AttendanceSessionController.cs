@@ -132,6 +132,44 @@ namespace SchoolManagementSystem.Controllers.Attendance
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Super Admin,Admin,Principal,Assistant Head,Senior Lecturer,Lecturer,Teacher")]
+        public async Task<IActionResult> Submit([FromBody] SubmitRequest dto, CancellationToken ct)
+        {
+            if (dto == null) return BadRequest();
+            try
+            {
+                await _attendanceService.SubmitAttendanceSessionAsync(
+                    dto.ClassId, dto.SectionId, dto.StudentGroupId, dto.AttendanceDate,
+                    User.Identity?.Name ?? "system", dto.Notes, ct);
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Super Admin,Admin,Principal,Assistant Head")]
+        public async Task<IActionResult> Lock([FromBody] LockRequest dto, CancellationToken ct)
+        {
+            if (dto == null) return BadRequest();
+            try
+            {
+                await _attendanceService.LockAttendanceSessionAsync(
+                    dto.ClassId, dto.SectionId, dto.StudentGroupId, dto.AttendanceDate,
+                    User.Identity?.Name ?? "system", dto.Notes, ct);
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         [Authorize(Roles = "Super Admin,Admin,Principal,Assistant Head")]
         public async Task<IActionResult> Unlock([FromBody] UnlockRequest dto, CancellationToken ct)
         {
@@ -187,6 +225,24 @@ namespace SchoolManagementSystem.Controllers.Attendance
             public int? StudentGroupId { get; set; }
             public DateTime AttendanceDate { get; set; }
             public string Reason { get; set; } = string.Empty;
+        }
+
+        public class SubmitRequest
+        {
+            public int ClassId { get; set; }
+            public int SectionId { get; set; }
+            public int? StudentGroupId { get; set; }
+            public DateTime AttendanceDate { get; set; }
+            public string? Notes { get; set; }
+        }
+
+        public class LockRequest
+        {
+            public int ClassId { get; set; }
+            public int SectionId { get; set; }
+            public int? StudentGroupId { get; set; }
+            public DateTime AttendanceDate { get; set; }
+            public string? Notes { get; set; }
         }
 
         public class ReviseRequest

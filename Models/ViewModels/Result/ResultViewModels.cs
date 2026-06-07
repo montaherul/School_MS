@@ -1,3 +1,4 @@
+using SchoolManagementSystem.Models.DTOs.Exam;
 using SchoolManagementSystem.Models.DTOs.Result;
 using SchoolManagementSystem.Models.Enums;
 
@@ -5,7 +6,7 @@ namespace SchoolManagementSystem.Models.ViewModels.Result;
 
 public class ExamIndexViewModel
 {
-    public List<ExamUpsertDto> Exams { get; set; } = new();
+    public List<ExamListDto> Exams { get; set; } = new();
     public int CurrentAcademicYearId { get; set; }
 }
 

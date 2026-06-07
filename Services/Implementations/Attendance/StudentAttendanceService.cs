@@ -44,6 +44,7 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
         private readonly IAttendanceNotificationService _notificationService;
         private readonly IAttendanceAuthorizationService _authorizationService;
         private readonly IAttendanceValidationService _validationService;
+        private readonly IAttendancePercentageService _percentageService;
         private readonly ILogger<StudentAttendanceService> _logger;
 
         public StudentAttendanceService(
@@ -53,6 +54,7 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
             IAttendanceNotificationService notificationService,
             IAttendanceAuthorizationService authorizationService,
             IAttendanceValidationService validationService,
+            IAttendancePercentageService percentageService,
             ILogger<StudentAttendanceService> logger)
         {
             _uow = uow;
@@ -61,6 +63,7 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
             _notificationService = notificationService;
             _authorizationService = authorizationService;
             _validationService = validationService;
+            _percentageService = percentageService;
             _logger = logger;
         }
 
@@ -313,7 +316,8 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
 
                         await _uow.SaveChangesAsync(ct);
 
-                        // Create or update attendance session and lock it as Submitted->Locked
+                        // Create or update attendance session as Draft -> Submitted.
+                        // Locking is now an explicit admin action (no workflow bypass).
                         if (existingSession == null)
                         {
                             existingSession = new AttendanceSession
@@ -340,15 +344,6 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
                             sessionRepo.Update(existingSession);
                         }
 
-                        await _uow.SaveChangesAsync(ct);
-
-                        // Immediately lock the session to prevent further submissions
-                        existingSession.Status = AttendanceSessionStatus.Locked;
-                        existingSession.LockedBy = recordedBy;
-                        existingSession.LockedAt = DateTime.UtcNow;
-                        existingSession.UpdatedBy = recordedBy;
-                        existingSession.UpdatedAt = DateTime.UtcNow;
-                        sessionRepo.Update(existingSession);
                         await _uow.SaveChangesAsync(ct);
 
                         // Refresh record IDs for revision entries on newly inserted rows
@@ -574,6 +569,80 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
             await _uow.SaveChangesAsync(ct);
 
             await _auditLog.AddAsync(new AttendanceLog { UserId = unlockedBy, Action = "Unlocked Attendance Session", EntityName = "AttendanceSession", EntityId = session.Id }, ct);
+            await _uow.SaveChangesAsync(ct);
+        }
+
+        public async Task SubmitAttendanceSessionAsync(int classId, int sectionId, int? studentGroupId, DateTime attendanceDate, string submittedBy, string? notes, CancellationToken ct = default)
+        {
+            var dateOnly = DateOnly.FromDateTime(attendanceDate.Date);
+            var sessionRepo = _uow.Repository<AttendanceSession>();
+            var session = await FindSessionAsync(classId, sectionId, studentGroupId, dateOnly, ct);
+
+            if (session == null)
+            {
+                session = new AttendanceSession
+                {
+                    SchoolClassId = classId,
+                    SectionId = sectionId,
+                    StudentGroupId = studentGroupId,
+                    AttendanceDate = dateOnly,
+                    Status = AttendanceSessionStatus.Submitted,
+                    SubmittedBy = submittedBy,
+                    SubmittedAt = DateTime.UtcNow,
+                    Notes = notes,
+                    CreatedBy = submittedBy,
+                    CreatedAt = DateTime.UtcNow
+                };
+                await sessionRepo.AddAsync(session, ct);
+            }
+            else
+            {
+                if (session.Status == AttendanceSessionStatus.Locked || session.Status == AttendanceSessionStatus.Approved)
+                    throw new InvalidOperationException("Cannot submit a locked or approved session. Use Revise first.");
+
+                session.Status = AttendanceSessionStatus.Submitted;
+                session.SubmittedBy = submittedBy;
+                session.SubmittedAt = DateTime.UtcNow;
+                session.UpdatedBy = submittedBy;
+                session.UpdatedAt = DateTime.UtcNow;
+                if (!string.IsNullOrWhiteSpace(notes))
+                {
+                    session.Notes = notes;
+                }
+                sessionRepo.Update(session);
+            }
+
+            await _uow.SaveChangesAsync(ct);
+            await _auditLog.AddAsync(new AttendanceLog { UserId = submittedBy, Action = "Submitted Attendance Session", EntityName = "AttendanceSession", EntityId = session.Id }, ct);
+            await _uow.SaveChangesAsync(ct);
+        }
+
+        public async Task LockAttendanceSessionAsync(int classId, int sectionId, int? studentGroupId, DateTime attendanceDate, string lockedBy, string? notes, CancellationToken ct = default)
+        {
+            var dateOnly = DateOnly.FromDateTime(attendanceDate.Date);
+            var sessionRepo = _uow.Repository<AttendanceSession>();
+            var session = await FindSessionAsync(classId, sectionId, studentGroupId, dateOnly, ct)
+                ?? throw new KeyNotFoundException("Attendance session not found. Submit attendance first.");
+
+            if (session.Status == AttendanceSessionStatus.Locked || session.Status == AttendanceSessionStatus.Approved)
+                throw new InvalidOperationException("Session is already locked or approved.");
+
+            if (session.Status != AttendanceSessionStatus.Submitted)
+                throw new InvalidOperationException("Only submitted sessions can be locked. Submit the session first.");
+
+            session.Status = AttendanceSessionStatus.Locked;
+            session.LockedBy = lockedBy;
+            session.LockedAt = DateTime.UtcNow;
+            session.UpdatedBy = lockedBy;
+            session.UpdatedAt = DateTime.UtcNow;
+            if (!string.IsNullOrWhiteSpace(notes))
+            {
+                session.Notes = notes;
+            }
+            sessionRepo.Update(session);
+            await _uow.SaveChangesAsync(ct);
+
+            await _auditLog.AddAsync(new AttendanceLog { UserId = lockedBy, Action = "Locked Attendance Session", EntityName = "AttendanceSession", EntityId = session.Id }, ct);
             await _uow.SaveChangesAsync(ct);
         }
 
@@ -814,12 +883,12 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
         }
 
         /// <summary>
-        /// Get attendance percentage for a student in a specific month - matches EmployeeAttendanceService pattern
+        /// Get attendance percentage for a student in a specific month - uses the dedicated percentage
+        /// service which honors CountLateAsPresent, CountLeaveAsPresent and excludes holidays/weekly offs.
         /// </summary>
         public async Task<double> GetAttendancePercentageAsync(int studentId, int year, int month, CancellationToken ct = default)
         {
-            var summary = await GetMonthlySummaryAsync(studentId, year, month, ct);
-            return summary.AttendancePercentage;
+            return await _percentageService.GetStudentAttendancePercentageAsync(studentId, year, month, ct);
         }
     }
 }

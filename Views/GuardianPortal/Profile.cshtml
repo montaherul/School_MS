@@ -1,0 +1,158 @@
+@{
+    ViewData["Title"] = "My Profile";
+    var guardian = ViewBag.Guardian as SchoolManagementSystem.Models.Entities.Guardian.Guardian;
+    var childrenCount = (int)(ViewBag.ChildrenCount ?? 0);
+    var statusLabel = guardian?.Status.ToString() ?? "Unknown";
+    var statusClass = guardian?.Status switch
+    {
+        SchoolManagementSystem.Models.Entities.Guardian.GuardianStatus.Active => "success",
+        SchoolManagementSystem.Models.Entities.Guardian.GuardianStatus.PendingActivation => "warning",
+        SchoolManagementSystem.Models.Entities.Guardian.GuardianStatus.Inactive => "secondary",
+        _ => "secondary"
+    };
+}
+
+<div class="container-fluid py-4">
+    @if (TempData["SuccessMessage"] is string successMsg)
+    {
+        <div class="alert alert-success alert-dismissible fade show">@successMsg
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] is string errorMsg)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">@errorMsg
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="row align-items-center mb-4">
+        <div class="col-md-8">
+            <h2 class="fw-bold mb-0"><i class="bi bi-person-circle me-2 text-primary"></i>My Profile</h2>
+            <p class="text-muted mb-0">View and update your guardian account information</p>
+        </div>
+    </div>
+
+    <form asp-action="UpdateProfile" asp-controller="GuardianPortalPages" method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center py-4">
+                        <div class="mb-3">
+                            @if (!string.IsNullOrEmpty(guardian?.PhotoPath))
+                            {
+                                <img src="@guardian.PhotoPath" alt="Guardian photo" class="rounded-circle" style="width:120px;height:120px;object-fit:cover;" id="profilePreview" />
+                            }
+                            else
+                            {
+                                <div class="rounded-circle bg-primary bg-opacity-10 d-inline-flex align-items-center justify-content-center" style="width:120px;height:120px;" id="profilePreviewContainer">
+                                    <i class="bi bi-person-fill text-primary" style="font-size:60px;"></i>
+                                </div>
+                            }
+                        </div>
+                        <h4 class="fw-bold mb-1">@guardian?.FullName</h4>
+                        <p class="text-muted mb-2">@guardian?.GuardianCode</p>
+                        <span class="badge bg-@statusClass">@statusLabel</span>
+
+                        <div class="mt-3">
+                            <label class="form-label small fw-bold">Change Photo</label>
+                            <input type="file" name="PhotoFile" class="form-control form-control-sm" accept="image/*" onchange="previewProfilePhoto(event)" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-0">
+                        <h5 class="mb-0 fw-bold"><i class="bi bi-info-circle me-2 text-info"></i>Account Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-sm-6">
+                                <label class="form-label small">First Name</label>
+                                <input name="FirstName" class="form-control" value="@guardian?.FirstName" />
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label small">Last Name</label>
+                                <input name="LastName" class="form-control" value="@guardian?.LastName" />
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label small">Email</label>
+                                <input name="Email" type="email" class="form-control" value="@(guardian?.Email ?? "")" />
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label small">Mobile</label>
+                                <input name="MobileNumber" class="form-control" value="@(guardian?.MobileNumber ?? "")" />
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label small">National ID</label>
+                                <input name="NationalId" class="form-control" value="@(guardian?.NationalId ?? "")" />
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label small">Occupation</label>
+                                <input name="Occupation" class="form-control" value="@(guardian?.Occupation ?? "")" />
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small">Present Address</label>
+                                <textarea name="PresentAddress" class="form-control" rows="2">@(guardian?.PresentAddress ?? "")</textarea>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small">Permanent Address</label>
+                                <textarea name="PermanentAddress" class="form-control" rows="2">@(guardian?.PermanentAddress ?? "")</textarea>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label small">Emergency Contact Name</label>
+                                <input name="EmergencyContactName" class="form-control" value="@(guardian?.EmergencyContactName ?? "")" />
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label small">Emergency Contact Number</label>
+                                <input name="EmergencyContactNumber" class="form-control" value="@(guardian?.EmergencyContactNumber ?? "")" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-white border-0">
+                        <h5 class="mb-0 fw-bold"><i class="bi bi-lock me-2 text-warning"></i>Change Password</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-sm-6">
+                                <label class="form-label small">Current Password</label>
+                                <input name="CurrentPassword" type="password" class="form-control" placeholder="Leave blank to keep current" />
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label small">New Password</label>
+                                <input name="NewPassword" type="password" class="form-control" placeholder="Min 8 chars with upper, lower, digit" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2 mb-4">
+                    <button type="submit" class="btn btn-primary px-4"><i class="bi bi-save me-1"></i> Save Changes</button>
+                    <a asp-action="Dashboard" class="btn btn-outline-secondary px-4">Back to Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+    function previewProfilePhoto(event) {
+        const reader = new FileReader();
+        reader.onload = function () {
+            const img = document.getElementById('profilePreview');
+            if (img) { img.src = reader.result; return; }
+            const container = document.getElementById('profilePreviewContainer');
+            if (container) {
+                container.innerHTML = `<img src="${reader.result}" class="rounded-circle" style="width:120px;height:120px;object-fit:cover;" id="profilePreview" />`;
+            }
+        };
+        if (event.target.files[0]) reader.readAsDataURL(event.target.files[0]);
+    }
+</script>

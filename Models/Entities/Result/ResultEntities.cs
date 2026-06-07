@@ -198,6 +198,17 @@ public class StudentSubjectResult : BaseEntity
     public int StudentId { get; set; }
     public int SubjectId { get; set; }
 
+    /// <summary>
+    /// Whether this subject is optional per ClassSubject mapping
+    /// (used instead of Subject.IsMandatory which is always true)
+    /// </summary>
+    public bool IsOptionalSubject { get; set; } = false;
+
+    /// <summary>
+    /// Whether this is a religion subject
+    /// </summary>
+    public bool IsReligionSubject { get; set; } = false;
+
     public decimal MarksObtained { get; set; } = 0;
     public decimal FullMarks { get; set; } = 100;
     public decimal PassMarks { get; set; } = 33;
@@ -420,6 +431,68 @@ public class ReEvaluationRequest : BaseEntity
     public virtual Exam.Exam Exam { get; set; } = null!;
     public virtual Student.Student Student { get; set; } = null!;
     public virtual Academic.Subject Subject { get; set; } = null!;
+}
+
+/// <summary>
+/// Result Settings: Configurable rules for optional subject handling, fail behavior, and grading
+/// </summary>
+public class ResultSetting : BaseEntity
+{
+    public int? AcademicYearId { get; set; }
+
+    /// <summary>
+    /// How optional subjects affect GPA calculation
+    /// </summary>
+    public OptionalSubjectMode OptionalSubjectMode { get; set; } = OptionalSubjectMode.ExcludeFromGPA;
+
+    /// <summary>
+    /// How failed subjects affect overall result
+    /// </summary>
+    public FailSubjectMode FailSubjectMode { get; set; } = FailSubjectMode.StrictFail;
+
+    /// <summary>
+    /// Bonus GPA added for optional subjects (when mode=Bonus)
+    /// Example: 0.50 means up to 0.50 bonus GPA
+    /// </summary>
+    public decimal OptionalBonusMaxGPA { get; set; } = 0.50m;
+
+    /// <summary>
+    /// Number of best optional subjects to include (when mode=BestOf)
+    /// Example: 2 means best 2 optional subjects count
+    /// </summary>
+    public int BestOfCount { get; set; } = 1;
+
+    /// <summary>
+    /// Whether to include only passed optional subjects
+    /// </summary>
+    public bool RequirePassedOptionalOnly { get; set; } = true;
+
+    /// <summary>
+    /// Maximum failed compulsory subjects allowed for promotion
+    /// </summary>
+    public int MaxFailedCompulsoryAllowed { get; set; } = 0;
+
+    /// <summary>
+    /// Minimum GPA required for promotion
+    /// </summary>
+    public decimal MinimumPromotionGPA { get; set; } = 1.00m;
+
+    /// <summary>
+    /// Whether religion subjects count toward GPA
+    /// </summary>
+    public bool IncludeReligionInGPA { get; set; } = true;
+
+    /// <summary>
+    /// Whether to auto-calculate component totals on mark entry
+    /// </summary>
+    public bool AutoCalculateComponentTotal { get; set; } = true;
+
+    /// <summary>
+    /// Rounding precision for GPA (2 = standard)
+    /// </summary>
+    public int GpaRoundingPrecision { get; set; } = 2;
+
+    public bool IsActive { get; set; } = true;
 }
 
 /// <summary>

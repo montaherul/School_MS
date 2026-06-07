@@ -1,12 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Models.DTOs.Result;
+using SchoolManagementSystem.Models.DTOs.Exam;
 using SchoolManagementSystem.Models.Entities.Academic;
-using SchoolManagementSystem.Models.Entities.Exam;
 using SchoolManagementSystem.Models.Entities.Result;
 using SchoolManagementSystem.Models.Enums;
+using SchoolManagementSystem.Models.ViewModels.Exam;
 using SchoolManagementSystem.Repositories.Interfaces.Result;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
+using ExamEntity = SchoolManagementSystem.Models.Entities.Exam.Exam;
 
 namespace SchoolManagementSystem.Services.Implementations.Result;
 
@@ -23,12 +25,22 @@ public class ExamService : IExamService
         _gradingRepository = gradingRepository;
     }
 
-    /// <summary>
-    /// Get all exams for admin view, optionally filtered by academic year
-    /// </summary>
-    public async Task<IEnumerable<ExamUpsertDto>> GetExamsAsync(int academicYearId)
+    public async Task<IEnumerable<ExamListDto>> GetExamsAsync(int academicYearId, CancellationToken ct = default)
+        => await _examRepository.GetExamsForAdminAsync(academicYearId, ct);
+
+    public async Task<(IEnumerable<ExamListDto> Items, int TotalCount)> GetPagedExamsAsync(
+        int academicYearId, string? searchTerm, int? status,
+        int pageNumber, int pageSize, string sortColumn, string sortDirection,
+        CancellationToken ct = default)
+        => await _examRepository.GetExamListAsync(academicYearId, searchTerm, status, pageNumber, pageSize, sortColumn, sortDirection, ct);
+
+    public Task<ExamDetailsDto?> GetExamDetailsAsync(int examId, CancellationToken ct = default)
+        => _examRepository.GetExamDetailsAsync(examId, ct);
+
+    public async Task<ExamUpsertDto?> GetExamForEditAsync(int examId, CancellationToken ct = default)
     {
-        return await _examRepository.GetExamsForAdminAsync(academicYearId, default);
+        var exam = await _uow.Repository<ExamEntity>().GetByIdAsync(examId, ct);
+        return exam == null ? null : ExamViewModelMapper.ToUpsertDto(exam);
     }
 
     /// <summary>
@@ -36,16 +48,17 @@ public class ExamService : IExamService
     /// </summary>
     public async Task<object?> CreateExamAsync(ExamUpsertDto dto, CancellationToken ct = default)
     {
-        var exam = new Exam
+        var exam = new ExamEntity
         {
             Name = dto.Name,
             Term = dto.Term,
             AcademicYearId = dto.AcademicYearId,
             StartsOn = dto.StartsOn,
             EndsOn = dto.EndsOn,
-            Status = ResultWorkflowStatus.Draft
+            Status = ResultWorkflowStatus.Draft,
+            StudentGroupId = dto.StudentGroupId
         };
-        await _uow.Repository<Exam>().AddAsync(exam);
+        await _uow.Repository<ExamEntity>().AddAsync(exam);
         await _uow.SaveChangesAsync(ct);
         
         return new { exam.Id, exam.Name, exam.Term, exam.Status };
@@ -56,7 +69,7 @@ public class ExamService : IExamService
     /// </summary>
     public async Task<object?> UpdateExamAsync(int examId, ExamUpsertDto dto, CancellationToken ct = default)
     {
-        var exam = await _uow.Repository<Exam>().GetByIdAsync(examId, ct);
+        var exam = await _uow.Repository<ExamEntity>().GetByIdAsync(examId, ct);
         if (exam == null)
             throw new KeyNotFoundException($"Exam with ID {examId} not found");
 
@@ -64,8 +77,9 @@ public class ExamService : IExamService
         exam.Term = dto.Term;
         exam.StartsOn = dto.StartsOn;
         exam.EndsOn = dto.EndsOn;
+        exam.StudentGroupId = dto.StudentGroupId;
 
-        _uow.Repository<Exam>().Update(exam);
+        _uow.Repository<ExamEntity>().Update(exam);
         await _uow.SaveChangesAsync(ct);
 
         return new { exam.Id, exam.Name, exam.Term, exam.Status };
@@ -76,11 +90,11 @@ public class ExamService : IExamService
     /// </summary>
     public async Task DeleteExamAsync(int examId, CancellationToken ct = default)
     {
-        var exam = await _uow.Repository<Exam>().GetByIdAsync(examId, ct);
+        var exam = await _uow.Repository<ExamEntity>().GetByIdAsync(examId, ct);
         if (exam == null)
             throw new KeyNotFoundException($"Exam with ID {examId} not found");
 
-        _uow.Repository<Exam>().Remove(exam);
+        _uow.Repository<ExamEntity>().Remove(exam);
         await _uow.SaveChangesAsync(ct);
     }
 
@@ -89,7 +103,7 @@ public class ExamService : IExamService
     /// </summary>
     public async Task<object?> GetExamByIdAsync(int examId, CancellationToken ct = default)
     {
-        var exam = await _uow.Repository<Exam>().GetByIdAsync(examId, ct);
+        var exam = await _uow.Repository<ExamEntity>().GetByIdAsync(examId, ct);
         return exam == null ? null : new 
         { 
             exam.Id, 
@@ -97,7 +111,8 @@ public class ExamService : IExamService
             exam.Term,
             exam.Status,
             exam.StartsOn,
-            exam.EndsOn
+            exam.EndsOn,
+            exam.StudentGroupId
         };
     }
 
@@ -168,7 +183,7 @@ public class ExamService : IExamService
     /// </summary>
     public async Task LockExamAsync(int examId, int userId, string? reason = null, CancellationToken ct = default)
     {
-        var exam = await _uow.Repository<Exam>().GetByIdAsync(examId, ct);
+        var exam = await _uow.Repository<ExamEntity>().GetByIdAsync(examId, ct);
         if (exam == null)
             throw new KeyNotFoundException($"Exam with ID {examId} not found");
 
@@ -182,7 +197,7 @@ public class ExamService : IExamService
             Reason = reason
         };
 
-        _uow.Repository<Exam>().Update(exam);
+        _uow.Repository<ExamEntity>().Update(exam);
         await _uow.Repository<ResultLock>().AddAsync(resultLock, ct);
         await _uow.SaveChangesAsync(ct);
     }
@@ -192,12 +207,12 @@ public class ExamService : IExamService
     /// </summary>
     public async Task UnlockExamAsync(int examId, string? reason = null, CancellationToken ct = default)
     {
-        var exam = await _uow.Repository<Exam>().GetByIdAsync(examId, ct);
+        var exam = await _uow.Repository<ExamEntity>().GetByIdAsync(examId, ct);
         if (exam == null)
             throw new KeyNotFoundException($"Exam with ID {examId} not found");
 
         exam.IsLocked = false;
-        _uow.Repository<Exam>().Update(exam);
+        _uow.Repository<ExamEntity>().Update(exam);
         await _uow.SaveChangesAsync(ct);
     }
 
@@ -206,7 +221,7 @@ public class ExamService : IExamService
     /// </summary>
     public async Task<object?> GetExamStatusAsync(int examId, CancellationToken ct = default)
     {
-        var exam = await _uow.Repository<Exam>().GetByIdAsync(examId, ct);
+        var exam = await _uow.Repository<ExamEntity>().GetByIdAsync(examId, ct);
         if (exam == null)
             return null;
 

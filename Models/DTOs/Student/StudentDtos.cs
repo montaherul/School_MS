@@ -150,4 +150,15 @@ public class StudentUpsertDto
     //sectionname
     public string? SectionName { get; set; }
     public List<SelectListItem> Sections { get; set; } = new();
+
+    // Guardian extended fields (populated from StudentGuardian -> Guardian)
+    public string? GuardianEmail { get; set; }
+    public string? GuardianMobileNumber { get; set; }
+    public string? GuardianRelationship { get; set; }
+    public string? GuardianNationalId { get; set; }
+    public string? GuardianAddress { get; set; }
+    public string? GuardianPhoto { get; set; }
+    public bool? GuardianUserCreated { get; set; }
+    public string? GuardianCode { get; set; }
+    public int LinkedChildrenCount { get; set; }
 }

@@ -1,0 +1,9 @@
+using SchoolManagementSystem.Models.DTOs.Result;
+
+namespace SchoolManagementSystem.Services.Interfaces.Result;
+
+public interface ITranscriptService
+{
+    Task<StudentTranscriptDto?> GetStudentTranscriptAsync(int studentId, int academicYearId);
+    Task<byte[]?> GenerateTranscriptPdfAsync(int studentId, int academicYearId);
+}

@@ -1,4 +1,4 @@
-@model IEnumerable<SchoolManagementSystem.Models.DTOs.Result.ExamUpsertDto>
+@model SchoolManagementSystem.Models.ViewModels.Exam.ExamListViewModel
 @{
     ViewData["Title"] = "Exam Results Management";
 }
@@ -43,7 +43,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach (var exam in Model)
+                                @foreach (var exam in Model.Exams)
                                 {
                                     <tr>
                                         <td class="ps-4 fw-bold">@exam.Name</td>
@@ -59,6 +59,22 @@
                                             else if (exam.Status == SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Submitted)
                                             {
                                                 <span class="badge rounded-pill bg-warning text-dark">Submitted</span>
+                                            }
+                                            else if (exam.Status == SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Reviewed)
+                                            {
+                                                <span class="badge rounded-pill bg-primary text-white">Reviewed</span>
+                                            }
+                                            else if (exam.Status == SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Approved)
+                                            {
+                                                <span class="badge rounded-pill bg-success">Approved</span>
+                                            }
+                                            else if (exam.Status == SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Locked)
+                                            {
+                                                <span class="badge rounded-pill bg-dark">Locked</span>
+                                            }
+                                            else if (exam.Status == SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Unpublished)
+                                            {
+                                                <span class="badge rounded-pill bg-danger">Unpublished</span>
                                             }
                                             else
                                             {
@@ -146,6 +162,8 @@
     }
 </style>
 
+<partial name="_ExamResultUx" />
+
 <script>
     function publishResult(examId) {
         if (confirm('Are you sure you want to publish results for this exam? This will lock current marks and notify students.')) {
@@ -160,15 +178,15 @@
             .then(async r => {
                 const data = await r.json();
                 if (r.ok && data.success) {
-                    alert('Results published successfully!');
+                    if (typeof showExamToast === 'function') showExamToast('Results published successfully!', 'success');
                     window.location.reload();
                 } else {
-                    alert('Error: ' + (data.message || 'Unknown error occurred'));
+                    if (typeof showExamToast === 'function') showExamToast('Error: ' + (data.message || 'Unknown error occurred'), 'error');
                 }
             })
             .catch(err => {
                 console.error('Publish error:', err);
-                alert('Network error or server unavailable');
+                if (typeof showExamToast === 'function') showExamToast('Network error or server unavailable', 'error');
             });
         }
     }
@@ -186,10 +204,10 @@
                 }
             }).then(r => {
                 if(r.ok) {
-                    alert('Ranking updated!');
+                    if (typeof showExamToast === 'function') showExamToast('Ranking updated!', 'success');
                     location.reload();
                 } else {
-                    alert('Failed to update ranking');
+                    if (typeof showExamToast === 'function') showExamToast('Failed to update ranking', 'error');
                 }
             });
         }

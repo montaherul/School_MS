@@ -1,0 +1,141 @@
+@model IEnumerable<SchoolManagementSystem.Models.Entities.Attendance.AutoAbsentExecutionLog>
+@{
+    ViewData["Title"] = "Auto-Absent Engine";
+    var lastRun = ViewBag.LastRun as SchoolManagementSystem.Models.Entities.Attendance.AutoAbsentExecutionLog;
+}
+
+<style>
+    .aa-page { display: grid; gap: 18px; }
+    .aa-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+    .aa-title { margin: 0; font-size: 26px; font-weight: 800; color: #111827; }
+    .aa-subtitle { margin: 4px 0 0; color: #64748b; font-size: 14px; }
+    .aa-panel { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 18px; box-shadow: 0 10px 28px rgba(15,23,42,.06); }
+    .aa-card { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    .aa-card__item { border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px; }
+    .aa-card__label { display: block; color: #64748b; font-size: 12px; font-weight: 700; text-transform: uppercase; }
+    .aa-card__value { display: block; margin-top: 6px; font-size: 22px; font-weight: 800; color: #111827; }
+    .aa-status { padding: 4px 10px; border-radius: 999px; font-weight: 700; font-size: 12px; }
+    .aa-status--success { background: #dcfce7; color: #15803d; }
+    .aa-status--skipped { background: #fef3c7; color: #92400e; }
+    .aa-status--failed  { background: #fee2e2; color: #b91c1c; }
+    .aa-table { width: 100%; border-collapse: collapse; }
+    .aa-table th, .aa-table td { padding: 10px; border-bottom: 1px solid #e5e7eb; text-align: left; font-size: 13px; }
+    .aa-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .aa-actions button { padding: 8px 14px; border-radius: 6px; border: none; font-weight: 700; cursor: pointer; }
+    .btn-primary { background: #2563eb; color: #fff; }
+    .btn-primary:hover { background: #1d4ed8; }
+    .btn-secondary { background: #64748b; color: #fff; }
+</style>
+
+<div class="aa-page">
+    <div class="aa-header">
+        <div>
+            <h1 class="aa-title">Auto-Absent Engine</h1>
+            <p class="aa-subtitle">Automatically marks students and employees absent for working days when attendance was not recorded.</p>
+        </div>
+        <div class="aa-actions">
+            <button class="btn-primary" id="runTodayBtn">Run for Today</button>
+            <button class="btn-secondary" id="runDateBtn">Run for Past Date</button>
+        </div>
+    </div>
+
+    <div class="aa-panel">
+        <h3 style="margin-top:0">Last Run</h3>
+        @if (lastRun != null)
+        {
+            <div class="aa-card">
+                <div class="aa-card__item">
+                    <span class="aa-card__label">Target Date</span>
+                    <span class="aa-card__value">@lastRun.TargetDate.ToString("yyyy-MM-dd")</span>
+                </div>
+                <div class="aa-card__item">
+                    <span class="aa-card__label">Status</span>
+                    <span class="aa-card__value">
+                        <span class="aa-status aa-status--@lastRun.Status.ToLower()">@lastRun.Status</span>
+                    </span>
+                </div>
+                <div class="aa-card__item">
+                    <span class="aa-card__label">Students Marked</span>
+                    <span class="aa-card__value">@lastRun.StudentsMarkedAbsent / @lastRun.StudentsProcessed</span>
+                </div>
+                <div class="aa-card__item">
+                    <span class="aa-card__label">Employees Marked</span>
+                    <span class="aa-card__value">@lastRun.EmployeesMarkedAbsent / @lastRun.EmployeesProcessed</span>
+                </div>
+            </div>
+            <p style="margin-top:14px; color:#64748b">@lastRun.Message</p>
+        }
+        else
+        {
+            <p>No runs recorded yet.</p>
+        }
+    </div>
+
+    <div class="aa-panel">
+        <h3 style="margin-top:0">Recent Executions</h3>
+        <table class="aa-table">
+            <thead>
+                <tr>
+                    <th>Execution</th>
+                    <th>Target</th>
+                    <th>Status</th>
+                    <th>Students</th>
+                    <th>Employees</th>
+                    <th>Duration</th>
+                    <th>Message</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var log in Model)
+                {
+                    <tr>
+                        <td>@log.ExecutionDate.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>@log.TargetDate.ToString("yyyy-MM-dd")</td>
+                        <td><span class="aa-status aa-status--@log.Status.ToLower()">@log.Status</span></td>
+                        <td>@log.StudentsMarkedAbsent / @log.StudentsProcessed</td>
+                        <td>@log.EmployeesMarkedAbsent / @log.EmployeesProcessed</td>
+                        <td>@log.DurationMs ms</td>
+                        <td>@log.Message</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script>
+        document.getElementById('runTodayBtn')?.addEventListener('click', async function () {
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+            const response = await fetch('@Url.Action("RunForToday", "AutoAbsent")', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token }
+            });
+            const result = await response.json();
+            if (result.success) {
+                toastr.success(result.message);
+            } else {
+                toastr.warning(result.message);
+            }
+            setTimeout(() => location.reload(), 1500);
+        });
+
+        document.getElementById('runDateBtn')?.addEventListener('click', async function () {
+            const date = prompt('Enter target date (yyyy-MM-dd):', new Date().toISOString().split('T')[0]);
+            if (!date) return;
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+            const response = await fetch('@Url.Action("RunForDate", "AutoAbsent")?targetDate=' + date, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token }
+            });
+            const result = await response.json();
+            if (result.success) {
+                toastr.success(result.message);
+            } else {
+                toastr.warning(result.message);
+            }
+            setTimeout(() => location.reload(), 1500);
+        });
+    </script>
+}

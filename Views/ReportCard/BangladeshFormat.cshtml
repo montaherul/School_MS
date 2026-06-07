@@ -1,0 +1,946 @@
+@model SchoolManagementSystem.Models.DTOs.Result.ReportCardDto
+@{
+    ViewData["Title"] = "Report Card — " + Model.SchoolName;
+    Layout = "_Layout";
+    var totalStudents = ViewBag.TotalStudents ?? 0;
+    var attendanceDays = ViewBag.AttendanceDays;
+    var attendancePresent = ViewBag.AttendancePresent;
+}
+
+<style>
+    .bd-card {
+        max-width: 210mm;
+        margin: 0 auto;
+        background: #fff;
+        border-radius: var(--adm-radius-lg);
+        box-shadow: var(--adm-shadow);
+        overflow: hidden;
+    }
+
+    .bd-card__inner {
+        padding: 24px 28px;
+    }
+
+    .bd-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-bottom: 16px;
+        border-bottom: 3px solid var(--adm-primary);
+        margin-bottom: 20px;
+    }
+
+    .bd-header__left {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .bd-header__logo {
+        width: 72px;
+        height: 72px;
+        border-radius: 50%;
+        border: 2px solid var(--adm-border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        flex-shrink: 0;
+        background: var(--adm-surface-2);
+    }
+
+    .bd-header__logo img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    .bd-header__school {
+        text-align: left;
+    }
+
+    .bd-header__school-name {
+        font-size: 20px;
+        font-weight: 800;
+        color: var(--adm-primary);
+        margin: 0;
+        line-height: 1.2;
+    }
+
+    .bd-header__eiin {
+        font-size: 12px;
+        color: var(--adm-text-3);
+        font-weight: 600;
+    }
+
+    .bd-header__address {
+        font-size: 12px;
+        color: var(--adm-text-2);
+        margin: 2px 0 0;
+        max-width: 320px;
+    }
+
+    .bd-header__right {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .bd-header__photo {
+        width: 90px;
+        height: 100px;
+        border: 2px solid var(--adm-border);
+        border-radius: var(--adm-radius-sm);
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--adm-surface-2);
+        flex-shrink: 0;
+    }
+
+    .bd-header__photo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .bd-header__photo-placeholder {
+        font-size: 10px;
+        color: var(--adm-text-3);
+        text-align: center;
+        padding: 4px;
+    }
+
+    .bd-title {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .bd-title__main {
+        font-size: 18px;
+        font-weight: 800;
+        color: var(--adm-text);
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        margin: 0;
+    }
+
+    .bd-title__sub {
+        font-size: 13px;
+        color: var(--adm-text-3);
+        margin: 4px 0 0;
+    }
+
+    .bd-info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4px 24px;
+        padding: 16px;
+        background: var(--adm-surface-2);
+        border-radius: var(--adm-radius);
+        margin-bottom: 20px;
+        border: 1px solid var(--adm-border);
+    }
+
+    .bd-info-item {
+        display: flex;
+        align-items: baseline;
+        gap: 6px;
+    }
+
+    .bd-info-item__label {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--adm-text-3);
+        min-width: 100px;
+    }
+
+    .bd-info-item__value {
+        font-size: 13.5px;
+        font-weight: 600;
+        color: var(--adm-text);
+    }
+
+    .bd-info-item__value--highlight {
+        color: var(--adm-primary);
+    }
+
+    .bd-table-wrap {
+        overflow-x: auto;
+        border: 1px solid var(--adm-border);
+        border-radius: var(--adm-radius);
+        margin-bottom: 20px;
+    }
+
+    .bd-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+        min-width: 900px;
+    }
+
+    .bd-table thead th {
+        background: var(--adm-primary);
+        color: #fff;
+        padding: 10px 8px;
+        font-size: 11px;
+        font-weight: 700;
+        text-align: center;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        border: 1px solid rgba(255,255,255,0.15);
+        white-space: nowrap;
+    }
+
+    .bd-table tbody td {
+        padding: 8px 6px;
+        text-align: center;
+        border: 1px solid var(--adm-border);
+        vertical-align: middle;
+        font-size: 12px;
+    }
+
+    .bd-table tbody tr:nth-child(even) {
+        background: var(--adm-surface-2);
+    }
+
+    .bd-table tbody tr:hover {
+        background: var(--adm-primary-bg);
+    }
+
+    .bd-table__subject {
+        text-align: left !important;
+        font-weight: 600;
+        padding-left: 10px !important;
+    }
+
+    .bd-table__optional {
+        background: rgba(217, 119, 6, 0.06) !important;
+    }
+
+    .bd-table__optional td {
+        font-style: italic;
+    }
+
+    .bd-table__religion {
+        background: rgba(5, 150, 105, 0.06) !important;
+    }
+
+    .bd-table__passed {
+        color: var(--adm-success);
+        font-weight: 700;
+    }
+
+    .bd-table__failed {
+        color: var(--adm-rejected);
+        font-weight: 700;
+    }
+
+    .bd-table__grade-a {
+        color: #059669;
+        font-weight: 700;
+    }
+
+    .bd-table__grade-b {
+        color: #0284c7;
+        font-weight: 700;
+    }
+
+    .bd-table__grade-c {
+        color: #d97706;
+        font-weight: 700;
+    }
+
+    .bd-table__grade-d {
+        color: #dc2626;
+        font-weight: 700;
+    }
+
+    .bd-table__grade-f {
+        color: #dc2626;
+        font-weight: 700;
+    }
+
+    .bd-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    .bd-summary .dash-stat-card {
+        padding: 16px;
+    }
+
+    .bd-summary .dash-stat-card__value {
+        font-size: 22px;
+    }
+
+    .bd-signatures {
+        display: flex;
+        justify-content: space-between;
+        padding: 20px 8px 8px;
+        margin-top: 8px;
+        border-top: 1px solid var(--adm-border);
+    }
+
+    .bd-signature-item {
+        text-align: center;
+        min-width: 160px;
+    }
+
+    .bd-signature-item__line {
+        height: 40px;
+        border-bottom: 1px solid var(--adm-text);
+        margin-bottom: 6px;
+    }
+
+    .bd-signature-item__label {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--adm-text-2);
+    }
+
+    .bd-signature-item__name {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--adm-text);
+        margin-top: 4px;
+    }
+
+    .bd-footer {
+        margin-top: 16px;
+        padding-top: 12px;
+        border-top: 1px solid var(--adm-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 11px;
+        color: var(--adm-text-3);
+    }
+
+    .bd-footer__qr {
+        width: 56px;
+        height: 56px;
+        border: 1px solid var(--adm-border);
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 9px;
+        color: var(--adm-text-3);
+        background: var(--adm-surface-2);
+        flex-shrink: 0;
+    }
+
+    .bd-footer__text {
+        text-align: right;
+        line-height: 1.5;
+    }
+
+    .bd-status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 16px;
+        border-radius: 100px;
+        font-size: 14px;
+        font-weight: 700;
+    }
+
+    .bd-status-badge--passed {
+        background: var(--adm-success-bg);
+        color: var(--adm-success);
+        border: 1px solid rgba(5,150,105,0.2);
+    }
+
+    .bd-status-badge--failed {
+        background: var(--adm-rejected-bg);
+        color: var(--adm-rejected);
+        border: 1px solid rgba(220,38,38,0.2);
+    }
+
+    .bd-print-btn {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    .bd-attendance {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+        padding: 8px 0;
+        font-size: 12px;
+        color: var(--adm-text-2);
+    }
+
+    .bd-attendance__item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .bd-attendance__label {
+        font-weight: 600;
+    }
+
+    .bd-attendance__value {
+        font-weight: 700;
+        color: var(--adm-text);
+    }
+
+    .bd-optional-tag {
+        display: inline-block;
+        font-size: 9px;
+        font-weight: 700;
+        padding: 1px 6px;
+        border-radius: 4px;
+        background: rgba(217,119,6,0.12);
+        color: #b45309;
+        margin-left: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+
+    .bd-religion-tag {
+        display: inline-block;
+        font-size: 9px;
+        font-weight: 700;
+        padding: 1px 6px;
+        border-radius: 4px;
+        background: rgba(5,150,105,0.12);
+        color: #047857;
+        margin-left: 4px;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+
+    .grade-cell {
+        font-weight: 700;
+    }
+
+    .grade-cell--A, .grade-cell--Aplus, .grade-cell--A- {
+        color: #059669;
+    }
+
+    .grade-cell--B, .grade-cell--Bplus, .grade-cell--Bminus, .grade-cell--B- {
+        color: #0284c7;
+    }
+
+    .grade-cell--C, .grade-cell--Cplus, .grade-cell--D {
+        color: #d97706;
+    }
+
+    .grade-cell--F {
+        color: #dc2626;
+    }
+
+    .highest-marks {
+        font-weight: 600;
+        color: var(--adm-primary);
+    }
+
+    @@media print {
+        @@page {
+            size: A4 portrait;
+            margin: 12mm 14mm 10mm;
+        }
+
+        body {
+            background: #fff !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        .sidebar,
+        .topbar,
+        .sidebar-overlay,
+        .adm-print-btn,
+        .bd-print-btn,
+        .no-print {
+            display: none !important;
+        }
+
+        .main-panel,
+        .content {
+            margin-left: 0 !important;
+            padding: 0 !important;
+            background: #fff !important;
+        }
+
+        .app-shell {
+            display: block !important;
+        }
+
+        .bd-card {
+            box-shadow: none !important;
+            border: none !important;
+            border-radius: 0 !important;
+            max-width: 100% !important;
+        }
+
+        .bd-card__inner {
+            padding: 0 !important;
+        }
+
+        .bd-table thead th {
+            background: var(--adm-primary) !important;
+            color: #fff !important;
+        }
+
+        .bd-table tbody tr:nth-child(even) {
+            background: #f8fafc !important;
+        }
+
+        .bd-info-grid {
+            background: #f8fafc !important;
+            border: 1px solid #e2e8f0 !important;
+        }
+
+        .bd-table__optional {
+            background: rgba(217,119,6,0.04) !important;
+        }
+
+        .bd-table__religion {
+            background: rgba(5,150,105,0.04) !important;
+        }
+
+        .dash-stat-card {
+            box-shadow: none !important;
+            border: 1px solid #e2e8f0 !important;
+        }
+
+        .bd-header {
+            border-bottom-color: var(--adm-primary) !important;
+        }
+
+        .bd-footer__qr {
+            border: 1px solid #d1d5db !important;
+        }
+
+        a {
+            text-decoration: none !important;
+        }
+
+        .bd-signature-item__line {
+            border-bottom-color: #1a1d1a !important;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .bd-card__inner {
+            padding: 16px;
+        }
+
+        .bd-header {
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .bd-header__left {
+            width: 100%;
+        }
+
+        .bd-header__right {
+            width: 100%;
+            align-items: center;
+        }
+
+        .bd-info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .bd-summary {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .bd-signatures {
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .bd-footer {
+            flex-direction: column;
+            gap: 12px;
+            text-align: center;
+        }
+
+        .bd-footer__text {
+            text-align: center;
+        }
+    }
+</style>
+
+<div class="adm-page no-print" style="padding-bottom: 8px;">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <circle cx="10" cy="13" r="2" />
+                    <circle cx="10" cy="17" r="2" />
+                    <line x1="14" y1="13" x2="18" y2="13" />
+                    <line x1="14" y1="17" x2="18" y2="17" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Report Card</h1>
+                <p class="adm-header__sub">@Model.SchoolName &middot; @Model.AcademicYearName &middot; @Model.ExamName</p>
+            </div>
+        </div>
+        <div class="adm-header__left">
+            <button onclick="window.print()" class="adm-btn adm-btn--primary" style="white-space: nowrap;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9V2h12v7" /><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect x="6" y="14" width="12" height="8" /></svg>
+                Print / Download PDF
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="bd-card">
+    <div class="bd-card__inner">
+
+        @* ── School Header ── *@
+        <div class="bd-header">
+            <div class="bd-header__left">
+                <div class="bd-header__logo">
+                    @if (!string.IsNullOrEmpty(Model.SchoolLogoPath))
+                    {
+                        <img src="@Model.SchoolLogoPath" alt="School Logo" />
+                    }
+                    else
+                    {
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--adm-text-3)" stroke-width="1.5" stroke-linecap="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c3 3 9 3 12 0v-5" /></svg>
+                    }
+                </div>
+                <div class="bd-header__school">
+                    <h2 class="bd-header__school-name">@Model.SchoolName</h2>
+                    <p class="bd-header__eiin">Institution ID: @Model.EIIN</p>
+                    <p class="bd-header__address">@Model.SchoolAddress</p>
+                </div>
+            </div>
+            <div class="bd-header__right">
+                <div class="bd-header__photo">
+                    @if (!string.IsNullOrEmpty(Model.PhotoPath))
+                    {
+                        <img src="@Model.PhotoPath" alt="Student Photo" />
+                    }
+                    else
+                    {
+                        <div class="bd-header__photo-placeholder">Photo</div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        @* ── Title ── *@
+        <div class="bd-title">
+            <h3 class="bd-title__main">Academic Report Card</h3>
+            <p class="bd-title__sub">
+                @Model.ExamName &middot; @Model.Term &middot; Academic Year @Model.AcademicYearName
+            </p>
+        </div>
+
+        @* ── Student Info ── *@
+        <div class="bd-info-grid">
+            <div class="bd-info-item">
+                <span class="bd-info-item__label">Student Name</span>
+                <span class="bd-info-item__value">@Model.StudentName</span>
+            </div>
+            <div class="bd-info-item">
+                <span class="bd-info-item__label">Roll Number</span>
+                <span class="bd-info-item__value">@Model.RollNumber</span>
+            </div>
+            <div class="bd-info-item">
+                <span class="bd-info-item__label">Father's Name</span>
+                <span class="bd-info-item__value">@Model.FatherName</span>
+            </div>
+            <div class="bd-info-item">
+                <span class="bd-info-item__label">Student ID</span>
+                <span class="bd-info-item__value bd-info-item__value--highlight">@Model.StudentNo</span>
+            </div>
+            <div class="bd-info-item">
+                <span class="bd-info-item__label">Mother's Name</span>
+                <span class="bd-info-item__value">@Model.MotherName</span>
+            </div>
+            <div class="bd-info-item">
+                <span class="bd-info-item__label">Date of Birth</span>
+                <span class="bd-info-item__value">@(Model.DateOfBirth?.ToString("dd MMM yyyy") ?? "—")</span>
+            </div>
+            <div class="bd-info-item">
+                <span class="bd-info-item__label">Class</span>
+                <span class="bd-info-item__value">@Model.ClassName</span>
+            </div>
+            <div class="bd-info-item">
+                <span class="bd-info-item__label">Section</span>
+                <span class="bd-info-item__value">@(Model.SectionName ?? "—")</span>
+            </div>
+            @if (!string.IsNullOrEmpty(Model.GroupName))
+            {
+                <div class="bd-info-item">
+                    <span class="bd-info-item__label">Group</span>
+                    <span class="bd-info-item__value bd-info-item__value--highlight">@Model.GroupName</span>
+                </div>
+            }
+        </div>
+
+        @* ── Marks Table ── *@
+        <div class="bd-table-wrap">
+            <table class="bd-table">
+                <thead>
+                    <tr>
+                        <th style="min-width: 140px; text-align: left; padding-left: 10px;">Subject</th>
+                        <th style="min-width: 60px;">Theory<br/><span style="font-weight: 400; font-size: 10px;">(CQ)</span></th>
+                        <th style="min-width: 50px;">MCQ</th>
+                        <th style="min-width: 60px;">Practical</th>
+                        <th style="min-width: 65px;">Assignment</th>
+                        <th style="min-width: 65px;">Total</th>
+                        <th style="min-width: 55px;">Highest</th>
+                        <th style="min-width: 55px;">GP</th>
+                        <th style="min-width: 55px;">Grade</th>
+                        <th style="min-width: 55px;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Subjects != null && Model.Subjects.Count > 0)
+                    {
+                        var rowClass = "";
+                        var highestMarks = Model.Subjects.Max(s => s.MarksObtained);
+
+                        foreach (var sub in Model.Subjects)
+                        {
+                            if (sub.IsOptionalSubject) { rowClass = "bd-table__optional"; }
+                            else if (sub.IsReligionSubject) { rowClass = "bd-table__religion"; }
+                            else { rowClass = ""; }
+
+                            var gradeClass = "grade-cell";
+                            var gradeUpper = (sub.Grade ?? "").ToUpperInvariant().Replace("+", "plus").Replace("-", "minus");
+                            if (gradeUpper.StartsWith("A")) gradeClass += " grade-cell--A" + (gradeUpper.Length > 1 ? gradeUpper.Substring(1) : "");
+                            else if (gradeUpper.StartsWith("B")) gradeClass += " grade-cell--B" + (gradeUpper.Length > 1 ? gradeUpper.Substring(1) : "");
+                            else if (gradeUpper == "C" || gradeUpper == "D") gradeClass += " grade-cell--C";
+                            else if (gradeUpper == "F") gradeClass += " grade-cell--F";
+
+                            <tr class="@rowClass">
+                                <td class="bd-table__subject">
+                                    @sub.SubjectName
+                                    @if (sub.IsOptionalSubject)
+                                    {
+                                        <span class="bd-optional-tag">Optional</span>
+                                    }
+                                    @if (sub.IsReligionSubject)
+                                    {
+                                        <span class="bd-religion-tag">Religion</span>
+                                    }
+                                </td>
+                                <td>@(sub.WrittenMarks?.ToString("F0") ?? sub.MarksWritten?.ToString("F0") ?? "—")</td>
+                                <td>@(sub.MCQMarks?.ToString("F0") ?? sub.MarksMCQ?.ToString("F0") ?? "—")</td>
+                                <td>@(sub.PracticalMarks?.ToString("F0") ?? sub.MarksPractical?.ToString("F0") ?? "—")</td>
+                                <td>@(sub.AssignmentMarks?.ToString("F0") ?? sub.MarksAssignment?.ToString("F0") ?? "—")</td>
+                                <td style="font-weight: 700;">@sub.MarksObtained.ToString("F0")</td>
+                                <td class="highest-marks">
+                                    @if (sub.MarksObtained == highestMarks && sub.MarksObtained > 0)
+                                    {
+                                        @sub.MarksObtained.ToString("F0")
+                                    }
+                                    else
+                                    {
+                                        <span style="color: var(--adm-text-3);">—</span>
+                                    }
+                                </td>
+                                <td style="font-weight: 600;">@sub.GradePoint.ToString("F2")</td>
+                                <td class="@gradeClass">@sub.Grade</td>
+                                <td>
+                                    @if (sub.IsPassed)
+                                    {
+                                        <span class="bd-table__passed">Pass</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="bd-table__failed">Fail</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="10" style="padding: 30px; text-align: center; color: var(--adm-text-3);">
+                                No subject records found.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @* ── Summary Stats ── *@
+        @if (Model.Summary != null)
+        {
+            <div class="bd-summary">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-card__icon dash-stat-card__icon--primary">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></svg>
+                    </div>
+                    <div class="dash-stat-card__body">
+                        <span class="dash-stat-card__label">Total Marks</span>
+                        <span class="dash-stat-card__value">
+                            @Model.Summary.TotalMarks.ToString("F0")
+                            <span class="dash-stat-card__unit">/ @Model.Summary.TotalFullMarks.ToString("F0")</span>
+                        </span>
+                    </div>
+                </div>
+                <div class="dash-stat-card">
+                    <div class="dash-stat-card__icon dash-stat-card__icon--success">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 20V10" /><path d="M18 20V4" /><path d="M6 20v-4" /></svg>
+                    </div>
+                    <div class="dash-stat-card__body">
+                        <span class="dash-stat-card__label">GPA</span>
+                        <span class="dash-stat-card__value">
+                            @Model.Summary.Gpa.ToString("F2")
+                            <span class="dash-stat-card__unit">/ 5.00</span>
+                        </span>
+                    </div>
+                </div>
+                <div class="dash-stat-card">
+                    <div class="dash-stat-card__icon dash-stat-card__icon--info">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="5" /><path d="M3 21v-2a7 7 0 0 1 7-7h4a7 7 0 0 1 7 7v2" /></svg>
+                    </div>
+                    <div class="dash-stat-card__body">
+                        <span class="dash-stat-card__label">Letter Grade</span>
+                        <span class="dash-stat-card__value" style="font-size: 26px;">@Model.Summary.Grade</span>
+                    </div>
+                </div>
+                <div class="dash-stat-card">
+                    <div class="dash-stat-card__icon dash-stat-card__icon--warning">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 2 7 12 12 22 7 12 2" /><polyline points="2 7 2 12 12 17 22 12 22 7" /><line x1="12" y1="17" x2="12" y2="22" /><line x1="8" y1="22" x2="16" y2="22" /></svg>
+                    </div>
+                    <div class="dash-stat-card__body">
+                        <span class="dash-stat-card__label">Merit Position</span>
+                        <span class="dash-stat-card__value">
+                            @Model.Summary.Position
+                            <span class="dash-stat-card__unit">/ @totalStudents</span>
+                        </span>
+                    </div>
+                </div>
+                @if (Model.Summary.ClassPosition > 0)
+                {
+                    <div class="dash-stat-card">
+                        <div class="dash-stat-card__icon dash-stat-card__icon--primary">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /></svg>
+                        </div>
+                        <div class="dash-stat-card__body">
+                            <span class="dash-stat-card__label">Class Position</span>
+                            <span class="dash-stat-card__value">@Model.Summary.ClassPosition</span>
+                        </div>
+                    </div>
+                }
+                @if (Model.Summary.GroupPosition.HasValue && Model.Summary.GroupPosition > 0)
+                {
+                    <div class="dash-stat-card">
+                        <div class="dash-stat-card__icon dash-stat-card__icon--success">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+                        </div>
+                        <div class="dash-stat-card__body">
+                            <span class="dash-stat-card__label">Group Position</span>
+                            <span class="dash-stat-card__value">@Model.Summary.GroupPosition</span>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;">
+                <div>
+                    @if (Model.Summary.IsPassed)
+                    {
+                        <span class="bd-status-badge bd-status-badge--passed">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12" /></svg>
+                            Passed
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="bd-status-badge bd-status-badge--failed">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                            Failed
+                        </span>
+                    }
+                </div>
+                <div style="font-size: 13px; color: var(--adm-text-2);">
+                    <span style="font-weight: 600;">Subjects:</span>
+                    <span style="font-weight: 700; color: var(--adm-success);">@Model.Summary.PassedSubjectCount Passed</span>
+                    <span style="margin: 0 6px; color: var(--adm-text-3);">|</span>
+                    <span style="font-weight: 700; color: var(--adm-rejected);">@Model.Summary.FailedSubjectCount Failed</span>
+                </div>
+                @if (Model.Summary.PublishedAt.HasValue)
+                {
+                    <div style="font-size: 12px; color: var(--adm-text-3);">
+                        Published: @Model.Summary.PublishedAt.Value.ToString("dd MMM yyyy")
+                    </div>
+                }
+            </div>
+
+            @* ── Attendance (placeholder) ── *@
+            @if (attendanceDays != null)
+            {
+                <div class="bd-attendance">
+                    <div class="bd-attendance__item">
+                        <span class="bd-attendance__label">Total Working Days:</span>
+                        <span class="bd-attendance__value">@attendanceDays</span>
+                    </div>
+                    <div class="bd-attendance__item">
+                        <span class="bd-attendance__label">Present:</span>
+                        <span class="bd-attendance__value">@attendancePresent</span>
+                    </div>
+                    <div class="bd-attendance__item">
+                        <span class="bd-attendance__label">Absent:</span>
+                        <span class="bd-attendance__value">@(attendanceDays - attendancePresent)</span>
+                    </div>
+                </div>
+            }
+        }
+
+        @* ── Signatures ── *@
+        <div class="bd-signatures">
+            <div class="bd-signature-item">
+                <div class="bd-signature-item__line"></div>
+                <div class="bd-signature-item__label">Class Teacher</div>
+                <div class="bd-signature-item__name">@Model.ClassName Teacher</div>
+            </div>
+            <div class="bd-signature-item">
+                <div class="bd-signature-item__line"></div>
+                <div class="bd-signature-item__label">Exam Controller</div>
+                <div class="bd-signature-item__name">Exam Controller</div>
+            </div>
+            <div class="bd-signature-item">
+                <div class="bd-signature-item__line"></div>
+                <div class="bd-signature-item__label">Head Teacher / Principal</div>
+                <div class="bd-signature-item__name">Principal</div>
+            </div>
+        </div>
+
+        @* ── Footer ── *@
+        <div class="bd-footer">
+            <div class="bd-footer__qr">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--adm-text-3)" stroke-width="1.3"><rect x="3" y="3" width="4" height="4" /><rect x="9" y="3" width="4" height="4" /><rect x="15" y="3" width="4" height="4" /><rect x="3" y="9" width="4" height="4" /><rect x="15" y="9" width="4" height="4" /><rect x="9" y="15" width="4" height="4" /><rect x="3" y="15" width="4" height="4" /></svg>
+            </div>
+            <div class="bd-footer__text">
+                <div>This is a computer-generated document.</div>
+                <div>@Model.SchoolName &middot; @Model.SchoolAddress</div>
+                <div>Institution ID: @Model.EIIN</div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // No additional JS needed for print mode
+        });
+    </script>
+}

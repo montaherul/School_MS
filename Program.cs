@@ -203,6 +203,16 @@ await using (var scope = app.Services.CreateAsyncScope())
     await seederWebsite.SeedAsync();
 
     await FinanceRbacSeeder.SeedAsync(db);
+
+    // RBAC safety net: ensure Guardian role is permanently restricted to the
+    // 9 portal permissions (run after all seeders so it can correct any
+    // drift introduced by historical or future migrations).
+    var rbacLogger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("GuardianRbacEnforcer");
+    var (wasCompliant, removed, added) = await GuardianRbacEnforcer.EnforceAsync(db, rbacLogger);
+    if (!wasCompliant)
+    {
+        Console.WriteLine($"[RBAC] Guardian role repaired: removed {removed}, added {added}.");
+    }
 }
 
 

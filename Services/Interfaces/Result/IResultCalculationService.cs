@@ -1,3 +1,5 @@
+using SchoolManagementSystem.Models.Entities.Academic;
+using SchoolManagementSystem.Models.Entities.Exam;
 using SchoolManagementSystem.Models.Entities.Result;
 
 namespace SchoolManagementSystem.Services.Interfaces.Result;
@@ -58,4 +60,14 @@ public interface IResultCalculationService
     /// Gets subject-wise pass/fail statistics for reporting
     /// </summary>
     Task<IDictionary<int, (int Passed, int Failed)>> GetSubjectPassFailStatsAsync(int examId);
+
+    /// <summary>
+    /// Calculates exam results with optional filtering by class or group
+    /// </summary>
+    Task CalculateExamResultsWithOptionsAsync(int examId, int? classId = null, int? groupId = null);
+
+    /// <summary>
+    /// Calculates a single subject result with ClassSubject mapping for optional/religion flags
+    /// </summary>
+    Task<StudentSubjectResult> CalculateSubjectResultWithMappingAsync(MarkEntry markEntry, IEnumerable<GradingRule> gradingRules, ExamSubject? examSubject, ClassSubject? classSubject);
 }

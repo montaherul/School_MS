@@ -172,6 +172,39 @@ public class GuardianRepository : BaseRepository<SchoolManagementSystem.Models.E
         return dashboard;
     }
 
+    public async Task<List<GuardianChildCardDto>> GetChildrenAsync(int guardianId, CancellationToken ct = default)
+    {
+        var result = new List<GuardianChildCardDto>();
+        var connection = _context.Database.GetDbConnection();
+        await using var _ = await OpenConnectionAsync(connection);
+        await using var command = connection.CreateCommand();
+        command.CommandText = "[dbo].[sp_GetGuardianChildren]";
+        command.CommandType = CommandType.StoredProcedure;
+        AddParameter(command, "@GuardianId", guardianId);
+
+        await using var reader = await command.ExecuteReaderAsync(ct);
+        while (await reader.ReadAsync(ct))
+        {
+            result.Add(new GuardianChildCardDto
+            {
+                StudentId = GetInt32(reader, "StudentId"),
+                StudentNo = GetString(reader, "StudentNo"),
+                FullName = GetString(reader, "FullName"),
+                ClassName = GetString(reader, "ClassName"),
+                SectionName = GetString(reader, "SectionName"),
+                RollNumber = GetInt32(reader, "RollNumber").ToString(),
+                ProfilePicturePath = GetNullableString(reader, "ProfilePicturePath") ?? string.Empty,
+                Relationship = GetString(reader, "Relationship"),
+                IsPrimaryGuardian = GetBoolean(reader, "IsPrimaryGuardian"),
+                AttendancePercentage = GetDecimal(reader, "AttendancePercentage") is decimal d ? (double)d : 0d,
+                OutstandingFees = GetDecimal(reader, "OutstandingFees"),
+                UnreadNotificationCount = GetInt32(reader, "UnreadNotificationCount")
+            });
+        }
+
+        return result;
+    }
+
     public async Task<bool> IsCodeUniqueAsync(string code)
     {
         return !await _context.Guardians.AnyAsync(g => g.GuardianCode == code);

@@ -136,7 +136,8 @@ public class ClassSubjectMappingSeeder
             "SOC",       // বাংলাদেশ ও বিশ্ব পরিচয়
             "ICT",       // ICT
             "PE",        // শারীরিক শিক্ষা
-            "ART"        // চারু ও কারুকলা
+            "ART",       // চারু ও কারুকলা
+            "HEALTH"     // শারীরিক শিক্ষা, স্বাস্থ্য ও খেলাধুলা
         };
 
         foreach (var classId in new[] { 1, 2, 3, 4, 5 })
@@ -174,6 +175,7 @@ public class ClassSubjectMappingSeeder
             "PE",        // শারীরিক শিক্ষা
             "ICT",       // ICT
             "ART",       // চারু ও কারুকলা
+            "HEALTH",
             "CAREER",    // কর্ম ও জীবনমুখী শিক্ষা
             "SOC",      // বাংলাদেশ ও বিশ্ব পরিচয়
             "SCI"       // বিজ্ঞান (Class 6-8)

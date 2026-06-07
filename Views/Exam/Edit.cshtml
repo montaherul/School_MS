@@ -1,2 +1,6 @@
-@model SchoolManagementSystem.Models.ViewModels.Shared.CrudFormViewModel
-@await Html.PartialAsync("~/Views/Shared/Crud/CreateEdit.cshtml", Model)
+@model SchoolManagementSystem.Models.ViewModels.Exam.ExamCreateEditViewModel
+@{
+    Layout = null;
+}
+@* Edit route renders Create view via ExamController.Edit — this file is kept for view discovery compatibility. *@
+@await Html.PartialAsync("Create", Model)

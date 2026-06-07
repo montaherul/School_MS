@@ -1,0 +1,303 @@
+@model SchoolManagementSystem.Models.DTOs.Result.StudentTranscriptDto
+@{
+    ViewData["Title"] = "My Transcript";
+    var totalExams = Model.ExamResults.Count;
+    var passedExams = Model.ExamResults.Count(e => e.IsPassed);
+    var bestGpa = Model.ExamResults.Any() ? Model.ExamResults.Max(e => e.Gpa) : 0m;
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-journal-text"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Academic Transcript</h1>
+                <p class="adm-header__sub">Complete academic record for @Model.StudentName</p>
+            </div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <a href="/Transcript/MyTranscript?academicYearId=@Model.AcademicYearId" class="adm-btn adm-btn--primary">
+                <i class="bi bi-download"></i> View Full Transcript
+            </a>
+            <button type="button" class="adm-btn adm-btn--ghost" onclick="window.print()">
+                <i class="bi bi-printer"></i> Print
+            </button>
+        </div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:16px;padding:18px 20px;background:var(--adm-surface);border:1px solid var(--adm-border);border-radius:var(--adm-radius-lg);margin-bottom:20px;">
+        <div style="width:56px;height:56px;border-radius:50%;background:var(--adm-primary-bg);display:flex;align-items:center;justify-content:center;color:var(--adm-primary);font-size:24px;flex-shrink:0;">
+            <i class="bi bi-person"></i>
+        </div>
+        <div style="flex:1;min-width:0;">
+            <div style="font-size:16px;font-weight:700;">@Model.StudentName</div>
+            <div style="font-size:13px;color:var(--adm-text-3);">
+                Roll: <strong style="color:var(--adm-text);">@Model.RollNumber</strong>
+                @if (!string.IsNullOrEmpty(Model.FatherName))
+                {
+                    <span> &middot; Father: @Model.FatherName</span>
+                }
+            </div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+            <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;color:var(--adm-text-3);">Academic Year</div>
+            <div style="font-size:16px;font-weight:800;">@Model.AcademicYear</div>
+        </div>
+    </div>
+
+    @if (!Model.ExamResults.Any() && !Model.SubjectWiseResults.Any())
+    {
+        <div class="adm-table-card" style="border-radius:var(--adm-radius-lg);border-top:1px solid var(--adm-border);">
+            <div class="dash-empty">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                <p class="dash-empty__title">No Transcript Data Available</p>
+                <p class="dash-empty__sub">Your academic transcript will be available once exam results are published.</p>
+            </div>
+        </div>
+    }
+    else
+    {
+        @if (Model.ExamResults.Any())
+        {
+            <div class="adm-table-card" style="margin-bottom:20px;border-radius:var(--adm-radius-lg);border-top:1px solid var(--adm-border);">
+                <div style="font-size:14px;font-weight:700;color:var(--adm-text);padding:14px 18px;background:var(--adm-surface-2);border-bottom:1px solid var(--adm-border);display:flex;align-items:center;gap:10px;">
+                    <i class="bi bi-journal-check" style="color:var(--adm-primary);"></i>
+                    Exam History
+                </div>
+                @foreach (var exam in Model.ExamResults)
+                {
+                    <div style="border-bottom:1px solid var(--adm-border);">
+                        <div style="font-size:13px;font-weight:700;color:var(--adm-primary);padding:12px 14px;background:var(--adm-primary-bg);border-bottom:1px solid var(--adm-border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+                            <div style="display:flex;align-items:center;gap:8px;">
+                                <i class="bi bi-pencil-square"></i>
+                                <span>@exam.ExamName</span>
+                                <span style="font-weight:500;color:var(--adm-text-3);font-size:11px;">@exam.Term</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                                <span style="font-size:11px;color:var(--adm-text-3);font-weight:500;">
+                                    <strong style="color:var(--adm-text);">@exam.PassedSubjectCount</strong> passed /
+                                    <strong style="color:var(--adm-text);">@(exam.PassedSubjectCount + exam.FailedSubjectCount)</strong> subjects
+                                </span>
+                                @if (exam.IsPassed)
+                                {
+                                    <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;padding:3px 8px;border-radius:100px;background:var(--adm-success-bg);color:var(--adm-success);">Passed</span>
+                                }
+                                else
+                                {
+                                    <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;padding:3px 8px;border-radius:100px;background:var(--adm-rejected-bg);color:var(--adm-rejected);">Failed</span>
+                                }
+                            </div>
+                        </div>
+                        @if (exam.Subjects.Any())
+                        {
+                            <div style="overflow-x:auto;">
+                                <table class="dash-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Subject</th>
+                                            <th style="text-align:center;width:100px;">Marks</th>
+                                            <th style="text-align:center;width:80px;">Grade</th>
+                                            <th style="text-align:center;width:90px;">Grade Point</th>
+                                            <th style="text-align:center;width:80px;">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var sub in exam.Subjects)
+                                        {
+                                            <tr>
+                                                <td style="font-weight:600;">@sub.SubjectName</td>
+                                                <td style="text-align:center;font-family:'SF Mono','Cascadia Code','Consolas',monospace;">
+                                                    @sub.MarksObtained.ToString("F0") / @sub.FullMarks.ToString("F0")
+                                                </td>
+                                                <td style="text-align:center;font-weight:700;">@sub.Grade</td>
+                                                <td style="text-align:center;">@sub.GradePoint.ToString("F2")</td>
+                                                <td style="text-align:center;">
+                                                    @if (sub.IsPassed)
+                                                    {
+                                                        <span class="adm-status adm-status--approved" style="font-size:10px;">Pass</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="adm-status adm-status--rejected" style="font-size:10px;">Fail</span>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                    <tfoot>
+                                        <tr style="background:var(--adm-surface-2);font-weight:700;">
+                                            <td>Exam Summary</td>
+                                            <td style="text-align:center;font-weight:700;">
+                                                @exam.TotalMarks.ToString("F0") / @exam.TotalFullMarks.ToString("F0")
+                                            </td>
+                                            <td style="text-align:center;font-weight:700;">@exam.Grade</td>
+                                            <td style="text-align:center;font-weight:700;">@exam.Gpa.ToString("F2")</td>
+                                            <td style="text-align:center;">
+                                                @if (exam.IsPassed)
+                                                {
+                                                    <span class="adm-status adm-status--approved">Passed</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="adm-status adm-status--rejected">Failed</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                        @if (exam.ClassPosition > 0)
+                                        {
+                                            <tr style="background:var(--adm-surface-2);">
+                                                <td colspan="5" style="padding:6px 14px;font-size:12px;color:var(--adm-text-3);">
+                                                    <i class="bi bi-trophy" style="color:var(--adm-pending);"></i>
+                                                    Class Position: <strong style="color:var(--adm-text);">@exam.ClassPosition</strong>
+                                                    @if (exam.GroupPosition.HasValue && exam.GroupPosition > 0)
+                                                    {
+                                                        <span> &middot; Group Position: <strong style="color:var(--adm-text);">@exam.GroupPosition</strong></span>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tfoot>
+                                </table>
+                            </div>
+                        }
+                        else
+                        {
+                            <div style="padding:16px 14px;text-align:center;color:var(--adm-text-3);font-size:13px;">
+                                <i class="bi bi-info-circle"></i> No subject details available for this exam.
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        }
+
+        @if (Model.SubjectWiseResults.Any())
+        {
+            <div class="adm-table-card" style="margin-bottom:20px;border-radius:var(--adm-radius-lg);border-top:1px solid var(--adm-border);">
+                <div style="font-size:14px;font-weight:700;color:var(--adm-text);padding:14px 18px;background:var(--adm-surface-2);border-bottom:1px solid var(--adm-border);display:flex;align-items:center;gap:10px;">
+                    <i class="bi bi-bar-chart" style="color:var(--adm-primary);"></i>
+                    Subject Summary
+                </div>
+                <div style="overflow-x:auto;">
+                    <table class="dash-table">
+                        <thead>
+                            <tr>
+                                <th>Subject</th>
+                                <th style="text-align:center;width:110px;">Average Marks</th>
+                                <th style="text-align:center;width:80px;">Grade</th>
+                                <th style="text-align:center;width:90px;">Grade Point</th>
+                                <th style="text-align:center;width:80px;">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var sub in Model.SubjectWiseResults)
+                            {
+                                <tr>
+                                    <td style="font-weight:600;">@sub.SubjectName</td>
+                                    <td style="text-align:center;font-family:'SF Mono','Cascadia Code','Consolas',monospace;">
+                                        @sub.TotalMarks.ToString("F2") / @sub.FullMarks.ToString("F2")
+                                    </td>
+                                    <td style="text-align:center;font-weight:700;">@sub.Grade</td>
+                                    <td style="text-align:center;">@sub.GradePoint.ToString("F2")</td>
+                                    <td style="text-align:center;">
+                                        @if (sub.IsPassed)
+                                        {
+                                            <span class="adm-status adm-status--approved" style="font-size:10px;">Pass</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="adm-status adm-status--rejected" style="font-size:10px;">Fail</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+
+        <div class="dash-stats" style="margin-bottom:0;">
+            <div class="dash-stat-card" style="background:linear-gradient(135deg,var(--adm-primary),#0D6B63);border-color:var(--adm-primary);color:#fff;">
+                <div class="dash-stat-card__icon" style="background:rgba(255,255,255,0.15);color:#fff;">
+                    <i class="bi bi-calculator"></i>
+                </div>
+                <div class="dash-stat-card__body">
+                    <span class="dash-stat-card__label" style="color:rgba(255,255,255,0.75);">Final GPA</span>
+                    <span class="dash-stat-card__value" style="color:#fff;">@Model.FinalGPA.ToString("F2")</span>
+                </div>
+            </div>
+            <div class="dash-stat-card">
+                <div class="dash-stat-card__icon dash-stat-card__icon--primary">
+                    <i class="bi bi-award"></i>
+                </div>
+                <div class="dash-stat-card__body">
+                    <span class="dash-stat-card__label">Final Grade</span>
+                    <span class="dash-stat-card__value" style="font-size:24px;">@Model.FinalGrade</span>
+                </div>
+            </div>
+            <div class="dash-stat-card">
+                <div class="dash-stat-card__icon dash-stat-card__icon--warning">
+                    <i class="bi bi-trophy"></i>
+                </div>
+                <div class="dash-stat-card__body">
+                    <span class="dash-stat-card__label">Merit Position</span>
+                    <span class="dash-stat-card__value">
+                        @Model.MeritPosition
+                        @if (Model.MeritPosition > 0)
+                        {
+                            <sup style="font-size:14px;font-weight:600;color:var(--adm-text-3);">th</sup>
+                        }
+                    </span>
+                </div>
+            </div>
+            <div class="dash-stat-card">
+                <div class="dash-stat-card__icon dash-stat-card__icon--info">
+                    <i class="bi bi-journal"></i>
+                </div>
+                <div class="dash-stat-card__body">
+                    <span class="dash-stat-card__label">Exams Taken</span>
+                    <span class="dash-stat-card__value">@totalExams</span>
+                </div>
+            </div>
+            <div class="dash-stat-card">
+                <div class="dash-stat-card__icon dash-stat-card__icon--success">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <div class="dash-stat-card__body">
+                    <span class="dash-stat-card__label">Passed Exams</span>
+                    <span class="dash-stat-card__value">
+                        @passedExams
+                        @if (totalExams > 0)
+                        {
+                            <span class="dash-stat-card__unit" style="font-size:14px;">/ @totalExams</span>
+                        }
+                    </span>
+                </div>
+            </div>
+            <div class="dash-stat-card">
+                <div class="dash-stat-card__icon" style="background:#eef2ff;color:#4f46e5;">
+                    <i class="bi bi-star"></i>
+                </div>
+                <div class="dash-stat-card__body">
+                    <span class="dash-stat-card__label">Best GPA</span>
+                    <span class="dash-stat-card__value">@bestGpa.ToString("F2")</span>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div style="margin-top:20px;text-align:center;">
+        <a href="/Transcript/MyTranscript?academicYearId=@Model.AcademicYearId" class="adm-btn adm-btn--primary">
+            <i class="bi bi-box-arrow-up-right"></i> View Complete Transcript
+        </a>
+    </div>
+</div>

@@ -8,9 +8,13 @@
 
   <ItemGroup>
     <Compile Remove="Repository\**" />
+    <Compile Remove="SchoolManagementSystem.Tests\**" />
     <Content Remove="Repository\**" />
+    <Content Remove="SchoolManagementSystem.Tests\**" />
     <EmbeddedResource Remove="Repository\**" />
+    <EmbeddedResource Remove="SchoolManagementSystem.Tests\**" />
     <None Remove="Repository\**" />
+    <None Remove="SchoolManagementSystem.Tests\**" />
   </ItemGroup>
 
   <ItemGroup>

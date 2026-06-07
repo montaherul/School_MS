@@ -59,6 +59,46 @@ public class GuardianChildDto
     public string FeeStatus { get; set; } = string.Empty;
 }
 
+public class GuardianProfileUpdateDto
+{
+    public int Id { get; set; }
+
+    [MaxLength(80)]
+    public string FirstName { get; set; } = string.Empty;
+
+    [MaxLength(80)]
+    public string LastName { get; set; } = string.Empty;
+
+    [MaxLength(160)]
+    public string? Email { get; set; }
+
+    [MaxLength(30)]
+    public string? MobileNumber { get; set; }
+
+    [MaxLength(50)]
+    public string? NationalId { get; set; }
+
+    [MaxLength(100)]
+    public string? Occupation { get; set; }
+
+    [MaxLength(250)]
+    public string? PresentAddress { get; set; }
+
+    [MaxLength(250)]
+    public string? PermanentAddress { get; set; }
+
+    [MaxLength(100)]
+    public string? EmergencyContactName { get; set; }
+
+    [MaxLength(30)]
+    public string? EmergencyContactNumber { get; set; }
+
+    public string? CurrentPassword { get; set; }
+    public string? NewPassword { get; set; }
+
+    public IFormFile? PhotoFile { get; set; }
+}
+
 public class GuardianUpsertDto
 {
     public int Id { get; set; }

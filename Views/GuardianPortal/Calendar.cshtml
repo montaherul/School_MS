@@ -1,0 +1,55 @@
+@model IEnumerable<SchoolManagementSystem.Models.Entities.Academic.AcademicCalendarEvent>
+@{
+    ViewData["Title"] = "Calendar";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">Academic Calendar</h2>
+        <a asp-action="Dashboard" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+        </a>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered align-middle">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>Event</th>
+                                <th>Type</th>
+                                <th>Start</th>
+                                <th>End</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var e in Model)
+                            {
+                                <tr>
+                                    <td><strong>@e.Title</strong></td>
+                                    <td><span class="badge bg-info">@e.EventType</span></td>
+                                    <td>@e.StartDate.ToString("dd MMM yyyy")</td>
+                                    <td>@e.EndDate.ToString("dd MMM yyyy")</td>
+                                    <td>@e.Description</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-calendar3 fs-1 text-muted"></i>
+                <p class="text-muted mt-2">No calendar events.</p>
+            </div>
+        </div>
+    }
+</div>

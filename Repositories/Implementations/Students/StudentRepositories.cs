@@ -79,8 +79,17 @@ public class StudentRepository : BaseRepository<Student>, IStudentRepository
             SectionId = student.SectionId,
             RollNumber = student.RollNumber,
             SectionName = student.Section?.Name ?? "N/A",
-            GuardianName = sg?.Relationship == SchoolManagementSystem.Models.Entities.Guardian.GuardianRelationshipType.LegalGuardian ? guardian?.FirstName : null,
+            GuardianName = guardian?.FullName,
             GuardianOccupation = guardian?.Occupation,
+            GuardianEmail = guardian?.Email,
+            GuardianMobileNumber = guardian?.MobileNumber,
+            GuardianRelationship = sg?.Relationship.ToString(),
+            GuardianNationalId = guardian?.NationalId,
+            GuardianAddress = guardian?.PresentAddress,
+            GuardianPhoto = guardian?.PhotoPath,
+            GuardianUserCreated = guardian?.UserId != null,
+            GuardianCode = guardian?.GuardianCode,
+            LinkedChildrenCount = guardian != null ? guardian.StudentGuardians.Count : 0,
             FatherOrGuardianMobileNo = guardian?.MobileNumber ?? string.Empty
         };
     }
@@ -133,8 +142,17 @@ public class StudentRepository : BaseRepository<Student>, IStudentRepository
             SectionId = student.SectionId,
             RollNumber = student.RollNumber,
             SectionName = student.Section?.Name ?? "N/A",
-            GuardianName = sg?.Relationship == SchoolManagementSystem.Models.Entities.Guardian.GuardianRelationshipType.LegalGuardian ? guardian?.FirstName : null,
+            GuardianName = guardian?.FullName,
             GuardianOccupation = guardian?.Occupation,
+            GuardianEmail = guardian?.Email,
+            GuardianMobileNumber = guardian?.MobileNumber,
+            GuardianRelationship = sg?.Relationship.ToString(),
+            GuardianNationalId = guardian?.NationalId,
+            GuardianAddress = guardian?.PresentAddress,
+            GuardianPhoto = guardian?.PhotoPath,
+            GuardianUserCreated = guardian?.UserId != null,
+            GuardianCode = guardian?.GuardianCode,
+            LinkedChildrenCount = guardian != null ? guardian.StudentGuardians.Count : 0,
             FatherOrGuardianMobileNo = guardian?.MobileNumber ?? string.Empty
         };
     }

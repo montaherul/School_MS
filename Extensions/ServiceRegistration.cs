@@ -147,6 +147,7 @@ public static class ServiceRegistration
         services.AddScoped<IReEvaluationService, ReEvaluationService>();
         services.AddScoped<IReportCardService, ReportCardService>();
         services.AddScoped<IResultAnalyticsService, ResultAnalyticsService>();
+        services.AddScoped<ISubjectComponentService, SubjectComponentService>();
 
         // Register Public Website Services
         services.AddScoped<ISchoolWebsiteService, SchoolWebsiteService>();
@@ -178,7 +179,10 @@ public static class ServiceRegistration
         services.AddScoped<SchoolManagementSystem.Services.Interfaces.Attendance.IAttendanceReportService, SchoolManagementSystem.Services.Implementations.Attendance.AttendanceReportService>();
         services.AddScoped<SchoolManagementSystem.Services.Interfaces.Attendance.IAttendanceSettingService, SchoolManagementSystem.Services.Implementations.Attendance.AttendanceSettingService>();
         services.AddScoped<SchoolManagementSystem.Services.Interfaces.Attendance.IAttendanceValidationService, SchoolManagementSystem.Services.Implementations.Attendance.AttendanceValidationService>();
+        services.AddScoped<SchoolManagementSystem.Services.Interfaces.Attendance.IAttendancePercentageService, SchoolManagementSystem.Services.Implementations.Attendance.AttendancePercentageService>();
+        services.AddScoped<SchoolManagementSystem.Services.Interfaces.Attendance.IAutoAbsentService, SchoolManagementSystem.Services.Implementations.Attendance.AutoAbsentService>();
         services.AddHostedService<SchoolManagementSystem.Services.Implementations.Attendance.AttendanceNotificationWorker>();
+        services.AddHostedService<SchoolManagementSystem.Services.Implementations.Attendance.AutoAbsentWorker>();
 
        
         return services;

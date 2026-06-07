@@ -1,0 +1,45 @@
+@model IEnumerable<SchoolManagementSystem.Models.Entities.Communication.Notice>
+@{
+    ViewData["Title"] = "Notices";
+}
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold">Notices & Announcements</h2>
+        <a asp-action="Dashboard" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
+        </a>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+        @foreach (var n in Model)
+        {
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <h5 class="fw-bold mb-2">@n.Title</h5>
+                        <small class="text-muted">@n.PublishAt.ToString("dd MMM yyyy")</small>
+                    </div>
+                    <span class="badge bg-secondary mb-2">@n.AudienceRole</span>
+                    <p class="mb-0">@n.Body</p>
+                    @if (!string.IsNullOrEmpty(n.AttachmentPath))
+                    {
+                        <a href="@n.AttachmentPath" target="_blank" class="btn btn-sm btn-link mt-2">
+                            <i class="bi bi-paperclip"></i> Attachment
+                        </a>
+                    }
+                </div>
+            </div>
+        }
+    }
+    else
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-5">
+                <i class="bi bi-megaphone fs-1 text-muted"></i>
+                <p class="text-muted mt-2">No notices at the moment.</p>
+            </div>
+        </div>
+    }
+</div>

@@ -1,0 +1,286 @@
+@model SchoolManagementSystem.Models.DTOs.Result.StudentPortalResultViewModel
+@{
+    ViewData["Title"] = "My Academic Results";
+    var totalExams = Model.ExamResults.Count;
+    var passedExams = Model.ExamResults.Count(e => e.IsPassed);
+    var failedExams = totalExams - passedExams;
+    var bestGpa = Model.ExamResults.Any() ? Model.ExamResults.Max(e => e.Gpa) : 0m;
+    var latestGpa = Model.ExamResults.LastOrDefault()?.Gpa ?? 0m;
+    var lastFive = Model.ExamResults.OrderByDescending(e => e.PublishedAt).Take(5).Reverse().ToList();
+    var chartLabels = new System.Text.StringBuilder();
+    var chartData = new System.Text.StringBuilder();
+    foreach (var e in lastFive)
+    {
+        if (chartLabels.Length > 0) { chartLabels.Append(","); chartData.Append(","); }
+        chartLabels.Append($"'{e.ExamName.Replace("'", "\\'")}'");
+        chartData.Append(e.Gpa.ToString("F2", System.Globalization.CultureInfo.InvariantCulture));
+    }
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-bar-chart-line"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">My Academic Results</h1>
+                <p class="adm-header__sub">
+                    @Model.StudentName
+                    @if (!string.IsNullOrEmpty(Model.ClassName))
+                    {
+                        <span> &middot; @Model.ClassName</span>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.SectionName))
+                    {
+                        <span> &middot; @Model.SectionName</span>
+                    }
+                </p>
+            </div>
+        </div>
+    </div>
+
+    @if (!Model.ExamResults.Any())
+    {
+        <div class="adm-table-card" style="border-radius:var(--adm-radius-lg);border-top:1px solid var(--adm-border);">
+            <div class="dash-empty">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                <p class="dash-empty__title">No Results Published Yet</p>
+                <p class="dash-empty__sub">Your exam results will appear here once they are officially released by the school administration.</p>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="dash-stats">
+            <div class="dash-stat-card">
+                <div class="dash-stat-card__icon dash-stat-card__icon--primary">
+                    <i class="bi bi-journal"></i>
+                </div>
+                <div class="dash-stat-card__body">
+                    <span class="dash-stat-card__label">Total Exams Taken</span>
+                    <span class="dash-stat-card__value">@totalExams</span>
+                </div>
+            </div>
+            <div class="dash-stat-card">
+                <div class="dash-stat-card__icon dash-stat-card__icon--success">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <div class="dash-stat-card__body">
+                    <span class="dash-stat-card__label">Total Passed</span>
+                    <span class="dash-stat-card__value">
+                        @passedExams
+                        @if (totalExams > 0)
+                        {
+                            <span class="dash-stat-card__unit" style="font-size:14px;">/ @totalExams</span>
+                        }
+                    </span>
+                </div>
+            </div>
+            <div class="dash-stat-card">
+                <div class="dash-stat-card__icon dash-stat-card__icon--warning">
+                    <i class="bi bi-star"></i>
+                </div>
+                <div class="dash-stat-card__body">
+                    <span class="dash-stat-card__label">Best GPA</span>
+                    <span class="dash-stat-card__value">@bestGpa.ToString("F2")</span>
+                </div>
+            </div>
+            <div class="dash-stat-card">
+                <div class="dash-stat-card__icon dash-stat-card__icon--info">
+                    <i class="bi bi-graph-up-arrow"></i>
+                </div>
+                <div class="dash-stat-card__body">
+                    <span class="dash-stat-card__label">Latest GPA</span>
+                    <span class="dash-stat-card__value">@latestGpa.ToString("F2")</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="adm-table-card" style="border-radius:var(--adm-radius-lg);border-top:1px solid var(--adm-border);">
+            <div style="overflow-x:auto;">
+                <table class="dash-table">
+                    <thead>
+                        <tr>
+                            <th>Exam Name</th>
+                            <th>Term</th>
+                            <th>Year</th>
+                            <th style="text-align:center;">GPA</th>
+                            <th style="text-align:center;">Grade</th>
+                            <th style="text-align:center;">Position</th>
+                            <th style="text-align:center;">Status</th>
+                            <th style="text-align:center;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var exam in Model.ExamResults.OrderByDescending(e => e.PublishedAt))
+                        {
+                            <tr>
+                                <td style="font-weight:600;">@exam.ExamName</td>
+                                <td>@exam.Term.ToString()</td>
+                                <td>@(exam.PublishedAt?.Year.ToString() ?? "-")</td>
+                                <td style="text-align:center;font-weight:700;">@exam.Gpa.ToString("F2")</td>
+                                <td style="text-align:center;"><span class="adm-badge adm-badge--primary">@exam.Grade</span></td>
+                                <td style="text-align:center;">
+                                    @if (exam.ClassPosition > 0)
+                                    {
+                                        <span style="font-weight:600;">#@exam.ClassPosition</span>
+                                        if (exam.GroupPosition.HasValue && exam.GroupPosition > 0)
+                                        {
+                                            <span style="font-size:11px;color:var(--adm-text-3);"> / #@exam.GroupPosition</span>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span style="color:var(--adm-text-3);">-</span>
+                                    }
+                                </td>
+                                <td style="text-align:center;">
+                                    @if (exam.IsPassed)
+                                    {
+                                        <span class="adm-status adm-status--approved">Pass</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="adm-status adm-status--rejected">Fail</span>
+                                    }
+                                </td>
+                                <td style="text-align:center;">
+                                    <div class="adm-actions">
+                                        <a href="/ResultManagement/StudentIndex" class="adm-action adm-action--view" title="View Details">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a href="/ReportCard/Download?examId=@exam.ExamId&studentId=@Model.StudentId" class="adm-action adm-action--edit" title="Download Report Card">
+                                            <i class="bi bi-file-earmark-pdf"></i>
+                                        </a>
+                                        @if (Model.Transcript != null)
+                                        {
+                                            <a href="/Transcript/MyTranscript?academicYearId=1" class="adm-action adm-action--convert" title="Download Transcript">
+                                                <i class="bi bi-journal-text"></i>
+                                            </a>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="dash-main-grid">
+            <div class="dash-panel">
+                <div class="dash-panel__header">
+                    <h3 class="dash-panel__title">
+                        <i class="bi bi-graph-up" style="color:var(--adm-primary);"></i>
+                        GPA Trend
+                    </h3>
+                </div>
+                <div style="padding:20px;">
+                    <canvas id="gpaTrendChart" height="220"></canvas>
+                </div>
+            </div>
+            <div class="dash-panel">
+                <div class="dash-panel__header">
+                    <h3 class="dash-panel__title">
+                        <i class="bi bi-pie-chart" style="color:var(--adm-primary);"></i>
+                        Pass / Fail
+                    </h3>
+                </div>
+                <div style="padding:20px;display:flex;justify-content:center;">
+                    <canvas id="passFailChart" height="220" style="max-width:260px;"></canvas>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var labels = [@Html.Raw(chartLabels.ToString())];
+            var data = [@Html.Raw(chartData.ToString())];
+
+            if (labels.length > 0) {
+                new Chart(document.getElementById('gpaTrendChart'), {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'GPA',
+                            data: data,
+                            borderColor: '#0F766E',
+                            backgroundColor: 'rgba(15,118,110,0.08)',
+                            borderWidth: 2.5,
+                            pointBackgroundColor: '#0F766E',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: 5,
+                            pointHoverRadius: 7,
+                            tension: 0.35,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: function (ctx) { return 'GPA: ' + ctx.parsed.y.toFixed(2); }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 5,
+                                ticks: { stepSize: 1, font: { size: 11 } },
+                                grid: { color: 'rgba(0,0,0,0.05)' }
+                            },
+                            x: {
+                                ticks: { font: { size: 10 } },
+                                grid: { display: false }
+                            }
+                        }
+                    }
+                });
+            }
+
+            var passCount = @passedExams;
+            var failCount = @failedExams;
+            if (passCount + failCount > 0) {
+                new Chart(document.getElementById('passFailChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Passed', 'Failed'],
+                        datasets: [{
+                            data: [passCount, failCount],
+                            backgroundColor: ['#059669', '#DC2626'],
+                            borderWidth: 0,
+                            hoverOffset: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '65%',
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: { padding: 16, usePointStyle: true, font: { size: 12 } }
+                            }
+                        }
+                    }
+                });
+            }
+        })();
+    </script>
+}

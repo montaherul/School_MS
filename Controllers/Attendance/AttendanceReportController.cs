@@ -39,6 +39,13 @@ namespace SchoolManagementSystem.Controllers.Attendance
             return View(summary);
         }
 
+        [Authorize(Roles = "Super Admin,Admin,Principal,Assistant Head,Senior Lecturer,Lecturer,Teacher")]
+        public async Task<IActionResult> Overview(CancellationToken ct)
+        {
+            var summary = await _service.GetDashboardSummaryAsync(ct);
+            return View(summary);
+        }
+
         [HttpGet]
         public async Task<IActionResult> DownloadStudentReport(int classId, int sectionId, int year, int month, int? studentGroupId, CancellationToken ct)
         {

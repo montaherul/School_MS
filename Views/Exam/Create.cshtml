@@ -1,3 +1,985 @@
-@model SchoolManagementSystem.Models.ViewModels.Shared.CrudFormViewModel
+@model SchoolManagementSystem.Models.ViewModels.Exam.ExamCreateEditViewModel
+@{
+    ViewData["Title"] = Model.IsEdit ? "Edit Exam" : "Create Exam";
+    var isEdit = Model.IsEdit;
+}
 
-@await Html.PartialAsync("~/Views/Shared/Crud/CreateEdit.cshtml", Model)
+<div class="adm-page" id="examWizardApp">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">@(isEdit ? "Edit Exam" : "Create New Exam")</h1>
+                <p class="adm-header__sub" id="stepDescription">Step 1 of 7 — Exam Information</p>
+            </div>
+        </div>
+        <div class="adm-btn-group">
+            <a href="@Url.Action("Index", "Exam")" class="adm-btn adm-btn--ghost">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6" /></svg>
+                Cancel
+            </a>
+        </div>
+    </div>
+
+    @* ── Progress Bar ── *@
+    <div class="wizard-progress" id="wizardProgress">
+        <div class="wizard-progress__bar">
+            <div class="wizard-progress__fill" id="progressFill"></div>
+        </div>
+        <div class="wizard-steps" id="wizardSteps">
+            <div class="wizard-step" data-step="1" data-label="Exam Info">
+                <div class="wizard-step__circle active" id="stepCircle1">1</div>
+                <span class="wizard-step__label">Exam Info</span>
+            </div>
+            <div class="wizard-step" data-step="2" data-label="Classes">
+                <div class="wizard-step__circle" id="stepCircle2">2</div>
+                <span class="wizard-step__label">Classes</span>
+            </div>
+            <div class="wizard-step" data-step="3" data-label="Sections">
+                <div class="wizard-step__circle" id="stepCircle3">3</div>
+                <span class="wizard-step__label">Sections</span>
+            </div>
+            <div class="wizard-step" data-step="4" data-label="Groups">
+                <div class="wizard-step__circle" id="stepCircle4">4</div>
+                <span class="wizard-step__label">Groups</span>
+            </div>
+            <div class="wizard-step" data-step="5" data-label="Subjects">
+                <div class="wizard-step__circle" id="stepCircle5">5</div>
+                <span class="wizard-step__label">Subjects</span>
+            </div>
+            <div class="wizard-step" data-step="6" data-label="Marks">
+                <div class="wizard-step__circle" id="stepCircle6">6</div>
+                <span class="wizard-step__label">Marks</span>
+            </div>
+            <div class="wizard-step" data-step="7" data-label="Review">
+                <div class="wizard-step__circle" id="stepCircle7">7</div>
+                <span class="wizard-step__label">Review</span>
+            </div>
+        </div>
+    </div>
+
+    @* ── Step Panels ── *@
+    <div class="wizard-body">
+        <form id="examForm" method="post" action="@Url.Action("Save", "Exam")">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="Id" id="formExamId" value="@(Model.ExamId ?? 0)" />
+            <input type="hidden" name="Status" value="Draft" />
+
+            @* ═══════════════ Step 1 — Exam Information ═══════════════ *@
+            <div class="wizard-panel active" id="stepPanel1">
+                <div class="adm-table-card">
+                    <div class="adm-table-card__body" style="padding:28px 32px;">
+                        <h3 style="font-size:18px;font-weight:700;margin-bottom:24px;color:var(--adm-text);">
+                            <i class="bi bi-info-circle me-2" style="color:var(--adm-primary);"></i>Exam Information
+                        </h3>
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <label class="adm-label" for="examName">Exam Name <span style="color:var(--adm-rejected);">*</span></label>
+                                <div class="adm-input-wrap">
+                                    <input class="adm-input" id="examName" name="Name" type="text" placeholder="e.g. Half Yearly Examination 2026" style="padding-left:12px;" required />
+                                </div>
+                                <div class="field-error" id="errName"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="adm-label" for="examTerm">Exam Term <span style="color:var(--adm-rejected);">*</span></label>
+                                <select class="adm-select" id="examTerm" name="Term" required>
+                                    <option value="">Select Term</option>
+                                    <option value="HalfYearly">Half Yearly</option>
+                                    <option value="Annual">Annual</option>
+                                    <option value="FirstTerminal">First Terminal</option>
+                                    <option value="SecondTerminal">Second Terminal</option>
+                                    <option value="Final">Final</option>
+                                    <option value="PreTest">Pre Test</option>
+                                    <option value="Test">Test</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                                <div class="field-error" id="errTerm"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="adm-label" for="examAcademicYear">Academic Year <span style="color:var(--adm-rejected);">*</span></label>
+                                <select class="adm-select" id="examAcademicYear" name="AcademicYearId" required>
+                                    <option value="">Loading...</option>
+                                </select>
+                                <div class="field-error" id="errYear"></div>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="adm-label" for="examStartsOn">Starts On <span style="color:var(--adm-rejected);">*</span></label>
+                                <div class="adm-input-wrap">
+                                    <input class="adm-input" id="examStartsOn" name="StartsOn" type="date" style="padding-left:12px;" required />
+                                </div>
+                                <div class="field-error" id="errStarts"></div>
+                            </div>
+                            <div class="col-md-3">
+                                <label class="adm-label" for="examEndsOn">Ends On <span style="color:var(--adm-rejected);">*</span></label>
+                                <div class="adm-input-wrap">
+                                    <input class="adm-input" id="examEndsOn" name="EndsOn" type="date" style="padding-left:12px;" required />
+                                </div>
+                                <div class="field-error" id="errEnds"></div>
+                            </div>
+                            <div class="col-12">
+                                <label class="adm-label" for="examDescription">Description / Remarks</label>
+                                <textarea class="adm-input" id="examDescription" rows="3" placeholder="Optional notes about this exam..." style="padding-left:12px;resize:vertical;min-height:80px;"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* ═══════════════ Step 2 — Class Selection ═══════════════ *@
+            <div class="wizard-panel" id="stepPanel2">
+                <div class="adm-table-card">
+                    <div class="adm-table-card__body" style="padding:28px 32px;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+                            <h3 style="font-size:18px;font-weight:700;margin:0;color:var(--adm-text);">
+                                <i class="bi bi-building me-2" style="color:var(--adm-primary);"></i>Select Classes
+                            </h3>
+                            <div>
+                                <button type="button" class="adm-btn adm-btn--ghost" onclick="toggleAllClasses(true)" style="font-size:12px;padding:5px 12px;">Select All</button>
+                                <button type="button" class="adm-btn adm-btn--ghost" onclick="toggleAllClasses(false)" style="font-size:12px;padding:5px 12px;">Deselect All</button>
+                            </div>
+                        </div>
+                        <div class="field-error" id="errClasses"></div>
+                        <div class="row g-3" id="classesContainer">
+                            <div class="col-12 text-center" style="padding:40px 0;color:var(--adm-text-3);">
+                                <div class="adm-loading adm-loading--visible"><div class="adm-loading__spinner"></div><span class="adm-loading__text">Loading classes...</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* ═══════════════ Step 3 — Section Selection ═══════════════ *@
+            <div class="wizard-panel" id="stepPanel3">
+                <div class="adm-table-card">
+                    <div class="adm-table-card__body" style="padding:28px 32px;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+                            <h3 style="font-size:18px;font-weight:700;margin:0;color:var(--adm-text);">
+                                <i class="bi bi-layers me-2" style="color:var(--adm-primary);"></i>Select Sections
+                            </h3>
+                            <div>
+                                <button type="button" class="adm-btn adm-btn--ghost" onclick="toggleAllSections(true)" style="font-size:12px;padding:5px 12px;">Select All</button>
+                                <button type="button" class="adm-btn adm-btn--ghost" onclick="toggleAllSections(false)" style="font-size:12px;padding:5px 12px;">Deselect All</button>
+                            </div>
+                        </div>
+                        <div class="field-error" id="errSections"></div>
+                        <div id="sectionsContainer">
+                            <div class="text-center" style="padding:40px 0;color:var(--adm-text-3);">
+                                <i class="bi bi-arrow-left-circle me-2"></i>Select at least one class in Step 2 first.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* ═══════════════ Step 4 — Group Selection ═══════════════ *@
+            <div class="wizard-panel" id="stepPanel4">
+                <div class="adm-table-card">
+                    <div class="adm-table-card__body" style="padding:28px 32px;">
+                        <h3 style="font-size:18px;font-weight:700;margin-bottom:20px;color:var(--adm-text);">
+                            <i class="bi bi-people me-2" style="color:var(--adm-primary);"></i>Select Groups
+                        </h3>
+                        <div class="field-error" id="errGroups"></div>
+                        <div id="groupsContainer">
+                            <div class="text-center" style="padding:40px 0;color:var(--adm-text-3);">
+                                <i class="bi bi-info-circle me-2"></i>Groups (Arts, Commerce, Science) are typically available for classes 9 &amp; 10.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* ═══════════════ Step 5 — Subject Selection ═══════════════ *@
+            <div class="wizard-panel" id="stepPanel5">
+                <div class="adm-table-card">
+                    <div class="adm-table-card__body" style="padding:28px 32px;">
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+                            <h3 style="font-size:18px;font-weight:700;margin:0;color:var(--adm-text);">
+                                <i class="bi bi-book me-2" style="color:var(--adm-primary);"></i>Select Subjects
+                            </h3>
+                        </div>
+                        <div class="field-error" id="errSubjects"></div>
+                        <div id="subjectsContainer">
+                            <div class="text-center" style="padding:40px 0;color:var(--adm-text-3);">
+                                <i class="bi bi-arrow-left-circle me-2"></i>Select classes first.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* ═══════════════ Step 6 — Mark Structure ═══════════════ *@
+            <div class="wizard-panel" id="stepPanel6">
+                <div class="adm-table-card">
+                    <div class="adm-table-card__body" style="padding:28px 32px;">
+                        <h3 style="font-size:18px;font-weight:700;margin-bottom:20px;color:var(--adm-text);">
+                            <i class="bi bi-sliders me-2" style="color:var(--adm-primary);"></i>Mark Structure
+                        </h3>
+                        <div id="marksContainer">
+                            <div class="text-center" style="padding:40px 0;color:var(--adm-text-3);">
+                                <i class="bi bi-arrow-left-circle me-2"></i>Select subjects first in Step 5.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @* ═══════════════ Step 7 — Review & Submit ═══════════════ *@
+            <div class="wizard-panel" id="stepPanel7">
+                <div class="adm-table-card">
+                    <div class="adm-table-card__body" style="padding:28px 32px;">
+                        <h3 style="font-size:18px;font-weight:700;margin-bottom:24px;color:var(--adm-text);">
+                            <i class="bi bi-check2-circle me-2" style="color:var(--adm-success);"></i>Review &amp; Submit
+                        </h3>
+                        <div id="reviewContent" style="min-height:200px;">
+                            <div class="text-center" style="padding:40px 0;color:var(--adm-text-3);">Loading review...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    @* ── Navigation ── *@
+    <div class="wizard-nav" id="wizardNav">
+        <button type="button" class="adm-btn adm-btn--ghost" id="btnPrev" onclick="prevStep()" disabled>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6" /></svg>
+            Previous
+        </button>
+        <div class="wizard-nav__right">
+            <button type="button" class="adm-btn adm-btn--primary" id="btnNext" onclick="nextStep()">
+                Next
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
+            </button>
+            <button type="button" class="adm-btn adm-btn--success" id="btnSubmit" onclick="submitExam()" style="display:none;">
+                <span class="adm-btn__spinner" id="submitSpinner" style="display:none;"></span>
+                <span id="submitText">Save Exam</span>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12" /></svg>
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .wizard-progress { margin-bottom: 28px; }
+    .wizard-progress__bar { height: 4px; background: var(--adm-surface-2); border-radius: 4px; margin-bottom: 16px; position: relative; overflow: hidden; }
+    .wizard-progress__fill { height: 100%; background: linear-gradient(90deg, var(--adm-primary), var(--adm-primary-l)); border-radius: 4px; transition: width 0.4s var(--ease); width: calc(100% / 7); }
+    .wizard-steps { display: flex; justify-content: space-between; position: relative; }
+    .wizard-step { display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; position: relative; z-index: 1; }
+    .wizard-step__circle { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; background: var(--adm-surface-2); color: var(--adm-text-3); border: 2px solid var(--adm-border); transition: all 0.3s var(--ease); }
+    .wizard-step__circle.active { background: var(--adm-primary); color: #fff; border-color: var(--adm-primary); transform: scale(1.1); box-shadow: 0 0 0 4px rgba(15,118,110,0.15); }
+    .wizard-step__circle.completed { background: var(--adm-success); color: #fff; border-color: var(--adm-success); }
+    .wizard-step__circle.completed::after { content: 'âœ“'; font-size: 14px; }
+    .wizard-step__circle.completed span { display: none; }
+    .wizard-step__label { font-size: 11px; font-weight: 600; color: var(--adm-text-3); text-align: center; white-space: nowrap; transition: color 0.3s var(--ease); }
+    .wizard-step.active .wizard-step__label { color: var(--adm-primary); }
+    .wizard-step.completed .wizard-step__label { color: var(--adm-success); }
+    .wizard-body { margin-bottom: 20px; }
+    .wizard-panel { display: none; }
+    .wizard-panel.active { display: block; animation: fadeIn 0.25s var(--ease); }
+    @@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .wizard-nav { display: flex; align-items: center; justify-content: space-between; padding: 16px 0; border-top: 1px solid var(--adm-border); }
+    .wizard-nav__right { display: flex; gap: 10px; }
+    .field-error { font-size: 12px; color: var(--adm-rejected); margin-top: 4px; min-height: 18px; }
+    .field-error.visible { display: block; }
+    .wizard-checkbox { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1px solid var(--adm-border); border-radius: var(--adm-radius); cursor: pointer; transition: all 0.2s var(--ease); background: var(--adm-surface); }
+    .wizard-checkbox:hover { border-color: var(--adm-primary); background: var(--adm-primary-bg); }
+    .wizard-checkbox.selected { border-color: var(--adm-primary); background: var(--adm-primary-bg); box-shadow: 0 0 0 2px rgba(15,118,110,0.12); }
+    .wizard-checkbox input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--adm-primary); flex-shrink: 0; }
+    .wizard-checkbox__label { font-size: 13.5px; font-weight: 500; color: var(--adm-text); }
+    .wizard-checkbox__code { font-size: 11px; color: var(--adm-text-3); margin-left: auto; }
+    .wizard-subject-group { margin-bottom: 20px; }
+    .wizard-subject-group__header { font-size: 14px; font-weight: 700; color: var(--adm-text); padding: 8px 14px; background: var(--adm-primary-bg); border-radius: var(--adm-radius) var(--adm-radius) 0 0; border: 1px solid var(--adm-border); border-bottom: none; }
+    .wizard-subject-group__body { border: 1px solid var(--adm-border); border-radius: 0 0 var(--adm-radius) var(--adm-radius); padding: 8px; display: flex; flex-direction: column; gap: 4px; }
+    .wizard-subject-group__body .wizard-checkbox { padding: 7px 12px; }
+    .marks-table { width: 100%; border-collapse: collapse; }
+    .marks-table th { font-size: 11.5px; font-weight: 600; color: var(--adm-text-3); text-transform: uppercase; letter-spacing: 0.04em; padding: 8px 10px; text-align: left; border-bottom: 2px solid var(--adm-border); }
+    .marks-table td { padding: 6px 10px; border-bottom: 1px solid var(--adm-border); vertical-align: middle; font-size: 13px; }
+    .marks-input { width: 70px; padding: 5px 8px; font-size: 13px; border: 1px solid var(--adm-border); border-radius: var(--adm-radius-sm); background: var(--adm-surface-2); color: var(--adm-text); outline: none; text-align: center; font-family: inherit; }
+    .marks-input:focus { border-color: var(--adm-primary); box-shadow: 0 0 0 2px rgba(15,118,110,0.1); background: #fff; }
+    .marks-toggle { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--adm-text-2); cursor: pointer; }
+    .marks-toggle input[type="checkbox"] { width: 14px; height: 14px; accent-color: var(--adm-primary); }
+    .review-section { margin-bottom: 20px; }
+    .review-section__title { font-size: 14px; font-weight: 700; color: var(--adm-text); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+    .review-section__title i { color: var(--adm-primary); }
+    .review-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 24px; }
+    .review-item { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed var(--adm-border); font-size: 13px; }
+    .review-item__label { color: var(--adm-text-3); font-weight: 500; }
+    .review-item__value { color: var(--adm-text); font-weight: 600; text-align: right; }
+    .review-badge { display: inline-block; padding: 2px 10px; font-size: 11px; font-weight: 600; border-radius: 100px; background: var(--adm-primary-bg); color: var(--adm-primary); margin: 2px 4px 2px 0; }
+    .review-badge--success { background: var(--adm-success-bg); color: var(--adm-success); }
+    .review-badge--info { background: var(--adm-converted-bg); color: var(--adm-converted); }
+    .review-section-card { border: 1px solid var(--adm-border); border-radius: var(--adm-radius); padding: 14px 18px; margin-bottom: 12px; }
+    .review-section-card__title { font-size: 14px; font-weight: 600; color: var(--adm-text); margin-bottom: 8px; }
+    .review-section-card__item { display: flex; justify-content: space-between; font-size: 12.5px; padding: 3px 0; color: var(--adm-text-2); }
+</style>
+
+@section Scripts {
+    <partial name="_ExamResultUx" />
+    <script>window.__examData = @Html.Raw(Model.ExamDataJson);</script>
+    <script>
+        (function () {
+            'use strict';
+
+            var STEP_DESCRIPTIONS = [
+                '',
+                'Step 1 of 7 â€” Exam Information',
+                'Step 2 of 7 â€” Class Selection',
+                'Step 3 of 7 â€” Section Selection',
+                'Step 4 of 7 â€” Group Selection',
+                'Step 5 of 7 â€” Subject Selection',
+                'Step 6 of 7 â€” Mark Structure',
+                'Step 7 of 7 â€” Review &amp; Submit'
+            ];
+
+            var state = {
+                currentStep: 1,
+                totalSteps: 7,
+                exam: {
+                    id: @(Model.ExamId ?? 0),
+                    name: '',
+                    term: '',
+                    academicYearId: '',
+                    startsOn: '',
+                    endsOn: '',
+                    description: ''
+                },
+                classes: [],
+                sections: [],
+                groups: [],
+                subjects: [],
+                selectedClasses: [],
+                selectedSections: [],
+                selectedGroups: [],
+                selectedSubjects: [],
+                subjectMarks: {},
+                academicYears: []
+            };
+
+            var cache = { classes: null, sections: {}, groups: {}, subjects: {}, years: null };
+
+            function $(id) { return document.getElementById(id); }
+            var panels = {};
+            var circles = {};
+            var steps = {};
+            for (var i = 1; i <= 7; i++) {
+                panels[i] = $('stepPanel' + i);
+                circles[i] = $('stepCircle' + i);
+                steps[i] = document.querySelector('.wizard-step[data-step="' + i + '"]');
+            }
+            var progressFill = $('progressFill');
+            var stepDesc = $('stepDescription');
+            var btnPrev = $('btnPrev');
+            var btnNext = $('btnNext');
+            var btnSubmit = $('btnSubmit');
+            var submitSpinner = $('submitSpinner');
+            var submitText = $('submitText');
+            var examForm = $('examForm');
+
+            function setActiveStep(step) {
+                for (var i = 1; i <= 7; i++) {
+                    panels[i].classList.remove('active');
+                    circles[i].classList.remove('active');
+                    if (steps[i]) steps[i].classList.remove('active');
+                    if (i < step) {
+                        circles[i].classList.add('completed');
+                        if (steps[i]) steps[i].classList.add('completed');
+                    } else {
+                        circles[i].classList.remove('completed');
+                        if (steps[i]) steps[i].classList.remove('completed');
+                    }
+                }
+                panels[step].classList.add('active');
+                circles[step].classList.add('active');
+                if (steps[step]) steps[step].classList.add('active');
+                stepDesc.innerHTML = STEP_DESCRIPTIONS[step];
+                var pct = ((step - 1) / (7 - 1)) * 100;
+                progressFill.style.width = pct + '%';
+                btnPrev.disabled = step === 1;
+                if (step === 7) {
+                    btnNext.style.display = 'none';
+                    btnSubmit.style.display = 'inline-flex';
+                } else {
+                    btnNext.style.display = 'inline-flex';
+                    btnSubmit.style.display = 'none';
+                }
+                state.currentStep = step;
+            }
+
+            function validateStep(step) {
+                clearErrors();
+                if (step === 1) {
+                    var name = $('examName').value.trim();
+                    var term = $('examTerm').value;
+                    var year = $('examAcademicYear').value;
+                    var starts = $('examStartsOn').value;
+                    var ends = $('examEndsOn').value;
+                    var valid = true;
+                    if (!name) { showError('errName', 'Exam name is required'); valid = false; }
+                    if (!term) { showError('errTerm', 'Please select a term'); valid = false; }
+                    if (!year) { showError('errYear', 'Please select an academic year'); valid = false; }
+                    if (!starts) { showError('errStarts', 'Start date is required'); valid = false; }
+                    if (!ends) { showError('errEnds', 'End date is required'); valid = false; }
+                    if (starts && ends && starts > ends) { showError('errEnds', 'End date must be after start date'); valid = false; }
+                    if (valid) {
+                        state.exam.name = name;
+                        state.exam.term = term;
+                        state.exam.academicYearId = year;
+                        state.exam.startsOn = starts;
+                        state.exam.endsOn = ends;
+                        state.exam.description = $('examDescription').value.trim();
+                    }
+                    return valid;
+                }
+                if (step === 2) {
+                    var checkedClasses = document.querySelectorAll('#classesContainer .wizard-checkbox input:checked');
+                    if (checkedClasses.length === 0) { showError('errClasses', 'Select at least one class'); return false; }
+                    state.selectedClasses = [];
+                    checkedClasses.forEach(function (cb) { state.selectedClasses.push(parseInt(cb.value)); });
+                    return true;
+                }
+                if (step === 3) {
+                    var checkedSections = document.querySelectorAll('#sectionsContainer .wizard-checkbox input:checked');
+                    if (checkedSections.length === 0) { showError('errSections', 'Select at least one section'); return false; }
+                    state.selectedSections = [];
+                    checkedSections.forEach(function (cb) { state.selectedSections.push(parseInt(cb.value)); });
+                    return true;
+                }
+                if (step === 4) {
+                    var checkedGroups = document.querySelectorAll('#groupsContainer .wizard-checkbox input:checked');
+                    state.selectedGroups = [];
+                    checkedGroups.forEach(function (cb) { state.selectedGroups.push(parseInt(cb.value)); });
+                    return true;
+                }
+                if (step === 5) {
+                    var checkedSubjs = document.querySelectorAll('#subjectsContainer .wizard-checkbox input:checked');
+                    if (checkedSubjs.length === 0) { showError('errSubjects', 'Select at least one subject'); return false; }
+                    state.selectedSubjects = [];
+                    checkedSubjs.forEach(function (cb) {
+                        var sid = parseInt(cb.value);
+                        state.selectedSubjects.push(sid);
+                        if (!state.subjectMarks[sid]) {
+                            state.subjectMarks[sid] = { fullMarks: 100, passMarks: 33, hasWritten: true, hasMCQ: false, hasPractical: false, hasViva: false, hasLab: false, hasOral: false, hasAssignment: false, hasContinuousAssessment: false };
+                        }
+                    });
+                    return true;
+                }
+                if (step === 6) {
+                    var marksValid = true;
+                    state.selectedSubjects.forEach(function (sid) {
+                        var fm = $('fm_' + sid);
+                        var pm = $('pm_' + sid);
+                        if (fm) {
+                            var fv = parseFloat(fm.value);
+                            if (isNaN(fv) || fv <= 0) { marksValid = false; fm.style.borderColor = 'var(--adm-rejected)'; }
+                            else { fm.style.borderColor = ''; state.subjectMarks[sid].fullMarks = fv; }
+                        }
+                        if (pm) {
+                            var pv = parseFloat(pm.value);
+                            if (isNaN(pv) || pv < 0) { marksValid = false; pm.style.borderColor = 'var(--adm-rejected)'; }
+                            else { pm.style.borderColor = ''; state.subjectMarks[sid].passMarks = pv; }
+                        }
+                        var toggles = ['hasWritten', 'hasMCQ', 'hasPractical', 'hasViva', 'hasLab', 'hasOral', 'hasAssignment', 'hasContinuousAssessment'];
+                        toggles.forEach(function (t) {
+                            var el = $(t + '_' + sid);
+                            if (el) state.subjectMarks[sid][t] = el.checked;
+                        });
+                    });
+                    if (!marksValid) { showError('errSubjects', 'Please fix invalid mark values'); return false; }
+                    return true;
+                }
+                return true;
+            }
+
+            function showError(id, msg) {
+                var el = $(id);
+                if (el) { el.textContent = msg; el.style.display = 'block'; }
+            }
+
+            function clearErrors() {
+                document.querySelectorAll('.field-error').forEach(function (el) { el.textContent = ''; el.style.display = 'none'; });
+                document.querySelectorAll('.marks-input').forEach(function (el) { el.style.borderColor = ''; });
+            }
+
+            window.nextStep = function () {
+                var cur = state.currentStep;
+                if (!validateStep(cur)) return;
+                if (cur < 7) {
+                    var next = cur + 1;
+                    loadStepData(next);
+                    setActiveStep(next);
+                }
+            };
+
+            window.prevStep = function () {
+                var cur = state.currentStep;
+                if (cur > 1) {
+                    var prev = cur - 1;
+                    loadStepData(prev, true);
+                    setActiveStep(prev);
+                }
+            };
+
+            function loadStepData(step, isBack) {
+                if (step === 2) renderClasses();
+                if (step === 3) renderSections();
+                if (step === 4) renderGroups();
+                if (step === 5) renderSubjects();
+                if (step === 6) renderMarks();
+                if (step === 7) renderReview();
+            }
+
+            function fetchJson(url) {
+                return fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } }).then(function (r) { return r.json(); });
+            }
+
+            function loadAcademicYears() {
+                if (cache.years) { renderAcademicYears(cache.years); return; }
+                fetchJson('/AcademicYear/GetList?page=1&size=100').then(function (res) {
+                    cache.years = res.data || [];
+                    renderAcademicYears(cache.years);
+                }).catch(function () {
+                    $('examAcademicYear').innerHTML = '<option value="">Failed to load</option>';
+                });
+            }
+
+            function renderAcademicYears(years) {
+                state.academicYears = years;
+                var sel = $('examAcademicYear');
+                sel.innerHTML = '<option value="">Select Academic Year</option>';
+                years.forEach(function (y) {
+                    var opt = document.createElement('option');
+                    opt.value = y.id;
+                    opt.textContent = y.name;
+                    if (y.isActive) opt.selected = true;
+                    sel.appendChild(opt);
+                });
+                if (state.exam.academicYearId) sel.value = state.exam.academicYearId;
+            }
+
+            function loadClasses() {
+                if (cache.classes) { renderClassCheckboxes(cache.classes); return; }
+                fetchJson('/SchoolClass/GetList?page=1&size=1000').then(function (res) {
+                    cache.classes = res.data || [];
+                    renderClassCheckboxes(cache.classes);
+                }).catch(function () {
+                    $('classesContainer').innerHTML = '<div class="col-12 text-center" style="padding:40px 0;color:var(--adm-rejected);">Failed to load classes.</div>';
+                });
+            }
+
+            function renderClassCheckboxes(classes) {
+                state.classes = classes;
+                var container = $('classesContainer');
+                if (!classes || classes.length === 0) {
+                    container.innerHTML = '<div class="col-12 text-center" style="padding:40px 0;color:var(--adm-text-3);">No classes available.</div>';
+                    return;
+                }
+                var html = '';
+                classes.forEach(function (c) {
+                    var checked = state.selectedClasses.indexOf(c.id) !== -1 ? 'checked' : '';
+                    html += '<div class="col-md-4 col-lg-3">';
+                    html += '<label class="wizard-checkbox' + (checked ? ' selected' : '') + '">';
+                    html += '<input type="checkbox" value="' + c.id + '" ' + checked + ' onchange="this.parentElement.classList.toggle(\'selected\',this.checked)">';
+                    html += '<span class="wizard-checkbox__label">' + escapeHtml(c.name || c.className || 'Class ' + c.id) + '</span>';
+                    html += '</label></div>';
+                });
+                container.innerHTML = html;
+            }
+
+            window.toggleAllClasses = function (select) {
+                var cbs = document.querySelectorAll('#classesContainer .wizard-checkbox input[type="checkbox"]');
+                cbs.forEach(function (cb) {
+                    cb.checked = select;
+                    cb.parentElement.classList.toggle('selected', select);
+                });
+            };
+
+            function loadSectionsForSelectedClasses() {
+                var classIds = state.selectedClasses;
+                if (classIds.length === 0) {
+                    $('sectionsContainer').innerHTML = '<div class="text-center" style="padding:40px 0;color:var(--adm-text-3);"><i class="bi bi-arrow-left-circle me-2"></i>Select at least one class in Step 2 first.</div>';
+                    return;
+                }
+                var promises = classIds.map(function (cid) {
+                    if (cache.sections[cid]) return Promise.resolve({ classId: cid, data: cache.sections[cid] });
+                    return fetchJson('/Section/GetSectionsByClass?classId=' + cid).then(function (data) {
+                        cache.sections[cid] = data;
+                        return { classId: cid, data: data };
+                    });
+                });
+                Promise.all(promises).then(function (results) {
+                    var allSections = [];
+                    var classMap = {};
+                    state.classes.forEach(function (c) { classMap[c.id] = c.name || c.className || 'Class ' + c.id; });
+                    results.forEach(function (r) {
+                        var items = Array.isArray(r.data) ? r.data : [];
+                        items.forEach(function (s) {
+                            s._className = classMap[r.classId] || 'Class ' + r.classId;
+                            allSections.push(s);
+                        });
+                    });
+                    state.sections = allSections;
+                    renderSectionCheckboxes(allSections);
+                }).catch(function () {
+                    $('sectionsContainer').innerHTML = '<div class="text-center" style="padding:40px 0;color:var(--adm-rejected);">Failed to load sections.</div>';
+                });
+            }
+
+            function renderSectionCheckboxes(sections) {
+                var container = $('sectionsContainer');
+                if (!sections || sections.length === 0) {
+                    container.innerHTML = '<div class="text-center" style="padding:40px 0;color:var(--adm-text-3);">No sections found for selected classes.</div>';
+                    return;
+                }
+                var grouped = {};
+                sections.forEach(function (s) {
+                    var key = s._className || 'General';
+                    if (!grouped[key]) grouped[key] = [];
+                    grouped[key].push(s);
+                });
+                var html = '';
+                for (var cls in grouped) {
+                    html += '<div class="wizard-subject-group"><div class="wizard-subject-group__header">' + escapeHtml(cls) + '</div><div class="wizard-subject-group__body">';
+                    grouped[cls].forEach(function (s) {
+                        var checked = state.selectedSections.indexOf(s.id) !== -1 ? 'checked' : '';
+                        html += '<label class="wizard-checkbox' + (checked ? ' selected' : '') + '">';
+                        html += '<input type="checkbox" value="' + s.id + '" ' + checked + ' onchange="this.parentElement.classList.toggle(\'selected\',this.checked)">';
+                        html += '<span class="wizard-checkbox__label">' + escapeHtml(s.name || 'Section ' + s.id) + '</span>';
+                        html += '</label>';
+                    });
+                    html += '</div></div>';
+                }
+                container.innerHTML = html;
+            }
+
+            window.toggleAllSections = function (select) {
+                var cbs = document.querySelectorAll('#sectionsContainer .wizard-checkbox input[type="checkbox"]');
+                cbs.forEach(function (cb) {
+                    cb.checked = select;
+                    cb.parentElement.classList.toggle('selected', select);
+                });
+            };
+
+            function loadGroupsForSelectedClasses() {
+                var classIds = state.selectedClasses;
+                if (classIds.length === 0) {
+                    $('groupsContainer').innerHTML = '<div class="text-center" style="padding:40px 0;color:var(--adm-text-3);"><i class="bi bi-info-circle me-2"></i>Groups are typically available for classes 9 &amp; 10.</div>';
+                    return;
+                }
+                var promises = classIds.map(function (cid) {
+                    if (cache.groups[cid]) return Promise.resolve({ classId: cid, data: cache.groups[cid] });
+                    return fetchJson('/Section/GetGroupsForClass?classId=' + cid).then(function (data) {
+                        cache.groups[cid] = data;
+                        return { classId: cid, data: data };
+                    }).catch(function () { return { classId: cid, data: [] }; });
+                });
+                Promise.all(promises).then(function (results) {
+                    var allGroups = [];
+                    var seen = {};
+                    results.forEach(function (r) {
+                        var items = Array.isArray(r.data) ? r.data : [];
+                        items.forEach(function (g) {
+                            if (!seen[g.id]) { seen[g.id] = true; allGroups.push(g); }
+                        });
+                    });
+                    state.groups = allGroups;
+                    renderGroupCheckboxes(allGroups);
+                }).catch(function () {
+                    $('groupsContainer').innerHTML = '<div class="text-center" style="padding:40px 0;color:var(--adm-rejected);">Failed to load groups.</div>';
+                });
+            }
+
+            function renderGroupCheckboxes(groups) {
+                var container = $('groupsContainer');
+                if (!groups || groups.length === 0) {
+                    container.innerHTML = '<div class="text-center" style="padding:40px 0;color:var(--adm-text-3);">No groups configured for the selected classes. This is normal for primary/lower secondary.</div>';
+                    return;
+                }
+                var html = '<div class="row g-3">';
+                groups.forEach(function (g) {
+                    var checked = state.selectedGroups.indexOf(g.id) !== -1 ? 'checked' : '';
+                    html += '<div class="col-md-4"><label class="wizard-checkbox' + (checked ? ' selected' : '') + '">';
+                    html += '<input type="checkbox" value="' + g.id + '" ' + checked + ' onchange="this.parentElement.classList.toggle(\'selected\',this.checked)">';
+                    html += '<span class="wizard-checkbox__label">' + escapeHtml(g.name || 'Group ' + g.id) + '</span>';
+                    html += '</label></div>';
+                });
+                html += '</div>';
+                container.innerHTML = html;
+            }
+
+            function loadSubjectsForSelectedClasses() {
+                var classIds = state.selectedClasses;
+                if (classIds.length === 0) {
+                    $('subjectsContainer').innerHTML = '<div class="text-center" style="padding:40px 0;color:var(--adm-text-3);"><i class="bi bi-arrow-left-circle me-2"></i>Select classes first.</div>';
+                    return;
+                }
+                var promises = classIds.map(function (cid) {
+                    if (cache.subjects[cid]) return Promise.resolve({ classId: cid, data: cache.subjects[cid] });
+                    return fetchJson('/ClassSubjectMapping/GetList?page=1&size=1000&classId=' + cid).then(function (res) {
+                        cache.subjects[cid] = res.data || [];
+                        return { classId: cid, data: res.data || [] };
+                    }).catch(function () { return { classId: cid, data: [] }; });
+                });
+                Promise.all(promises).then(function (results) {
+                    var allSubjects = [];
+                    var classMap = {};
+                    state.classes.forEach(function (c) { classMap[c.id] = c.name || c.className || 'Class ' + c.id; });
+                    results.forEach(function (r) {
+                        var items = Array.isArray(r.data) ? r.data : [];
+                        items.forEach(function (s) {
+                            s._className = classMap[r.classId] || 'Class ' + r.classId;
+                            s._classId = r.classId;
+                            allSubjects.push(s);
+                        });
+                    });
+                    state.subjects = allSubjects;
+                    renderSubjectCheckboxes(allSubjects);
+                }).catch(function () {
+                    $('subjectsContainer').innerHTML = '<div class="text-center" style="padding:40px 0;color:var(--adm-rejected);">Failed to load subjects.</div>';
+                });
+            }
+
+            function renderSubjectCheckboxes(subjects) {
+                var container = $('subjectsContainer');
+                if (!subjects || subjects.length === 0) {
+                    container.innerHTML = '<div class="text-center" style="padding:40px 0;color:var(--adm-text-3);">No subjects mapped to the selected classes. Please contact admin.</div>';
+                    return;
+                }
+                var grouped = {};
+                subjects.forEach(function (s) {
+                    var key = s._className || 'General';
+                    if (!grouped[key]) grouped[key] = [];
+                    grouped[key].push(s);
+                });
+                var html = '';
+                for (var cls in grouped) {
+                    html += '<div class="wizard-subject-group"><div class="wizard-subject-group__header">' + escapeHtml(cls) + '</div><div class="wizard-subject-group__body">';
+                    grouped[cls].forEach(function (s) {
+                        var subjId = s.id || s.subjectId;
+                        var checked = state.selectedSubjects.indexOf(subjId) !== -1 ? 'checked' : '';
+                        var code = s.subjectCode || s.code || '';
+                        var name = s.subjectName || s.name || 'Subject';
+                        html += '<label class="wizard-checkbox' + (checked ? ' selected' : '') + '">';
+                        html += '<input type="checkbox" value="' + subjId + '" ' + checked + ' onchange="this.parentElement.classList.toggle(\'selected\',this.checked)">';
+                        html += '<span class="wizard-checkbox__label">' + escapeHtml(code ? code + ' â€” ' + name : name) + '</span>';
+                        html += '</label>';
+                    });
+                    html += '</div></div>';
+                }
+                container.innerHTML = html;
+            }
+
+            function renderMarks() {
+                var container = $('marksContainer');
+                var selected = state.selectedSubjects;
+                if (!selected || selected.length === 0) {
+                    container.innerHTML = '<div class="text-center" style="padding:40px 0;color:var(--adm-text-3);"><i class="bi bi-arrow-left-circle me-2"></i>Select subjects first in Step 5.</div>';
+                    return;
+                }
+                var subjMap = {};
+                state.subjects.forEach(function (s) { subjMap[s.id || s.subjectId] = s; });
+                var html = '<div class="table-responsive"><table class="marks-table"><thead><tr><th style="min-width:120px;">Subject</th><th style="width:80px;">Full Marks</th><th style="width:80px;">Pass Marks</th><th style="min-width:200px;">Components</th></tr></thead><tbody>';
+                selected.forEach(function (sid) {
+                    var s = subjMap[sid] || {};
+                    var name = s.subjectName || s.name || 'Subject #' + sid;
+                    var code = s.subjectCode || s.code || '';
+                    var displayName = code ? code + ' â€” ' + name : name;
+                    var marks = state.subjectMarks[sid] || { fullMarks: 100, passMarks: 33, hasWritten: true, hasMCQ: false, hasPractical: false, hasViva: false, hasLab: false, hasOral: false, hasAssignment: false, hasContinuousAssessment: false };
+                    var defFm = s.defaultFullMarks || s.fullMarks || 100;
+                    var defPm = s.defaultPassMarks || s.passMarks || 33;
+                    var fm = marks.fullMarks || defFm;
+                    var pm = marks.passMarks || defPm;
+                    html += '<tr><td><strong style="font-size:13px;">' + escapeHtml(displayName) + '</strong></td>';
+                    html += '<td><input class="marks-input" id="fm_' + sid + '" type="number" value="' + fm + '" min="1" step="0.5"></td>';
+                    html += '<td><input class="marks-input" id="pm_' + sid + '" type="number" value="' + pm + '" min="0" step="0.5"></td>';
+                    html += '<td><div style="display:flex;flex-wrap:wrap;gap:6px;">';
+                    var components = [
+                        { key: 'hasWritten', label: 'Written' },
+                        { key: 'hasMCQ', label: 'MCQ' },
+                        { key: 'hasPractical', label: 'Practical' },
+                        { key: 'hasViva', label: 'Viva' },
+                        { key: 'hasLab', label: 'Lab' },
+                        { key: 'hasOral', label: 'Oral' },
+                        { key: 'hasAssignment', label: 'Assignment' },
+                        { key: 'hasContinuousAssessment', label: 'CA' }
+                    ];
+                    components.forEach(function (c) {
+                        var checked = marks[c.key] ? 'checked' : '';
+                        html += '<label class="marks-toggle"><input type="checkbox" id="' + c.key + '_' + sid + '" ' + checked + '>' + c.label + '</label>';
+                    });
+                    html += '</div></td></tr>';
+                });
+                html += '</tbody></table></div>';
+                container.innerHTML = html;
+            }
+
+            function renderReview() {
+                var container = $('reviewContent');
+                var classNames = [];
+                state.selectedClasses.forEach(function (cid) {
+                    state.classes.forEach(function (c) {
+                        if (c.id === cid) classNames.push(c.name || c.className || 'Class ' + cid);
+                    });
+                });
+                var sectionNames = [];
+                state.selectedSections.forEach(function (sid) {
+                    state.sections.forEach(function (s) {
+                        if (s.id === sid) sectionNames.push(s.name || 'Section ' + sid);
+                    });
+                });
+                var groupNames = [];
+                state.selectedGroups.forEach(function (gid) {
+                    state.groups.forEach(function (g) {
+                        if (g.id === gid) groupNames.push(g.name || 'Group ' + gid);
+                    });
+                });
+                var yearName = '';
+                var yearId = parseInt(state.exam.academicYearId);
+                state.academicYears.forEach(function (y) {
+                    if (y.id === yearId) yearName = y.name;
+                });
+                var termLabels = { HalfYearly: 'Half Yearly', Annual: 'Annual', FirstTerminal: 'First Terminal', SecondTerminal: 'Second Terminal', Final: 'Final', PreTest: 'Pre Test', Test: 'Test', Other: 'Other' };
+                var termLabel = termLabels[state.exam.term] || state.exam.term;
+                var subjMap = {};
+                state.subjects.forEach(function (s) { subjMap[s.id || s.subjectId] = s; });
+                var html = '';
+                html += '<div class="review-section"><div class="review-section__title"><i class="bi bi-info-circle"></i>Exam Information</div>';
+                html += '<div class="review-grid"><div class="review-item"><span class="review-item__label">Exam Name</span><span class="review-item__value">' + escapeHtml(state.exam.name) + '</span></div>';
+                html += '<div class="review-item"><span class="review-item__label">Term</span><span class="review-item__value">' + escapeHtml(termLabel) + '</span></div>';
+                html += '<div class="review-item"><span class="review-item__label">Academic Year</span><span class="review-item__value">' + escapeHtml(yearName) + '</span></div>';
+                html += '<div class="review-item"><span class="review-item__label">Duration</span><span class="review-item__value">' + escapeHtml(state.exam.startsOn) + ' to ' + escapeHtml(state.exam.endsOn) + '</span></div>';
+                if (state.exam.description) html += '<div class="review-item" style="grid-column:1/-1;"><span class="review-item__label">Description</span><span class="review-item__value" style="text-align:left;">' + escapeHtml(state.exam.description) + '</span></div>';
+                html += '</div></div>';
+                html += '<div class="review-section"><div class="review-section__title"><i class="bi bi-building"></i>Classes &amp; Sections</div>';
+                html += '<div><span class="review-item__label">Classes:</span> ';
+                classNames.forEach(function (n) { html += '<span class="review-badge">' + escapeHtml(n) + '</span>'; });
+                html += '</div><div style="margin-top:6px;"><span class="review-item__label">Sections:</span> ';
+                sectionNames.forEach(function (n) { html += '<span class="review-badge review-badge--info">' + escapeHtml(n) + '</span>'; });
+                html += '</div>';
+                if (groupNames.length > 0) {
+                    html += '<div style="margin-top:6px;"><span class="review-item__label">Groups:</span> ';
+                    groupNames.forEach(function (n) { html += '<span class="review-badge review-badge--success">' + escapeHtml(n) + '</span>'; });
+                    html += '</div>';
+                }
+                html += '</div>';
+                html += '<div class="review-section"><div class="review-section__title"><i class="bi bi-book"></i>Subjects (' + state.selectedSubjects.length + ')</div>';
+                state.selectedSubjects.forEach(function (sid) {
+                    var s = subjMap[sid] || {};
+                    var name = s.subjectName || s.name || 'Subject #' + sid;
+                    var code = s.subjectCode || s.code || '';
+                    var displayName = code ? code + ' â€” ' + name : name;
+                    var marks = state.subjectMarks[sid] || { fullMarks: 100, passMarks: 33 };
+                    var comps = [];
+                    if (marks.hasWritten) comps.push('Written');
+                    if (marks.hasMCQ) comps.push('MCQ');
+                    if (marks.hasPractical) comps.push('Practical');
+                    if (marks.hasViva) comps.push('Viva');
+                    if (marks.hasLab) comps.push('Lab');
+                    if (marks.hasOral) comps.push('Oral');
+                    if (marks.hasAssignment) comps.push('Assignment');
+                    if (marks.hasContinuousAssessment) comps.push('CA');
+                    html += '<div class="review-section-card"><div class="review-section-card__title">' + escapeHtml(displayName) + '</div>';
+                    html += '<div class="review-section-card__item"><span>Full Marks: <strong>' + marks.fullMarks + '</strong></span><span>Pass Marks: <strong>' + marks.passMarks + '</strong></span></div>';
+                    if (comps.length > 0) html += '<div style="font-size:12px;color:var(--adm-text-3);margin-top:4px;">Components: ' + comps.join(', ') + '</div>';
+                    html += '</div>';
+                });
+                html += '</div>';
+                container.innerHTML = html;
+            }
+
+            window.submitExam = function () {
+                if (!validateStep(6)) return;
+                var btn = $('btnSubmit');
+                btn.disabled = true;
+                submitSpinner.style.display = 'inline-block';
+                submitText.textContent = 'Saving...';
+
+                var payload = {
+                    name: state.exam.name,
+                    term: state.exam.term,
+                    academicYearId: parseInt(state.exam.academicYearId, 10),
+                    startsOn: state.exam.startsOn,
+                    endsOn: state.exam.endsOn,
+                    status: 0
+                };
+
+                var url = state.exam.id ? '/api/ExamAdmin/update-exam/' + state.exam.id : '/api/ExamAdmin/create-exam';
+                var method = state.exam.id ? 'PUT' : 'POST';
+
+                fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                })
+                .then(function (r) { return r.json(); })
+                .then(function (r) {
+                    btn.disabled = false;
+                    submitSpinner.style.display = 'none';
+                    submitText.textContent = state.exam.id ? 'Update Exam' : 'Create Exam';
+                    if (r.success) {
+                        if (typeof showExamToast === 'function') showExamToast(r.message || 'Exam saved successfully', 'success');
+                        setTimeout(function () { window.location.href = '@Url.Action("Dashboard", "Exam")'; }, 900);
+                    } else {
+                        if (typeof showExamToast === 'function') showExamToast(r.message || 'Save failed', 'error');
+                    }
+                })
+                .catch(function (e) {
+                    btn.disabled = false;
+                    submitSpinner.style.display = 'none';
+                    submitText.textContent = state.exam.id ? 'Update Exam' : 'Create Exam';
+                    if (typeof showExamToast === 'function') showExamToast('Network error: ' + e, 'error');
+                });
+            };
+
+            function addHidden(name, value) {
+                var input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = name;
+                input.value = value;
+                examForm.appendChild(input);
+            }
+
+            function escapeHtml(str) {
+                if (!str) return '';
+                var div = document.createElement('div');
+                div.appendChild(document.createTextNode(str));
+                return div.innerHTML;
+            }
+
+            function init() {
+                var examData = window.__examData || null;
+                if (examData) {
+                    state.exam.id = examData.id || 0;
+                    state.exam.name = examData.name || '';
+                    state.exam.term = examData.term || '';
+                    state.exam.academicYearId = examData.academicYearId || '';
+                    state.exam.startsOn = examData.startsOn || '';
+                    state.exam.endsOn = examData.endsOn || '';
+                    state.exam.description = examData.description || '';
+                    if (examData.selectedClasses) state.selectedClasses = examData.selectedClasses;
+                    if (examData.selectedSections) state.selectedSections = examData.selectedSections;
+                    if (examData.selectedGroups) state.selectedGroups = examData.selectedGroups;
+                    if (examData.selectedSubjects) state.selectedSubjects = examData.selectedSubjects;
+                    if (examData.subjectMarks) state.subjectMarks = examData.subjectMarks;
+                }
+                loadAcademicYears();
+                loadClasses();
+                if (state.exam.name) $('examName').value = state.exam.name;
+                if (state.exam.term) $('examTerm').value = state.exam.term;
+                if (state.exam.startsOn) $('examStartsOn').value = state.exam.startsOn;
+                if (state.exam.endsOn) $('examEndsOn').value = state.exam.endsOn;
+                if (state.exam.description) $('examDescription').value = state.exam.description;
+                setActiveStep(1);
+            }
+
+            window.__wizardState = state;
+            init();
+        })();
+    </script>
+}

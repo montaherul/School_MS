@@ -72,6 +72,7 @@ public class SchoolDbContext : DbContext
     public DbSet<AttendanceSession> AttendanceSessions => Set<AttendanceSession>();
     public DbSet<AttendanceNotificationLog> AttendanceNotificationLogs => Set<AttendanceNotificationLog>();
     public DbSet<AttendanceRevision> AttendanceRevisions => Set<AttendanceRevision>();
+    public DbSet<AutoAbsentExecutionLog> AutoAbsentExecutionLogs => Set<AutoAbsentExecutionLog>();
     public DbSet<Exam> Exams => Set<Exam>();
     public DbSet<ExamSubject> ExamSubjects => Set<ExamSubject>();
     public DbSet<ExamSchedule> ExamSchedules => Set<ExamSchedule>();

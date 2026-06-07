@@ -1,5 +1,5 @@
 using SchoolManagementSystem.Models.Entities.Academic;
-using SchoolManagementSystem.Models.Entities.Exam;
+using ExamEntity = SchoolManagementSystem.Models.Entities.Exam.Exam;
 using SchoolManagementSystem.Models.Entities.Result;
 using SchoolManagementSystem.Models.Enums;
 using System.ComponentModel.DataAnnotations;
@@ -20,6 +20,9 @@ public class ExamUpsertDto
     public string Name { get; set; } = string.Empty;
     public ExamTerm Term { get; set; } = ExamTerm.Other;
     public int AcademicYearId { get; set; }
+    public int? ClassId { get; set; }
+    public int? SectionId { get; set; }
+    public int? StudentGroupId { get; set; }
     public DateOnly StartsOn { get; set; }
     public DateOnly EndsOn { get; set; }
     public ResultWorkflowStatus Status { get; set; }
@@ -368,7 +371,7 @@ public class ResultDashboardViewModel
 {
     public AcademicYear? ActiveYear { get; set; }
 
-    public List<Exam> Exams { get; set; }
+    public List<ExamEntity> Exams { get; set; }
         = new();
 
     public ResultSummaryDto ResultStats { get; set; }
