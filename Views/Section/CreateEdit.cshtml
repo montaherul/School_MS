@@ -31,11 +31,11 @@
                             {
                                 if(c.Id == Model.SchoolClassId)
                                 {
-                                    <option value="@c.Id" selected>@c.Name</option>
+                                    <option value="@c.Id" data-is-group-based="@(c.IsGroupBased.ToString().ToLower())" selected>@c.Name</option>
                                 }
                                 else
                                 {
-                                    <option value="@c.Id">@c.Name</option>
+                                    <option value="@c.Id" data-is-group-based="@(c.IsGroupBased.ToString().ToLower())">@c.Name</option>
                                 }
                             }
                         </select>
@@ -43,10 +43,10 @@
                         <span asp-validation-for="SchoolClassId" class="text-danger small"></span>
                     </div>
 
-                    <!-- PARENT GROUP (only shows for Class 9/10) -->
+                    <!-- PARENT GROUP (only shows for group-based classes) -->
                     <div class="mb-3" id="parentGroupRow" style="display:none;">
                         <label asp-for="ParentSectionId" class="form-label">
-                            Parent Group <span class="text-muted small">(for Class 9/10 sub-sections)</span>
+                            Parent Group <span class="text-muted small">(for group-based class sub-sections)</span>
                         </label>
                         <select asp-for="ParentSectionId" class="form-select" id="parentGroupSelect">
                             <option value="">— None (this IS the group) —</option>
@@ -82,13 +82,16 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 
     <script>
-        const GROUPED_CLASS_IDS = [9, 10]; // Class Nine = 9, Class Ten = 10
+        function isGroupBasedClass(classId) {
+            var opt = document.querySelector('#classSelect option[value="' + classId + '"]');
+            return opt ? opt.dataset.isGroupBased === 'true' : false;
+        }
 
         function loadGroupsForClass(classId) {
             const parentRow = document.getElementById('parentGroupRow');
             const parentSelect = document.getElementById('parentGroupSelect');
 
-            if (!classId || !GROUPED_CLASS_IDS.includes(parseInt(classId))) {
+            if (!classId || !isGroupBasedClass(classId)) {
                 parentRow.style.display = 'none';
                 parentSelect.value = '';
                 return;

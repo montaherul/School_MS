@@ -35,5 +35,10 @@ public interface IExamService
     Task<IEnumerable<object>> GetSubjectsByClassIdAsync(int classId, int? groupId = null, int? sectionId = null, CancellationToken ct = default);
     Task<IEnumerable<object>> GetClassesAsync(CancellationToken ct = default);
     Task<IEnumerable<object>> GetSectionsAsync(int? classId = null, CancellationToken ct = default);
+
+    // Dynamic curriculum-based exam subject generation (Phase 10)
+    Task<int> GenerateExamSubjectsFromCurriculumAsync(int examId, int classId, int? groupId = null, CancellationToken ct = default);
+    Task<int> GenerateReligionExamSubjectsAsync(int examId, int classId, CancellationToken ct = default);
+    Task<int> GenerateOptionalExamSubjectsAsync(int examId, int classId, CancellationToken ct = default);
 }
 

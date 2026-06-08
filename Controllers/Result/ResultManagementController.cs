@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Models.DTOs.Result;
+using SchoolManagementSystem.Models.DTOs.Exam;
+using SchoolManagementSystem.Models.ViewModels.Result;
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Models.Entities.Exam;
 using SchoolManagementSystem.Models.Enums;
@@ -31,6 +33,8 @@ public class ResultManagementController : Controller
     private readonly ITeacherAssignmentService _assignmentService;
     private readonly ITranscriptService _transcriptService;
     private readonly IUnitOfWork _uow;
+    private readonly IResultAuthorizationService _resultAuthService;
+    private readonly ISubjectMarkStructureService _markStructureService;
 
     public ResultManagementController(
         IExamService examService,
@@ -44,7 +48,9 @@ public class ResultManagementController : Controller
         ISectionService sectionService,
         ITeacherAssignmentService assignmentService,
         ITranscriptService transcriptService,
-        IUnitOfWork uow)
+        IUnitOfWork uow,
+        IResultAuthorizationService resultAuthService,
+        ISubjectMarkStructureService markStructureService)
     {
         _examService = examService;
         _publicationService = publicationService;
@@ -58,6 +64,8 @@ public class ResultManagementController : Controller
         _assignmentService = assignmentService;
         _transcriptService = transcriptService;
         _uow = uow;
+        _resultAuthService = resultAuthService;
+        _markStructureService = markStructureService;
     }
 
     [HttpGet]
@@ -85,10 +93,13 @@ public class ResultManagementController : Controller
         var activeYear = academicYears.Items.FirstOrDefault(ay => ay.IsActive);
         var academicYearId = activeYear?.Id ?? 1; // Default to 1 if no active year found
 
-        ViewBag.Assignments = await _assignmentService.GetTeacherClassAssignmentsAsync(teacher.Id, ct);
-        ViewBag.Exams = await _examService.GetExamsAsync(academicYearId);
-        ViewBag.TeacherId = teacher.Id;
-        return View();
+        var model = new SchoolManagementSystem.Models.ViewModels.Result.TeacherEntryViewModel
+        {
+            TeacherId = teacher.Id,
+            Assignments = (await _assignmentService.GetTeacherClassAssignmentsAsync(teacher.Id, ct)).ToList(),
+            Exams = (await _examService.GetExamsAsync(academicYearId)).ToList()
+        };
+        return View(model);
     }
 
     [HttpGet]
@@ -134,14 +145,14 @@ public class ResultManagementController : Controller
             return RedirectToAction("Index", "Home");
         }
 
-        var model = await _publicationService.GetStudentResultsAsync(student.Id);
-        if (model == null)
+        var dto = await _publicationService.GetStudentResultsAsync(student.Id);
+        if (dto == null)
         {
             TempData["Error"] = "Result data not found.";
             return RedirectToAction("Index", "Home");
         }
 
-        return View(model);
+        return View(ToViewModel(dto));
     }
 
     [HttpGet]
@@ -152,30 +163,30 @@ public class ResultManagementController : Controller
         var student = await _studentService.GetByUserIdAsync(currentUserId, ct);
         if (student == null) return RedirectToAction("StudentDashboard");
 
-        var model = await _publicationService.GetStudentResultsAsync(student.Id);
-        if (model == null) return RedirectToAction("StudentDashboard");
+        var dto = await _publicationService.GetStudentResultsAsync(student.Id);
+        if (dto == null) return RedirectToAction("StudentDashboard");
 
         var academicYears = await _academicYearService.GetPagedAsync(1, 100, string.Empty, ct);
         ViewBag.AcademicYears = academicYears.Items;
         ViewBag.SelectedAcademicYearId = academicYearId ?? 0;
         ViewBag.SelectedExamId = examId ?? 0;
 
-        if (academicYearId.HasValue && academicYearId > 0)
-        {
-            ViewBag.Exams = await _uow.Repository<ExamEntity>().ListAsync(e => e.AcademicYearId == academicYearId && !e.IsDeleted, ct);
-            var yearExamIds = (await _uow.Repository<ExamEntity>().ListAsync(e => e.AcademicYearId == academicYearId && !e.IsDeleted, ct))
-                .Select(e => e.Id).ToHashSet();
-            model.ExamResults = model.ExamResults.Where(e => yearExamIds.Contains(e.ExamId)).ToList();
-        }
-        else
-        {
-            ViewBag.Exams = await _uow.Repository<ExamEntity>().ListAsync(e => !e.IsDeleted, ct);
-        }
+            if (academicYearId.HasValue && academicYearId > 0)
+            {
+                ViewBag.Exams = await _uow.Repository<ExamEntity>().ListAsync(e => e.AcademicYearId == academicYearId && !e.IsDeleted, ct);
+                var yearExamIds = (await _uow.Repository<ExamEntity>().ListAsync(e => e.AcademicYearId == academicYearId && !e.IsDeleted, ct))
+                    .Select(e => e.Id).ToHashSet();
+                dto.ExamResults = dto.ExamResults.Where(e => yearExamIds.Contains(e.ExamId)).ToList();
+            }
+            else
+            {
+                ViewBag.Exams = await _uow.Repository<ExamEntity>().ListAsync(e => !e.IsDeleted, ct);
+            }
 
-        if (examId.HasValue && examId > 0)
-            model.ExamResults = model.ExamResults.Where(e => e.ExamId == examId).ToList();
+            if (examId.HasValue && examId > 0)
+                dto.ExamResults = dto.ExamResults.Where(e => e.ExamId == examId).ToList();
 
-        return View(model);
+            return View(ToViewModel(dto));
     }
 
     [HttpGet]
@@ -225,26 +236,88 @@ public class ResultManagementController : Controller
 
     [HttpGet]
     [Authorize(Roles = "Principal,Teacher,Senior Lecturer,Lecturer")]
-    public async Task<IActionResult> MarkEntry(int examId, int classId, int sectionId, int subjectId)
+    public async Task<IActionResult> MarkEntry(int examId, int classId, int sectionId, int subjectId, int? groupId, CancellationToken ct)
     {
         if (examId <= 0 || classId <= 0 || sectionId <= 0 || subjectId <= 0) return BadRequest();
-        var vm = await _markEntryService.GetMarkEntryDataAsync(examId, subjectId, classId, sectionId);
 
-        var classSubject = await _uow.Repository<ClassSubject>().Query()
-            .Include(cs => cs.SubjectComponents)
-            .FirstOrDefaultAsync(cs => cs.SchoolClassId == classId && cs.SubjectId == subjectId && !cs.IsDeleted);
+        var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+        var teacher = await _teacherService.GetByUserIdAsync(currentUserId, ct);
+        if (teacher == null) return Unauthorized();
 
-        var components = classSubject?.SubjectComponents
-            .Where(c => !c.IsDeleted && c.IsActive)
-            .OrderBy(c => c.DisplayOrder)
-            .ToList() ?? new List<SubjectComponent>();
+        if (!User.IsInRole("Admin") && !User.IsInRole("Super Admin") && !User.IsInRole("Principal"))
+        {
+            var exam = await _examService.GetExamByIdAsync(examId, ct);
+            var acYearId = exam is SchoolManagementSystem.Models.Entities.Exam.Exam e ? e.AcademicYearId : 0;
+            var authorized = await _resultAuthService.IsAuthorizedToEnterMarksAsync(teacher.Id, subjectId, classId, sectionId, acYearId, ct);
+            if (!authorized) return Forbid();
+        }
 
-        ViewBag.SubjectComponents = components;
+        var dto = await _markEntryService.GetMarkEntryDataAsync(examId, subjectId, classId, sectionId);
+        var vm = new MarkEntryViewModel
+        {
+            ExamId = dto.ExamId,
+            ExamName = dto.ExamName,
+            SubjectId = dto.SubjectId,
+            SubjectName = dto.SubjectName,
+            ClassId = dto.ClassId,
+            ClassName = dto.ClassName,
+            Students = dto.Students.Select(s => new StudentMarkViewModel
+            {
+                StudentId = s.StudentId,
+                StudentNo = s.StudentNo,
+                StudentName = s.StudentName,
+                RollNumber = s.RollNumber,
+                MarksObtained = s.MarksObtained,
+                Grade = s.Grade,
+                IsLocked = s.IsLocked,
+                WrittenMarks = s.WrittenMarks,
+                MCQMarks = s.MCQMarks,
+                CQMarks = s.CQMarks,
+                PracticalMarks = s.PracticalMarks,
+                VivaMarks = s.VivaMarks,
+                LabMarks = s.LabMarks,
+                OralMarks = s.OralMarks,
+                AssignmentMarks = s.AssignmentMarks,
+                ContinuousAssessmentMarks = s.ContinuousAssessmentMarks,
+                CompetencyMarks = s.CompetencyMarks,
+                BehaviourMarks = s.BehaviourMarks,
+                ParticipationMarks = s.ParticipationMarks,
+                ComponentValues = s.ComponentValues,
+                EnteredByTeacherId = s.EnteredByTeacherId,
+                EnteredByTeacherName = s.EnteredByTeacherName
+            }).ToList()
+        };
 
-        ViewBag.ComponentColumns = components.Select(c => new {
+        // Load component columns from SubjectMarkStructure (dynamic), fall back to SubjectComponent
+        var columns = await _markStructureService.GetGridColumnsAsync(examId, subjectId, classId, groupId);
+
+        if (columns.Count == 0)
+        {
+            // Fallback: load from legacy SubjectComponent
+            var classSubject = await _uow.Repository<ClassSubject>().Query()
+                .Include(cs => cs.SubjectComponents)
+                .FirstOrDefaultAsync(cs => cs.SchoolClassId == classId && cs.SubjectId == subjectId && !cs.IsDeleted);
+
+            var components = classSubject?.SubjectComponents
+                .Where(c => !c.IsDeleted && c.IsActive)
+                .OrderBy(c => c.DisplayOrder)
+                .ToList() ?? new List<SubjectComponent>();
+
+            ViewBag.SubjectComponents = components;
+
+            columns = components.Select(c => new ComponentColumnDto
+            {
+                ComponentCode = c.ComponentName,
+                ComponentName = c.ComponentName,
+                FieldName = JsonNamingPolicy.CamelCase.ConvertName(c.ComponentName) + "Marks",
+                FullMarks = c.MaxMarks
+            }).ToList();
+        }
+
+        ViewBag.ComponentColumns = columns.Select(c => new {
             name = c.ComponentName,
-            field = JsonNamingPolicy.CamelCase.ConvertName(c.ComponentName) + "Marks",
-            max = c.MaxMarks
+            field = c.FieldName,
+            max = c.FullMarks
         }).ToList();
 
         return View(vm);
@@ -258,6 +331,26 @@ public class ResultManagementController : Controller
         var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
         var teacher = await _teacherService.GetByUserIdAsync(currentUserId, ct);
         if (teacher == null) return Json(new { success = false, message = "Teacher not found" });
+        
+        if (!User.IsInRole("Admin") && !User.IsInRole("Super Admin") && !User.IsInRole("Principal"))
+        {
+            if (dto.Marks.Any())
+            {
+                var studentIds = dto.Marks.Select(m => m.StudentId).Distinct().ToList();
+                var classSections = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>()
+                    .Query()
+                    .Where(s => studentIds.Contains(s.Id))
+                    .Select(s => new { s.ClassId, s.SectionId })
+                    .Distinct()
+                    .ToListAsync(ct);
+
+                foreach (var cs in classSections)
+                {
+                    var isAuthorized = await _resultAuthService.IsAuthorizedToEnterMarksAsync(teacher.Id, dto.SubjectId, cs.ClassId, cs.SectionId, 0, ct);
+                    if (!isAuthorized) return Json(new { success = false, message = "Unauthorized to enter marks for one or more students" });
+                }
+            }
+        }
         
         dto.TeacherId = teacher.Id;
         await _markEntryService.SubmitMarksBatchAsync(dto);
@@ -284,7 +377,40 @@ public class ResultManagementController : Controller
     [Authorize(Roles = "Admin,Super Admin,Principal")]
     public async Task<IActionResult> ReEvaluationDashboard()
     {
-        var model = await _reEvaluationService.GetReEvaluationDashboardAsync();
+        var dto = await _reEvaluationService.GetReEvaluationDashboardAsync();
+        var model = new ReEvaluationDashboardViewModel
+        {
+            PendingRequests = dto.PendingRequests.Select(r => new ReEvaluationRequestViewModel
+            {
+                Id = r.Id,
+                StudentId = r.StudentId,
+                SubjectId = r.SubjectId,
+                ExamId = r.ExamId,
+                ExamName = r.ExamName,
+                StudentName = r.StudentName,
+                SubjectName = r.SubjectName,
+                OldMarks = r.OldMarks,
+                NewMarks = r.NewMarks,
+                Status = r.Status,
+                Notes = r.Notes,
+                CreatedAt = r.CreatedAt
+            }).ToList(),
+            CompletedRequests = dto.CompletedRequests.Select(r => new ReEvaluationRequestViewModel
+            {
+                Id = r.Id,
+                StudentId = r.StudentId,
+                SubjectId = r.SubjectId,
+                ExamId = r.ExamId,
+                ExamName = r.ExamName,
+                StudentName = r.StudentName,
+                SubjectName = r.SubjectName,
+                OldMarks = r.OldMarks,
+                NewMarks = r.NewMarks,
+                Status = r.Status,
+                Notes = r.Notes,
+                CreatedAt = r.CreatedAt
+            }).ToList()
+        };
         return View(model);
     }
 
@@ -365,5 +491,17 @@ public class ResultManagementController : Controller
         if (pdf == null) return NotFound();
         return File(pdf, "application/pdf", $"ReportCard_{studentId}_{examId}.pdf");
     }
+
+    private static StudentPortalResultViewModel ToViewModel(StudentPortalResultDto dto) => new()
+    {
+        StudentId = dto.StudentId,
+        StudentName = dto.StudentName,
+        ClassName = dto.ClassName,
+        SectionName = dto.SectionName,
+        RollNumber = dto.RollNumber,
+        ExamResults = dto.ExamResults,
+        FinalResult = dto.FinalResult,
+        Transcript = dto.Transcript
+    };
 }
 

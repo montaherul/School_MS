@@ -20,12 +20,17 @@ BEGIN
         m.MarksObtained,
         m.WrittenMarks,
         m.MCQMarks,
+        m.CQMarks,
         m.PracticalMarks,
         m.AssignmentMarks,
         m.VivaMarks,
         m.LabMarks,
         m.ContinuousAssessmentMarks,
         m.OralMarks,
+        m.CompetencyMarks,
+        m.BehaviourMarks,
+        m.ParticipationMarks,
+        m.ComponentValues,
         m.Grade,
         m.GradePoint,
         m.IsLocked,
@@ -40,7 +45,7 @@ BEGIN
         AND m.IsDeleted = 0
     WHERE s.ClassId = @ClassId
       AND s.SectionId = @SectionId
-      AND s.Status = 1
+      AND s.Status = 1 -- Active per StudentStatus enum
       AND s.IsDeleted = 0
     ORDER BY s.RollNumber;
 END;

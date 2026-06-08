@@ -21,6 +21,18 @@ public static class ExamViewModelMapper
         Name = group.Name
     };
 
+    public static ExamFilterOptionViewModel ToClassFilterOption(SchoolClass cls) => new()
+    {
+        Id = cls.Id,
+        Name = cls.Name
+    };
+
+    public static ExamFilterOptionViewModel ToSectionFilterOption(Section section) => new()
+    {
+        Id = section.Id,
+        Name = section.Name
+    };
+
     public static ExamListDto ToListDto(ExamEntity exam, string academicYearName = "") => new()
     {
         Id = exam.Id,
@@ -60,6 +72,7 @@ public static class ExamViewModelMapper
             startsOn = exam.StartsOn.ToString("yyyy-MM-dd"),
             endsOn = exam.EndsOn.ToString("yyyy-MM-dd"),
             description = "",
+            status = (int)exam.Status,
             selectedClasses = Array.Empty<int>(),
             selectedSections = Array.Empty<int>(),
             selectedGroups = exam.StudentGroupId.HasValue ? new[] { exam.StudentGroupId.Value } : Array.Empty<int>(),

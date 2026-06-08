@@ -2,15 +2,16 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Models.DTOs.Employee;
+using SchoolManagementSystem.Models.ViewModels;
+using SchoolManagementSystem.Models.ViewModels.Employee;
 using SchoolManagementSystem.Services.Interfaces.Employee;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
-using SchoolManagementSystem.Data;
 using SchoolManagementSystem.Models.Entities.Auth;
 using SchoolManagementSystem.Models.Entities.Website;
 using SchoolManagementSystem.Helpers.Pdf;
-using SchoolManagementSystem.Models.Entities.Employee;
-using SchoolManagementSystem.Models.Entities.Teachers;
+using SchoolManagementSystem.UnitOfWork.Interfaces;
+using EmpEntity = SchoolManagementSystem.Models.Entities.Employee.Employee;
 
 namespace SchoolManagementSystem.Controllers.Employee;
 
@@ -20,15 +21,21 @@ public class EmployeeController : Controller
     private readonly IEmployeeService _employeeService;
     private readonly IDepartmentService _departmentService;
     private readonly IDesignationService _designationService;
+    private readonly IUnitOfWork _uow;
+    private readonly IPdfGenerator _pdfGenerator;
 
     public EmployeeController(
         IEmployeeService employeeService,
         IDepartmentService departmentService,
-        IDesignationService designationService)
+        IDesignationService designationService,
+        IUnitOfWork uow,
+        IPdfGenerator pdfGenerator)
     {
         _employeeService = employeeService;
         _departmentService = departmentService;
         _designationService = designationService;
+        _uow = uow;
+        _pdfGenerator = pdfGenerator;
     }
 
     [RequirePermission("Users.View")] // Fallback to Users permission or specialized if desired
@@ -42,7 +49,8 @@ public class EmployeeController : Controller
         if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
         {
             var totalPages = (int)Math.Ceiling((double)totalRecords / size);
-            return Json(new { data = items, last_page = totalPages, total_records = totalRecords });
+            var viewModels = items.Select(i => i.MapTo<EmployeeListItemViewModel>()).ToList();
+            return Json(new { data = viewModels, last_page = totalPages, total_records = totalRecords });
         }
 
         await PopulateLookupListsAsync(ct);
@@ -138,14 +146,13 @@ public class EmployeeController : Controller
             return Forbid();
         }
 
-        var db = HttpContext.RequestServices.GetRequiredService<SchoolDbContext>();
         var dto = await _employeeService.GetDetailsAsync(targetId, ct);
         if (dto == null) return NotFound("Employee details not found.");
 
         // Initialize ID Card fields if not present
         if (string.IsNullOrEmpty(dto.EmployeeCardNumber))
         {
-            var employeeEntity = await db.Employees.FindAsync(targetId);
+            var employeeEntity = await _uow.Repository<EmpEntity>().GetByIdAsync(targetId, ct);
             if (employeeEntity != null)
             {
                 employeeEntity.EmployeeCardNumber = $"CARD-{DateTime.Today.Year}-{targetId:D6}";
@@ -153,7 +160,7 @@ public class EmployeeController : Controller
                 employeeEntity.CardExpiryDate = new DateTime(DateTime.Today.Year + 2, 12, 31);
                 employeeEntity.CardVersion = 1;
                 employeeEntity.QRVerificationCode = Guid.NewGuid().ToString("N").Substring(0, 10).ToUpper();
-                await db.SaveChangesAsync(ct);
+                await _uow.SaveChangesAsync(ct);
 
                 // Update DTO
                 dto.EmployeeCardNumber = employeeEntity.EmployeeCardNumber;
@@ -164,9 +171,9 @@ public class EmployeeController : Controller
             }
         }
 
-        ViewBag.SchoolSetting = await db.SchoolSettings.FirstOrDefaultAsync(ct) ?? new SchoolSetting { SchoolName = "School Management ERP" };
+        ViewBag.SchoolSetting = await _uow.Repository<SchoolSetting>().Query().FirstOrDefaultAsync(ct) ?? new SchoolSetting { SchoolName = "School Management ERP" };
         
-        return View(dto);
+        return View(dto.MapTo<EmployeeDetailsViewModel>());
     }
 
     [HttpPost]
@@ -222,14 +229,13 @@ public class EmployeeController : Controller
             return Forbid();
         }
 
-        var db = HttpContext.RequestServices.GetRequiredService<SchoolDbContext>();
         var employee = await _employeeService.GetDetailsAsync(id, ct);
         if (employee == null) return NotFound("Employee not found.");
 
         // Initialize ID Card fields if not present
         if (string.IsNullOrEmpty(employee.EmployeeCardNumber))
         {
-            var employeeEntity = await db.Employees.FindAsync(id);
+            var employeeEntity = await _uow.Repository<EmpEntity>().GetByIdAsync(id, ct);
             if (employeeEntity != null)
             {
                 employeeEntity.EmployeeCardNumber = $"CARD-{DateTime.Today.Year}-{id:D6}";
@@ -237,7 +243,7 @@ public class EmployeeController : Controller
                 employeeEntity.CardExpiryDate = new DateTime(DateTime.Today.Year + 2, 12, 31);
                 employeeEntity.CardVersion = 1;
                 employeeEntity.QRVerificationCode = Guid.NewGuid().ToString("N").Substring(0, 10).ToUpper();
-                await db.SaveChangesAsync(ct);
+                await _uow.SaveChangesAsync(ct);
                 
                 // Update DTO
                 employee.EmployeeCardNumber = employeeEntity.EmployeeCardNumber;
@@ -248,17 +254,16 @@ public class EmployeeController : Controller
             }
         }
 
-        var schoolSetting = await db.SchoolSettings.FirstOrDefaultAsync(ct) ?? new SchoolSetting { SchoolName = "School Management ERP" };
-        var pdfGenerator = HttpContext.RequestServices.GetRequiredService<IPdfGenerator>();
+        var schoolSetting = await _uow.Repository<SchoolSetting>().Query().FirstOrDefaultAsync(ct) ?? new SchoolSetting { SchoolName = "School Management ERP" };
 
-        var pdfBytes = pdfGenerator.GenerateEmployeeIdCard(employee, schoolSetting);
+        var pdfBytes = _pdfGenerator.GenerateEmployeeIdCard(employee, schoolSetting);
 
         // Update tracking
-        var currentEmpEntity = await db.Employees.FindAsync(id);
+        var currentEmpEntity = await _uow.Repository<EmpEntity>().GetByIdAsync(id, ct);
         if (currentEmpEntity != null)
         {
             currentEmpEntity.CardPrintedAt = DateTime.UtcNow;
-            await db.SaveChangesAsync(ct);
+            await _uow.SaveChangesAsync(ct);
         }
 
         // Log audit
@@ -276,14 +281,13 @@ public class EmployeeController : Controller
             return Forbid();
         }
 
-        var db = HttpContext.RequestServices.GetRequiredService<SchoolDbContext>();
         var employee = await _employeeService.GetDetailsAsync(id, ct);
         if (employee == null) return NotFound("Employee not found.");
 
         // Initialize ID Card fields if not present
         if (string.IsNullOrEmpty(employee.EmployeeCardNumber))
         {
-            var employeeEntity = await db.Employees.FindAsync(id);
+            var employeeEntity = await _uow.Repository<EmpEntity>().GetByIdAsync(id, ct);
             if (employeeEntity != null)
             {
                 employeeEntity.EmployeeCardNumber = $"CARD-{DateTime.Today.Year}-{id:D6}";
@@ -291,7 +295,7 @@ public class EmployeeController : Controller
                 employeeEntity.CardExpiryDate = new DateTime(DateTime.Today.Year + 2, 12, 31);
                 employeeEntity.CardVersion = 1;
                 employeeEntity.QRVerificationCode = Guid.NewGuid().ToString("N").Substring(0, 10).ToUpper();
-                await db.SaveChangesAsync(ct);
+                await _uow.SaveChangesAsync(ct);
 
                 // Update DTO
                 employee.EmployeeCardNumber = employeeEntity.EmployeeCardNumber;
@@ -302,22 +306,22 @@ public class EmployeeController : Controller
             }
         }
 
-        var schoolSetting = await db.SchoolSettings.FirstOrDefaultAsync(ct) ?? new SchoolSetting { SchoolName = "School Management ERP" };
+        var schoolSetting = await _uow.Repository<SchoolSetting>().Query().FirstOrDefaultAsync(ct) ?? new SchoolSetting { SchoolName = "School Management ERP" };
         ViewBag.SchoolSetting = schoolSetting;
 
         // Update printed tracking
-        var empToUpdate = await db.Employees.FindAsync(id);
+        var empToUpdate = await _uow.Repository<EmpEntity>().GetByIdAsync(id, ct);
         if (empToUpdate != null)
         {
             empToUpdate.CardPrintedAt = DateTime.UtcNow;
-            await db.SaveChangesAsync(ct);
+            await _uow.SaveChangesAsync(ct);
         }
 
         // Log audit
         var userName = User.Identity?.Name ?? "Unknown";
         await LogAuditAsync("ID Card Printed", $"Employee ID Card printed for: {employee.FullName} (Code: {employee.EmployeeCode}) by {userName}", ct);
 
-        return View("PrintIdCard", employee);
+        return View("PrintIdCard", employee.MapTo<EmployeeDetailsViewModel>());
     }
 
     [HttpPost]
@@ -329,8 +333,7 @@ public class EmployeeController : Controller
             return Forbid();
         }
 
-        var db = HttpContext.RequestServices.GetRequiredService<SchoolDbContext>();
-        var employeeEntity = await db.Employees.FindAsync(id);
+        var employeeEntity = await _uow.Repository<EmpEntity>().GetByIdAsync(id, ct);
         if (employeeEntity == null) return NotFound("Employee not found.");
 
         employeeEntity.CardVersion += 1;
@@ -338,7 +341,7 @@ public class EmployeeController : Controller
         employeeEntity.CardExpiryDate = new DateTime(DateTime.Today.Year + 2, 12, 31);
         employeeEntity.QRVerificationCode = Guid.NewGuid().ToString("N").Substring(0, 10).ToUpper();
         
-        await db.SaveChangesAsync(ct);
+        await _uow.SaveChangesAsync(ct);
 
         // Log audit
         var userName = User.Identity?.Name ?? "Unknown";
@@ -353,8 +356,7 @@ public class EmployeeController : Controller
     [Route("Employee/Verify/{id}")]
     public async Task<IActionResult> Verify(int id, CancellationToken ct)
     {
-        var db = HttpContext.RequestServices.GetRequiredService<SchoolDbContext>();
-        var schoolSetting = await db.SchoolSettings.FirstOrDefaultAsync(ct) ?? new SchoolSetting { SchoolName = "School Management ERP" };
+        var schoolSetting = await _uow.Repository<SchoolSetting>().Query().FirstOrDefaultAsync(ct) ?? new SchoolSetting { SchoolName = "School Management ERP" };
         ViewBag.SchoolSetting = schoolSetting;
 
         var dto = await _employeeService.GetDetailsAsync(id, ct);
@@ -371,7 +373,7 @@ public class EmployeeController : Controller
 
         if (dto.IsTeachingStaff)
         {
-            var teacher = await db.Teachers
+            var teacher = await _uow.Repository<SchoolManagementSystem.Models.Entities.Teachers.Teacher>().Query()
                 .FirstOrDefaultAsync(t => t.EmployeeId == id && !t.IsDeleted, ct);
             if (teacher != null)
             {
@@ -394,13 +396,12 @@ public class EmployeeController : Controller
             return Forbid();
         }
 
-        var db = HttpContext.RequestServices.GetRequiredService<SchoolDbContext>();
-        var schoolSetting = await db.SchoolSettings.FirstOrDefaultAsync(ct) ?? new SchoolSetting { SchoolName = "School Management ERP" };
+        var schoolSetting = await _uow.Repository<SchoolSetting>().Query().FirstOrDefaultAsync(ct) ?? new SchoolSetting { SchoolName = "School Management ERP" };
         ViewBag.SchoolSetting = schoolSetting;
 
         if (ids != null && ids.Length > 0)
         {
-            var employees = new List<EmployeeDetailsDto>();
+            var employees = new List<EmployeeDetailsViewModel>();
             foreach (var id in ids)
             {
                 var emp = await _employeeService.GetDetailsAsync(id, ct);
@@ -409,7 +410,7 @@ public class EmployeeController : Controller
                     // Initialize ID Card fields if not present
                     if (string.IsNullOrEmpty(emp.EmployeeCardNumber))
                     {
-                        var employeeEntity = await db.Employees.FindAsync(id);
+                        var employeeEntity = await _uow.Repository<EmpEntity>().GetByIdAsync(id, ct);
                         if (employeeEntity != null)
                         {
                             employeeEntity.EmployeeCardNumber = $"CARD-{DateTime.Today.Year}-{id:D6}";
@@ -417,7 +418,7 @@ public class EmployeeController : Controller
                             employeeEntity.CardExpiryDate = new DateTime(DateTime.Today.Year + 2, 12, 31);
                             employeeEntity.CardVersion = 1;
                             employeeEntity.QRVerificationCode = Guid.NewGuid().ToString("N").Substring(0, 10).ToUpper();
-                            await db.SaveChangesAsync(ct);
+                            await _uow.SaveChangesAsync(ct);
 
                             emp.EmployeeCardNumber = employeeEntity.EmployeeCardNumber;
                             emp.CardIssueDate = employeeEntity.CardIssueDate;
@@ -428,14 +429,14 @@ public class EmployeeController : Controller
                     }
 
                     // Update tracking
-                    var empToUpdate = await db.Employees.FindAsync(id);
+                    var empToUpdate = await _uow.Repository<EmpEntity>().GetByIdAsync(id, ct);
                     if (empToUpdate != null)
                     {
                         empToUpdate.CardPrintedAt = DateTime.UtcNow;
-                        await db.SaveChangesAsync(ct);
+                        await _uow.SaveChangesAsync(ct);
                     }
 
-                    employees.Add(emp);
+                    employees.Add(emp.MapTo<EmployeeDetailsViewModel>());
                 }
             }
 
@@ -492,7 +493,6 @@ public class EmployeeController : Controller
     {
         try
         {
-            var db = HttpContext.RequestServices.GetRequiredService<SchoolDbContext>();
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
             int? userId = null;
             if (int.TryParse(userIdStr, out var parsedId))
@@ -512,8 +512,8 @@ public class EmployeeController : Controller
                 CreatedAt = DateTime.UtcNow
             };
 
-            db.AuditLogs.Add(log);
-            await db.SaveChangesAsync(ct);
+            await _uow.Repository<AuditLog>().AddAsync(log, ct);
+            await _uow.SaveChangesAsync(ct);
         }
         catch
         {

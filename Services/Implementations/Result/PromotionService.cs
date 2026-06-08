@@ -253,6 +253,28 @@ public class PromotionService : IPromotionService
 
     public async Task<PromotionRules> GetPromotionRulesAsync(int classId)
     {
+        // Check for stored override rules first
+        var stored = await _uow.Repository<ClassPromotionRule>()
+            .FirstOrDefaultAsync(r => r.ClassId == classId && r.IsActive && !r.IsDeleted);
+
+        if (stored != null)
+        {
+            return new PromotionRules
+            {
+                ClassId = classId,
+                MinimumGPA = stored.MinimumGPA,
+                MaximumFailedSubjects = stored.MaximumFailedSubjects,
+                AllowConditionalPromotion = stored.AllowConditionalPromotion,
+                ConditionalPromotionGPA = stored.ConditionalPromotionGPA,
+                RequireAllSubjectsPass = stored.RequireAllSubjectsPass,
+                CriticalSubjects = stored.CriticalSubjectsJson != null
+                    ? System.Text.Json.JsonSerializer.Deserialize<List<string>>(stored.CriticalSubjectsJson) ?? []
+                    : []
+            };
+        }
+
+        // Fall back to computed defaults based on class
+        var schoolClass = await _uow.Repository<SchoolClass>().GetByIdAsync(classId);
         var rules = new PromotionRules
         {
             ClassId = classId,
@@ -260,16 +282,17 @@ public class PromotionService : IPromotionService
             MaximumFailedSubjects = 2,
             AllowConditionalPromotion = true,
             ConditionalPromotionGPA = 0.8m,
-            RequireAllSubjectsPass = classId >= 9,
+            RequireAllSubjectsPass = schoolClass?.IsGroupBased ?? false,
             CriticalSubjects = ["Bangla", "English", "Mathematics"]
         };
 
-        if (classId <= 5)
+        var sortOrder = schoolClass?.SortOrder ?? classId;
+        if (sortOrder <= 5)
         {
             rules.MaximumFailedSubjects = 3;
             rules.MinimumGPA = 0.5m;
         }
-        else if (classId <= 8)
+        else if (sortOrder <= 8)
         {
             rules.MaximumFailedSubjects = 2;
             rules.MinimumGPA = 1.0m;
@@ -286,7 +309,42 @@ public class PromotionService : IPromotionService
 
     public async Task UpdatePromotionRulesAsync(int classId, PromotionRules rules)
     {
-        throw new NotImplementedException("Promotion rules storage not implemented");
+        var existing = await _uow.Repository<ClassPromotionRule>()
+            .FirstOrDefaultAsync(r => r.ClassId == classId && r.IsActive && !r.IsDeleted);
+
+        if (existing != null)
+        {
+            existing.MinimumGPA = rules.MinimumGPA;
+            existing.MaximumFailedSubjects = rules.MaximumFailedSubjects;
+            existing.AllowConditionalPromotion = rules.AllowConditionalPromotion;
+            existing.ConditionalPromotionGPA = rules.ConditionalPromotionGPA;
+            existing.RequireAllSubjectsPass = rules.RequireAllSubjectsPass;
+            existing.CriticalSubjectsJson = rules.CriticalSubjects != null
+                ? System.Text.Json.JsonSerializer.Serialize(rules.CriticalSubjects)
+                : null;
+            existing.UpdatedAt = DateTime.UtcNow;
+            _uow.Repository<ClassPromotionRule>().Update(existing);
+        }
+        else
+        {
+            var entity = new ClassPromotionRule
+            {
+                ClassId = classId,
+                MinimumGPA = rules.MinimumGPA,
+                MaximumFailedSubjects = rules.MaximumFailedSubjects,
+                AllowConditionalPromotion = rules.AllowConditionalPromotion,
+                ConditionalPromotionGPA = rules.ConditionalPromotionGPA,
+                RequireAllSubjectsPass = rules.RequireAllSubjectsPass,
+                CriticalSubjectsJson = rules.CriticalSubjects != null
+                    ? System.Text.Json.JsonSerializer.Serialize(rules.CriticalSubjects)
+                    : null,
+                IsActive = true,
+                CreatedAt = DateTime.UtcNow
+            };
+            await _uow.Repository<ClassPromotionRule>().AddAsync(entity);
+        }
+
+        await _uow.SaveChangesAsync();
     }
 
     public async Task<IEnumerable<PromotionRecord>> GetStudentPromotionHistoryAsync(int studentId)

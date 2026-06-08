@@ -1,11 +1,7 @@
-using SchoolManagementSystem.Services.Interfaces.Result;
+using SchoolManagementSystem.Models.DTOs.Result;
 
 namespace SchoolManagementSystem.Services.Interfaces.Result;
 
-/// <summary>
-/// Service for calculating merit positions and rankings
-/// Supports class-wise, section-wise, and group-wise rankings
-/// </summary>
 public interface IMeritCalculationService
 {
     /// <summary>
@@ -52,25 +48,4 @@ public enum MeritCategory
     School
 }
 
-public class MeritListItem
-{
-    public int StudentId { get; set; }
-    public string StudentName { get; set; } = string.Empty;
-    public int RollNumber { get; set; }
-    public decimal GPA { get; set; }
-    public decimal TotalMarks { get; set; }
-    public int Position { get; set; }
-    public string Grade { get; set; } = string.Empty;
-    public string Section { get; set; } = string.Empty;
-    public string StudentGroup { get; set; } = string.Empty;
-}
 
-public class TopPerformer
-{
-    public int StudentId { get; set; }
-    public string StudentName { get; set; }
-    public int RollNumber { get; set; }
-    public decimal GPA { get; set; }
-    public string Grade { get; set; } = string.Empty;
-    public int Position { get; set; }
-}

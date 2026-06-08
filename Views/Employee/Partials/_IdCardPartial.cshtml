@@ -1,4 +1,4 @@
-@model SchoolManagementSystem.Models.DTOs.Employee.EmployeeDetailsDto
+@model SchoolManagementSystem.Models.ViewModels.Employee.EmployeeDetailsViewModel
 
 <div class="id-card-wrap">
     <!-- Front Side -->
@@ -38,7 +38,7 @@
             <div>Emergency:</div><div>+1 (555) 987‑6543</div>
             <div>Blood Group:</div><div>@Model.BloodGroup</div>
             <div>National ID:</div><div>@Model.NationalId</div>
-            <div>Valid Until:</div><div>@Model.CardValidUntil?.ToString("yyyy-MM-dd")</div>
+            <div>Valid Until:</div><div>@Model.ValidUntil?.ToString("yyyy-MM-dd")</div>
         </div>
         <div class="qr-section">
             <img src="@Url.Action("QrCode", "Employee", new { id = Model.Id })" alt="QR Code" class="qr-code" />

@@ -26,7 +26,7 @@
                         </a>
                         <a href="/Exam/Create" class="btn btn-sm btn-primary">
                             <i class="fas fa-plus me-1"></i> New Exam
-                        </button>
+                        </a>
                     </div>
                 </div>
                 <div class="card-body p-0">
@@ -164,9 +164,45 @@
 
 <partial name="_ExamResultUx" />
 
+<div class="modal fade" id="confirmModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title" id="confirmModalTitle">Confirm Action</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmModalBody">Are you sure?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-sm btn-primary" id="confirmModalBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
+    var pendingConfirmAction = null;
+
+    function showConfirm(message, callback) {
+        document.getElementById('confirmModalBody').textContent = message;
+        pendingConfirmAction = callback;
+        var modal = new bootstrap.Modal(document.getElementById('confirmModal'));
+        modal.show();
+    }
+
+    document.getElementById('confirmModalBtn').addEventListener('click', function () {
+        if (pendingConfirmAction) {
+            var fn = pendingConfirmAction;
+            pendingConfirmAction = null;
+            bootstrap.Modal.getInstance(document.getElementById('confirmModal')).hide();
+            fn();
+        }
+    });
+
     function publishResult(examId) {
-        if (confirm('Are you sure you want to publish results for this exam? This will lock current marks and notify students.')) {
+        showConfirm('Are you sure you want to publish results for this exam? This will lock current marks and notify students.', function () {
             fetch('/ResultManagement/PublishResults', {
                 method: 'POST',
                 headers: { 
@@ -188,11 +224,11 @@
                 console.error('Publish error:', err);
                 if (typeof showExamToast === 'function') showExamToast('Network error or server unavailable', 'error');
             });
-        }
+        });
     }
 
     function recalculateRanking(examId) {
-        if (confirm('Recalculate merit positions and ranks?')) {
+        showConfirm('Recalculate merit positions and ranks?', function () {
             const formData = new FormData();
             formData.append('examId', examId);
             
@@ -210,6 +246,6 @@
                     if (typeof showExamToast === 'function') showExamToast('Failed to update ranking', 'error');
                 }
             });
-        }
+        });
     }
 </script>

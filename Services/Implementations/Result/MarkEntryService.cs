@@ -1,16 +1,18 @@
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Models.DTOs.Result;
+using SchoolManagementSystem.Models.DTOs.Exam;
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Models.Entities.Student;
 using SchoolManagementSystem.Models.Entities.Exam;
 using SchoolManagementSystem.Models.Entities.Result;
 using SchoolManagementSystem.Models.Enums;
-using SchoolManagementSystem.Models.ViewModels.Result;
 using SchoolManagementSystem.Repositories.Interfaces.Academic;
 using SchoolManagementSystem.Repositories.Interfaces.Students;
 using SchoolManagementSystem.Services.Implementations.Base;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using System.Security.Claims;
+using System.Text;
+using ClosedXML.Excel;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.Repositories.Interfaces.Result;
 
@@ -25,6 +27,9 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
     private readonly ISchoolClassRepository _classRepository;
     private readonly ISectionRepository _sectionRepository;
     private readonly IStudentRepository _studentRepository;
+    private readonly ISubjectMarkStructureService _markStructureService;
+    private readonly IAuditLogger _auditLogger;
+    private readonly IGradeCalculator _gradeCalculator;
 
     public MarkEntryService(
         IUnitOfWork uow, 
@@ -34,7 +39,10 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
         ISubjectRepository subjectRepository,
         ISchoolClassRepository classRepository,
         ISectionRepository sectionRepository,
-        IStudentRepository studentRepository) : base(uow)
+        IStudentRepository studentRepository,
+        ISubjectMarkStructureService markStructureService,
+        IAuditLogger auditLogger,
+        IGradeCalculator gradeCalculator) : base(uow)
     {
         _examRepository = examRepository;
         _markRepository = markRepository;
@@ -43,18 +51,62 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
         _classRepository = classRepository;
         _sectionRepository = sectionRepository;
         _studentRepository = studentRepository;
+        _markStructureService = markStructureService;
+        _auditLogger = auditLogger;
+        _gradeCalculator = gradeCalculator;
     }
 
-    public async Task<MarkEntryViewModel> GetMarkEntryDataAsync(int examId, int subjectId, int classId, int sectionId)
+    public async Task<MarkEntryDataDto> GetMarkEntryDataAsync(int examId, int subjectId, int classId, int sectionId)
     {
         var exam = await _examRepository.GetByIdAsync(examId);
         var subject = await _subjectRepository.GetByIdAsync(subjectId);
         var schoolClass = await _classRepository.GetByIdAsync(classId);
         var section = await _sectionRepository.GetByIdAsync(sectionId);
 
-        var students = await _markRepository.GetMarkEntrySheetAsync(examId, classId, sectionId, subjectId, default);
+        var sheetDtos = await _markRepository.GetMarkEntrySheetAsync(examId, classId, sectionId, subjectId, default);
 
-        return new MarkEntryViewModel
+        var students = sheetDtos.Select(dto =>
+        {
+            var d = new StudentMarkDataDto
+            {
+                StudentId = dto.StudentId,
+                StudentNo = dto.StudentNo,
+                StudentName = dto.StudentName,
+                RollNumber = dto.RollNumber,
+                MarksObtained = dto.MarksObtained,
+                Grade = dto.Grade,
+                IsLocked = dto.IsLocked,
+                WrittenMarks = dto.WrittenMarks,
+                MCQMarks = dto.MCQMarks,
+                CQMarks = dto.CQMarks,
+                PracticalMarks = dto.PracticalMarks,
+                VivaMarks = dto.VivaMarks,
+                LabMarks = dto.LabMarks,
+                OralMarks = dto.OralMarks,
+                AssignmentMarks = dto.AssignmentMarks,
+                ContinuousAssessmentMarks = dto.ContinuousAssessmentMarks,
+                CompetencyMarks = dto.CompetencyMarks,
+                BehaviourMarks = dto.BehaviourMarks,
+                ParticipationMarks = dto.ParticipationMarks,
+                EnteredByTeacherId = dto.EnteredByTeacherId,
+                EnteredByTeacherName = dto.EnteredByTeacherName
+            };
+
+            if (!string.IsNullOrEmpty(dto.ComponentValues))
+            {
+                try
+                {
+                    var parsed = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, decimal?>>(dto.ComponentValues);
+                    if (parsed != null)
+                        d.ComponentValues = parsed;
+                }
+                catch { }
+            }
+
+            return d;
+        }).ToList();
+
+        return new MarkEntryDataDto
         {
             ExamId = examId,
             ExamName = exam?.Name ?? "",
@@ -70,7 +122,16 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
 
     public async Task SubmitMarksBatchAsync(MarkBatchDto dto)
     {
+        var exam = await _examRepository.GetByIdAsync(dto.ExamId);
+        if (exam == null)
+            throw new InvalidOperationException("Exam not found.");
+        if (exam.Status == ResultWorkflowStatus.Published || exam.Status == ResultWorkflowStatus.Locked || exam.Status == ResultWorkflowStatus.Unpublished)
+            throw new InvalidOperationException($"Cannot modify marks — exam is {exam.Status}.");
+
         var gradingRules = await _gradingRepository.ListAsync();
+
+        var configuredComponents = await _markStructureService.GetGridColumnsAsync(
+            dto.ExamId, dto.SubjectId);
 
         foreach (var markDto in dto.Marks)
         {
@@ -78,81 +139,62 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
                 .ListAsync(x => x.ExamId == dto.ExamId && x.StudentId == markDto.StudentId && x.SubjectId == dto.SubjectId))
                 .FirstOrDefault();
 
-            if (existingMark != null && existingMark.IsLocked) continue;
+            if (existingMark != null && (existingMark.IsLocked || existingMark.Status == ResultWorkflowStatus.Approved))
+                continue;
 
-            // Calculate total marks from component fields if provided; otherwise use provided MarksObtained
-            var totalMarks = ComputeTotalFromComponents(markDto);
+            ApplyComponentValues(dto, markDto, configuredComponents,
+                out var componentValuesJson, out var totalMarks);
+
             if (totalMarks == null)
-            {
                 totalMarks = markDto.MarksObtained;
-            }
 
-            var (grade, gp) = CalculateGrade(totalMarks ?? 0, gradingRules);
+            var gradeResult = _gradeCalculator.CalculateGrade(totalMarks ?? 0, gradingRules);
+
+            // Determine target status — never downgrade from Submitted to Draft
+            var targetStatus = ResultWorkflowStatus.Submitted;
+            if (markDto.Status == ResultWorkflowStatus.Draft
+                && (existingMark == null || existingMark.Status < ResultWorkflowStatus.Submitted))
+                targetStatus = ResultWorkflowStatus.Draft;
 
             if (existingMark == null)
             {
+                var student = await _studentRepository.GetByIdAsync(markDto.StudentId);
                 var newMark = new MarkEntry
                 {
                     ExamId = dto.ExamId,
                     StudentId = markDto.StudentId,
                     SubjectId = dto.SubjectId,
-                    // store component-wise marks
-                    WrittenMarks = markDto.WrittenMarks,
-                    MCQMarks = markDto.MCQMarks,
-                    CQMarks = markDto.CQMarks,
-                    PracticalMarks = markDto.PracticalMarks,
-                    VivaMarks = markDto.VivaMarks,
-                    LabMarks = markDto.LabMarks,
-                    OralMarks = markDto.OralMarks,
-                    AssignmentMarks = markDto.AssignmentMarks,
-                    ContinuousAssessmentMarks = markDto.ContinuousAssessmentMarks,
-                    CompetencyMarks = markDto.CompetencyMarks,
-                    BehaviourMarks = markDto.BehaviourMarks,
-                    ParticipationMarks = markDto.ParticipationMarks,
+                    AcademicYearId = dto.ExamId > 0 ? (await _examRepository.GetByIdAsync(dto.ExamId))?.AcademicYearId ?? 0 : 0,
+                    ClassId = student?.ClassId ?? 0,
+                    SectionId = student?.SectionId ?? 0,
                     MarksObtained = totalMarks ?? 0,
-                    Grade = grade,
-                    GradePoint = gp,
+                    Grade = gradeResult.Grade,
+                    GradePoint = gradeResult.GradePoint,
                     EnteredByTeacherId = dto.TeacherId,
-                    Status = ResultWorkflowStatus.Submitted
+                    Status = targetStatus,
+                    ComponentValues = componentValuesJson
                 };
+
+                ApplyStandardFieldValues(newMark, markDto);
                 await _markRepository.AddAsync(newMark);
             }
             else
             {
-                // Audit Log
                 if (existingMark.MarksObtained != (totalMarks ?? 0))
                 {
-                    var audit = new ResultAuditLog
-                    {
-                        ExamId = dto.ExamId,
-                        StudentId = markDto.StudentId,
-                        SubjectId = dto.SubjectId,
-                        OldMarks = existingMark.MarksObtained,
-                        NewMarks = totalMarks ?? 0,
-                        ChangedByUserId = dto.TeacherId,
-                        Reason = "Teacher update"
-                    };
-                    await _unitOfWork.Repository<ResultAuditLog>().AddAsync(audit);
+                    await _auditLogger.LogMarkChangeAsync(
+                        dto.ExamId, markDto.StudentId, dto.SubjectId,
+                        existingMark.MarksObtained, totalMarks ?? 0,
+                        dto.TeacherId, "Teacher update");
                 }
 
-                // update components and totals
-                existingMark.WrittenMarks = markDto.WrittenMarks;
-                existingMark.MCQMarks = markDto.MCQMarks;
-                existingMark.CQMarks = markDto.CQMarks;
-                existingMark.PracticalMarks = markDto.PracticalMarks;
-                existingMark.VivaMarks = markDto.VivaMarks;
-                existingMark.LabMarks = markDto.LabMarks;
-                existingMark.OralMarks = markDto.OralMarks;
-                existingMark.AssignmentMarks = markDto.AssignmentMarks;
-                existingMark.ContinuousAssessmentMarks = markDto.ContinuousAssessmentMarks;
-                existingMark.CompetencyMarks = markDto.CompetencyMarks;
-                existingMark.BehaviourMarks = markDto.BehaviourMarks;
-                existingMark.ParticipationMarks = markDto.ParticipationMarks;
+                ApplyStandardFieldValues(existingMark, markDto);
+                existingMark.ComponentValues = componentValuesJson;
                 existingMark.MarksObtained = totalMarks ?? existingMark.MarksObtained;
-                existingMark.Grade = grade;
-                existingMark.GradePoint = gp;
+                existingMark.Grade = gradeResult.Grade;
+                existingMark.GradePoint = gradeResult.GradePoint;
                 existingMark.EnteredByTeacherId = dto.TeacherId;
-                existingMark.Status = ResultWorkflowStatus.Submitted;
+                existingMark.Status = targetStatus;
                 _markRepository.Update(existingMark);
             }
         }
@@ -160,25 +202,308 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
         await _unitOfWork.SaveChangesAsync();
     }
 
-    private decimal? ComputeTotalFromComponents(MarkEntryDto dto)
+    public async Task<byte[]> GenerateImportTemplateAsync(int examId, int subjectId, int classId, int sectionId)
     {
-        // Sum up all non-null component marks where applicable
+        var components = await _markStructureService.GetGridColumnsAsync(examId, subjectId, classId);
+        var students = await _markRepository.GetMarkEntrySheetAsync(examId, classId, sectionId, subjectId, default);
+
+        using var wb = new XLWorkbook();
+        var ws = wb.Worksheets.Add("MarkEntry");
+
+        int col = 1;
+        ws.Cell(1, col++).SetValue("Roll");
+        ws.Cell(1, col++).SetValue("StudentName");
+        ws.Cell(1, col++).SetValue("StudentNo");
+
+        foreach (var c in components)
+        {
+            ws.Cell(1, col).SetValue(c.ComponentCode);
+            col++;
+        }
+
+        int row = 2;
+        foreach (var s in students)
+        {
+            col = 1;
+            ws.Cell(row, col++).SetValue(s.RollNumber);
+            ws.Cell(row, col++).SetValue(s.StudentName);
+            ws.Cell(row, col++).SetValue(s.StudentNo);
+            row++;
+        }
+
+        ws.RangeUsed().SetAutoFilter();
+        ws.Columns().AdjustToContents();
+
+        using var ms = new MemoryStream();
+        wb.SaveAs(ms);
+        return ms.ToArray();
+    }
+
+    public async Task<ImportResultDto> ImportMarksFromExcelAsync(Stream stream, int examId, int subjectId, int classId, int sectionId, int teacherId, bool saveAsDraft)
+    {
+        var result = new ImportResultDto();
+        using var wb = new XLWorkbook(stream);
+        var ws = wb.Worksheet(1);
+        var range = ws.RangeUsed();
+        if (range == null)
+        {
+            result.ErrorCount = 1;
+            result.Errors.Add(new ImportErrorItemDto { RowNumber = 0, Message = "Empty worksheet — no data found." });
+            return result;
+        }
+
+        var rows = range.RowsUsed().Skip(1).ToList();
+        result.TotalRows = rows.Count;
+
+        if (rows.Count == 0)
+        {
+            result.ErrorCount = 1;
+            result.Errors.Add(new ImportErrorItemDto { RowNumber = 0, Message = "No data rows found (header only)." });
+            return result;
+        }
+
+        var components = await _markStructureService.GetGridColumnsAsync(examId, subjectId, classId);
+        var students = await _markRepository.GetMarkEntrySheetAsync(examId, classId, sectionId, subjectId, default);
+        var studentLookup = students.ToDictionary(s => s.RollNumber, s => s.StudentId);
+
+        int colRoll = 1;
+        var headerCols = new Dictionary<string, int>();
+
+        var headerRow = range.FirstRow().CellsUsed().ToList();
+        for (int i = 0; i < headerRow.Count; i++)
+            headerCols[headerRow[i].GetString().Trim().ToLowerInvariant()] = i + 1;
+
+        var marks = new List<MarkEntryDto>();
+        var seenStudentIds = new HashSet<int>();
+
+        foreach (var row in rows)
+        {
+            int rowNum = row.RowNumber();
+            var rollStr = row.Cell(colRoll).GetString().Trim();
+
+            if (!int.TryParse(rollStr, out var roll))
+            {
+                result.Errors.Add(new ImportErrorItemDto { RowNumber = rowNum, Message = $"Invalid roll number: '{rollStr}'" });
+                result.ErrorCount++;
+                continue;
+            }
+
+            if (!studentLookup.TryGetValue(roll, out var studentId))
+            {
+                result.Errors.Add(new ImportErrorItemDto { RowNumber = rowNum, Message = $"Roll {roll} not found in this class/section" });
+                result.ErrorCount++;
+                continue;
+            }
+
+            if (!seenStudentIds.Add(studentId))
+            {
+                result.Errors.Add(new ImportErrorItemDto { RowNumber = rowNum, Message = $"Duplicate roll {roll} (student already processed on an earlier row)" });
+                result.ErrorCount++;
+                continue;
+            }
+
+            var md = new MarkEntryDto
+            {
+                StudentId = studentId,
+                Status = saveAsDraft ? ResultWorkflowStatus.Draft : ResultWorkflowStatus.Submitted
+            };
+
+            foreach (var c in components)
+            {
+                var key = c.ComponentCode.ToLowerInvariant();
+                if (!headerCols.TryGetValue(key, out var ci)) continue;
+
+                var cellVal = row.Cell(ci).GetString().Trim();
+                if (string.IsNullOrEmpty(cellVal)) continue;
+
+                if (!decimal.TryParse(cellVal, out var val) || val < 0 || val > c.FullMarks)
+                {
+                    result.Errors.Add(new ImportErrorItemDto { RowNumber = rowNum, Message = $"Invalid {c.ComponentName}: '{cellVal}' (expected 0-{c.FullMarks})" });
+                    result.ErrorCount++;
+                    break;
+                }
+
+                SetMarkEntryComponentValue(md, c.ComponentCode, val);
+            }
+
+            if (result.Errors.Count(e => e.RowNumber == rowNum) == 0)
+                marks.Add(md);
+        }
+
+        if (result.ErrorCount == 0 && marks.Count > 0)
+        {
+            var dto = new MarkBatchDto
+            {
+                ExamId = examId, SubjectId = subjectId, TeacherId = teacherId, Marks = marks
+            };
+            await SubmitMarksBatchAsync(dto);
+            result.SuccessCount = marks.Count;
+        }
+
+        return result;
+    }
+
+    public async Task<byte[]> ExportMarksToExcelAsync(int examId, int subjectId, int classId, int sectionId, int? groupId)
+    {
+        var components = await _markStructureService.GetGridColumnsAsync(examId, subjectId, classId);
+        var students = await _markRepository.GetMarkEntrySheetAsync(examId, classId, sectionId, subjectId, default);
+
+        using var wb = new XLWorkbook();
+        var ws = wb.Worksheets.Add("Marks");
+
+        int col = 1;
+        ws.Cell(1, col++).SetValue("Roll");
+        ws.Cell(1, col++).SetValue("StudentName");
+        ws.Cell(1, col++).SetValue("StudentNo");
+
+        foreach (var c in components)
+        {
+            ws.Cell(1, col).SetValue(c.ComponentName);
+            col++;
+        }
+        ws.Cell(1, col++).SetValue("Total");
+        ws.Cell(1, col++).SetValue("Grade");
+        ws.Cell(1, col++).SetValue("GradePoint");
+        ws.Cell(1, col).SetValue("PassStatus");
+
+        int row = 2;
+        foreach (var s in students)
+        {
+            col = 1;
+            ws.Cell(row, col++).SetValue(s.RollNumber);
+            ws.Cell(row, col++).SetValue(s.StudentName);
+            ws.Cell(row, col++).SetValue(s.StudentNo);
+
+            foreach (var c in components)
+            {
+                var val = ComponentFieldMapper.GetValue(
+                    new MarkEntry
+                    {
+                        WrittenMarks = s.WrittenMarks, MCQMarks = s.MCQMarks, CQMarks = s.CQMarks,
+                        PracticalMarks = s.PracticalMarks, VivaMarks = s.VivaMarks, LabMarks = s.LabMarks,
+                        OralMarks = s.OralMarks, AssignmentMarks = s.AssignmentMarks,
+                        ContinuousAssessmentMarks = s.ContinuousAssessmentMarks,
+                        CompetencyMarks = s.CompetencyMarks, BehaviourMarks = s.BehaviourMarks,
+                        ParticipationMarks = s.ParticipationMarks
+                    }, c.ComponentCode);
+                ws.Cell(row, col++).SetValue((double)(val ?? 0));
+            }
+
+            ws.Cell(row, col++).SetValue(s.MarksObtained ?? 0);
+            ws.Cell(row, col++).SetValue(s.Grade ?? "");
+            ws.Cell(row, col).SetValue(!string.IsNullOrEmpty(s.Grade) && s.Grade != "F" ? "Pass" : "Fail");
+            row++;
+        }
+
+        ws.RangeUsed().SetAutoFilter();
+        ws.Columns().AdjustToContents();
+
+        using var ms = new MemoryStream();
+        wb.SaveAs(ms);
+        return ms.ToArray();
+    }
+
+    public async Task<string> ExportMarksToCsvAsync(int examId, int subjectId, int classId, int sectionId, int? groupId)
+    {
+        var components = await _markStructureService.GetGridColumnsAsync(examId, subjectId, classId);
+        var students = await _markRepository.GetMarkEntrySheetAsync(examId, classId, sectionId, subjectId, default);
+
+        var sb = new StringBuilder();
+        sb.Append("Roll,StudentName,StudentNo");
+        foreach (var c in components)
+            sb.Append($",{c.ComponentName}");
+        sb.AppendLine(",Total,Grade,GradePoint,PassStatus");
+
+        foreach (var s in students)
+        {
+            sb.Append($"{s.RollNumber},{EscapeCsv(s.StudentName)},{EscapeCsv(s.StudentNo)}");
+
+            foreach (var c in components)
+            {
+                var val = ComponentFieldMapper.GetValue(
+                    new MarkEntry
+                    {
+                        WrittenMarks = s.WrittenMarks, MCQMarks = s.MCQMarks, CQMarks = s.CQMarks,
+                        PracticalMarks = s.PracticalMarks, VivaMarks = s.VivaMarks, LabMarks = s.LabMarks,
+                        OralMarks = s.OralMarks, AssignmentMarks = s.AssignmentMarks,
+                        ContinuousAssessmentMarks = s.ContinuousAssessmentMarks,
+                        CompetencyMarks = s.CompetencyMarks, BehaviourMarks = s.BehaviourMarks,
+                        ParticipationMarks = s.ParticipationMarks
+                    }, c.ComponentCode);
+                sb.Append($",{val ?? 0}");
+            }
+
+            sb.AppendLine($",{s.MarksObtained ?? 0},{s.Grade ?? ""},,{(!string.IsNullOrEmpty(s.Grade) && s.Grade != "F" ? "Pass" : "Fail")}");
+        }
+
+        return sb.ToString();
+    }
+
+    private static string EscapeCsv(string val) =>
+        val.Contains(',') || val.Contains('"') || val.Contains('\n')
+            ? $"\"{val.Replace("\"", "\"\"")}\"" : val;
+
+    private static void SetMarkEntryComponentValue(MarkEntryDto dto, string code, decimal val)
+    {
+        switch (code.ToUpperInvariant())
+        {
+            case "WRITTEN": dto.WrittenMarks = val; break;
+            case "MCQ": dto.MCQMarks = val; break;
+            case "CQ": dto.CQMarks = val; break;
+            case "PRACTICAL": dto.PracticalMarks = val; break;
+            case "VIVA": dto.VivaMarks = val; break;
+            case "LAB": dto.LabMarks = val; break;
+            case "ORAL": dto.OralMarks = val; break;
+            case "ASSIGNMENT": dto.AssignmentMarks = val; break;
+            case "CONTINUOUS_ASSESSMENT": dto.ContinuousAssessmentMarks = val; break;
+            case "COMPETENCY": dto.CompetencyMarks = val; break;
+            case "BEHAVIOUR": dto.BehaviourMarks = val; break;
+            case "PARTICIPATION": dto.ParticipationMarks = val; break;
+            default: dto.ComponentValues[code] = val; break;
+        }
+    }
+
+    private static void ApplyStandardFieldValues(MarkEntry entry, MarkEntryDto dto)
+    {
+        ComponentFieldMapper.ApplyStandardFieldValues(entry, dto);
+    }
+
+    private void ApplyComponentValues(
+        MarkBatchDto batch,
+        MarkEntryDto markDto,
+        List<ComponentColumnDto> configuredComponents,
+        out string? componentValuesJson,
+        out decimal? totalMarks)
+    {
         decimal sum = 0;
         var any = false;
-        if (dto.WrittenMarks.HasValue) { sum += dto.WrittenMarks.Value; any = true; }
-        if (dto.MCQMarks.HasValue) { sum += dto.MCQMarks.Value; any = true; }
-        if (dto.CQMarks.HasValue) { sum += dto.CQMarks.Value; any = true; }
-        if (dto.PracticalMarks.HasValue) { sum += dto.PracticalMarks.Value; any = true; }
-        if (dto.VivaMarks.HasValue) { sum += dto.VivaMarks.Value; any = true; }
-        if (dto.LabMarks.HasValue) { sum += dto.LabMarks.Value; any = true; }
-        if (dto.OralMarks.HasValue) { sum += dto.OralMarks.Value; any = true; }
-        if (dto.AssignmentMarks.HasValue) { sum += dto.AssignmentMarks.Value; any = true; }
-        if (dto.ContinuousAssessmentMarks.HasValue) { sum += dto.ContinuousAssessmentMarks.Value; any = true; }
-        if (dto.CompetencyMarks.HasValue) { sum += dto.CompetencyMarks.Value; any = true; }
-        if (dto.BehaviourMarks.HasValue) { sum += dto.BehaviourMarks.Value; any = true; }
-        if (dto.ParticipationMarks.HasValue) { sum += dto.ParticipationMarks.Value; any = true; }
+        var dynamicValues = new Dictionary<string, decimal?>();
 
-        return any ? sum : (decimal?)null;
+        foreach (var component in configuredComponents)
+        {
+            decimal? value = GetComponentValue(markDto, component.ComponentCode);
+            if (!value.HasValue) continue;
+
+            any = true;
+            sum += value.Value;
+
+            // Store in dynamic JSON for all non-mapped components
+            if (!ComponentFieldMapper.IsStandardField(component.ComponentCode))
+            {
+                dynamicValues[component.ComponentCode] = value;
+            }
+        }
+
+        componentValuesJson = dynamicValues.Count > 0
+            ? System.Text.Json.JsonSerializer.Serialize(dynamicValues)
+            : null;
+
+        totalMarks = any ? sum : null;
+    }
+
+    private static decimal? GetComponentValue(MarkEntryDto dto, string componentCode)
+    {
+        return ComponentFieldMapper.GetDtoValue(dto, componentCode);
     }
 
     protected override IQueryable<MarkEntry> ApplySecurityFilters(IQueryable<MarkEntry> query, System.Security.Claims.ClaimsPrincipal user)
@@ -199,9 +524,4 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
         return query;
     }
 
-    private (string Grade, decimal GP) CalculateGrade(decimal marks, IEnumerable<GradingRule> rules)
-    {
-        var rule = rules.FirstOrDefault(x => marks >= x.MinMarks && marks <= x.MaxMarks);
-        return rule != null ? (rule.Grade, rule.GradePoint) : ("F", 0);
-    }
 }

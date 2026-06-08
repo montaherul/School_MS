@@ -1,8 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using SchoolManagementSystem.Data;
 using SchoolManagementSystem.Models.DTOs.Result;
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Models.Entities.Result;
+using SchoolManagementSystem.Models.Entities.System;
 using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
@@ -12,12 +12,10 @@ namespace SchoolManagementSystem.Services.Implementations.Result;
 public class TranscriptService : ITranscriptService
 {
     private readonly IUnitOfWork _uow;
-    private readonly SchoolDbContext _db;
 
-    public TranscriptService(IUnitOfWork uow, SchoolDbContext db)
+    public TranscriptService(IUnitOfWork uow)
     {
         _uow = uow;
-        _db = db;
     }
 
     public async Task<StudentTranscriptDto?> GetStudentTranscriptAsync(int studentId, int academicYearId)
@@ -32,7 +30,7 @@ public class TranscriptService : ITranscriptService
             .FirstOrDefaultAsync(y => y.Id == academicYearId && !y.IsDeleted);
         if (academicYear == null) return null;
 
-        var schoolProfile = await _db.SchoolProfiles.FirstOrDefaultAsync();
+        var schoolProfile = await _uow.Repository<SchoolProfile>().Query().FirstOrDefaultAsync();
 
         var examResults = await _uow.Repository<StudentExamResult>()
             .Query()
@@ -48,6 +46,13 @@ public class TranscriptService : ITranscriptService
             .Include(r => r.Exam)
             .Where(r => r.StudentId == studentId && r.Exam.AcademicYearId == academicYearId)
             .ToListAsync();
+
+        // Filter subject results based on student's curriculum
+        var validSubjectIds = await GetValidSubjectIdsForStudentAsync(student);
+        if (validSubjectIds.Count > 0)
+        {
+            subjectResults = subjectResults.Where(sr => validSubjectIds.Contains(sr.SubjectId)).ToList();
+        }
 
         var finalResult = await _uow.Repository<FinalResult>()
             .FirstOrDefaultAsync(f => f.StudentId == studentId && f.AcademicYearId == academicYearId);
@@ -127,5 +132,40 @@ public class TranscriptService : ITranscriptService
     public async Task<byte[]?> GenerateTranscriptPdfAsync(int studentId, int academicYearId)
     {
         return null;
+    }
+
+    private async Task<HashSet<int>> GetValidSubjectIdsForStudentAsync(SchoolManagementSystem.Models.Entities.Student.Student student)
+    {
+        var validIds = new HashSet<int>();
+
+        var classSubjects = await _uow.Repository<ClassSubject>().Query()
+            .AsNoTracking()
+            .Where(cs => cs.SchoolClassId == student.ClassId && !cs.IsDeleted && cs.IsActive)
+            .ToListAsync();
+
+        foreach (var cs in classSubjects)
+        {
+            // Skip religion subjects not matching student's religion
+            if (cs.IsReligionSubject)
+            {
+                if (student.AssignedReligionSubjectId.HasValue && cs.SubjectId == student.AssignedReligionSubjectId.Value)
+                    validIds.Add(cs.SubjectId);
+                continue;
+            }
+
+            // Skip group subjects not matching student's group
+            if (cs.IsGroupSubject)
+            {
+                if (cs.StudentGroupId.HasValue && student.StudentGroupId.HasValue &&
+                    cs.StudentGroupId.Value == student.StudentGroupId.Value)
+                    validIds.Add(cs.SubjectId);
+                continue;
+            }
+
+            // Include common (non-religion, non-group) subjects
+            validIds.Add(cs.SubjectId);
+        }
+
+        return validIds;
     }
 }

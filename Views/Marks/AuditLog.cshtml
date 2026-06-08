@@ -1,7 +1,7 @@
-@model IEnumerable<SchoolManagementSystem.Models.Entities.Result.ResultAuditLog>
+@model SchoolManagementSystem.Models.ViewModels.Result.MarksAuditLogViewModel
 @{
     ViewData["Title"] = "Academic Result Audit Logs";
-    var exams = ViewBag.Exams as IEnumerable<SchoolManagementSystem.Models.Entities.Exam.Exam>;
+    var exams = Model.Exams;
 }
 
 <div class="adm-page">
@@ -34,7 +34,7 @@
                     {
                         foreach (var e in exams)
                         {
-                            <!option value="@e.Id" @(ViewBag.SelectedExamId == e.Id ? "selected" : "")>@e.Name</!option>
+                            <!option value="@e.Id" @(Model.SelectedExamId == e.Id ? "selected" : "")>@e.Name</!option>
                         }
                     }
                 </select>
@@ -50,7 +50,7 @@
     <!-- ── Audit Log Table ── -->
     <div class="adm-table-card" style="border-radius: var(--adm-radius-lg); border-top: 1px solid var(--adm-border);">
         <div class="adm-table-card__body">
-            @if (Model != null && Model.Any())
+            @if (Model.Logs != null && Model.Logs.Any())
             {
                 <div class="table-responsive" style="border-radius: var(--adm-radius-lg);">
                     <table class="dash-table">
@@ -67,7 +67,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var log in Model)
+                            @foreach (var log in Model.Logs)
                             {
                                 <tr>
                                     <td>

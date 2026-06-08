@@ -22,7 +22,7 @@
                 </p>
             </div>
         </div>
-        <div class="adm-btn-group">
+        <div class="adm-btn-group align-items-center">
             <a href="@Url.Action("Index")" class="adm-btn adm-btn--ghost">Back</a>
             @if (!isReadOnly)
             {
@@ -30,6 +30,7 @@
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" /><polyline points="17 21 17 13 7 13 7 21" /><polyline points="7 3 7 8 15 8" /></svg>
                     Save Marksheet
                 </button>
+                <span id="autoSaveIndicator" class="text-muted small ms-3"></span>
             }
         </div>
     </div>
@@ -144,8 +145,8 @@
                 $row.find('.c-gp').text(gp.toFixed(2));
             }).trigger('input');
 
-            // Save via AJAX
-            $('#btnSaveMarks').click(function() {
+            // Build payload from grid
+            function buildMarksPayload() {
                 var marks = [];
                 $('#marksheetTable tbody tr').each(function() {
                     var studentId = parseInt($(this).data('student-id'));
@@ -160,35 +161,81 @@
                         });
                     }
                 });
-
-                var payload = {
+                return {
                     examId: parseInt('@Model.ExamId'),
                     subjectId: parseInt('@Model.SubjectId'),
                     marks: marks
                 };
+            }
 
-                $('#btnSaveMarks').prop('disabled', true).text('Saving...');
-
+            function saveMarks(url, btn, btnText) {
+                var payload = buildMarksPayload();
+                if (payload.marks.length === 0) return;
+                $(btn).prop('disabled', true).text('Saving...');
                 $.ajax({
-                    url: '@Url.Action("Save")',
+                    url: url,
                     type: 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify(payload),
                     success: function(res) {
                         if (res.success) {
-                            alert('Marksheet saved successfully.');
-                            window.location.href = '@Url.Action("Index")';
+                            localStorage.removeItem('marksDraft_@Model.ExamId');
+                            if (url.indexOf('SaveDraft') > -1) {
+                                var now = new Date();
+                                $('#autoSaveIndicator').text('Draft saved at ' + now.toLocaleTimeString());
+                                $(btn).prop('disabled', false).html(btnText);
+                            } else {
+                                window.location.href = '@Url.Action("Index")';
+                            }
                         } else {
-                            alert(res.message || 'Error occurred while saving marks.');
-                            $('#btnSaveMarks').prop('disabled', false).html('Save Marksheet');
+                            alert(res.message || 'Error saving marks.');
+                            $(btn).prop('disabled', false).html(btnText);
                         }
                     },
                     error: function() {
-                        alert('Fatal communication failure with ERP server.');
-                        $('#btnSaveMarks').prop('disabled', false).html('Save Marksheet');
+                        alert('Communication failure with server.');
+                        $(btn).prop('disabled', false).html(btnText);
                     }
                 });
+            }
+
+            // Manual save
+            $('#btnSaveMarks').click(function() {
+                saveMarks('@Url.Action("Save")', this, 'Save Marksheet');
             });
+
+            // Auto-save every 60 seconds (draft mode)
+            var autoSaveTimer = null;
+            @if (!isReadOnly)
+            {
+                <text>
+                // Backup to localStorage on every input change
+                $('.score-input').on('input', function() {
+                    try {
+                        localStorage.setItem('marksDraft_@Model.ExamId', JSON.stringify(buildMarksPayload()));
+                    } catch(e) {}
+                });
+
+                autoSaveTimer = setInterval(function() {
+                    if ($('#marksheetTable tbody tr').length > 1) {
+                        saveMarks('@Url.Action("SaveDraft")', '#btnSaveMarks', 'Save Marksheet');
+                    }
+                }, 60000);
+
+                // Recovery: check for unsaved draft on page load
+                try {
+                    var saved = localStorage.getItem('marksDraft_@Model.ExamId');
+                    if (saved) {
+                        var payload = JSON.parse(saved);
+                        if (payload && payload.marks && payload.marks.length > 0) {
+                            if (confirm('Unsaved draft found from a previous session. Restore and save now?')) {
+                                saveMarks('@Url.Action("SaveDraft")', '#btnSaveMarks', 'Save Marksheet');
+                            }
+                        }
+                    }
+                } catch(e) {}
+                </text>
+            }
         });
     </script>
 }

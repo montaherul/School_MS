@@ -1,3 +1,4 @@
+@model SchoolManagementSystem.Models.ViewModels.Student.StudentIndexViewModel
 @{
     ViewData["Title"] = "Student Management";
 }
@@ -99,9 +100,9 @@
 
                 <select id="classFilter" class="adm-select">
                     <option value="">All Classes</option>
-                    @if (ViewBag.Classes != null)
+                    @if (Model.Classes != null)
                     {
-                        foreach (var c in (IEnumerable<dynamic>)ViewBag.Classes)
+                        foreach (var c in Model.Classes)
                         {
                             <option value="@c.Id">@c.Name</option>
                         }
@@ -160,6 +161,8 @@
     </div>
 
 </div>
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer" style="z-index:1060;"></div>
 
 <!-- DELETE MODAL -->
 <div class="adm-modal-backdrop d-none"
@@ -234,6 +237,20 @@
 
 @section Scripts {
     <script>
+        function showToast(message, type) {
+            var bg = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : 'bg-warning';
+            var container = document.getElementById('toastContainer');
+            if (!container) return;
+            var toast = document.createElement('div');
+            toast.className = 'toast align-items-center text-white border-0 ' + bg;
+            toast.setAttribute('role', 'alert');
+            toast.innerHTML = '<div class="d-flex"><div class="toast-body">' + message + '</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>';
+            container.appendChild(toast);
+            var bs = new bootstrap.Toast(toast, { delay: 4000 });
+            bs.show();
+            toast.addEventListener('hidden.bs.toast', function () { toast.remove(); });
+        }
+
         let pendingDeleteId = null;
         const deleteModal = document.getElementById('deleteModalBackdrop');
         const searchInput = document.getElementById('table-search');
@@ -432,7 +449,7 @@
             const data = await res.json();
             closeDeleteModal();
             if (data.success) reloadTable();
-            else alert(data.message);
+            else showToast(data.message, 'error');
         });
     </script>
 }

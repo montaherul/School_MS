@@ -1,8 +1,8 @@
-@model IEnumerable<SchoolManagementSystem.Models.DTOs.Result.ResultListItemDto>
+@model SchoolManagementSystem.Models.ViewModels.Result.ReviewResultsPageViewModel
 @{
     ViewData["Title"] = "Review Results";
-    var examName = ViewBag.ExamName as string;
-    var examId = ViewBag.ExamId as int?;
+    var examName = Model.ExamName;
+    var examId = Model.ExamId;
 }
 
 <div class="adm-page">
@@ -17,15 +17,15 @@
             <div>
                 <h1 class="adm-header__title">Review Results</h1>
                 <p class="adm-header__sub">
-                    @if (!string.IsNullOrEmpty(ViewBag.AcademicYearName as string))
+                    @if (!string.IsNullOrEmpty(Model.AcademicYearName))
                     {
-                        <span>@ViewBag.AcademicYearName &middot; </span>
+                        <span>@Model.AcademicYearName &middot; </span>
                     }
                     @examName
                 </p>
             </div>
         </div>
-        @if (Model != null && Model.Any())
+        @if (Model.Results != null && Model.Results.Any())
         {
             <div class="adm-btn-group">
                 <button class="adm-btn adm-btn--primary" onclick="approveAll(@examId)" id="approveAllBtn">
@@ -43,12 +43,12 @@
         }
     </div>
 
-    @if (Model != null && Model.Any())
+    @if (Model.Results != null && Model.Results.Any())
     {
-        var total = Model.Count();
-        var passed = Model.Count(r => r.IsPassed);
-        var failed = Model.Count(r => !r.IsPassed);
-        var pending = Model.Count(r => r.Status == 0 || r.Status == 1);
+        var total = Model.Results.Count();
+        var passed = Model.Results.Count(r => r.IsPassed);
+        var failed = Model.Results.Count(r => !r.IsPassed);
+        var pending = Model.Results.Count(r => r.Status == 0 || r.Status == 1);
 
         <div class="row g-3 mb-3">
             <div class="col-md-12">
@@ -104,7 +104,7 @@
             </div>
         </div>
         <div class="adm-table-card__body">
-            @if (Model != null && Model.Any())
+            @if (Model.Results != null && Model.Results.Any())
             {
                 <div class="table-responsive">
                     <table class="dash-table" id="reviewTable">
@@ -129,7 +129,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var r in Model)
+                            @foreach (var r in Model.Results)
                             {
                                 <tr data-student-id="@r.StudentId" data-status="@r.Status" data-pass="@(r.IsPassed ? "pass" : "fail")" data-name="@r.StudentName.ToLower()" data-roll="@r.RollNumber.ToLower()">
                                     <td><input type="checkbox" class="form-check-input row-check" value="@r.StudentId"></td>
@@ -350,7 +350,7 @@
                 fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ examId: @(examId ?? 0), studentId: parseInt(studentId), notes: notes })
+                    body: JSON.stringify({ examId: @examId, studentId: parseInt(studentId), notes: notes })
                 })
                 .then(r => r.json())
                 .then(r => {

@@ -4,6 +4,7 @@ public class TeacherClassAssignmentDto
 {
     public int ClassId { get; set; }
     public string ClassName { get; set; } = string.Empty;
+    public bool IsGroupBased { get; set; }
     public int? GroupId { get; set; }
     public string? GroupName { get; set; }
     public int SectionId { get; set; }

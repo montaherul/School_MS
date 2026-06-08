@@ -107,6 +107,10 @@ public class Student : BaseEntity
     public int? AssignedReligionSubjectId { get; set; }
     public Subject? AssignedReligionSubject { get; set; }
 
+    // Per-student optional subject selection (e.g., Agriculture or Home Science for 6-8)
+    public int? OptionalSubjectId { get; set; }
+    public Subject? OptionalSubject { get; set; }
+
     // Group assignment for Class 9-10 (Science, Humanities, Business)
     public int? StudentGroupId { get; set; }
     public StudentGroup? StudentGroup { get; set; }

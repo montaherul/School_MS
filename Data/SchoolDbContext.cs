@@ -149,6 +149,8 @@ public class SchoolDbContext : DbContext
     public DbSet<ExamConfiguration> ExamConfigurations => Set<ExamConfiguration>();
     public DbSet<SubjectComponent> SubjectComponents => Set<SubjectComponent>();
     public DbSet<GpaConfiguration> GpaConfigurations => Set<GpaConfiguration>();
+    public DbSet<ExamComponent> ExamComponents => Set<ExamComponent>();
+    public DbSet<SubjectMarkStructure> SubjectMarkStructures => Set<SubjectMarkStructure>();
 
     // Result DbSets
     public DbSet<MarkAuditLog> MarkAuditLogs => Set<MarkAuditLog>();
@@ -269,6 +271,8 @@ public class SchoolDbContext : DbContext
         modelBuilder.Entity<SubjectComponent>().HasIndex(x => new { x.ClassSubjectId, x.ComponentName }).IsUnique();
         modelBuilder.Entity<GpaConfiguration>().HasIndex(x => x.Grade).IsUnique();
         modelBuilder.Entity<GpaConfiguration>().HasIndex(x => new { x.MinMarks, x.MaxMarks }).IsUnique();
+        modelBuilder.Entity<ExamComponent>().HasIndex(x => x.Code).IsUnique();
+        modelBuilder.Entity<SubjectMarkStructure>().HasIndex(x => new { x.ComponentId, x.ExamId, x.SubjectId, x.StudentGroupId }).IsUnique();
 
         // Result Indexes
         modelBuilder.Entity<MarkAuditLog>().HasIndex(x => x.MarkEntryId);
@@ -369,6 +373,37 @@ public class SchoolDbContext : DbContext
           .HasForeignKey(s => s.GuardianId)
           .OnDelete(DeleteBehavior.Restrict);
 });
+
+// Configure SubjectMarkStructure relationships
+modelBuilder.Entity<SubjectMarkStructure>()
+    .HasOne(s => s.Component)
+    .WithMany()
+    .HasForeignKey(s => s.ComponentId)
+    .OnDelete(DeleteBehavior.Restrict);
+
+modelBuilder.Entity<SubjectMarkStructure>()
+    .HasOne(s => s.Exam)
+    .WithMany()
+    .HasForeignKey(s => s.ExamId)
+    .OnDelete(DeleteBehavior.Restrict);
+
+modelBuilder.Entity<SubjectMarkStructure>()
+    .HasOne(s => s.Class)
+    .WithMany()
+    .HasForeignKey(s => s.ClassId)
+    .OnDelete(DeleteBehavior.Restrict);
+
+modelBuilder.Entity<SubjectMarkStructure>()
+    .HasOne(s => s.Subject)
+    .WithMany()
+    .HasForeignKey(s => s.SubjectId)
+    .OnDelete(DeleteBehavior.Restrict);
+
+modelBuilder.Entity<SubjectMarkStructure>()
+    .HasOne(s => s.StudentGroup)
+    .WithMany()
+    .HasForeignKey(s => s.StudentGroupId)
+    .OnDelete(DeleteBehavior.Restrict);
 
 DbInitializer.Seed(modelBuilder);
     }

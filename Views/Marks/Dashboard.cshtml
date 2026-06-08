@@ -1,0 +1,98 @@
+@model SchoolManagementSystem.Models.ViewModels.Result.TeacherMarksDashboardViewModel
+@{
+    ViewData["Title"] = "Teacher Dashboard";
+}
+
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h3 class="mb-1 text-primary"><i class="bi bi-bar-chart-fill"></i> Teacher Marks Dashboard</h3>
+                    <p class="text-muted">Overview of your marks entry progress across all assigned exams and subjects.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 text-center p-4">
+                <h2 class="text-primary mb-0">@Model.AssignedExams</h2>
+                <small class="text-muted">Assigned Exams</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 text-center p-4">
+                <h2 class="text-info mb-0">@Model.AssignedSubjects</h2>
+                <small class="text-muted">Assigned Subjects</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 text-center p-4">
+                <h2 class="text-success mb-0">@Model.SubmittedEntries</h2>
+                <small class="text-muted">Submitted Entries</small>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 text-center p-4">
+                <h2 class="text-warning mb-0">@Model.PendingEntries</h2>
+                <small class="text-muted">Pending Entries</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white py-3">
+            <h5 class="mb-0">Exam-wise Completion</h5>
+        </div>
+        <div class="card-body">
+            @if (Model.ExamNames.Count > 0)
+            {
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Exam</th>
+                            <th>Progress</th>
+                            <th class="text-end">Completion</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (int i = 0; i < Model.ExamNames.Count; i++)
+                        {
+                            var pct = Model.CompletionPercentages.ElementAtOrDefault(i);
+                            <tr>
+                                <td>@Model.ExamNames[i]</td>
+                                <td>
+                                    <div class="progress" style="height: 12px;">
+                                        <div class="progress-bar @(pct >= 80 ? "bg-success" : pct >= 50 ? "bg-warning" : "bg-danger")"
+                                             role="progressbar"
+                                             style="width: @pct%"
+                                             aria-valuenow="@pct"
+                                             aria-valuemin="0"
+                                             aria-valuemax="100">
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-end fw-bold">@pct%</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p class="text-muted mb-0">No exam assignments found for the current academic year.</p>
+            }
+        </div>
+    </div>
+
+    <div class="mt-4">
+        <a href="@Url.Action("Index")" class="btn btn-primary">
+            <i class="bi bi-pencil-square"></i> Enter Marks
+        </a>
+        <a href="@Url.Action("Index", "SubjectMarkStructure")" class="btn btn-outline-secondary ms-2">
+            <i class="bi bi-gear"></i> Configure Subjects
+        </a>
+    </div>
+</div>

@@ -1,11 +1,11 @@
-@model IEnumerable<SchoolManagementSystem.Models.DTOs.Result.StudentExamResultDto>
+@model SchoolManagementSystem.Models.ViewModels.Result.AllResultsPageViewModel
 @{
     ViewData["Title"] = "All Results Overview";
-    var exams = ViewBag.Exams as IEnumerable<dynamic>;
-    var classes = ViewBag.Classes as IEnumerable<dynamic>;
-    var selectedExamId = ViewBag.SelectedExamId as int?;
-    var selectedClassId = ViewBag.SelectedClassId as int?;
-    var selectedStatus = ViewBag.SelectedStatus as string;
+    var exams = Model.Exams;
+    var classes = Model.Classes;
+    var selectedExamId = Model.SelectedExamId;
+    var selectedClassId = Model.SelectedClassId;
+    var selectedStatus = Model.SelectedStatus;
 }
 
 <div class="container-fluid py-4">
@@ -92,7 +92,7 @@
     </div>
 
     <!-- Results Table -->
-    @if (Model != null && Model.Any())
+    @if (Model.Results != null && Model.Results.Any())
     {
         <div class="row">
             <div class="col-12">
@@ -129,7 +129,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach (var result in Model)
+                                    @foreach (var result in Model.Results)
                                     {
                                         <tr>
                                             <td class="ps-4">
@@ -213,7 +213,7 @@
                         <div class="row align-items-center">
                             <div class="col-md-6">
                                 <small class="text-muted">
-                                    Showing @Model.Count() results
+                                    Showing @Model.Results.Count() results
                                     @if (selectedExamId.HasValue || selectedClassId.HasValue || !string.IsNullOrEmpty(selectedStatus))
                                     {
                                         <span>(filtered)</span>
@@ -263,34 +263,48 @@
     }
 </div>
 
+<div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer" style="z-index:1080;"></div>
+
 @section Scripts {
     <script>
         $(document).ready(function () {
             $('#resultsTable').DataTable({
                 "pageLength": 25,
-                "order": [[3, "desc"], [9, "desc"]], // Sort by GPA desc, then date desc
+                "order": [[3, "desc"], [9, "desc"]],
                 "columnDefs": [
-                    { "orderable": false, "targets": [10] } // Disable sorting on actions column
+                    { "orderable": false, "targets": [10] }
                 ]
             });
         });
 
+        function showToast(message, type) {
+            var bg = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : 'bg-warning';
+            var container = document.getElementById('toastContainer');
+            if (!container) return;
+            var toast = document.createElement('div');
+            toast.className = 'toast align-items-center text-white border-0 ' + bg;
+            toast.setAttribute('role', 'alert');
+            toast.innerHTML = '<div class="d-flex"><div class="toast-body">' + message + '</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>';
+            container.appendChild(toast);
+            var bs = new bootstrap.Toast(toast, { delay: 4000 });
+            bs.show();
+            toast.addEventListener('hidden.bs.toast', function () { toast.remove(); });
+        }
+
         function viewDetailedResult(resultId) {
-            // Implement detailed result view
-            alert('Detailed result view for ID: ' + resultId);
+            showToast('Detailed result view for ID: ' + resultId + ' — coming soon', 'info');
         }
 
         function printResult(resultId) {
-            // Implement result printing
-            alert('Print result for ID: ' + resultId);
+            showToast('Print result for ID: ' + resultId + ' — coming soon', 'info');
         }
 
         function exportToExcel() {
-            alert('Excel export feature coming soon!');
+            showToast('Excel export feature coming soon!', 'info');
         }
 
         function exportToPDF() {
-            alert('PDF export feature coming soon!');
+            showToast('PDF export feature coming soon!', 'info');
         }
     </script>
 }

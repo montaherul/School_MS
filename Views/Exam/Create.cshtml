@@ -182,13 +182,19 @@
             <div class="wizard-panel" id="stepPanel4">
                 <div class="adm-table-card">
                     <div class="adm-table-card__body" style="padding:28px 32px;">
-                        <h3 style="font-size:18px;font-weight:700;margin-bottom:20px;color:var(--adm-text);">
-                            <i class="bi bi-people me-2" style="color:var(--adm-primary);"></i>Select Groups
-                        </h3>
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+                            <h3 style="font-size:18px;font-weight:700;margin:0;color:var(--adm-text);">
+                                <i class="bi bi-people me-2" style="color:var(--adm-primary);"></i>Select Groups
+                            </h3>
+                            <div>
+                                <button type="button" class="adm-btn adm-btn--ghost" onclick="toggleAllGroups(true)" style="font-size:12px;padding:5px 12px;">Select All</button>
+                                <button type="button" class="adm-btn adm-btn--ghost" onclick="toggleAllGroups(false)" style="font-size:12px;padding:5px 12px;">Deselect All</button>
+                            </div>
+                        </div>
                         <div class="field-error" id="errGroups"></div>
                         <div id="groupsContainer">
                             <div class="text-center" style="padding:40px 0;color:var(--adm-text-3);">
-                                <i class="bi bi-info-circle me-2"></i>Groups (Arts, Commerce, Science) are typically available for classes 9 &amp; 10.
+                                <i class="bi bi-info-circle me-2"></i>Groups (Arts, Commerce, Science) are available for group-based classes.
                             </div>
                         </div>
                     </div>
@@ -203,6 +209,10 @@
                             <h3 style="font-size:18px;font-weight:700;margin:0;color:var(--adm-text);">
                                 <i class="bi bi-book me-2" style="color:var(--adm-primary);"></i>Select Subjects
                             </h3>
+                            <div>
+                                <button type="button" class="adm-btn adm-btn--ghost" onclick="toggleAllSubjects(true)" style="font-size:12px;padding:5px 12px;">Select All</button>
+                                <button type="button" class="adm-btn adm-btn--ghost" onclick="toggleAllSubjects(false)" style="font-size:12px;padding:5px 12px;">Deselect All</button>
+                            </div>
                         </div>
                         <div class="field-error" id="errSubjects"></div>
                         <div id="subjectsContainer">
@@ -267,6 +277,9 @@
 </div>
 
 <style>
+    @@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap');
+
+    .bangla { font-family: 'Noto Sans Bengali', 'Hind Siliguri', sans-serif; }
     .wizard-progress { margin-bottom: 28px; }
     .wizard-progress__bar { height: 4px; background: var(--adm-surface-2); border-radius: 4px; margin-bottom: 16px; position: relative; overflow: hidden; }
     .wizard-progress__fill { height: 100%; background: linear-gradient(90deg, var(--adm-primary), var(--adm-primary-l)); border-radius: 4px; transition: width 0.4s var(--ease); width: calc(100% / 7); }
@@ -527,10 +540,10 @@
             };
 
             function loadStepData(step, isBack) {
-                if (step === 2) renderClasses();
-                if (step === 3) renderSections();
-                if (step === 4) renderGroups();
-                if (step === 5) renderSubjects();
+                if (step === 2) renderClassCheckboxes(cache.classes || state.classes);
+                if (step === 3) loadSectionsForSelectedClasses();
+                if (step === 4) loadGroupsForSelectedClasses();
+                if (step === 5) loadSubjectsForSelectedClasses();
                 if (step === 6) renderMarks();
                 if (step === 7) renderReview();
             }
@@ -586,7 +599,7 @@
                     html += '<div class="col-md-4 col-lg-3">';
                     html += '<label class="wizard-checkbox' + (checked ? ' selected' : '') + '">';
                     html += '<input type="checkbox" value="' + c.id + '" ' + checked + ' onchange="this.parentElement.classList.toggle(\'selected\',this.checked)">';
-                    html += '<span class="wizard-checkbox__label">' + escapeHtml(c.name || c.className || 'Class ' + c.id) + '</span>';
+                    html += '<span class="wizard-checkbox__label bangla">' + escapeHtml(c.name || c.className || 'Class ' + c.id) + '</span>';
                     html += '</label></div>';
                 });
                 container.innerHTML = html;
@@ -650,7 +663,7 @@
                         var checked = state.selectedSections.indexOf(s.id) !== -1 ? 'checked' : '';
                         html += '<label class="wizard-checkbox' + (checked ? ' selected' : '') + '">';
                         html += '<input type="checkbox" value="' + s.id + '" ' + checked + ' onchange="this.parentElement.classList.toggle(\'selected\',this.checked)">';
-                        html += '<span class="wizard-checkbox__label">' + escapeHtml(s.name || 'Section ' + s.id) + '</span>';
+                        html += '<span class="wizard-checkbox__label bangla">' + escapeHtml(s.name || 'Section ' + s.id) + '</span>';
                         html += '</label>';
                     });
                     html += '</div></div>';
@@ -660,6 +673,22 @@
 
             window.toggleAllSections = function (select) {
                 var cbs = document.querySelectorAll('#sectionsContainer .wizard-checkbox input[type="checkbox"]');
+                cbs.forEach(function (cb) {
+                    cb.checked = select;
+                    cb.parentElement.classList.toggle('selected', select);
+                });
+            };
+
+            window.toggleAllGroups = function (select) {
+                var cbs = document.querySelectorAll('#groupsContainer .wizard-checkbox input[type="checkbox"]');
+                cbs.forEach(function (cb) {
+                    cb.checked = select;
+                    cb.parentElement.classList.toggle('selected', select);
+                });
+            };
+
+            window.toggleAllSubjects = function (select) {
+                var cbs = document.querySelectorAll('#subjectsContainer .wizard-checkbox input[type="checkbox"]');
                 cbs.forEach(function (cb) {
                     cb.checked = select;
                     cb.parentElement.classList.toggle('selected', select);
@@ -706,7 +735,7 @@
                     var checked = state.selectedGroups.indexOf(g.id) !== -1 ? 'checked' : '';
                     html += '<div class="col-md-4"><label class="wizard-checkbox' + (checked ? ' selected' : '') + '">';
                     html += '<input type="checkbox" value="' + g.id + '" ' + checked + ' onchange="this.parentElement.classList.toggle(\'selected\',this.checked)">';
-                    html += '<span class="wizard-checkbox__label">' + escapeHtml(g.name || 'Group ' + g.id) + '</span>';
+                    html += '<span class="wizard-checkbox__label bangla">' + escapeHtml(g.name || 'Group ' + g.id) + '</span>';
                     html += '</label></div>';
                 });
                 html += '</div>';
@@ -767,7 +796,7 @@
                         var name = s.subjectName || s.name || 'Subject';
                         html += '<label class="wizard-checkbox' + (checked ? ' selected' : '') + '">';
                         html += '<input type="checkbox" value="' + subjId + '" ' + checked + ' onchange="this.parentElement.classList.toggle(\'selected\',this.checked)">';
-                        html += '<span class="wizard-checkbox__label">' + escapeHtml(code ? code + ' â€” ' + name : name) + '</span>';
+                        html += '<span class="wizard-checkbox__label bangla">' + escapeHtml(code ? code + ' — ' + name : name) + '</span>';
                         html += '</label>';
                     });
                     html += '</div></div>';
@@ -795,7 +824,7 @@
                     var defPm = s.defaultPassMarks || s.passMarks || 33;
                     var fm = marks.fullMarks || defFm;
                     var pm = marks.passMarks || defPm;
-                    html += '<tr><td><strong style="font-size:13px;">' + escapeHtml(displayName) + '</strong></td>';
+                    html += '<tr><td><strong class="bangla" style="font-size:13px;">' + escapeHtml(displayName) + '</strong></td>';
                     html += '<td><input class="marks-input" id="fm_' + sid + '" type="number" value="' + fm + '" min="1" step="0.5"></td>';
                     html += '<td><input class="marks-input" id="pm_' + sid + '" type="number" value="' + pm + '" min="0" step="0.5"></td>';
                     html += '<td><div style="display:flex;flex-wrap:wrap;gap:6px;">';
@@ -850,21 +879,21 @@
                 state.subjects.forEach(function (s) { subjMap[s.id || s.subjectId] = s; });
                 var html = '';
                 html += '<div class="review-section"><div class="review-section__title"><i class="bi bi-info-circle"></i>Exam Information</div>';
-                html += '<div class="review-grid"><div class="review-item"><span class="review-item__label">Exam Name</span><span class="review-item__value">' + escapeHtml(state.exam.name) + '</span></div>';
-                html += '<div class="review-item"><span class="review-item__label">Term</span><span class="review-item__value">' + escapeHtml(termLabel) + '</span></div>';
-                html += '<div class="review-item"><span class="review-item__label">Academic Year</span><span class="review-item__value">' + escapeHtml(yearName) + '</span></div>';
+                html += '<div class="review-grid"><div class="review-item"><span class="review-item__label">Exam Name</span><span class="review-item__value bangla">' + escapeHtml(state.exam.name) + '</span></div>';
+                html += '<div class="review-item"><span class="review-item__label">Term</span><span class="review-item__value bangla">' + escapeHtml(termLabel) + '</span></div>';
+                html += '<div class="review-item"><span class="review-item__label">Academic Year</span><span class="review-item__value bangla">' + escapeHtml(yearName) + '</span></div>';
                 html += '<div class="review-item"><span class="review-item__label">Duration</span><span class="review-item__value">' + escapeHtml(state.exam.startsOn) + ' to ' + escapeHtml(state.exam.endsOn) + '</span></div>';
-                if (state.exam.description) html += '<div class="review-item" style="grid-column:1/-1;"><span class="review-item__label">Description</span><span class="review-item__value" style="text-align:left;">' + escapeHtml(state.exam.description) + '</span></div>';
+                if (state.exam.description) html += '<div class="review-item" style="grid-column:1/-1;"><span class="review-item__label">Description</span><span class="review-item__value bangla" style="text-align:left;">' + escapeHtml(state.exam.description) + '</span></div>';
                 html += '</div></div>';
                 html += '<div class="review-section"><div class="review-section__title"><i class="bi bi-building"></i>Classes &amp; Sections</div>';
                 html += '<div><span class="review-item__label">Classes:</span> ';
-                classNames.forEach(function (n) { html += '<span class="review-badge">' + escapeHtml(n) + '</span>'; });
+                classNames.forEach(function (n) { html += '<span class="review-badge bangla">' + escapeHtml(n) + '</span>'; });
                 html += '</div><div style="margin-top:6px;"><span class="review-item__label">Sections:</span> ';
-                sectionNames.forEach(function (n) { html += '<span class="review-badge review-badge--info">' + escapeHtml(n) + '</span>'; });
+                sectionNames.forEach(function (n) { html += '<span class="review-badge review-badge--info bangla">' + escapeHtml(n) + '</span>'; });
                 html += '</div>';
                 if (groupNames.length > 0) {
                     html += '<div style="margin-top:6px;"><span class="review-item__label">Groups:</span> ';
-                    groupNames.forEach(function (n) { html += '<span class="review-badge review-badge--success">' + escapeHtml(n) + '</span>'; });
+                    groupNames.forEach(function (n) { html += '<span class="review-badge review-badge--success bangla">' + escapeHtml(n) + '</span>'; });
                     html += '</div>';
                 }
                 html += '</div>';
@@ -884,7 +913,7 @@
                     if (marks.hasOral) comps.push('Oral');
                     if (marks.hasAssignment) comps.push('Assignment');
                     if (marks.hasContinuousAssessment) comps.push('CA');
-                    html += '<div class="review-section-card"><div class="review-section-card__title">' + escapeHtml(displayName) + '</div>';
+                    html += '<div class="review-section-card"><div class="review-section-card__title bangla">' + escapeHtml(displayName) + '</div>';
                     html += '<div class="review-section-card__item"><span>Full Marks: <strong>' + marks.fullMarks + '</strong></span><span>Pass Marks: <strong>' + marks.passMarks + '</strong></span></div>';
                     if (comps.length > 0) html += '<div style="font-size:12px;color:var(--adm-text-3);margin-top:4px;">Components: ' + comps.join(', ') + '</div>';
                     html += '</div>';
@@ -900,13 +929,35 @@
                 submitSpinner.style.display = 'inline-block';
                 submitText.textContent = 'Saving...';
 
+                var subjects = state.selectedSubjects.map(function (sid) {
+                    var marks = state.subjectMarks[sid] || {};
+                    return {
+                        subjectId: sid,
+                        fullMarks: marks.fullMarks || 100,
+                        passMarks: marks.passMarks || 33,
+                        isOptional: marks.isOptional || false,
+                        hasWritten: marks.hasWritten || false,
+                        hasMCQ: marks.hasMCQ || false,
+                        hasPractical: marks.hasPractical || false,
+                        hasViva: marks.hasViva || false,
+                        hasLab: marks.hasLab || false,
+                        hasOral: marks.hasOral || false,
+                        hasAssignment: marks.hasAssignment || false,
+                        hasContinuousAssessment: marks.hasContinuousAssessment || false
+                    };
+                });
+
                 var payload = {
                     name: state.exam.name,
                     term: state.exam.term,
                     academicYearId: parseInt(state.exam.academicYearId, 10),
                     startsOn: state.exam.startsOn,
                     endsOn: state.exam.endsOn,
-                    status: 0
+                    studentGroupId: state.selectedGroups.length > 0 ? state.selectedGroups[0] : null,
+                    status: state.exam.id ? state.exam.status : 1,
+                    selectedClassIds: state.selectedClasses,
+                    selectedSectionIds: state.selectedSections,
+                    subjects: subjects
                 };
 
                 var url = state.exam.id ? '/api/ExamAdmin/update-exam/' + state.exam.id : '/api/ExamAdmin/create-exam';
@@ -962,6 +1013,7 @@
                     state.exam.startsOn = examData.startsOn || '';
                     state.exam.endsOn = examData.endsOn || '';
                     state.exam.description = examData.description || '';
+                    state.exam.status = examData.status || 1;
                     if (examData.selectedClasses) state.selectedClasses = examData.selectedClasses;
                     if (examData.selectedSections) state.selectedSections = examData.selectedSections;
                     if (examData.selectedGroups) state.selectedGroups = examData.selectedGroups;

@@ -53,8 +53,12 @@ public class StudentController : Controller
             });
         }
 
-        ViewBag.Classes = await _sectionService.GetAvailableClassesAsync(ct);
-        return View();
+        var availableClasses = (await _sectionService.GetAvailableClassesAsync(ct)).Cast<dynamic>().Select(c => new SchoolManagementSystem.Models.DTOs.Academic.SchoolClassListItemDto { Id = (int)c.Id, Name = (string)c.Name }).ToList();
+        var model = new SchoolManagementSystem.Models.ViewModels.Student.StudentIndexViewModel
+        {
+            Classes = availableClasses
+        };
+        return View(model);
     }
 
     [HttpGet]

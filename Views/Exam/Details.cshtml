@@ -1,2 +1,131 @@
-@model SchoolManagementSystem.Models.ViewModels.Shared.CrudDetailsViewModel
-@await Html.PartialAsync("~/Views/Shared/Crud/Details.cshtml", Model)
+@model SchoolManagementSystem.Models.ViewModels.Exam.ExamDetailsViewModel
+@{
+    ViewData["Title"] = "Exam Details";
+    var exam = Model.Exam;
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">@exam.Name</h1>
+                <p class="adm-header__sub">Exam Details</p>
+            </div>
+        </div>
+        <div class="adm-btn-group">
+            <a href="@Url.Action("Edit", "Exam", new { id = exam.Id })" class="adm-btn adm-btn--primary">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
+                Edit
+            </a>
+            <a href="@Url.Action("Index", "Exam")" class="adm-btn adm-btn--ghost">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6" /></svg>
+                Back
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-8">
+            <div class="adm-table-card">
+                <div class="adm-table-card__header">
+                    <h3>Exam Information</h3>
+                </div>
+                <div class="adm-table-card__body" style="padding:24px 32px;">
+                    <table class="dash-table dash-table--details">
+                        <tbody>
+                            <tr>
+                                <td style="width:200px;font-weight:600;color:var(--adm-text-2);padding:12px 0;">Exam Name</td>
+                                <td style="padding:12px 0;">@exam.Name</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight:600;color:var(--adm-text-2);padding:12px 0;">Term</td>
+                                <td style="padding:12px 0;">
+                                    <span class="adm-status adm-status--neutral">@exam.Term</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight:600;color:var(--adm-text-2);padding:12px 0;">Academic Year</td>
+                                <td style="padding:12px 0;">@exam.AcademicYearName</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight:600;color:var(--adm-text-2);padding:12px 0;">Duration</td>
+                                <td style="padding:12px 0;">@exam.StartsOn.ToString("d") – @exam.EndsOn.ToString("d")</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight:600;color:var(--adm-text-2);padding:12px 0;">Student Group</td>
+                                <td style="padding:12px 0;">@(exam.StudentGroupName ?? "All Groups")</td>
+                            </tr>
+                            <tr>
+                                <td style="font-weight:600;color:var(--adm-text-2);padding:12px 0;">Status</td>
+                                <td style="padding:12px 0;">
+                                    @{
+                                        var badgeClass = exam.Status switch
+                                        {
+                                            SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Draft => "neutral",
+                                            SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Submitted => "pending",
+                                            SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Reviewed => "approved",
+                                            SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Approved => "approved",
+                                            SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Published => "converted",
+                                            SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Locked => "neutral",
+                                            SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Unpublished => "rejected",
+                                            _ => "neutral"
+                                        };
+                                    }
+                                    <span class="adm-status adm-status--@badgeClass">@exam.Status</span>
+                                    @if (exam.IsLocked)
+                                    {
+                                        <span class="adm-status adm-status--neutral ms-2">Locked</span>
+                                    }
+                                </td>
+                            </tr>
+                            @if (exam.LockedAt.HasValue)
+                            {
+                                <tr>
+                                    <td style="font-weight:600;color:var(--adm-text-2);padding:12px 0;">Locked At</td>
+                                    <td style="padding:12px 0;">@exam.LockedAt.Value.ToString("g")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="adm-table-card">
+                <div class="adm-table-card__header">
+                    <h3>Statistics</h3>
+                </div>
+                <div class="adm-table-card__body" style="padding:24px 32px;">
+                    <div style="display:flex;flex-direction:column;gap:16px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--adm-bg-2);border-radius:var(--adm-radius);">
+                            <span style="color:var(--adm-text-2);">Subjects</span>
+                            <span style="font-size:20px;font-weight:700;color:var(--adm-primary);">@exam.SubjectCount</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--adm-bg-2);border-radius:var(--adm-radius);">
+                            <span style="color:var(--adm-text-2);">Student Results</span>
+                            <span style="font-size:20px;font-weight:700;color:var(--adm-primary);">@exam.StudentResultCount</span>
+                        </div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--adm-bg-2);border-radius:var(--adm-radius);">
+                            <span style="color:var(--adm-text-2);">Created</span>
+                            <span style="font-size:14px;font-weight:600;color:var(--adm-text);">@exam.CreatedAt.ToString("d")</span>
+                        </div>
+                        @if (!string.IsNullOrEmpty(exam.CreatedBy))
+                        {
+                            <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--adm-bg-2);border-radius:var(--adm-radius);">
+                                <span style="color:var(--adm-text-2);">Created By</span>
+                                <span style="font-size:14px;font-weight:600;color:var(--adm-text);">@exam.CreatedBy</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,13 +1,9 @@
 window.TeacherAssignmentCascade = {
-    // Utility to determine if a class is secondary (Class 9-10) supporting groups
-    isSecondaryClass: function(className) {
-        if (!className) return false;
-        const normalized = className.trim().toUpperCase();
-        const classNumMatch = normalized.match(/\b(9|10)\b/);
-        if (classNumMatch) return true;
-        const romanMatch = normalized.match(/\b(IX|X)\b/);
-        if (romanMatch) return true;
-        return false;
+    // Utility to determine if a class is group-based using data attribute
+    isGroupBasedClass: function(classSelectEl) {
+        if (!classSelectEl || !classSelectEl.length) return false;
+        const selectedOpt = classSelectEl.find('option:selected');
+        return selectedOpt.attr('data-is-group-based') === 'true';
     },
 
     // Main setup function to wire up selectors
@@ -42,7 +38,6 @@ window.TeacherAssignmentCascade = {
         // 1. Class Selection Change
         classEl.change(async function() {
             const classId = $(this).val();
-            const classText = classEl.find('option:selected').text();
             
             // Reset cascading elements
             if (groupEl) resetSelect(groupEl, groupEl.data('placeholder') || '-- Choose Group --');
@@ -55,7 +50,7 @@ window.TeacherAssignmentCascade = {
                 return;
             }
 
-            const isSec = window.TeacherAssignmentCascade.isSecondaryClass(classText);
+            const isSec = window.TeacherAssignmentCascade.isGroupBasedClass(classEl);
 
             if (isSec && groupEl) {
                 // Fetch and populate Groups

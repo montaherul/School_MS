@@ -122,6 +122,8 @@ public class StudentUpsertDto
     [Range(1, int.MaxValue)]
     public int SectionId { get; set; }
 
+    public int? OptionalSubjectId { get; set; }
+
     [Range(1, 500)]
     public int RollNumber { get; set; }
     // Present

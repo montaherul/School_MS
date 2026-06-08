@@ -1,7 +1,8 @@
+@model SchoolManagementSystem.Models.ViewModels.Guardian.GuardianProfileViewModel
 @{
     ViewData["Title"] = "My Profile";
-    var guardian = ViewBag.Guardian as SchoolManagementSystem.Models.Entities.Guardian.Guardian;
-    var childrenCount = (int)(ViewBag.ChildrenCount ?? 0);
+    var guardian = Model.Guardian;
+    var childrenCount = Model.ChildrenCount;
     var statusLabel = guardian?.Status.ToString() ?? "Unknown";
     var statusClass = guardian?.Status switch
     {

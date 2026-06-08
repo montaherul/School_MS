@@ -4,7 +4,12 @@
     var classes = ViewBag.Classes as SelectList;
     var defaultClassId = ViewBag.DefaultClassId;
     var defaultSectionId = ViewBag.DefaultSectionId;
+    var classIsGroupBasedDict = ViewBag.ClassIsGroupBasedData as Dictionary<int, bool>;
 }
+
+<script>
+    var classIsGroupBased = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(classIsGroupBasedDict ?? new Dictionary<int, bool>()));
+</script>
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
 <link rel="stylesheet" href="https://unpkg.com/tabulator-tables@5.4.0/dist/css/tabulator.min.css">
@@ -360,17 +365,15 @@ function initializeTable() {
             const sectionId = $('#filterSection').val();
             const studentGroupId = $('#filterGroup').val();
             const attendanceDate = $('#filterDate').val();
-            const classText = $('#filterClass option:selected').text();
-            const classNum = parseInt(classText.replace(/\D/g, '')) || 0;
 
             if (!classId || !sectionId) {
                 toastr.warning('Please select class and section');
                 return;
             }
 
-            // Enforce group selection for classes 9-10
-            if (classNum >= 9 && classNum <= 10 && !studentGroupId) {
-                toastr.warning('Please select a group for class 9-10');
+            // Enforce group selection for group-based classes
+            if (classIsGroupBased[classId] && !studentGroupId) {
+                toastr.warning('Please select a group for this class');
                 return;
             }
 
@@ -529,8 +532,6 @@ function initializeTable() {
         // Load sections (and groups) when class changes
         $('#filterClass').change(async function () {
             const classId = $(this).val();
-            const classText = $('#filterClass option:selected').text();
-            const classNum = parseInt(classText.replace(/\D/g, '')) || 0;
 
             // reset dropdowns
             $('#filterSection').html('<option value="">Select section</option>');
@@ -539,8 +540,8 @@ function initializeTable() {
 
             if (!classId) return;
 
-            // If class is 9-10, load groups
-            if (classNum >= 9 && classNum <= 10) {
+            // If class is group-based, load groups
+            if (classIsGroupBased[classId]) {
                 try {
                     const grpResp = await fetch(`${routes.getGroups}?classId=${classId}`);
                     const grpResult = await grpResp.json();

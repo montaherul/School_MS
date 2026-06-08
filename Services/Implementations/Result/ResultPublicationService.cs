@@ -4,11 +4,9 @@ using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Models.Entities.Exam;
 using SchoolManagementSystem.Models.Entities.Result;
 using SchoolManagementSystem.Models.Enums;
-using SchoolManagementSystem.Models.ViewModels.Result;
 using SchoolManagementSystem.Repositories.Interfaces.Result;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
-using StudentPortalResultViewModel = SchoolManagementSystem.Models.ViewModels.Result.StudentPortalResultViewModel;
 
 namespace SchoolManagementSystem.Services.Implementations.Result;
 
@@ -51,6 +49,8 @@ public class ResultPublicationService : IResultPublicationService
 
         foreach (var mark in marks)
         {
+            if (mark.Status != ResultWorkflowStatus.Draft)
+                throw new InvalidOperationException($"Mark entry for StudentId {mark.StudentId} is not in Draft status (current: {mark.Status})");
             mark.Status = ResultWorkflowStatus.Submitted;
             _markEntryRepository.Update(mark);
         }
@@ -64,6 +64,8 @@ public class ResultPublicationService : IResultPublicationService
 
         foreach (var mark in marks)
         {
+            if (mark.Status != ResultWorkflowStatus.Submitted && mark.Status != ResultWorkflowStatus.Reviewed)
+                throw new InvalidOperationException($"Mark entry for StudentId {mark.StudentId} must be Submitted or Reviewed before approval (current: {mark.Status})");
             mark.Status = ResultWorkflowStatus.Approved;
             _markEntryRepository.Update(mark);
         }
@@ -75,6 +77,12 @@ public class ResultPublicationService : IResultPublicationService
     {
         var exam = await _examRepository.GetByIdAsync(dto.ExamId);
         if (exam == null) return;
+
+        if (exam.Status == ResultWorkflowStatus.Published)
+            throw new InvalidOperationException("Exam results are already published");
+
+        if (exam.Status == ResultWorkflowStatus.Locked)
+            throw new InvalidOperationException("Exam results are locked and cannot be published");
 
         // Calculate Ranking / GPA / Position
         await _meritCalculationService.RecalculateMeritPositionsAsync(dto.ExamId);
@@ -92,6 +100,9 @@ public class ResultPublicationService : IResultPublicationService
             if (dto.LockResults) mark.IsLocked = true;
 
             // Publish Status
+            if (mark.Status == ResultWorkflowStatus.Published)
+                continue; // Skip already-published entries
+
             mark.Status = ResultWorkflowStatus.Published;
             _markEntryRepository.Update(mark);
 
@@ -108,6 +119,9 @@ public class ResultPublicationService : IResultPublicationService
                     ExamId = mark.ExamId,
                     StudentId = mark.StudentId,
                     SubjectId = mark.SubjectId,
+                    AcademicYearId = mark.AcademicYearId,
+                    ClassId = mark.ClassId,
+                    SectionId = mark.SectionId,
                     MarksObtained = mark.MarksObtained,
                     Grade = mark.Grade ?? "",
                     GradePoint = mark.GradePoint ?? 0,
@@ -159,6 +173,8 @@ public class ResultPublicationService : IResultPublicationService
         var marks = await _markEntryRepository.ListAsync(x => x.ExamId == examId);
         foreach (var mark in marks)
         {
+            if (mark.Status != ResultWorkflowStatus.Submitted)
+                throw new InvalidOperationException($"Mark entry for StudentId {mark.StudentId} must be Submitted before review (current: {mark.Status})");
             mark.Status = ResultWorkflowStatus.Reviewed;
             _markEntryRepository.Update(mark);
         }
@@ -170,6 +186,8 @@ public class ResultPublicationService : IResultPublicationService
         var marks = await _markEntryRepository.ListAsync(x => x.ExamId == examId);
         foreach (var mark in marks)
         {
+            if (mark.Status != ResultWorkflowStatus.Reviewed)
+                throw new InvalidOperationException($"Mark entry for StudentId {mark.StudentId} must be Reviewed before approval (current: {mark.Status})");
             mark.Status = ResultWorkflowStatus.Approved;
             _markEntryRepository.Update(mark);
         }
@@ -180,6 +198,9 @@ public class ResultPublicationService : IResultPublicationService
     {
         var exam = await _examRepository.GetByIdAsync(examId);
         if (exam == null) return;
+
+        if (exam.Status != ResultWorkflowStatus.Published && exam.Status != ResultWorkflowStatus.Unpublished)
+            throw new InvalidOperationException($"Exam must be Published or Unpublished to unpublish (current: {exam.Status})");
         
         exam.Status = ResultWorkflowStatus.Unpublished;
         _examRepository.Update(exam);
@@ -237,7 +258,7 @@ public class ResultPublicationService : IResultPublicationService
         });
     }
 
-    public async Task<StudentPortalResultViewModel> GetStudentResultsAsync(int studentId)
+    public async Task<StudentPortalResultDto> GetStudentResultsAsync(int studentId)
     {
         var student = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().GetByIdAsync(studentId);
 
@@ -260,7 +281,7 @@ public class ResultPublicationService : IResultPublicationService
             .Where(x => x.StudentId == studentId)
             .ToListAsync();
 
-        var viewModel = new StudentPortalResultViewModel
+        var result = new StudentPortalResultDto
         {
             StudentId = studentId,
             StudentName = student?.FullName ?? "",
@@ -287,7 +308,7 @@ public class ResultPublicationService : IResultPublicationService
             }).ToList()
         };
 
-        return viewModel;
+        return result;
     }
 
     public async Task<IEnumerable<StudentExamResultDto>> GetAllResultsAsync(int? examId, int? classId, string? status)

@@ -41,9 +41,17 @@
                 </select>
                 <select name="classId" class="form-select adm-select" style="width:auto;">
                     <option value="">All Classes</option>
+                    @foreach (var c in Model.Classes)
+                    {
+                        <!option value="@c.Id" selected="@(c.Id == Model.SelectedClassId)">@c.Name</!option>
+                    }
                 </select>
                 <select name="sectionId" class="form-select adm-select" style="width:auto;">
                     <option value="">All Sections</option>
+                    @foreach (var s in Model.Sections)
+                    {
+                        <!option value="@s.Id" selected="@(s.Id == Model.SelectedSectionId)">@s.Name</!option>
+                    }
                 </select>
                 <select name="groupId" class="form-select adm-select" style="width:auto;">
                     <option value="">All Groups</option>
@@ -203,7 +211,7 @@
                                             <td><span class="adm-cell-name">@exam.Name</span></td>
                                             <td><span class="adm-status adm-status--neutral">@exam.Term</span></td>
                                             <td>
-                                                <span>@exam.StartsOn.ToShortDateString() – @exam.EndsOn.ToShortDateString()</span>
+                                                <span>@exam.StartsOn.ToString("d") – @exam.EndsOn.ToString("d")</span>
                                             </td>
                                             <td>
                                                 @{
@@ -212,12 +220,12 @@
                                                     var label = "Draft";
                                                     switch (st)
                                                     {
-                                                        case 1: badgeClass = "pending"; label = "Submitted"; break;
-                                                        case 2: badgeClass = "approved"; label = "Reviewed"; break;
-                                                        case 3: badgeClass = "approved"; label = "Approved"; break;
-                                                        case 4: badgeClass = "converted"; label = "Published"; break;
-                                                        case 5: badgeClass = "neutral"; label = "Locked"; break;
-                                                        case 6: badgeClass = "neutral"; label = "Unpublished"; break;
+                                                        case 2: badgeClass = "pending"; label = "Submitted"; break;
+                                                        case 3: badgeClass = "approved"; label = "Reviewed"; break;
+                                                        case 4: badgeClass = "approved"; label = "Approved"; break;
+                                                        case 5: badgeClass = "converted"; label = "Published"; break;
+                                                        case 6: badgeClass = "neutral"; label = "Locked"; break;
+                                                        case 7: badgeClass = "rejected"; label = "Unpublished"; break;
                                                     }
                                                 }
                                                 <span class="adm-status adm-status--@badgeClass">@label</span>
@@ -289,7 +297,7 @@
             var passData = @Html.Raw(Model.PassRateDataJson);
 
             if (statusDist.length) {
-                var statusNames = { 0:'Draft', 1:'Submitted', 2:'Reviewed', 3:'Approved', 4:'Published', 5:'Locked', 6:'Unpublished' };
+                var statusNames = { 1:'Draft', 2:'Submitted', 3:'Reviewed', 4:'Approved', 5:'Published', 6:'Locked', 7:'Unpublished' };
                 var colors = ['#ffc107','#17a2b8','#0d6efd','#198754','#6f42c1','#212529','#dc3545'];
                 new Chart(document.getElementById('statusChart'), {
                     type: 'doughnut',

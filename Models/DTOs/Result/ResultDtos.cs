@@ -4,6 +4,7 @@ using SchoolManagementSystem.Models.Entities.Result;
 using SchoolManagementSystem.Models.Enums;
 using System.ComponentModel.DataAnnotations;
 using SchoolManagementSystem.Models.Entities.Student;
+using SchoolManagementSystem.Models.DTOs.Exam;
 namespace SchoolManagementSystem.Models.DTOs.Result;
 
 /// <summary>
@@ -17,16 +18,50 @@ namespace SchoolManagementSystem.Models.DTOs.Result;
 public class ExamUpsertDto
 {
     public int? Id { get; set; }
+
+    [Required(ErrorMessage = "Exam name is required")]
+    [MaxLength(100)]
     public string Name { get; set; } = string.Empty;
+
+    [Required(ErrorMessage = "Exam term is required")]
     public ExamTerm Term { get; set; } = ExamTerm.Other;
+
+    [Required(ErrorMessage = "Academic year is required")]
     public int AcademicYearId { get; set; }
-    public int? ClassId { get; set; }
-    public int? SectionId { get; set; }
+
     public int? StudentGroupId { get; set; }
+
+    [Required(ErrorMessage = "Start date is required")]
     public DateOnly StartsOn { get; set; }
+
+    [Required(ErrorMessage = "End date is required")]
     public DateOnly EndsOn { get; set; }
+
     public ResultWorkflowStatus Status { get; set; }
     public bool IsLocked { get; set; } = false;
+
+    public List<int>? SelectedClassIds { get; set; }
+    public List<int>? SelectedSectionIds { get; set; }
+    public List<SubjectMarkConfigDto>? Subjects { get; set; }
+}
+
+/// <summary>
+/// Per-subject mark configuration sent from the wizard
+/// </summary>
+public class SubjectMarkConfigDto
+{
+    public int SubjectId { get; set; }
+    public decimal FullMarks { get; set; } = 100;
+    public decimal PassMarks { get; set; } = 33;
+    public bool IsOptional { get; set; }
+    public bool HasWritten { get; set; }
+    public bool HasMCQ { get; set; }
+    public bool HasPractical { get; set; }
+    public bool HasViva { get; set; }
+    public bool HasLab { get; set; }
+    public bool HasOral { get; set; }
+    public bool HasAssignment { get; set; }
+    public bool HasContinuousAssessment { get; set; }
 }
 
 /// <summary>
@@ -59,6 +94,9 @@ public class MarkEntryDto
     public string? Grade { get; set; }
     public decimal? GradePoint { get; set; }
 
+    // Dynamic component values for components not mapped to standard fields
+    public Dictionary<string, decimal?> ComponentValues { get; set; } = new();
+
     public int TeacherId { get; set; }
     public ResultWorkflowStatus Status { get; set; } = ResultWorkflowStatus.Draft;
 }
@@ -74,29 +112,43 @@ public class MarkBatchDto
     public List<MarkEntryDto> Marks { get; set; } = [];
 }
 
-/// <summary>
-/// Enhanced student subject result DTO with Bangla names
-/// </summary>
-public class StudentSubjectResultDto
+public class ImportResultDto
 {
-    public int SubjectId { get; set; }
-    public string SubjectName { get; set; } = string.Empty;
-    public string SubjectNameBn { get; set; } = string.Empty; // Bangla name
-    public string SubjectGroup { get; set; } = string.Empty; // Common, Science, Humanities, etc.
-
-    public decimal MarksObtained { get; set; }
-    public decimal FullMarks { get; set; }
-    public decimal PassMarks { get; set; }
-
-    public string Grade { get; set; } = string.Empty;
-    public decimal GradePoint { get; set; }
-    public bool IsPassed { get; set; }
-
-    [MaxLength(500)]
-    public string? Remarks { get; set; }
-    public object ObtainedMarks { get; internal set; }
-    public object GPA { get; internal set; }
+    public int TotalRows { get; set; }
+    public int SuccessCount { get; set; }
+    public int ErrorCount { get; set; }
+    public List<ImportErrorItemDto> Errors { get; set; } = [];
 }
+
+public class ImportErrorItemDto
+{
+    public int RowNumber { get; set; }
+    public string Message { get; set; } = "";
+}
+
+/// <summary>
+    /// Enhanced student subject result DTO with Bangla names
+    /// </summary>
+    public class StudentSubjectResultDto
+    {
+        public int SubjectId { get; set; }
+        public string SubjectName { get; set; } = string.Empty;
+        public string SubjectNameBn { get; set; } = string.Empty; // Bangla name
+        public string SubjectGroup { get; set; } = string.Empty; // Common, Science, Humanities, etc.
+
+        public decimal MarksObtained { get; set; }
+        public decimal FullMarks { get; set; }
+        public decimal PassMarks { get; set; }
+
+        public string Grade { get; set; } = string.Empty;
+        public decimal GradePoint { get; set; }
+        public bool IsPassed { get; set; }
+
+        [MaxLength(500)]
+        public string? Remarks { get; set; }
+        public decimal ObtainedMarks { get; set; }
+        public decimal GPA { get; set; }
+    }
 
 /// <summary>
 /// Enhanced student exam result DTO with merit positions
@@ -353,30 +405,6 @@ public class FinalResultDto
     public string? PromotionRemarks { get; set; }
 }
 
-/// <summary>
-/// Student portal result view model
-/// </summary>
-public class StudentPortalResultViewModel
-{
-    public int StudentId { get; set; }
-    public string StudentName { get; set; } = string.Empty;
-    public string ClassName { get; set; } = string.Empty;
-    public string SectionName { get; set; } = string.Empty;
-    public int RollNumber { get; set; }
-
-    public List<StudentExamResultDto> ExamResults { get; set; } = [];
-    public StudentTranscriptDto? Transcript { get; set; }
-}
-public class ResultDashboardViewModel
-{
-    public AcademicYear? ActiveYear { get; set; }
-
-    public List<ExamEntity> Exams { get; set; }
-        = new();
-
-    public ResultSummaryDto ResultStats { get; set; }
-        = new();
-}
 public class ResultPublicationDto
 {
     public int Id { get; set; }
@@ -386,4 +414,41 @@ public class ResultPublicationDto
     public DateTime PublishedAt { get; set; }
 
     public bool IsPublished { get; set; }
+}
+
+public class PublicationHistoryEntryDto
+{
+    public string Timestamp { get; set; } = "";
+    public string Action { get; set; } = "";
+    public string PerformedBy { get; set; } = "";
+    public string Notes { get; set; } = "";
+}
+
+public class IdNamePairDto
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = "";
+}
+
+public class MeritListItem
+{
+    public int StudentId { get; set; }
+    public string StudentName { get; set; } = string.Empty;
+    public int RollNumber { get; set; }
+    public decimal GPA { get; set; }
+    public decimal TotalMarks { get; set; }
+    public int Position { get; set; }
+    public string Grade { get; set; } = string.Empty;
+    public string Section { get; set; } = string.Empty;
+    public string StudentGroup { get; set; } = string.Empty;
+}
+
+public class TopPerformer
+{
+    public int StudentId { get; set; }
+    public string StudentName { get; set; }
+    public int RollNumber { get; set; }
+    public decimal GPA { get; set; }
+    public string Grade { get; set; } = string.Empty;
+    public int Position { get; set; }
 }

@@ -1,7 +1,8 @@
-@model IEnumerable<SchoolManagementSystem.Models.Entities.Academic.Subject>
+@model SchoolManagementSystem.Models.ViewModels.Result.AllSubjectsPageViewModel
 @{
     ViewData["Title"] = "All Subjects Overview";
-    var groupedSubjects = ViewBag.GroupedSubjects as Dictionary<string, List<SchoolManagementSystem.Models.Entities.Academic.Subject>>;
+    var groupedSubjects = Model.GroupedSubjects;
+    var allSubjects = Model.Subjects;
 }
 
 <div class="container-fluid py-4">
@@ -65,15 +66,12 @@
                                                     <th>Subject Name</th>
                                                     <th>Bangla Name</th>
                                                     <th>Type</th>
-                                                    <th>Marks</th>
-                                                    <th>Components</th>
                                                     <th>Religion</th>
-                                                    <th>Class Mapping</th>
                                                     <th>Status</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                @foreach (var subject in subjects.OrderBy(s => s.DisplayOrder).ThenBy(s => s.Name))
+                                                @foreach (var subject in subjects.OrderBy(s => s.Name))
                                                 {
                                                     <tr>
                                                         <td>
@@ -82,48 +80,14 @@
                                                         <td class="fw-bold">@subject.Name</td>
                                                         <td>@subject.NameBn</td>
                                                         <td>
-                                                            @if (subject.IsMandatory)
-                                                            {
-                                                                <span class="badge bg-success">Mandatory</span>
-                                                            }
-                                                            else if (subject.IsOptional)
+                                                            @if (subject.IsOptional)
                                                             {
                                                                 <span class="badge bg-warning">Optional</span>
                                                             }
                                                             else
                                                             {
-                                                                <span class="badge bg-secondary">General</span>
+                                                                <span class="badge bg-success">Mandatory</span>
                                                             }
-                                                        </td>
-                                                        <td>
-                                                            <small class="text-muted">
-                                                                Full: @subject.DefaultFullMarks<br>
-                                                                Pass: @subject.DefaultPassMarks
-                                                            </small>
-                                                        </td>
-                                                        <td>
-                                                            <div class="btn-group btn-group-sm">
-                                                                @if (subject.HasWritten)
-                                                                {
-                                                                    <span class="badge bg-light text-dark">Written</span>
-                                                                }
-                                                                @if (subject.HasMCQ)
-                                                                {
-                                                                    <span class="badge bg-light text-dark">MCQ</span>
-                                                                }
-                                                                @if (subject.HasPractical)
-                                                                {
-                                                                    <span class="badge bg-info">Practical</span>
-                                                                }
-                                                                @if (subject.HasViva)
-                                                                {
-                                                                    <span class="badge bg-info">Viva</span>
-                                                                }
-                                                                @if (subject.HasLab)
-                                                                {
-                                                                    <span class="badge bg-info">Lab</span>
-                                                                }
-                                                            </div>
                                                         </td>
                                                         <td>
                                                             @if (subject.IsReligionSubject)
@@ -134,27 +98,6 @@
                                                             {
                                                                 <span class="text-muted">-</span>
                                                             }
-                                                        </td>
-                                                        <td>
-                                                            <small class="text-muted">
-                                                                @if (subject.ClassSubjects != null && subject.ClassSubjects.Any())
-                                                                {
-                                                                    var classNames = subject.ClassSubjects
-                                                                        .Select(cs => cs.SchoolClass?.Name)
-                                                                        .Where(name => !string.IsNullOrEmpty(name))
-                                                                        .Distinct()
-                                                                        .Take(3);
-                                                                    @string.Join(", ", classNames)
-                                                                    @if (subject.ClassSubjects.Count > 3)
-                                                                    {
-                                                                        <span>... +@(subject.ClassSubjects.Count - 3) more</span>
-                                                                    }
-                                                                }
-                                                                else
-                                                                {
-                                                                    <span class="text-warning">Not mapped</span>
-                                                                }
-                                                            </small>
                                                         </td>
                                                         <td>
                                                             @if (subject.IsActive)
@@ -198,13 +141,13 @@
     }
 
     <!-- Summary Cards -->
-    @if (Model != null && Model.Any())
+    @if (allSubjects != null && allSubjects.Any())
     {
         <div class="row mt-4">
             <div class="col-md-3 mb-3">
                 <div class="card shadow-sm border-0 h-100">
                     <div class="card-body text-center">
-                        <div class="display-4 text-primary mb-2">@Model.Count()</div>
+                        <div class="display-4 text-primary mb-2">@allSubjects.Count()</div>
                         <h6 class="text-muted">Total Subjects</h6>
                     </div>
                 </div>
@@ -212,7 +155,7 @@
             <div class="col-md-3 mb-3">
                 <div class="card shadow-sm border-0 h-100">
                     <div class="card-body text-center">
-                        <div class="display-4 text-success mb-2">@Model.Count(s => s.IsMandatory)</div>
+                            <div class="display-4 text-success mb-2">@allSubjects.Count(s => !s.IsOptional)</div>
                         <h6 class="text-muted">Mandatory Subjects</h6>
                     </div>
                 </div>
@@ -220,7 +163,7 @@
             <div class="col-md-3 mb-3">
                 <div class="card shadow-sm border-0 h-100">
                     <div class="card-body text-center">
-                        <div class="display-4 text-warning mb-2">@Model.Count(s => s.IsOptional)</div>
+                        <div class="display-4 text-warning mb-2">@allSubjects.Count(s => s.IsOptional)</div>
                         <h6 class="text-muted">Optional Subjects</h6>
                     </div>
                 </div>
@@ -228,7 +171,7 @@
             <div class="col-md-3 mb-3">
                 <div class="card shadow-sm border-0 h-100">
                     <div class="card-body text-center">
-                        <div class="display-4 text-info mb-2">@Model.Count(s => s.IsReligionSubject)</div>
+                        <div class="display-4 text-info mb-2">@allSubjects.Count(s => s.IsReligionSubject)</div>
                         <h6 class="text-muted">Religion Subjects</h6>
                     </div>
                 </div>

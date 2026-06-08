@@ -147,16 +147,13 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
             DateTime? date = null, 
             CancellationToken ct = default)
         {
-            // Business Rule: Class 9 & 10 must have a group selected in Bangladesh curriculum
+            // Business Rule: Group-based classes must have a group selected
             if (classId.HasValue && !studentGroupId.HasValue)
             {
                 var schoolClass = await _uow.Repository<SchoolClass>().GetByIdAsync(classId.Value, ct);
-                if (schoolClass != null && (schoolClass.Name.Contains("Class 9", StringComparison.OrdinalIgnoreCase) || schoolClass.Name.Contains("Class 10", StringComparison.OrdinalIgnoreCase)))
+                if (schoolClass != null && schoolClass.IsGroupBased)
                 {
-                    // If Class 9/10 is selected but no group, and it's not a global view, 
-                    // we should ideally enforce group selection in the UI.
-                    // For now, we allow the fetch but log it.
-                    _logger.LogInformation("Class 9/10 attendance fetched without group filter.");
+                    _logger.LogInformation("Group-based class attendance fetched without group filter.");
                 }
             }
 
@@ -738,27 +735,12 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
             }
         }
 
-        private static int ParseClassNumber(string className)
-        {
-            if (string.IsNullOrEmpty(className)) return 0;
-            var trimmed = className.Replace("Class ", "", StringComparison.OrdinalIgnoreCase).Trim();
-            var match = System.Text.RegularExpressions.Regex.Match(trimmed, "\\d+");
-            if (match.Success && int.TryParse(match.Value, out var num)) return num;
-            return trimmed.ToUpperInvariant() switch
-            {
-                "IX" => 9,
-                "X" => 10,
-                _ => 0
-            };
-        }
-
         private async Task RequireGroupForUpperClassesAsync(int classId, int? studentGroupId, CancellationToken ct)
         {
             var schoolClass = await _uow.Repository<SchoolClass>().GetByIdAsync(classId, ct);
             if (schoolClass == null) return;
-            var classNum = ParseClassNumber(schoolClass.Name);
-            if (classNum >= 9 && classNum <= 10 && !studentGroupId.HasValue)
-                throw new InvalidOperationException("Student group is required for Class 9 and 10 attendance.");
+            if (schoolClass.IsGroupBased && !studentGroupId.HasValue)
+                throw new InvalidOperationException("Student group is required for this class.");
         }
 
         private async Task ValidateStudentRosterAsync(int classId, int sectionId, int? studentGroupId, IEnumerable<int> studentIds, CancellationToken ct)

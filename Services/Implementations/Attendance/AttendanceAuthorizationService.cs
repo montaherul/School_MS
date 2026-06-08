@@ -158,19 +158,6 @@ public class AttendanceAuthorizationService : IAttendanceAuthorizationService
 
     private static bool IsGroupClass(SchoolClass schoolClass)
     {
-        if (schoolClass.SortOrder >= 9 && schoolClass.SortOrder <= 10)
-        {
-            return true;
-        }
-
-        var name = schoolClass.Name.Replace("Class ", "", StringComparison.OrdinalIgnoreCase).Trim();
-        var match = System.Text.RegularExpressions.Regex.Match(name, "\\d+");
-        if (match.Success && int.TryParse(match.Value, out var classNumber))
-        {
-            return classNumber >= 9 && classNumber <= 10;
-        }
-
-        return name.Equals("IX", StringComparison.OrdinalIgnoreCase) ||
-               name.Equals("X", StringComparison.OrdinalIgnoreCase);
+        return schoolClass.IsGroupBased;
     }
 }

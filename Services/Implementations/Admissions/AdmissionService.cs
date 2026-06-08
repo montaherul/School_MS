@@ -421,7 +421,7 @@ public class AdmissionService : IAdmissionService
     {
         return await _classRepository.Query()
             .Where(c => c.Name != "Class Ten" && !c.IsDeleted)
-            .Select(c => new { c.Id, c.Name })
+            .Select(c => new { c.Id, c.Name, c.IsGroupBased })
             .ToListAsync(ct);
     }
 

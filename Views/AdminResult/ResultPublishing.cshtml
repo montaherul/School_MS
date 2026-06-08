@@ -1,8 +1,8 @@
-@model IEnumerable<SchoolManagementSystem.Models.DTOs.Result.PublicationDashboardExamDto>
+@model SchoolManagementSystem.Models.ViewModels.Result.ResultPublishingPageViewModel
 @{
     ViewData["Title"] = "Result Publication";
-    var summary = ViewBag.Summary as SchoolManagementSystem.Models.DTOs.Result.PublicationDashboardSummaryDto;
-    var history = ViewBag.PublicationHistory as IEnumerable<dynamic>;
+    var summary = Model.Summary;
+    var history = Model.History;
 }
 
 <div class="adm-page">
@@ -58,7 +58,7 @@
 
     <div class="adm-table-card" style="border-radius: var(--adm-radius-lg); border-top: 1px solid var(--adm-border);">
         <div class="adm-table-card__body">
-            @if (Model != null && Model.Any())
+            @if (Model.Exams != null && Model.Exams.Any())
             {
                 <div class="table-responsive">
                     <table class="dash-table" id="pubTable">
@@ -74,7 +74,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var exam in Model)
+                            @foreach (var exam in Model.Exams)
                             {
                                 <tr data-exam-id="@exam.ExamId">
                                     <td style="text-align:center;">
@@ -87,23 +87,23 @@
                                     <td><span class="adm-cell-dob">@exam.StartsOn.ToShortDateString() – @exam.EndsOn.ToShortDateString()</span></td>
                                     <td>@exam.PublishedResults / @exam.TotalResults</td>
                                     <td>
-                                        @if (exam.Status == 4)
+                                        @if (exam.Status == 5)
                                         {
                                             <span class="adm-status adm-status--converted">Published</span>
                                         }
-                                        else if (exam.Status == 5)
+                                        else if (exam.Status == 6)
                                         {
                                             <span class="adm-status adm-status--neutral">Locked</span>
                                         }
-                                        else if (exam.Status == 3)
+                                        else if (exam.Status == 4)
                                         {
                                             <span class="adm-status adm-status--approved">Approved</span>
                                         }
-                                        else if (exam.Status == 2)
+                                        else if (exam.Status == 3)
                                         {
                                             <span class="adm-status adm-status--approved">Reviewed</span>
                                         }
-                                        else if (exam.Status == 1)
+                                        else if (exam.Status == 2)
                                         {
                                             <span class="adm-status adm-status--pending">Submitted</span>
                                         }
@@ -114,21 +114,21 @@
                                     </td>
                                     <td>
                                         <div class="actions-cell" id="actions-@exam.ExamId" style="display:flex;gap:6px;justify-content:flex-end;">
-                                            @if (exam.Status == 4 || exam.Status == 5)
+                                            @if (exam.Status == 5 || exam.Status == 6)
                                             {
                                                 <button class="adm-btn adm-btn--ghost py-1 px-3" onclick="confirmAndUnpublish(@exam.ExamId)" title="Unpublish">
                                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" /></svg>
                                                     Unpublish
                                                 </button>
                                             }
-                                            @if (exam.Status == 4 || exam.Status == 5)
+                                            @if (exam.Status == 5 || exam.Status == 6)
                                             {
                                                 <button class="adm-btn adm-btn--primary py-1 px-3" onclick="confirmAndRepublish(@exam.ExamId)" title="Republish">
                                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" /></svg>
                                                     Republish
                                                 </button>
                                             }
-                                            @if (exam.Status != 4 && exam.Status != 5)
+                                            @if (exam.Status != 5 && exam.Status != 6)
                                             {
                                                 <button class="adm-btn adm-btn--primary py-1 px-3" onclick="confirmAndPublish(@exam.ExamId)" title="Publish">
                                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" /></svg>
@@ -235,7 +235,7 @@
                                         <td><span style="font-size:13px;color:var(--adm-text-2);">@entry.Timestamp</span></td>
                                         <td>
                                             @{
-                                                var actionLower = (entry.Action as string ?? "").ToLower();
+                                                var actionLower = (entry.Action ?? "").ToLower();
                                                 string badgeClass = "adm-status--neutral";
                                                 if (actionLower == "published") { badgeClass = "adm-status--converted"; }
                                                 else if (actionLower == "republished") { badgeClass = "adm-status--approved"; }

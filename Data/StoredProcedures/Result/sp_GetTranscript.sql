@@ -18,7 +18,8 @@ BEGIN
         s.SectionId,
         sec.Name AS SectionName,
         s.StudentGroupId,
-        sg.Name AS GroupName
+        sg.Name AS GroupName,
+        (SELECT TOP 1 Name FROM AcademicYears WHERE IsActive = 1) AS CurrentAcademicYear
     FROM Students s
     INNER JOIN Classes cl ON s.ClassId = cl.Id
     LEFT JOIN Sections sec ON s.SectionId = sec.Id
@@ -31,7 +32,17 @@ BEGIN
         ay.Name AS AcademicYearName,
         e.Id AS ExamId,
         e.Name AS ExamName,
-        e.Term,
+        CASE e.Term
+            WHEN 1 THEN 'First Terminal'
+            WHEN 2 THEN 'Half Yearly'
+            WHEN 3 THEN 'Second Terminal'
+            WHEN 4 THEN 'Annual'
+            WHEN 5 THEN 'Final'
+            WHEN 6 THEN 'Pre Test'
+            WHEN 7 THEN 'Test'
+            WHEN 8 THEN 'Other'
+            ELSE CAST(e.Term AS NVARCHAR)
+        END AS Term,
         e.StartsOn,
         e.EndsOn,
         ser.TotalMarks,
@@ -49,10 +60,10 @@ BEGIN
     WHERE ser.StudentId = @StudentId
       AND ser.IsDeleted = 0
       AND e.IsDeleted = 0
-      AND ser.Status IN (4, 5)
+      AND ser.Status IN (5, 6) -- Published (5) or Locked (6) per ResultWorkflowStatus enum
     ORDER BY ay.Id, e.EndsOn;
 
-    -- All subject results
+    -- All subject results (filtered by student's religion & group)
     SELECT 
         e.Id AS ExamId,
         e.Name AS ExamName,
@@ -68,9 +79,18 @@ BEGIN
     FROM StudentSubjectResults ssr
     INNER JOIN Exams e ON ssr.ExamId = e.Id
     INNER JOIN Subjects sub ON ssr.SubjectId = sub.Id
+    INNER JOIN Students s ON s.Id = @StudentId
+    LEFT JOIN ClassSubjects cs ON cs.SchoolClassId = s.ClassId AND cs.SubjectId = ssr.SubjectId AND cs.IsDeleted = 0
     WHERE ssr.StudentId = @StudentId
       AND ssr.IsDeleted = 0
       AND e.IsDeleted = 0
+      AND (
+          -- Non-religion subjects
+          (sub.ReligionType IS NULL)
+          OR
+          -- Only the student's assigned religion subject
+          (sub.ReligionType IS NOT NULL AND s.AssignedReligionSubjectId = ssr.SubjectId)
+      )
     ORDER BY e.EndsOn DESC, sub.DisplayOrder;
 
     -- Overall stats
@@ -86,6 +106,6 @@ BEGIN
     WHERE ser.StudentId = @StudentId
       AND ser.IsDeleted = 0
       AND e.IsDeleted = 0
-      AND ser.Status IN (4, 5);
+      AND ser.Status IN (5, 6); -- Published (5) or Locked (6) per ResultWorkflowStatus enum
 END;
 GO

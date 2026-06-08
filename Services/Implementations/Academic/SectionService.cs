@@ -227,7 +227,7 @@ public class SectionService : ISectionService
         return await _unitOfWork.Repository<SchoolClass>().Query()
             .Where(c => !c.IsDeleted && _unitOfWork.Repository<Section>().Query().Any(s => s.SchoolClassId == c.Id && !s.IsDeleted))
             .OrderBy(c => c.SortOrder)
-            .Select(c => (dynamic)new { Id = c.Id, Name = c.Name })
+            .Select(c => (dynamic)new { Id = c.Id, Name = c.Name, IsGroupBased = c.IsGroupBased })
             .ToListAsync(ct);
     }
 }

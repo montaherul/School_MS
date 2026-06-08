@@ -19,6 +19,7 @@ public class SchoolClass : BaseEntity
     public string Name { get; set; } = string.Empty;
 
     public int SortOrder { get; set; }
+    public bool IsGroupBased { get; set; }
     public ICollection<Section> Sections { get; set; } = new List<Section>();
     public SchoolClass(string name) // ✅ matches property
     {

@@ -117,28 +117,6 @@ namespace SchoolManagementSystem.Controllers.Attendance
             return DateTime.Now > lockAt;
         }
 
-        private int TryParseClassNumber(string className)
-        {
-            // Try to extract the numeric part from class name like "Class 10", "10", "X", etc.
-            if (string.IsNullOrEmpty(className)) return 0;
-
-            // Remove common prefix
-            var trimmed = className.Replace("Class ", "").Trim();
-
-            // Use regex to find first number
-            var match = System.Text.RegularExpressions.Regex.Match(trimmed, "\\d+");
-            if (match.Success && int.TryParse(match.Value, out var num))
-                return num;
-
-            // Handle Roman numerals
-            return trimmed.ToUpper() switch
-            {
-                "IX" => 9,
-                "X" => 10,
-                _ => 0
-            };
-        }
-
         public async Task<IActionResult> Index(CancellationToken ct)
         {
             var classes = await _classService.GetAllAsync(ct);
@@ -170,28 +148,24 @@ namespace SchoolManagementSystem.Controllers.Attendance
             }
 
             ViewBag.Classes = new SelectList(classes, "Id", "Name", defaultClassId);
+            ViewBag.ClassIsGroupBasedData = classes.ToDictionary(c => c.Id, c => c.IsGroupBased);
             ViewBag.DefaultClassId = defaultClassId;
             ViewBag.DefaultSectionId = defaultSectionId;
 
-            // Determine default group ID for class 9-10 based on curriculum rules
+            // Determine default group ID for group-based classes
             int? defaultGroupId = null;
             if (defaultClassId.HasValue)
             {
-                // Find class name from the list
                 var selectedClass = classes.FirstOrDefault(c => c.Id == defaultClassId.Value);
-                if (selectedClass != null)
+                if (selectedClass != null && selectedClass.IsGroupBased)
                 {
-                    var classNumber = TryParseClassNumber(selectedClass.Name);
-                    if (classNumber >= 9 && classNumber <= 10)
-                    {
-                        var group = await _uow.Repository<SchoolManagementSystem.Models.Entities.Academic.StudentGroup>()
-                            .Query()
-                            .Where(g => g.IsActive && !g.IsDeleted && classNumber >= g.MinClass && classNumber <= g.MaxClass)
-                            .OrderBy(g => g.DisplayOrder)
-                            .FirstOrDefaultAsync();
-                        if (group != null)
-                            defaultGroupId = group.Id;
-                    }
+                    var group = await _uow.Repository<SchoolManagementSystem.Models.Entities.Academic.StudentGroup>()
+                        .Query()
+                        .Where(g => g.IsActive && !g.IsDeleted)
+                        .OrderBy(g => g.DisplayOrder)
+                        .FirstOrDefaultAsync();
+                    if (group != null)
+                        defaultGroupId = group.Id;
                 }
             }
             ViewBag.DefaultGroupId = defaultGroupId;
@@ -710,12 +684,15 @@ namespace SchoolManagementSystem.Controllers.Attendance
                 if (schoolClass == null)
                     return Json(new { data = new List<object>() });
 
-                // Get all active student groups where this class falls within MinClass-MaxClass range
-                var classNumber = TryParseClassNumber(schoolClass.Name);
-                var groups = await _uow.Repository<SchoolManagementSystem.Models.Entities.Academic.StudentGroup>().Query()
-                    .Where(g => g.IsActive && !g.IsDeleted && classNumber >= g.MinClass && classNumber <= g.MaxClass)
-                    .OrderBy(g => g.DisplayOrder)
-                    .ToListAsync(ct);
+                // Get all active student groups for group-based classes
+                List<SchoolManagementSystem.Models.Entities.Academic.StudentGroup> groups = new();
+                if (schoolClass.IsGroupBased)
+                {
+                    groups = await _uow.Repository<SchoolManagementSystem.Models.Entities.Academic.StudentGroup>().Query()
+                        .Where(g => g.IsActive && !g.IsDeleted)
+                        .OrderBy(g => g.DisplayOrder)
+                        .ToListAsync(ct);
+                }
 
                 if (!IsAdminOrPrincipal())
                 {

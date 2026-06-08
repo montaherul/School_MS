@@ -32,7 +32,8 @@ public class SchoolClassService : ISchoolClassService
             {
                 Id = c.Id,
                 Name = c.Name,
-                SortOrder = c.SortOrder
+                SortOrder = c.SortOrder,
+                IsGroupBased = c.IsGroupBased
             })
             .ToListAsync(cancellationToken);
 
@@ -49,12 +50,12 @@ public class SchoolClassService : ISchoolClassService
     {
         var entity = await _unitOfWork.Repository<SchoolClass>().FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted, cancellationToken);
         if (entity is null) return null;
-        return new SchoolClassUpsertDto { Id = entity.Id, Name = entity.Name, SortOrder = entity.SortOrder };
+        return new SchoolClassUpsertDto { Id = entity.Id, Name = entity.Name, SortOrder = entity.SortOrder, IsGroupBased = entity.IsGroupBased };
     }
 
     public async Task<int> CreateAsync(SchoolClassUpsertDto dto, string createdBy, CancellationToken cancellationToken = default)
     {
-        var entity = new SchoolClass { CreatedBy = createdBy, Name = dto.Name, SortOrder = dto.SortOrder };
+        var entity = new SchoolClass { CreatedBy = createdBy, Name = dto.Name, SortOrder = dto.SortOrder, IsGroupBased = dto.IsGroupBased };
         await _unitOfWork.Repository<SchoolClass>().AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         return entity.Id;
@@ -65,6 +66,7 @@ public class SchoolClassService : ISchoolClassService
         var entity = await _unitOfWork.Repository<SchoolClass>().FirstOrDefaultAsync(x => x.Id == dto.Id && !x.IsDeleted, cancellationToken) ?? throw new InvalidOperationException("SchoolClass not found.");
         entity.Name = dto.Name;
         entity.SortOrder = dto.SortOrder;
+        entity.IsGroupBased = dto.IsGroupBased;
         entity.UpdatedBy = updatedBy;
         entity.UpdatedAt = DateTime.UtcNow;
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -88,7 +90,8 @@ public class SchoolClassService : ISchoolClassService
             {
                 Id = c.Id,
                 Name = c.Name,
-                SortOrder = c.SortOrder
+                SortOrder = c.SortOrder,
+                IsGroupBased = c.IsGroupBased
             })
             .ToListAsync(cancellationToken);
     }

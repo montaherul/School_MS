@@ -1,5 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using SchoolManagementSystem.Data;
 using SchoolManagementSystem.Helpers.Security;
 using SchoolManagementSystem.Models.DTOs.Attendance;
 using SchoolManagementSystem.Models.DTOs.Guardian;
@@ -7,6 +6,9 @@ using SchoolManagementSystem.Models.Entities.Admission;
 using SchoolManagementSystem.Models.Entities.Auth;
 using SchoolManagementSystem.Models.Entities.Guardian;
 using SchoolManagementSystem.Models.Entities.Student;
+using SchoolManagementSystem.Models.Entities.Fees;
+using SchoolManagementSystem.Models.Entities.Attendance;
+using SchoolManagementSystem.Models.Entities.Result;
 using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Repositories.Guardian;
 using SchoolManagementSystem.Services.Guardian;
@@ -18,15 +20,13 @@ public class GuardianService : IGuardianService
 {
     private readonly IUnitOfWork _uow;
     private readonly IGuardianRepository _guardianRepo;
-    private readonly SchoolDbContext _db;
     private readonly IPasswordHashService _passwordHashService;
     private readonly ILogger<GuardianService> _logger;
 
-    public GuardianService(IUnitOfWork uow, IGuardianRepository guardianRepo, SchoolDbContext db, IPasswordHashService passwordHashService, ILogger<GuardianService> logger)
+    public GuardianService(IUnitOfWork uow, IGuardianRepository guardianRepo, IPasswordHashService passwordHashService, ILogger<GuardianService> logger)
     {
         _uow = uow;
         _guardianRepo = guardianRepo;
-        _db = db;
         _passwordHashService = passwordHashService;
         _logger = logger;
     }
@@ -72,7 +72,7 @@ public class GuardianService : IGuardianService
             if (string.IsNullOrWhiteSpace(dto.CurrentPassword))
                 throw new InvalidOperationException("Current password is required to set a new password.");
 
-            var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted, ct);
+            var user = await _uow.Repository<ApplicationUser>().Query().FirstOrDefaultAsync(u => u.Id == userId && !u.IsDeleted, ct);
             if (user == null) throw new KeyNotFoundException("User account not found.");
 
             if (!_passwordHashService.VerifyPassword(dto.CurrentPassword, user.PasswordHash))
@@ -282,7 +282,7 @@ public class GuardianService : IGuardianService
         // Already linked
         if (guardian.UserId.HasValue)
         {
-            var existingUser = await _db.Users.FirstOrDefaultAsync(u => u.Id == guardian.UserId.Value, ct);
+            var existingUser = await _uow.Repository<ApplicationUser>().Query().FirstOrDefaultAsync(u => u.Id == guardian.UserId.Value, ct);
             if (existingUser != null) return string.Empty;
             guardian.UserId = null;
         }
@@ -290,13 +290,13 @@ public class GuardianService : IGuardianService
         // Username: gdn-{GuardianCode} (e.g. gdn-GRD-00001) \u2014 strip dashes from code per spec
         var codeNoDashes = (guardian.GuardianCode ?? $"G{guardian.Id:D5}").Replace("-", string.Empty);
         var candidateUserName = $"gdn-{codeNoDashes}";
-        while (await _db.Users.AnyAsync(u => u.UserName == candidateUserName, ct))
+        while (await _uow.Repository<ApplicationUser>().AnyAsync(u => u.UserName == candidateUserName, ct))
         {
             candidateUserName = $"{candidateUserName}_{guardian.Id}";
         }
 
         // Conflict: another user already has this email
-        var existingByEmail = await _db.Users.FirstOrDefaultAsync(u => u.Email == guardian.Email, ct);
+        var existingByEmail = await _uow.Repository<ApplicationUser>().Query().FirstOrDefaultAsync(u => u.Email == guardian.Email, ct);
         if (existingByEmail != null)
         {
             guardian.UserId = existingByEmail.Id;
@@ -308,7 +308,7 @@ public class GuardianService : IGuardianService
             return string.Empty;
         }
 
-        var guardianRole = await _db.Roles.FirstOrDefaultAsync(r => !r.IsDeleted && r.Name == "Guardian", ct)
+        var guardianRole = await _uow.Repository<Role>().Query().FirstOrDefaultAsync(r => !r.IsDeleted && r.Name == "Guardian", ct)
             ?? throw new InvalidOperationException("Guardian role not found. Seed it first.");
 
         var activationToken = Guid.NewGuid().ToString("N");
@@ -326,11 +326,11 @@ public class GuardianService : IGuardianService
             CreatedAt = DateTime.UtcNow
         };
 
-        _db.Users.Add(user);
-        await _db.SaveChangesAsync(ct);
+        await _uow.Repository<ApplicationUser>().AddAsync(user, ct);
+        await _uow.SaveChangesAsync(ct);
 
-        _db.UserRoles.Add(new UserRole { UserId = user.Id, RoleId = guardianRole.Id });
-        await _db.SaveChangesAsync(ct);
+        await _uow.Repository<UserRole>().AddAsync(new UserRole { UserId = user.Id, RoleId = guardianRole.Id }, ct);
+        await _uow.SaveChangesAsync(ct);
 
         guardian.UserId = user.Id;
         guardian.Status = GuardianStatus.PendingActivation;
@@ -346,81 +346,81 @@ public class GuardianService : IGuardianService
     // =====================================================================
     public async Task CreateNotificationAsync(int guardianId, string title, string message, string? category = null, CancellationToken ct = default)
     {
-        _db.GuardianNotifications.Add(new GuardianNotification
+        await _uow.Repository<GuardianNotification>().AddAsync(new GuardianNotification
         {
             GuardianId = guardianId,
             Title = title,
             Message = message,
             Category = category ?? "General",
             CreatedAt = DateTime.UtcNow
-        });
-        await _db.SaveChangesAsync(ct);
+        }, ct);
+        await _uow.SaveChangesAsync(ct);
     }
 
     public async Task CreateAttendanceNotificationAsync(int studentId, string studentName, string status, DateTime date, CancellationToken ct = default)
     {
-        var mappings = await _db.StudentGuardians
+        var mappings = await _uow.Repository<StudentGuardian>().Query()
             .Where(sg => sg.StudentId == studentId && !sg.IsDeleted && sg.ReceivesAttendanceNotifications)
             .ToListAsync(ct);
 
         foreach (var sg in mappings)
         {
-            _db.GuardianNotifications.Add(new GuardianNotification
+            await _uow.Repository<GuardianNotification>().AddAsync(new GuardianNotification
             {
                 GuardianId = sg.GuardianId,
                 Title = $"{studentName} - {status}",
                 Message = $"{studentName} was marked {status} on {date:dd MMM yyyy}.",
                 Category = "Attendance",
                 CreatedAt = DateTime.UtcNow
-            });
+            }, ct);
         }
-        await _db.SaveChangesAsync(ct);
+        await _uow.SaveChangesAsync(ct);
     }
 
     public async Task CreateFeeDueNotificationAsync(int studentId, string studentName, decimal amount, CancellationToken ct = default)
     {
-        var mappings = await _db.StudentGuardians
+        var mappings = await _uow.Repository<StudentGuardian>().Query()
             .Where(sg => sg.StudentId == studentId && !sg.IsDeleted && sg.ReceivesFeeNotifications)
             .ToListAsync(ct);
 
         foreach (var sg in mappings)
         {
-            var alreadySent = await _db.GuardianNotifications.AnyAsync(n => n.GuardianId == sg.GuardianId
+            var alreadySent = await _uow.Repository<GuardianNotification>().AnyAsync(n => n.GuardianId == sg.GuardianId
                 && n.Category == "Fee"
                 && n.Message.Contains(studentName)
                 && n.CreatedAt.Date == DateTime.UtcNow.Date, ct);
             if (alreadySent) continue;
 
-            _db.GuardianNotifications.Add(new GuardianNotification
+            await _uow.Repository<GuardianNotification>().AddAsync(new GuardianNotification
             {
                 GuardianId = sg.GuardianId,
                 Title = "Fee Due Reminder",
                 Message = $"Fee due for {studentName}: ৳{amount:N2} remaining.",
                 Category = "Fee",
                 CreatedAt = DateTime.UtcNow
-            });
+            }, ct);
         }
-        await _db.SaveChangesAsync(ct);
+        await _uow.SaveChangesAsync(ct);
     }
 
     public async Task CreateResultPublishedNotificationAsync(int studentId, string studentName, string examName, CancellationToken ct = default)
     {
-        var mappings = await _db.StudentGuardians
+        var mappings = await _uow.Repository<StudentGuardian>().Query()
             .Where(sg => sg.StudentId == studentId && !sg.IsDeleted && sg.ReceivesResultNotifications)
             .ToListAsync(ct);
 
         foreach (var sg in mappings)
         {
-            _db.GuardianNotifications.Add(new GuardianNotification
+            await _uow.Repository<GuardianNotification>().AddAsync(new GuardianNotification
             {
                 GuardianId = sg.GuardianId,
                 Title = "Result Published",
                 Message = $"Result for {examName} has been published for {studentName}.",
                 Category = "Result",
                 CreatedAt = DateTime.UtcNow
-            });
+            }, ct);
         }
-        await _db.SaveChangesAsync(ct);
+        await _uow.SaveChangesAsync(ct);
     }
 
     public async Task<bool> UserHasAccessToStudentAsync(int userId, int studentId, CancellationToken ct = default)
@@ -428,7 +428,7 @@ public class GuardianService : IGuardianService
         var guardian = await _guardianRepo.Query().AsNoTracking()
             .FirstOrDefaultAsync(g => g.UserId == userId && !g.IsDeleted, ct);
         if (guardian == null) return false;
-        return await _db.Set<StudentGuardian>()
+        return await _uow.Repository<StudentGuardian>().Query()
             .AsNoTracking()
             .AnyAsync(sg => sg.GuardianId == guardian.Id && sg.StudentId == studentId && !sg.IsDeleted, ct);
     }
@@ -446,7 +446,7 @@ public class GuardianService : IGuardianService
     {
         if (!await UserHasAccessToStudentAsync(userId, studentId, ct)) return null;
 
-        var mapping = await _db.Set<StudentGuardian>().AsNoTracking()
+        var mapping = await _uow.Repository<StudentGuardian>().Query().AsNoTracking()
             .Include(sg => sg.Student)!.ThenInclude(s => s!.Class)
             .Include(sg => sg.Student)!.ThenInclude(s => s!.Section)
             .FirstOrDefaultAsync(sg => sg.StudentId == studentId
@@ -458,7 +458,7 @@ public class GuardianService : IGuardianService
         if (mapping?.Student == null) return null;
         var s = mapping.Student;
 
-        var attendance = await _db.Attendance.AsNoTracking()
+        var attendance = await _uow.Repository<AttendanceRecord>().Query().AsNoTracking()
             .Where(a => a.StudentId == s.Id && !a.IsDeleted)
             .GroupBy(_ => 1)
             .Select(g => new
@@ -471,11 +471,11 @@ public class GuardianService : IGuardianService
             })
             .FirstOrDefaultAsync(ct);
 
-        var outstanding = await _db.FeeInvoices.AsNoTracking()
+        var outstanding = await _uow.Repository<FeeInvoice>().Query().AsNoTracking()
             .Where(fi => fi.StudentId == s.Id && (int)fi.Status != 3)
             .SumAsync(fi => (decimal?)(fi.TotalAmount - fi.PaidAmount), ct) ?? 0m;
 
-        var latestGpa = await _db.StudentExamResults.AsNoTracking()
+        var latestGpa = await _uow.Repository<StudentExamResult>().Query().AsNoTracking()
             .Where(r => r.StudentId == s.Id && !r.IsDeleted && (r.Status == ResultWorkflowStatus.Published || r.Status == ResultWorkflowStatus.Locked))
             .OrderByDescending(r => r.Id)
             .Select(r => (decimal?)r.Gpa)
@@ -516,13 +516,13 @@ public class GuardianService : IGuardianService
         var fromDate = (from ?? DateTime.Today.AddMonths(-1)).Date;
         var toDate = (to ?? DateTime.Today).Date;
 
-        var student = await _db.Students.AsNoTracking()
+        var student = await _uow.Repository<Student>().Query().AsNoTracking()
             .Include(s => s.Class)
             .Include(s => s.Section)
             .FirstOrDefaultAsync(s => s.Id == studentId && !s.IsDeleted, ct)
             ?? throw new KeyNotFoundException("Student not found");
 
-        var records = await _db.Attendance.AsNoTracking()
+        var records = await _uow.Repository<AttendanceRecord>().Query().AsNoTracking()
             .Where(a => a.StudentId == studentId
                 && !a.IsDeleted
                 && a.AttendanceDate >= DateOnly.FromDateTime(fromDate)

@@ -1,2 +1,72 @@
-@model SchoolManagementSystem.Models.ViewModels.Shared.CrudDetailsViewModel
-@await Html.PartialAsync("~/Views/Shared/Crud/Delete.cshtml", Model)
+@model SchoolManagementSystem.Models.ViewModels.Exam.ExamDetailsViewModel
+@{
+    ViewData["Title"] = "Delete Exam";
+    var exam = Model.Exam;
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Delete Exam</h1>
+                <p class="adm-header__sub">Are you sure you want to delete this exam?</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="adm-table-card" style="border-color:var(--adm-rejected);">
+        <div class="adm-table-card__body" style="padding:28px 32px;">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;padding:16px;background:#fef2f2;border-radius:var(--adm-radius);border:1px solid #fecaca;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <div>
+                    <strong style="color:#dc2626;font-size:15px;">This action cannot be undone.</strong>
+                    <p style="margin:4px 0 0;color:#991b1b;font-size:13px;">All associated data including schedules and results will be permanently removed.</p>
+                </div>
+            </div>
+
+            <table class="dash-table dash-table--details">
+                <tbody>
+                    <tr>
+                        <td style="width:180px;font-weight:600;color:var(--adm-text-2);padding:10px 0;">Exam Name</td>
+                        <td style="padding:10px 0;">@exam.Name</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:600;color:var(--adm-text-2);padding:10px 0;">Term</td>
+                        <td style="padding:10px 0;"><span class="adm-status adm-status--neutral">@exam.Term</span></td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:600;color:var(--adm-text-2);padding:10px 0;">Academic Year</td>
+                        <td style="padding:10px 0;">@exam.AcademicYearName</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:600;color:var(--adm-text-2);padding:10px 0;">Duration</td>
+                        <td style="padding:10px 0;">@exam.StartsOn.ToString("d") – @exam.EndsOn.ToString("d")</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:600;color:var(--adm-text-2);padding:10px 0;">Subjects</td>
+                        <td style="padding:10px 0;">@exam.SubjectCount subject(s)</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:600;color:var(--adm-text-2);padding:10px 0;">Student Results</td>
+                        <td style="padding:10px 0;">@exam.StudentResultCount result(s)</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <form method="post" action="@Url.Action("DeleteConfirmed", "Exam", new { id = exam.Id })" style="margin-top:24px;display:flex;gap:12px;">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="adm-btn" style="background:#dc2626;color:#fff;border:none;padding:10px 24px;border-radius:var(--adm-radius);font-weight:600;cursor:pointer;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:6px;"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+                    Delete Permanently
+                </button>
+                <a href="@Url.Action("Index", "Exam")" class="adm-btn adm-btn--ghost">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>

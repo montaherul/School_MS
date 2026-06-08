@@ -1,10 +1,11 @@
+@model SchoolManagementSystem.Models.ViewModels.Result.MeritListPageViewModel
 @{
     ViewData["Title"] = "Merit Lists";
-    var exam = ViewBag.Exam as SchoolManagementSystem.Models.Entities.Exam.Exam;
-    var classMerit = ViewBag.ClassMerit as IEnumerable<dynamic>;
-    var sectionMerit = ViewBag.SectionMerit as IEnumerable<dynamic>;
-    var groupMerit = ViewBag.GroupMerit as IEnumerable<dynamic>;
-    var schoolMerit = ViewBag.SchoolMerit as IEnumerable<dynamic>;
+    var exam = Model.Exam;
+    var classMerit = Model.ClassMerit;
+    var sectionMerit = Model.SectionMerit;
+    var groupMerit = Model.GroupMerit;
+    var schoolMerit = Model.SchoolMerit;
 }
 
 <div class="container-fluid py-4">

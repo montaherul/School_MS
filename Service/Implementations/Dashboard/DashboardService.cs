@@ -1,21 +1,12 @@
-using System;
-using System.Data;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
-using SchoolManagementSystem.Data;
-using SchoolManagementSystem.Models.Entities.Attendance;
-using SchoolManagementSystem.Models.Entities.Employee;
 using SchoolManagementSystem.Models.Enums;
+using SchoolManagementSystem.Models.DTOs.Dashboard;
 using SchoolManagementSystem.Models.ViewModels.Dashboard;
 using SchoolManagementSystem.Service.Interfaces.Dashboard;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using SchoolManagementSystem.Repositories.Interfaces.Dashboard;
-using SchoolManagementSystem.Models.Entities.Student;
 using SchoolManagementSystem.Models.DTOs.Attendance;
 using SchoolManagementSystem.Services.Guardian;
-using SchoolManagementSystem.Models.Entities.Guardian;
-using SchoolManagementSystem.Models.Entities.Fees;
-using SchoolManagementSystem.Models.Entities.Result;
 
 namespace SchoolManagementSystem.Service.Implementations.Dashboard;
 
@@ -25,20 +16,17 @@ public class DashboardService : IDashboardService
     private readonly IDashboardQueryRepository _dashboardQueryRepository;
     private readonly IUnitOfWork _uow;
     private readonly IGuardianService _guardianService;
-    private readonly SchoolDbContext _db;
 
     public DashboardService(
-        IDashboardRepository dashboardRepository, 
-        IDashboardQueryRepository dashboardQueryRepository, 
+        IDashboardRepository dashboardRepository,
+        IDashboardQueryRepository dashboardQueryRepository,
         IUnitOfWork uow,
-        IGuardianService guardianService,
-        SchoolDbContext db)
+        IGuardianService guardianService)
     {
         _dashboardRepository = dashboardRepository;
         _dashboardQueryRepository = dashboardQueryRepository;
         _uow = uow;
         _guardianService = guardianService;
-        _db = db;
     }
 
     public async Task<DashboardViewModel> GetDashboardAsync(CancellationToken cancellationToken = default)
@@ -54,7 +42,7 @@ public class DashboardService : IDashboardService
         var employeesByDept = await employeeRepo.Query()
             .Where(e => !e.IsDeleted && e.Department != null)
             .GroupBy(e => e.Department!.Name)
-            .Select(g => new ChartPoint(g.Key, g.Count()))
+            .Select(g => new DashboardChartDto { Label = g.Key, Value = g.Count() })
             .ToListAsync(cancellationToken);
 
         var totalClasses = await _uow.Repository<SchoolManagementSystem.Models.Entities.Academic.SchoolClass>().CountAsync(c => !c.IsDeleted, cancellationToken);
@@ -81,13 +69,13 @@ public class DashboardService : IDashboardService
             FeesCollected = data.feesCollected,
             FeesDue = data.feesTotal - data.feesCollected,
             AttendancePercentage = attendanceSummary.StudentAttendancePercentage,
-            StudentsByClass = data.studentsByClass,
-            MonthlyCollections = data.monthlyCollections,
-            RecentActivities = data.recentActivities,
+            StudentsByClass = data.studentsByClass.Select(MapChart).ToList(),
+            MonthlyCollections = data.monthlyCollections.Select(MapChart).ToList(),
+            RecentActivities = data.recentActivities.Select(MapActivity).ToList(),
             TotalEmployees = totalEmployees,
             TeachingStaffCount = teachingStaff,
             NonTeachingStaffCount = nonTeachingStaff,
-            EmployeesByDepartment = employeesByDept,
+            EmployeesByDepartment = employeesByDept.Select(MapChart).ToList(),
             TotalClasses = totalClasses,
             AssignedClasses = assignedClasses,
             TotalSubjects = totalSubjects,
@@ -101,7 +89,7 @@ public class DashboardService : IDashboardService
             EmployeeLateToday = attendanceSummary.EmployeeLate,
             ClassesMissingAttendance = attendanceSummary.ClassesMissingAttendance,
             LockedSessionsPendingApproval = attendanceSummary.LockedSessions,
-            TeachersNotSubmittedToday = attendanceSummary.ClassesMissingAttendance, // Approximate
+            TeachersNotSubmittedToday = attendanceSummary.ClassesMissingAttendance,
             AttendanceDailyTrend = dailyTrend,
             AttendanceMonthlyTrend = monthlyTrend,
             ClassWiseAttendance = classWisePoints
@@ -110,70 +98,14 @@ public class DashboardService : IDashboardService
 
     private async Task<(List<ChartPoint> Daily, List<ChartPoint> Monthly)> GetAttendanceAnalyticsAsync(CancellationToken ct)
     {
-        using var command = _db.Database.GetDbConnection().CreateCommand();
-        command.CommandText = "sp_GetAttendanceAnalytics";
-        command.CommandType = CommandType.StoredProcedure;
-        command.Parameters.Add(new SqlParameter("@StartDate", DateTime.Today.AddDays(-6)));
-        command.Parameters.Add(new SqlParameter("@EndDate", DateTime.Today));
-
-        if (command.Connection!.State != ConnectionState.Open)
-        {
-            await _db.Database.OpenConnectionAsync(ct);
-        }
-
-        try
-        {
-            using var reader = await command.ExecuteReaderAsync(ct);
-            var daily = new List<ChartPoint>();
-            while (await reader.ReadAsync(ct))
-            {
-                daily.Add(new ChartPoint(reader.GetDateTime(0).ToString("yyyy-MM-dd"), reader.GetDecimal(3)));
-            }
-
-            var monthly = new List<ChartPoint>();
-            if (await reader.NextResultAsync(ct))
-            {
-                while (await reader.ReadAsync(ct))
-                {
-                    monthly.Add(new ChartPoint($"{reader.GetInt32(0)}-{reader.GetInt32(1):D2}", reader.GetDecimal(4)));
-                }
-            }
-
-            return (daily, monthly);
-        }
-        finally
-        {
-            await _db.Database.CloseConnectionAsync();
-        }
+        var (daily, monthly) = await _dashboardRepository.GetAttendanceAnalyticsAsync(ct);
+        return (daily.Select(MapChart).ToList(), monthly.Select(MapChart).ToList());
     }
 
     private async Task<List<ChartPoint>> GetClassAttendanceAnalyticsAsync(DateTime date, CancellationToken ct)
     {
-        using var command = _db.Database.GetDbConnection().CreateCommand();
-        command.CommandText = "sp_GetClassAttendanceAnalytics";
-        command.CommandType = CommandType.StoredProcedure;
-        command.Parameters.Add(new SqlParameter("@Date", date.Date));
-
-        if (command.Connection!.State != ConnectionState.Open)
-        {
-            await _db.Database.OpenConnectionAsync(ct);
-        }
-
-        try
-        {
-            using var reader = await command.ExecuteReaderAsync(ct);
-            var points = new List<ChartPoint>();
-            while (await reader.ReadAsync(ct))
-            {
-                points.Add(new ChartPoint(reader.GetString(1), reader.GetDecimal(4)));
-            }
-
-            return points;
-        }
-        finally
-        {
-            await _db.Database.CloseConnectionAsync();
-        }
+        var points = await _dashboardRepository.GetClassAttendanceAnalyticsAsync(date, ct);
+        return points.Select(MapChart).ToList();
     }
 
     public async Task<StudentDashboardViewModel> GetStudentDashboardAsync(int userId, CancellationToken cancellationToken = default)
@@ -198,9 +130,9 @@ public class DashboardService : IDashboardService
             AttendancePercentage = data.totalAttendance == 0 ? 0 : Math.Round((decimal)data.presentAttendance / data.totalAttendance * 100, 2),
             TotalDue = data.totalInvoiced - data.totalPaid,
             StudentStatus = student.Status.ToString(),
-            RecentNotices = data.recentNotices,
-            UpcomingAssignments = data.upcomingAssignments,
-            AttendanceCalendar = calendar
+            RecentNotices = data.recentNotices.Select(MapActivity).ToList(),
+            UpcomingAssignments = data.upcomingAssignments.Select(MapAssignment).ToList(),
+            AttendanceCalendar = calendar.Select(MapCalendar).ToList()
         };
     }
 
@@ -247,18 +179,17 @@ public class DashboardService : IDashboardService
             MySubjectsCount = subjectAssignments.Count,
             MyClasses = classAssignments.Select(a => $"{a.Class?.Name} {a.Section?.Name}").ToList(),
             MySubjects = subjectAssignments.Select(a => $"{a.Subject?.Name} ({a.Class?.Name}{a.Section?.Name})").ToList(),
-            AttendanceRate = 95.5m // Placeholder or real logic
+            AttendanceRate = 95.5m
         };
 
-        // Common Data
-        model.RecentNotices = await _uow.Repository<SchoolManagementSystem.Models.Entities.Communication.Notice>().Query()
+        var notices = await _uow.Repository<SchoolManagementSystem.Models.Entities.Communication.Notice>().Query()
             .Where(n => !n.IsDeleted && (n.AudienceRole == "All" || n.AudienceRole == "Teacher"))
             .OrderByDescending(n => n.PublishAt)
             .Take(5)
-            .Select(n => new RecentActivityItem("Notice", n.Title, n.PublishAt, n.Body ?? ""))
+            .Select(n => new DashboardActivityDto { Module = "Notice", Title = n.Title, At = n.PublishAt, Summary = n.Body ?? "" })
             .ToListAsync(cancellationToken);
+        model.RecentNotices = notices.Select(MapActivity).ToList();
 
-        // Principal Specific
         if (model.IsPrincipal)
         {
             model.PrincipalStats = new PrincipalStats
@@ -266,7 +197,7 @@ public class DashboardService : IDashboardService
                 TotalStaff = await _uow.Repository<SchoolManagementSystem.Models.Entities.Teachers.Teacher>().CountAsync(t => !t.IsDeleted, cancellationToken),
                 TotalStudents = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().CountAsync(s => !s.IsDeleted, cancellationToken),
                 MonthlyRevenue = await _uow.Repository<SchoolManagementSystem.Models.Entities.Fees.Payment>().Query().Where(p => p.PaidAt.Month == DateTime.Today.Month).SumAsync(p => p.Amount, cancellationToken),
-                ExpensePercentage = 45.2m // Placeholder
+                ExpensePercentage = 45.2m
             };
         }
 
@@ -276,7 +207,7 @@ public class DashboardService : IDashboardService
     public async Task<GuardianDashboardViewModel> GetGuardianDashboardAsync(int userId, CancellationToken cancellationToken = default)
     {
         var data = await _guardianService.GetDashboardByUserIdAsync(userId);
-        
+
         var guardian = await _uow.Repository<SchoolManagementSystem.Models.Entities.Guardian.Guardian>().Query()
             .FirstOrDefaultAsync(g => g.UserId == userId, cancellationToken)
             ?? throw new InvalidOperationException("Guardian profile not found.");
@@ -300,8 +231,7 @@ public class DashboardService : IDashboardService
             }).ToList()
         };
 
-        // Populate detailed child info for the first/selected child
-        var studentGuardians = await _uow.Repository<StudentGuardian>().Query()
+        var studentGuardians = await _uow.Repository<SchoolManagementSystem.Models.Entities.Guardian.StudentGuardian>().Query()
             .Include(sg => sg.Student).ThenInclude(s => s.Class)
             .Include(sg => sg.Student).ThenInclude(s => s.Section)
             .Where(sg => sg.GuardianId == guardian.Id && !sg.IsDeleted)
@@ -320,7 +250,7 @@ public class DashboardService : IDashboardService
                 var today = DateTime.Today;
                 var startOfMonth = new DateOnly(today.Year, today.Month, 1);
                 var endOfMonth = startOfMonth.AddMonths(1).AddDays(-1);
-                var attendanceRecords = await _uow.Repository<AttendanceRecord>().Query()
+                var attendanceRecords = await _uow.Repository<SchoolManagementSystem.Models.Entities.Attendance.AttendanceRecord>().Query()
                     .Where(a => a.StudentId == selectedStudent.Id && a.AttendanceDate >= startOfMonth && a.AttendanceDate <= endOfMonth && !a.IsDeleted)
                     .OrderByDescending(a => a.AttendanceDate)
                     .ToListAsync(cancellationToken);
@@ -367,16 +297,14 @@ public class DashboardService : IDashboardService
                     model.Alerts.Add($"Absent Notification: {selectedStudent.FullName} was marked absent on {recentAbsent.AttendanceDate:dd MMM yyyy}.");
                 }
 
-                // -- Fee widget --
-                var invoices = await _uow.Repository<FeeInvoice>().Query()
+                var invoices = await _uow.Repository<SchoolManagementSystem.Models.Entities.Fees.FeeInvoice>().Query()
                     .Where(fi => fi.StudentId == selectedStudent.Id && !fi.IsDeleted)
                     .ToListAsync(cancellationToken);
                 model.SelectedChildOutstandingFees = invoices.Where(i => (int)i.Status != 3).Sum(i => i.TotalAmount - i.PaidAmount);
                 model.SelectedChildTotalPaid = invoices.Sum(i => i.PaidAmount);
                 model.SelectedChildInvoiceCount = invoices.Count;
 
-                // -- Result widget --
-                var latestResult = await _uow.Repository<StudentExamResult>().Query()
+                var latestResult = await _uow.Repository<SchoolManagementSystem.Models.Entities.Result.StudentExamResult>().Query()
                     .Where(r => r.StudentId == selectedStudent.Id && !r.IsDeleted)
                     .OrderByDescending(r => r.ExamId)
                     .FirstOrDefaultAsync(cancellationToken);
@@ -387,14 +315,33 @@ public class DashboardService : IDashboardService
                     model.SelectedChildLatestPassed = latestResult.IsPassed;
                 }
 
-                // -- Leave widget --
-                model.SelectedChildLeaveCount = await _uow.Repository<StudentLeaveApplication>().Query()
+                model.SelectedChildLeaveCount = await _uow.Repository<SchoolManagementSystem.Models.Entities.Attendance.StudentLeaveApplication>().Query()
                     .CountAsync(l => l.StudentId == selectedStudent.Id, cancellationToken);
-                model.SelectedChildPendingLeaveCount = await _uow.Repository<StudentLeaveApplication>().Query()
-                    .CountAsync(l => l.StudentId == selectedStudent.Id && l.ApprovalStatus == StudentLeaveApplication.ApprovalStatusEnum.Pending, cancellationToken);
+                model.SelectedChildPendingLeaveCount = await _uow.Repository<SchoolManagementSystem.Models.Entities.Attendance.StudentLeaveApplication>().Query()
+                    .CountAsync(l => l.StudentId == selectedStudent.Id && l.ApprovalStatus == SchoolManagementSystem.Models.Entities.Attendance.StudentLeaveApplication.ApprovalStatusEnum.Pending, cancellationToken);
             }
         }
 
         return model;
     }
+
+    private static ChartPoint MapChart(DashboardChartDto dto) => new ChartPoint(dto.Label, dto.Value);
+
+    private static RecentActivityItem MapActivity(DashboardActivityDto dto) => new RecentActivityItem(dto.Module, dto.Title, dto.At, dto.Summary);
+
+    private static AssignmentDashboardItem MapAssignment(DashboardAssignmentDto dto) => new AssignmentDashboardItem(dto.Subject, dto.Title, dto.Deadline);
+
+    private static AttendanceCalendarDto MapCalendar(DashboardCalendarDto dto) => new AttendanceCalendarDto
+    {
+        Date = dto.Date,
+        Status = dto.Status,
+        StatusColor = dto.Status.ToLower() switch
+        {
+            "present" => "success",
+            "absent" => "danger",
+            "late" => "warning",
+            "leave" => "info",
+            _ => "secondary"
+        }
+    };
 }

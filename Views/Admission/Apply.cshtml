@@ -321,7 +321,7 @@
                                             {
                                                 foreach (var c in ViewBag.Classes)
                                                 {
-                                                    <option value="@c.Id">@c.Name</option>
+                                                    <option value="@c.Id" data-is-group-based="@(c.IsGroupBased.ToString().ToLower())">@c.Name</option>
                                                 }
                                             }
                                         </select>
@@ -400,15 +400,9 @@
         const sectionContainer = document.getElementById("sectionContainer");
 
         classDropdown.addEventListener("change", function () {
-
-            const selectedClass = parseInt(this.value);
-
-            // Class 9 বা 10 হলে show
-            if (selectedClass === 9 || selectedClass === 10) {
-                sectionContainer.style.display = "block";
-            } else {
-                sectionContainer.style.display = "none";
-            }
+            var selectedOption = this.options[this.selectedIndex];
+            var isGroupBased = selectedOption && selectedOption.dataset.isGroupBased === 'true';
+            sectionContainer.style.display = isGroupBased ? "block" : "none";
         });
 
     });

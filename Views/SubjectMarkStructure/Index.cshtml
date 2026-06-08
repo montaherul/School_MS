@@ -1,0 +1,142 @@
+@model List<SchoolManagementSystem.Models.DTOs.Exam.SubjectMarkStructureDto>
+@{
+    ViewData["Title"] = "Subject Mark Structure";
+    var exams = ViewBag.Exams as List<SchoolManagementSystem.Models.Entities.Exam.Exam> ?? new();
+    var subjects = ViewBag.Subjects as List<SchoolManagementSystem.Models.Entities.Academic.Subject> ?? new();
+    var selectedExamId = Context.Request.Query["examId"];
+    var selectedSubjectId = Context.Request.Query["subjectId"];
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Subject Mark Structure</h1>
+                <p class="adm-header__sub">Configure component-wise marks per exam and subject</p>
+            </div>
+        </div>
+        <div class="adm-btn-group">
+            <a href="@Url.Action("Index", "ExamComponents")" class="adm-btn adm-btn--ghost">Manage Components</a>
+            @if (!string.IsNullOrEmpty(selectedExamId) && !string.IsNullOrEmpty(selectedSubjectId))
+            {
+                <a href="@Url.Action("BulkEdit", "SubjectMarkStructure", new { examId = int.Parse(selectedExamId), subjectId = int.Parse(selectedSubjectId) })" class="adm-btn adm-btn--primary">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                    Configure Components
+                </a>
+            }
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] is string msg)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @msg
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="adm-card mb-4">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label adm-label">Exam</label>
+                <select name="examId" class="form-select adm-select" onchange="this.form.submit()">
+                    <option value="">-- Select Exam --</option>
+                    @foreach (var e in exams)
+                    {
+                        <!option value="@e.Id" selected="@(e.Id.ToString() == selectedExamId)">@e.Name</!option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label adm-label">Subject</label>
+                <select name="subjectId" class="form-select adm-select" onchange="this.form.submit()">
+                    <option value="">-- All Subjects --</option>
+                    @foreach (var s in subjects)
+                    {
+                        <!option value="@s.Id" selected="@(s.Id.ToString() == selectedSubjectId)">@s.Name</!option>
+                    }
+                </select>
+            </div>
+        </form>
+    </div>
+
+    <div class="adm-card">
+        @if (Model.Count == 0)
+        {
+            <div class="text-center py-5 text-muted">
+                <p>No subject mark structures configured.</p>
+                <p class="small">Select an exam and subject above, then click "Configure Components".</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table adm-table">
+                    <thead>
+                        <tr>
+                            <th>Component</th>
+                            <th>Full Marks</th>
+                            <th>Pass Marks</th>
+                            <th>Exam</th>
+                            <th>Subject</th>
+                            <th>Class</th>
+                            <th>Group</th>
+                            <th>Order</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr class="@(!item.IsActive ? "text-muted" : "")">
+                                <td><code>@item.ComponentCode</code> @item.ComponentName</td>
+                                <td>@item.FullMarks</td>
+                                <td>@item.PassMarks</td>
+                                <td>@item.ExamName</td>
+                                <td>@item.SubjectName</td>
+                                <td>@item.ClassName</td>
+                                <td>@item.StudentGroupName</td>
+                                <td>@item.DisplayOrder</td>
+                                <td>
+                                    @if (item.IsActive)
+                                    {
+                                        <span class="badge bg-success">Active</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-danger">Inactive</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="d-flex gap-1">
+                                        <a href="@Url.Action("Details", new { id = item.Id })" class="adm-btn adm-btn--sm adm-btn--ghost" title="Details">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
+                                        </a>
+                                        <a href="@Url.Action("Edit", new { id = item.Id })" class="adm-btn adm-btn--sm adm-btn--ghost" title="Edit">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
+                                        </a>
+                                        <form method="post" action="@Url.Action("Delete", new { id = item.Id })" style="display:inline" onsubmit="return confirm('Delete this component configuration?');">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="adm-btn adm-btn--sm adm-btn--ghost text-danger" title="Delete">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

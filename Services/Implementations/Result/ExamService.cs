@@ -3,12 +3,13 @@ using SchoolManagementSystem.Models.DTOs.Result;
 using SchoolManagementSystem.Models.DTOs.Exam;
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Models.Entities.Result;
+using SchoolManagementSystem.Models.Entities.Student;
 using SchoolManagementSystem.Models.Enums;
-using SchoolManagementSystem.Models.ViewModels.Exam;
 using SchoolManagementSystem.Repositories.Interfaces.Result;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using ExamEntity = SchoolManagementSystem.Models.Entities.Exam.Exam;
+using ExamSubjectEntity = SchoolManagementSystem.Models.Entities.Exam.ExamSubject;
 
 namespace SchoolManagementSystem.Services.Implementations.Result;
 
@@ -40,11 +41,23 @@ public class ExamService : IExamService
     public async Task<ExamUpsertDto?> GetExamForEditAsync(int examId, CancellationToken ct = default)
     {
         var exam = await _uow.Repository<ExamEntity>().GetByIdAsync(examId, ct);
-        return exam == null ? null : ExamViewModelMapper.ToUpsertDto(exam);
+        if (exam == null) return null;
+        return new ExamUpsertDto
+        {
+            Id = exam.Id,
+            Name = exam.Name,
+            Term = exam.Term,
+            AcademicYearId = exam.AcademicYearId,
+            StudentGroupId = exam.StudentGroupId,
+            StartsOn = exam.StartsOn,
+            EndsOn = exam.EndsOn,
+            Status = exam.Status,
+            IsLocked = exam.IsLocked
+        };
     }
 
     /// <summary>
-    /// Create a new exam
+    /// Create a new exam with subjects and mark configuration
     /// </summary>
     public async Task<object?> CreateExamAsync(ExamUpsertDto dto, CancellationToken ct = default)
     {
@@ -60,12 +73,37 @@ public class ExamService : IExamService
         };
         await _uow.Repository<ExamEntity>().AddAsync(exam);
         await _uow.SaveChangesAsync(ct);
+
+        if (dto.Subjects != null && dto.Subjects.Count > 0)
+        {
+            foreach (var s in dto.Subjects)
+            {
+                var examSubject = new ExamSubjectEntity
+                {
+                    ExamId = exam.Id,
+                    SubjectId = s.SubjectId,
+                    FullMarks = s.FullMarks,
+                    PassMarks = s.PassMarks,
+                    IsOptional = s.IsOptional,
+                    WrittenMarks = s.HasWritten ? s.FullMarks : null,
+                    MCQMarks = s.HasMCQ ? s.FullMarks : null,
+                    PracticalMarks = s.HasPractical ? s.FullMarks : null,
+                    VivaMarks = s.HasViva ? s.FullMarks : null,
+                    LabMarks = s.HasLab ? s.FullMarks : null,
+                    OralMarks = s.HasOral ? s.FullMarks : null,
+                    AssignmentMarks = s.HasAssignment ? s.FullMarks : null,
+                    ContinuousAssessmentMarks = s.HasContinuousAssessment ? s.FullMarks : null
+                };
+                await _uow.Repository<ExamSubjectEntity>().AddAsync(examSubject);
+            }
+            await _uow.SaveChangesAsync(ct);
+        }
         
         return new { exam.Id, exam.Name, exam.Term, exam.Status };
     }
 
     /// <summary>
-    /// Update existing exam details
+    /// Update existing exam details and subjects
     /// </summary>
     public async Task<object?> UpdateExamAsync(int examId, ExamUpsertDto dto, CancellationToken ct = default)
     {
@@ -75,11 +113,42 @@ public class ExamService : IExamService
 
         exam.Name = dto.Name;
         exam.Term = dto.Term;
+        exam.AcademicYearId = dto.AcademicYearId;
         exam.StartsOn = dto.StartsOn;
         exam.EndsOn = dto.EndsOn;
         exam.StudentGroupId = dto.StudentGroupId;
 
         _uow.Repository<ExamEntity>().Update(exam);
+
+        if (dto.Subjects != null)
+        {
+            var existingSubjects = await _uow.Repository<ExamSubjectEntity>().Query()
+                .Where(es => es.ExamId == examId).ToListAsync(ct);
+            foreach (var old in existingSubjects)
+                _uow.Repository<ExamSubjectEntity>().Remove(old);
+
+            foreach (var s in dto.Subjects)
+            {
+                var examSubject = new ExamSubjectEntity
+                {
+                    ExamId = exam.Id,
+                    SubjectId = s.SubjectId,
+                    FullMarks = s.FullMarks,
+                    PassMarks = s.PassMarks,
+                    IsOptional = s.IsOptional,
+                    WrittenMarks = s.HasWritten ? s.FullMarks : null,
+                    MCQMarks = s.HasMCQ ? s.FullMarks : null,
+                    PracticalMarks = s.HasPractical ? s.FullMarks : null,
+                    VivaMarks = s.HasViva ? s.FullMarks : null,
+                    LabMarks = s.HasLab ? s.FullMarks : null,
+                    OralMarks = s.HasOral ? s.FullMarks : null,
+                    AssignmentMarks = s.HasAssignment ? s.FullMarks : null,
+                    ContinuousAssessmentMarks = s.HasContinuousAssessment ? s.FullMarks : null
+                };
+                await _uow.Repository<ExamSubjectEntity>().AddAsync(examSubject);
+            }
+        }
+
         await _uow.SaveChangesAsync(ct);
 
         return new { exam.Id, exam.Name, exam.Term, exam.Status };
@@ -300,6 +369,154 @@ public class ExamService : IExamService
         var query = _uow.Repository<Section>().Query().AsNoTracking().Where(s => !s.IsDeleted);
         if (classId.HasValue) query = query.Where(s => s.SchoolClassId == classId.Value);
         return await query.Select(s => new { s.Id, s.Name }).ToListAsync(ct);
+    }
+
+    /// <summary>
+    /// Dynamically generate exam subjects from ClassSubjectMappings based on NCTB curriculum.
+    /// Considers class, group, religion, and optional subject assignments.
+    /// </summary>
+    public async Task<int> GenerateExamSubjectsFromCurriculumAsync(int examId, int classId, int? groupId = null, CancellationToken ct = default)
+    {
+        var classSubjects = await _uow.Repository<ClassSubject>().Query()
+            .AsNoTracking()
+            .Include(cs => cs.Subject)
+            .Where(cs => cs.SchoolClassId == classId && !cs.IsDeleted && cs.IsActive)
+            .ToListAsync(ct);
+
+        // Filter by group for class 9-10
+        if (groupId.HasValue)
+        {
+            classSubjects = classSubjects.Where(cs =>
+                cs.StudentGroupId == null || cs.StudentGroupId == groupId.Value).ToList();
+        }
+
+        // Remove religion subjects (they're added per-student based on religion)
+        var nonReligionSubjects = classSubjects.Where(cs => !cs.IsReligionSubject).ToList();
+
+        // Generate ExamSubject records
+        var examSubjects = new List<ExamSubjectEntity>();
+        foreach (var cs in nonReligionSubjects)
+        {
+            examSubjects.Add(new ExamSubjectEntity
+            {
+                ExamId = examId,
+                SubjectId = cs.SubjectId,
+                FullMarks = cs.FullMarks,
+                PassMarks = cs.PassMarks,
+                IsOptional = cs.IsOptional
+            });
+        }
+
+        var existingSubjects = await _uow.Repository<ExamSubjectEntity>().Query()
+            .Where(es => es.ExamId == examId).ToListAsync(ct);
+
+        foreach (var old in existingSubjects)
+            _uow.Repository<ExamSubjectEntity>().Remove(old);
+
+        await _uow.Repository<ExamSubjectEntity>().AddRangeAsync(examSubjects, ct);
+        await _uow.SaveChangesAsync(ct);
+
+        return examSubjects.Count;
+    }
+
+    /// <summary>
+    /// Generate per-student religion exam subjects for an exam based on student profiles.
+    /// </summary>
+    public async Task<int> GenerateReligionExamSubjectsAsync(int examId, int classId, CancellationToken ct = default)
+    {
+        var students = await _uow.Repository<Student>().Query()
+            .AsNoTracking()
+            .Where(s => s.ClassId == classId && !s.IsDeleted && s.Status == StudentStatus.Active)
+            .ToListAsync(ct);
+
+        var religionSubjectIds = students
+            .Where(s => s.AssignedReligionSubjectId.HasValue)
+            .Select(s => s.AssignedReligionSubjectId!.Value)
+            .Distinct()
+            .ToList();
+
+        var classSubjects = await _uow.Repository<ClassSubject>().Query()
+            .AsNoTracking()
+            .Where(cs => cs.SchoolClassId == classId && cs.IsReligionSubject && !cs.IsDeleted && cs.IsActive)
+            .ToListAsync(ct);
+
+        var generated = 0;
+        foreach (var religionSubjectId in religionSubjectIds)
+        {
+            var cs = classSubjects.FirstOrDefault(c => c.SubjectId == religionSubjectId);
+            if (cs == null) continue;
+
+            var existing = await _uow.Repository<ExamSubjectEntity>().Query()
+                .AnyAsync(es => es.ExamId == examId && es.SubjectId == religionSubjectId, ct);
+
+            if (!existing)
+            {
+                await _uow.Repository<ExamSubjectEntity>().AddAsync(new ExamSubjectEntity
+                {
+                    ExamId = examId,
+                    SubjectId = religionSubjectId,
+                    FullMarks = cs.FullMarks,
+                    PassMarks = cs.PassMarks,
+                    IsOptional = false
+                }, ct);
+                generated++;
+            }
+        }
+
+        if (generated > 0)
+            await _uow.SaveChangesAsync(ct);
+
+        return generated;
+    }
+
+    /// <summary>
+    /// Generate per-student optional exam subjects based on student selections.
+    /// </summary>
+    public async Task<int> GenerateOptionalExamSubjectsAsync(int examId, int classId, CancellationToken ct = default)
+    {
+        var students = await _uow.Repository<Student>().Query()
+            .AsNoTracking()
+            .Where(s => s.ClassId == classId && !s.IsDeleted && s.Status == StudentStatus.Active)
+            .ToListAsync(ct);
+
+        var optionalSubjectIds = students
+            .Where(s => s.OptionalSubjectId.HasValue)
+            .Select(s => s.OptionalSubjectId!.Value)
+            .Distinct()
+            .ToList();
+
+        var classSubjects = await _uow.Repository<ClassSubject>().Query()
+            .AsNoTracking()
+            .Where(cs => cs.SchoolClassId == classId && cs.IsOptional && !cs.IsDeleted && cs.IsActive)
+            .ToListAsync(ct);
+
+        var generated = 0;
+        foreach (var optionalSubjectId in optionalSubjectIds)
+        {
+            var cs = classSubjects.FirstOrDefault(c => c.SubjectId == optionalSubjectId);
+            if (cs == null) continue;
+
+            var existing = await _uow.Repository<ExamSubjectEntity>().Query()
+                .AnyAsync(es => es.ExamId == examId && es.SubjectId == optionalSubjectId, ct);
+
+            if (!existing)
+            {
+                await _uow.Repository<ExamSubjectEntity>().AddAsync(new ExamSubjectEntity
+                {
+                    ExamId = examId,
+                    SubjectId = optionalSubjectId,
+                    FullMarks = cs.FullMarks,
+                    PassMarks = cs.PassMarks,
+                    IsOptional = true
+                }, ct);
+                generated++;
+            }
+        }
+
+        if (generated > 0)
+            await _uow.SaveChangesAsync(ct);
+
+        return generated;
     }
 }
 

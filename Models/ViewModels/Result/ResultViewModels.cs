@@ -1,6 +1,10 @@
+using SchoolManagementSystem.Models.Entities.Academic;
+using ExamEntity = SchoolManagementSystem.Models.Entities.Exam.Exam;
+using SchoolManagementSystem.Models.Entities.Result;
+using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Models.DTOs.Exam;
 using SchoolManagementSystem.Models.DTOs.Result;
-using SchoolManagementSystem.Models.Enums;
+using SchoolManagementSystem.Models.DTOs.Teacher;
 
 namespace SchoolManagementSystem.Models.ViewModels.Result;
 
@@ -45,6 +49,9 @@ public class StudentMarkViewModel
     public decimal? BehaviourMarks { get; set; }
     public decimal? ParticipationMarks { get; set; }
 
+    // Dynamic component values for components not mapped to standard fields
+    public Dictionary<string, decimal?> ComponentValues { get; set; } = new();
+
     // Teacher who entered the marks
     public int? EnteredByTeacherId { get; set; }
     public string? EnteredByTeacherName { get; set; }
@@ -72,8 +79,12 @@ public class StudentPortalResultViewModel
 {
     public int StudentId { get; set; }
     public string StudentName { get; set; } = string.Empty;
+    public string ClassName { get; set; } = string.Empty;
+    public string SectionName { get; set; } = string.Empty;
+    public int RollNumber { get; set; }
     public List<StudentExamResultDto> ExamResults { get; set; } = new();
     public FinalResultDto? FinalResult { get; set; }
+    public StudentTranscriptDto? Transcript { get; set; }
 }
 
 public class ReEvaluationDashboardViewModel
@@ -96,4 +107,124 @@ public class ReEvaluationRequestViewModel
     public ReEvaluationStatus Status { get; set; }
     public string? Notes { get; set; }
     public DateTime CreatedAt { get; set; }
+}
+
+public class MarksIndexViewModel
+{
+    public List<SchoolManagementSystem.Models.Entities.Exam.Exam> Exams { get; set; } = new();
+    public List<SchoolManagementSystem.Models.Entities.Academic.SchoolClass> Classes { get; set; } = new();
+    public bool IsTeacher { get; set; }
+    public int TeacherId { get; set; }
+    public List<SchoolManagementSystem.Models.Entities.Teachers.TeacherClassAssignment>? Assignments { get; set; }
+}
+
+public class MarksAuditLogViewModel
+{
+    public IEnumerable<SchoolManagementSystem.Models.Entities.Result.ResultAuditLog> Logs { get; set; } = Enumerable.Empty<SchoolManagementSystem.Models.Entities.Result.ResultAuditLog>();
+    public List<SchoolManagementSystem.Models.Entities.Exam.Exam> Exams { get; set; } = new();
+    public int? SelectedExamId { get; set; }
+}
+
+public class ResultDashboardViewModel
+{
+    public AcademicYear? ActiveYear { get; set; }
+    public List<ExamEntity> Exams { get; set; } = new();
+    public ResultSummaryDto ResultStats { get; set; } = new();
+    public List<AcademicYear> AcademicYears { get; set; } = new();
+    public List<ExamListDto> FilterExams { get; set; } = new();
+    public List<StudentGroup> Groups { get; set; } = new();
+    public int SelectedAcademicYearId { get; set; }
+    public int? SelectedExamId { get; set; }
+    public int? SelectedGroupId { get; set; }
+    public string ChartDataJson { get; set; } = "{}";
+}
+
+public class MeritListPageViewModel
+{
+    public ExamEntity Exam { get; set; } = null!;
+    public List<MeritListItem> ClassMerit { get; set; } = new();
+    public List<MeritListItem> SectionMerit { get; set; } = new();
+    public List<MeritListItem> GroupMerit { get; set; } = new();
+    public List<MeritListItem> SchoolMerit { get; set; } = new();
+}
+
+public class TeacherEntryViewModel
+{
+    public int TeacherId { get; set; }
+    public List<TeacherClassAssignmentDto> Assignments { get; set; } = new();
+    public List<ExamListDto> Exams { get; set; } = new();
+}
+
+public class AllResultsPageViewModel
+{
+    public IEnumerable<StudentExamResultDto> Results { get; set; } = Enumerable.Empty<StudentExamResultDto>();
+    public IEnumerable<ExamListDto> Exams { get; set; } = Enumerable.Empty<ExamListDto>();
+    public List<IdNamePairDto> Classes { get; set; } = new();
+    public int? SelectedExamId { get; set; }
+    public int? SelectedClassId { get; set; }
+    public string? SelectedStatus { get; set; }
+}
+
+public class ResultPublishingPageViewModel
+{
+    public List<PublicationDashboardExamDto> Exams { get; set; } = new();
+    public PublicationDashboardSummaryDto? Summary { get; set; }
+    public List<PublicationHistoryEntryDto> History { get; set; } = new();
+    public List<AcademicYear> AcademicYears { get; set; } = new();
+    public int SelectedYearId { get; set; }
+    public AcademicYear? ActiveYear { get; set; }
+}
+
+public class ReviewResultsPageViewModel
+{
+    public string ExamName { get; set; } = "";
+    public int ExamId { get; set; }
+    public string AcademicYearName { get; set; } = "";
+    public int? ClassId { get; set; }
+    public int? SectionId { get; set; }
+    public int? GroupId { get; set; }
+    public IEnumerable<ResultListItemDto> Results { get; set; } = Enumerable.Empty<ResultListItemDto>();
+}
+
+public class SubjectAnalysisPageViewModel
+{
+    public IEnumerable<SubjectPerformanceDto> Subjects { get; set; } = Enumerable.Empty<SubjectPerformanceDto>();
+    public ExamEntity? Exam { get; set; }
+}
+
+public class AllSubjectsPageViewModel
+{
+    public List<SchoolManagementSystem.Models.DTOs.Academic.SubjectListItemDto> Subjects { get; set; } = new();
+    public Dictionary<string, List<SchoolManagementSystem.Models.DTOs.Academic.SubjectListItemDto>> GroupedSubjects { get; set; } = new();
+}
+
+public class TeacherMarksEntryDataViewModel
+{
+    public bool Authorized { get; set; }
+    public List<TeacherMarksEntryStudentDto> Students { get; set; } = new();
+    public Dictionary<int, MarksEntryExistingDto> ExistingMarks { get; set; } = new();
+}
+
+public class TeacherResultSummaryViewModel
+{
+    public int TotalStudents { get; set; }
+    public int MarksEntered { get; set; }
+    public int PassCount { get; set; }
+    public int FailCount { get; set; }
+    public decimal AvgMarks { get; set; }
+    public decimal HighestMarks { get; set; }
+    public decimal LowestMarks { get; set; }
+    public List<GradeDistributionItemDto> GradeDistribution { get; set; } = new();
+    public string ChartDataJson { get; set; } = "{}";
+}
+
+public class TeacherMarksDashboardViewModel
+{
+    public int AssignedExams { get; set; }
+    public int AssignedSubjects { get; set; }
+    public int PendingEntries { get; set; }
+    public int SubmittedEntries { get; set; }
+    public int TotalEntries { get; set; }
+    public List<string> ExamNames { get; set; } = new();
+    public List<int> CompletionPercentages { get; set; } = new();
 }

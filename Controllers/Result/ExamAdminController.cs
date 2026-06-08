@@ -15,6 +15,7 @@ namespace SchoolManagementSystem.Controllers.Result;
 [Authorize(Roles = "Admin,Super Admin,Principal")]
 [Route("api/[controller]")]
 [ApiController]
+[IgnoreAntiforgeryToken]
 public class ExamAdminController : ControllerBase
 {
     private readonly IExamService _examService;

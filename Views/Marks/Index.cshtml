@@ -1,9 +1,10 @@
+@model SchoolManagementSystem.Models.ViewModels.Result.MarksIndexViewModel
 @{
     ViewData["Title"] = "Marks Entry Center";
-    var exams = ViewBag.Exams as IEnumerable<SchoolManagementSystem.Models.Entities.Exam.Exam>;
-    var classes = ViewBag.Classes as IEnumerable<SchoolManagementSystem.Models.Entities.Academic.SchoolClass>;
-    var assignments = ViewBag.Assignments as IEnumerable<SchoolManagementSystem.Models.Entities.Teachers.TeacherClassAssignment>;
-    var isTeacher = (bool)ViewBag.IsTeacher;
+    var exams = Model.Exams;
+    var classes = Model.Classes;
+    var assignments = Model.Assignments;
+    var isTeacher = Model.IsTeacher;
 }
 
 <div class="adm-page">
@@ -54,7 +55,7 @@
 
                 @if (isTeacher && assignments != null && assignments.Any())
                 {
-                    var distinctClasses = assignments.Select(a => new { ClassId = a.ClassId, ClassName = a.Class?.Name }).DistinctBy(c => c.ClassId);
+                    var distinctClasses = assignments.Select(a => new { ClassId = a.ClassId, ClassName = a.Class?.Name, IsGroupBased = a.Class != null && a.Class.IsGroupBased }).DistinctBy(c => c.ClassId);
 
                     <div class="col-md-6">
                         <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Select Class</label>
@@ -62,7 +63,7 @@
                             <option value="">-- Choose Class --</option>
                             @foreach (var c in distinctClasses)
                             {
-                                <option value="@c.ClassId">@c.ClassName</option>
+                                <option value="@c.ClassId" data-is-group-based="@(c.IsGroupBased.ToString().ToLower())">@c.ClassName</option>
                             }
                         </select>
                     </div>
@@ -98,7 +99,7 @@
                             {
                                 foreach (var c in classes)
                                 {
-                                    <option value="@c.Id">@c.Name</option>
+                                    <option value="@c.Id" data-is-group-based="@(c.IsGroupBased.ToString().ToLower())">@c.Name</option>
                                 }
                             }
                         </select>
@@ -144,7 +145,7 @@
             {
                 <text>
                 window.TeacherAssignmentCascade.init({
-                    teacherId: '@ViewBag.TeacherId',
+                    teacherId: '@Model.TeacherId',
                     classSelect: '#teacherClassSelect',
                     groupSelect: '#teacherGroupSelect',
                     groupContainer: '#teacherGroupContainer',

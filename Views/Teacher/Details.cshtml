@@ -424,7 +424,7 @@
             .then(classes => {
                 const classSelect = $('#filterClass');
                 classes.forEach(c => {
-                    classSelect.append($('<option>', { value: c.id, text: c.name }));
+                    classSelect.append($('<option>', { value: c.id, text: c.name, 'data-is-group-based': c.isGroupBased }));
                 });
             })
             .catch(err => console.error("Error loading teacher classes:", err));

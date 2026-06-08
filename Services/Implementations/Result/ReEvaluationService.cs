@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Models.DTOs.Result;
 using SchoolManagementSystem.Models.Entities.Result;
 using SchoolManagementSystem.Models.Enums;
-using SchoolManagementSystem.Models.ViewModels.Result;
 using SchoolManagementSystem.Repositories.Interfaces.Result;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
@@ -91,7 +90,7 @@ public class ReEvaluationService : IReEvaluationService
         await _uow.SaveChangesAsync();
     }
 
-    public async Task<ReEvaluationDashboardViewModel> GetReEvaluationDashboardAsync()
+    public async Task<ReEvaluationDashboardDto> GetReEvaluationDashboardAsync()
     {
         var requests = await _reEvaluationRequestRepository.Query()
             .Include(r => r.Exam)
@@ -101,38 +100,26 @@ public class ReEvaluationService : IReEvaluationService
             .OrderByDescending(r => r.CreatedAt)
             .ToListAsync();
 
-        return new ReEvaluationDashboardViewModel
+        static ReEvaluationRequestItemDto ToItem(ReEvaluationRequest r) => new()
         {
-            PendingRequests = requests.Where(r => r.Status == ReEvaluationStatus.Requested).Select(r => new ReEvaluationRequestViewModel
-            {
-                Id = r.Id,
-                StudentId = r.StudentId,
-                SubjectId = r.SubjectId,
-                ExamId = r.ExamId,
-                ExamName = r.Exam.Name,
-                StudentName = r.Student.FullName,
-                SubjectName = r.Subject.Name,
-                OldMarks = r.OldMarks,
-                NewMarks = r.NewMarks,
-                Status = r.Status,
-                Notes = r.Notes,
-                CreatedAt = r.CreatedAt
-            }).ToList(),
-            CompletedRequests = requests.Where(r => r.Status != ReEvaluationStatus.Requested).Select(r => new ReEvaluationRequestViewModel
-            {
-                Id = r.Id,
-                StudentId = r.StudentId,
-                SubjectId = r.SubjectId,
-                ExamId = r.ExamId,
-                ExamName = r.Exam.Name,
-                StudentName = r.Student.FullName,
-                SubjectName = r.Subject.Name,
-                OldMarks = r.OldMarks,
-                NewMarks = r.NewMarks,
-                Status = r.Status,
-                Notes = r.Notes,
-                CreatedAt = r.CreatedAt
-            }).ToList()
+            Id = r.Id,
+            StudentId = r.StudentId,
+            SubjectId = r.SubjectId,
+            ExamId = r.ExamId,
+            ExamName = r.Exam.Name,
+            StudentName = r.Student.FullName,
+            SubjectName = r.Subject.Name,
+            OldMarks = r.OldMarks,
+            NewMarks = r.NewMarks,
+            Status = r.Status,
+            Notes = r.Notes,
+            CreatedAt = r.CreatedAt
+        };
+
+        return new ReEvaluationDashboardDto
+        {
+            PendingRequests = requests.Where(r => r.Status == ReEvaluationStatus.Requested).Select(ToItem).ToList(),
+            CompletedRequests = requests.Where(r => r.Status != ReEvaluationStatus.Requested).Select(ToItem).ToList()
         };
     }
 }

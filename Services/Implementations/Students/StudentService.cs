@@ -78,9 +78,13 @@ public class StudentService : IStudentService
             CreatedBy = createdBy
         };
 
+        student.OptionalSubjectId = dto.OptionalSubjectId;
+        student.AssignedReligionSubjectId = await GetReligionSubjectIdAsync(dto.Religion, cancellationToken);
+
         if (dto.LinkedGuardianId.HasValue && dto.LinkedGuardianId > 0)
         {
-            student.StudentGuardians.Add(new SchoolManagementSystem.Models.Entities.Guardian.StudentGuardian
+
+        student.StudentGuardians.Add(new SchoolManagementSystem.Models.Entities.Guardian.StudentGuardian
             {
                 GuardianId = dto.LinkedGuardianId.Value,
                 Relationship = !string.IsNullOrWhiteSpace(dto.GuardianName) 
@@ -156,6 +160,8 @@ public class StudentService : IStudentService
         student.Country = dto.Country;
         student.MaritalStatus = dto.MaritalStatus;
         student.Religion = dto.Religion;
+        student.AssignedReligionSubjectId = await GetReligionSubjectIdAsync(dto.Religion, cancellationToken);
+        student.OptionalSubjectId = dto.OptionalSubjectId;
         student.BloodGroup = dto.BloodGroup;
         student.PresentVillage = dto.PresentVillage;
         student.PresentPostOffice = dto.PresentPostOffice;
@@ -230,6 +236,22 @@ public class StudentService : IStudentService
     {
         var student = await _studentRepository.FirstOrDefaultAsync(s => s.UserId == userId && !s.IsDeleted, cancellationToken);
         return student?.Id;
+    }
+
+    private async Task<int?> GetReligionSubjectIdAsync(string religion, CancellationToken cancellationToken)
+    {
+        var code = religion?.Trim().ToLowerInvariant() switch
+        {
+            "islam" => "IRE",
+            "hindu" => "HRE",
+            "buddhist" => "BRE",
+            "christian" => "CRE",
+            _ => null
+        };
+        if (code == null) return null;
+        var subject = await _unitOfWork.Repository<Subject>()
+            .FirstOrDefaultAsync(s => s.Code == code && !s.IsDeleted, cancellationToken);
+        return subject?.Id;
     }
 
     private async Task<string> GenerateStudentNoAsync(CancellationToken cancellationToken)

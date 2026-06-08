@@ -1,13 +1,19 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SchoolManagementSystem.Data;
 using SchoolManagementSystem.Models.DTOs.Guardian;
+using SchoolManagementSystem.Models.Entities.Fees;
+using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Models.Entities.Attendance;
+using SchoolManagementSystem.Models.Entities.Communication;
+using SchoolManagementSystem.Models.Entities.Guardian;
+using SchoolManagementSystem.Models.Entities.Result;
 using SchoolManagementSystem.Models.Enums;
+using GuardianEntity = SchoolManagementSystem.Models.Entities.Guardian.Guardian;
 using SchoolManagementSystem.Repositories.Interfaces.Result;
 using SchoolManagementSystem.Services.Guardian;
 using SchoolManagementSystem.Services.Interfaces.Result;
+using SchoolManagementSystem.UnitOfWork.Interfaces;
 using System.Security.Claims;
 
 namespace SchoolManagementSystem.Controllers.Guardian;
@@ -17,19 +23,22 @@ namespace SchoolManagementSystem.Controllers.Guardian;
 public class GuardianPortalPagesController : Controller
 {
     private readonly IGuardianService _guardianService;
-    private readonly SchoolDbContext _db;
+    private readonly IUnitOfWork _uow;
     private readonly IStudentExamResultRepository _studentExamResultRepository;
+    private readonly ITranscriptService _transcriptService;
     private readonly ILogger<GuardianPortalPagesController> _logger;
 
     public GuardianPortalPagesController(
         IGuardianService guardianService,
-        SchoolDbContext db,
+        IUnitOfWork uow,
         IStudentExamResultRepository studentExamResultRepository,
+        ITranscriptService transcriptService,
         ILogger<GuardianPortalPagesController> logger)
     {
         _guardianService = guardianService;
-        _db = db;
+        _uow = uow;
         _studentExamResultRepository = studentExamResultRepository;
+        _transcriptService = transcriptService;
         _logger = logger;
     }
 
@@ -54,7 +63,7 @@ public class GuardianPortalPagesController : Controller
     {
         var userId = CurrentUserId();
         var sid = await ResolveOrFirstChildAsync(studentId, ct);
-        if (sid == 0) { ViewBag.Message = "No child linked to your account."; return View("~/Views/GuardianPortal/Empty.cshtml"); }
+        if (sid == 0) { return View("~/Views/GuardianPortal/Empty.cshtml", "No child linked to your account."); }
 
         if (!await _guardianService.UserHasAccessToStudentAsync(userId, sid, ct)) return Forbid();
 
@@ -76,17 +85,17 @@ public class GuardianPortalPagesController : Controller
     {
         var userId = CurrentUserId();
         var sid = await ResolveOrFirstChildAsync(studentId, ct);
-        if (sid == 0) { ViewBag.Message = "No child linked to your account."; return View("~/Views/GuardianPortal/Empty.cshtml"); }
+        if (sid == 0) { return View("~/Views/GuardianPortal/Empty.cshtml", "No child linked to your account."); }
         if (!await _guardianService.UserHasAccessToStudentAsync(userId, sid, ct)) return Forbid();
 
-        var results = await _db.StudentExamResults
+        var results = await _uow.Repository<StudentExamResult>().Query()
             .AsNoTracking()
             .Include(r => r.Exam)
             .Where(r => r.StudentId == sid && !r.IsDeleted && (r.Status == ResultWorkflowStatus.Published || r.Status == ResultWorkflowStatus.Locked))
             .OrderByDescending(r => r.ExamId)
             .ToListAsync(ct);
 
-        var subjects = await _db.StudentSubjectResults
+        var subjects = await _uow.Repository<StudentSubjectResult>().Query()
             .AsNoTracking()
             .Include(s => s.Subject)
             .Where(s => s.StudentId == sid && !s.IsDeleted)
@@ -103,17 +112,17 @@ public class GuardianPortalPagesController : Controller
     {
         var userId = CurrentUserId();
         var sid = await ResolveOrFirstChildAsync(studentId, ct);
-        if (sid == 0) { ViewBag.Message = "No child linked to your account."; return View("~/Views/GuardianPortal/Empty.cshtml"); }
+        if (sid == 0) { return View("~/Views/GuardianPortal/Empty.cshtml", "No child linked to your account."); }
         if (!await _guardianService.UserHasAccessToStudentAsync(userId, sid, ct)) return Forbid();
 
-        var invoices = await _db.FeeInvoices
+        var invoices = await _uow.Repository<FeeInvoice>().Query()
             .AsNoTracking()
             .Where(i => i.StudentId == sid && !i.IsDeleted)
             .OrderByDescending(i => i.Id)
             .ToListAsync(ct);
 
         var invoiceIds = invoices.Select(i => i.Id).ToList();
-        var payments = await _db.Payments
+        var payments = await _uow.Repository<Payment>().Query()
             .AsNoTracking()
             .Where(p => invoiceIds.Contains(p.FeeInvoiceId) && !p.IsDeleted)
             .OrderByDescending(p => p.PaidAt)
@@ -132,10 +141,10 @@ public class GuardianPortalPagesController : Controller
     {
         var userId = CurrentUserId();
         var sid = await ResolveOrFirstChildAsync(studentId, ct);
-        if (sid == 0) { ViewBag.Message = "No child linked to your account."; return View("~/Views/GuardianPortal/Empty.cshtml"); }
+        if (sid == 0) { return View("~/Views/GuardianPortal/Empty.cshtml", "No child linked to your account."); }
         if (!await _guardianService.UserHasAccessToStudentAsync(userId, sid, ct)) return Forbid();
 
-        var leaves = await _db.StudentLeaveApplications
+        var leaves = await _uow.Repository<StudentLeaveApplication>().Query()
             .AsNoTracking()
             .Include(l => l.LeaveType)
             .Where(l => l.StudentId == sid)
@@ -144,7 +153,7 @@ public class GuardianPortalPagesController : Controller
 
         ViewBag.StudentId = sid;
         ViewBag.StudentName = (await _guardianService.GetChildDetailAsync(userId, sid, ct))?.FullName;
-        ViewBag.LeaveTypes = await _db.LeaveTypes.AsNoTracking().Where(t => t.IsActive).ToListAsync(ct);
+        ViewBag.LeaveTypes = await _uow.Repository<LeaveType>().Query().AsNoTracking().Where(t => t.IsActive).ToListAsync(ct);
         return View("~/Views/GuardianPortal/Leaves.cshtml", leaves);
     }
 
@@ -162,14 +171,14 @@ public class GuardianPortalPagesController : Controller
         }
 
         // Find the Guardian entity to satisfy the required GuardianId
-        var guardian = await _db.Guardians.AsNoTracking().FirstOrDefaultAsync(g => g.UserId == userId && !g.IsDeleted, ct);
+        var guardian = await _uow.Repository<GuardianEntity>().Query().AsNoTracking().FirstOrDefaultAsync(g => g.UserId == userId && !g.IsDeleted, ct);
         if (guardian == null)
         {
             TempData["ErrorMessage"] = "No guardian profile found.";
             return RedirectToAction(nameof(Leaves), new { studentId });
         }
 
-        var entity = new SchoolManagementSystem.Models.Entities.Attendance.StudentLeaveApplication
+        var entity = new StudentLeaveApplication
         {
             StudentId = studentId,
             GuardianId = guardian.Id,
@@ -177,11 +186,11 @@ public class GuardianPortalPagesController : Controller
             FromDate = fromDate,
             ToDate = toDate,
             Reason = reason,
-            ApprovalStatus = SchoolManagementSystem.Models.Entities.Attendance.StudentLeaveApplication.ApprovalStatusEnum.Pending,
+            ApprovalStatus = StudentLeaveApplication.ApprovalStatusEnum.Pending,
             CreatedAt = DateTime.UtcNow
         };
-        _db.StudentLeaveApplications.Add(entity);
-        await _db.SaveChangesAsync(ct);
+        await _uow.Repository<StudentLeaveApplication>().AddAsync(entity, ct);
+        await _uow.SaveChangesAsync(ct);
         TempData["SuccessMessage"] = "Leave application submitted successfully.";
         return RedirectToAction(nameof(Leaves), new { studentId });
     }
@@ -189,7 +198,7 @@ public class GuardianPortalPagesController : Controller
     [HttpGet("Notices")]
     public async Task<IActionResult> Notices(CancellationToken ct)
     {
-        var notices = await _db.Notices.AsNoTracking()
+        var notices = await _uow.Repository<Notice>().Query().AsNoTracking()
             .Where(n => !n.IsDeleted && n.IsPublished
                 && (n.AudienceRole == "All" || n.AudienceRole == "Guardian" || n.AudienceRole == "Guardians" || n.AudienceRole == "Parent" || n.AudienceRole == "Parents"))
             .OrderByDescending(n => n.PublishAt)
@@ -201,7 +210,7 @@ public class GuardianPortalPagesController : Controller
     [HttpGet("Calendar")]
     public async Task<IActionResult> Calendar(CancellationToken ct)
     {
-        var events = await _db.AcademicCalendarEvents.AsNoTracking()
+        var events = await _uow.Repository<AcademicCalendarEvent>().Query().AsNoTracking()
             .Include(e => e.AcademicCalendar)
             .Where(e => !e.IsDeleted && e.IsActive)
             .OrderBy(e => e.StartDate)
@@ -213,10 +222,10 @@ public class GuardianPortalPagesController : Controller
     public async Task<IActionResult> Notifications(CancellationToken ct)
     {
         var userId = CurrentUserId();
-        var guardian = await _db.Guardians.AsNoTracking().FirstOrDefaultAsync(g => g.UserId == userId && !g.IsDeleted, ct);
-        if (guardian == null) { ViewBag.Message = "No guardian profile."; return View("~/Views/GuardianPortal/Empty.cshtml"); }
+        var guardian = await _uow.Repository<GuardianEntity>().Query().AsNoTracking().FirstOrDefaultAsync(g => g.UserId == userId && !g.IsDeleted, ct);
+        if (guardian == null) { return View("~/Views/GuardianPortal/Empty.cshtml", "No guardian profile."); }
 
-        var notifications = await _db.GuardianNotifications.AsNoTracking()
+        var notifications = await _uow.Repository<GuardianNotification>().Query().AsNoTracking()
             .Where(n => n.GuardianId == guardian.Id && !n.IsDeleted)
             .OrderByDescending(n => n.Id)
             .Take(100)
@@ -229,16 +238,17 @@ public class GuardianPortalPagesController : Controller
     public async Task<IActionResult> MarkRead(int id, CancellationToken ct)
     {
         var userId = CurrentUserId();
-        var guardian = await _db.Guardians.AsNoTracking().FirstOrDefaultAsync(g => g.UserId == userId && !g.IsDeleted, ct);
+        var guardian = await _uow.Repository<GuardianEntity>().Query().AsNoTracking().FirstOrDefaultAsync(g => g.UserId == userId && !g.IsDeleted, ct);
         if (guardian == null) return Forbid();
 
-        var n = await _db.GuardianNotifications.FirstOrDefaultAsync(x => x.Id == id && x.GuardianId == guardian.Id && !x.IsDeleted, ct);
+        var n = await _uow.Repository<GuardianNotification>().Query().FirstOrDefaultAsync(x => x.Id == id && x.GuardianId == guardian.Id && !x.IsDeleted, ct);
         if (n == null) return NotFound();
         n.IsRead = true;
         n.ReadAt = DateTime.UtcNow;
         n.UpdatedAt = DateTime.UtcNow;
         n.UpdatedBy = User.Identity?.Name ?? "guardian";
-        await _db.SaveChangesAsync(ct);
+        _uow.Repository<GuardianNotification>().Update(n);
+        await _uow.SaveChangesAsync(ct);
         return RedirectToAction(nameof(Notifications));
     }
 
@@ -246,16 +256,19 @@ public class GuardianPortalPagesController : Controller
     public async Task<IActionResult> Profile(CancellationToken ct)
     {
         var userId = CurrentUserId();
-        var guardian = await _db.Guardians.AsNoTracking()
+        var guardian = await _uow.Repository<GuardianEntity>().Query().AsNoTracking()
             .FirstOrDefaultAsync(g => g.UserId == userId && !g.IsDeleted, ct);
-        if (guardian == null) { ViewBag.Message = "No guardian profile linked to this account."; return View("~/Views/GuardianPortal/Empty.cshtml"); }
+        if (guardian == null) { return View("~/Views/GuardianPortal/Empty.cshtml", "No guardian profile linked to this account."); }
 
-        var childrenCount = await _db.Set<SchoolManagementSystem.Models.Entities.Guardian.StudentGuardian>().AsNoTracking()
+        var childrenCount = await _uow.Repository<StudentGuardian>().Query().AsNoTracking()
             .CountAsync(sg => sg.GuardianId == guardian.Id && !sg.IsDeleted, ct);
 
-        ViewBag.Guardian = guardian;
-        ViewBag.ChildrenCount = childrenCount;
-        return View("~/Views/GuardianPortal/Profile.cshtml");
+        var model = new SchoolManagementSystem.Models.ViewModels.Guardian.GuardianProfileViewModel
+        {
+            Guardian = guardian,
+            ChildrenCount = childrenCount
+        };
+        return View("~/Views/GuardianPortal/Profile.cshtml", model);
     }
 
     [HttpGet("ReportCard")]
@@ -263,7 +276,7 @@ public class GuardianPortalPagesController : Controller
     {
         var userId = CurrentUserId();
         var sid = await ResolveOrFirstChildAsync(studentId, ct);
-        if (sid == 0) { ViewBag.Message = "No child linked to your account."; return View("~/Views/GuardianPortal/Empty.cshtml"); }
+        if (sid == 0) { return View("~/Views/GuardianPortal/Empty.cshtml", "No child linked to your account."); }
         if (!await _guardianService.UserHasAccessToStudentAsync(userId, sid, ct)) return Forbid();
         if (examId <= 0) return RedirectToAction(nameof(Results), new { studentId = sid });
 
@@ -278,15 +291,14 @@ public class GuardianPortalPagesController : Controller
     {
         var userId = CurrentUserId();
         var sid = await ResolveOrFirstChildAsync(studentId, ct);
-        if (sid == 0) { ViewBag.Message = "No child linked to your account."; return View("~/Views/GuardianPortal/Empty.cshtml"); }
+        if (sid == 0) { return View("~/Views/GuardianPortal/Empty.cshtml", "No child linked to your account."); }
         if (!await _guardianService.UserHasAccessToStudentAsync(userId, sid, ct)) return Forbid();
 
-        var transcriptService = HttpContext.RequestServices.GetRequiredService<ITranscriptService>();
-        var activeYear = await _db.AcademicYears.AsNoTracking().FirstOrDefaultAsync(y => y.IsActive && !y.IsDeleted, ct);
+        var activeYear = await _uow.Repository<AcademicYear>().Query().AsNoTracking().FirstOrDefaultAsync(y => y.IsActive && !y.IsDeleted, ct);
         var yearId = academicYearId ?? activeYear?.Id ?? 0;
         if (yearId == 0) return RedirectToAction(nameof(Results), new { studentId = sid });
 
-        var transcript = await transcriptService.GetStudentTranscriptAsync(sid, yearId);
+        var transcript = await _transcriptService.GetStudentTranscriptAsync(sid, yearId);
         if (transcript == null) return NotFound("Transcript not found.");
 
         ViewBag.StudentId = sid;
@@ -298,17 +310,17 @@ public class GuardianPortalPagesController : Controller
     {
         var userId = CurrentUserId();
         var sid = await ResolveOrFirstChildAsync(studentId, ct);
-        if (sid == 0) { ViewBag.Message = "No child linked to your account."; return View("~/Views/GuardianPortal/Empty.cshtml"); }
+        if (sid == 0) { return View("~/Views/GuardianPortal/Empty.cshtml", "No child linked to your account."); }
         if (!await _guardianService.UserHasAccessToStudentAsync(userId, sid, ct)) return Forbid();
 
-        var results = await _db.StudentExamResults
+        var results = await _uow.Repository<StudentExamResult>().Query()
             .AsNoTracking()
             .Include(r => r.Exam)
             .Where(r => r.StudentId == sid && !r.IsDeleted && (r.Status == ResultWorkflowStatus.Published || r.Status == ResultWorkflowStatus.Locked))
             .OrderBy(r => r.ExamId)
             .ToListAsync(ct);
 
-        var subjects = await _db.StudentSubjectResults
+        var subjects = await _uow.Repository<StudentSubjectResult>().Query()
             .AsNoTracking()
             .Include(s => s.Subject)
             .Where(s => s.StudentId == sid && !s.IsDeleted)

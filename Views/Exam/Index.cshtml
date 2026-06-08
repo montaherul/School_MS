@@ -74,7 +74,7 @@
                                     <td><span class="adm-cell-name">@exam.Name</span></td>
                                     <td><span class="adm-status adm-status--neutral">@exam.Term</span></td>
                                     <td>@exam.AcademicYearName</td>
-                                    <td><span class="adm-cell-dob">@exam.StartsOn.ToShortDateString() – @exam.EndsOn.ToShortDateString()</span></td>
+                                    <td><span class="adm-cell-dob">@exam.StartsOn.ToString("d") – @exam.EndsOn.ToString("d")</span></td>
                                     <td>
                                         @if (exam.Status == SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Published)
                                         {

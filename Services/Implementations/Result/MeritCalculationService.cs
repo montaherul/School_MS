@@ -5,6 +5,7 @@ using SchoolManagementSystem.Models.Entities.Result;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using SchoolManagementSystem.Repositories.Interfaces.Result;
+using SchoolManagementSystem.Models.DTOs.Result;
 using ExamEntity = SchoolManagementSystem.Models.Entities.Exam.Exam;
 
 namespace SchoolManagementSystem.Services.Implementations.Result;

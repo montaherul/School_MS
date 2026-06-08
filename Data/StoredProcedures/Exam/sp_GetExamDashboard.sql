@@ -7,13 +7,13 @@ BEGIN
     -- Stats
     SELECT
         (SELECT COUNT(*) FROM Exams WHERE AcademicYearId = @AcademicYearId AND IsDeleted = 0) AS TotalExams,
-        (SELECT COUNT(*) FROM Exams WHERE AcademicYearId = @AcademicYearId AND IsDeleted = 0 AND Status = 0) AS DraftExams,
-        (SELECT COUNT(*) FROM Exams WHERE AcademicYearId = @AcademicYearId AND IsDeleted = 0 AND Status = 1) AS SubmittedExams,
-        (SELECT COUNT(*) FROM Exams WHERE AcademicYearId = @AcademicYearId AND IsDeleted = 0 AND Status = 2) AS ReviewedExams,
-        (SELECT COUNT(*) FROM Exams WHERE AcademicYearId = @AcademicYearId AND IsDeleted = 0 AND Status = 3) AS ApprovedExams,
-        (SELECT COUNT(*) FROM Exams WHERE AcademicYearId = @AcademicYearId AND IsDeleted = 0 AND Status = 4) AS PublishedExams,
-        (SELECT COUNT(*) FROM Exams WHERE AcademicYearId = @AcademicYearId AND IsDeleted = 0 AND Status = 5) AS LockedExams,
-        (SELECT COUNT(*) FROM Exams WHERE AcademicYearId = @AcademicYearId AND IsDeleted = 0 AND Status = 6) AS UnpublishedExams,
+        (SELECT COUNT(*) FROM Exams WHERE AcademicYearId = @AcademicYearId AND IsDeleted = 0 AND Status = 1) AS DraftExams,
+        (SELECT COUNT(*) FROM Exams WHERE AcademicYearId = @AcademicYearId AND IsDeleted = 0 AND Status = 2) AS SubmittedExams,
+        (SELECT COUNT(*) FROM Exams WHERE AcademicYearId = @AcademicYearId AND IsDeleted = 0 AND Status = 3) AS ReviewedExams,
+        (SELECT COUNT(*) FROM Exams WHERE AcademicYearId = @AcademicYearId AND IsDeleted = 0 AND Status = 4) AS ApprovedExams,
+        (SELECT COUNT(*) FROM Exams WHERE AcademicYearId = @AcademicYearId AND IsDeleted = 0 AND Status = 5) AS PublishedExams,
+        (SELECT COUNT(*) FROM Exams WHERE AcademicYearId = @AcademicYearId AND IsDeleted = 0 AND Status = 6) AS LockedExams,
+        (SELECT COUNT(*) FROM Exams WHERE AcademicYearId = @AcademicYearId AND IsDeleted = 0 AND Status = 7) AS UnpublishedExams,
         (SELECT COUNT(DISTINCT StudentId) FROM StudentExamResults ser
             INNER JOIN Exams e ON ser.ExamId = e.Id
             WHERE e.AcademicYearId = @AcademicYearId AND ser.IsDeleted = 0) AS StudentsAppeared;

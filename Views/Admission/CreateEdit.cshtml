@@ -366,7 +366,7 @@
                                     {
                                         foreach (var c in ViewBag.Classes)
                                         {
-                                            <option value="@c.Id">@c.Name</option>
+                                            <option value="@c.Id" data-is-group-based="@(c.IsGroupBased.ToString().ToLower())">@c.Name</option>
                                         }
                                     }
                                 </select>
@@ -447,7 +447,9 @@
         const groupSelect = sectionContainer.querySelector('select');
 
         function updateGroups(classId) {
-            if (classId === 9 || classId === 10) {
+            var selectedOption = classDropdown && classDropdown.options[classDropdown.selectedIndex];
+            var isGroupBased = selectedOption && selectedOption.dataset.isGroupBased === 'true';
+            if (isGroupBased) {
                 sectionContainer.style.display = "block";
                 groupSelect.innerHTML = '<option value="">Loading...</option>';
                 fetch(`/Section/GetGroupsForClass?classId=${classId}`)

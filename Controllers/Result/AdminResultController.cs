@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Models.DTOs.Result;
+using SchoolManagementSystem.Models.ViewModels.Result;
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Models.Entities.Exam;
 using SchoolManagementSystem.Models.Entities.Result;
@@ -63,14 +64,14 @@ public class AdminResultController : Controller
         var activeYear = academicYears.FirstOrDefault(x => x.IsActive);
         var yearId = academicYearId ?? activeYear?.Id ?? 0;
 
-        var dashboardData = await _analyticsService.GetAdminDashboardAsync();
+        var dashboardDto = await _analyticsService.GetAdminDashboardAsync();
         if (yearId > 0 && activeYear?.Id != yearId)
         {
             var year = academicYears.FirstOrDefault(y => y.Id == yearId);
             if (year != null)
             {
-                dashboardData.ActiveYear = year;
-                dashboardData.Exams = await _uow.Repository<ExamEntity>().Query()
+                dashboardDto.ActiveYear = year;
+                dashboardDto.Exams = await _uow.Repository<ExamEntity>().Query()
                     .Where(e => e.AcademicYearId == yearId && !e.IsDeleted)
                     .ToListAsync(ct);
             }
@@ -125,20 +126,8 @@ public class AdminResultController : Controller
         var topStudents = results.OrderByDescending(r => r.Gpa).Take(10)
             .Select(r => new { Name = r.Student.FullName, Gpa = r.Gpa }).ToList();
 
-        ViewBag.ActiveYear = dashboardData.ActiveYear;
-        ViewBag.Exams = dashboardData.Exams;
-        ViewBag.ResultStats = dashboardData.ResultStats;
-        ViewBag.AcademicYears = academicYears;
-        ViewBag.SelectedYearId = yearId;
-        ViewBag.SelectedExamId = examId;
-        ViewBag.SelectedClassId = classId;
-        ViewBag.SelectedSectionId = sectionId;
-        ViewBag.SelectedGroupId = groupId;
-        ViewBag.FilterExams = await _examService.GetExamsAsync(yearId);
-        ViewBag.Classes = await _examService.GetClassesAsync(ct);
-        ViewBag.Sections = classId.HasValue ? await _examService.GetSectionsAsync(classId, ct) : Enumerable.Empty<object>();
-        ViewBag.Groups = await _uow.Repository<StudentGroup>().ListAsync(g => !g.IsDeleted, ct);
-        ViewBag.ChartData = JsonSerializer.Serialize(new
+        var groups = await _uow.Repository<StudentGroup>().ListAsync(g => !g.IsDeleted, ct);
+        var chartDataJson = JsonSerializer.Serialize(new
         {
             classPerf,
             sectionPerf,
@@ -151,7 +140,21 @@ public class AdminResultController : Controller
             failCount = results.Count(r => !r.IsPassed)
         });
 
-        return View();
+        var vm = new ResultDashboardViewModel
+        {
+            ActiveYear = dashboardDto.ActiveYear,
+            Exams = dashboardDto.Exams,
+            ResultStats = dashboardDto.ResultStats,
+            AcademicYears = academicYears.ToList(),
+            FilterExams = (await _examService.GetExamsAsync(yearId)).ToList(),
+            Groups = groups.ToList(),
+            SelectedAcademicYearId = yearId,
+            SelectedExamId = examId,
+            SelectedGroupId = groupId,
+            ChartDataJson = chartDataJson
+        };
+
+        return View(vm);
     }
 
     [HttpGet]
@@ -159,8 +162,16 @@ public class AdminResultController : Controller
     public async Task<IActionResult> AllSubjects(CancellationToken ct)
     {
         var groupedSubjects = await _subjectService.GetGroupedSubjectsAsync(ct);
-        ViewBag.GroupedSubjects = groupedSubjects;
-        return View();
+        var dict = new Dictionary<string?, List<SchoolManagementSystem.Models.DTOs.Academic.SubjectListItemDto>>();
+        foreach (var kvp in groupedSubjects)
+            dict[kvp.Key] = kvp.Value.ToList();
+        var allSubjects = dict.SelectMany(g => g.Value).ToList();
+        var model = new AllSubjectsPageViewModel
+        {
+            Subjects = allSubjects,
+            GroupedSubjects = dict
+        };
+        return View(model);
     }
 
     [HttpGet]
@@ -168,12 +179,22 @@ public class AdminResultController : Controller
     public async Task<IActionResult> AllResults(int? examId, int? classId, string? status, CancellationToken ct)
     {
         var results = await _publicationService.GetAllResultsAsync(examId, classId, status);
-        ViewBag.Exams = await _examService.GetExamsAsync(0);
-        ViewBag.Classes = await _examService.GetClassesAsync(ct);
-        ViewBag.SelectedExamId = examId;
-        ViewBag.SelectedClassId = classId;
-        ViewBag.SelectedStatus = status;
-        return View(results);
+        var rawClasses = await _examService.GetClassesAsync(ct);
+        var classes = rawClasses.Select(c => new IdNamePairDto
+        {
+            Id = (int)c.GetType().GetProperty("Id")!.GetValue(c)!,
+            Name = (string)c.GetType().GetProperty("Name")!.GetValue(c)!
+        }).ToList();
+        var model = new AllResultsPageViewModel
+        {
+            Results = results,
+            Exams = await _examService.GetExamsAsync(0),
+            Classes = classes,
+            SelectedExamId = examId,
+            SelectedClassId = classId,
+            SelectedStatus = status
+        };
+        return View(model);
     }
 
     [HttpGet]
@@ -186,8 +207,6 @@ public class AdminResultController : Controller
         ViewBag.Classes = await _examService.GetClassesAsync(ct);
         ViewBag.Sections = await _examService.GetSectionsAsync(classId, ct);
 
-        ViewBag.SelectedClassId = classId;
-        ViewBag.SelectedSectionId = sectionId;
         return View(tabulationSheet);
     }
 
@@ -195,27 +214,34 @@ public class AdminResultController : Controller
     [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
     public async Task<IActionResult> MeritLists(int examId, CancellationToken ct)
     {
-        var exam = await _examService.GetExamByIdAsync(examId, ct);
+        var exam = await _examService.GetExamByIdAsync(examId, ct) as SchoolManagementSystem.Models.Entities.Exam.Exam;
         if (exam == null) return NotFound();
 
-        ViewBag.Exam = exam;
-        ViewBag.ClassMerit = (await _meritCalculationService.GetMeritListAsync(examId, MeritCategory.Class)).Take(50).ToList();
-        ViewBag.SectionMerit = (await _meritCalculationService.GetMeritListAsync(examId, MeritCategory.Section)).Take(50).ToList();
-        ViewBag.GroupMerit = (await _meritCalculationService.GetMeritListAsync(examId, MeritCategory.Group)).Take(50).ToList();
-        ViewBag.SchoolMerit = (await _meritCalculationService.GetMeritListAsync(examId, MeritCategory.School)).Take(50).ToList();
+        var model = new SchoolManagementSystem.Models.ViewModels.Result.MeritListPageViewModel
+        {
+            Exam = exam,
+            ClassMerit = (await _meritCalculationService.GetMeritListAsync(examId, MeritCategory.Class)).Take(50).ToList(),
+            SectionMerit = (await _meritCalculationService.GetMeritListAsync(examId, MeritCategory.Section)).Take(50).ToList(),
+            GroupMerit = (await _meritCalculationService.GetMeritListAsync(examId, MeritCategory.Group)).Take(50).ToList(),
+            SchoolMerit = (await _meritCalculationService.GetMeritListAsync(examId, MeritCategory.School)).Take(50).ToList()
+        };
 
-        return View();
+        return View(model);
     }
 
     [HttpGet]
     [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
     public async Task<IActionResult> SubjectAnalysis(int examId, CancellationToken ct)
     {
-        var exam = await _examService.GetExamByIdAsync(examId, ct);
+        var exam = await _examService.GetExamByIdAsync(examId, ct) as ExamEntity;
         if (exam == null) return NotFound();
         var subjectAnalysis = await _analyticsService.GetSubjectAnalysisAsync(examId);
-        ViewBag.Exam = exam;
-        return View(subjectAnalysis);
+        var model = new SubjectAnalysisPageViewModel
+        {
+            Subjects = subjectAnalysis,
+            Exam = exam
+        };
+        return View(model);
     }
 
     [HttpGet]
@@ -226,35 +252,47 @@ public class AdminResultController : Controller
         var activeYear = academicYears.FirstOrDefault(x => x.IsActive);
         var yearId = academicYearId ?? activeYear?.Id ?? 0;
 
-        if (yearId == 0)
+        PublicationDashboardSummaryDto? summary = null;
+        List<PublicationDashboardExamDto> exams;
+        List<PublicationHistoryEntryDto> history = new();
+
+        if (yearId > 0)
         {
-            ViewBag.AcademicYears = academicYears;
-            return View(Enumerable.Empty<PublicationDashboardExamDto>());
+            var (examsData, summaryData) = await _publicationRepository.GetPublicationDashboardAsync(yearId, ct);
+            exams = examsData.ToList();
+            summary = summaryData;
+
+            var rawHistory = await _publicationRepository.Query()
+                .Include(p => p.Exam)
+                .Where(p => !p.IsDeleted && p.Exam.AcademicYearId == yearId)
+                .OrderByDescending(p => p.PublishedAt ?? p.UpdatedAt ?? p.CreatedAt)
+                .Take(50)
+                .Select(p => new PublicationHistoryEntryDto
+                {
+                    Timestamp = (p.PublishedAt ?? p.UpdatedAt ?? p.CreatedAt).ToString("dd MMM yyyy HH:mm"),
+                    Action = p.Status.ToString(),
+                    PerformedBy = p.UpdatedBy ?? p.CreatedBy ?? "System",
+                    Notes = p.IsLocked ? "Results locked" : ""
+                })
+                .ToListAsync(ct);
+            history = rawHistory;
+        }
+        else
+        {
+            exams = new List<PublicationDashboardExamDto>();
         }
 
-        var (exams, summary) = await _publicationRepository.GetPublicationDashboardAsync(yearId, ct);
+        var model = new ResultPublishingPageViewModel
+        {
+            Exams = exams,
+            Summary = summary,
+            History = history,
+            AcademicYears = academicYears.ToList(),
+            SelectedYearId = yearId,
+            ActiveYear = yearId > 0 ? academicYears.FirstOrDefault(y => y.Id == yearId) : activeYear
+        };
 
-        var history = await _publicationRepository.Query()
-            .Include(p => p.Exam)
-            .Where(p => !p.IsDeleted && p.Exam.AcademicYearId == yearId)
-            .OrderByDescending(p => p.PublishedAt ?? p.UpdatedAt ?? p.CreatedAt)
-            .Take(50)
-            .Select(p => new
-            {
-                Timestamp = (p.PublishedAt ?? p.UpdatedAt ?? p.CreatedAt).ToString("dd MMM yyyy HH:mm"),
-                Action = p.Status.ToString(),
-                PerformedBy = p.UpdatedBy ?? p.CreatedBy ?? "System",
-                Notes = p.IsLocked ? "Results locked" : ""
-            })
-            .ToListAsync(ct);
-
-        ViewBag.Summary = summary;
-        ViewBag.PublicationHistory = history;
-        ViewBag.AcademicYears = academicYears;
-        ViewBag.SelectedYearId = yearId;
-        ViewBag.ActiveYear = academicYears.FirstOrDefault(y => y.Id == yearId);
-
-        return View(exams);
+        return View(model);
     }
 
     [HttpGet]
@@ -268,17 +306,21 @@ public class AdminResultController : Controller
 
         var academicYear = await _uow.Repository<AcademicYear>().GetByIdAsync(exam.AcademicYearId, ct);
 
-        ViewBag.ExamName = exam.Name;
-        ViewBag.ExamId = examId;
-        ViewBag.AcademicYearName = academicYear?.Name ?? "";
-        ViewBag.ClassId = classId;
-        ViewBag.SectionId = sectionId;
-        ViewBag.GroupId = groupId;
-
         var (results, _) = await _studentExamResultRepository.GetResultListAsync(
             examId, classId, sectionId, groupId, (int)ResultWorkflowStatus.Submitted, null, 1, 2000, ct);
 
-        return View(results);
+        var model = new ReviewResultsPageViewModel
+        {
+            ExamName = exam.Name,
+            ExamId = examId,
+            AcademicYearName = academicYear?.Name ?? "",
+            ClassId = classId,
+            SectionId = sectionId,
+            GroupId = groupId,
+            Results = results
+        };
+
+        return View(model);
     }
 
     [HttpPost]

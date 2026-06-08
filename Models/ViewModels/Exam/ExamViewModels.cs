@@ -43,6 +43,8 @@ public class ExamDashboardViewModel
     public int? SelectedSectionId { get; set; }
     public int? SelectedGroupId { get; set; }
     public IReadOnlyList<ExamFilterOptionViewModel> Groups { get; set; } = [];
+    public IReadOnlyList<ExamFilterOptionViewModel> Classes { get; set; } = [];
+    public IReadOnlyList<ExamFilterOptionViewModel> Sections { get; set; } = [];
     public IReadOnlyList<ExamStatusDistributionDto> StatusDistribution { get; set; } = [];
     public IReadOnlyList<ExamPassRateDto> PassRates { get; set; } = [];
     public IReadOnlyList<ExamGroupPerformanceViewModel> GroupPerformance { get; set; } = [];

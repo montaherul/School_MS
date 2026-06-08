@@ -1,7 +1,3 @@
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using iText.Kernel.Colors;
 using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
@@ -9,24 +5,26 @@ using iText.Layout;
 using iText.Layout.Element;
 using iText.Layout.Properties;
 using Microsoft.EntityFrameworkCore;
-using SchoolManagementSystem.Data;
+using SchoolManagementSystem.Models.Entities.Attendance;
+using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Models.ViewModels.Attendance;
 using SchoolManagementSystem.Repositories.Interfaces.Attendance;
 using SchoolManagementSystem.Services.Interfaces.Attendance;
+using SchoolManagementSystem.UnitOfWork.Interfaces;
 
 namespace SchoolManagementSystem.Services.Implementations.Attendance
 {
     public class AttendanceReportService : IAttendanceReportService
     {
-        private readonly SchoolDbContext _db;
+        private readonly IUnitOfWork _uow;
         private readonly ILeaveApplicationRepository _leaveRepo;
 
         public AttendanceReportService(
-            SchoolDbContext db,
+            IUnitOfWork uow,
             ILeaveApplicationRepository leaveRepo)
         {
-            _db = db;
+            _uow = uow;
             _leaveRepo = leaveRepo;
         }
 
@@ -34,27 +32,27 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
         {
             var today = DateOnly.FromDateTime(DateTime.Today);
 
-            var studentPresent = await _db.Attendance.CountAsync(
+            var studentPresent = await _uow.Repository<AttendanceRecord>().Query().CountAsync(
                 a => a.AttendanceDate == today && !a.IsDeleted &&
-                     (a.Status == SchoolManagementSystem.Models.Enums.AttendanceStatus.Present ||
-                      a.Status == SchoolManagementSystem.Models.Enums.AttendanceStatus.Late), ct);
-            var studentAbsent = await _db.Attendance.CountAsync(
+                     (a.Status == AttendanceStatus.Present ||
+                      a.Status == AttendanceStatus.Late), ct);
+            var studentAbsent = await _uow.Repository<AttendanceRecord>().Query().CountAsync(
                 a => a.AttendanceDate == today && !a.IsDeleted &&
-                     a.Status == SchoolManagementSystem.Models.Enums.AttendanceStatus.Absent, ct);
+                     a.Status == AttendanceStatus.Absent, ct);
 
-            var employeePresent = await _db.EmployeeAttendances.CountAsync(
+            var employeePresent = await _uow.Repository<EmployeeAttendance>().Query().CountAsync(
                 a => a.AttendanceDate.Date == today.ToDateTime(TimeOnly.MinValue).Date && !a.IsDeleted &&
-                     (a.Status == SchoolManagementSystem.Models.Enums.AttendanceStatus.Present ||
-                      a.Status == SchoolManagementSystem.Models.Enums.AttendanceStatus.Late), ct);
-            var employeeAbsent = await _db.EmployeeAttendances.CountAsync(
+                     (a.Status == AttendanceStatus.Present ||
+                      a.Status == AttendanceStatus.Late), ct);
+            var employeeAbsent = await _uow.Repository<EmployeeAttendance>().Query().CountAsync(
                 a => a.AttendanceDate.Date == today.ToDateTime(TimeOnly.MinValue).Date && !a.IsDeleted &&
-                     a.Status == SchoolManagementSystem.Models.Enums.AttendanceStatus.Absent, ct);
+                     a.Status == AttendanceStatus.Absent, ct);
 
             var pendingLeaves = await _leaveRepo.Query().CountAsync(
-                l => l.ApprovalStatus == SchoolManagementSystem.Models.Enums.LeaveStatus.Pending, ct);
+                l => l.ApprovalStatus == LeaveStatus.Pending, ct);
 
-            var studentTotal = await _db.Attendance.CountAsync(a => a.AttendanceDate == today && !a.IsDeleted, ct);
-            var employeeTotal = await _db.EmployeeAttendances.CountAsync(a => a.AttendanceDate.Date == today.ToDateTime(TimeOnly.MinValue).Date && !a.IsDeleted, ct);
+            var studentTotal = await _uow.Repository<AttendanceRecord>().Query().CountAsync(a => a.AttendanceDate == today && !a.IsDeleted, ct);
+            var employeeTotal = await _uow.Repository<EmployeeAttendance>().Query().CountAsync(a => a.AttendanceDate.Date == today.ToDateTime(TimeOnly.MinValue).Date && !a.IsDeleted, ct);
 
             return new AttendanceDashboardVm
             {
@@ -90,7 +88,7 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
         {
             var from = DateOnly.FromDateTime(fromDate.Date);
             var to = DateOnly.FromDateTime(toDate.Date);
-            var query = _db.Attendance
+            var query = _uow.Repository<AttendanceRecord>().Query()
                 .AsNoTracking()
                 .Include(a => a.Student).ThenInclude(s => s!.Class)
                 .Include(a => a.Student).ThenInclude(s => s!.Section)
@@ -159,7 +157,7 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
         {
             var from = DateOnly.FromDateTime(fromDate.Date);
             var to = DateOnly.FromDateTime(toDate.Date);
-            var className = await _db.Classes.AsNoTracking()
+            var className = await _uow.Repository<SchoolClass>().Query().AsNoTracking()
                 .Where(c => c.Id == classId)
                 .Select(c => c.Name)
                 .FirstOrDefaultAsync(ct) ?? classId.ToString();
@@ -168,7 +166,7 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
                 $"Class Attendance Report - {className}",
                 from,
                 to,
-                _db.Attendance.AsNoTracking().Where(a => a.SchoolClassId == classId),
+                _uow.Repository<AttendanceRecord>().Query().AsNoTracking().Where(a => a.SchoolClassId == classId),
                 ct);
         }
 
@@ -176,7 +174,7 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
         {
             var from = DateOnly.FromDateTime(fromDate.Date);
             var to = DateOnly.FromDateTime(toDate.Date);
-            var sectionName = await _db.Sections.AsNoTracking()
+            var sectionName = await _uow.Repository<Section>().Query().AsNoTracking()
                 .Where(s => s.Id == sectionId)
                 .Select(s => s.Name)
                 .FirstOrDefaultAsync(ct) ?? sectionId.ToString();
@@ -185,7 +183,7 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
                 $"Section Attendance Report - {sectionName}",
                 from,
                 to,
-                _db.Attendance.AsNoTracking().Where(a => a.SchoolClassId == classId && a.SectionId == sectionId),
+                _uow.Repository<AttendanceRecord>().Query().AsNoTracking().Where(a => a.SchoolClassId == classId && a.SectionId == sectionId),
                 ct);
         }
 
@@ -193,7 +191,7 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
         {
             var from = DateOnly.FromDateTime(fromDate.Date);
             var to = DateOnly.FromDateTime(toDate.Date);
-            var groupName = await _db.StudentGroups.AsNoTracking()
+            var groupName = await _uow.Repository<StudentGroup>().Query().AsNoTracking()
                 .Where(g => g.Id == studentGroupId)
                 .Select(g => g.Name)
                 .FirstOrDefaultAsync(ct) ?? studentGroupId.ToString();
@@ -202,7 +200,7 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
                 $"Group Attendance Report - {groupName}",
                 from,
                 to,
-                _db.Attendance.AsNoTracking()
+                _uow.Repository<AttendanceRecord>().Query().AsNoTracking()
                     .Include(a => a.Student)
                     .Where(a => a.SchoolClassId == classId
                         && a.SectionId == sectionId
@@ -213,7 +211,7 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
 
         private async Task<byte[]> GenerateEmployeePdfAsync(DateTime fromDate, DateTime toDate, string title, CancellationToken ct)
         {
-            var rows = await _db.EmployeeAttendances
+            var rows = await _uow.Repository<EmployeeAttendance>().Query()
                 .AsNoTracking()
                 .Include(a => a.Employee).ThenInclude(e => e!.Department)
                 .Include(a => a.Employee).ThenInclude(e => e!.Designation)

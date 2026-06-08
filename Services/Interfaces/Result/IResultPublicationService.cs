@@ -1,5 +1,4 @@
 using SchoolManagementSystem.Models.DTOs.Result;
-using StudentPortalResultViewModel = SchoolManagementSystem.Models.ViewModels.Result.StudentPortalResultViewModel;
 
 namespace SchoolManagementSystem.Services.Interfaces.Result;
 
@@ -14,7 +13,7 @@ public interface IResultPublicationService
     Task RepublishResultsAsync(int examId);
     Task<ResultPublicationDto> GetPublicationStatusAsync(int examId);
     Task<IEnumerable<ResultPublicationDto>> GetResultPublicationsAsync();
-    Task<StudentPortalResultViewModel> GetStudentResultsAsync(int studentId);
+    Task<StudentPortalResultDto> GetStudentResultsAsync(int studentId);
     Task<IEnumerable<StudentExamResultDto>> GetAllResultsAsync(int? examId, int? classId, string? status);
     Task RecalculateResultsAsync(int examId);
     Task RecalculateMeritPositionsAsync(int examId);

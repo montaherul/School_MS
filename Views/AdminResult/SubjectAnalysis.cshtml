@@ -1,7 +1,7 @@
-@model IEnumerable<SchoolManagementSystem.Models.DTOs.Result.SubjectPerformanceDto>
+@model SchoolManagementSystem.Models.ViewModels.Result.SubjectAnalysisPageViewModel
 @{
     ViewData["Title"] = "Subject Analysis";
-    var exam = ViewBag.Exam;
+    var exam = Model.Exam;
 }
 
 <div class="container-fluid py-4">
@@ -17,7 +17,7 @@
                         </div>
                         <div class="text-end">
                             <div class="small opacity-75">Total Subjects</div>
-                            <div class="display-6 fw-bold">@Model.Count()</div>
+                            <div class="display-6 fw-bold">@Model.Subjects.Count()</div>
                         </div>
                     </div>
                 </div>
@@ -31,7 +31,7 @@
             <span class="badge bg-light text-dark border">Average, pass rate, high/low scores</span>
         </div>
         <div class="card-body p-0">
-            @if (Model != null && Model.Any())
+            @if (Model.Subjects != null && Model.Subjects.Any())
             {
                 <div class="table-responsive">
                     <table class="table table-hover align-middle mb-0">
@@ -47,7 +47,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var subject in Model.OrderByDescending(x => x.PassPercentage).ThenByDescending(x => x.AverageMarks))
+                            @foreach (var subject in Model.Subjects.OrderByDescending(x => x.PassPercentage).ThenByDescending(x => x.AverageMarks))
                             {
                                 <tr>
                                     <td class="ps-4 fw-semibold">@subject.SubjectName</td>
@@ -75,10 +75,10 @@
     </div>
 
     <div class="row g-4">
-        @if (Model != null && Model.Any())
+        @if (Model.Subjects != null && Model.Subjects.Any())
         {
-            var topSubject = Model.OrderByDescending(x => x.PassPercentage).First();
-            var hardestSubject = Model.OrderBy(x => x.PassPercentage).First();
+            var topSubject = Model.Subjects.OrderByDescending(x => x.PassPercentage).First();
+            var hardestSubject = Model.Subjects.OrderBy(x => x.PassPercentage).First();
 
             <div class="col-md-6">
                 <div class="card shadow-sm border-0 h-100">

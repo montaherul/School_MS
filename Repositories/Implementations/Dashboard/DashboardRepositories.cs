@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Data;
 using SchoolManagementSystem.Models.Enums;
-using SchoolManagementSystem.Models.ViewModels.Dashboard;
-using SchoolManagementSystem.Repositories.Interfaces.Dashboard;
+using SchoolManagementSystem.Models.DTOs.Dashboard;
 using SchoolManagementSystem.Models.DTOs.Attendance;
+using SchoolManagementSystem.Repositories.Interfaces.Dashboard;
 using System.Data;
 using Microsoft.Data.SqlClient;
 
@@ -18,51 +18,46 @@ public class DashboardRepository : IDashboardRepository
         _db = db;
     }
 
-    public async Task<(int totalAttendance, int presentAttendance, decimal feesCollected, decimal feesTotal, List<ChartPoint> studentsByClass, List<ChartPoint> monthlyCollections, List<RecentActivityItem> recentActivities, int totalStudents, int pendingAdmissions)> GetAdminDashboardDataAsync(CancellationToken ct)
+    public async Task<(int totalAttendance, int presentAttendance, decimal feesCollected, decimal feesTotal, List<DashboardChartDto> studentsByClass, List<DashboardChartDto> monthlyCollections, List<DashboardActivityDto> recentActivities, int totalStudents, int pendingAdmissions)> GetAdminDashboardDataAsync(CancellationToken ct)
     {
         var totalStudents = await _db.Students.Where(s => !s.IsDeleted).CountAsync(ct);
         var pendingAdmissions = await _db.Admissions.Where(a => a.Status == AdmissionStatus.Pending).CountAsync(ct);
-        var approvedAdmissions = await _db.Admissions.Where(a => a.Status == AdmissionStatus.Approved).CountAsync(ct);
-        var rejectedAdmissions = await _db.Admissions.Where(a => a.Status == AdmissionStatus.Rejected).CountAsync(ct);
-        var convertedAdmissions = await _db.Admissions.Where(a => a.Status == AdmissionStatus.Converted).CountAsync(ct);
         var totalAttendance = await _db.Attendance.Where(a => !a.IsDeleted).CountAsync(ct);
         var presentAttendance = await _db.Attendance.Where(a => (a.Status == AttendanceStatus.Present || a.Status == AttendanceStatus.Late) && !a.IsDeleted).CountAsync(ct);
         var feesCollected = await _db.FeeInvoices.Where(f => (int)f.Status == 1).SumAsync(f => f.PaidAmount, ct);
         var feesTotal = await _db.FeeInvoices.SumAsync(f => f.TotalAmount, ct);
 
-        // Get students count by class
         var studentsByClass = await _db.Students
             .Where(s => !s.IsDeleted)
             .GroupBy(s => s.ClassId)
-            .Select(g => new ChartPoint(g.Key.ToString(), g.Count()))
+            .Select(g => new DashboardChartDto { Label = g.Key.ToString(), Value = g.Count() })
             .ToListAsync(ct);
 
-        // Get monthly fee collections
         var monthlyCollections = await _db.FeeInvoices
             .Where(f => (int)f.Status == 1 && f.UpdatedAt.HasValue)
             .GroupBy(f => f.UpdatedAt.Value.Month)
-            .Select(g => new ChartPoint(g.Key.ToString(), (int)g.Sum(f => f.PaidAmount)))
+            .Select(g => new DashboardChartDto { Label = g.Key.ToString(), Value = (int)g.Sum(f => f.PaidAmount) })
             .ToListAsync(ct);
 
-        var recentActivities = new List<RecentActivityItem>();
+        var recentActivities = new List<DashboardActivityDto>();
 
         return (totalAttendance, presentAttendance, feesCollected, feesTotal, studentsByClass, monthlyCollections, recentActivities, totalStudents, pendingAdmissions);
     }
 
-    public async Task<(int totalAttendance, int presentAttendance, decimal totalInvoiced, decimal totalPaid, List<RecentActivityItem> recentNotices, List<AssignmentDashboardItem> upcomingAssignments)> GetStudentDashboardDataAsync(int studentId, int classId, int sectionId, CancellationToken ct)
+    public async Task<(int totalAttendance, int presentAttendance, decimal totalInvoiced, decimal totalPaid, List<DashboardActivityDto> recentNotices, List<DashboardAssignmentDto> upcomingAssignments)> GetStudentDashboardDataAsync(int studentId, int classId, int sectionId, CancellationToken ct)
     {
         var totalAttendance = await _db.Attendance.Where(a => a.StudentId == studentId && !a.IsDeleted).CountAsync(ct);
         var presentAttendance = await _db.Attendance.Where(a => a.StudentId == studentId && (a.Status == AttendanceStatus.Present || a.Status == AttendanceStatus.Late) && !a.IsDeleted).CountAsync(ct);
         var totalInvoiced = await _db.FeeInvoices.Where(f => f.StudentId == studentId).SumAsync(f => f.TotalAmount, ct);
         var totalPaid = await _db.FeeInvoices.Where(f => f.StudentId == studentId && (int)f.Status == 1).SumAsync(f => f.PaidAmount, ct);
 
-        var recentNotices = new List<RecentActivityItem>();
-        var upcomingAssignments = new List<AssignmentDashboardItem>();
+        var recentNotices = new List<DashboardActivityDto>();
+        var upcomingAssignments = new List<DashboardAssignmentDto>();
 
         return (totalAttendance, presentAttendance, totalInvoiced, totalPaid, recentNotices, upcomingAssignments);
     }
 
-    public async Task<List<AttendanceCalendarDto>> GetStudentAttendanceCalendarAsync(int studentId, int year, int month, CancellationToken ct)
+    public async Task<List<DashboardCalendarDto>> GetStudentAttendanceCalendarAsync(int studentId, int year, int month, CancellationToken ct)
     {
         var records = await _db.Attendance
             .AsNoTracking()
@@ -71,11 +66,10 @@ public class DashboardRepository : IDashboardRepository
                 && a.AttendanceDate.Year == year
                 && a.AttendanceDate.Month == month)
             .OrderBy(a => a.AttendanceDate)
-            .Select(a => new AttendanceCalendarDto
+            .Select(a => new DashboardCalendarDto
             {
                 Date = a.AttendanceDate.ToDateTime(TimeOnly.MinValue),
-                Status = a.Status.ToString(),
-                StatusColor = GetStatusColor(a.Status.ToString())
+                Status = a.Status.ToString()
             })
             .ToListAsync(ct);
 
@@ -111,16 +105,68 @@ public class DashboardRepository : IDashboardRepository
         return summary;
     }
 
-    private string GetStatusColor(string status)
+    public async Task<(List<DashboardChartDto> Daily, List<DashboardChartDto> Monthly)> GetAttendanceAnalyticsAsync(CancellationToken ct)
     {
-        return status.ToLower() switch
+        using var command = _db.Database.GetDbConnection().CreateCommand();
+        command.CommandText = "sp_GetAttendanceAnalytics";
+        command.CommandType = CommandType.StoredProcedure;
+        command.Parameters.Add(new SqlParameter("@StartDate", DateTime.Today.AddDays(-6)));
+        command.Parameters.Add(new SqlParameter("@EndDate", DateTime.Today));
+
+        if (command.Connection!.State != ConnectionState.Open)
+            await command.Connection.OpenAsync(ct);
+
+        try
         {
-            "present" => "success",
-            "absent" => "danger",
-            "late" => "warning",
-            "leave" => "info",
-            _ => "secondary"
-        };
+            using var reader = await command.ExecuteReaderAsync(ct);
+            var daily = new List<DashboardChartDto>();
+            while (await reader.ReadAsync(ct))
+            {
+                daily.Add(new DashboardChartDto { Label = reader.GetDateTime(0).ToString("yyyy-MM-dd"), Value = reader.GetDecimal(3) });
+            }
+
+            var monthly = new List<DashboardChartDto>();
+            if (await reader.NextResultAsync(ct))
+            {
+                while (await reader.ReadAsync(ct))
+                {
+                    monthly.Add(new DashboardChartDto { Label = $"{reader.GetInt32(0)}-{reader.GetInt32(1):D2}", Value = reader.GetDecimal(4) });
+                }
+            }
+
+            return (daily, monthly);
+        }
+        finally
+        {
+            await _db.Database.CloseConnectionAsync();
+        }
+    }
+
+    public async Task<List<DashboardChartDto>> GetClassAttendanceAnalyticsAsync(DateTime date, CancellationToken ct)
+    {
+        using var command = _db.Database.GetDbConnection().CreateCommand();
+        command.CommandText = "sp_GetClassAttendanceAnalytics";
+        command.CommandType = CommandType.StoredProcedure;
+        command.Parameters.Add(new SqlParameter("@Date", date.Date));
+
+        if (command.Connection!.State != ConnectionState.Open)
+            await command.Connection.OpenAsync(ct);
+
+        try
+        {
+            using var reader = await command.ExecuteReaderAsync(ct);
+            var points = new List<DashboardChartDto>();
+            while (await reader.ReadAsync(ct))
+            {
+                points.Add(new DashboardChartDto { Label = reader.GetString(1), Value = reader.GetDecimal(4) });
+            }
+
+            return points;
+        }
+        finally
+        {
+            await _db.Database.CloseConnectionAsync();
+        }
     }
 }
 
@@ -135,11 +181,15 @@ public class DashboardQueryRepository : IDashboardQueryRepository
         _repo = repo;
     }
 
-    public Task<(int totalAttendance, int presentAttendance, decimal feesCollected, decimal feesTotal, List<ChartPoint> studentsByClass, List<ChartPoint> monthlyCollections, List<RecentActivityItem> recentActivities, int totalStudents, int pendingAdmissions)> GetAdminDashboardDataAsync(CancellationToken ct) => _repo.GetAdminDashboardDataAsync(ct);
-    
-    public Task<(int totalAttendance, int presentAttendance, decimal totalInvoiced, decimal totalPaid, List<RecentActivityItem> recentNotices, List<AssignmentDashboardItem> upcomingAssignments)> GetStudentDashboardDataAsync(int studentId, int classId, int sectionId, CancellationToken ct) => _repo.GetStudentDashboardDataAsync(studentId, classId, sectionId, ct);
+    public Task<(int totalAttendance, int presentAttendance, decimal feesCollected, decimal feesTotal, List<DashboardChartDto> studentsByClass, List<DashboardChartDto> monthlyCollections, List<DashboardActivityDto> recentActivities, int totalStudents, int pendingAdmissions)> GetAdminDashboardDataAsync(CancellationToken ct) => _repo.GetAdminDashboardDataAsync(ct);
 
-    public Task<List<AttendanceCalendarDto>> GetStudentAttendanceCalendarAsync(int studentId, int year, int month, CancellationToken ct) => _repo.GetStudentAttendanceCalendarAsync(studentId, year, month,ct);
+    public Task<(int totalAttendance, int presentAttendance, decimal totalInvoiced, decimal totalPaid, List<DashboardActivityDto> recentNotices, List<DashboardAssignmentDto> upcomingAssignments)> GetStudentDashboardDataAsync(int studentId, int classId, int sectionId, CancellationToken ct) => _repo.GetStudentDashboardDataAsync(studentId, classId, sectionId, ct);
+
+    public Task<List<DashboardCalendarDto>> GetStudentAttendanceCalendarAsync(int studentId, int year, int month, CancellationToken ct) => _repo.GetStudentAttendanceCalendarAsync(studentId, year, month, ct);
 
     public Task<DashboardAttendanceSummaryDto> GetAttendanceDashboardSummaryAsync(DateTime date, CancellationToken ct) => _repo.GetAttendanceDashboardSummaryAsync(date, ct);
+
+    public Task<(List<DashboardChartDto> Daily, List<DashboardChartDto> Monthly)> GetAttendanceAnalyticsAsync(CancellationToken ct) => _repo.GetAttendanceAnalyticsAsync(ct);
+
+    public Task<List<DashboardChartDto>> GetClassAttendanceAnalyticsAsync(DateTime date, CancellationToken ct) => _repo.GetClassAttendanceAnalyticsAsync(date, ct);
 }

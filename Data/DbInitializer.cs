@@ -246,16 +246,16 @@ public static class DbInitializer
 
 
         modelBuilder.Entity<SchoolClass>().HasData(
-     new SchoolClass { Id = 1, Name = "Class One", SortOrder = 1, CreatedAt = createdAt },
-     new SchoolClass { Id = 2, Name = "Class Two", SortOrder = 2, CreatedAt = createdAt },
-     new SchoolClass { Id = 3, Name = "Class Three", SortOrder = 3, CreatedAt = createdAt },
-     new SchoolClass { Id = 4, Name = "Class Four", SortOrder = 4, CreatedAt = createdAt },
-     new SchoolClass { Id = 5, Name = "Class Five", SortOrder = 5, CreatedAt = createdAt },
-     new SchoolClass { Id = 6, Name = "Class Six", SortOrder = 6, CreatedAt = createdAt },
-     new SchoolClass { Id = 7, Name = "Class Seven", SortOrder = 7, CreatedAt = createdAt },
-     new SchoolClass { Id = 8, Name = "Class Eight", SortOrder = 8, CreatedAt = createdAt },
-     new SchoolClass { Id = 9, Name = "Class Nine", SortOrder = 9, CreatedAt = createdAt },
-     new SchoolClass { Id = 10, Name = "Class Ten", SortOrder = 10, CreatedAt = createdAt }
+     new SchoolClass { Id = 1, Name = "Class One", SortOrder = 1, IsGroupBased = false, CreatedAt = createdAt },
+     new SchoolClass { Id = 2, Name = "Class Two", SortOrder = 2, IsGroupBased = false, CreatedAt = createdAt },
+     new SchoolClass { Id = 3, Name = "Class Three", SortOrder = 3, IsGroupBased = false, CreatedAt = createdAt },
+     new SchoolClass { Id = 4, Name = "Class Four", SortOrder = 4, IsGroupBased = false, CreatedAt = createdAt },
+     new SchoolClass { Id = 5, Name = "Class Five", SortOrder = 5, IsGroupBased = false, CreatedAt = createdAt },
+     new SchoolClass { Id = 6, Name = "Class Six", SortOrder = 6, IsGroupBased = false, CreatedAt = createdAt },
+     new SchoolClass { Id = 7, Name = "Class Seven", SortOrder = 7, IsGroupBased = false, CreatedAt = createdAt },
+     new SchoolClass { Id = 8, Name = "Class Eight", SortOrder = 8, IsGroupBased = false, CreatedAt = createdAt },
+     new SchoolClass { Id = 9, Name = "Class Nine", SortOrder = 9, IsGroupBased = true, CreatedAt = createdAt },
+     new SchoolClass { Id = 10, Name = "Class Ten", SortOrder = 10, IsGroupBased = true, CreatedAt = createdAt }
  );
 
         var sections = new List<Section>();
@@ -361,11 +361,14 @@ public static class DbInitializer
             new Subject { Id = 28, Code = "HEALTH", Name = "Physical Education, Health and Sports", NameBn = "শারীরিক শিক্ষা, স্বাস্থ্য ও খেলাধুলা", CreatedAt = createdAt },
             new Subject { Id = 29, Code = "HSC", Name = "Home Science", NameBn = "গার্হস্থ্য বিজ্ঞান", CreatedAt = createdAt },
 
+            // Music (NCTB compulsory for classes 1-8)
+            new Subject { Id = 34, Code = "MUS", Name = "Music", NameBn = "সঙ্গীত", SubjectGroup = "Common", IsMandatory = true, CreatedAt = createdAt },
+
             // Religion & Moral Education
-            new Subject { Id = 30, Code = "IRE", Name = "Islam and Moral Education", NameBn = "ইসলাম ও নৈতিক শিক্ষা", CreatedAt = createdAt },
-            new Subject { Id = 31, Code = "HRE", Name = "Hindu Religion and Moral Education", NameBn = "হিন্দুধর্ম ও নৈতিক শিক্ষা", CreatedAt = createdAt },
-            new Subject { Id = 32, Code = "BRE", Name = "Buddhist Religion and Moral Education", NameBn = "বৌদ্ধধর্ম ও নৈতিক শিক্ষা", CreatedAt = createdAt },
-            new Subject { Id = 33, Code = "CRE", Name = "Christian Religion and Moral Education", NameBn = "খ্রিস্টধর্ম ও নৈতিক শিক্ষা", CreatedAt = createdAt }
+            new Subject { Id = 30, Code = "IRE", Name = "Islam and Moral Education", NameBn = "ইসলাম ও নৈতিক শিক্ষা", SubjectGroup = "Religion", IsReligionSubject = true, ReligionType = "Islam", CreatedAt = createdAt },
+            new Subject { Id = 31, Code = "HRE", Name = "Hindu Religion and Moral Education", NameBn = "হিন্দুধর্ম ও নৈতিক শিক্ষা", SubjectGroup = "Religion", IsReligionSubject = true, ReligionType = "Hindu", CreatedAt = createdAt },
+            new Subject { Id = 32, Code = "BRE", Name = "Buddhist Religion and Moral Education", NameBn = "বৌদ্ধধর্ম ও নৈতিক শিক্ষা", SubjectGroup = "Religion", IsReligionSubject = true, ReligionType = "Buddhist", CreatedAt = createdAt },
+            new Subject { Id = 33, Code = "CRE", Name = "Christian Religion and Moral Education", NameBn = "খ্রিস্টধর্ম ও নৈতিক শিক্ষা", SubjectGroup = "Religion", IsReligionSubject = true, ReligionType = "Christian", CreatedAt = createdAt }
         );
 
         modelBuilder.Entity<Student>().HasData(

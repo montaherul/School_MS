@@ -37,7 +37,7 @@ public class TeacherAssignmentController : Controller
         public async Task<IActionResult> GetAssignedClasses(int teacherId, CancellationToken ct)
         {
             var classes = await _service.GetClassesByTeacherIdAsync(teacherId, ct);
-            return Json(classes.Select(c => new { id = c.Id, name = c.Name }));
+            return Json(classes.Select(c => new { id = c.Id, name = c.Name, isGroupBased = c.IsGroupBased }));
         }
 
         // Get groups assigned to teacher for a class

@@ -39,7 +39,7 @@
                     {
                         foreach (var c in ViewBag.Classes)
                         {
-                            <option value="@c.Id">@c.Name</option>
+                            <option value="@c.Id" data-is-group-based="@(c.IsGroupBased.ToString().ToLower())">@c.Name</option>
                         }
                     }
                 </select>
@@ -506,12 +506,17 @@
         if (e.target.id === 'approveModal') closeApproveModal();
         });
 
+        function getIsGroupBased(classId) {
+            var opt = document.querySelector('#classFilter option[value="' + classId + '"]');
+            return opt ? opt.dataset.isGroupBased === 'true' : false;
+        }
+
         function loadSectionsDropdown() {
         var classId = currentClassIdForSection;
         var sel = document.getElementById('sectionSelect');
         sel.innerHTML = '<option value="">Loading sections...</option>';
         document.getElementById('sectionCapacityInfo').style.display = 'none';
-        document.getElementById('addSectionBtn').style.display = (classId == 9 || classId == 10) ? 'flex' : 'none';
+        document.getElementById('addSectionBtn').style.display = getIsGroupBased(classId) ? 'flex' : 'none';
 
         $.get('/Admission/GetClassSections?classId=' + classId, function (data) {
         loadedSectionData = data;

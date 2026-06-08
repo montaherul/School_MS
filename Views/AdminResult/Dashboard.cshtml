@@ -1,9 +1,9 @@
-@model dynamic
+@model SchoolManagementSystem.Models.ViewModels.Result.ResultDashboardViewModel
 @{
     ViewData["Title"] = "Result Dashboard";
-    var activeYear = ViewBag.ActiveYear;
-    var exams = ViewBag.Exams as List<SchoolManagementSystem.Models.Entities.Exam.Exam>;
-    var resultStats = ViewBag.ResultStats as SchoolManagementSystem.Models.DTOs.Result.ResultSummaryDto;
+    var activeYear = Model.ActiveYear;
+    var exams = Model.Exams;
+    var resultStats = Model.ResultStats;
 }
 
 <div class="adm-page">
@@ -49,12 +49,9 @@
             <div class="adm-filters__field">
                 <label class="adm-label">Academic Year</label>
                 <select name="academicYearId" class="adm-select">
-                    @if (ViewBag.AcademicYears is IEnumerable<SchoolManagementSystem.Models.Entities.Academic.AcademicYear> years)
+                    @foreach (var y in Model.AcademicYears)
                     {
-                        foreach (var y in years)
-                        {
-                            <!option value="@y.Id" selected="@(y.Id == ViewBag.SelectedYearId)">@y.Name</!option>
-                        }
+                        <!option value="@y.Id" selected="@(y.Id == Model.SelectedAcademicYearId)">@y.Name</!option>
                     }
                 </select>
             </div>
@@ -62,12 +59,9 @@
                 <label class="adm-label">Exam</label>
                 <select name="examId" class="adm-select">
                     <option value="">All Exams</option>
-                    @if (ViewBag.FilterExams is IEnumerable<SchoolManagementSystem.Models.DTOs.Exam.ExamListDto> filterExams)
+                    @foreach (var ex in Model.FilterExams)
                     {
-                        foreach (var ex in filterExams)
-                        {
-                            <!option value="@ex.Id" selected="@(ex.Id == ViewBag.SelectedExamId)">@ex.Name</!option>
-                        }
+                        <!option value="@ex.Id" selected="@(ex.Id == Model.SelectedExamId)">@ex.Name</!option>
                     }
                 </select>
             </div>
@@ -75,12 +69,9 @@
                 <label class="adm-label">Group</label>
                 <select name="groupId" class="adm-select">
                     <option value="">All Groups</option>
-                    @if (ViewBag.Groups is IEnumerable<SchoolManagementSystem.Models.Entities.Academic.StudentGroup> grpList)
+                    @foreach (var g in Model.Groups)
                     {
-                        foreach (var g in grpList)
-                        {
-                            <!option value="@g.Id" selected="@(g.Id == ViewBag.SelectedGroupId)">@g.Name</!option>
-                        }
+                        <!option value="@g.Id" selected="@(g.Id == Model.SelectedGroupId)">@g.Name</!option>
                     }
                 </select>
             </div>
@@ -688,7 +679,7 @@
             if (typeof Chart === 'undefined') return;
 
             // ── Database-driven chart data ──
-            var chartPayload = @Html.Raw(ViewBag.ChartData ?? "{}");
+            var chartPayload = @Html.Raw(Model.ChartDataJson);
             var classLabels = (chartPayload.classPerf || []).map(function (x) { return x.label; });
             var classPassRates = (chartPayload.classPerf || []).map(function (x) { return x.passRate; });
             var classColors = ['#0F766E', '#14B8A6', '#059669', '#0284C7', '#D97706', '#7C3AED', '#DC2626'];

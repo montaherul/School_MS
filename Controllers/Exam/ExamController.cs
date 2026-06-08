@@ -11,6 +11,7 @@ using SchoolManagementSystem.Repositories.Interfaces.Result;
 using SchoolManagementSystem.Services.Interfaces.Base;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
+using SchoolManagementSystem.Models.Enums;
 using System.Text.Json;
 using ExamEntity = SchoolManagementSystem.Models.Entities.Exam.Exam;
 
@@ -93,6 +94,8 @@ public class ExamController : GenericCrudController<ExamEntity>
             .ToList();
 
         var groups = await _uow.Repository<StudentGroup>().ListAsync(g => !g.IsDeleted, ct);
+        var classes = await _uow.Repository<SchoolClass>().ListAsync(c => !c.IsDeleted, ct);
+        var sections = await _uow.Repository<Section>().ListAsync(s => !s.IsDeleted, ct);
 
         var resultsQuery = _uow.Repository<StudentExamResult>().Query()
             .Include(r => r.Student).ThenInclude(s => s.StudentGroup)
@@ -128,6 +131,8 @@ public class ExamController : GenericCrudController<ExamEntity>
             SelectedSectionId = sectionId,
             SelectedGroupId = groupId,
             Groups = groups.Select(ExamViewModelMapper.ToFilterOption).ToList(),
+            Classes = classes.Select(ExamViewModelMapper.ToClassFilterOption).ToList(),
+            Sections = sections.Select(ExamViewModelMapper.ToSectionFilterOption).ToList(),
             StatusDistribution = statusDistribution,
             PassRates = passRates,
             GroupPerformance = groupPerformance,
@@ -139,5 +144,38 @@ public class ExamController : GenericCrudController<ExamEntity>
         };
 
         return View(model);
+    }
+
+    public override async Task<IActionResult> Details(int id, CancellationToken cancellationToken = default)
+    {
+        var dto = await _examService.GetExamDetailsAsync(id, cancellationToken);
+        if (dto == null) return NotFound();
+
+        return View(new ExamDetailsViewModel { Exam = dto });
+    }
+
+    public override async Task<IActionResult> Delete(int id, CancellationToken cancellationToken = default)
+    {
+        var dto = await _examService.GetExamDetailsAsync(id, cancellationToken);
+        if (dto == null) return NotFound();
+
+        return View(new ExamDetailsViewModel { Exam = dto });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public override async Task<IActionResult> DeleteConfirmed(int id, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await _examService.DeleteExamAsync(id, cancellationToken);
+            TempData["SuccessMessage"] = "Exam deleted successfully.";
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+
+        return RedirectToAction(nameof(Index));
     }
 }

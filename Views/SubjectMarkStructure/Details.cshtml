@@ -1,0 +1,48 @@
+@model SchoolManagementSystem.Models.DTOs.Exam.SubjectMarkStructureDto
+@{
+    ViewData["Title"] = "Subject Mark Structure Details";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Subject Mark Structure Details</h1>
+            </div>
+        </div>
+        <div class="adm-btn-group">
+            <a href="@Url.Action("Index", new { examId = Model.ExamId, subjectId = Model.SubjectId })" class="adm-btn adm-btn--ghost">Back</a>
+            <a href="@Url.Action("Edit", new { id = Model.Id })" class="adm-btn adm-btn--primary">Edit</a>
+        </div>
+    </div>
+
+    <div class="adm-card">
+        <div class="row">
+            <div class="col-md-6">
+                <table class="table table-bordered">
+                    <tr><th>Component</th><td>@Model.ComponentName (<code>@Model.ComponentCode</code>)</td></tr>
+                    <tr><th>Full Marks</th><td>@Model.FullMarks</td></tr>
+                    <tr><th>Pass Marks</th><td>@Model.PassMarks</td></tr>
+                    <tr><th>Display Order</th><td>@Model.DisplayOrder</td></tr>
+                    <tr><th>Status</th><td>@(Model.IsActive ? "Active" : "Inactive")</td></tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <table class="table table-bordered">
+                    <tr><th>Exam</th><td>@Model.ExamName</td></tr>
+                    <tr><th>Subject</th><td>@Model.SubjectName</td></tr>
+                    <tr><th>Class</th><td>@Model.ClassName</td></tr>
+                    <tr><th>Group</th><td>@Model.StudentGroupName</td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

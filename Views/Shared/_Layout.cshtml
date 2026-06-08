@@ -220,6 +220,7 @@
                             @if (Can("Exams.View") || Can("Exam.View"))
                             {
                                 <a asp-controller="Exam" asp-action="Index" data-title="Exams"><i class="bi bi-pencil-square"></i><span class="nav-text">Exams</span></a>
+                                <a asp-controller="ExamComponents" asp-action="Index" data-title="Exam Components"><i class="bi bi-layers"></i><span class="nav-text">Exam Components</span></a>
                             }
                             @if (IsAdmin())
                             {
@@ -554,6 +555,7 @@
         })();
     </script>
 
+    <partial name="_ExamResultUx" />
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

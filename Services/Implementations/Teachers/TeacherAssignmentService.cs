@@ -25,6 +25,7 @@ public class TeacherAssignmentService : ITeacherAssignmentService
             {
                 ClassId = a.ClassId,
                 ClassName = a.Class != null ? a.Class.Name : string.Empty,
+                IsGroupBased = a.Class != null && a.Class.IsGroupBased,
                 GroupId = a.GroupId,
                 GroupName = a.Group != null ? a.Group.Name : null,
                 SectionId = a.SectionId,

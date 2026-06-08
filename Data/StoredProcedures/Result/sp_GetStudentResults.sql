@@ -30,7 +30,7 @@ BEGIN
     WHERE ser.StudentId = @StudentId
       AND ser.IsDeleted = 0
       AND e.IsDeleted = 0
-      AND ser.Status IN (4, 5) -- Published or Locked
+      AND ser.Status IN (5, 6) -- Published (5) or Locked (6) per ResultWorkflowStatus enum
       AND (@AcademicYearId IS NULL OR e.AcademicYearId = @AcademicYearId)
     ORDER BY e.EndsOn DESC;
 

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using SchoolManagementSystem.Models.Entities.Base;
 using SchoolManagementSystem.Models.Enums;
 
@@ -13,6 +14,11 @@ public class MarkEntry : BaseEntity
     public int ExamId { get; set; }
     public int StudentId { get; set; }
     public int SubjectId { get; set; }
+
+    // Denormalized fields for query performance (avoid JOINs)
+    public int AcademicYearId { get; set; }
+    public int ClassId { get; set; }
+    public int SectionId { get; set; }
 
     /// <summary>
     /// Component-wise marks entry
@@ -59,6 +65,13 @@ public class MarkEntry : BaseEntity
     public int? UpdatedByUserId { get; set; }
 
     /// <summary>
+    /// JSON column for dynamic component values beyond the 12 standard fields.
+    /// Format: {"COMPONENT_CODE": marks}
+    /// Used with SubjectMarkStructure for unlimited dynamic component support.
+    /// </summary>
+    public string? ComponentValues { get; set; }
+
+    /// <summary>
     /// Audit trail for mark changes
     /// </summary>
     public virtual ICollection<MarkAuditLog> AuditLogs { get; set; } = [];
@@ -87,6 +100,11 @@ public class MarkEntryDraft : BaseEntity
     public int ExamId { get; set; }
     public int StudentId { get; set; }
     public int SubjectId { get; set; }
+
+    // Denormalized fields for query performance
+    public int AcademicYearId { get; set; }
+    public int ClassId { get; set; }
+    public int SectionId { get; set; }
 
     /// <summary>
     /// Component-wise marks in draft
@@ -144,6 +162,10 @@ public class GradingRule : BaseEntity
 public class ResultPublication : BaseEntity
 {
     public int ExamId { get; set; }
+
+    // Denormalized for dashboard queries
+    public int AcademicYearId { get; set; }
+
     public ResultWorkflowStatus Status { get; set; } = ResultWorkflowStatus.Submitted;
     public DateTime? PublishedAt { get; set; }
     public int? ApprovedByUserId { get; set; }
@@ -198,6 +220,11 @@ public class StudentSubjectResult : BaseEntity
     public int StudentId { get; set; }
     public int SubjectId { get; set; }
 
+    // Denormalized fields for query performance
+    public int AcademicYearId { get; set; }
+    public int ClassId { get; set; }
+    public int SectionId { get; set; }
+
     /// <summary>
     /// Whether this subject is optional per ClassSubject mapping
     /// (used instead of Subject.IsMandatory which is always true)
@@ -237,6 +264,12 @@ public class StudentExamResult : BaseEntity
 {
     public int ExamId { get; set; }
     public int StudentId { get; set; }
+
+    // Denormalized fields for query & report performance
+    public int AcademicYearId { get; set; }
+    public int ClassId { get; set; }
+    public int SectionId { get; set; }
+    public int? StudentGroupId { get; set; }
 
     public decimal TotalMarks { get; set; } = 0;
     public decimal TotalFullMarks { get; set; } = 0;
@@ -285,6 +318,10 @@ public class FinalResult : BaseEntity
     public int AcademicYearId { get; set; }
     public int StudentId { get; set; }
     public int SchoolClassId { get; set; }
+
+    // Denormalized fields for promotion/final report queries
+    public int SectionId { get; set; }
+    public int? StudentGroupId { get; set; }
 
     public decimal FinalGpa { get; set; } = 0;
     public int FinalPosition { get; set; } = 0;
@@ -341,6 +378,11 @@ public class MeritResult : BaseEntity
     public int ExamId { get; set; }
     public int StudentId { get; set; }
     public int SectionId { get; set; }
+
+    // Denormalized fields for merit list queries
+    public int AcademicYearId { get; set; }
+    public int ClassId { get; set; }
+    public int? StudentGroupId { get; set; }
 
     /// <summary>
     /// Overall position in section
@@ -538,4 +580,26 @@ public class RollNumberAssignment : BaseEntity
     public virtual Academic.SchoolClass FromClass { get; set; } = null!;
     public virtual Academic.SchoolClass ToClass { get; set; } = null!;
     public virtual Academic.Section Section { get; set; } = null!;
+}
+
+/// <summary>
+/// Promotion rules configuration per class. Overrides default rule calculation.
+/// </summary>
+public class ClassPromotionRule : BaseEntity
+{
+    public int ClassId { get; set; }
+
+    public decimal MinimumGPA { get; set; } = 1.0m;
+    public int MaximumFailedSubjects { get; set; } = 2;
+    public bool AllowConditionalPromotion { get; set; } = true;
+    public decimal ConditionalPromotionGPA { get; set; } = 0.8m;
+    public bool RequireAllSubjectsPass { get; set; } = false;
+
+    [MaxLength(500)]
+    public string? CriticalSubjectsJson { get; set; }
+
+    public bool IsActive { get; set; } = true;
+
+    // Navigation
+    public virtual Academic.SchoolClass Class { get; set; } = null!;
 }

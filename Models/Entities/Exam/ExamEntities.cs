@@ -52,6 +52,66 @@ public class ExamConfiguration : BaseEntity
 }
 
 /// <summary>
+/// System-wide master catalog of exam component types (Written, MCQ, Practical, Viva, etc.)
+/// Used by SubjectMarkStructure to define per-subject mark distributions.
+/// Replaces hardcoded component columns with a dynamic, extensible registry.
+/// </summary>
+public class ExamComponent : BaseEntity
+{
+    [MaxLength(100)]
+    public string Name { get; set; } = string.Empty; // "Written", "MCQ", "Practical", etc.
+
+    [MaxLength(50)]
+    public string Code { get; set; } = string.Empty; // "WRITTEN", "MCQ", "PRACTICAL"
+
+    [MaxLength(500)]
+    public string? Description { get; set; }
+
+    public int DisplayOrder { get; set; } = 0;
+
+    /// <summary>Default maximum marks for this component type (overridable per-subject).</summary>
+    public decimal DefaultFullMarks { get; set; } = 100;
+
+    /// <summary>Default pass marks for this component type (overridable per-subject).</summary>
+    public decimal DefaultPassMarks { get; set; } = 33;
+
+    /// <summary>Whether this is a practical component (affects grading rules).</summary>
+    public bool IsPractical { get; set; } = false;
+
+    /// <summary>Whether this component is optional for subjects.</summary>
+    public bool IsOptional { get; set; } = false;
+
+    public bool IsActive { get; set; } = true;
+}
+
+/// <summary>
+/// Subject Mark Structure: Maps ExamComponent instances to subjects with FullMarks/PassMarks.
+/// Supports exam-specific overrides, class-level defaults, and group-specific configurations.
+/// This is the dynamic replacement for hardcoded component columns on ExamSubject.
+/// </summary>
+public class SubjectMarkStructure : BaseEntity
+{
+    public int ComponentId { get; set; } // FK → ExamComponent
+
+    public int? ExamId { get; set; } // null = applies to all exams for this subject
+    public int? ClassId { get; set; } // null = applies to all classes
+    public int? SubjectId { get; set; } // null = applies to all subjects
+    public int? StudentGroupId { get; set; } // null = applies to all groups
+
+    public decimal FullMarks { get; set; } = 100;
+    public decimal PassMarks { get; set; } = 33;
+    public int DisplayOrder { get; set; } = 0;
+    public bool IsActive { get; set; } = true;
+
+    // Navigation
+    public virtual ExamComponent Component { get; set; } = null!;
+    public virtual Exam? Exam { get; set; }
+    public virtual Academic.SchoolClass? Class { get; set; }
+    public virtual Academic.Subject? Subject { get; set; }
+    public virtual Academic.StudentGroup? StudentGroup { get; set; }
+}
+
+/// <summary>
 /// Subject Component: Defines mark distribution for a subject
 /// E.g., Written=50, MCQ=30, Practical=20 for Science
 /// </summary>

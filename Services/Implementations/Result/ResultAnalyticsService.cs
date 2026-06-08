@@ -3,7 +3,6 @@ using SchoolManagementSystem.Models.DTOs.Result;
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Models.Entities.Exam;
 using SchoolManagementSystem.Models.Entities.Result;
-using SchoolManagementSystem.Models.ViewModels.Result;
 using SchoolManagementSystem.Repositories.Interfaces.Result;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
@@ -30,7 +29,7 @@ public class ResultAnalyticsService : IResultAnalyticsService
         _subjectResultRepository = subjectResultRepository;
     }
 
-    public async Task<ResultDashboardViewModel> GetAdminDashboardAsync()
+    public async Task<AdminDashboardDto> GetAdminDashboardAsync()
     {
         var activeYear = await _uow.Repository<AcademicYear>().FirstOrDefaultAsync(x => x.IsActive);
         var stats = new ResultSummaryDto();
@@ -58,7 +57,7 @@ public class ResultAnalyticsService : IResultAnalyticsService
             }
         }
 
-        return new ResultDashboardViewModel
+        return new AdminDashboardDto
         {
             ActiveYear = activeYear,
             Exams = exams,

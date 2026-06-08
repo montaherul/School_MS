@@ -104,6 +104,7 @@ public static class ServiceRegistration
         services.AddScoped<IMeritResultRepository, MeritResultRepository>();
         services.AddScoped<IFinalResultRepository, FinalResultRepository>();
         services.AddScoped<IPromotionHistoryRepository, PromotionHistoryRepository>();
+        services.AddScoped<ITeacherResultRepository, TeacherResultRepository>();
         services.AddScoped<IDashboardRepository, DashboardRepository>();
         services.AddScoped<IDashboardQueryRepository, DashboardQueryRepository>();
         services.AddScoped<IAcademicCalendarRepository, AcademicCalendarRepository>();
@@ -139,6 +140,10 @@ public static class ServiceRegistration
         services.AddScoped<EmployeeModuleSeeder>();
 
         services.AddScoped<IResultCalculationService, ResultCalculationService>();
+        services.AddScoped<IGradeCalculator, GradeCalculator>();
+        services.AddScoped<IComponentAggregator, ComponentAggregator>();
+        services.AddScoped<IPassFailPolicy, PassFailPolicy>();
+        services.AddScoped<IAuditLogger, AuditLogger>();
         services.AddScoped<IGPACalculationService, GPACalculationService>();
         services.AddScoped<IMeritCalculationService, MeritCalculationService>();
         services.AddScoped<IMarkEntryService, MarkEntryService>();
@@ -148,6 +153,8 @@ public static class ServiceRegistration
         services.AddScoped<IReportCardService, ReportCardService>();
         services.AddScoped<IResultAnalyticsService, ResultAnalyticsService>();
         services.AddScoped<ISubjectComponentService, SubjectComponentService>();
+        services.AddScoped<IExamComponentService, ExamComponentService>();
+        services.AddScoped<ISubjectMarkStructureService, SubjectMarkStructureService>();
 
         // Register Public Website Services
         services.AddScoped<ISchoolWebsiteService, SchoolWebsiteService>();
