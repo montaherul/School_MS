@@ -6,12 +6,12 @@
     var resultStats = Model.ResultStats;
 }
 
-<div class="adm-page">
+<div class="adm-page er-page">
 
     <!-- ── Page Header ── -->
-    <div class="adm-header">
-        <div class="adm-header__left">
-            <div class="adm-header__icon-wrap">
+    <div class="er-page-header">
+        <div class="er-page-header__left">
+            <div class="er-page-header__icon">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="18" y1="20" x2="18" y2="10" />
                     <line x1="12" y1="20" x2="12" y2="4" />
@@ -19,8 +19,8 @@
                 </svg>
             </div>
             <div>
-                <h1 class="adm-header__title">Result Dashboard</h1>
-                <p class="adm-header__sub">
+                <h1 class="er-page-header__title">Result Dashboard</h1>
+                <p class="er-page-header__sub">
                     @if (activeYear != null)
                     {
                         <span>Academic Year: @activeYear.Name (@activeYear.StartsOn.Year – @activeYear.EndsOn.Year)</span>
@@ -32,12 +32,12 @@
                 </p>
             </div>
         </div>
-        <div class="adm-btn-group">
-            <a href="@Url.Action("AllResults", "AdminResult")" class="adm-btn adm-btn--ghost">
+        <div class="er-page-header__right">
+            <a href="@Url.Action("AllResults", "AdminResult")" class="er-btn er-btn--secondary">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
                 All Results
             </a>
-            <a href="@Url.Action("AllSubjects", "AdminResult")" class="adm-btn adm-btn--primary">
+            <a href="@Url.Action("AllSubjects", "AdminResult")" class="er-btn er-btn--primary">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>
                 All Subjects
             </a>
@@ -47,8 +47,8 @@
     <div class="adm-filters mb-4">
         <form method="get" action="@Url.Action("Dashboard")" class="adm-filters__row" style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;">
             <div class="adm-filters__field">
-                <label class="adm-label">Academic Year</label>
-                <select name="academicYearId" class="adm-select">
+                <label class="er-label">Academic Year</label>
+                <select name="academicYearId" class="er-filters__select">
                     @foreach (var y in Model.AcademicYears)
                     {
                         <!option value="@y.Id" selected="@(y.Id == Model.SelectedAcademicYearId)">@y.Name</!option>
@@ -56,8 +56,8 @@
                 </select>
             </div>
             <div class="adm-filters__field">
-                <label class="adm-label">Exam</label>
-                <select name="examId" class="adm-select">
+                <label class="er-label">Exam</label>
+                <select name="examId" class="er-filters__select">
                     <option value="">All Exams</option>
                     @foreach (var ex in Model.FilterExams)
                     {
@@ -66,8 +66,8 @@
                 </select>
             </div>
             <div class="adm-filters__field">
-                <label class="adm-label">Group</label>
-                <select name="groupId" class="adm-select">
+                <label class="er-label">Group</label>
+                <select name="groupId" class="er-filters__select">
                     <option value="">All Groups</option>
                     @foreach (var g in Model.Groups)
                     {
@@ -76,7 +76,7 @@
                 </select>
             </div>
             <div class="adm-filters__field">
-                <button type="submit" class="adm-btn adm-btn--primary adm-btn--sm">Apply Filters</button>
+                <button type="submit" class="er-btn er-btn--primary adm-btn--sm">Apply Filters</button>
             </div>
         </form>
     </div>
@@ -84,44 +84,44 @@
     <!-- ── Stats Cards ── -->
     @if (resultStats != null)
     {
-        <div class="dash-stats">
-            <div class="dash-stat-card">
-                <div class="dash-stat-card__icon dash-stat-card__icon--primary">
+        <div class="er-stats">
+            <div class="er-stat">
+                <div class="er-stat__icon er-stat__icon--primary">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>
                 </div>
-                <div class="dash-stat-card__body">
-                    <span class="dash-stat-card__label">Total Exams</span>
-                    <span class="dash-stat-card__value">@(exams?.Count ?? 0)</span>
+                <div class="er-stat__body">
+                    <span class="er-stat__label">Total Exams</span>
+                    <span class="er-stat__value">@(exams?.Count ?? 0)</span>
                 </div>
             </div>
 
-            <div class="dash-stat-card">
-                <div class="dash-stat-card__icon dash-stat-card__icon--success">
+            <div class="er-stat">
+                <div class="er-stat__icon er-stat__icon--success">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
                 </div>
-                <div class="dash-stat-card__body">
-                    <span class="dash-stat-card__label">Published Results</span>
-                    <span class="dash-stat-card__value">@resultStats.ResultsPublished</span>
+                <div class="er-stat__body">
+                    <span class="er-stat__label">Published Results</span>
+                    <span class="er-stat__value">@resultStats.ResultsPublished</span>
                 </div>
             </div>
 
-            <div class="dash-stat-card">
-                <div class="dash-stat-card__icon dash-stat-card__icon--info">
+            <div class="er-stat">
+                <div class="er-stat__icon er-stat__icon--info">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4" /><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2" /></svg>
                 </div>
-                <div class="dash-stat-card__body">
-                    <span class="dash-stat-card__label">Average GPA</span>
-                    <span class="dash-stat-card__value">@resultStats.ClassAverageGPA.ToString("F2")</span>
+                <div class="er-stat__body">
+                    <span class="er-stat__label">Average GPA</span>
+                    <span class="er-stat__value">@resultStats.ClassAverageGPA.ToString("F2")</span>
                 </div>
             </div>
 
-            <div class="dash-stat-card">
-                <div class="dash-stat-card__icon dash-stat-card__icon--warning">
+            <div class="er-stat">
+                <div class="er-stat__icon er-stat__icon--warning">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>
                 </div>
-                <div class="dash-stat-card__body">
-                    <span class="dash-stat-card__label">Pass Rate</span>
-                    <span class="dash-stat-card__value">@resultStats.PassPercentage.ToString("F1")<span class="dash-stat-card__unit">%</span></span>
+                <div class="er-stat__body">
+                    <span class="er-stat__label">Pass Rate</span>
+                    <span class="er-stat__value">@resultStats.PassPercentage.ToString("F1")<span class="er-stat__unit">%</span></span>
                 </div>
             </div>
         </div>
@@ -271,8 +271,8 @@
             }
         </div>
 
-        <div class="adm-table-card" style="border-radius: var(--adm-radius-lg); border-top: 1px solid var(--adm-border);">
-            <div class="adm-table-card__body">
+        <div class="er-card" style="border-radius: var(--adm-radius-lg); border-top: 1px solid var(--adm-border);">
+            <div class="er-card__body">
                 @if (exams != null && exams.Any())
                 {
                     <div class="table-responsive" style="border-radius: var(--adm-radius-lg); min-width:unset;">
@@ -293,7 +293,7 @@
                                     <tr>
                                         <td><span class="adm-cell-name">@exam.Name</span></td>
                                         <td>
-                                            <span class="adm-status adm-status--neutral">@exam.Term</span>
+                                            <span class="er-badge er-badge--neutral">@exam.Term</span>
                                         </td>
                                         <td>
                                             <span class="adm-cell-dob">
@@ -303,31 +303,31 @@
                                         <td>
                                             @if (exam.Status == SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Published)
                                             {
-                                                <span class="adm-status adm-status--converted">Published</span>
+                                                <span class="er-badge er-badge--converted">Published</span>
                                             }
                                             else if (exam.Status == SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Approved)
                                             {
-                                                <span class="adm-status adm-status--approved">Approved</span>
+                                                <span class="er-badge er-badge--approved">Approved</span>
                                             }
                                             else if (exam.Status == SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Submitted)
                                             {
-                                                <span class="adm-status adm-status--pending">Submitted</span>
+                                                <span class="er-badge er-badge--pending">Submitted</span>
                                             }
                                             else if (exam.Status == SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Reviewed)
                                             {
-                                                <span class="adm-status adm-status--approved">Reviewed</span>
+                                                <span class="er-badge er-badge--approved">Reviewed</span>
                                             }
                                             else if (exam.Status == SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Locked)
                                             {
-                                                <span class="adm-status adm-status--neutral">Locked</span>
+                                                <span class="er-badge er-badge--neutral">Locked</span>
                                             }
                                             else if (exam.Status == SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Unpublished)
                                             {
-                                                <span class="adm-status adm-status--rejected">Unpublished</span>
+                                                <span class="er-badge er-badge--rejected">Unpublished</span>
                                             }
                                             else
                                             {
-                                                <span class="adm-status adm-status--neutral">Draft</span>
+                                                <span class="er-badge er-badge--neutral">Draft</span>
                                             }
                                         </td>
                                         <td>
@@ -336,15 +336,15 @@
                                         <td>
                                             <div class="actions-cell">
                                                 <a href="@Url.Action("TabulationSheet", "AdminResult", new { examId = exam.Id })"
-                                                   class="adm-action adm-action--edit" title="Tabulation Sheet">
+                                                   class="er-action er-action--edit" title="Tabulation Sheet">
                                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18M3 15h18M9 3v18" /></svg>
                                                 </a>
                                                 <a href="@Url.Action("MeritLists", "AdminResult", new { examId = exam.Id })"
-                                                   class="adm-action adm-action--convert" title="Merit Lists">
+                                                   class="er-action er-action--convert" title="Merit Lists">
                                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
                                                 </a>
                                                 <a href="@Url.Action("SubjectAnalysis", "AdminResult", new { examId = exam.Id })"
-                                                   class="adm-action" title="Subject Analysis" style="color:var(--adm-converted);">
+                                                   class="er-action" title="Subject Analysis" style="color:var(--adm-converted);">
                                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></svg>
                                                 </a>
                                             </div>
@@ -357,11 +357,11 @@
                 }
                 else
                 {
-                    <div class="dash-empty">
+                    <div class="er-empty">
                         <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>
-                        <h3 class="dash-empty__title">No Exams Found</h3>
-                        <p class="dash-empty__sub">No exams have been created for the active academic year.</p>
-                        <a href="#" class="adm-btn adm-btn--primary">
+                        <h3 class="er-empty__title">No Exams Found</h3>
+                        <p class="er-empty__desc">No exams have been created for the active academic year.</p>
+                        <a href="#" class="er-btn er-btn--primary">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
                             Create First Exam
                         </a>
@@ -374,10 +374,10 @@
 </div>
 
 <!-- ── Loading Overlay ── -->
-<div class="adm-loading-overlay" id="loadingOverlay" style="display:none;">
-    <div class="adm-loading-spinner">
-        <div class="adm-loading-spinner__ring"></div>
-        <span class="adm-loading-spinner__text">Processing...</span>
+<div class="er-skeleton-overlay" id="loadingOverlay" style="display:none;">
+    <div class="er-skeleton-spinner">
+        <div class="er-skeleton-spinner__ring"></div>
+        <span class="er-skeleton-spinner__text">Processing...</span>
     </div>
 </div>
 
@@ -405,8 +405,8 @@
             <p style="font-size:14px;color:var(--adm-text-2);line-height:1.5;" id="confirmModalBody">This action cannot be undone. Do you wish to proceed?</p>
         </div>
         <div class="adm-modal__footer">
-            <button type="button" class="adm-btn adm-btn--ghost" onclick="closeConfirmModal()">Cancel</button>
-            <button type="button" class="adm-btn adm-btn--primary" id="confirmModalBtn">
+            <button type="button" class="er-btn er-btn--secondary" onclick="closeConfirmModal()">Cancel</button>
+            <button type="button" class="er-btn er-btn--primary" id="confirmModalBtn">
                 <span class="adm-btn__spinner" id="confirmSpinner" style="display:none;"></span>
                 <span id="confirmBtnText">Confirm</span>
             </button>
@@ -468,7 +468,7 @@
             </div>
         </div>
         <div class="adm-modal__footer">
-            <button type="button" class="adm-btn adm-btn--ghost" onclick="closeBulkModal()">Close</button>
+            <button type="button" class="er-btn er-btn--secondary" onclick="closeBulkModal()">Close</button>
         </div>
     </div>
 </div>
@@ -568,7 +568,7 @@
         // ─────────────────────────────────────────────────────────────
         function showLoading(message) {
             var overlay = document.getElementById('loadingOverlay');
-            overlay.querySelector('.adm-loading-spinner__text').textContent = message || 'Processing...';
+            overlay.querySelector('.er-skeleton-spinner__text').textContent = message || 'Processing...';
             overlay.style.display = 'flex';
         }
 
@@ -923,7 +923,7 @@
         }
 
         /* ── Loading Overlay ── */
-        .adm-loading-overlay {
+        .er-skeleton-overlay {
             position: fixed;
             inset: 0;
             background: rgba(20,24,20,0.55);
@@ -934,7 +934,7 @@
             justify-content: center;
         }
 
-        .adm-loading-spinner {
+        .er-skeleton-spinner {
             background: var(--adm-surface);
             border-radius: var(--adm-radius-lg);
             padding: 32px 40px;
@@ -945,7 +945,7 @@
             gap: 14px;
         }
 
-        .adm-loading-spinner__ring {
+        .er-skeleton-spinner__ring {
             width: 36px;
             height: 36px;
             border: 3px solid var(--adm-border);
@@ -954,7 +954,7 @@
             animation: adm-spin 0.7s linear infinite;
         }
 
-        .adm-loading-spinner__text {
+        .er-skeleton-spinner__text {
             font-size: 14px;
             font-weight: 600;
             color: var(--adm-text-2);

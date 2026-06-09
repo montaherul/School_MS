@@ -95,6 +95,10 @@ public class ReportCardService : IReportCardService
             .Where(m => m.ExamId == examId && m.StudentId == studentId && !m.IsDeleted)
             .ToListAsync(ct);
 
+        // Include the student's optional subject if assigned
+        if (student != null && student.OptionalSubjectId.HasValue)
+            validSubjectIds.Add(student.OptionalSubjectId.Value);
+
         // Filter marks to only show valid subjects for this student
         if (validSubjectIds.Count > 0)
             marks = marks.Where(m => validSubjectIds.Contains(m.SubjectId)).ToList();

@@ -87,7 +87,12 @@
                     marksObtained: parseFloat(r.MarksObtained) || 0
                 };
                 componentColumns.forEach(c => {
-                    mark[c.field] = parseFloat(r[c.field]) || null;
+                    if (c.field.startsWith('cmp_')) {
+                        mark.componentValues = mark.componentValues || {};
+                        mark.componentValues[c.componentCode] = parseFloat(r[c.field]) || null;
+                    } else {
+                        mark[c.field] = parseFloat(r[c.field]) || null;
+                    }
                 });
                 return mark;
             });

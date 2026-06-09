@@ -131,7 +131,7 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
         var gradingRules = await _gradingRepository.ListAsync();
 
         var configuredComponents = await _markStructureService.GetGridColumnsAsync(
-            dto.ExamId, dto.SubjectId);
+            dto.SubjectId);
 
         foreach (var markDto in dto.Marks)
         {
@@ -204,7 +204,7 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
 
     public async Task<byte[]> GenerateImportTemplateAsync(int examId, int subjectId, int classId, int sectionId)
     {
-        var components = await _markStructureService.GetGridColumnsAsync(examId, subjectId, classId);
+        var components = await _markStructureService.GetGridColumnsAsync(subjectId, classId);
         var students = await _markRepository.GetMarkEntrySheetAsync(examId, classId, sectionId, subjectId, default);
 
         using var wb = new XLWorkbook();
@@ -262,7 +262,7 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
             return result;
         }
 
-        var components = await _markStructureService.GetGridColumnsAsync(examId, subjectId, classId);
+        var components = await _markStructureService.GetGridColumnsAsync(subjectId, classId);
         var students = await _markRepository.GetMarkEntrySheetAsync(examId, classId, sectionId, subjectId, default);
         var studentLookup = students.ToDictionary(s => s.RollNumber, s => s.StudentId);
 
@@ -345,7 +345,7 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
 
     public async Task<byte[]> ExportMarksToExcelAsync(int examId, int subjectId, int classId, int sectionId, int? groupId)
     {
-        var components = await _markStructureService.GetGridColumnsAsync(examId, subjectId, classId);
+        var components = await _markStructureService.GetGridColumnsAsync(subjectId, classId);
         var students = await _markRepository.GetMarkEntrySheetAsync(examId, classId, sectionId, subjectId, default);
 
         using var wb = new XLWorkbook();
@@ -384,7 +384,8 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
                         OralMarks = s.OralMarks, AssignmentMarks = s.AssignmentMarks,
                         ContinuousAssessmentMarks = s.ContinuousAssessmentMarks,
                         CompetencyMarks = s.CompetencyMarks, BehaviourMarks = s.BehaviourMarks,
-                        ParticipationMarks = s.ParticipationMarks
+                        ParticipationMarks = s.ParticipationMarks,
+                        ComponentValues = s.ComponentValues
                     }, c.ComponentCode);
                 ws.Cell(row, col++).SetValue((double)(val ?? 0));
             }
@@ -405,7 +406,7 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
 
     public async Task<string> ExportMarksToCsvAsync(int examId, int subjectId, int classId, int sectionId, int? groupId)
     {
-        var components = await _markStructureService.GetGridColumnsAsync(examId, subjectId, classId);
+        var components = await _markStructureService.GetGridColumnsAsync(subjectId, classId);
         var students = await _markRepository.GetMarkEntrySheetAsync(examId, classId, sectionId, subjectId, default);
 
         var sb = new StringBuilder();
@@ -428,7 +429,8 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
                         OralMarks = s.OralMarks, AssignmentMarks = s.AssignmentMarks,
                         ContinuousAssessmentMarks = s.ContinuousAssessmentMarks,
                         CompetencyMarks = s.CompetencyMarks, BehaviourMarks = s.BehaviourMarks,
-                        ParticipationMarks = s.ParticipationMarks
+                        ParticipationMarks = s.ParticipationMarks,
+                        ComponentValues = s.ComponentValues
                     }, c.ComponentCode);
                 sb.Append($",{val ?? 0}");
             }

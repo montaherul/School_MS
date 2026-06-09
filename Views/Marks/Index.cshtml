@@ -7,10 +7,10 @@
     var isTeacher = Model.IsTeacher;
 }
 
-<div class="adm-page">
-    <div class="adm-header">
+<div class="er-page adm-page">
+    <div class="er-page-header">
         <div class="adm-header__left">
-            <div class="adm-header__icon-wrap">
+            <div class="er-page-header__icon">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                     <polyline points="14 2 14 8 20 8" />
@@ -20,14 +20,14 @@
                 </svg>
             </div>
             <div>
-                <h1 class="adm-header__title">Marks Entry Center</h1>
-                <p class="adm-header__sub">Evaluate students, enter component marks, and submit academic results.</p>
+                <h1 class="er-page-header__title">Marks Entry Center</h1>
+                <p class="er-page-header__sub">Evaluate students, enter component marks, and submit academic results.</p>
             </div>
         </div>
         @if (!isTeacher)
         {
-            <div class="adm-btn-group">
-                <a href="@Url.Action("AuditLog")" class="adm-btn adm-btn--ghost">
+            <div class="er-page-header__right">
+                <a href="@Url.Action("AuditLog")" class="er-btn er-btn--secondary">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="me-2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
                     Audit Logs
                 </a>
@@ -36,12 +36,12 @@
     </div>
 
     <!-- ── Filter Selector Panel ── -->
-    <div class="adm-table-card" style="border-radius: var(--adm-radius-lg); padding: 40px; border: 1px solid var(--adm-border);">
+    <div class="er-card">
         <form id="marksEntrySelectForm" method="get" action="@Url.Action("Entry")">
             <div class="row g-4">
                 <div class="col-md-6">
-                    <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Select Examination</label>
-                    <select name="examId" class="form-select adm-select" required>
+                    <label class="form-label er-label">Select Examination</label>
+                    <select name="examId" class="form-select er-filters__select" required>
                         <option value="">-- Choose Exam --</option>
                         @if (exams != null)
                         {
@@ -58,8 +58,8 @@
                     var distinctClasses = assignments.Select(a => new { ClassId = a.ClassId, ClassName = a.Class?.Name, IsGroupBased = a.Class != null && a.Class.IsGroupBased }).DistinctBy(c => c.ClassId);
 
                     <div class="col-md-6">
-                        <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Select Class</label>
-                        <select name="classId" id="teacherClassSelect" class="form-select adm-select" required>
+                        <label class="form-label er-label">Select Class</label>
+                        <select name="classId" id="teacherClassSelect" class="form-select er-filters__select" required>
                             <option value="">-- Choose Class --</option>
                             @foreach (var c in distinctClasses)
                             {
@@ -69,22 +69,22 @@
                     </div>
 
                     <div class="col-md-6 d-none" id="teacherGroupContainer">
-                        <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Select Group</label>
-                        <select name="groupId" id="teacherGroupSelect" class="form-select adm-select">
+                        <label class="form-label er-label">Select Group</label>
+                        <select name="groupId" id="teacherGroupSelect" class="form-select er-filters__select">
                             <option value="">-- Choose Group --</option>
                         </select>
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Select Section</label>
-                        <select name="sectionId" id="teacherSectionSelect" class="form-select adm-select" required disabled>
+                        <label class="form-label er-label">Select Section</label>
+                        <select name="sectionId" id="teacherSectionSelect" class="form-select er-filters__select" required disabled>
                             <option value="">-- Choose Section --</option>
                         </select>
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Select Subject</label>
-                        <select name="subjectId" id="teacherSubjectSelect" class="form-select adm-select" required disabled>
+                        <label class="form-label er-label">Select Subject</label>
+                        <select name="subjectId" id="teacherSubjectSelect" class="form-select er-filters__select" required disabled>
                             <option value="">-- Choose Subject --</option>
                         </select>
                     </div>
@@ -92,8 +92,8 @@
                 else
                 {
                     <div class="col-md-6">
-                        <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Select Class</label>
-                        <select name="classId" id="adminClassSelect" class="form-select adm-select" required>
+                        <label class="form-label er-label">Select Class</label>
+                        <select name="classId" id="adminClassSelect" class="form-select er-filters__select" required>
                             <option value="">-- Choose Class --</option>
                             @if (classes != null)
                             {
@@ -106,29 +106,29 @@
                     </div>
 
                     <div class="col-md-6 d-none" id="adminGroupContainer">
-                        <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Select Group</label>
-                        <select name="groupId" id="adminGroupSelect" class="form-select adm-select">
+                        <label class="form-label er-label">Select Group</label>
+                        <select name="groupId" id="adminGroupSelect" class="form-select er-filters__select">
                             <option value="">-- Choose Group --</option>
                         </select>
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Select Section</label>
-                        <select name="sectionId" id="adminSectionSelect" class="form-select adm-select" required disabled>
+                        <label class="form-label er-label">Select Section</label>
+                        <select name="sectionId" id="adminSectionSelect" class="form-select er-filters__select" required disabled>
                             <option value="">-- Choose Section --</option>
                         </select>
                     </div>
 
                     <div class="col-md-6">
-                        <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Select Subject</label>
-                        <select name="subjectId" id="adminSubjectSelect" class="form-select adm-select" required disabled>
+                        <label class="form-label er-label">Select Subject</label>
+                        <select name="subjectId" id="adminSubjectSelect" class="form-select er-filters__select" required disabled>
                             <option value="">-- Choose Subject --</option>
                         </select>
                     </div>
                 }
 
                 <div class="col-12 mt-5">
-                    <button type="submit" class="adm-btn adm-btn--primary px-5 py-2" style="font-size: 1rem;">
+                    <button type="submit" class="er-btn er-btn--primary px-5 py-2">
                         Load Marksheet
                     </button>
                 </div>

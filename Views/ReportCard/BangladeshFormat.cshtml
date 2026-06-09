@@ -573,10 +573,10 @@
     }
 </style>
 
-<div class="adm-page no-print" style="padding-bottom: 8px;">
-    <div class="adm-header">
+<div class="adm-page no-print er-page">
+    <div class="er-page-header">
         <div class="adm-header__left">
-            <div class="adm-header__icon-wrap">
+            <div class="er-page-header__icon">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                     <polyline points="14 2 14 8 20 8" />
@@ -587,12 +587,12 @@
                 </svg>
             </div>
             <div>
-                <h1 class="adm-header__title">Report Card</h1>
-                <p class="adm-header__sub">@Model.SchoolName &middot; @Model.AcademicYearName &middot; @Model.ExamName</p>
+                <h1 class="er-page-header__title">Report Card</h1>
+                <p class="er-page-header__sub">@Model.SchoolName &middot; @Model.AcademicYearName &middot; @Model.ExamName</p>
             </div>
         </div>
-        <div class="adm-header__left">
-            <button onclick="window.print()" class="adm-btn adm-btn--primary" style="white-space: nowrap;">
+        <div class="er-page-header__right">
+            <button onclick="window.print()" class="er-btn er-btn--primary">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9V2h12v7" /><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect x="6" y="14" width="12" height="8" /></svg>
                 Print / Download PDF
             </button>

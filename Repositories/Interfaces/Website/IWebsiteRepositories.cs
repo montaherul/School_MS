@@ -2,6 +2,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using SchoolManagementSystem.Models.Entities.Website;
 using SchoolManagementSystem.Models.Entities.Communication;
+using SchoolManagementSystem.Models.Entities.Website;
 
 namespace SchoolManagementSystem.Repositories.Interfaces.Website;
 
@@ -33,5 +34,13 @@ public interface IGalleryImageRepository : IBaseRepository<GalleryImage>
 }
 
 public interface INoticeRepository : IBaseRepository<Notice>
+{
+}
+
+public interface IContactMessageRepository : IBaseRepository<ContactMessage>
+{
+}
+
+public interface IEmailTemplateRepository : IBaseRepository<EmailTemplate>
 {
 }

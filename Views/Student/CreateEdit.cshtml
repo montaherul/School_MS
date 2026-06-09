@@ -289,6 +289,12 @@
                             <input asp-for="RollNumber" class="form-control" type="number" min="1" />
                             <span asp-validation-for="RollNumber" class="text-danger small"></span>
                         </div>
+                        <div class="col-md-4">
+                            <label asp-for="OptionalSubjectId" class="form-label">Optional Subject</label>
+                            <select asp-for="OptionalSubjectId" class="form-select" asp-items="Model.OptionalSubjectList">
+                                <option value="">-- No Optional Subject --</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>

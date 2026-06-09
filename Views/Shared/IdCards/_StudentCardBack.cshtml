@@ -1,0 +1,73 @@
+@model SchoolManagementSystem.Models.DTOs.Student.StudentUpsertDto
+@{
+    var qrDataUri = ViewBag.QrCodeDataUri as string;
+    var guardianMobile = Model.GuardianMobileNumber ?? Model.FatherOrGuardianMobileNo;
+    var address = string.Join(", ",
+        new[] {
+            Model.PresentVillage,
+            Model.PresentPostOffice,
+            Model.PresentThana,
+            Model.PresentDistrict
+        }.Where(a => !string.IsNullOrEmpty(a)));
+}
+<div class="id-card id-card-back">
+    <div class="back-header">
+        <div class="back-header-title">Student Information</div>
+    </div>
+
+    <div class="back-body">
+        <div class="back-info-panel">
+            <div class="back-field-group">
+                <div class="back-field-group-title">Guardian</div>
+                <div class="back-row">
+                    <span class="back-label">Father</span>
+                    <span class="back-value">@Model.FatherName</span>
+                </div>
+                <div class="back-row">
+                    <span class="back-label">Mother</span>
+                    <span class="back-value">@Model.MotherName</span>
+                </div>
+                <div class="back-row">
+                    <span class="back-label">Mobile</span>
+                    <span class="back-value @(string.IsNullOrEmpty(guardianMobile) ? "n-a" : "")">
+                        @(!string.IsNullOrEmpty(guardianMobile) ? guardianMobile : "N/A")
+                    </span>
+                </div>
+                @if (!string.IsNullOrEmpty(address))
+                {
+                    <div class="back-row">
+                        <span class="back-label">Address</span>
+                        <span class="back-value" style="font-size:1.6mm;">@address</span>
+                    </div>
+                }
+            </div>
+
+            <div class="back-field-group" style="margin-top:1mm;">
+                <div class="back-field-group-title">Emergency Contact</div>
+                <div class="back-row">
+                    <span class="back-value" style="font-size:1.8mm;font-weight:600;">
+                        @(!string.IsNullOrEmpty(guardianMobile) ? guardianMobile : "N/A")
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="back-qr-panel">
+            <div class="back-qr-image">
+                @if (!string.IsNullOrEmpty(qrDataUri))
+                {
+                    <img src="@qrDataUri" alt="QR" />
+                }
+            </div>
+            <div class="back-qr-label">Student ID</div>
+        </div>
+    </div>
+
+    <div class="back-footer">
+        <div class="back-footer-text">
+            @ViewBag.SchoolNameEn &mdash;
+            <span class="phone-email">@ViewBag.SchoolPhone | @ViewBag.SchoolEmail</span>
+            <br />@ViewBag.SchoolAddress
+        </div>
+    </div>
+</div>

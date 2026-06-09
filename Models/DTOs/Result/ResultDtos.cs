@@ -47,6 +47,7 @@ public class ExamUpsertDto
 
 /// <summary>
 /// Per-subject mark configuration sent from the wizard
+/// SubjectMarkStructure is the source of truth for component-level distribution.
 /// </summary>
 public class SubjectMarkConfigDto
 {
@@ -54,14 +55,6 @@ public class SubjectMarkConfigDto
     public decimal FullMarks { get; set; } = 100;
     public decimal PassMarks { get; set; } = 33;
     public bool IsOptional { get; set; }
-    public bool HasWritten { get; set; }
-    public bool HasMCQ { get; set; }
-    public bool HasPractical { get; set; }
-    public bool HasViva { get; set; }
-    public bool HasLab { get; set; }
-    public bool HasOral { get; set; }
-    public bool HasAssignment { get; set; }
-    public bool HasContinuousAssessment { get; set; }
 }
 
 /// <summary>

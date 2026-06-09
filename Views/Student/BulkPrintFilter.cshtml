@@ -1,0 +1,82 @@
+@model SchoolManagementSystem.Models.ViewModels.Student.IdCardBulkFilterViewModel
+@{
+    ViewData["Title"] = "Bulk ID Card Generation";
+}
+
+<div class="container py-4">
+    <div class="bulk-filter-form">
+        <h4><i class="bi bi-card-list me-2"></i>Bulk ID Card Generation</h4>
+        <p class="text-muted mb-4">Select filters to generate ID cards for multiple students at once.</p>
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+        }
+
+        <form method="get" action="@Url.Action("BulkPrint")">
+            <div class="form-row">
+                <div class="form-group">
+                    <label><i class="bi bi-book"></i> Class</label>
+                    <select name="classId" id="classId" class="form-select" required>
+                        <option value="">-- Select Class --</option>
+                        @foreach (var c in Model.Classes)
+                        {
+                            <option value="@c.Id" selected="@(c.Id == Model.ClassId)">@c.Name</option>
+                        }
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label><i class="bi bi-layers"></i> Section</label>
+                    <select name="sectionId" id="sectionId" class="form-select">
+                        <option value="">-- All Sections --</option>
+                    </select>
+                </div>
+                <div class="form-group" style="flex:0 0 auto;">
+                    <button type="submit" class="btn-submit">
+                        <i class="bi bi-search"></i> Generate Cards
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="text-center mt-4">
+        <a href="@Url.Action("Index")" class="btn btn-back no-print">
+            <i class="bi bi-arrow-left"></i> Back to Students
+        </a>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('classId').addEventListener('change', function () {
+            const classId = this.value;
+            const sectionSelect = document.getElementById('sectionId');
+            sectionSelect.innerHTML = '<option value="">-- All Sections --</option>';
+
+            if (!classId) return;
+
+            fetch('@Url.Action("GetSectionsByClass", "Section")?classId=' + classId)
+                .then(r => r.json())
+                .then(data => {
+                    if (Array.isArray(data)) {
+                        data.forEach(function (s) {
+                            const opt = document.createElement('option');
+                            opt.value = s.id || s.Id;
+                            opt.textContent = s.name || s.Name || s.text || s.Text;
+                            sectionSelect.appendChild(opt);
+                        });
+                    }
+                })
+                .catch(() => {});
+        });
+
+        @if (Model.ClassId.HasValue)
+        {
+            <text>
+            document.getElementById('classId').value = '@Model.ClassId';
+            document.getElementById('classId').dispatchEvent(new Event('change'));
+            </text>
+        }
+    </script>
+}

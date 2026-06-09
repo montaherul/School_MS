@@ -6,6 +6,7 @@ using SchoolManagementSystem.Models.Entities.Result;
 using SchoolManagementSystem.Models.DTOs.Result;
 using SchoolManagementSystem.Models.DTOs.Exam;
 using SchoolManagementSystem.Models.Enums;
+using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Repositories.Interfaces.Result;
 using System.Data;
 using System.Data.Common;
@@ -18,8 +19,16 @@ public class MarkEntryRepository : BaseRepository<MarkEntry>, IMarkEntryReposito
 
     public async Task<List<MarkEntrySheetDto>> GetMarkEntrySheetAsync(int examId, int classId, int sectionId, int subjectId, CancellationToken ct)
     {
-        return await _db.Students.AsNoTracking()
-            .Where(s => s.ClassId == classId && s.SectionId == sectionId && !s.IsDeleted)
+        var isOptionalSubject = await _db.ClassSubjects
+            .AnyAsync(cs => cs.SchoolClassId == classId && cs.SubjectId == subjectId && cs.IsOptional && !cs.IsDeleted, ct);
+
+        var query = _db.Students.AsNoTracking()
+            .Where(s => s.ClassId == classId && s.SectionId == sectionId && !s.IsDeleted);
+
+        if (isOptionalSubject)
+            query = query.Where(s => s.OptionalSubjectId == subjectId);
+
+        return await query
             .GroupJoin(
                 _db.Marks.Where(m => m.ExamId == examId && m.SubjectId == subjectId),
                 s => s.Id,
@@ -53,7 +62,7 @@ public class MarkEntryRepository : BaseRepository<MarkEntry>, IMarkEntryReposito
             .ToListAsync(ct);
     }
 
-    public async Task<List<MarksEntryStudentDto>> GetMarksEntryListAsync(int examId, int classId, int sectionId, int subjectId, CancellationToken ct)
+    public async Task<List<MarksEntryStudentDto>> GetMarksEntryListAsync(int examId, int classId, int sectionId, int subjectId, CancellationToken ct, int? optionalSubjectId = null)
     {
         var result = new List<MarksEntryStudentDto>();
         var connection = _db.Database.GetDbConnection();
@@ -65,6 +74,7 @@ public class MarkEntryRepository : BaseRepository<MarkEntry>, IMarkEntryReposito
         AddParameter(command, "@ClassId", classId);
         AddParameter(command, "@SectionId", sectionId);
         AddParameter(command, "@SubjectId", subjectId);
+        AddParameter(command, "@OptionalSubjectId", (object?)optionalSubjectId ?? DBNull.Value);
 
         await using var reader = await command.ExecuteReaderAsync(ct);
         while (await reader.ReadAsync(ct))

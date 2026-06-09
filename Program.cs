@@ -105,14 +105,14 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.Cookie.HttpOnly = true;
         //options.Cookie.SameSite = SameSiteMode.Strict;// by localhostlogin
       //  options.Cookie.SameSite = SameSiteMode.Lax;//by ip login
-        options.Cookie.SameSite = SameSiteMode.None;
+        options.Cookie.SameSite = SameSiteMode.Lax;
         /*  options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;*/
         options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     });
 
 builder.Services.Configure<CookiePolicyOptions>(options =>
 {
-    options.MinimumSameSitePolicy = SameSiteMode.None;
+    options.MinimumSameSitePolicy = SameSiteMode.Lax;
 });
 builder.Services.AddAuthorization();
 builder.Services.AddSession(options =>

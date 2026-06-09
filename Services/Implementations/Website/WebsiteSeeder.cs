@@ -172,6 +172,88 @@ public class WebsiteSeeder
             await _db.WebsitePages.AddAsync(page);
         }
 
+        // 6. Seed Email Templates
+        if (!await _db.EmailTemplates.AnyAsync(t => !t.IsDeleted))
+        {
+            var templates = new[]
+            {
+                new EmailTemplate
+                {
+                    TemplateName = "EmployeeInvitation",
+                    Subject = "You're invited to join {SchoolName}",
+                    Body = @"<h2>Welcome to {SchoolName}!</h2>
+<p>Dear {EmployeeName},</p>
+<p>You have been invited to join {SchoolName} as a <strong>{Designation}</strong>.</p>
+<p>Please use the following credentials to log in and complete your profile:</p>
+<ul>
+<li><strong>Portal URL:</strong> <a href=""{PortalUrl}"">{PortalUrl}</a></li>
+<li><strong>Email:</strong> {Email}</li>
+<li><strong>Temporary Password:</strong> {Password}</li>
+</ul>
+<p>For security reasons, please change your password after your first login.</p>
+<p>Best regards,<br/>{PrincipalName}<br/>Principal, {SchoolName}</p>",
+                    Placeholders = "{SchoolName},{EmployeeName},{Designation},{PortalUrl},{Email},{Password},{PrincipalName}",
+                    IsActive = true,
+                    CreatedBy = "seeder",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new EmailTemplate
+                {
+                    TemplateName = "PasswordReset",
+                    Subject = "Password Reset Request - {SchoolName}",
+                    Body = @"<h2>Password Reset</h2>
+<p>Dear {UserName},</p>
+<p>We received a request to reset your password for your {SchoolName} account.</p>
+<p>Your new temporary password is: <strong>{Password}</strong></p>
+<p>Please log in at <a href=""{PortalUrl}"">{PortalUrl}</a> and change your password immediately.</p>
+<p>If you did not request this, please contact the administration.</p>
+<p>Best regards,<br/>{SchoolName} Administration</p>",
+                    Placeholders = "{SchoolName},{UserName},{Password},{PortalUrl}",
+                    IsActive = true,
+                    CreatedBy = "seeder",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new EmailTemplate
+                {
+                    TemplateName = "AttendanceAbsent",
+                    Subject = "Attendance Alert - {EmployeeName} was absent on {Date}",
+                    Body = @"<h2>Attendance Notification</h2>
+<p>This is an automated notification regarding attendance.</p>
+<p><strong>Employee:</strong> {EmployeeName}<br/>
+<strong>Designation:</strong> {Designation}<br/>
+<strong>Date:</strong> {Date}<br/>
+<strong>Status:</strong> Absent</p>
+<p>Please ensure proper documentation is submitted as per school policy.</p>
+<p>Best regards,<br/>Attendance Management System<br/>{SchoolName}</p>",
+                    Placeholders = "{EmployeeName},{Designation},{Date},{SchoolName}",
+                    IsActive = true,
+                    CreatedBy = "seeder",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new EmailTemplate
+                {
+                    TemplateName = "WelcomeEmail",
+                    Subject = "Welcome to {SchoolName}!",
+                    Body = @"<h2>Welcome Aboard!</h2>
+<p>Dear {UserName},</p>
+<p>Welcome to <strong>{SchoolName}</strong>! We are delighted to have you as part of our community.</p>
+<p>Your account has been created successfully. Here are your details:</p>
+<ul>
+<li><strong>Portal URL:</strong> <a href=""{PortalUrl}"">{PortalUrl}</a></li>
+<li><strong>Email:</strong> {Email}</li>
+<li><strong>Temporary Password:</strong> {Password}</li>
+</ul>
+<p>Please log in and update your profile at your earliest convenience.</p>
+<p>Best regards,<br/>{PrincipalName}<br/>Principal, {SchoolName}</p>",
+                    Placeholders = "{SchoolName},{UserName},{PortalUrl},{Email},{Password},{PrincipalName}",
+                    IsActive = true,
+                    CreatedBy = "seeder",
+                    CreatedAt = DateTime.UtcNow
+                }
+            };
+            await _db.EmailTemplates.AddRangeAsync(templates);
+        }
+
         await _db.SaveChangesAsync();
     }
 }

@@ -254,6 +254,32 @@ public class StudentService : IStudentService
         return subject?.Id;
     }
 
+    public async Task<List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>> GetOptionalSubjectsAsync(int classId, CancellationToken cancellationToken = default)
+    {
+        var optionalSubjectIds = await _unitOfWork.Repository<ClassSubject>()
+            .Query()
+            .Where(cs => cs.SchoolClassId == classId && cs.IsOptional && !cs.IsDeleted)
+            .Select(cs => cs.SubjectId)
+            .Distinct()
+            .ToListAsync(cancellationToken);
+
+        if (optionalSubjectIds.Count == 0)
+            return new List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>();
+
+        var subjects = await _unitOfWork.Repository<Subject>()
+            .Query()
+            .Where(s => optionalSubjectIds.Contains(s.Id) && !s.IsDeleted)
+            .ToListAsync(cancellationToken);
+
+        return subjects
+            .Select(s => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
+            {
+                Value = s.Id.ToString(),
+                Text = $"{s.Code} — {s.Name}"
+            })
+            .ToList();
+    }
+
     private async Task<string> GenerateStudentNoAsync(CancellationToken cancellationToken)
     {
         var year = DateTime.UtcNow.Year;

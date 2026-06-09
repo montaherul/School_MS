@@ -84,15 +84,7 @@ public class ExamService : IExamService
                     SubjectId = s.SubjectId,
                     FullMarks = s.FullMarks,
                     PassMarks = s.PassMarks,
-                    IsOptional = s.IsOptional,
-                    WrittenMarks = s.HasWritten ? s.FullMarks : null,
-                    MCQMarks = s.HasMCQ ? s.FullMarks : null,
-                    PracticalMarks = s.HasPractical ? s.FullMarks : null,
-                    VivaMarks = s.HasViva ? s.FullMarks : null,
-                    LabMarks = s.HasLab ? s.FullMarks : null,
-                    OralMarks = s.HasOral ? s.FullMarks : null,
-                    AssignmentMarks = s.HasAssignment ? s.FullMarks : null,
-                    ContinuousAssessmentMarks = s.HasContinuousAssessment ? s.FullMarks : null
+                    IsOptional = s.IsOptional
                 };
                 await _uow.Repository<ExamSubjectEntity>().AddAsync(examSubject);
             }
@@ -135,15 +127,7 @@ public class ExamService : IExamService
                     SubjectId = s.SubjectId,
                     FullMarks = s.FullMarks,
                     PassMarks = s.PassMarks,
-                    IsOptional = s.IsOptional,
-                    WrittenMarks = s.HasWritten ? s.FullMarks : null,
-                    MCQMarks = s.HasMCQ ? s.FullMarks : null,
-                    PracticalMarks = s.HasPractical ? s.FullMarks : null,
-                    VivaMarks = s.HasViva ? s.FullMarks : null,
-                    LabMarks = s.HasLab ? s.FullMarks : null,
-                    OralMarks = s.HasOral ? s.FullMarks : null,
-                    AssignmentMarks = s.HasAssignment ? s.FullMarks : null,
-                    ContinuousAssessmentMarks = s.HasContinuousAssessment ? s.FullMarks : null
+                    IsOptional = s.IsOptional
                 };
                 await _uow.Repository<ExamSubjectEntity>().AddAsync(examSubject);
             }

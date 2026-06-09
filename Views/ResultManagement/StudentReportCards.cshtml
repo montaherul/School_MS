@@ -8,15 +8,15 @@
     var exams = ViewBag.Exams as List<SchoolManagementSystem.Models.Entities.Exam.Exam> ?? new();
 }
 
-<div class="adm-page">
-    <div class="adm-header">
-        <div class="adm-header__left">
-            <div class="adm-header__icon-wrap">
+<div class="er-page">
+    <div class="er-page-header">
+        <div class="er-page-header__left">
+            <div class="er-page-header__icon">
                 <i class="bi bi-file-earmark-text"></i>
             </div>
             <div>
-                <h1 class="adm-header__title">My Report Cards</h1>
-                <p class="adm-header__sub">Download and view your published report cards</p>
+                <h1 class="er-page-header__title">My Report Cards</h1>
+                <p class="er-page-header__sub">Download and view your published report cards</p>
             </div>
         </div>
     </div>
@@ -25,8 +25,8 @@
         <form method="get" action="@Url.Action("StudentReportCards", "ResultManagement")" style="display:contents;">
             <div class="adm-filters__row">
                 <div class="adm-filters__field">
-                    <label class="adm-label" for="academicYearId">Academic Year</label>
-                    <select id="academicYearId" name="academicYearId" class="adm-select" onchange="this.form.submit()">
+                    <label class="er-label" for="academicYearId">Academic Year</label>
+                    <select id="academicYearId" name="academicYearId" class="er-filters__select" onchange="this.form.submit()">
                         <option value="0">All Years</option>
                         @foreach (var ay in academicYears)
                         {
@@ -35,8 +35,8 @@
                     </select>
                 </div>
                 <div class="adm-filters__field">
-                    <label class="adm-label" for="examId">Exam</label>
-                    <select id="examId" name="examId" class="adm-select" onchange="this.form.submit()">
+                    <label class="er-label" for="examId">Exam</label>
+                    <select id="examId" name="examId" class="er-filters__select" onchange="this.form.submit()">
                         <option value="0">All Exams</option>
                         @foreach (var ex in exams)
                         {
@@ -45,9 +45,9 @@
                     </select>
                 </div>
                 <div class="adm-filters__field adm-filters__field--actions">
-                    <label class="adm-label">&nbsp;</label>
-                    <div class="adm-btn-group">
-                        <a href="@Url.Action("StudentReportCards", "ResultManagement")" class="adm-btn adm-btn--ghost">
+                    <label class="er-label">&nbsp;</label>
+                    <div class="er-page-header__right">
+                        <a href="@Url.Action("StudentReportCards", "ResultManagement")" class="er-btn er-btn--secondary">
                             <i class="bi bi-x-circle"></i> Clear
                         </a>
                     </div>
@@ -58,8 +58,8 @@
 
     @if (!Model.ExamResults.Any())
     {
-        <div class="adm-table-card" style="border-radius:var(--adm-radius-lg);border-top:1px solid var(--adm-border);">
-            <div class="dash-empty">
+        <div class="er-card" style="border-radius:var(--adm-radius-lg);border-top:1px solid var(--adm-border);">
+            <div class="er-empty">
                 <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                     <polyline points="14 2 14 8 20 8"></polyline>
@@ -67,14 +67,14 @@
                     <line x1="16" y1="17" x2="8" y2="17"></line>
                     <polyline points="10 9 9 9 8 9"></polyline>
                 </svg>
-                <p class="dash-empty__title">No Report Cards Available</p>
-                <p class="dash-empty__sub">Published report cards will appear here. Check back after exam results are released.</p>
+                <p class="er-empty__title">No Report Cards Available</p>
+                <p class="er-empty__desc">Published report cards will appear here. Check back after exam results are released.</p>
             </div>
         </div>
     }
     else
     {
-        <div class="adm-table-card" style="border-radius:var(--adm-radius-lg);border-top:1px solid var(--adm-border);">
+        <div class="er-card" style="border-radius:var(--adm-radius-lg);border-top:1px solid var(--adm-border);">
             <div style="overflow-x:auto;">
                 <table class="dash-table">
                     <thead>
@@ -109,21 +109,21 @@
                                 <td style="text-align:center;">
                                     @if (exam.IsPassed)
                                     {
-                                        <span class="adm-status adm-status--approved">Passed</span>
+                                        <span class="er-badge er-badge--approved">Passed</span>
                                     }
                                     else
                                     {
-                                        <span class="adm-status adm-status--rejected">Failed</span>
+                                        <span class="er-badge er-badge--rejected">Failed</span>
                                     }
                                 </td>
                                 <td style="text-align:center;">
-                                    <div class="adm-actions" style="justify-content:center;">
+                                    <div class="er-actions" style="justify-content:center;">
                                         <a href="/ReportCard/Download?examId=@exam.ExamId&studentId=@Model.StudentId"
-                                           class="adm-action adm-action--edit" title="Download PDF">
+                                           class="er-action er-action--edit" title="Download PDF">
                                             <i class="bi bi-download"></i>
                                         </a>
                                         <a href="/ReportCard/PrintFormat?examId=@exam.ExamId&studentId=@Model.StudentId"
-                                           class="adm-action adm-action--view" title="View Online">
+                                           class="er-action er-action--view" title="View Online">
                                             <i class="bi bi-eye"></i>
                                         </a>
                                     </div>

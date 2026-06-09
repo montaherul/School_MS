@@ -93,7 +93,6 @@ public class SubjectMarkStructure : BaseEntity
 {
     public int ComponentId { get; set; } // FK → ExamComponent
 
-    public int? ExamId { get; set; } // null = applies to all exams for this subject
     public int? ClassId { get; set; } // null = applies to all classes
     public int? SubjectId { get; set; } // null = applies to all subjects
     public int? StudentGroupId { get; set; } // null = applies to all groups
@@ -105,30 +104,9 @@ public class SubjectMarkStructure : BaseEntity
 
     // Navigation
     public virtual ExamComponent Component { get; set; } = null!;
-    public virtual Exam? Exam { get; set; }
     public virtual Academic.SchoolClass? Class { get; set; }
     public virtual Academic.Subject? Subject { get; set; }
     public virtual Academic.StudentGroup? StudentGroup { get; set; }
-}
-
-/// <summary>
-/// Subject Component: Defines mark distribution for a subject
-/// E.g., Written=50, MCQ=30, Practical=20 for Science
-/// </summary>
-public class SubjectComponent : BaseEntity
-{
-    public int ClassSubjectId { get; set; }
-
-    [MaxLength(100)]
-    public string ComponentName { get; set; } = string.Empty; // Written, MCQ, Practical, CQ, Viva, Lab, Oral, etc.
-
-    public decimal MaxMarks { get; set; } = 0;
-    public int DisplayOrder { get; set; } = 0;
-    public bool IsRequired { get; set; } = true;
-    public bool IsActive { get; set; } = true;
-
-    // Navigation
-    public virtual ClassSubject ClassSubject { get; set; } = null!;
 }
 
 /// <summary>
@@ -190,16 +168,6 @@ public class ExamSubject : BaseEntity
     public decimal FullMarks { get; set; } = 100;
     public decimal PassMarks { get; set; } = 33;
     public bool IsOptional { get; set; } = false;
-
-    // Component-wise marks for flexible configuration
-    public decimal? WrittenMarks { get; set; }
-    public decimal? MCQMarks { get; set; }
-    public decimal? PracticalMarks { get; set; }
-    public decimal? VivaMarks { get; set; }
-    public decimal? LabMarks { get; set; }
-    public decimal? ContinuousAssessmentMarks { get; set; }
-    public decimal? OralMarks { get; set; }
-    public decimal? AssignmentMarks { get; set; }
 
     // Navigation
     public virtual Exam Exam { get; set; } = null!;

@@ -11,6 +11,12 @@ public interface ISchoolClassService
     Task UpdateAsync(SchoolClassUpsertDto dto, string updatedBy, CancellationToken cancellationToken = default);
     Task DeleteAsync(int id, string updatedBy, CancellationToken cancellationToken = default);
     Task<IEnumerable<SchoolClassListItemDto>> GetAllAsync(CancellationToken cancellationToken = default);
+
+    Task<SchoolClassListItemDto> CloneAsync(int id, string createdBy, CancellationToken cancellationToken = default);
+    Task ArchiveAsync(int id, string updatedBy, CancellationToken cancellationToken = default);
+    Task RestoreAsync(int id, string updatedBy, CancellationToken cancellationToken = default);
+    Task ToggleActiveAsync(int id, string updatedBy, CancellationToken cancellationToken = default);
+    Task<bool> IsNameUniqueAsync(string name, int? excludeId = null, CancellationToken cancellationToken = default);
+    Task<bool> IsCodeUniqueAsync(string code, int? excludeId = null, CancellationToken cancellationToken = default);
+    Task<bool> CanDeleteAsync(int id, CancellationToken cancellationToken = default);
 }
-
-

@@ -13,5 +13,6 @@ public interface IStudentService
     Task DeleteAsync(int id, string updatedBy, CancellationToken cancellationToken = default);
     Task<StudentUpsertDto?> GetByUserIdAsync(int userId, CancellationToken cancellationToken = default);
     Task<int?> GetStudentIdByUserIdAsync(int userId, CancellationToken cancellationToken = default);
+    Task<List<Microsoft.AspNetCore.Mvc.Rendering.SelectListItem>> GetOptionalSubjectsAsync(int classId, CancellationToken cancellationToken = default);
 }
 

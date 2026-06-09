@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SchoolManagementSystem.Helpers.Pdf;
 using SchoolManagementSystem.Models.DTOs.Result;
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Models.Entities.Result;
@@ -12,10 +13,12 @@ namespace SchoolManagementSystem.Services.Implementations.Result;
 public class TranscriptService : ITranscriptService
 {
     private readonly IUnitOfWork _uow;
+    private readonly IPdfGenerator _pdfGenerator;
 
-    public TranscriptService(IUnitOfWork uow)
+    public TranscriptService(IUnitOfWork uow, IPdfGenerator pdfGenerator)
     {
         _uow = uow;
+        _pdfGenerator = pdfGenerator;
     }
 
     public async Task<StudentTranscriptDto?> GetStudentTranscriptAsync(int studentId, int academicYearId)
@@ -131,7 +134,10 @@ public class TranscriptService : ITranscriptService
 
     public async Task<byte[]?> GenerateTranscriptPdfAsync(int studentId, int academicYearId)
     {
-        return null;
+        var transcript = await GetStudentTranscriptAsync(studentId, academicYearId);
+        if (transcript == null) return null;
+
+        return _pdfGenerator.GenerateTranscript(transcript);
     }
 
     private async Task<HashSet<int>> GetValidSubjectIdsForStudentAsync(SchoolManagementSystem.Models.Entities.Student.Student student)
@@ -165,6 +171,10 @@ public class TranscriptService : ITranscriptService
             // Include common (non-religion, non-group) subjects
             validIds.Add(cs.SubjectId);
         }
+
+        // Include the student's optional subject if assigned
+        if (student.OptionalSubjectId.HasValue)
+            validIds.Add(student.OptionalSubjectId.Value);
 
         return validIds;
     }

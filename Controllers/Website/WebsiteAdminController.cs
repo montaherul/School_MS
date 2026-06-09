@@ -23,6 +23,9 @@ public class WebsiteAdminController : Controller
     private readonly IEventService _eventService;
     private readonly IGalleryService _galleryService;
     private readonly IWebsitePageService _pageService;
+    private readonly IContactMessageService _contactService;
+    private readonly IEmailTemplateService _emailTemplateService;
+    private readonly IAdmissionFeeStructureService _feeService;
     private readonly IFileStorageService _fileService;
 
     public WebsiteAdminController(
@@ -32,6 +35,9 @@ public class WebsiteAdminController : Controller
         IEventService eventService,
         IGalleryService galleryService,
         IWebsitePageService pageService,
+        IContactMessageService contactService,
+        IEmailTemplateService emailTemplateService,
+        IAdmissionFeeStructureService feeService,
         IFileStorageService fileService)
     {
         _settingsService = settingsService;
@@ -40,6 +46,9 @@ public class WebsiteAdminController : Controller
         _eventService = eventService;
         _galleryService = galleryService;
         _pageService = pageService;
+        _contactService = contactService;
+        _emailTemplateService = emailTemplateService;
+        _feeService = feeService;
         _fileService = fileService;
     }
 
@@ -59,7 +68,7 @@ public class WebsiteAdminController : Controller
 
     [HttpPost("Settings")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Settings(SchoolSetting model, IFormFile? logoFile, IFormFile? faviconFile, IFormFile? principalFile, CancellationToken ct)
+    public async Task<IActionResult> Settings(SchoolSetting model, IFormFile? logoFile, IFormFile? faviconFile, IFormFile? principalFile, IFormFile? signatureFile, IFormFile? loginLogoFile, IFormFile? footerLogoFile, IFormFile? bannerFile, IFormFile? ogImageFile, IFormFile? admissionCircularFile, IFormFile? admissionFormFile, IFormFile? admissionOgImageFile, CancellationToken ct)
     {
         if (logoFile != null && ValidateFile(logoFile, [".jpg", ".jpeg", ".png"]))
         {
@@ -72,6 +81,44 @@ public class WebsiteAdminController : Controller
         if (principalFile != null && ValidateFile(principalFile, [".jpg", ".jpeg", ".png"]))
         {
             model.PrincipalImagePath = await _fileService.SaveAsync(principalFile, "settings", ct);
+        }
+        if (signatureFile != null && ValidateFile(signatureFile, [".jpg", ".jpeg", ".png"]))
+        {
+            model.PrincipalSignaturePath = await _fileService.SaveAsync(signatureFile, "settings", ct);
+        }
+        if (loginLogoFile != null && ValidateFile(loginLogoFile, [".jpg", ".jpeg", ".png"]))
+        {
+            model.LoginLogoPath = await _fileService.SaveAsync(loginLogoFile, "settings", ct);
+        }
+        if (footerLogoFile != null && ValidateFile(footerLogoFile, [".jpg", ".jpeg", ".png"]))
+        {
+            model.FooterLogoPath = await _fileService.SaveAsync(footerLogoFile, "settings", ct);
+        }
+        if (bannerFile != null && ValidateFile(bannerFile, [".jpg", ".jpeg", ".png"]))
+        {
+            model.WebsiteBannerPath = await _fileService.SaveAsync(bannerFile, "settings", ct);
+        }
+        if (ogImageFile != null && ValidateFile(ogImageFile, [".jpg", ".jpeg", ".png"]))
+        {
+            model.OgImagePath = await _fileService.SaveAsync(ogImageFile, "settings", ct);
+        }
+        if (admissionCircularFile != null && ValidateFile(admissionCircularFile, [".pdf"]))
+        {
+            model.AdmissionCircularPath = await _fileService.SaveAsync(admissionCircularFile, "admissions", ct);
+        }
+        if (admissionFormFile != null && ValidateFile(admissionFormFile, [".pdf"]))
+        {
+            model.AdmissionFormPath = await _fileService.SaveAsync(admissionFormFile, "admissions", ct);
+        }
+        if (admissionOgImageFile != null && ValidateFile(admissionOgImageFile, [".jpg", ".jpeg", ".png"]))
+        {
+            model.AdmissionOgImagePath = await _fileService.SaveAsync(admissionOgImageFile, "settings", ct);
+        }
+
+        if (model.AdmissionOpenDate.HasValue && model.AdmissionCloseDate.HasValue && model.AdmissionCloseDate < model.AdmissionOpenDate)
+        {
+            TempData["ErrorMessage"] = "Admission close date must be after the open date.";
+            return RedirectToAction(nameof(Settings));
         }
 
         await _settingsService.UpdateSettingsAsync(model, ct);
@@ -323,6 +370,77 @@ public class WebsiteAdminController : Controller
         return Json(new { success = true });
     }
 
+    // ── Contact Messages ──
+    [HttpGet("Messages/List")]
+    public async Task<IActionResult> MessagesList(CancellationToken ct)
+    {
+        var list = await _contactService.GetMessagesAsync(ct);
+        return Json(list);
+    }
+
+    [HttpPost("Messages/MarkRead/{id}")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> MessageMarkRead(int id, CancellationToken ct)
+    {
+        await _contactService.MarkAsReadAsync(id, ct);
+        return Json(new { success = true });
+    }
+
+    [HttpPost("Messages/Delete/{id}")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> MessageDelete(int id, CancellationToken ct)
+    {
+        await _contactService.DeleteMessageAsync(id, ct);
+        return Json(new { success = true });
+    }
+
+    // ── Email Templates ──
+    [HttpGet("EmailTemplates/List")]
+    public async Task<IActionResult> EmailTemplatesList(CancellationToken ct)
+    {
+        var list = await _emailTemplateService.GetTemplatesAsync(ct);
+        return Json(list);
+    }
+
+    [HttpGet("EmailTemplates/CreateEdit/{id?}")]
+    public async Task<IActionResult> EmailTemplateCreateEdit(int? id, CancellationToken ct)
+    {
+        if (id.HasValue && id > 0)
+        {
+            var tpl = await _emailTemplateService.GetTemplateByIdAsync(id.Value, ct);
+            if (tpl == null) return NotFound();
+            return View(tpl);
+        }
+        return View(new EmailTemplate());
+    }
+
+    [HttpPost("EmailTemplates/CreateEdit/{id?}")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EmailTemplateCreateEdit(int? id, EmailTemplate model, CancellationToken ct)
+    {
+        if (id.HasValue && id > 0)
+        {
+            model.Id = id.Value;
+            await _emailTemplateService.UpdateTemplateAsync(model, ct);
+            TempData["SuccessMessage"] = "Email template updated successfully.";
+        }
+        else
+        {
+            await _emailTemplateService.CreateTemplateAsync(model, ct);
+            TempData["SuccessMessage"] = "Email template created successfully.";
+        }
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost("EmailTemplates/Delete/{id}")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EmailTemplateDelete(int id, CancellationToken ct)
+    {
+        await _emailTemplateService.DeleteTemplateAsync(id, ct);
+        return Json(new { success = true });
+    }
+
     // ── Website Pages ──
     [HttpGet("Pages/List")]
     public async Task<IActionResult> PagesList(CancellationToken ct)
@@ -370,12 +488,58 @@ public class WebsiteAdminController : Controller
         return Json(new { success = true });
     }
 
+    // ── Admission Fee Structures ──
+    [HttpGet("AdmissionFees/List")]
+    public async Task<IActionResult> AdmissionFeesList(CancellationToken ct)
+    {
+        var list = await _feeService.GetAllAsync(ct);
+        return Json(list);
+    }
+
+    [HttpGet("AdmissionFees/CreateEdit/{id?}")]
+    public async Task<IActionResult> AdmissionFeeCreateEdit(int? id, CancellationToken ct)
+    {
+        if (id.HasValue && id > 0)
+        {
+            var fee = await _feeService.GetByIdAsync(id.Value, ct);
+            if (fee == null) return NotFound();
+            return View(fee);
+        }
+        return View(new AdmissionFeeStructure());
+    }
+
+    [HttpPost("AdmissionFees/CreateEdit/{id?}")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AdmissionFeeCreateEdit(int? id, AdmissionFeeStructure model, CancellationToken ct)
+    {
+        if (id.HasValue && id > 0)
+        {
+            model.Id = id.Value;
+            await _feeService.UpdateAsync(model, ct);
+            TempData["SuccessMessage"] = "Fee structure updated successfully.";
+        }
+        else
+        {
+            await _feeService.CreateAsync(model, ct);
+            TempData["SuccessMessage"] = "Fee structure created successfully.";
+        }
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost("AdmissionFees/Delete/{id}")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AdmissionFeeDelete(int id, CancellationToken ct)
+    {
+        await _feeService.DeleteAsync(id, ct);
+        return Json(new { success = true });
+    }
+
     // Helper file validator
     private static bool ValidateFile(IFormFile file, string[] allowedExtensions)
     {
         var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
         if (!allowedExtensions.Contains(ext)) return false;
-        if (file.Length > 10 * 1024 * 1024) return false; // 10MB limit
+        if (file.Length > 5 * 1024 * 1024) return false; // 5MB limit
         return true;
     }
 }

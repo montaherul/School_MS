@@ -1,0 +1,70 @@
+@model SchoolManagementSystem.Models.DTOs.Employee.EmployeeDetailsDto
+@{
+    var qrDataUri = ViewBag.QrCodeDataUri as string;
+    var schoolAddress = ViewBag.SchoolAddress as string;
+    var schoolPhone = ViewBag.SchoolPhone as string;
+    var schoolEmail = ViewBag.SchoolEmail as string;
+    var themeColor = ViewBag.ThemeColor as string ?? "#1B4D8C";
+    var emergencyContact = !string.IsNullOrEmpty(Model.EmergencyContactPhone)
+        ? $"{Model.EmergencyContactName ?? ""} {Model.EmergencyContactPhone}".Trim()
+        : "N/A";
+}
+<div class="id-card id-card-back">
+    <div class="back-header" style="background:linear-gradient(135deg, @themeColor 0%, @themeColor 100%)">
+        <div class="back-header-title">Employee Information</div>
+    </div>
+
+    <div class="back-body">
+        <div class="back-info-panel">
+            <div class="back-field-group">
+                <div class="back-field-group-title">Contact &amp; Personal</div>
+                <div class="back-row">
+                    <span class="back-label">Address</span>
+                    <span class="back-value" style="font-size:1.6mm;">@(schoolAddress ?? "N/A")</span>
+                </div>
+                <div class="back-row">
+                    <span class="back-label">Phone</span>
+                    <span class="back-value">@(schoolPhone ?? "N/A")</span>
+                </div>
+                <div class="back-row">
+                    <span class="back-label">Email</span>
+                    <span class="back-value" style="font-size:1.6mm;">@(schoolEmail ?? "N/A")</span>
+                </div>
+                <div class="back-row">
+                    <span class="back-label">Emergency</span>
+                    <span class="back-value @(emergencyContact == "N/A" ? "n-a" : "")" style="font-size:1.6mm;">@emergencyContact</span>
+                </div>
+            </div>
+
+            <div class="back-field-group" style="margin-top:1mm;">
+                <div class="back-field-group-title">Identification</div>
+                <div class="back-row">
+                    <span class="back-label">National ID</span>
+                    <span class="back-value">@(!string.IsNullOrEmpty(Model.NIDNumber) ? Model.NIDNumber : "N/A")</span>
+                </div>
+                <div class="back-row">
+                    <span class="back-label">Valid Until</span>
+                    <span class="back-value">@(Model.CardExpiryDate?.ToString("dd MMM yyyy") ?? "N/A")</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="back-qr-panel">
+            <div class="back-qr-image">
+                @if (!string.IsNullOrEmpty(qrDataUri))
+                {
+                    <img src="@qrDataUri" alt="QR" />
+                }
+            </div>
+            <div class="back-qr-label">Employee ID</div>
+        </div>
+    </div>
+
+    <div class="back-footer" style="background:linear-gradient(135deg, @themeColor 0%, @themeColor 100%)">
+        <div class="back-footer-text">
+            @ViewBag.SchoolNameEn &mdash;
+            <span class="phone-email">@schoolPhone | @schoolEmail</span>
+            <br />@schoolAddress
+        </div>
+    </div>
+</div>

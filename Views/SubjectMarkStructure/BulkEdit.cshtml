@@ -1,12 +1,12 @@
-@model SchoolManagementSystem.Controllers.Exam.SubjectMarkStructureBulkViewModel
+@model SchoolManagementSystem.Models.ViewModels.Exam.SubjectMarkStructureBulkViewModel
 @{
     ViewData["Title"] = "Configure Components";
 }
 
-<div class="adm-page">
-    <div class="adm-header">
+<div class="adm-page er-page">
+    <div class="er-page-header">
         <div class="adm-header__left">
-            <div class="adm-header__icon-wrap">
+            <div class="er-page-header__icon">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                     <polyline points="14 2 14 8 20 8" />
@@ -15,12 +15,12 @@
                 </svg>
             </div>
             <div>
-                <h1 class="adm-header__title">Configure Components</h1>
-                <p class="adm-header__sub">@Model.ExamName — @Model.SubjectName</p>
+                <h1 class="er-page-header__title">Configure Components</h1>
+                <p class="er-page-header__sub">@Model.SubjectName</p>
             </div>
         </div>
-        <div class="adm-btn-group">
-            <a href="@Url.Action("Index", "SubjectMarkStructure", new { examId = Model.ExamId, subjectId = Model.SubjectId })" class="adm-btn adm-btn--ghost">
+        <div class="er-page-header__right">
+            <a href="@Url.Action("Index", "SubjectMarkStructure", new { subjectId = Model.SubjectId })" class="er-btn er-btn--secondary">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6" /></svg>
                 Back
             </a>
@@ -38,18 +38,18 @@
     }
 
     <div class="adm-card">
-        <form method="post" asp-action="BulkEdit" asp-route-examId="@Model.ExamId" asp-route-subjectId="@Model.SubjectId">
+        <form method="post" asp-action="BulkEdit" asp-route-subjectId="@Model.SubjectId">
             @Html.AntiForgeryToken()
 
             <div class="table-responsive">
                 <table class="table adm-table">
                     <thead>
                         <tr>
-                            <th style="width:40px">Enable</th>
+                            <th>Enable</th>
                             <th>Component</th>
                             <th>Code</th>
-                            <th style="width:150px">Full Marks</th>
-                            <th style="width:150px">Pass Marks</th>
+                            <th>Full Marks</th>
+                            <th>Pass Marks</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -65,10 +65,10 @@
                                 <td>@Model.Components[i].ComponentName</td>
                                 <td><code>@Model.Components[i].ComponentCode</code></td>
                                 <td>
-                                    <input asp-for="Components[i].FullMarks" class="form-control adm-input" type="number" step="0.01" min="0" />
+                                    <input asp-for="Components[i].FullMarks" class="form-control er-input" type="number" step="0.01" min="0" />
                                 </td>
                                 <td>
-                                    <input asp-for="Components[i].PassMarks" class="form-control adm-input" type="number" step="0.01" min="0" />
+                                    <input asp-for="Components[i].PassMarks" class="form-control er-input" type="number" step="0.01" min="0" />
                                 </td>
                             </tr>
                         }
@@ -85,11 +85,11 @@
             </div>
 
             <div class="mt-4 d-flex gap-2">
-                <button type="submit" class="adm-btn adm-btn--primary">
+                <button type="submit" class="er-btn er-btn--primary">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12" /></svg>
                     Save Configuration
                 </button>
-                <a href="@Url.Action("Index", "SubjectMarkStructure", new { examId = Model.ExamId, subjectId = Model.SubjectId })" class="adm-btn adm-btn--ghost">Cancel</a>
+                <a href="@Url.Action("Index", "SubjectMarkStructure", new { subjectId = Model.SubjectId })" class="er-btn er-btn--secondary">Cancel</a>
             </div>
         </form>
     </div>

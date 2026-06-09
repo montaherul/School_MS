@@ -74,3 +74,17 @@ public class NoticeRepository : BaseRepository<Notice>, INoticeRepository
     {
     }
 }
+
+public class ContactMessageRepository : BaseRepository<ContactMessage>, IContactMessageRepository
+{
+    public ContactMessageRepository(SchoolDbContext context) : base(context)
+    {
+    }
+}
+
+public class EmailTemplateRepository : BaseRepository<EmailTemplate>, IEmailTemplateRepository
+{
+    public EmailTemplateRepository(SchoolDbContext context) : base(context)
+    {
+    }
+}

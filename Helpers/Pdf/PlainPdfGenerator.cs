@@ -1,9 +1,9 @@
+using DinkToPdf;
 using iText.Kernel.Colors;
 using iText.Kernel.Font;
 using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas;
-using iText.Kernel.Pdf.Extgstate;
 using iText.Layout;
 using iText.Layout.Borders;
 using iText.Layout.Element;
@@ -12,9 +12,8 @@ using iText.IO.Image;
 using SchoolManagementSystem.Helpers;
 using SchoolManagementSystem.Models.Entities.Exam;
 using SchoolManagementSystem.Models.Entities.Result;
-using System.IO;
-using SchoolManagementSystem.Models.DTOs.Student;
 using SchoolManagementSystem.Models.DTOs.Employee;
+using SchoolManagementSystem.Models.DTOs.Result;
 using SchoolManagementSystem.Models.Entities.Website;
 using Path = System.IO.Path;
 
@@ -22,12 +21,14 @@ namespace SchoolManagementSystem.Helpers.Pdf;
 
 public class PlainPdfGenerator : IPdfGenerator
 {
+    private static readonly object _syncLock = new();
+
     // ─────────────────────────────────────────────────────────────
     //  REPORT CARD  (unchanged)
     // ─────────────────────────────────────────────────────────────
     public byte[] GenerateSchoolReportCard(
         StudentExamResult result,
-        List<MarkEntry> marks,SchoolSetting school)
+        List<MarkEntry> marks, SchoolSetting school)
     {
         using var stream = new MemoryStream();
         using var writer = new PdfWriter(stream);
@@ -111,234 +112,70 @@ public class PlainPdfGenerator : IPdfGenerator
     }
 
     // ─────────────────────────────────────────────────────────────
-    //  STUDENT ID CARD  (new design)
+    //  STUDENT ID CARD  — HTML to PDF via DinkToPdf
     // ─────────────────────────────────────────────────────────────
-    public byte[] GenerateStudentIdCard(StudentUpsertDto student, SchoolSetting school)
+    public byte[] GenerateStudentIdCardFromHtml(string html)
     {
-        using var stream = new MemoryStream();
-        using var writer = new PdfWriter(stream);
-        using var pdf = new PdfDocument(writer);
-
-        // CR80 card: ~243 x 153 pt  (portrait: swap → 153 w × 243 h)
-        // The reference image shows a PORTRAIT card
-        float cardW = 153f, cardH = 243f;
-        var pageSize = new PageSize(cardW, cardH);
-
-        // ── FRONT PAGE ──────────────────────────────────────────
-        // Must add the page before drawing on it
-        pdf.AddNewPage(pageSize);
-        DrawStudentFront(pdf, pageSize, student, school);
-
-        // ── BACK PAGE ───────────────────────────────────────────
-        pdf.AddNewPage(pageSize);
-        DrawStudentBack(pdf, pageSize, student, school);
-
-        pdf.Close();
-        return stream.ToArray();
+        return ConvertHtmlToPdf(html, singleCard: true);
     }
 
-    private void DrawStudentFront(PdfDocument pdf, PageSize ps, StudentUpsertDto student, SchoolSetting school)
+    public byte[] GenerateBulkStudentIdCardPdfFromHtml(string html)
     {
-        var page = pdf.GetFirstPage();
-        var canvas = new PdfCanvas(page);
-        float w = ps.GetWidth(), h = ps.GetHeight();
-
-        // Dark blue background (top 55 %)
-        var darkBlue = new DeviceRgb(0x2B, 0x2F, 0x8F);   // #2B2F8F
-        var lightBlue = new DeviceRgb(0xB8, 0xC4, 0xF5);   // #B8C4F5
-
-        // Full card background – light blue
-        canvas.SetFillColor(lightBlue)
-              .Rectangle(0, 0, w, h)
-              .Fill();
-
-        // Dark blue wavy top section (top ~55% of card)
-        // Approximated with a rounded rectangle + bezier wave
-        float waveY = h * 0.44f;
-        canvas.SetFillColor(darkBlue);
-        canvas.MoveTo(0, h)
-              .LineTo(w, h)
-              .LineTo(w, waveY + 10)
-              .CurveTo(w * 0.75f, waveY - 18, w * 0.25f, waveY + 20, 0, waveY + 8)
-              .ClosePath()
-              .Fill();
-
-        // Decorative dots (light, scattered) – front top-right area
-        canvas.SetFillColor(new DeviceRgb(0x6B, 0x74, 0xD0));
-        float[] dotXs = { w * 0.72f, w * 0.80f, w * 0.88f, w * 0.76f, w * 0.68f };
-        float[] dotYs = { h * 0.78f, h * 0.72f, h * 0.82f, h * 0.90f, h * 0.65f };
-        for (int i = 0; i < dotXs.Length; i++)
-            canvas.Circle(dotXs[i], dotYs[i], 2.5f).Fill();
-
-        // Small tick marks (bottom left, light blue on dark)
-        canvas.SetFillColor(new DeviceRgb(0x9B, 0xA5, 0xE8));
-        float[] tickX = { 12, 18, 8 };
-        float[] tickY = { h * 0.52f, h * 0.47f, h * 0.44f };
-        for (int i = 0; i < tickX.Length; i++)
-        {
-            canvas.Rectangle(tickX[i], tickY[i], 6, 1.5f).Fill();
-            canvas.Rectangle(tickX[i] + 2, tickY[i] - 3, 6, 1.5f).Fill();
-        }
-
-        // Circular photo frame
-        float circleR = 30f;
-        float circleX = w / 2f;
-        float circleY = h * 0.60f;
-
-        // White ring
-        canvas.SetFillColor(ColorConstants.WHITE)
-              .Circle(circleX, circleY, circleR + 3)
-              .Fill();
-
-        // Photo or placeholder inside circle
-        // We clip to circle for the photo
-        canvas.SaveState();
-        canvas.SetFillColor(new DeviceRgb(0xCC, 0xCC, 0xCC));
-        canvas.Circle(circleX, circleY, circleR).Fill();
-        // (Actual image clipping requires iText canvas.Clip() + image paint – placeholder shown)
-        canvas.RestoreState();
-
-        // Text area (below wave)
-        PdfFont bold = PdfFontFactory.CreateFont(iText.IO.Font.Constants.StandardFonts.HELVETICA_BOLD);
-        PdfFont normal = PdfFontFactory.CreateFont(iText.IO.Font.Constants.StandardFonts.HELVETICA);
-
-        var layout = new Canvas(canvas, ps);
-
-        // Name
-        layout.Add(new Paragraph(student.FullName)
-            .SetFont(bold).SetFontSize(9f)
-            .SetFontColor(darkBlue)
-            .SetTextAlignment(TextAlignment.CENTER)
-            .SetFixedPosition(0, h * 0.335f, w));
-
-        // Designation / class label
-        layout.Add(new Paragraph($"Class {student.ClassId}")
-            .SetFont(normal).SetFontSize(7f)
-            .SetFontColor(new DeviceRgb(0x55, 0x5E, 0xCC))
-            .SetTextAlignment(TextAlignment.CENTER)
-            .SetFixedPosition(0, h * 0.305f, w));
-
-        // Icon row: location, phone, email
-        float iconRowY = h * 0.21f;
-        float lineH = 14f;
-
-        // Row 1 – ID No
-        layout.Add(new Paragraph($"\u25CF  {student.StudentNo}")
-            .SetFont(normal).SetFontSize(6.5f)
-            .SetFontColor(new DeviceRgb(0x44, 0x44, 0x44))
-            .SetFixedPosition(20, iconRowY + lineH * 2, w - 40));
-
-        // Row 2 – Roll
-        layout.Add(new Paragraph($"\u260E  Roll: {student.RollNumber}")
-            .SetFont(normal).SetFontSize(6.5f)
-            .SetFontColor(new DeviceRgb(0x44, 0x44, 0x44))
-            .SetFixedPosition(20, iconRowY + lineH, w - 40));
-
-        // Row 3 – placeholder email / contact
-        layout.Add(new Paragraph($"\u2709  {school.Email}")
-            .SetFont(normal).SetFontSize(6.5f)
-            .SetFontColor(new DeviceRgb(0x44, 0x44, 0x44))
-            .SetFixedPosition(20, iconRowY, w - 40));
-
-        layout.Close();
-
-        // School name top-centre — reuse same page canvas
-        var topLayout = new Canvas(new PdfCanvas(pdf.GetPage(1)), ps);
-        topLayout.Add(new Paragraph($"{school.SchoolName}")
-            .SetFont(bold).SetFontSize(8f)
-            .SetFontColor(ColorConstants.WHITE)
-            .SetTextAlignment(TextAlignment.CENTER)
-            .SetFixedPosition(0, h - 26, w));
-        topLayout.Close();
+        return ConvertHtmlToPdf(html, singleCard: false);
     }
 
-    private void DrawStudentBack(PdfDocument pdf, PageSize ps, StudentUpsertDto student, SchoolSetting school)
+    private byte[] ConvertHtmlToPdf(string html, bool singleCard)
     {
-        var page = pdf.GetPage(2);
-        var canvas = new PdfCanvas(page);
-        float w = ps.GetWidth(), h = ps.GetHeight();
-
-        var darkBlue = new DeviceRgb(0x2B, 0x2F, 0x8F);
-        var lightBlue = new DeviceRgb(0xB8, 0xC4, 0xF5);
-
-        // Background
-        canvas.SetFillColor(lightBlue)
-              .Rectangle(0, 0, w, h).Fill();
-
-        // Small dark-blue wave at top
-        canvas.SetFillColor(darkBlue);
-        canvas.MoveTo(0, h)
-              .LineTo(w, h)
-              .LineTo(w, h - 40)
-              .CurveTo(w * 0.65f, h - 22, w * 0.35f, h - 54, 0, h - 36)
-              .ClosePath().Fill();
-
-        // Bottom wave
-        canvas.SetFillColor(darkBlue);
-        canvas.MoveTo(0, 0)
-              .LineTo(w, 0)
-              .LineTo(w, 28)
-              .CurveTo(w * 0.65f, 46, w * 0.35f, 14, 0, 32)
-              .ClosePath().Fill();
-
-        // Decorative cross lines bottom-right
-        canvas.SetStrokeColor(new DeviceRgb(0x6B, 0x74, 0xD0));
-        canvas.SetLineWidth(1.2f);
-        canvas.MoveTo(w - 22, 28).LineTo(w - 22, 50).Stroke();
-        canvas.MoveTo(w - 30, 38).LineTo(w - 8, 38).Stroke();
-        canvas.MoveTo(w - 14, 20).LineTo(w - 14, 36).Stroke();
-
-        // Book icon (open book shape) – top centre
-        PdfFont bold = PdfFontFactory.CreateFont(iText.IO.Font.Constants.StandardFonts.HELVETICA_BOLD);
-        PdfFont normal = PdfFontFactory.CreateFont(iText.IO.Font.Constants.StandardFonts.HELVETICA);
-
-        var layout = new Canvas(canvas, ps);
-        layout.Add(new Paragraph($"{school.SchoolName}")
-            .SetFont(bold).SetFontSize(10f)
-            .SetFontColor(ColorConstants.WHITE)
-            .SetTextAlignment(TextAlignment.CENTER)
-            .SetFixedPosition(0, h - 30, w));
-
-        // Join / Expired dates
-        float midY = h * 0.58f;
-        layout.Add(new Paragraph("JOIN :  MM/DD/YY")
-            .SetFont(bold).SetFontSize(7f)
-            .SetFontColor(darkBlue)
-            .SetFixedPosition(14, midY, w - 28));
-
-        layout.Add(new Paragraph("EXPIRED :  MM/DD/YY")
-            .SetFont(bold).SetFontSize(7f)
-            .SetFontColor(darkBlue)
-            .SetFixedPosition(14, midY - 13, w - 28));
-
-        // Terms text
-        layout.Add(new Paragraph(
-                "This card is the property of the institution. " +
-                "If found, please return to the school office.")
-            .SetFont(normal).SetFontSize(5.5f)
-            .SetFontColor(new DeviceRgb(0x44, 0x44, 0x44))
-            .SetFixedPosition(14, midY - 40, w - 28));
-
-        // QR Code
-        var qrData = $"ID:{student.StudentNo}|Name:{student.FullName}|Class:{student.ClassId}|Roll:{student.RollNumber}";
-        var qrBytes = GetQrCodeBytes(qrData);
-        if (qrBytes != null)
+        lock (_syncLock)
         {
-            try
+            var converter = new SynchronizedConverter(new PdfTools());
+            var doc = new HtmlToPdfDocument
             {
-                var qrImg = new Image(ImageDataFactory.Create(qrBytes))
-                    .ScaleAbsolute(52, 52)
-                    .SetFixedPosition((w - 52) / 2f, 32);
-                layout.Add(qrImg);
-            }
-            catch { /* skip */ }
-        }
+                GlobalSettings =
+                {
+                    PaperSize = singleCard
+                        ? new PechkinPaperSize("85.6mm", "53.98mm")
+                        : new PechkinPaperSize("210mm", "297mm"),
+                    Orientation = DinkToPdf.Orientation.Landscape,
+                    Margins = new MarginSettings { Top = 0, Right = 0, Bottom = 0, Left = 0 },
+                },
+                Objects =
+                {
+                    new ObjectSettings
+                    {
+                        HtmlContent = html,
+                        PagesCount = true,
+                        WebSettings = new WebSettings
+                        {
+                            DefaultEncoding = "utf-8",
+                            LoadImages = true,
+                            EnableIntelligentShrinking = false,
+                            PrintMediaType = true,
+                        },
+                        FooterSettings = { HtmUrl = string.Empty, FontSize = 0 }
+                    }
+                }
+            };
 
-        layout.Close();
+            return converter.Convert(doc);
+        }
     }
 
     // ─────────────────────────────────────────────────────────────
-    //  EMPLOYEE ID CARD  (new design – matches screenshot exactly)
+    //  EMPLOYEE ID CARD  — HTML to PDF via DinkToPdf
+    // ─────────────────────────────────────────────────────────────
+    public byte[] GenerateEmployeeIdCardFromHtml(string html)
+    {
+        return ConvertHtmlToPdf(html, singleCard: true);
+    }
+
+    public byte[] GenerateBulkEmployeeIdCardPdfFromHtml(string html)
+    {
+        return ConvertHtmlToPdf(html, singleCard: false);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    //  EMPLOYEE ID CARD  (iText7 – legacy, kept for compatibility)
     // ─────────────────────────────────────────────────────────────
     public byte[] GenerateEmployeeIdCard(EmployeeDetailsDto employee, SchoolSetting schoolSetting)
     {
@@ -363,6 +200,132 @@ public class PlainPdfGenerator : IPdfGenerator
         DrawEmployeeBack(pdf, pageSize, employee, schoolSetting, themeColor);
 
         pdf.Close();
+        return stream.ToArray();
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    //  TRANSCRIPT
+    // ─────────────────────────────────────────────────────────────
+    public byte[] GenerateTranscript(StudentTranscriptDto transcript)
+    {
+        using var stream = new MemoryStream();
+        using var writer = new PdfWriter(stream);
+        using var pdf = new PdfDocument(writer);
+        var document = new Document(pdf, PageSize.A4.Rotate());
+        document.SetMargins(20, 20, 20, 20);
+
+        PdfFont bold = PdfFontFactory.CreateFont(iText.IO.Font.Constants.StandardFonts.HELVETICA_BOLD);
+        PdfFont normal = PdfFontFactory.CreateFont(iText.IO.Font.Constants.StandardFonts.HELVETICA);
+
+        document.Add(new Paragraph(transcript.SchoolName)
+            .SetFont(bold).SetFontSize(22)
+            .SetTextAlignment(TextAlignment.CENTER)
+            .SetFontColor(ColorConstants.BLUE));
+
+        document.Add(new Paragraph("Academic Transcript")
+            .SetFont(bold).SetFontSize(16)
+            .SetTextAlignment(TextAlignment.CENTER));
+
+        document.Add(new Paragraph($"Academic Year: {transcript.AcademicYear}")
+            .SetFont(normal).SetFontSize(12)
+            .SetTextAlignment(TextAlignment.CENTER));
+
+        document.Add(new Paragraph("\n"));
+
+        var infoTable = new Table(UnitValue.CreatePercentArray(new float[] { 1, 3, 1, 3 })).UseAllAvailableWidth();
+        infoTable.AddCell(GetLabelCell("Student Name")); infoTable.AddCell(GetValueCell(transcript.StudentName));
+        infoTable.AddCell(GetLabelCell("Roll No")); infoTable.AddCell(GetValueCell(transcript.RollNumber.ToString()));
+        infoTable.AddCell(GetLabelCell("Father's Name")); infoTable.AddCell(GetValueCell(transcript.FatherName));
+        infoTable.AddCell(GetLabelCell("Reg. No")); infoTable.AddCell(GetValueCell(transcript.RegistrationNumber));
+        infoTable.AddCell(GetLabelCell("Mother's Name")); infoTable.AddCell(GetValueCell(transcript.MotherName));
+        infoTable.AddCell(GetLabelCell("DOB")); infoTable.AddCell(GetValueCell(transcript.DateOfBirth.ToString("dd-MM-yyyy")));
+        document.Add(infoTable);
+
+        document.Add(new Paragraph("\n"));
+
+        foreach (var exam in transcript.ExamResults)
+        {
+            document.Add(new Paragraph(exam.ExamName)
+                .SetFont(bold).SetFontSize(13)
+                .SetFontColor(ColorConstants.DARK_GRAY));
+
+            var examTable = new Table(UnitValue.CreatePercentArray(new float[] { 4, 2, 2, 2, 2 })).UseAllAvailableWidth();
+            examTable.AddHeaderCell(GetHeaderCell("Subject"));
+            examTable.AddHeaderCell(GetHeaderCell("Marks"));
+            examTable.AddHeaderCell(GetHeaderCell("Grade"));
+            examTable.AddHeaderCell(GetHeaderCell("GPA"));
+            examTable.AddHeaderCell(GetHeaderCell("Status"));
+
+            foreach (var subj in exam.Subjects)
+            {
+                examTable.AddCell(GetBodyCell(subj.SubjectName));
+                examTable.AddCell(GetBodyCell($"{subj.MarksObtained} / {subj.FullMarks}"));
+                examTable.AddCell(GetBodyCell(subj.Grade));
+                examTable.AddCell(GetBodyCell(subj.GradePoint.ToString("F2")));
+                examTable.AddCell(GetBodyCell(subj.IsPassed ? "PASS" : "FAIL"));
+            }
+
+            examTable.AddCell(GetHeaderCell("Total"));
+            examTable.AddCell(GetHeaderCell($"{exam.TotalMarks} / {exam.TotalFullMarks}"));
+            examTable.AddCell(GetHeaderCell(exam.Grade));
+            examTable.AddCell(GetHeaderCell(exam.Gpa.ToString("F2")));
+            examTable.AddCell(GetHeaderCell(exam.IsPassed ? "PASSED" : "FAILED"));
+
+            document.Add(examTable);
+            document.Add(new Paragraph("\n"));
+        }
+
+        document.Add(new Paragraph("Subject-Wise Summary (All Terms)")
+            .SetFont(bold).SetFontSize(13)
+            .SetFontColor(ColorConstants.DARK_GRAY));
+
+        var summaryTable = new Table(UnitValue.CreatePercentArray(new float[] { 4, 2, 2, 2, 2 })).UseAllAvailableWidth();
+        summaryTable.AddHeaderCell(GetHeaderCell("Subject"));
+        summaryTable.AddHeaderCell(GetHeaderCell("Avg Marks"));
+        summaryTable.AddHeaderCell(GetHeaderCell("Grade"));
+        summaryTable.AddHeaderCell(GetHeaderCell("GPA"));
+        summaryTable.AddHeaderCell(GetHeaderCell("Status"));
+
+        foreach (var subj in transcript.SubjectWiseResults)
+        {
+            summaryTable.AddCell(GetBodyCell(subj.SubjectName));
+            summaryTable.AddCell(GetBodyCell(subj.TotalMarks.ToString("F2")));
+            summaryTable.AddCell(GetBodyCell(subj.Grade));
+            summaryTable.AddCell(GetBodyCell(subj.GradePoint.ToString("F2")));
+            summaryTable.AddCell(GetBodyCell(subj.IsPassed ? "PASS" : "FAIL"));
+        }
+        document.Add(summaryTable);
+
+        document.Add(new Paragraph("\n"));
+
+        var finalBox = new Table(1).UseAllAvailableWidth();
+        string status = transcript.FinalGPA > 0 ? "PROMOTED" : "FAILED";
+        finalBox.AddCell(new Cell()
+            .Add(new Paragraph($"Final GPA: {transcript.FinalGPA:F2} | Grade: {transcript.FinalGrade} | Position: {transcript.MeritPosition} | Status: {status}"))
+            .SetFont(bold).SetFontSize(14)
+            .SetTextAlignment(TextAlignment.CENTER)
+            .SetBackgroundColor(ColorConstants.LIGHT_GRAY)
+            .SetPadding(10));
+        document.Add(finalBox);
+
+        document.Add(new Paragraph("\n\n"));
+
+        var signTable = new Table(UnitValue.CreatePercentArray(new float[] { 1, 1 })).UseAllAvailableWidth();
+        signTable.AddCell(new Cell()
+            .Add(new Paragraph("Class Teacher"))
+            .SetTextAlignment(TextAlignment.CENTER)
+            .SetBorderTop(new SolidBorder(1))
+            .SetBorderBottom(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER).SetBorderRight(Border.NO_BORDER)
+            .SetPaddingTop(20));
+        signTable.AddCell(new Cell()
+            .Add(new Paragraph("Principal"))
+            .SetTextAlignment(TextAlignment.CENTER)
+            .SetBorderTop(new SolidBorder(1))
+            .SetBorderBottom(Border.NO_BORDER).SetBorderLeft(Border.NO_BORDER).SetBorderRight(Border.NO_BORDER)
+            .SetPaddingTop(20));
+        document.Add(signTable);
+
+        document.Close();
         return stream.ToArray();
     }
 
@@ -678,9 +641,7 @@ public class PlainPdfGenerator : IPdfGenerator
     {
         try
         {
-            using var client = new System.Net.Http.HttpClient();
-            var url = $"https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={Uri.EscapeDataString(data)}";
-            return client.GetByteArrayAsync(url).GetAwaiter().GetResult();
+            return IdCardQRHelper.GenerateQrCodePng(data);
         }
         catch { return null; }
     }

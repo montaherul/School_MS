@@ -4,7 +4,7 @@
     bool isStudent = User.IsInRole("Student");
 }
 
-<link rel="stylesheet" href="~/css/idcard-print.css" />
+<link rel="stylesheet" href="~/css/idcard-print.css" asp-append-version="true" />
 
 <!-- ===== PROFILE HEADER ===== -->
 <div class="row g-4 mb-4 align-items-center">
@@ -208,141 +208,23 @@
             </div>
         </div>
 
-        <!-- QR + Print -->
+        <!-- ID Card Actions -->
         <div class="card border-0 shadow-sm rounded-4">
             <div class="card-body p-4 text-center">
-                <div class="mb-3 p-3 border rounded-3 bg-white d-inline-block">
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=@Model.StudentNo"
-                         alt="Student ID Barcode"
-                         style="width:160px;height:160px;display:block;" />
-                </div>
-                <p class="text-muted small mb-3">STUDENT ID BARCODE</p>
-                <div class="d-grid">
-                    <button type="button" id="btnPrintIdCard"
-                            class="btn btn-primary rounded-pill fw-bold py-2">
+                <div class="d-grid gap-2">
+                    <a href="@Url.Action("PrintIdCard", new { id = Model.StudentNo })"
+                       class="btn btn-primary rounded-pill fw-bold py-2" target="_blank">
                         <i class="bi bi-printer-fill me-2"></i>Print ID Card
-                    </button>
+                    </a>
+                    <a href="@Url.Action("DownloadIdCard", new { id = Model.StudentNo })"
+                       class="btn btn-danger rounded-pill fw-bold py-2" target="_blank">
+                        <i class="bi bi-file-earmark-pdf-fill me-2"></i>Download PDF
+                    </a>
                 </div>
+                <p class="text-muted small mt-3 mb-0">
+                    <i class="bi bi-info-circle"></i> Enterprise ID card with QR, photo &amp; guardian info
+                </p>
             </div>
         </div>
     </div>
 </div>
-
-
-<!-- =================================================
-     PRINT DATA — Hidden on screen, read by JS
-     ================================================= -->
-<div id="idCardPrintArea">
-    <div class="id-card-wrap">
-
-        <!-- FRONT -->
-        <div class="id-card front">
-            <div class="card-bg-blob"></div>
-            <div class="card-top">
-                <i class="bi bi-mortarboard-fill" style="font-size:1.4rem;color:#134e4a;"></i>
-                <div class="school-name">SCHOOL MANAGEMENT SYSTEM</div>
-                <div class="card-sub">Student Identity Card</div>
-            </div>
-            <div class="card-mid">
-                <div class="photo-box">
-                    @if (!string.IsNullOrEmpty(Model.ProfilePicturePath))
-                    {
-                        <img src="@Model.ProfilePicturePath" alt="Photo" />
-                    }
-                    else
-                    {
-                        <i class="bi bi-person-fill"></i>
-                    }
-                </div>
-                <div class="s-name">@Model.FullName</div>
-                <div class="s-info">
-                    <div class="s-row"><span>ID No</span><b>@Model.StudentNo</b></div>
-                    <div class="s-row"><span>Class</span><b>Class @Model.ClassId</b></div>
-                    <div class="s-row"><span>Roll</span><b>@Model.RollNumber.ToString("D4")</b></div>
-                    <div class="s-row"><span>Father</span><b>@Model.FatherName</b></div>
-                </div>
-            </div>
-            <div class="card-bar"></div>
-        </div>
-
-        <!-- BACK -->
-        <div class="id-card back">
-            <div class="back-top">
-                <div class="back-title">IMPORTANT INFORMATION</div>
-            </div>
-            <div class="back-body">
-                <div class="help-lbl">FOR HELP</div>
-                <div class="help-no">+880 1875989022</div>
-                <div class="qr-box">
-                    <img src="https://api.qrserver.com/v1/create-qr-code/?size=90x90&data=@Model.StudentNo"
-                         alt="QR" style="width:90px;height:90px;" />
-                    <div class="qr-lbl">Scan for Attendance</div>
-                </div>
-                <div class="addr">
-                    Chittagong, Bangladesh<br />
-                    info@@schoolms.com
-                </div>
-                <div class="sign-area">
-                    <div class="sign-line"></div>
-                    <div class="sign-lbl">Principal Signature</div>
-                </div>
-            </div>
-        </div>
-
-    </div>
-</div>
-
-@section Scripts {
-    <script>
-        document.getElementById('btnPrintIdCard').addEventListener('click', async function () {
-            const pw = window.open('', '_blank', 'width=850,height=350');
-            if (!pw) return;
-
-            const iconCss = pw.document.createElement('link');
-            iconCss.rel = 'stylesheet';
-            iconCss.href = 'https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css';
-            pw.document.head.appendChild(iconCss);
-
-            const printCss = pw.document.createElement('link');
-            printCss.rel = 'stylesheet';
-            printCss.href = new URL('@Url.Content("~/css/idcard-print.css")?v=idcard-vertical-2', window.location.origin).href;
-            pw.document.head.appendChild(printCss);
-
-            pw.document.title = 'Student ID Card';
-            pw.document.documentElement.className = 'id-card-print-root';
-            pw.document.body.className = 'id-card-print-document';
-            pw.document.body.appendChild(
-                pw.document.importNode(document.querySelector('#idCardPrintArea .id-card-wrap'), true)
-            );
-            pw.document.close();
-
-            pw.addEventListener('afterprint', function () {
-                pw.close();
-            });
-
-            await new Promise(function (resolve) {
-                if (printCss.sheet) {
-                    resolve();
-                    return;
-                }
-
-                printCss.onload = resolve;
-                printCss.onerror = resolve;
-                setTimeout(resolve, 1200);
-            });
-
-            await Promise.all(Array.from(pw.document.images).map(function (img) {
-                if (img.complete) return Promise.resolve();
-
-                return new Promise(function (resolve) {
-                    img.onload = resolve;
-                    img.onerror = resolve;
-                    setTimeout(resolve, 1200);
-                });
-            }));
-
-            pw.focus();
-            pw.print();
-        });
-    </script>
-}

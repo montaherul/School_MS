@@ -146,7 +146,8 @@ public class SectionService : ISectionService
             .Select(s => new SectionListItemDto
             {
                 Id = s.Id,
-                Name = s.Name
+                Name = s.Name,
+                StudentGroupId = s.StudentGroupId
             })
             .ToListAsync(ct);
     }

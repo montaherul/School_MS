@@ -1,0 +1,72 @@
+@model SchoolManagementSystem.Models.Entities.Website.AdmissionFeeStructure
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = Model.Id > 0 ? "Edit Fee Structure" : "Add Fee Structure";
+}
+
+<div class="container-fluid py-4">
+    <div class="mb-4">
+        <a href="/Admin/Website" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i> Back to Console</a>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3">
+            <h5 class="fw-bold mb-0 text-primary">
+                <i class="bi bi-cash-stack me-2"></i>
+                @(Model.Id > 0 ? "Edit" : "Add") Admission Fee Structure
+            </h5>
+        </div>
+        <div class="card-body p-4">
+            <form action="/Admin/Website/AdmissionFees/CreateEdit/@(Model.Id > 0 ? Model.Id.ToString() : "")" method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Class Name</label>
+                        <input type="text" name="ClassName" value="@Model.ClassName" class="form-control" required placeholder="e.g., Class VI"/>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">School Class ID</label>
+                        <input type="number" name="SchoolClassId" value="@Model.SchoolClassId" class="form-control" required/>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Display Order</label>
+                        <input type="number" name="DisplayOrder" value="@Model.DisplayOrder" class="form-control"/>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold">Admission Fee</label>
+                        <input type="number" name="AdmissionFee" value="@Model.AdmissionFee" class="form-control" step="0.01" min="0"/>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold">Monthly Fee</label>
+                        <input type="number" name="MonthlyFee" value="@Model.MonthlyFee" class="form-control" step="0.01" min="0"/>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold">Session Fee</label>
+                        <input type="number" name="SessionFee" value="@Model.SessionFee" class="form-control" step="0.01" min="0"/>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold">Exam Fee</label>
+                        <input type="number" name="ExamFee" value="@Model.ExamFee" class="form-control" step="0.01" min="0"/>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold">Other Fee</label>
+                        <input type="number" name="OtherFee" value="@Model.OtherFee" class="form-control" step="0.01" min="0"/>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label fw-bold">Status</label>
+                        <div class="form-check form-switch mt-2">
+                            <input class="form-check-input" type="checkbox" name="IsActive" value="true" @(Model.IsActive ? "checked" : "") id="chkActive"/>
+                            <input type="hidden" name="IsActive" value="false"/>
+                            <label class="form-check-label" for="chkActive">Active</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-12 text-end pt-4 mt-3 border-top">
+                    <button type="submit" class="btn btn-primary px-4"><i class="bi bi-save me-1"></i> Save Fee Structure</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

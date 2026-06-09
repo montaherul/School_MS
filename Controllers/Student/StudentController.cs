@@ -1,7 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SchoolManagementSystem.Filters;
+using SchoolManagementSystem.Helpers.Pdf;
+using SchoolManagementSystem.Models.DTOs.Academic;
 using SchoolManagementSystem.Models.DTOs.Student;
+using SchoolManagementSystem.Models.ViewModels.Student;
 using SchoolManagementSystem.Services.Interfaces.Academic;
 using SchoolManagementSystem.Services.Interfaces.Students;
 using SchoolManagementSystem.Services.Interfaces.Teachers;
@@ -16,19 +19,25 @@ public class StudentController : Controller
     private readonly IStudentService _studentService;
     private readonly ITeacherService _teacherService;
     private readonly ISectionService _sectionService;
-    private readonly  ISchoolWebsiteService _websiteService;
+    private readonly ISchoolWebsiteService _websiteService;
+    private readonly IViewRendererService _viewRenderer;
+    private readonly IPdfGenerator _pdfGenerator;
 
     public StudentController(
         IStudentService studentService,
         ITeacherService teacherService,
         ISectionService sectionService,
-        ISchoolWebsiteService websiteService
+        ISchoolWebsiteService websiteService,
+        IViewRendererService viewRenderer,
+        IPdfGenerator pdfGenerator
            )
     {
         _studentService = studentService;
         _teacherService = teacherService;
         _sectionService = sectionService;
         _websiteService = websiteService;
+        _viewRenderer = viewRenderer;
+        _pdfGenerator = pdfGenerator;
     }
 
     [RequirePermission("Student.View")]
@@ -135,8 +144,15 @@ public class StudentController : Controller
     }
 
     [HttpGet]
+    [Route("Student/PreviewIdCard/{id}")]
+    public async Task<IActionResult> PreviewIdCard(string id, CancellationToken ct)
+    {
+        return await PrintIdCard(id, ct);
+    }
+
+    [HttpGet]
     [Route("Student/DownloadIdCard/{id}")]
-    public async Task<IActionResult> DownloadIdCard(string id, [FromServices] SchoolManagementSystem.Helpers.Pdf.IPdfGenerator pdfGenerator, CancellationToken ct)
+    public async Task<IActionResult> DownloadIdCard(string id, CancellationToken ct)
     {
         var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
         StudentUpsertDto? dto;
@@ -162,9 +178,12 @@ public class StudentController : Controller
         {
             return Forbid();
         }
-        var school = await _websiteService.GetSettingsAsync(ct);
 
-        var pdfBytes = pdfGenerator.GenerateStudentIdCard(dto, school);
+        var school = await _websiteService.GetSettingsAsync(ct);
+        var viewModel = await BuildIdCardViewModelAsync([dto], school);
+
+        var html = await _viewRenderer.RenderToStringAsync("PrintIdCard", viewModel);
+        var pdfBytes = _pdfGenerator.GenerateStudentIdCardFromHtml(html);
         return File(pdfBytes, "application/pdf", $"ID_Card_{dto.StudentNo}.pdf");
     }
 
@@ -203,8 +222,112 @@ public class StudentController : Controller
         {
             return Forbid();
         }
-        
-        return View(dto);
+
+        var school = await _websiteService.GetSettingsAsync(ct);
+        var viewModel = await BuildIdCardViewModelAsync([dto], school);
+
+        return View(viewModel);
+    }
+
+    [HttpGet]
+    [Route("Student/DownloadBulkIdCardPdf")]
+    public async Task<IActionResult> DownloadBulkIdCardPdf(string ids, CancellationToken ct)
+    {
+        var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+
+        if (!User.HasClaim("Permission", "Student.View") && !User.IsInRole("Super Admin") && !User.IsInRole("Admin"))
+        {
+            return Forbid();
+        }
+
+        var studentNos = ids.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var students = new List<StudentUpsertDto>();
+
+        foreach (var no in studentNos)
+        {
+            var s = await _studentService.GetByStudentNoAsync(no, ct);
+            if (s != null) students.Add(s);
+        }
+
+        if (students.Count == 0) return NotFound();
+
+        var school = await _websiteService.GetSettingsAsync(ct);
+        var viewModel = await BuildIdCardViewModelAsync(students, school);
+
+        var html = await _viewRenderer.RenderToStringAsync("PrintIdCard", viewModel);
+        var pdfBytes = _pdfGenerator.GenerateBulkStudentIdCardPdfFromHtml(html);
+        return File(pdfBytes, "application/pdf", $"Bulk_ID_Cards_{DateTime.Today:yyyyMMdd}.pdf");
+    }
+
+    [HttpGet]
+    [Route("Student/BulkPrint")]
+    public async Task<IActionResult> BulkPrint(int? classId, int? sectionId, CancellationToken ct)
+    {
+        if (!User.HasClaim("Permission", "Student.View") && !User.IsInRole("Super Admin") && !User.IsInRole("Admin"))
+        {
+            return Forbid();
+        }
+
+        var availableClasses = (await _sectionService.GetAvailableClassesAsync(ct))
+            .Cast<dynamic>()
+            .Select(c => new SchoolClassListItemDto
+            {
+                Id = (int)c.Id,
+                Name = (string)c.Name
+            })
+            .ToList();
+
+        if (classId == null)
+        {
+            return View("BulkPrintFilter", new IdCardBulkFilterViewModel
+            {
+                Classes = availableClasses
+            });
+        }
+
+        var paged = await _studentService.GetPagedAsync(1, 5000, null, classId, sectionId, null, ct);
+        var studentIds = paged.Items.Select(i => i.Id).ToList();
+        var students = new List<StudentUpsertDto>();
+
+        foreach (var sid in studentIds)
+        {
+            var s = await _studentService.GetForEditAsync(sid, ct);
+            if (s != null) students.Add(s);
+        }
+
+        if (students.Count == 0)
+        {
+            TempData["ErrorMessage"] = "No students found for the selected filters.";
+            return View("BulkPrintFilter", new IdCardBulkFilterViewModel
+            {
+                Classes = availableClasses,
+                ClassId = classId,
+                SectionId = sectionId
+            });
+        }
+
+        var school = await _websiteService.GetSettingsAsync(ct);
+        var viewModel = await BuildIdCardViewModelAsync(students, school);
+
+        return View("PrintIdCard", viewModel);
+    }
+
+    private async Task<IdCardPrintViewModel> BuildIdCardViewModelAsync(List<StudentUpsertDto> students, Models.Entities.Website.SchoolSetting school)
+    {
+        return new IdCardPrintViewModel
+        {
+            Students = students,
+            SchoolLogoPath = school.LogoPath ?? "",
+            SchoolNameEn = school.SchoolName,
+            SchoolNameBn = school.BanglaName ?? "",
+            SchoolEIIN = school.EIIN,
+            SchoolWebsite = school.Website,
+            SchoolAddress = school.Address,
+            SchoolPhone = school.Phone,
+            SchoolEmail = school.Email,
+            PrincipalName = school.PrincipalName ?? "",
+            PrincipalSignaturePath = school.PrincipalSignaturePath ?? ""
+        };
     }
 
     [HttpGet]
@@ -226,6 +349,7 @@ public class StudentController : Controller
             var dto = await _studentService.GetForEditAsync(id.Value, ct);
             if (dto == null) return NotFound();
             dto.Sections = selectList;
+            dto.OptionalSubjectList = await _studentService.GetOptionalSubjectsAsync(dto.ClassId, ct);
             return View(dto);
         }
 

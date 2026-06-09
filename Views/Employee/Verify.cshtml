@@ -1,0 +1,84 @@
+@model SchoolManagementSystem.Models.DTOs.Employee.EmployeeDetailsDto?
+@{
+    ViewData["Title"] = "Employee Card Verification";
+    var schoolSetting = ViewBag.SchoolSetting as SchoolManagementSystem.Models.Entities.Website.SchoolSetting;
+    var isValid = ViewBag.IsValid as bool? ?? false;
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-5 text-center">
+                    @if (Model == null)
+                    {
+                        <div class="mb-4">
+                            <i class="bi bi-shield-exclamation" style="font-size:4rem;color:#dc3545;"></i>
+                        </div>
+                        <h3 class="fw-bold text-danger mb-3">Invalid Card</h3>
+                        <p class="text-muted mb-0">No employee record found for this ID. The card may be counterfeit or the employee record has been removed.</p>
+                    }
+                    else
+                    {
+                        <div class="mb-4">
+                            @if (isValid)
+                            {
+                                <i class="bi bi-patch-check-fill" style="font-size:4rem;color:#198754;"></i>
+                                <h3 class="fw-bold text-success mt-2">Verified</h3>
+                                <p class="text-success mb-0">This is a valid active employee ID card.</p>
+                            }
+                            else
+                            {
+                                <i class="bi bi-exclamation-triangle-fill" style="font-size:4rem;color:#ffc107;"></i>
+                                <h3 class="fw-bold text-warning mt-2">Invalid / Expired</h3>
+                                <p class="text-warning mb-0">This card is either expired or the employee is no longer active.</p>
+                            }
+                        </div>
+
+                        <hr class="my-4" />
+
+                        <div class="text-start">
+                            <div class="row mb-2">
+                                <div class="col-5 text-muted fw-bold">Name</div>
+                                <div class="col-7 fw-semibold">@Model.FullName</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-5 text-muted fw-bold">Employee Code</div>
+                                <div class="col-7 fw-semibold">@Model.EmployeeCode</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-5 text-muted fw-bold">Designation</div>
+                                <div class="col-7">@Model.Designation</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-5 text-muted fw-bold">Department</div>
+                                <div class="col-7">@Model.Department</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-5 text-muted fw-bold">Status</div>
+                                <div class="col-7">
+                                    <span class="badge @(Model.Status == "Active" ? "bg-success" : "bg-danger")">@Model.Status</span>
+                                </div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-5 text-muted fw-bold">Card Valid Until</div>
+                                <div class="col-7">@(Model.CardExpiryDate?.ToString("dd MMM yyyy") ?? "N/A")</div>
+                            </div>
+                            <div class="row mb-2">
+                                <div class="col-5 text-muted fw-bold">Card Version</div>
+                                <div class="col-7">@Model.CardVersion</div>
+                            </div>
+                        </div>
+                    }
+
+                    <hr class="my-4" />
+
+                    <div class="text-muted small">
+                        <i class="bi bi-shield-check me-1"></i>
+                        Secured by @(schoolSetting?.SchoolName ?? "School Management System") &mdash; @DateTime.Today.ToString("dd MMM yyyy")
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

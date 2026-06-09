@@ -13,8 +13,22 @@ public class SchoolSetting : BaseEntity
     [MaxLength(80)]
     public string ShortName { get; set; } = string.Empty;
 
+    [MaxLength(160)]
+    public string? BanglaName { get; set; }
+
     [MaxLength(20)]
     public string EIIN { get; set; } = string.Empty;
+
+    [MaxLength(30)]
+    public string? SchoolCode { get; set; }
+
+    public int? EstablishedYear { get; set; }
+
+    [MaxLength(500)]
+    public string? SchoolMotto { get; set; }
+
+    [MaxLength(2000)]
+    public string? SchoolDescription { get; set; }
 
     [MaxLength(300)]
     public string Address { get; set; } = string.Empty;
@@ -22,12 +36,16 @@ public class SchoolSetting : BaseEntity
     [MaxLength(30)]
     public string Phone { get; set; } = string.Empty;
 
+    [MaxLength(30)]
+    public string? Mobile { get; set; }
+
     [MaxLength(160)]
     public string Email { get; set; } = string.Empty;
 
     [MaxLength(260)]
     public string Website { get; set; } = string.Empty;
 
+    // Social Media
     [MaxLength(260)]
     public string? FacebookUrl { get; set; }
 
@@ -35,13 +53,36 @@ public class SchoolSetting : BaseEntity
     public string? YouTubeUrl { get; set; }
 
     [MaxLength(260)]
+    public string? InstagramUrl { get; set; }
+
+    [MaxLength(260)]
+    public string? LinkedInUrl { get; set; }
+
+    [MaxLength(260)]
+    public string? TwitterUrl { get; set; }
+
+    // Branding
+    [MaxLength(260)]
     public string? LogoPath { get; set; }
 
     [MaxLength(260)]
     public string? FaviconPath { get; set; }
 
+    [MaxLength(260)]
+    public string? LoginLogoPath { get; set; }
+
+    [MaxLength(260)]
+    public string? FooterLogoPath { get; set; }
+
+    [MaxLength(260)]
+    public string? WebsiteBannerPath { get; set; }
+
+    // Principal Info
     [MaxLength(160)]
     public string? PrincipalName { get; set; }
+
+    [MaxLength(160)]
+    public string? PrincipalDesignation { get; set; }
 
     [MaxLength(4000)]
     public string? PrincipalMessage { get; set; }
@@ -49,17 +90,145 @@ public class SchoolSetting : BaseEntity
     [MaxLength(260)]
     public string? PrincipalImagePath { get; set; }
 
+    [MaxLength(260)]
+    public string? PrincipalSignaturePath { get; set; }
+
+    [MaxLength(500)]
+    public string? PrincipalQualification { get; set; }
+
+    // Content
     [MaxLength(2000)]
     public string? Mission { get; set; }
 
     [MaxLength(2000)]
     public string? Vision { get; set; }
 
+    // Footer
     [MaxLength(500)]
     public string? FooterText { get; set; }
 
+    [MaxLength(500)]
+    public string? CopyrightText { get; set; }
+
+    // Map
     [MaxLength(1000)]
     public string? GoogleMapEmbed { get; set; }
+
+    // SEO
+    [MaxLength(160)]
+    public string? MetaTitle { get; set; }
+
+    [MaxLength(500)]
+    public string? MetaDescription { get; set; }
+
+    [MaxLength(500)]
+    public string? MetaKeywords { get; set; }
+
+    [MaxLength(260)]
+    public string? OgImagePath { get; set; }
+
+    [MaxLength(160)]
+    public string? OgTitle { get; set; }
+
+    [MaxLength(500)]
+    public string? OgDescription { get; set; }
+
+    // Homepage Section Visibility Toggles
+    public bool ShowSlider { get; set; } = true;
+    public bool ShowPrincipalMessage { get; set; } = true;
+    public bool ShowNotices { get; set; } = true;
+    public bool ShowEvents { get; set; } = true;
+    public bool ShowGallery { get; set; } = true;
+    public bool ShowAdmissionCTA { get; set; } = true;
+    public bool ShowStatistics { get; set; } = true;
+    public bool ShowWelcomeSection { get; set; } = true;
+
+    // Admission Page Settings
+    public bool AdmissionEnabled { get; set; } = true;
+    public bool OnlineAdmissionEnabled { get; set; } = true;
+    public bool ShowAdmissionPage { get; set; } = true;
+    public bool ShowAdmissionFees { get; set; } = true;
+    public bool ShowAdmissionGuidelines { get; set; } = true;
+    public bool ShowAdmissionRequirements { get; set; } = true;
+    public bool ShowAdmissionDownloads { get; set; } = true;
+
+    [MaxLength(200)]
+    public string? AdmissionTitle { get; set; }
+
+    [MaxLength(500)]
+    public string? AdmissionSubtitle { get; set; }
+
+    [MaxLength(4000)]
+    public string? AdmissionGuidelines { get; set; }
+
+    [MaxLength(4000)]
+    public string? AdmissionEligibility { get; set; }
+
+    [MaxLength(4000)]
+    public string? AdmissionRequirements { get; set; }
+
+    [MaxLength(4000)]
+    public string? AdmissionProcess { get; set; }
+
+    [MaxLength(2000)]
+    public string? AdmissionFeeNote { get; set; }
+
+    [MaxLength(200)]
+    public string? AdmissionCtaTitle { get; set; }
+
+    [MaxLength(500)]
+    public string? AdmissionCtaText { get; set; }
+
+    public DateTime? AdmissionOpenDate { get; set; }
+
+    public DateTime? AdmissionCloseDate { get; set; }
+
+    [MaxLength(260)]
+    public string? AdmissionCircularPath { get; set; }
+
+    [MaxLength(260)]
+    public string? AdmissionFormPath { get; set; }
+
+    // Admission SEO
+    [MaxLength(160)]
+    public string? AdmissionMetaTitle { get; set; }
+
+    [MaxLength(500)]
+    public string? AdmissionMetaDescription { get; set; }
+
+    [MaxLength(500)]
+    public string? AdmissionMetaKeywords { get; set; }
+
+    [MaxLength(160)]
+    public string? AdmissionOgTitle { get; set; }
+
+    [MaxLength(500)]
+    public string? AdmissionOgDescription { get; set; }
+
+    [MaxLength(260)]
+    public string? AdmissionOgImagePath { get; set; }
+}
+
+public class AdmissionFeeStructure : BaseEntity
+{
+    public int SchoolClassId { get; set; }
+
+    [MaxLength(100)]
+    public string ClassName { get; set; } = string.Empty;
+
+    public decimal AdmissionFee { get; set; }
+
+    public decimal MonthlyFee { get; set; }
+
+    public decimal SessionFee { get; set; }
+
+    public decimal ExamFee { get; set; }
+
+    public decimal OtherFee { get; set; }
+
+    public int DisplayOrder { get; set; } = 0;
+
+    public bool IsActive { get; set; } = true;
 }
 
 public class WebsitePage : BaseEntity
@@ -157,6 +326,43 @@ public class Announcement : BaseEntity
 
     [MaxLength(2000)]
     public string Content { get; set; } = string.Empty;
+
+    public bool IsActive { get; set; } = true;
+}
+
+public class ContactMessage : BaseEntity
+{
+    [MaxLength(160)]
+    public string Name { get; set; } = string.Empty;
+
+    [MaxLength(160)]
+    public string Email { get; set; } = string.Empty;
+
+    [MaxLength(30)]
+    public string? Phone { get; set; }
+
+    [MaxLength(260)]
+    public string Subject { get; set; } = string.Empty;
+
+    [MaxLength(4000)]
+    public string Message { get; set; } = string.Empty;
+
+    [MaxLength(30)]
+    public string Status { get; set; } = "Unread";
+}
+
+public class EmailTemplate : BaseEntity
+{
+    [MaxLength(160)]
+    public string TemplateName { get; set; } = string.Empty;
+
+    [MaxLength(260)]
+    public string Subject { get; set; } = string.Empty;
+
+    public string Body { get; set; } = string.Empty;
+
+    [MaxLength(500)]
+    public string? Placeholders { get; set; }
 
     public bool IsActive { get; set; } = true;
 }

@@ -5,10 +5,10 @@
     var history = Model.History;
 }
 
-<div class="adm-page">
-    <div class="adm-header">
-        <div class="adm-header__left">
-            <div class="adm-header__icon-wrap">
+<div class="adm-page er-page">
+    <div class="er-page-header">
+        <div class="er-page-header__left">
+            <div class="er-page-header__icon">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polyline points="16 16 12 12 8 16" />
                     <line x1="12" y1="12" x2="12" y2="21" />
@@ -16,48 +16,48 @@
                 </svg>
             </div>
             <div>
-                <h1 class="adm-header__title">Result Publication Management</h1>
-                <p class="adm-header__sub">Publish, unpublish, and manage exam result visibility</p>
+                <h1 class="er-page-header__title">Result Publication Management</h1>
+                <p class="er-page-header__sub">Publish, unpublish, and manage exam result visibility</p>
             </div>
         </div>
     </div>
 
     @if (summary != null)
     {
-        <div class="dash-stats mb-4">
-            <div class="dash-stat-card">
-                <div class="dash-stat-card__icon dash-stat-card__icon--primary"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /></svg></div>
-                <div class="dash-stat-card__body">
-                    <span class="dash-stat-card__label">Total Exams</span>
-                    <span class="dash-stat-card__value">@summary.TotalExams</span>
+        <div class="er-stats mb-4">
+            <div class="er-stat">
+                <div class="er-stat__icon er-stat__icon--primary"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /></svg></div>
+                <div class="er-stat__body">
+                    <span class="er-stat__label">Total Exams</span>
+                    <span class="er-stat__value">@summary.TotalExams</span>
                 </div>
             </div>
-            <div class="dash-stat-card">
-                <div class="dash-stat-card__icon dash-stat-card__icon--success"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" /></svg></div>
-                <div class="dash-stat-card__body">
-                    <span class="dash-stat-card__label">Published</span>
-                    <span class="dash-stat-card__value">@summary.PublishedExams</span>
+            <div class="er-stat">
+                <div class="er-stat__icon er-stat__icon--success"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" /></svg></div>
+                <div class="er-stat__body">
+                    <span class="er-stat__label">Published</span>
+                    <span class="er-stat__value">@summary.PublishedExams</span>
                 </div>
             </div>
-            <div class="dash-stat-card">
-                <div class="dash-stat-card__icon" style="background:#fff3e0;color:#e65100;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3" /></svg></div>
-                <div class="dash-stat-card__body">
-                    <span class="dash-stat-card__label">Pending Action</span>
-                    <span class="dash-stat-card__value">@(summary.DraftExams + summary.SubmittedExams + summary.ReviewedExams + summary.ApprovedExams)</span>
+            <div class="er-stat">
+                <div class="er-stat__icon" style="background:#fff3e0;color:#e65100;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3" /></svg></div>
+                <div class="er-stat__body">
+                    <span class="er-stat__label">Pending Action</span>
+                    <span class="er-stat__value">@(summary.DraftExams + summary.SubmittedExams + summary.ReviewedExams + summary.ApprovedExams)</span>
                 </div>
             </div>
-            <div class="dash-stat-card">
-                <div class="dash-stat-card__icon" style="background:#e3f2fd;color:#1565c0;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></svg></div>
-                <div class="dash-stat-card__body">
-                    <span class="dash-stat-card__label">Total Results</span>
-                    <span class="dash-stat-card__value">@summary.TotalPublishedResults / @summary.TotalStudentResults</span>
+            <div class="er-stat">
+                <div class="er-stat__icon" style="background:#e3f2fd;color:#1565c0;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></svg></div>
+                <div class="er-stat__body">
+                    <span class="er-stat__label">Total Results</span>
+                    <span class="er-stat__value">@summary.TotalPublishedResults / @summary.TotalStudentResults</span>
                 </div>
             </div>
         </div>
     }
 
-    <div class="adm-table-card" style="border-radius: var(--adm-radius-lg); border-top: 1px solid var(--adm-border);">
-        <div class="adm-table-card__body">
+    <div class="er-card" style="border-radius: var(--adm-radius-lg); border-top: 1px solid var(--adm-border);">
+        <div class="er-card__body">
             @if (Model.Exams != null && Model.Exams.Any())
             {
                 <div class="table-responsive">
@@ -78,59 +78,59 @@
                             {
                                 <tr data-exam-id="@exam.ExamId">
                                     <td style="text-align:center;">
-                                        <button type="button" class="row-expander adm-btn adm-btn--ghost" style="padding:2px 6px;min-width:auto;font-size:16px;line-height:1;" onclick="toggleRowDetail(@exam.ExamId, this)" title="Toggle details">
+                                        <button type="button" class="row-expander er-btn er-btn--secondary" style="padding:2px 6px;min-width:auto;font-size:16px;line-height:1;" onclick="toggleRowDetail(@exam.ExamId, this)" title="Toggle details">
                                             <span class="expander-icon">+</span>
                                         </button>
                                     </td>
                                     <td><span class="adm-cell-name">@exam.ExamName</span></td>
-                                    <td><span class="adm-status adm-status--neutral">@exam.Term</span></td>
+                                    <td><span class="er-badge er-badge--neutral">@exam.Term</span></td>
                                     <td><span class="adm-cell-dob">@exam.StartsOn.ToShortDateString() – @exam.EndsOn.ToShortDateString()</span></td>
                                     <td>@exam.PublishedResults / @exam.TotalResults</td>
                                     <td>
                                         @if (exam.Status == 5)
                                         {
-                                            <span class="adm-status adm-status--converted">Published</span>
+                                            <span class="er-badge er-badge--converted">Published</span>
                                         }
                                         else if (exam.Status == 6)
                                         {
-                                            <span class="adm-status adm-status--neutral">Locked</span>
+                                            <span class="er-badge er-badge--neutral">Locked</span>
                                         }
                                         else if (exam.Status == 4)
                                         {
-                                            <span class="adm-status adm-status--approved">Approved</span>
+                                            <span class="er-badge er-badge--approved">Approved</span>
                                         }
                                         else if (exam.Status == 3)
                                         {
-                                            <span class="adm-status adm-status--approved">Reviewed</span>
+                                            <span class="er-badge er-badge--approved">Reviewed</span>
                                         }
                                         else if (exam.Status == 2)
                                         {
-                                            <span class="adm-status adm-status--pending">Submitted</span>
+                                            <span class="er-badge er-badge--pending">Submitted</span>
                                         }
                                         else
                                         {
-                                            <span class="adm-status adm-status--neutral">Draft</span>
+                                            <span class="er-badge er-badge--neutral">Draft</span>
                                         }
                                     </td>
                                     <td>
                                         <div class="actions-cell" id="actions-@exam.ExamId" style="display:flex;gap:6px;justify-content:flex-end;">
                                             @if (exam.Status == 5 || exam.Status == 6)
                                             {
-                                                <button class="adm-btn adm-btn--ghost py-1 px-3" onclick="confirmAndUnpublish(@exam.ExamId)" title="Unpublish">
+                                                <button class="er-btn er-btn--secondary py-1 px-3" onclick="confirmAndUnpublish(@exam.ExamId)" title="Unpublish">
                                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" /></svg>
                                                     Unpublish
                                                 </button>
                                             }
                                             @if (exam.Status == 5 || exam.Status == 6)
                                             {
-                                                <button class="adm-btn adm-btn--primary py-1 px-3" onclick="confirmAndRepublish(@exam.ExamId)" title="Republish">
+                                                <button class="er-btn er-btn--primary py-1 px-3" onclick="confirmAndRepublish(@exam.ExamId)" title="Republish">
                                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" /></svg>
                                                     Republish
                                                 </button>
                                             }
                                             @if (exam.Status != 5 && exam.Status != 6)
                                             {
-                                                <button class="adm-btn adm-btn--primary py-1 px-3" onclick="confirmAndPublish(@exam.ExamId)" title="Publish">
+                                                <button class="er-btn er-btn--primary py-1 px-3" onclick="confirmAndPublish(@exam.ExamId)" title="Publish">
                                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" /></svg>
                                                     Publish
                                                 </button>
@@ -184,15 +184,15 @@
             }
             else
             {
-                <div class="dash-empty">
+                <div class="er-empty">
                     <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
                         <polyline points="16 16 12 12 8 16" />
                         <line x1="12" y1="12" x2="12" y2="21" />
                         <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" />
                     </svg>
-                    <h3 class="dash-empty__title">No Exams Found</h3>
-                    <p class="dash-empty__sub">No exams have been created for the active academic year. Create an exam to start publishing results.</p>
-                    <a href="@Url.Action("Create", "Exam")" class="adm-btn adm-btn--primary" style="margin-top:8px;text-decoration:none;">
+                    <h3 class="er-empty__title">No Exams Found</h3>
+                    <p class="er-empty__desc">No exams have been created for the active academic year. Create an exam to start publishing results.</p>
+                    <a href="@Url.Action("Create", "Exam")" class="er-btn er-btn--primary" style="margin-top:8px;text-decoration:none;">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
                         Create Exam
                     </a>
@@ -201,8 +201,8 @@
         </div>
     </div>
 
-    <div class="adm-table-card mt-4" style="border-radius: var(--adm-radius-lg); border-top: 1px solid var(--adm-border);">
-        <div class="adm-table-card__body">
+    <div class="er-card mt-4" style="border-radius: var(--adm-radius-lg); border-top: 1px solid var(--adm-border);">
+        <div class="er-card__body">
             <div style="padding:16px 20px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;" onclick="toggleAuditTrail()" role="button">
                 <div style="display:flex;align-items:center;gap:10px;">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
@@ -236,12 +236,12 @@
                                         <td>
                                             @{
                                                 var actionLower = (entry.Action ?? "").ToLower();
-                                                string badgeClass = "adm-status--neutral";
-                                                if (actionLower == "published") { badgeClass = "adm-status--converted"; }
-                                                else if (actionLower == "republished") { badgeClass = "adm-status--approved"; }
-                                                else if (actionLower == "unpublished") { badgeClass = "adm-status--rejected"; }
+                                                string badgeClass = "er-badge--neutral";
+                                                if (actionLower == "published") { badgeClass = "er-badge--converted"; }
+                                                else if (actionLower == "republished") { badgeClass = "er-badge--approved"; }
+                                                else if (actionLower == "unpublished") { badgeClass = "er-badge--rejected"; }
                                             }
-                                            <span class="adm-status @badgeClass">@entry.Action</span>
+                                            <span class="er-badge @badgeClass">@entry.Action</span>
                                         </td>
                                         <td><span style="font-size:13px;color:var(--adm-text);">@entry.PerformedBy</span></td>
                                         <td><span style="font-size:13px;color:var(--adm-text-3);">@entry.Notes</span></td>
@@ -253,13 +253,13 @@
                 }
                 else
                 {
-                    <div class="dash-empty" style="padding:40px 20px;">
+                    <div class="er-empty" style="padding:40px 20px;">
                         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
                             <circle cx="12" cy="12" r="10" />
                             <polyline points="12 6 12 12 16 14" />
                         </svg>
-                        <h3 class="dash-empty__title">No History Available</h3>
-                        <p class="dash-empty__sub">Publication actions will appear here once you publish or unpublish exam results.</p>
+                        <h3 class="er-empty__title">No History Available</h3>
+                        <p class="er-empty__desc">Publication actions will appear here once you publish or unpublish exam results.</p>
                     </div>
                 }
             </div>

@@ -3,10 +3,10 @@
     ViewData["Title"] = "Subject Mark Structure Details";
 }
 
-<div class="adm-page">
-    <div class="adm-header">
+<div class="adm-page er-page">
+    <div class="er-page-header">
         <div class="adm-header__left">
-            <div class="adm-header__icon-wrap">
+            <div class="er-page-header__icon">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                     <polyline points="14 2 14 8 20 8" />
@@ -15,12 +15,12 @@
                 </svg>
             </div>
             <div>
-                <h1 class="adm-header__title">Subject Mark Structure Details</h1>
+                <h1 class="er-page-header__title">Subject Mark Structure Details</h1>
             </div>
         </div>
-        <div class="adm-btn-group">
-            <a href="@Url.Action("Index", new { examId = Model.ExamId, subjectId = Model.SubjectId })" class="adm-btn adm-btn--ghost">Back</a>
-            <a href="@Url.Action("Edit", new { id = Model.Id })" class="adm-btn adm-btn--primary">Edit</a>
+        <div class="er-page-header__right">
+            <a href="@Url.Action("Index", new { subjectId = Model.SubjectId })" class="er-btn er-btn--secondary">Back</a>
+            <a href="@Url.Action("Edit", new { id = Model.Id })" class="er-btn er-btn--primary">Edit</a>
         </div>
     </div>
 
@@ -37,7 +37,6 @@
             </div>
             <div class="col-md-6">
                 <table class="table table-bordered">
-                    <tr><th>Exam</th><td>@Model.ExamName</td></tr>
                     <tr><th>Subject</th><td>@Model.SubjectName</td></tr>
                     <tr><th>Class</th><td>@Model.ClassName</td></tr>
                     <tr><th>Group</th><td>@Model.StudentGroupName</td></tr>

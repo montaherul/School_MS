@@ -5,18 +5,18 @@
     var examId = Model.ExamId;
 }
 
-<div class="adm-page">
-    <div class="adm-header">
-        <div class="adm-header__left">
-            <div class="adm-header__icon-wrap">
+<div class="adm-page er-page">
+    <div class="er-page-header">
+        <div class="er-page-header__left">
+            <div class="er-page-header__icon">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 20h9" />
                     <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
                 </svg>
             </div>
             <div>
-                <h1 class="adm-header__title">Review Results</h1>
-                <p class="adm-header__sub">
+                <h1 class="er-page-header__title">Review Results</h1>
+                <p class="er-page-header__sub">
                     @if (!string.IsNullOrEmpty(Model.AcademicYearName))
                     {
                         <span>@Model.AcademicYearName &middot; </span>
@@ -27,8 +27,8 @@
         </div>
         @if (Model.Results != null && Model.Results.Any())
         {
-            <div class="adm-btn-group">
-                <button class="adm-btn adm-btn--primary" onclick="approveAll(@examId)" id="approveAllBtn">
+            <div class="er-page-header__right">
+                <button class="er-btn er-btn--primary" onclick="approveAll(@examId)" id="approveAllBtn">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12" /></svg>
                     Approve All
                 </button>
@@ -36,7 +36,7 @@
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
                     Reject All
                 </button>
-                <a href="@Url.Action("Dashboard", "AdminResult")" class="adm-btn adm-btn--ghost">
+                <a href="@Url.Action("Dashboard", "AdminResult")" class="er-btn er-btn--secondary">
                     Back to Dashboard
                 </a>
             </div>
@@ -52,8 +52,8 @@
 
         <div class="row g-3 mb-3">
             <div class="col-md-12">
-                <div class="adm-table-card" style="border-radius: var(--adm-radius-lg);">
-                    <div class="adm-table-card__body d-flex align-items-center gap-4 flex-wrap py-2 px-3">
+                <div class="er-card" style="border-radius: var(--adm-radius-lg);">
+                    <div class="er-card__body d-flex align-items-center gap-4 flex-wrap py-2 px-3">
                         <div><strong>Total Students:</strong> <span class="badge bg-secondary">@total</span></div>
                         <div><strong>Passed:</strong> <span class="badge bg-success">@passed</span></div>
                         <div><strong>Failed:</strong> <span class="badge bg-danger">@failed</span></div>
@@ -65,8 +65,8 @@
 
         <div class="row g-3 mb-3">
             <div class="col-md-12">
-                <div class="adm-table-card" style="border-radius: var(--adm-radius-lg);">
-                    <div class="adm-table-card__body d-flex align-items-center gap-3 flex-wrap py-2 px-3">
+                <div class="er-card" style="border-radius: var(--adm-radius-lg);">
+                    <div class="er-card__body d-flex align-items-center gap-3 flex-wrap py-2 px-3">
                         <div class="d-flex align-items-center gap-2">
                             <label class="form-label mb-0 text-nowrap">Search:</label>
                             <input type="text" id="filterSearch" class="form-control form-control-sm" style="width:200px;" placeholder="Name or Roll..." />
@@ -89,21 +89,21 @@
                                 <option value="fail">Fail</option>
                             </select>
                         </div>
-                        <button class="adm-btn adm-btn--primary adm-btn--sm" onclick="applyFilters()">Apply Filter</button>
-                        <button class="adm-btn adm-btn--ghost adm-btn--sm" onclick="clearFilters()">Clear</button>
+                        <button class="er-btn er-btn--primary adm-btn--sm" onclick="applyFilters()">Apply Filter</button>
+                        <button class="er-btn er-btn--secondary adm-btn--sm" onclick="clearFilters()">Clear</button>
                     </div>
                 </div>
             </div>
         </div>
     }
 
-    <div class="adm-table-card" style="border-radius: var(--adm-radius-lg); position:relative;">
+    <div class="er-card" style="border-radius: var(--adm-radius-lg); position:relative;">
         <div class="loading-overlay" id="loadingOverlay" style="display:none; position:absolute; inset:0; background:rgba(255,255,255,0.7); z-index:999; display:none; align-items:center; justify-content:center; border-radius:var(--adm-radius-lg);">
             <div class="spinner-border text-primary" role="status">
                 <span class="visually-hidden">Loading...</span>
             </div>
         </div>
-        <div class="adm-table-card__body">
+        <div class="er-card__body">
             @if (Model.Results != null && Model.Results.Any())
             {
                 <div class="table-responsive">
@@ -140,15 +140,15 @@
                                     <td>@r.GroupName</td>
                                     <td class="fw-bold">@r.TotalMarks.ToString("F1")</td>
                                     <td class="text-primary fw-bold">@r.Gpa.ToString("F2")</td>
-                                    <td><span class="adm-status adm-status--neutral">@r.Grade</span></td>
+                                    <td><span class="er-badge er-badge--neutral">@r.Grade</span></td>
                                     <td>
                                         @if (r.IsPassed)
                                         {
-                                            <span class="adm-status adm-status--converted">Pass</span>
+                                            <span class="er-badge er-badge--converted">Pass</span>
                                         }
                                         else
                                         {
-                                            <span class="adm-status adm-status--rejected">Fail</span>
+                                            <span class="er-badge er-badge--rejected">Fail</span>
                                         }
                                     </td>
                                     <td>@r.FailedSubjectCount</td>
@@ -156,24 +156,24 @@
                                     <td>
                                         @if (r.Status == 3)
                                         {
-                                            <span class="adm-status adm-status--approved">Approved</span>
+                                            <span class="er-badge er-badge--approved">Approved</span>
                                         }
                                         else if (r.Status == 2)
                                         {
-                                            <span class="adm-status adm-status--approved">Reviewed</span>
+                                            <span class="er-badge er-badge--approved">Reviewed</span>
                                         }
                                         else if (r.Status == 1)
                                         {
-                                            <span class="adm-status adm-status--pending">Submitted</span>
+                                            <span class="er-badge er-badge--pending">Submitted</span>
                                         }
                                         else
                                         {
-                                            <span class="adm-status adm-status--neutral">Draft</span>
+                                            <span class="er-badge er-badge--neutral">Draft</span>
                                         }
                                     </td>
                                     <td>
                                         <div class="d-flex gap-1">
-                                            <button class="adm-btn adm-btn--sm adm-btn--primary" onclick="openReviewModal(@r.StudentId, 'review')" title="Review">
+                                            <button class="adm-btn adm-btn--sm er-btn--primary" onclick="openReviewModal(@r.StudentId, 'review')" title="Review">
                                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
                                                 Review
                                             </button>
@@ -191,11 +191,11 @@
             }
             else
             {
-                <div class="dash-empty">
+                <div class="er-empty">
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
-                    <h3 class="dash-empty__title">No Results to Review</h3>
-                    <p class="dash-empty__sub">All results have been reviewed or no submissions exist yet.</p>
-                    <a href="@Url.Action("Dashboard", "AdminResult")" class="adm-btn adm-btn--ghost">Back to Dashboard</a>
+                    <h3 class="er-empty__title">No Results to Review</h3>
+                    <p class="er-empty__desc">All results have been reviewed or no submissions exist yet.</p>
+                    <a href="@Url.Action("Dashboard", "AdminResult")" class="er-btn er-btn--secondary">Back to Dashboard</a>
                 </div>
             }
         </div>
@@ -221,8 +221,8 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="adm-btn adm-btn--ghost" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="adm-btn adm-btn--primary" id="confirmReviewBtn" onclick="confirmReview()">
+                <button type="button" class="er-btn er-btn--secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="er-btn er-btn--primary" id="confirmReviewBtn" onclick="confirmReview()">
                     Confirm
                 </button>
             </div>
@@ -256,7 +256,7 @@
         }
 
         function disableButtons(disable) {
-            document.querySelectorAll('.adm-btn--primary, .adm-btn--outline-danger').forEach(b => {
+            document.querySelectorAll('.er-btn--primary, .adm-btn--outline-danger').forEach(b => {
                 if (b.id !== 'confirmReviewBtn') {
                     b.disabled = disable;
                 }
@@ -328,7 +328,7 @@
             const title = document.getElementById('reviewModalTitle');
             title.textContent = action === 'review' ? 'Review Student Result' : 'Reject Student Result';
             const confirmBtn = document.getElementById('confirmReviewBtn');
-            confirmBtn.className = action === 'review' ? 'adm-btn adm-btn--primary' : 'adm-btn adm-btn--outline-danger';
+            confirmBtn.className = action === 'review' ? 'er-btn er-btn--primary' : 'adm-btn adm-btn--outline-danger';
             confirmBtn.textContent = action === 'review' ? 'Confirm Review' : 'Confirm Reject';
             const modal = new bootstrap.Modal(document.getElementById('reviewModal'));
             modal.show();

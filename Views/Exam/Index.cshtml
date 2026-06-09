@@ -3,18 +3,18 @@
     ViewData["Title"] = "Exam Management";
 }
 
-<div class="adm-page">
-    <div class="adm-header">
-        <div class="adm-header__left">
-            <div class="adm-header__icon-wrap">
+<div class="adm-page er-page er-page--slide">
+    <div class="er-page-header">
+        <div class="er-page-header__left">
+            <div class="er-page-header__icon">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                     <polyline points="14 2 14 8 20 8" />
                 </svg>
             </div>
             <div>
-                <h1 class="adm-header__title">Exam Management</h1>
-                <p class="adm-header__sub">
+                <h1 class="er-page-header__title">Exam Management</h1>
+                <p class="er-page-header__sub">
                     @if (!string.IsNullOrEmpty(Model.SelectedAcademicYearName))
                     {
                         <span>Academic Year: @Model.SelectedAcademicYearName</span>
@@ -26,20 +26,20 @@
                 </p>
             </div>
         </div>
-        <div class="adm-btn-group">
+        <div class="er-page-header__right">
             <form method="get" action="@Url.Action("Index")" class="d-flex gap-2 align-items-center">
-                <select name="academicYearId" class="form-select adm-select" style="width:auto;" onchange="this.form.submit()">
+                <select name="academicYearId" class="form-select er-filters__select" onchange="this.form.submit()">
                     @foreach (var year in Model.AcademicYears)
                     {
                         <!option value="@year.Id" selected="@(year.Id == Model.SelectedAcademicYearId)">@year.Name</!option>
                     }
                 </select>
             </form>
-            <a href="@Url.Action("Dashboard", "Exam")" class="adm-btn adm-btn--ghost">
+            <a href="@Url.Action("Dashboard", "Exam")" class="er-btn er-btn--secondary">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></svg>
                 Dashboard
             </a>
-            <a href="@Url.Action("Create", "Exam")" class="adm-btn adm-btn--primary">
+            <a href="@Url.Action("Create", "Exam")" class="er-btn er-btn--primary">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
                 Create Exam
             </a>
@@ -51,12 +51,12 @@
         <div class="alert alert-success alert-dismissible fade show">@msg<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
     }
 
-    <div class="adm-table-card" style="border-radius: var(--adm-radius-lg);">
-        <div class="adm-table-card__body">
+    <div class="er-card">
+        <div class="er-card__body">
             @if (Model.Exams.Any())
             {
-                <div class="table-responsive">
-                    <table class="dash-table">
+                <div class="er-table-wrap">
+                    <table class="er-table">
                         <thead>
                             <tr>
                                 <th>Exam Name</th>
@@ -71,42 +71,42 @@
                             @foreach (var exam in Model.Exams)
                             {
                                 <tr>
-                                    <td><span class="adm-cell-name">@exam.Name</span></td>
-                                    <td><span class="adm-status adm-status--neutral">@exam.Term</span></td>
+                                    <td><span class="er-cell-name">@exam.Name</span></td>
+                                    <td><span class="er-badge er-badge--neutral">@exam.Term</span></td>
                                     <td>@exam.AcademicYearName</td>
                                     <td><span class="adm-cell-dob">@exam.StartsOn.ToString("d") – @exam.EndsOn.ToString("d")</span></td>
                                     <td>
                                         @if (exam.Status == SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Published)
                                         {
-                                            <span class="adm-status adm-status--converted">Published</span>
+                                            <span class="er-badge er-badge--success">Published</span>
                                         }
                                         else if (exam.Status == SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Locked)
                                         {
-                                            <span class="adm-status adm-status--neutral">Locked</span>
+                                            <span class="er-badge er-badge--neutral">Locked</span>
                                         }
                                         else if (exam.Status == SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Approved)
                                         {
-                                            <span class="adm-status adm-status--approved">Approved</span>
+                                            <span class="er-badge er-badge--success">Approved</span>
                                         }
                                         else if (exam.Status == SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Reviewed)
                                         {
-                                            <span class="adm-status adm-status--approved">Reviewed</span>
+                                            <span class="er-badge er-badge--success">Reviewed</span>
                                         }
                                         else if (exam.Status == SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Submitted)
                                         {
-                                            <span class="adm-status adm-status--pending">Submitted</span>
+                                            <span class="er-badge er-badge--warning">Submitted</span>
                                         }
                                         else
                                         {
-                                            <span class="adm-status adm-status--neutral">Draft</span>
+                                            <span class="er-badge er-badge--neutral">Draft</span>
                                         }
                                     </td>
                                     <td>
                                         <div class="actions-cell">
-                                            <a href="@Url.Action("Edit", "Exam", new { id = exam.Id })" class="adm-action adm-action--edit" title="Edit">
+                                            <a href="@Url.Action("Edit", "Exam", new { id = exam.Id })" class="er-action er-action--edit" title="Edit">
                                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                                             </a>
-                                            <a href="@Url.Action("Details", "Exam", new { id = exam.Id })" class="adm-action" title="Details">
+                                            <a href="@Url.Action("Details", "Exam", new { id = exam.Id })" class="er-action" title="Details">
                                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3" /><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14" /></svg>
                                             </a>
                                         </div>
@@ -119,11 +119,15 @@
             }
             else
             {
-                <div class="dash-empty">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
-                    <h3 class="dash-empty__title">No Exams Found</h3>
-                    <p class="dash-empty__sub">Create your first exam to get started.</p>
-                    <a href="@Url.Action("Create", "Exam")" class="adm-btn adm-btn--primary">Create Exam</a>
+                <div class="er-empty">
+                    <div class="er-empty__icon">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                    </div>
+                    <h3 class="er-empty__title">No Exams Found</h3>
+                    <p class="er-empty__desc">Create your first exam to get started.</p>
+                    <div class="er-empty__action">
+                        <a href="@Url.Action("Create", "Exam")" class="er-btn er-btn--primary">Create Exam</a>
+                    </div>
                 </div>
             }
         </div>

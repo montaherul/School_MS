@@ -16,30 +16,14 @@ public class SubjectMarkStructureService : ISubjectMarkStructureService
         _uow = uow;
     }
 
-    public async Task<List<SubjectMarkStructureDto>> GetByExamAsync(int examId)
+    public async Task<List<SubjectMarkStructureDto>> GetBySubjectAsync(int subjectId)
     {
         return await _uow.Repository<SubjectMarkStructure>().Query()
             .Include(s => s.Component)
-            .Include(s => s.Exam)
             .Include(s => s.Class)
             .Include(s => s.Subject)
             .Include(s => s.StudentGroup)
-            .Where(s => s.ExamId == examId && !s.IsDeleted && s.IsActive)
-            .OrderBy(s => s.DisplayOrder)
-            .ThenBy(s => s.Component!.DisplayOrder)
-            .Select(s => MapToDto(s))
-            .ToListAsync();
-    }
-
-    public async Task<List<SubjectMarkStructureDto>> GetBySubjectAsync(int examId, int subjectId)
-    {
-        return await _uow.Repository<SubjectMarkStructure>().Query()
-            .Include(s => s.Component)
-            .Include(s => s.Exam)
-            .Include(s => s.Class)
-            .Include(s => s.Subject)
-            .Include(s => s.StudentGroup)
-            .Where(s => s.ExamId == examId && s.SubjectId == subjectId && !s.IsDeleted && s.IsActive)
+            .Where(s => s.SubjectId == subjectId && !s.IsDeleted && s.IsActive)
             .OrderBy(s => s.DisplayOrder)
             .ThenBy(s => s.Component!.DisplayOrder)
             .Select(s => MapToDto(s))
@@ -50,7 +34,6 @@ public class SubjectMarkStructureService : ISubjectMarkStructureService
     {
         var entity = await _uow.Repository<SubjectMarkStructure>().Query()
             .Include(s => s.Component)
-            .Include(s => s.Exam)
             .Include(s => s.Class)
             .Include(s => s.Subject)
             .Include(s => s.StudentGroup)
@@ -67,7 +50,6 @@ public class SubjectMarkStructureService : ISubjectMarkStructureService
         var entity = new SubjectMarkStructure
         {
             ComponentId = dto.ComponentId,
-            ExamId = dto.ExamId,
             ClassId = dto.ClassId,
             SubjectId = dto.SubjectId,
             StudentGroupId = dto.StudentGroupId,
@@ -92,7 +74,6 @@ public class SubjectMarkStructureService : ISubjectMarkStructureService
         if (entity == null || entity.IsDeleted) return null;
 
         entity.ComponentId = dto.ComponentId;
-        entity.ExamId = dto.ExamId;
         entity.ClassId = dto.ClassId;
         entity.SubjectId = dto.SubjectId;
         entity.StudentGroupId = dto.StudentGroupId;
@@ -121,20 +102,19 @@ public class SubjectMarkStructureService : ISubjectMarkStructureService
         return true;
     }
 
-    public async Task<bool> SaveBulkAsync(int examId, int subjectId, List<SubjectMarkStructureUpsertDto> items, string updatedBy)
+    public async Task<bool> SaveBulkAsync(int subjectId, List<SubjectMarkStructureUpsertDto> items, string updatedBy)
     {
         foreach (var item in items)
         {
-            item.ExamId = examId;
             item.SubjectId = subjectId;
             Validate(item);
         }
 
         await _uow.ExecuteInTransactionAsync(async () =>
         {
-            // Remove existing structures for this exam+subject
+            // Remove existing structures for this subject
             var existing = await _uow.Repository<SubjectMarkStructure>().Query()
-                .Where(s => s.ExamId == examId && s.SubjectId == subjectId && !s.IsDeleted)
+                .Where(s => s.SubjectId == subjectId && !s.IsDeleted)
                 .ToListAsync();
 
             foreach (var e in existing)
@@ -151,7 +131,6 @@ public class SubjectMarkStructureService : ISubjectMarkStructureService
                 var entity = new SubjectMarkStructure
                 {
                     ComponentId = item.ComponentId,
-                    ExamId = examId,
                     SubjectId = subjectId,
                     FullMarks = item.FullMarks,
                     PassMarks = item.PassMarks,
@@ -166,16 +145,15 @@ public class SubjectMarkStructureService : ISubjectMarkStructureService
         return true;
     }
 
-    public async Task<List<ComponentColumnDto>> GetGridColumnsAsync(int examId, int subjectId, int? classId = null, int? studentGroupId = null)
+    public async Task<List<ComponentColumnDto>> GetGridColumnsAsync(int subjectId, int? classId = null, int? studentGroupId = null)
     {
         var structures = await _uow.Repository<SubjectMarkStructure>().Query()
             .Include(s => s.Component)
             .Where(s => !s.IsDeleted && s.IsActive
                 && s.Component!.IsActive
-                && ((s.ExamId == examId && s.SubjectId == subjectId)
-                    || (s.ExamId == null && s.SubjectId == subjectId)
-                    || (s.ExamId == null && s.SubjectId == null && s.ClassId == classId)
-                    || (s.ExamId == null && s.SubjectId == null && s.ClassId == null && s.StudentGroupId == studentGroupId)))
+                && ((s.SubjectId == subjectId)
+                    || (s.SubjectId == null && s.ClassId == classId)
+                    || (s.SubjectId == null && s.ClassId == null && s.StudentGroupId == studentGroupId)))
             .OrderBy(s => s.DisplayOrder)
             .ThenBy(s => s.Component!.DisplayOrder)
             .ToListAsync();
@@ -230,6 +208,37 @@ public class SubjectMarkStructureService : ISubjectMarkStructureService
             throw new InvalidOperationException("Component marks must be greater than 0.");
     }
 
+    public async Task<List<ComponentPreviewDto>> GetComponentPreviewsAsync(List<int> subjectIds, CancellationToken ct = default)
+    {
+        if (subjectIds.Count == 0) return [];
+
+        var structures = await _uow.Repository<SubjectMarkStructure>().Query()
+            .Include(s => s.Component)
+            .Where(s => s.SubjectId != null && subjectIds.Contains(s.SubjectId.Value) && !s.IsDeleted && s.IsActive
+                && s.Component != null && s.Component.IsActive)
+            .OrderBy(s => s.SubjectId)
+            .ThenBy(s => s.DisplayOrder)
+            .ThenBy(s => s.Component!.DisplayOrder)
+            .ToListAsync(ct);
+
+        return subjectIds.Select(subjectId =>
+        {
+            var subjectStructures = structures.Where(s => s.SubjectId == subjectId).ToList();
+            return new ComponentPreviewDto
+            {
+                SubjectId = subjectId,
+                Preview = subjectStructures.Count > 0
+                    ? string.Join(" + ", subjectStructures.Select(s => $"{s.Component!.Name}({s.FullMarks})"))
+                    : "No components configured",
+                Components = subjectStructures.Select(s => new ComponentDetailDto
+                {
+                    Name = s.Component!.Name,
+                    FullMarks = s.FullMarks
+                }).ToList()
+            };
+        }).ToList();
+    }
+
     private static SubjectMarkStructureDto MapToDto(SubjectMarkStructure entity)
     {
         return new SubjectMarkStructureDto
@@ -238,8 +247,6 @@ public class SubjectMarkStructureService : ISubjectMarkStructureService
             ComponentId = entity.ComponentId,
             ComponentName = entity.Component?.Name ?? string.Empty,
             ComponentCode = entity.Component?.Code ?? string.Empty,
-            ExamId = entity.ExamId,
-            ExamName = entity.Exam?.Name ?? string.Empty,
             ClassId = entity.ClassId,
             ClassName = entity.Class?.Name ?? string.Empty,
             SubjectId = entity.SubjectId,

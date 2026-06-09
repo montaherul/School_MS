@@ -5,25 +5,25 @@
     var selectedCategory = (SchoolManagementSystem.Services.Interfaces.Result.MeritCategory)ViewBag.SelectedCategory;
 }
 
-<div class="adm-page">
-    <div class="adm-header">
+<div class="adm-page er-page">
+    <div class="er-page-header">
         <div class="adm-header__left">
-            <div class="adm-header__icon-wrap">
+            <div class="er-page-header__icon">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
                 </svg>
             </div>
             <div>
-                <h1 class="adm-header__title">Academic Merit Rankings</h1>
-                <p class="adm-header__sub">View school-wide, class-wise, and section-wise student merit standings.</p>
+                <h1 class="er-page-header__title">Academic Merit Rankings</h1>
+                <p class="er-page-header__sub">View school-wide, class-wise, and section-wise student merit standings.</p>
             </div>
         </div>
         @if (User.IsInRole("Admin") || User.IsInRole("Super Admin") || User.IsInRole("Principal") || User.IsInRole("Exam Controller"))
         {
             @if (ViewBag.SelectedExamId != null && ViewBag.SelectedExamId > 0)
             {
-                <div class="adm-btn-group">
-                    <button type="button" id="btnRecalcMerit" class="adm-btn adm-btn--primary">
+                <div class="er-page-header__right">
+                    <button type="button" id="btnRecalcMerit" class="er-btn er-btn--primary">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="me-2"><circle cx="12" cy="12" r="10" /><path d="M12 8v4l3 3" /></svg>
                         Recalculate Merit Positions
                     </button>
@@ -33,11 +33,11 @@
     </div>
 
     <!-- ── Filter Panel ── -->
-    <div class="adm-table-card" style="margin-bottom: 24px; padding: 20px; border-radius: var(--adm-radius-lg);">
+    <div class="er-card">
         <form method="get" action="@Url.Action("Index")" class="row g-3">
             <div class="col-md-5">
-                <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Select Examination</label>
-                <select name="examId" class="form-select adm-select" required>
+                <label class="form-label">Select Examination</label>
+                <select name="examId" class="form-select er-filters__select" required>
                     <option value="">-- Choose Exam --</option>
                     @if (exams != null)
                     {
@@ -49,8 +49,8 @@
                 </select>
             </div>
             <div class="col-md-5">
-                <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Ranking Category</label>
-                <select name="category" class="form-select adm-select">
+                <label class="form-label">Ranking Category</label>
+                <select name="category" class="form-select er-filters__select">
                     <!option value="Class" @(selectedCategory == SchoolManagementSystem.Services.Interfaces.Result.MeritCategory.Class ? "selected" : "")>Class-wise Ranking</!option>
                     <!option value="Section" @(selectedCategory == SchoolManagementSystem.Services.Interfaces.Result.MeritCategory.Section ? "selected" : "")>Section-wise Ranking</!option>
                     <!option value="Group" @(selectedCategory == SchoolManagementSystem.Services.Interfaces.Result.MeritCategory.Group ? "selected" : "")>Group-wise (Sci/Hum/Arts) Ranking</!option>
@@ -58,7 +58,7 @@
                 </select>
             </div>
             <div class="col-md-2 d-flex align-items-end">
-                <button type="submit" class="adm-btn adm-btn--primary w-100" style="height: 38px;">
+                <button type="submit" class="er-btn er-btn--primary w-100">
                     View Rankings
                 </button>
             </div>
@@ -66,15 +66,15 @@
     </div>
 
     <!-- ── Merit List Table ── -->
-    <div class="adm-table-card" style="border-radius: var(--adm-radius-lg); border-top: 1px solid var(--adm-border);">
-        <div class="adm-table-card__body">
+    <div class="er-card">
+        <div class="er-card__body">
             @if (Model != null && Model.Any())
             {
-                <div class="table-responsive" style="border-radius: var(--adm-radius-lg);">
+                <div class="table-responsive">
                     <table class="dash-table">
                         <thead>
                             <tr>
-                                <th style="width: 80px;">Rank</th>
+                                <th>Rank</th>
                                 <th>Student ID</th>
                                 <th>Student Name</th>
                                 <th>Roll Number</th>
@@ -107,11 +107,11 @@
                                             <span style="color: var(--adm-text-2);">@m.Position</span>
                                         }
                                     </td>
-                                    <td><span style="color: var(--adm-text-3);">@m.StudentId</span></td>
+                                    <td><span>@m.StudentId</span></td>
                                     <td><span class="adm-cell-name">@m.StudentName</span></td>
                                     <td class="text-center">@m.RollNumber</td>
-                                    <td><span class="adm-status adm-status--neutral">@m.Section</span></td>
-                                    <td><span class="adm-status adm-status--neutral">@m.StudentGroup</span></td>
+                                    <td><span class="er-badge">@m.Section</span></td>
+                                    <td><span class="er-badge">@m.StudentGroup</span></td>
                                     <td class="text-center font-weight-bold text-success">@m.TotalMarks.ToString("F2")</td>
                                     <td class="text-center text-primary font-weight-bold">@m.GPA.ToString("F2")</td>
                                     <td class="text-center font-weight-bold">@m.Grade</td>
@@ -123,10 +123,10 @@
             }
             else
             {
-                <div class="dash-empty">
+                <div class="er-empty">
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
-                    <h3 class="dash-empty__title">No Merit Rankings Found</h3>
-                    <p class="dash-empty__sub">Please filter by exam and category above to load school standings.</p>
+                    <h3 class="er-empty__title">No Merit Rankings Found</h3>
+                    <p class="er-empty__desc">Please filter by exam and category above to load school standings.</p>
                 </div>
             }
         </div>

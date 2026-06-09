@@ -62,14 +62,6 @@ BEGIN
         CAST(ssr.IsPassed AS BIT) AS IsPassed,
         ssr.IsOptionalSubject,
         ssr.IsReligionSubject,
-        es.WrittenMarks,
-        es.MCQMarks,
-        es.PracticalMarks,
-        es.VivaMarks,
-        es.LabMarks,
-        es.OralMarks,
-        es.AssignmentMarks,
-        es.ContinuousAssessmentMarks,
         m.WrittenMarks AS MarksWritten,
         m.MCQMarks AS MarksMCQ,
         m.PracticalMarks AS MarksPractical,
@@ -78,11 +70,13 @@ BEGIN
         m.OralMarks AS MarksOral,
         m.AssignmentMarks AS MarksAssignment,
         m.ContinuousAssessmentMarks AS MarksContinuousAssessment,
+        m.CompetencyMarks AS MarksCompetency,
+        m.BehaviourMarks AS MarksBehaviour,
+        m.ParticipationMarks AS MarksParticipation,
         m.ComponentValues
     FROM StudentSubjectResults ssr
     INNER JOIN Subjects sub ON ssr.SubjectId = sub.Id
     INNER JOIN Students s ON s.Id = @StudentId
-    LEFT JOIN ExamSubjects es ON es.ExamId = @ExamId AND es.SubjectId = ssr.SubjectId
     LEFT JOIN Marks m ON m.ExamId = @ExamId AND m.StudentId = @StudentId AND m.SubjectId = ssr.SubjectId AND m.IsDeleted = 0
     WHERE ssr.ExamId = @ExamId AND ssr.StudentId = @StudentId AND ssr.IsDeleted = 0
       AND (

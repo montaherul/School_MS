@@ -4,7 +4,13 @@
     ViewData["Title"] = "Welcome to Our School";
 }
 
+@{
+    var settings = Model.Settings;
+}
+
 <!-- ── 1. Hero Banner Slider ── -->
+@if (settings.ShowSlider)
+{
 <div id="heroCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" style="margin-top:-20px;">
     <div class="carousel-indicators">
         @for (int i = 0; i < Model.Sliders.Count; i++)
@@ -63,6 +69,7 @@
         <span class="carousel-control-next-icon" aria-hidden="true"></span>
     </button>
 </div>
+}
 
 <!-- ── 2. Announcement Scrolling Marquee ── -->
 <div class="bg-warning py-2 text-dark border-bottom border-top border-dark" style="position: relative; z-index: 10; font-weight: 700; font-size: 14px;">
@@ -82,6 +89,8 @@
 </div>
 
 <!-- ── 3. Welcome & Principal Message Section ── -->
+@if (settings.ShowWelcomeSection || settings.ShowPrincipalMessage)
+{
 <section class="py-5 bg-white" id="welcome">
     <div class="container py-3">
         <div class="row g-5 align-items-center">
@@ -144,8 +153,11 @@
         </div>
     </div>
 </section>
+}
 
 <!-- ── 4. Notice Board & Events Section ── -->
+@if (settings.ShowNotices || settings.ShowEvents)
+{
 <section class="py-5 bg-light border-top border-bottom">
     <div class="container py-3">
         <div class="row g-5">
@@ -226,8 +238,11 @@
         </div>
     </div>
 </section>
+}
 
 <!-- ── 5. Dynamic Stats Block Section ── -->
+@if (settings.ShowStatistics)
+{
 <section class="py-5 text-white" style="background: linear-gradient(135deg, var(--edu-navy), var(--edu-dark)); position: relative;">
     <div style="position: absolute; top:0; left:0; width:100%; height:100%; background: url('https://www.transparenttextures.com/patterns/black-paper.png'); opacity:0.1;"></div>
     <div class="container py-4 position-relative">
@@ -264,15 +279,18 @@
                     <div class="p-3 bg-warning text-dark rounded-circle mx-auto d-flex align-items-center justify-content-center mb-3 shadow" style="width:70px; height:70px;">
                         <i class="bi bi-mortarboard fs-2"></i>
                     </div>
-                    <h2 class="display-5 fw-extrabold text-white mb-1">98.5%</h2>
-                    <span class="text-white-50 text-uppercase fw-semibold" style="font-size:13px;">Success Rate</span>
+                    <h2 class="display-5 fw-extrabold text-white mb-1">@Model.EmployeeCount+</h2>
+                    <span class="text-white-50 text-uppercase fw-semibold" style="font-size:13px;">Staff Members</span>
                 </div>
             </div>
         </div>
     </div>
 </section>
+}
 
 <!-- ── 6. Photo Albums Gallery Preview Section ── -->
+@if (settings.ShowGallery)
+{
 <section class="py-5 bg-white">
     <div class="container py-3">
         <div class="d-flex justify-content-between align-items-center mb-5">
@@ -321,8 +339,11 @@
         </div>
     </div>
 </section>
+}
 
 <!-- ── 7. Admission CTA Banner ── -->
+@if (settings.ShowAdmissionCTA)
+{
 <section class="py-5" style="background-color: var(--edu-light);">
     <div class="container py-3">
         <div class="bg-white p-5 shadow rounded-lg" style="border-left: 8px solid var(--edu-gold); border-radius: 12px;">
@@ -337,13 +358,14 @@
                 <div class="col-lg-4 text-lg-end">
                     <div class="d-flex flex-column gap-2 justify-content-lg-end">
                         <a href="/Admission/Apply" class="btn btn-edu-gold px-4 py-3"><i class="bi bi-pencil-square me-2"></i> Apply Online Now</a>
-                        <a href="/admission" class="btn btn-outline-primary px-4 py-3"><i class="bi bi-info-circle me-2"></i> Admission Info</a>
+                        <a href="/admission-info" class="btn btn-outline-primary px-4 py-3"><i class="bi bi-info-circle me-2"></i> Admission Info</a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </section>
+}
 
 <style>
     .transition-hover {

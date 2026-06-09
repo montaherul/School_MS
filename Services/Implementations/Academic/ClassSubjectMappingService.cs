@@ -17,11 +17,11 @@ public class ClassSubjectMappingService : IClassSubjectMappingService
     }
 
     public async Task<PagedResult<ClassSubjectListItemDto>> GetPagedAsync(
-        int page, 
-        int pageSize, 
-        int? classId, 
-        string? groupName, 
-        string? search, 
+        int page,
+        int pageSize,
+        int? classId,
+        string? groupName,
+        string? search,
         CancellationToken ct = default)
     {
         var query = _unitOfWork.Repository<ClassSubject>().Query()
@@ -30,38 +30,30 @@ public class ClassSubjectMappingService : IClassSubjectMappingService
             .Include(x => x.StudentGroup)
             .Where(x => !x.IsDeleted && !x.SchoolClass!.IsDeleted && !x.Subject!.IsDeleted);
 
-        // Apply filters
         if (classId.HasValue && classId > 0)
-        {
             query = query.Where(x => x.SchoolClassId == classId.Value);
-        }
 
         if (!string.IsNullOrEmpty(groupName))
         {
             if (groupName.Equals("General", StringComparison.OrdinalIgnoreCase))
-            {
                 query = query.Where(x => string.IsNullOrEmpty(x.GroupName) || x.GroupName == "General");
-            }
             else
-            {
                 query = query.Where(x => x.GroupName == groupName || (x.StudentGroup != null && x.StudentGroup.Name == groupName));
-            }
         }
 
         if (!string.IsNullOrEmpty(search))
         {
             var lower = search.ToLower();
-            query = query.Where(x => 
-                x.SchoolClass!.Name.ToLower().Contains(lower) || 
-                x.Subject!.Name.ToLower().Contains(lower) || 
-                x.Subject!.NameBn.ToLower().Contains(lower) || 
+            query = query.Where(x =>
+                x.SchoolClass!.Name.ToLower().Contains(lower) ||
+                x.Subject!.Name.ToLower().Contains(lower) ||
+                x.Subject!.NameBn.ToLower().Contains(lower) ||
                 x.Subject!.Code.ToLower().Contains(lower) ||
-                (x.GroupName != null && x.GroupName.ToLower().Contains(lower))
-            );
+                (x.GroupName != null && x.GroupName.ToLower().Contains(lower)));
         }
 
         var totalCount = await query.CountAsync(ct);
-        
+
         var items = await query
             .OrderBy(x => x.SchoolClass!.SortOrder)
             .ThenBy(x => x.DisplayOrder)
@@ -81,14 +73,11 @@ public class ClassSubjectMappingService : IClassSubjectMappingService
                 GroupName = x.GroupName,
                 FullMarks = x.FullMarks,
                 PassMarks = x.PassMarks,
-                WrittenMarks = x.WrittenMarks,
-                MCQMarks = x.MCQMarks,
-                CQMarks = x.CQMarks,
-                PracticalMarks = x.PracticalMarks,
                 IsMandatory = x.IsMandatory,
                 IsOptional = x.IsOptional,
                 IsReligionSubject = x.IsReligionSubject,
                 ReligionType = x.ReligionType,
+                DisplayOrder = x.DisplayOrder,
                 IsActive = x.IsActive
             })
             .ToListAsync(ct);
@@ -120,15 +109,7 @@ public class ClassSubjectMappingService : IClassSubjectMappingService
             GroupName = entity.GroupName,
             FullMarks = entity.FullMarks,
             PassMarks = entity.PassMarks,
-            WrittenMarks = entity.WrittenMarks,
-            MCQMarks = entity.MCQMarks,
-            CQMarks = entity.CQMarks,
-            PracticalMarks = entity.PracticalMarks,
-            VivaMarks = entity.VivaMarks,
-            LabMarks = entity.LabMarks,
-            OralMarks = entity.OralMarks,
-            AssignmentMarks = entity.AssignmentMarks,
-            ContinuousAssessmentMarks = entity.ContinuousAssessmentMarks,
+            DisplayOrder = entity.DisplayOrder,
             IsMandatory = entity.IsMandatory,
             IsOptional = entity.IsOptional,
             IsReligionSubject = entity.IsReligionSubject,
@@ -141,7 +122,6 @@ public class ClassSubjectMappingService : IClassSubjectMappingService
     {
         var repo = _unitOfWork.Repository<ClassSubject>();
 
-        // Match StudentGroupId if GroupName is set
         int? resolvedGroupId = null;
         if (!string.IsNullOrEmpty(dto.GroupName))
         {
@@ -151,29 +131,19 @@ public class ClassSubjectMappingService : IClassSubjectMappingService
 
         if (dto.Id > 0)
         {
-            // Edit Mode
             var entity = await repo.FirstOrDefaultAsync(x => x.Id == dto.Id && !x.IsDeleted, ct)
-                ?? throw new InvalidOperationException("Class-Subject mapping configuration not found.");
+                ?? throw new InvalidOperationException("Class-Subject mapping not found.");
 
             entity.GroupName = dto.GroupName;
             entity.StudentGroupId = resolvedGroupId ?? dto.StudentGroupId;
             entity.FullMarks = dto.FullMarks;
             entity.PassMarks = dto.PassMarks;
-            entity.WrittenMarks = dto.WrittenMarks;
-            entity.MCQMarks = dto.MCQMarks;
-            entity.CQMarks = dto.CQMarks;
-            entity.PracticalMarks = dto.PracticalMarks;
-            entity.VivaMarks = dto.VivaMarks;
-            entity.LabMarks = dto.LabMarks;
-            entity.OralMarks = dto.OralMarks;
-            entity.AssignmentMarks = dto.AssignmentMarks;
-            entity.ContinuousAssessmentMarks = dto.ContinuousAssessmentMarks;
+            entity.DisplayOrder = dto.DisplayOrder;
             entity.IsOptional = dto.IsOptional;
             entity.IsMandatory = !dto.IsOptional;
             entity.IsReligionSubject = dto.IsReligionSubject;
             entity.ReligionType = dto.IsReligionSubject ? dto.ReligionType : null;
             entity.IsActive = dto.IsActive;
-            
             entity.UpdatedBy = userId;
             entity.UpdatedAt = DateTime.UtcNow;
 
@@ -182,20 +152,15 @@ public class ClassSubjectMappingService : IClassSubjectMappingService
         }
         else
         {
-            // Create Mode
-            // Check duplicate
-            var duplicate = await repo.AnyAsync(x => 
-                x.SchoolClassId == dto.SchoolClassId && 
-                x.SubjectId == dto.SubjectId && 
-                x.GroupName == dto.GroupName && 
+            var duplicate = await repo.AnyAsync(x =>
+                x.SchoolClassId == dto.SchoolClassId &&
+                x.SubjectId == dto.SubjectId &&
+                x.GroupName == dto.GroupName &&
                 !x.IsDeleted, ct);
 
             if (duplicate)
-            {
                 throw new InvalidOperationException("This subject is already mapped to the selected class and stream.");
-            }
 
-            // Fetch subject to inherit properties if needed
             var subject = await _unitOfWork.Repository<Subject>().FirstOrDefaultAsync(x => x.Id == dto.SubjectId && !x.IsDeleted, ct)
                 ?? throw new InvalidOperationException("Subject not found.");
 
@@ -207,22 +172,13 @@ public class ClassSubjectMappingService : IClassSubjectMappingService
                 GroupName = dto.GroupName,
                 FullMarks = dto.FullMarks,
                 PassMarks = dto.PassMarks,
-                WrittenMarks = dto.WrittenMarks,
-                MCQMarks = dto.MCQMarks,
-                CQMarks = dto.CQMarks,
-                PracticalMarks = dto.PracticalMarks,
-                VivaMarks = dto.VivaMarks,
-                LabMarks = dto.LabMarks,
-                OralMarks = dto.OralMarks,
-                AssignmentMarks = dto.AssignmentMarks,
-                ContinuousAssessmentMarks = dto.ContinuousAssessmentMarks,
+                DisplayOrder = dto.DisplayOrder,
                 IsOptional = dto.IsOptional,
                 IsMandatory = !dto.IsOptional,
                 IsReligionSubject = dto.IsReligionSubject || subject.IsReligionSubject,
                 ReligionType = dto.IsReligionSubject ? dto.ReligionType : subject.ReligionType,
                 IsActive = dto.IsActive,
-                CreatedBy = userId,
-                CreatedAt = DateTime.UtcNow
+                CreatedBy = userId
             };
 
             await repo.AddAsync(entity, ct);
@@ -234,7 +190,7 @@ public class ClassSubjectMappingService : IClassSubjectMappingService
     public async Task SaveAssignmentsAsync(ClassSubjectAssignmentDto dto, string userId, CancellationToken ct = default)
     {
         var repo = _unitOfWork.Repository<ClassSubject>();
-        
+
         int? resolvedGroupId = null;
         if (!string.IsNullOrEmpty(dto.GroupName))
         {
@@ -244,17 +200,15 @@ public class ClassSubjectMappingService : IClassSubjectMappingService
 
         foreach (var subId in dto.SubjectIds)
         {
-            // Check if mapping exists
-            var existing = await repo.FirstOrDefaultAsync(x => 
-                x.SchoolClassId == dto.SchoolClassId && 
-                x.SubjectId == subId && 
+            var existing = await repo.FirstOrDefaultAsync(x =>
+                x.SchoolClassId == dto.SchoolClassId &&
+                x.SubjectId == subId &&
                 x.GroupName == dto.GroupName, ct);
 
             if (existing != null)
             {
                 if (existing.IsDeleted)
                 {
-                    // Reactivate
                     existing.IsDeleted = false;
                     existing.IsActive = true;
                     existing.UpdatedBy = userId;
@@ -279,8 +233,7 @@ public class ClassSubjectMappingService : IClassSubjectMappingService
                     IsReligionSubject = subject.IsReligionSubject,
                     ReligionType = subject.ReligionType,
                     IsActive = true,
-                    CreatedBy = userId,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedBy = userId
                 };
                 await repo.AddAsync(mapping, ct);
             }
@@ -293,24 +246,21 @@ public class ClassSubjectMappingService : IClassSubjectMappingService
     {
         var repo = _unitOfWork.Repository<ClassSubject>();
         var entity = await repo.FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted, ct)
-            ?? throw new InvalidOperationException("Class-Subject mapping config not found.");
+            ?? throw new InvalidOperationException("Class-Subject mapping not found.");
 
         entity.IsDeleted = true;
         entity.UpdatedBy = userId;
         entity.UpdatedAt = DateTime.UtcNow;
-
         await _unitOfWork.SaveChangesAsync(ct);
     }
 
     public async Task<IEnumerable<SubjectListItemDto>> GetUnmappedSubjectsAsync(int classId, string? groupName, CancellationToken ct = default)
     {
-        // Get already mapped subject IDs
         var mappedIds = await _unitOfWork.Repository<ClassSubject>().Query()
             .Where(x => x.SchoolClassId == classId && x.GroupName == groupName && !x.IsDeleted)
             .Select(x => x.SubjectId)
             .ToListAsync(ct);
 
-        // Fetch subjects that are NOT in mapped IDs
         return await _unitOfWork.Repository<Subject>().Query()
             .Where(s => !s.IsDeleted && !mappedIds.Contains(s.Id) && s.IsActive)
             .OrderBy(s => s.Code)
@@ -320,11 +270,16 @@ public class ClassSubjectMappingService : IClassSubjectMappingService
                 Code = s.Code,
                 Name = s.Name,
                 NameBn = s.NameBn,
+                ShortName = s.ShortName,
+                Category = s.Category,
                 SubjectGroup = s.SubjectGroup,
                 IsReligionSubject = s.IsReligionSubject,
                 ReligionType = s.ReligionType,
                 IsOptional = s.IsOptional,
                 IsPractical = s.IsPractical,
+                DefaultFullMarks = s.DefaultFullMarks,
+                DefaultPassMarks = s.DefaultPassMarks,
+                DisplayOrder = s.DisplayOrder,
                 IsActive = s.IsActive
             })
             .ToListAsync(ct);

@@ -1,0 +1,90 @@
+@model SchoolManagementSystem.Models.Entities.Website.EmailTemplate
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    bool isEdit = Model.Id > 0;
+    ViewData["Title"] = isEdit ? "Edit Email Template" : "Create Email Template";
+}
+
+<div class="container-fluid py-4">
+    <div class="mb-4">
+        <a href="/Admin/Website" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i> Back to Console</a>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white py-3">
+            <h5 class="fw-bold mb-0 text-primary"><i class="bi bi-envelope-paper me-2"></i> @(isEdit ? "Update Email Template" : "Create Email Template")</h5>
+        </div>
+        <div class="card-body p-4">
+            <form action="/Admin/Website/EmailTemplates/CreateEdit/@(isEdit ? Model.Id.ToString() : "")" method="post" id="templateForm">
+                @Html.AntiForgeryToken()
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Template Name</label>
+                            <input type="text" name="TemplateName" value="@Model.TemplateName" class="form-control" placeholder="Employee Invitation" required/>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Email Subject</label>
+                            <input type="text" name="Subject" value="@Model.Subject" class="form-control" placeholder="Welcome to {{SchoolName}}" required/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Available Placeholders (comma separated)</label>
+                    <input type="text" name="Placeholders" value="@Model.Placeholders" class="form-control" placeholder="{{SchoolName}}, {{EmployeeName}}, {{StudentName}}, {{GuardianName}}, {{AttendanceDate}}"/>
+                    <span class="small text-muted">Use these placeholders in subject and body. They will be replaced dynamically.</span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Active Status</label>
+                    <select name="IsActive" class="form-select" style="max-width: 200px;">
+                        <option value="true" selected="@(Model.IsActive)">Active</option>
+                        <option value="false" selected="@(!Model.IsActive)">Inactive</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Email Body (HTML)</label>
+                    <input type="hidden" name="Body" id="hiddenBody" value="@Model.Body"/>
+                    <div id="editor-container" style="height: 400px; background-color: #fff; border-radius:4px;">
+                        @Html.Raw(Model.Body)
+                    </div>
+                </div>
+
+                <div class="text-end pt-3 border-top">
+                    <button type="submit" class="btn btn-primary px-5"><i class="bi bi-save me-1"></i> Save Template</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const quill = new Quill('#editor-container', {
+                theme: 'snow',
+                modules: {
+                    toolbar: [
+                        [{ 'header': [1, 2, 3, false] }],
+                        ['bold', 'italic', 'underline', 'strike'],
+                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                        ['link', 'blockquote', 'code-block'],
+                        ['clean']
+                    ]
+                }
+            });
+
+            const form = document.getElementById('templateForm');
+            form.addEventListener('submit', function() {
+                document.getElementById('hiddenBody').value = quill.root.innerHTML;
+            });
+        });
+    </script>
+}

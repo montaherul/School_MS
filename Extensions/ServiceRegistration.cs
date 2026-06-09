@@ -117,6 +117,8 @@ public static class ServiceRegistration
         services.AddScoped<IGalleryRepository, GalleryRepository>();
         services.AddScoped<IGalleryImageRepository, GalleryImageRepository>();
         services.AddScoped<INoticeRepository, NoticeRepository>();
+        services.AddScoped<IContactMessageRepository, ContactMessageRepository>();
+        services.AddScoped<IEmailTemplateRepository, EmailTemplateRepository>();
 
         services.AddScoped<IDashboardService, DashboardService>();
         services.AddScoped<IStudentService, StudentService>();
@@ -152,9 +154,9 @@ public static class ServiceRegistration
         services.AddScoped<IReEvaluationService, ReEvaluationService>();
         services.AddScoped<IReportCardService, ReportCardService>();
         services.AddScoped<IResultAnalyticsService, ResultAnalyticsService>();
-        services.AddScoped<ISubjectComponentService, SubjectComponentService>();
         services.AddScoped<IExamComponentService, ExamComponentService>();
         services.AddScoped<ISubjectMarkStructureService, SubjectMarkStructureService>();
+        services.AddScoped<IExamValidationService, ExamValidationService>();
 
         // Register Public Website Services
         services.AddScoped<ISchoolWebsiteService, SchoolWebsiteService>();
@@ -163,12 +165,16 @@ public static class ServiceRegistration
         services.AddScoped<IEventService, EventService>();
         services.AddScoped<IGalleryService, GalleryService>();
         services.AddScoped<IWebsitePageService, WebsitePageService>();
+        services.AddScoped<IContactMessageService, ContactMessageService>();
+        services.AddScoped<IEmailTemplateService, EmailTemplateService>();
+        services.AddScoped<IAdmissionFeeStructureService, AdmissionFeeStructureService>();
         services.AddScoped<IAuditLogService, AuditLogService>();
         services.AddScoped<IPasswordHashService, Pbkdf2PasswordHashService>();
         services.AddScoped<IFileStorageService, LocalFileStorageService>();
         services.AddScoped<IEmailSender, SmtpEmailSender>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IPdfGenerator, PlainPdfGenerator>();
+        services.AddScoped<IViewRendererService, ViewRendererService>();
 
         // Attendance & Leave Management Modules
         services.AddScoped<SchoolManagementSystem.Repositories.Interfaces.Attendance.IStudentAttendanceRepository, SchoolManagementSystem.Repositories.Implementations.Attendance.StudentAttendanceRepository>();

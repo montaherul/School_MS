@@ -60,27 +60,210 @@ public class SchoolWebsiteService : ISchoolWebsiteService
         {
             existing.SchoolName = settings.SchoolName;
             existing.ShortName = settings.ShortName;
+            existing.BanglaName = settings.BanglaName;
             existing.EIIN = settings.EIIN;
+            existing.SchoolCode = settings.SchoolCode;
+            existing.EstablishedYear = settings.EstablishedYear;
+            existing.SchoolMotto = settings.SchoolMotto;
+            existing.SchoolDescription = settings.SchoolDescription;
             existing.Address = settings.Address;
             existing.Phone = settings.Phone;
+            existing.Mobile = settings.Mobile;
             existing.Email = settings.Email;
             existing.Website = settings.Website;
             existing.FacebookUrl = settings.FacebookUrl;
             existing.YouTubeUrl = settings.YouTubeUrl;
+            existing.InstagramUrl = settings.InstagramUrl;
+            existing.LinkedInUrl = settings.LinkedInUrl;
+            existing.TwitterUrl = settings.TwitterUrl;
             if (!string.IsNullOrEmpty(settings.LogoPath)) existing.LogoPath = settings.LogoPath;
             if (!string.IsNullOrEmpty(settings.FaviconPath)) existing.FaviconPath = settings.FaviconPath;
+            if (!string.IsNullOrEmpty(settings.LoginLogoPath)) existing.LoginLogoPath = settings.LoginLogoPath;
+            if (!string.IsNullOrEmpty(settings.FooterLogoPath)) existing.FooterLogoPath = settings.FooterLogoPath;
+            if (!string.IsNullOrEmpty(settings.WebsiteBannerPath)) existing.WebsiteBannerPath = settings.WebsiteBannerPath;
             existing.PrincipalName = settings.PrincipalName;
+            existing.PrincipalDesignation = settings.PrincipalDesignation;
             existing.PrincipalMessage = settings.PrincipalMessage;
             if (!string.IsNullOrEmpty(settings.PrincipalImagePath)) existing.PrincipalImagePath = settings.PrincipalImagePath;
+            if (!string.IsNullOrEmpty(settings.PrincipalSignaturePath)) existing.PrincipalSignaturePath = settings.PrincipalSignaturePath;
+            existing.PrincipalQualification = settings.PrincipalQualification;
             existing.Mission = settings.Mission;
             existing.Vision = settings.Vision;
             existing.FooterText = settings.FooterText;
+            existing.CopyrightText = settings.CopyrightText;
             existing.GoogleMapEmbed = settings.GoogleMapEmbed;
+            existing.MetaTitle = settings.MetaTitle;
+            existing.MetaDescription = settings.MetaDescription;
+            existing.MetaKeywords = settings.MetaKeywords;
+            if (!string.IsNullOrEmpty(settings.OgImagePath)) existing.OgImagePath = settings.OgImagePath;
+            existing.OgTitle = settings.OgTitle;
+            existing.OgDescription = settings.OgDescription;
+            existing.ShowSlider = settings.ShowSlider;
+            existing.ShowPrincipalMessage = settings.ShowPrincipalMessage;
+            existing.ShowNotices = settings.ShowNotices;
+            existing.ShowEvents = settings.ShowEvents;
+            existing.ShowGallery = settings.ShowGallery;
+            existing.ShowAdmissionCTA = settings.ShowAdmissionCTA;
+            existing.ShowStatistics = settings.ShowStatistics;
+            existing.ShowWelcomeSection = settings.ShowWelcomeSection;
+
+            // Admission Page Settings
+            existing.AdmissionEnabled = settings.AdmissionEnabled;
+            existing.OnlineAdmissionEnabled = settings.OnlineAdmissionEnabled;
+            existing.ShowAdmissionPage = settings.ShowAdmissionPage;
+            existing.ShowAdmissionFees = settings.ShowAdmissionFees;
+            existing.ShowAdmissionGuidelines = settings.ShowAdmissionGuidelines;
+            existing.ShowAdmissionRequirements = settings.ShowAdmissionRequirements;
+            existing.ShowAdmissionDownloads = settings.ShowAdmissionDownloads;
+            existing.AdmissionTitle = settings.AdmissionTitle;
+            existing.AdmissionSubtitle = settings.AdmissionSubtitle;
+            existing.AdmissionGuidelines = settings.AdmissionGuidelines;
+            existing.AdmissionEligibility = settings.AdmissionEligibility;
+            existing.AdmissionRequirements = settings.AdmissionRequirements;
+            existing.AdmissionProcess = settings.AdmissionProcess;
+            existing.AdmissionFeeNote = settings.AdmissionFeeNote;
+            existing.AdmissionCtaTitle = settings.AdmissionCtaTitle;
+            existing.AdmissionCtaText = settings.AdmissionCtaText;
+            existing.AdmissionOpenDate = settings.AdmissionOpenDate;
+            existing.AdmissionCloseDate = settings.AdmissionCloseDate;
+            if (!string.IsNullOrEmpty(settings.AdmissionCircularPath)) existing.AdmissionCircularPath = settings.AdmissionCircularPath;
+            if (!string.IsNullOrEmpty(settings.AdmissionFormPath)) existing.AdmissionFormPath = settings.AdmissionFormPath;
+
+            // Admission SEO
+            existing.AdmissionMetaTitle = settings.AdmissionMetaTitle;
+            existing.AdmissionMetaDescription = settings.AdmissionMetaDescription;
+            existing.AdmissionMetaKeywords = settings.AdmissionMetaKeywords;
+            existing.AdmissionOgTitle = settings.AdmissionOgTitle;
+            existing.AdmissionOgDescription = settings.AdmissionOgDescription;
+            if (!string.IsNullOrEmpty(settings.AdmissionOgImagePath)) existing.AdmissionOgImagePath = settings.AdmissionOgImagePath;
+
             existing.UpdatedAt = DateTime.UtcNow;
             existing.UpdatedBy = "admin";
             _repo.Update(existing);
         }
         await _uow.SaveChangesAsync(cancellationToken);
+    }
+}
+
+public class ContactMessageService : IContactMessageService
+{
+    private readonly IContactMessageRepository _repo;
+    private readonly IUnitOfWork _uow;
+
+    public ContactMessageService(IContactMessageRepository repo, IUnitOfWork uow)
+    {
+        _repo = repo;
+        _uow = uow;
+    }
+
+    public async Task<IReadOnlyList<ContactMessage>> GetMessagesAsync(CancellationToken cancellationToken = default)
+    {
+        return await _repo.ListAsync(m => !m.IsDeleted, cancellationToken);
+    }
+
+    public async Task<ContactMessage?> GetMessageByIdAsync(int id, CancellationToken cancellationToken = default)
+    {
+        return await _repo.GetByIdAsync(id, cancellationToken);
+    }
+
+    public async Task SaveMessageAsync(ContactMessage message, CancellationToken cancellationToken = default)
+    {
+        message.CreatedAt = DateTime.UtcNow;
+        message.CreatedBy = "public";
+        message.Status = "Unread";
+        await _repo.AddAsync(message, cancellationToken);
+        await _uow.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task MarkAsReadAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var msg = await _repo.GetByIdAsync(id, cancellationToken);
+        if (msg != null)
+        {
+            msg.Status = "Read";
+            msg.UpdatedAt = DateTime.UtcNow;
+            msg.UpdatedBy = "admin";
+            _repo.Update(msg);
+            await _uow.SaveChangesAsync(cancellationToken);
+        }
+    }
+
+    public async Task DeleteMessageAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var msg = await _repo.GetByIdAsync(id, cancellationToken);
+        if (msg != null)
+        {
+            msg.IsDeleted = true;
+            msg.UpdatedAt = DateTime.UtcNow;
+            msg.UpdatedBy = "admin";
+            _repo.Update(msg);
+            await _uow.SaveChangesAsync(cancellationToken);
+        }
+    }
+
+    public async Task<int> GetUnreadCountAsync(CancellationToken cancellationToken = default)
+    {
+        return await _repo.CountAsync(m => !m.IsDeleted && m.Status == "Unread", cancellationToken);
+    }
+}
+
+public class EmailTemplateService : IEmailTemplateService
+{
+    private readonly IEmailTemplateRepository _repo;
+    private readonly IUnitOfWork _uow;
+
+    public EmailTemplateService(IEmailTemplateRepository repo, IUnitOfWork uow)
+    {
+        _repo = repo;
+        _uow = uow;
+    }
+
+    public async Task<IReadOnlyList<EmailTemplate>> GetTemplatesAsync(CancellationToken cancellationToken = default)
+    {
+        return await _repo.ListAsync(t => !t.IsDeleted, cancellationToken);
+    }
+
+    public async Task<EmailTemplate?> GetTemplateByIdAsync(int id, CancellationToken cancellationToken = default)
+    {
+        return await _repo.GetByIdAsync(id, cancellationToken);
+    }
+
+    public async Task CreateTemplateAsync(EmailTemplate template, CancellationToken cancellationToken = default)
+    {
+        template.CreatedAt = DateTime.UtcNow;
+        template.CreatedBy = "admin";
+        await _repo.AddAsync(template, cancellationToken);
+        await _uow.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task UpdateTemplateAsync(EmailTemplate template, CancellationToken cancellationToken = default)
+    {
+        var existing = await _repo.GetByIdAsync(template.Id, cancellationToken);
+        if (existing != null)
+        {
+            existing.TemplateName = template.TemplateName;
+            existing.Subject = template.Subject;
+            existing.Body = template.Body;
+            existing.Placeholders = template.Placeholders;
+            existing.IsActive = template.IsActive;
+            existing.UpdatedAt = DateTime.UtcNow;
+            existing.UpdatedBy = "admin";
+            _repo.Update(existing);
+            await _uow.SaveChangesAsync(cancellationToken);
+        }
+    }
+
+    public async Task DeleteTemplateAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var existing = await _repo.GetByIdAsync(id, cancellationToken);
+        if (existing != null)
+        {
+            existing.IsDeleted = true;
+            existing.UpdatedAt = DateTime.UtcNow;
+            existing.UpdatedBy = "admin";
+            _repo.Update(existing);
+            await _uow.SaveChangesAsync(cancellationToken);
+        }
     }
 }
 
@@ -458,6 +641,75 @@ public class WebsitePageService : IWebsitePageService
             existing.UpdatedAt = DateTime.UtcNow;
             existing.UpdatedBy = "admin";
             _repo.Update(existing);
+            await _uow.SaveChangesAsync(cancellationToken);
+        }
+    }
+}
+
+public class AdmissionFeeStructureService : IAdmissionFeeStructureService
+{
+    private readonly IUnitOfWork _uow;
+
+    public AdmissionFeeStructureService(IUnitOfWork uow)
+    {
+        _uow = uow;
+    }
+
+    public async Task<IReadOnlyList<AdmissionFeeStructure>> GetAllAsync(CancellationToken cancellationToken = default)
+    {
+        return await _uow.Repository<AdmissionFeeStructure>()
+            .ListAsync(f => !f.IsDeleted, cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<AdmissionFeeStructure>> GetActiveAsync(CancellationToken cancellationToken = default)
+    {
+        return await _uow.Repository<AdmissionFeeStructure>()
+            .ListAsync(f => f.IsActive && !f.IsDeleted, cancellationToken);
+    }
+
+    public async Task<AdmissionFeeStructure?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
+    {
+        return await _uow.Repository<AdmissionFeeStructure>().GetByIdAsync(id, cancellationToken);
+    }
+
+    public async Task CreateAsync(AdmissionFeeStructure fee, CancellationToken cancellationToken = default)
+    {
+        fee.CreatedAt = DateTime.UtcNow;
+        fee.CreatedBy = "admin";
+        await _uow.Repository<AdmissionFeeStructure>().AddAsync(fee, cancellationToken);
+        await _uow.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task UpdateAsync(AdmissionFeeStructure fee, CancellationToken cancellationToken = default)
+    {
+        var existing = await _uow.Repository<AdmissionFeeStructure>().GetByIdAsync(fee.Id, cancellationToken);
+        if (existing != null)
+        {
+            existing.SchoolClassId = fee.SchoolClassId;
+            existing.ClassName = fee.ClassName;
+            existing.AdmissionFee = fee.AdmissionFee;
+            existing.MonthlyFee = fee.MonthlyFee;
+            existing.SessionFee = fee.SessionFee;
+            existing.ExamFee = fee.ExamFee;
+            existing.OtherFee = fee.OtherFee;
+            existing.DisplayOrder = fee.DisplayOrder;
+            existing.IsActive = fee.IsActive;
+            existing.UpdatedAt = DateTime.UtcNow;
+            existing.UpdatedBy = "admin";
+            _uow.Repository<AdmissionFeeStructure>().Update(existing);
+            await _uow.SaveChangesAsync(cancellationToken);
+        }
+    }
+
+    public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var existing = await _uow.Repository<AdmissionFeeStructure>().GetByIdAsync(id, cancellationToken);
+        if (existing != null)
+        {
+            existing.IsDeleted = true;
+            existing.UpdatedAt = DateTime.UtcNow;
+            existing.UpdatedBy = "admin";
+            _uow.Repository<AdmissionFeeStructure>().Update(existing);
             await _uow.SaveChangesAsync(cancellationToken);
         }
     }

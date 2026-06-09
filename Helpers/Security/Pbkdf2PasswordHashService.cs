@@ -19,7 +19,7 @@ public class Pbkdf2PasswordHashService : IPasswordHashService
     {
         if (passwordHash == "ChangeThisHash")
         {
-            return password == "Admin@12345";
+            return false;
         }
 
         var parts = passwordHash.Split(':');

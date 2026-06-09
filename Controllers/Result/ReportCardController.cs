@@ -6,6 +6,7 @@ using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.Services.Interfaces.Academic;
 using SchoolManagementSystem.Services.Interfaces.Students;
+using SchoolManagementSystem.Services.Interfaces.Teachers;
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Repositories.Interfaces.Result;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
@@ -20,13 +21,15 @@ public class ReportCardController : Controller
     private readonly IStudentService _studentService;
     private readonly IUnitOfWork _uow;
     private readonly IStudentExamResultRepository _studentExamResultRepository;
+    private readonly ITeacherScopeService _teacherScopeService;
 
-    public ReportCardController(IReportCardService reportCardService, IStudentService studentService, IUnitOfWork uow, IStudentExamResultRepository studentExamResultRepository)
+    public ReportCardController(IReportCardService reportCardService, IStudentService studentService, IUnitOfWork uow, IStudentExamResultRepository studentExamResultRepository, ITeacherScopeService teacherScopeService)
     {
         _reportCardService = reportCardService;
         _studentService = studentService;
         _uow = uow;
         _studentExamResultRepository = studentExamResultRepository;
+        _teacherScopeService = teacherScopeService;
     }
 
     [HttpGet]
@@ -44,7 +47,23 @@ public class ReportCardController : Controller
 
         if (classId.HasValue)
         {
+            var isTeacher = User.IsInRole("Teacher") || User.IsInRole("Senior Lecturer") || User.IsInRole("Lecturer");
+            var isAdmin = User.IsInRole("Admin") || User.IsInRole("Super Admin") || User.IsInRole("Principal") || User.IsInRole("Exam Controller");
+
+            IEnumerable<int> allowedSectionIds;
+            if (isTeacher && !isAdmin)
+            {
+                var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+                allowedSectionIds = await _teacherScopeService.GetAssignedSectionIdsAsync(currentUserId, classId.Value, ct);
+            }
+            else
+            {
+                allowedSectionIds = Enumerable.Empty<int>(); // admins see all
+            }
+
             var sections = await _uow.Repository<Section>().ListAsync(x => x.SchoolClassId == classId.Value && !x.IsDeleted);
+            if (isTeacher && !isAdmin)
+                sections = sections.Where(s => allowedSectionIds.Contains(s.Id)).ToList();
             ViewBag.Sections = sections;
         }
 
@@ -92,8 +111,7 @@ public class ReportCardController : Controller
             }
             else if (User.IsInRole("Teacher") || User.IsInRole("Senior Lecturer") || User.IsInRole("Lecturer"))
             {
-                var studentObj = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().GetByIdAsync(studentId);
-                if (studentObj == null)
+                if (!await _teacherScopeService.HasStudentAccessAsync(currentUserId, studentId, ct))
                     return Forbid();
             }
             else
@@ -145,8 +163,7 @@ public class ReportCardController : Controller
             }
             else if (User.IsInRole("Teacher") || User.IsInRole("Senior Lecturer") || User.IsInRole("Lecturer"))
             {
-                var studentObj = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().GetByIdAsync(studentId);
-                if (studentObj == null)
+                if (!await _teacherScopeService.HasStudentAccessAsync(currentUserId, studentId, ct))
                     return Forbid();
             }
             else

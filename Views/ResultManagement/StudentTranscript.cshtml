@@ -6,22 +6,22 @@
     var bestGpa = Model.ExamResults.Any() ? Model.ExamResults.Max(e => e.Gpa) : 0m;
 }
 
-<div class="adm-page">
-    <div class="adm-header">
-        <div class="adm-header__left">
-            <div class="adm-header__icon-wrap">
+<div class="er-page">
+    <div class="er-page-header">
+        <div class="er-page-header__left">
+            <div class="er-page-header__icon">
                 <i class="bi bi-journal-text"></i>
             </div>
             <div>
-                <h1 class="adm-header__title">Academic Transcript</h1>
-                <p class="adm-header__sub">Complete academic record for @Model.StudentName</p>
+                <h1 class="er-page-header__title">Academic Transcript</h1>
+                <p class="er-page-header__sub">Complete academic record for @Model.StudentName</p>
             </div>
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <a href="/Transcript/MyTranscript?academicYearId=@Model.AcademicYearId" class="adm-btn adm-btn--primary">
+            <a href="/Transcript/MyTranscript?academicYearId=@Model.AcademicYearId" class="er-btn er-btn--primary">
                 <i class="bi bi-download"></i> View Full Transcript
             </a>
-            <button type="button" class="adm-btn adm-btn--ghost" onclick="window.print()">
+            <button type="button" class="er-btn er-btn--secondary" onclick="window.print()">
                 <i class="bi bi-printer"></i> Print
             </button>
         </div>
@@ -49,8 +49,8 @@
 
     @if (!Model.ExamResults.Any() && !Model.SubjectWiseResults.Any())
     {
-        <div class="adm-table-card" style="border-radius:var(--adm-radius-lg);border-top:1px solid var(--adm-border);">
-            <div class="dash-empty">
+        <div class="er-card" style="border-radius:var(--adm-radius-lg);border-top:1px solid var(--adm-border);">
+            <div class="er-empty">
                 <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                     <polyline points="14 2 14 8 20 8"></polyline>
@@ -58,8 +58,8 @@
                     <line x1="16" y1="17" x2="8" y2="17"></line>
                     <polyline points="10 9 9 9 8 9"></polyline>
                 </svg>
-                <p class="dash-empty__title">No Transcript Data Available</p>
-                <p class="dash-empty__sub">Your academic transcript will be available once exam results are published.</p>
+                <p class="er-empty__title">No Transcript Data Available</p>
+                <p class="er-empty__desc">Your academic transcript will be available once exam results are published.</p>
             </div>
         </div>
     }
@@ -67,7 +67,7 @@
     {
         @if (Model.ExamResults.Any())
         {
-            <div class="adm-table-card" style="margin-bottom:20px;border-radius:var(--adm-radius-lg);border-top:1px solid var(--adm-border);">
+            <div class="er-card" style="margin-bottom:20px;border-radius:var(--adm-radius-lg);border-top:1px solid var(--adm-border);">
                 <div style="font-size:14px;font-weight:700;color:var(--adm-text);padding:14px 18px;background:var(--adm-surface-2);border-bottom:1px solid var(--adm-border);display:flex;align-items:center;gap:10px;">
                     <i class="bi bi-journal-check" style="color:var(--adm-primary);"></i>
                     Exam History
@@ -122,11 +122,11 @@
                                                 <td style="text-align:center;">
                                                     @if (sub.IsPassed)
                                                     {
-                                                        <span class="adm-status adm-status--approved" style="font-size:10px;">Pass</span>
+                                                        <span class="er-badge er-badge--approved" style="font-size:10px;">Pass</span>
                                                     }
                                                     else
                                                     {
-                                                        <span class="adm-status adm-status--rejected" style="font-size:10px;">Fail</span>
+                                                        <span class="er-badge er-badge--rejected" style="font-size:10px;">Fail</span>
                                                     }
                                                 </td>
                                             </tr>
@@ -143,11 +143,11 @@
                                             <td style="text-align:center;">
                                                 @if (exam.IsPassed)
                                                 {
-                                                    <span class="adm-status adm-status--approved">Passed</span>
+                                                    <span class="er-badge er-badge--approved">Passed</span>
                                                 }
                                                 else
                                                 {
-                                                    <span class="adm-status adm-status--rejected">Failed</span>
+                                                    <span class="er-badge er-badge--rejected">Failed</span>
                                                 }
                                             </td>
                                         </tr>
@@ -181,7 +181,7 @@
 
         @if (Model.SubjectWiseResults.Any())
         {
-            <div class="adm-table-card" style="margin-bottom:20px;border-radius:var(--adm-radius-lg);border-top:1px solid var(--adm-border);">
+            <div class="er-card" style="margin-bottom:20px;border-radius:var(--adm-radius-lg);border-top:1px solid var(--adm-border);">
                 <div style="font-size:14px;font-weight:700;color:var(--adm-text);padding:14px 18px;background:var(--adm-surface-2);border-bottom:1px solid var(--adm-border);display:flex;align-items:center;gap:10px;">
                     <i class="bi bi-bar-chart" style="color:var(--adm-primary);"></i>
                     Subject Summary
@@ -210,11 +210,11 @@
                                     <td style="text-align:center;">
                                         @if (sub.IsPassed)
                                         {
-                                            <span class="adm-status adm-status--approved" style="font-size:10px;">Pass</span>
+                                            <span class="er-badge er-badge--approved" style="font-size:10px;">Pass</span>
                                         }
                                         else
                                         {
-                                            <span class="adm-status adm-status--rejected" style="font-size:10px;">Fail</span>
+                                            <span class="er-badge er-badge--rejected" style="font-size:10px;">Fail</span>
                                         }
                                     </td>
                                 </tr>
@@ -225,32 +225,32 @@
             </div>
         }
 
-        <div class="dash-stats" style="margin-bottom:0;">
-            <div class="dash-stat-card" style="background:linear-gradient(135deg,var(--adm-primary),#0D6B63);border-color:var(--adm-primary);color:#fff;">
-                <div class="dash-stat-card__icon" style="background:rgba(255,255,255,0.15);color:#fff;">
+        <div class="er-stats" style="margin-bottom:0;">
+            <div class="er-stat" style="background:linear-gradient(135deg,var(--adm-primary),#0D6B63);border-color:var(--adm-primary);color:#fff;">
+                <div class="er-stat__icon" style="background:rgba(255,255,255,0.15);color:#fff;">
                     <i class="bi bi-calculator"></i>
                 </div>
-                <div class="dash-stat-card__body">
-                    <span class="dash-stat-card__label" style="color:rgba(255,255,255,0.75);">Final GPA</span>
-                    <span class="dash-stat-card__value" style="color:#fff;">@Model.FinalGPA.ToString("F2")</span>
+                <div class="er-stat__body">
+                    <span class="er-stat__label" style="color:rgba(255,255,255,0.75);">Final GPA</span>
+                    <span class="er-stat__value" style="color:#fff;">@Model.FinalGPA.ToString("F2")</span>
                 </div>
             </div>
-            <div class="dash-stat-card">
-                <div class="dash-stat-card__icon dash-stat-card__icon--primary">
+            <div class="er-stat">
+                <div class="er-stat__icon er-stat__icon--primary">
                     <i class="bi bi-award"></i>
                 </div>
-                <div class="dash-stat-card__body">
-                    <span class="dash-stat-card__label">Final Grade</span>
-                    <span class="dash-stat-card__value" style="font-size:24px;">@Model.FinalGrade</span>
+                <div class="er-stat__body">
+                    <span class="er-stat__label">Final Grade</span>
+                    <span class="er-stat__value" style="font-size:24px;">@Model.FinalGrade</span>
                 </div>
             </div>
-            <div class="dash-stat-card">
-                <div class="dash-stat-card__icon dash-stat-card__icon--warning">
+            <div class="er-stat">
+                <div class="er-stat__icon er-stat__icon--warning">
                     <i class="bi bi-trophy"></i>
                 </div>
-                <div class="dash-stat-card__body">
-                    <span class="dash-stat-card__label">Merit Position</span>
-                    <span class="dash-stat-card__value">
+                <div class="er-stat__body">
+                    <span class="er-stat__label">Merit Position</span>
+                    <span class="er-stat__value">
                         @Model.MeritPosition
                         @if (Model.MeritPosition > 0)
                         {
@@ -259,44 +259,44 @@
                     </span>
                 </div>
             </div>
-            <div class="dash-stat-card">
-                <div class="dash-stat-card__icon dash-stat-card__icon--info">
+            <div class="er-stat">
+                <div class="er-stat__icon er-stat__icon--info">
                     <i class="bi bi-journal"></i>
                 </div>
-                <div class="dash-stat-card__body">
-                    <span class="dash-stat-card__label">Exams Taken</span>
-                    <span class="dash-stat-card__value">@totalExams</span>
+                <div class="er-stat__body">
+                    <span class="er-stat__label">Exams Taken</span>
+                    <span class="er-stat__value">@totalExams</span>
                 </div>
             </div>
-            <div class="dash-stat-card">
-                <div class="dash-stat-card__icon dash-stat-card__icon--success">
+            <div class="er-stat">
+                <div class="er-stat__icon er-stat__icon--success">
                     <i class="bi bi-check-circle"></i>
                 </div>
-                <div class="dash-stat-card__body">
-                    <span class="dash-stat-card__label">Passed Exams</span>
-                    <span class="dash-stat-card__value">
+                <div class="er-stat__body">
+                    <span class="er-stat__label">Passed Exams</span>
+                    <span class="er-stat__value">
                         @passedExams
                         @if (totalExams > 0)
                         {
-                            <span class="dash-stat-card__unit" style="font-size:14px;">/ @totalExams</span>
+                            <span class="er-stat__unit" style="font-size:14px;">/ @totalExams</span>
                         }
                     </span>
                 </div>
             </div>
-            <div class="dash-stat-card">
-                <div class="dash-stat-card__icon" style="background:#eef2ff;color:#4f46e5;">
+            <div class="er-stat">
+                <div class="er-stat__icon" style="background:#eef2ff;color:#4f46e5;">
                     <i class="bi bi-star"></i>
                 </div>
-                <div class="dash-stat-card__body">
-                    <span class="dash-stat-card__label">Best GPA</span>
-                    <span class="dash-stat-card__value">@bestGpa.ToString("F2")</span>
+                <div class="er-stat__body">
+                    <span class="er-stat__label">Best GPA</span>
+                    <span class="er-stat__value">@bestGpa.ToString("F2")</span>
                 </div>
             </div>
         </div>
     }
 
     <div style="margin-top:20px;text-align:center;">
-        <a href="/Transcript/MyTranscript?academicYearId=@Model.AcademicYearId" class="adm-btn adm-btn--primary">
+        <a href="/Transcript/MyTranscript?academicYearId=@Model.AcademicYearId" class="er-btn er-btn--primary">
             <i class="bi bi-box-arrow-up-right"></i> View Complete Transcript
         </a>
     </div>

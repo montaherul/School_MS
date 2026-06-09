@@ -6,10 +6,10 @@
     var sections = ViewBag.Sections as IEnumerable<SchoolManagementSystem.Models.Entities.Academic.Section>;
 }
 
-<div class="adm-page">
-    <div class="adm-header">
+<div class="adm-page er-page">
+    <div class="er-page-header">
         <div class="adm-header__left">
-            <div class="adm-header__icon-wrap">
+            <div class="er-page-header__icon">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                     <polyline points="14 2 14 8 20 8" />
@@ -20,18 +20,18 @@
                 </svg>
             </div>
             <div>
-                <h1 class="adm-header__title">Student Report Cards</h1>
-                <p class="adm-header__sub">Generate, preview, and download formal academic progress report cards.</p>
+                <h1 class="er-page-header__title">Student Report Cards</h1>
+                <p class="er-page-header__sub">Generate, preview, and download formal academic progress report cards.</p>
             </div>
         </div>
     </div>
 
     <!-- ── Filter Selector Panel ── -->
-    <div class="adm-table-card" style="margin-bottom: 24px; padding: 20px; border-radius: var(--adm-radius-lg);">
+    <div class="er-card">
         <form method="get" action="@Url.Action("Index")" class="row g-3">
             <div class="col-md-4">
-                <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Select Examination</label>
-                <select name="examId" class="form-select adm-select" required>
+                <label class="form-label">Select Examination</label>
+                <select name="examId" class="form-select er-filters__select" required>
                     <option value="">-- Choose Exam --</option>
                     @if (exams != null)
                     {
@@ -43,8 +43,8 @@
                 </select>
             </div>
             <div class="col-md-3">
-                <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Select Class</label>
-                <select name="classId" id="classSelect" class="form-select adm-select" required>
+                <label class="form-label">Select Class</label>
+                <select name="classId" id="classSelect" class="form-select er-filters__select" required>
                     <option value="">-- Choose Class --</option>
                     @if (classes != null)
                     {
@@ -56,8 +56,8 @@
                 </select>
             </div>
             <div class="col-md-3">
-                <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Select Section (Optional)</label>
-                <select name="sectionId" id="sectionSelect" class="form-select adm-select">
+                <label class="form-label">Select Section (Optional)</label>
+                <select name="sectionId" id="sectionSelect" class="form-select er-filters__select">
                     <option value="">-- Choose Section --</option>
                     @if (sections != null)
                     {
@@ -69,7 +69,7 @@
                 </select>
             </div>
             <div class="col-md-2 d-flex align-items-end">
-                <button type="submit" class="adm-btn adm-btn--primary w-100" style="height: 38px;">
+                <button type="submit" class="er-btn er-btn--primary w-100">
                     Search Results
                 </button>
             </div>
@@ -77,8 +77,7 @@
     </div>
 
     <!-- ── Student Results Table ── -->
-    <div class="adm-table-card" style="border-radius: var(--adm-radius-lg); border-top: 1px solid var(--adm-border);">
-        <div class="adm-table-card__body">
+    <div class="er-card">
             @if (Model != null && Model.Any())
             {
                 <div class="table-responsive" style="border-radius: var(--adm-radius-lg);">
@@ -101,26 +100,26 @@
                             {
                                 <tr>
                                     <td class="text-center font-weight-bold">@r.Student.RollNumber</td>
-                                    <td><span style="color: var(--adm-text-3);">@r.Student.StudentNo</span></td>
+                                    <td><span>@r.Student.StudentNo</span></td>
                                     <td><span class="adm-cell-name">@r.Student.FullName</span></td>
                                     <td class="text-center font-weight-bold">@r.TotalMarks.ToString("F2")</td>
                                     <td class="text-center text-primary font-weight-bold">@r.Gpa.ToString("F2")</td>
-                                    <td class="text-center"><span class="adm-status adm-status--neutral">@r.Grade</span></td>
+                                    <td class="text-center"><span class="er-badge er-badge--neutral">@r.Grade</span></td>
                                     <td class="text-center font-weight-bold">@r.Position</td>
                                     <td>
                                         @if (r.IsPassed)
                                         {
-                                            <span class="adm-status adm-status--converted">Passed</span>
+                                            <span class="er-badge er-badge--converted">Passed</span>
                                         }
                                         else
                                         {
-                                            <span class="adm-status adm-status--rejected">Failed</span>
+                                            <span class="er-badge er-badge--rejected">Failed</span>
                                         }
                                     </td>
                                     <td>
                                         <div class="actions-cell">
                                             <a href="@Url.Action("Download", new { examId = r.ExamId, studentId = r.StudentId })"
-                                               class="adm-btn adm-btn--ghost py-1 px-3 d-flex align-items-center" style="font-size: 0.85rem;" title="Download PDF">
+                                               class="er-btn er-btn--secondary py-1 px-3 d-flex align-items-center" title="Download PDF">
                                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="me-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
                                                 Download PDF
                                             </a>
@@ -134,13 +133,12 @@
             }
             else
             {
-                <div class="dash-empty">
+                <div class="er-empty">
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
-                    <h3 class="dash-empty__title">No Report Cards Found</h3>
-                    <p class="dash-empty__sub">Choose filters above to load the calculated exam result report cards.</p>
+                    <h3 class="er-empty__title">No Report Cards Found</h3>
+                    <p class="er-empty__desc">Choose filters above to load the calculated exam result report cards.</p>
                 </div>
             }
-        </div>
     </div>
 </div>
 

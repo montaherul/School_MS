@@ -12,6 +12,7 @@ using SchoolManagementSystem.Models.Entities.Website;
 using SchoolManagementSystem.Helpers.Pdf;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using EmpEntity = SchoolManagementSystem.Models.Entities.Employee.Employee;
+using SchoolManagementSystem.Helpers;
 
 namespace SchoolManagementSystem.Controllers.Employee;
 
@@ -23,19 +24,22 @@ public class EmployeeController : Controller
     private readonly IDesignationService _designationService;
     private readonly IUnitOfWork _uow;
     private readonly IPdfGenerator _pdfGenerator;
+    private readonly IViewRendererService _viewRenderer;
 
     public EmployeeController(
         IEmployeeService employeeService,
         IDepartmentService departmentService,
         IDesignationService designationService,
         IUnitOfWork uow,
-        IPdfGenerator pdfGenerator)
+        IPdfGenerator pdfGenerator,
+        IViewRendererService viewRenderer)
     {
         _employeeService = employeeService;
         _departmentService = departmentService;
         _designationService = designationService;
         _uow = uow;
         _pdfGenerator = pdfGenerator;
+        _viewRenderer = viewRenderer;
     }
 
     [RequirePermission("Users.View")] // Fallback to Users permission or specialized if desired
@@ -232,31 +236,13 @@ public class EmployeeController : Controller
         var employee = await _employeeService.GetDetailsAsync(id, ct);
         if (employee == null) return NotFound("Employee not found.");
 
-        // Initialize ID Card fields if not present
-        if (string.IsNullOrEmpty(employee.EmployeeCardNumber))
-        {
-            var employeeEntity = await _uow.Repository<EmpEntity>().GetByIdAsync(id, ct);
-            if (employeeEntity != null)
-            {
-                employeeEntity.EmployeeCardNumber = $"CARD-{DateTime.Today.Year}-{id:D6}";
-                employeeEntity.CardIssueDate = DateTime.Today;
-                employeeEntity.CardExpiryDate = new DateTime(DateTime.Today.Year + 2, 12, 31);
-                employeeEntity.CardVersion = 1;
-                employeeEntity.QRVerificationCode = Guid.NewGuid().ToString("N").Substring(0, 10).ToUpper();
-                await _uow.SaveChangesAsync(ct);
-                
-                // Update DTO
-                employee.EmployeeCardNumber = employeeEntity.EmployeeCardNumber;
-                employee.CardIssueDate = employeeEntity.CardIssueDate;
-                employee.CardExpiryDate = employeeEntity.CardExpiryDate;
-                employee.CardVersion = employeeEntity.CardVersion;
-                employee.QRVerificationCode = employeeEntity.QRVerificationCode;
-            }
-        }
+        await InitializeCardFieldsAsync(employee, id, ct);
 
         var schoolSetting = await _uow.Repository<SchoolSetting>().Query().FirstOrDefaultAsync(ct) ?? new SchoolSetting { SchoolName = "School Management ERP" };
 
-        var pdfBytes = _pdfGenerator.GenerateEmployeeIdCard(employee, schoolSetting);
+        var viewModel = BuildEmployeeCardViewModel([employee], schoolSetting);
+        var html = await _viewRenderer.RenderToStringAsync("PrintIdCard", viewModel);
+        var pdfBytes = _pdfGenerator.GenerateEmployeeIdCardFromHtml(html);
 
         // Update tracking
         var currentEmpEntity = await _uow.Repository<EmpEntity>().GetByIdAsync(id, ct);
@@ -274,6 +260,19 @@ public class EmployeeController : Controller
     }
 
     [HttpGet]
+    public async Task<IActionResult> PreviewIdCard(int id, CancellationToken ct)
+    {
+        return await PrintIdCard(id, ct);
+    }
+
+    [HttpGet]
+    public IActionResult QrCode(int id)
+    {
+        var png = IdCardQRHelper.GenerateQrCodePng(id.ToString());
+        return File(png, "image/png");
+    }
+
+    [HttpGet]
     public async Task<IActionResult> PrintIdCard(int id, CancellationToken ct)
     {
         if (!CanManageIdCards())
@@ -284,27 +283,7 @@ public class EmployeeController : Controller
         var employee = await _employeeService.GetDetailsAsync(id, ct);
         if (employee == null) return NotFound("Employee not found.");
 
-        // Initialize ID Card fields if not present
-        if (string.IsNullOrEmpty(employee.EmployeeCardNumber))
-        {
-            var employeeEntity = await _uow.Repository<EmpEntity>().GetByIdAsync(id, ct);
-            if (employeeEntity != null)
-            {
-                employeeEntity.EmployeeCardNumber = $"CARD-{DateTime.Today.Year}-{id:D6}";
-                employeeEntity.CardIssueDate = DateTime.Today;
-                employeeEntity.CardExpiryDate = new DateTime(DateTime.Today.Year + 2, 12, 31);
-                employeeEntity.CardVersion = 1;
-                employeeEntity.QRVerificationCode = Guid.NewGuid().ToString("N").Substring(0, 10).ToUpper();
-                await _uow.SaveChangesAsync(ct);
-
-                // Update DTO
-                employee.EmployeeCardNumber = employeeEntity.EmployeeCardNumber;
-                employee.CardIssueDate = employeeEntity.CardIssueDate;
-                employee.CardExpiryDate = employeeEntity.CardExpiryDate;
-                employee.CardVersion = employeeEntity.CardVersion;
-                employee.QRVerificationCode = employeeEntity.QRVerificationCode;
-            }
-        }
+        await InitializeCardFieldsAsync(employee, id, ct);
 
         var schoolSetting = await _uow.Repository<SchoolSetting>().Query().FirstOrDefaultAsync(ct) ?? new SchoolSetting { SchoolName = "School Management ERP" };
         ViewBag.SchoolSetting = schoolSetting;
@@ -321,7 +300,8 @@ public class EmployeeController : Controller
         var userName = User.Identity?.Name ?? "Unknown";
         await LogAuditAsync("ID Card Printed", $"Employee ID Card printed for: {employee.FullName} (Code: {employee.EmployeeCode}) by {userName}", ct);
 
-        return View("PrintIdCard", employee.MapTo<EmployeeDetailsViewModel>());
+        var viewModel = BuildEmployeeCardViewModel([employee], schoolSetting);
+        return View("PrintIdCard", viewModel);
     }
 
     [HttpPost]
@@ -401,34 +381,14 @@ public class EmployeeController : Controller
 
         if (ids != null && ids.Length > 0)
         {
-            var employees = new List<EmployeeDetailsViewModel>();
+            var employees = new List<EmployeeDetailsDto>();
             foreach (var id in ids)
             {
                 var emp = await _employeeService.GetDetailsAsync(id, ct);
                 if (emp != null)
                 {
-                    // Initialize ID Card fields if not present
-                    if (string.IsNullOrEmpty(emp.EmployeeCardNumber))
-                    {
-                        var employeeEntity = await _uow.Repository<EmpEntity>().GetByIdAsync(id, ct);
-                        if (employeeEntity != null)
-                        {
-                            employeeEntity.EmployeeCardNumber = $"CARD-{DateTime.Today.Year}-{id:D6}";
-                            employeeEntity.CardIssueDate = DateTime.Today;
-                            employeeEntity.CardExpiryDate = new DateTime(DateTime.Today.Year + 2, 12, 31);
-                            employeeEntity.CardVersion = 1;
-                            employeeEntity.QRVerificationCode = Guid.NewGuid().ToString("N").Substring(0, 10).ToUpper();
-                            await _uow.SaveChangesAsync(ct);
+                    await InitializeCardFieldsAsync(emp, id, ct);
 
-                            emp.EmployeeCardNumber = employeeEntity.EmployeeCardNumber;
-                            emp.CardIssueDate = employeeEntity.CardIssueDate;
-                            emp.CardExpiryDate = employeeEntity.CardExpiryDate;
-                            emp.CardVersion = employeeEntity.CardVersion;
-                            emp.QRVerificationCode = employeeEntity.QRVerificationCode;
-                        }
-                    }
-
-                    // Update tracking
                     var empToUpdate = await _uow.Repository<EmpEntity>().GetByIdAsync(id, ct);
                     if (empToUpdate != null)
                     {
@@ -436,20 +396,53 @@ public class EmployeeController : Controller
                         await _uow.SaveChangesAsync(ct);
                     }
 
-                    employees.Add(emp.MapTo<EmployeeDetailsViewModel>());
+                    employees.Add(emp);
                 }
             }
 
-            // Log audit
             var userName = User.Identity?.Name ?? "Unknown";
             await LogAuditAsync("Bulk ID Cards Printed", $"Bulk printed ID Cards for {employees.Count} employees by {userName}", ct);
 
             return View("BulkPrint", employees);
         }
 
-        // Render filtering screen
         await PopulateLookupListsAsync(ct);
         return View("BulkPrintFilter");
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> DownloadBulkIdCardPdf(string ids, CancellationToken ct)
+    {
+        if (!CanManageIdCards())
+        {
+            return Forbid();
+        }
+
+        var idList = ids.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(int.Parse).ToArray();
+        var employees = new List<EmployeeDetailsDto>();
+
+        foreach (var id in idList)
+        {
+            var emp = await _employeeService.GetDetailsAsync(id, ct);
+            if (emp != null)
+            {
+                await InitializeCardFieldsAsync(emp, id, ct);
+                employees.Add(emp);
+            }
+        }
+
+        if (employees.Count == 0) return NotFound();
+
+        var schoolSetting = await _uow.Repository<SchoolSetting>().Query().FirstOrDefaultAsync(ct) ?? new SchoolSetting { SchoolName = "School Management ERP" };
+        var viewModel = BuildEmployeeCardViewModel(employees, schoolSetting);
+        var html = await _viewRenderer.RenderToStringAsync("PrintIdCard", viewModel);
+        var pdfBytes = _pdfGenerator.GenerateBulkEmployeeIdCardPdfFromHtml(html);
+
+        var userName = User.Identity?.Name ?? "Unknown";
+        await LogAuditAsync("Bulk ID Cards Downloaded", $"Bulk downloaded ID Cards for {employees.Count} employees by {userName}", ct);
+
+        return File(pdfBytes, "application/pdf", $"Bulk_Employee_ID_Cards_{DateTime.Today:yyyyMMdd}.pdf");
     }
 
     [HttpPost]
@@ -525,5 +518,43 @@ public class EmployeeController : Controller
     {
         ViewBag.Departments = await _departmentService.GetAllAsync(ct);
         ViewBag.Designations = await _designationService.GetAllAsync(ct);
+    }
+
+    private async Task InitializeCardFieldsAsync(EmployeeDetailsDto employee, int id, CancellationToken ct)
+    {
+        if (!string.IsNullOrEmpty(employee.EmployeeCardNumber)) return;
+
+        var employeeEntity = await _uow.Repository<EmpEntity>().GetByIdAsync(id, ct);
+        if (employeeEntity == null) return;
+
+        employeeEntity.EmployeeCardNumber = $"CARD-{DateTime.Today.Year}-{id:D6}";
+        employeeEntity.CardIssueDate = DateTime.Today;
+        employeeEntity.CardExpiryDate = new DateTime(DateTime.Today.Year + 2, 12, 31);
+        employeeEntity.CardVersion = 1;
+        employeeEntity.QRVerificationCode = Guid.NewGuid().ToString("N").Substring(0, 10).ToUpper();
+        await _uow.SaveChangesAsync(ct);
+
+        employee.EmployeeCardNumber = employeeEntity.EmployeeCardNumber;
+        employee.CardIssueDate = employeeEntity.CardIssueDate;
+        employee.CardExpiryDate = employeeEntity.CardExpiryDate;
+        employee.CardVersion = employeeEntity.CardVersion;
+        employee.QRVerificationCode = employeeEntity.QRVerificationCode;
+    }
+
+    private static EmployeeIdCardPrintViewModel BuildEmployeeCardViewModel(List<EmployeeDetailsDto> employees, SchoolSetting school)
+    {
+        return new EmployeeIdCardPrintViewModel
+        {
+            Employees = employees,
+            SchoolLogoPath = school.LogoPath ?? "",
+            SchoolNameEn = school.SchoolName,
+            SchoolEIIN = school.EIIN,
+            SchoolWebsite = school.Website,
+            SchoolAddress = school.Address,
+            SchoolPhone = school.Phone,
+            SchoolEmail = school.Email,
+            PrincipalName = school.PrincipalName ?? "",
+            PrincipalSignaturePath = school.PrincipalSignaturePath ?? ""
+        };
     }
 }

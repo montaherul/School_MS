@@ -13,6 +13,8 @@ using SchoolManagementSystem.Models.Entities.Employee;
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Services.Interfaces.Website;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
+using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.EntityFrameworkCore;
 
 namespace SchoolManagementSystem.Controllers.Common;
 
@@ -23,6 +25,7 @@ public class HomeController : Controller
     private readonly INoticeService _noticeService;
     private readonly IEventService _eventService;
     private readonly IGalleryService _galleryService;
+    private readonly IContactMessageService _contactService;
     private readonly IUnitOfWork _uow;
 
     public HomeController(
@@ -31,6 +34,7 @@ public class HomeController : Controller
         INoticeService noticeService,
         IEventService eventService,
         IGalleryService galleryService,
+        IContactMessageService contactService,
         IUnitOfWork uow)
     {
         _websiteService = websiteService;
@@ -38,6 +42,7 @@ public class HomeController : Controller
         _noticeService = noticeService;
         _eventService = eventService;
         _galleryService = galleryService;
+        _contactService = contactService;
         _uow = uow;
     }
 
@@ -72,6 +77,7 @@ public class HomeController : Controller
     }
 
     [HttpGet("/about")]
+    [HttpGet]
     public async Task<IActionResult> About(CancellationToken ct)
     {
         var settings = await _websiteService.GetSettingsAsync(ct);
@@ -100,9 +106,28 @@ public class HomeController : Controller
     }
 
     [HttpGet("/admission-info")]
-    public IActionResult Admission()
+    public async Task<IActionResult> Admission(CancellationToken ct)
     {
-        return View();
+        var settings = await _websiteService.GetSettingsAsync(ct);
+        var feeStructure = await _uow.Repository<AdmissionFeeStructure>()
+            .ListAsync(f => f.IsActive && !f.IsDeleted, ct);
+        ViewBag.FeeStructure = feeStructure.OrderBy(f => f.DisplayOrder).ToList();
+        return View(settings);
+    }
+
+    [HttpPost("/contact/send")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ContactSend(ContactMessage model, CancellationToken ct)
+    {
+        if (!ModelState.IsValid)
+        {
+            TempData["Error"] = "Please fill in all required fields.";
+            return RedirectToAction(nameof(Contact));
+        }
+
+        await _contactService.SaveMessageAsync(model, ct);
+        TempData["Success"] = "Your message has been received! Our support desk will reply soon.";
+        return RedirectToAction(nameof(Contact));
     }
 
     public IActionResult Privacy()

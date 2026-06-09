@@ -459,7 +459,7 @@ public class ResultCalculationService : IResultCalculationService
     public async Task<decimal> AggregateComponentMarksAsync(MarkEntry markEntry)
     {
         var components = await _markStructureService.GetGridColumnsAsync(
-            markEntry.ExamId, markEntry.SubjectId);
+            markEntry.SubjectId);
 
         if (components.Count == 0)
             return _componentAggregator.AggregateAll(markEntry);

@@ -2,12 +2,14 @@
 @{
     ViewData["Title"] = "Marks Sheet: " + Model.SubjectName;
     bool isReadOnly = ViewBag.IsReadOnly ?? false;
+    var columns = ViewBag.ComponentColumns as List<SchoolManagementSystem.Models.DTOs.Exam.ComponentColumnDto> ?? new();
+    int colCount = 3 + columns.Count + 3;
 }
 
-<div class="adm-page">
-    <div class="adm-header">
+<div class="er-page adm-page">
+    <div class="er-page-header">
         <div class="adm-header__left">
-            <div class="adm-header__icon-wrap">
+            <div class="er-page-header__icon">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                     <polyline points="14 2 14 8 20 8" />
@@ -16,17 +18,17 @@
                 </svg>
             </div>
             <div>
-                <h1 class="adm-header__title">@Model.SubjectName Marksheet</h1>
-                <p class="adm-header__sub">
+                <h1 class="er-page-header__title">@Model.SubjectName Marksheet</h1>
+                <p class="er-page-header__sub">
                     Exam: <strong>@Model.ExamName</strong> | Class & Section: <strong>@Model.ClassName</strong>
                 </p>
             </div>
         </div>
-        <div class="adm-btn-group align-items-center">
-            <a href="@Url.Action("Index")" class="adm-btn adm-btn--ghost">Back</a>
+        <div class="er-page-header__right align-items-center">
+            <a href="@Url.Action("Index")" class="er-btn er-btn--secondary">Back</a>
             @if (!isReadOnly)
             {
-                <button type="button" id="btnSaveMarks" class="adm-btn adm-btn--primary">
+                <button type="button" id="btnSaveMarks" class="er-btn er-btn--primary">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" /><polyline points="17 21 17 13 7 13 7 21" /><polyline points="7 3 7 8 15 8" /></svg>
                     Save Marksheet
                 </button>
@@ -42,20 +44,21 @@
         </div>
     }
 
-    <!-- ── Interactive Spreadsheet Grid ── -->
-    <div class="adm-table-card" style="border-radius: var(--adm-radius-lg); border-top: 1px solid var(--adm-border);">
-        <div class="adm-table-card__body">
-            <div class="table-responsive" style="border-radius: var(--adm-radius-lg);">
+    <div class="er-card">
+        <div class="er-card__body">
+            <div class="table-responsive">
                 <table class="dash-table table-hover" id="marksheetTable">
                     <thead>
                         <tr>
                             <th style="width: 80px;">Roll</th>
                             <th>Student ID</th>
                             <th>Student Name</th>
-                            <th style="width: 130px;">Written (CQ)</th>
-                            <th style="width: 130px;">MCQ</th>
-                            <th style="width: 130px;">Practical</th>
-                            <th style="width: 130px;">Continuous Ass.</th>
+                            @foreach (var col in columns)
+                            {
+                                <th style="width: 130px;" data-field="@col.FieldName" data-code="@col.ComponentCode" data-max="@col.FullMarks">
+                                    @col.ComponentName (@col.FullMarks)
+                                </th>
+                            }
                             <th style="width: 120px;">Total</th>
                             <th style="width: 100px;">Grade</th>
                             <th style="width: 100px;">GP</th>
@@ -66,32 +69,16 @@
                         {
                             foreach (var s in Model.Students)
                             {
-                                <tr data-student-id="@s.StudentId">
+                                <tr data-student-id="@s.StudentId" data-roll="@s.RollNumber" data-student-no="@s.StudentNo" data-student-name="@s.StudentName" data-marks-obtained="@s.MarksObtained" data-grade="@s.Grade">
                                     <td class="text-center font-weight-bold">@s.RollNumber</td>
-                                    <td><span style="color: var(--adm-text-3);">@s.StudentNo</span></td>
+                                    <td><span>@s.StudentNo</span></td>
                                     <td><span class="adm-cell-name">@s.StudentName</span></td>
-                                    <td>
-                                        <input type="number" step="0.01" class="form-control adm-select score-input c-written" 
-                                               value="@s.MarksObtained" 
-                                               @(isReadOnly || s.IsLocked ? "disabled" : "") style="padding: 6px 10px;" />
-                                    </td>
-                                    <td>
-                                        <input type="number" step="0.01" class="form-control adm-select score-input c-mcq" 
-                                               value="0" 
-                                               @(isReadOnly || s.IsLocked ? "disabled" : "") style="padding: 6px 10px;" />
-                                    </td>
-                                    <td>
-                                        <input type="number" step="0.01" class="form-control adm-select score-input c-practical" 
-                                               value="0" 
-                                               @(isReadOnly || s.IsLocked ? "disabled" : "") style="padding: 6px 10px;" />
-                                    </td>
-                                    <td>
-                                        <input type="number" step="0.01" class="form-control adm-select score-input c-ca" 
-                                               value="0" 
-                                               @(isReadOnly || s.IsLocked ? "disabled" : "") style="padding: 6px 10px;" />
-                                    </td>
+                                    @foreach (var col in columns)
+                                    {
+                                        <td><input type="number" step="0.01" class="form-control er-filters__select score-input cmp-@col.FieldName" data-field="@col.FieldName" data-code="@col.ComponentCode" data-max="@col.FullMarks" value="0" @(isReadOnly || s.IsLocked ? "disabled" : "") /></td>
+                                    }
                                     <td class="text-center font-weight-bold text-primary c-total">@s.MarksObtained</td>
-                                    <td class="text-center"><span class="adm-status adm-status--neutral c-grade">@s.Grade</span></td>
+                                    <td class="text-center"><span class="er-badge er-badge--neutral c-grade">@s.Grade</span></td>
                                     <td class="text-center font-weight-bold c-gp">0.00</td>
                                 </tr>
                             }
@@ -99,7 +86,7 @@
                         else
                         {
                             <tr>
-                                <td colspan="10" class="text-center py-5" style="color: var(--adm-text-3);">No active students found in this section.</td>
+                                <td colspan="@colCount" class="text-center py-5">No active students found in this section.</td>
                             </tr>
                         }
                     </tbody>
@@ -111,66 +98,82 @@
 
 @section Scripts {
     <script>
-        $(document).ready(function() {
-            // Recalculate grades locally on marks entry
-            $('.score-input').on('input', function() {
-                var $row = $(this).closest('tr');
-                var written = parseFloat($row.find('.c-written').val()) || 0;
-                var mcq = parseFloat($row.find('.c-mcq').val()) || 0;
-                var practical = parseFloat($row.find('.c-practical').val()) || 0;
-                var ca = parseFloat($row.find('.c-ca').val()) || 0;
+        var componentColumns = @Html.Raw(Json.Serialize(columns));
+        var studentData = @Html.Raw(Json.Serialize(Model.Students));
+        var examId = @Model.ExamId;
+        var subjectId = @Model.SubjectId;
 
-                var total = written + mcq + practical + ca;
-                $row.find('.c-total').text(total.toFixed(2));
-
-                // Perform Bangladesh grading calculation
-                var grade = 'F';
-                var gp = 0.00;
-
-                if (total >= 80) { grade = 'A+'; gp = 5.00; }
-                else if (total >= 70) { grade = 'A'; gp = 4.00; }
-                else if (total >= 60) { grade = 'A-'; gp = 3.50; }
-                else if (total >= 50) { grade = 'B'; gp = 3.00; }
-                else if (total >= 40) { grade = 'C'; gp = 2.00; }
-                else if (total >= 33) { grade = 'D'; gp = 1.00; }
-
-                var $status = $row.find('.c-grade');
-                $status.text(grade);
-                if (grade === 'F') {
-                    $status.removeClass().addClass('adm-status adm-status--rejected c-grade');
-                } else {
-                    $status.removeClass().addClass('adm-status adm-status--converted c-grade');
-                }
-
-                $row.find('.c-gp').text(gp.toFixed(2));
-            }).trigger('input');
-
-            // Build payload from grid
-            function buildMarksPayload() {
-                var marks = [];
-                $('#marksheetTable tbody tr').each(function() {
-                    var studentId = parseInt($(this).data('student-id'));
-                    if (studentId) {
-                        marks.push({
-                            studentId: studentId,
-                            writtenMarks: parseFloat($(this).find('.c-written').val()) || 0,
-                            mcqMarks: parseFloat($(this).find('.c-mcq').val()) || 0,
-                            practicalMarks: parseFloat($(this).find('.c-practical').val()) || 0,
-                            continuousAssessmentMarks: parseFloat($(this).find('.c-ca').val()) || 0,
-                            marksObtained: parseFloat($(this).find('.c-total').text()) || 0
-                        });
-                    }
-                });
-                return {
-                    examId: parseInt('@Model.ExamId'),
-                    subjectId: parseInt('@Model.SubjectId'),
-                    marks: marks
-                };
+        function getStudentValue(student, field, code) {
+            if (field.startsWith('cmp_')) {
+                return student.componentValues && student.componentValues[code] != null ? student.componentValues[code] : 0;
             }
+            var val = student[field];
+            return val != null ? val : 0;
+        }
+
+        function recalcRow($row) {
+            var total = 0;
+            componentColumns.forEach(function(c) {
+                total += parseFloat($row.find('.cmp-' + c.field).val()) || 0;
+            });
+            $row.find('.c-total').text(total.toFixed(2));
+
+            var grade = 'F', gp = 0.00;
+            if (total >= 80) { grade = 'A+'; gp = 5.00; }
+            else if (total >= 70) { grade = 'A'; gp = 4.00; }
+            else if (total >= 60) { grade = 'A-'; gp = 3.50; }
+            else if (total >= 50) { grade = 'B'; gp = 3.00; }
+            else if (total >= 40) { grade = 'C'; gp = 2.00; }
+            else if (total >= 33) { grade = 'D'; gp = 1.00; }
+
+            var $status = $row.find('.c-grade');
+            $status.text(grade);
+            $status.removeClass().addClass('er-badge c-grade ' + (grade === 'F' ? 'er-badge--rejected' : 'er-badge--converted'));
+            $row.find('.c-gp').text(gp.toFixed(2));
+        }
+
+        function buildMarksPayload() {
+            var marks = [];
+            $('#marksheetTable tbody tr').each(function() {
+                var studentId = parseInt($(this).data('student-id'));
+                if (studentId) {
+                    var mark = { studentId: studentId, marksObtained: parseFloat($(this).find('.c-total').text()) || 0, componentValues: {} };
+                    componentColumns.forEach(function(c) {
+                        var val = parseFloat($(this).find('.cmp-' + c.field).val()) || null;
+                        if (c.field.startsWith('cmp_')) {
+                            mark.componentValues[c.componentCode] = val;
+                        } else {
+                            mark[c.field] = val;
+                        }
+                    }.bind(this));
+                    marks.push(mark);
+                }
+            });
+            return { examId: examId, subjectId: subjectId, marks: marks };
+        }
+
+        $(document).ready(function() {
+            $('#marksheetTable tbody tr').each(function() {
+                var $row = $(this);
+                var idx = $row.index();
+                var student = studentData[idx];
+                if (student) {
+                    componentColumns.forEach(function(c) {
+                        var val = getStudentValue(student, c.field, c.componentCode);
+                        $row.find('.cmp-' + c.field).val(val);
+                    });
+                }
+            });
+
+            $('.score-input').on('input', function() {
+                recalcRow($(this).closest('tr'));
+            });
+
+            $('.score-input').trigger('input');
 
             function saveMarks(url, btn, btnText) {
                 var payload = buildMarksPayload();
-                if (payload.marks.length === 0) return;
+                if (payload.marks.length === 0 || !payload.marks.some(function(m) { return m.marksObtained > 0; })) return;
                 $(btn).prop('disabled', true).text('Saving...');
                 $.ajax({
                     url: url,
@@ -179,7 +182,7 @@
                     data: JSON.stringify(payload),
                     success: function(res) {
                         if (res.success) {
-                            localStorage.removeItem('marksDraft_@Model.ExamId');
+                            localStorage.removeItem('marksDraft_' + examId);
                             if (url.indexOf('SaveDraft') > -1) {
                                 var now = new Date();
                                 $('#autoSaveIndicator').text('Draft saved at ' + now.toLocaleTimeString());
@@ -199,32 +202,25 @@
                 });
             }
 
-            // Manual save
             $('#btnSaveMarks').click(function() {
                 saveMarks('@Url.Action("Save")', this, 'Save Marksheet');
             });
 
-            // Auto-save every 60 seconds (draft mode)
-            var autoSaveTimer = null;
             @if (!isReadOnly)
             {
                 <text>
-                // Backup to localStorage on every input change
                 $('.score-input').on('input', function() {
-                    try {
-                        localStorage.setItem('marksDraft_@Model.ExamId', JSON.stringify(buildMarksPayload()));
-                    } catch(e) {}
+                    try { localStorage.setItem('marksDraft_' + examId, JSON.stringify(buildMarksPayload())); } catch(e) {}
                 });
 
-                autoSaveTimer = setInterval(function() {
+                setInterval(function() {
                     if ($('#marksheetTable tbody tr').length > 1) {
                         saveMarks('@Url.Action("SaveDraft")', '#btnSaveMarks', 'Save Marksheet');
                     }
                 }, 60000);
 
-                // Recovery: check for unsaved draft on page load
                 try {
-                    var saved = localStorage.getItem('marksDraft_@Model.ExamId');
+                    var saved = localStorage.getItem('marksDraft_' + examId);
                     if (saved) {
                         var payload = JSON.parse(saved);
                         if (payload && payload.marks && payload.marks.length > 0) {

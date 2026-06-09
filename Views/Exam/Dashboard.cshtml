@@ -3,10 +3,10 @@
     ViewData["Title"] = "Exam Dashboard";
 }
 
-<div class="adm-page">
-    <div class="adm-header">
-        <div class="adm-header__left">
-            <div class="adm-header__icon-wrap">
+<div class="adm-page er-page">
+    <div class="er-page-header">
+        <div class="er-page-header__left">
+            <div class="er-page-header__icon">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                     <polyline points="14 2 14 8 20 8" />
@@ -15,8 +15,8 @@
                 </svg>
             </div>
             <div>
-                <h1 class="adm-header__title">Exam Dashboard</h1>
-                <p class="adm-header__sub">
+                <h1 class="er-page-header__title">Exam Dashboard</h1>
+                <p class="er-page-header__sub">
                     @if (!string.IsNullOrEmpty(Model.ActiveAcademicYearName))
                     {
                         <span>Academic Year: @Model.ActiveAcademicYearName</span>
@@ -24,45 +24,45 @@
                 </p>
             </div>
         </div>
-        <div class="adm-btn-group">
-            <form method="get" action="@Url.Action("Dashboard")" class="d-flex flex-wrap gap-2 align-items-center" id="examDashFilters">
-                <select name="academicYearId" class="form-select adm-select" style="width:auto;" onchange="this.form.submit()">
+        <div class="er-page-header__right">
+            <form method="get" action="@Url.Action("Dashboard")" class="d-flex flex-wrap gap-2 align-items-center er-filters" id="examDashFilters">
+                <select name="academicYearId" class="form-select er-filters__select" onchange="this.form.submit()">
                     @foreach (var y in Model.AcademicYears)
                     {
                         <!option value="@y.Id" selected="@(y.Id == Model.SelectedAcademicYearId)">@y.Name</!option>
                     }
                 </select>
-                <select name="examId" class="form-select adm-select" style="width:auto;">
+                <select name="examId" class="form-select er-filters__select">
                     <option value="">All Exams</option>
                     @foreach (var ex in Model.YearExams)
                     {
                         <!option value="@ex.Id" selected="@(ex.Id == Model.SelectedExamId)">@ex.Name</!option>
                     }
                 </select>
-                <select name="classId" class="form-select adm-select" style="width:auto;">
+                <select name="classId" class="form-select er-filters__select">
                     <option value="">All Classes</option>
                     @foreach (var c in Model.Classes)
                     {
                         <!option value="@c.Id" selected="@(c.Id == Model.SelectedClassId)">@c.Name</!option>
                     }
                 </select>
-                <select name="sectionId" class="form-select adm-select" style="width:auto;">
+                <select name="sectionId" class="form-select er-filters__select">
                     <option value="">All Sections</option>
                     @foreach (var s in Model.Sections)
                     {
                         <!option value="@s.Id" selected="@(s.Id == Model.SelectedSectionId)">@s.Name</!option>
                     }
                 </select>
-                <select name="groupId" class="form-select adm-select" style="width:auto;">
+                <select name="groupId" class="form-select er-filters__select">
                     <option value="">All Groups</option>
                     @foreach (var g in Model.Groups)
                     {
                         <!option value="@g.Id" selected="@(g.Id == Model.SelectedGroupId)">@g.Name</!option>
                     }
                 </select>
-                <button type="submit" class="adm-btn adm-btn--ghost adm-btn--sm">Apply</button>
+                <button type="submit" class="er-btn er-btn--secondary er-btn--sm">Apply</button>
             </form>
-            <a href="@Url.Action("Create", "Exam")" class="adm-btn adm-btn--primary">
+            <a href="@Url.Action("Create", "Exam")" class="er-btn er-btn--primary">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
                 New Exam
             </a>
@@ -71,115 +71,127 @@
 
     @if (Model.Stats.TotalExams == 0)
     {
-        <div class="dash-empty">
-            <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
-                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                <polyline points="14 2 14 8 20 8" />
-                <line x1="16" y1="13" x2="8" y2="13" />
-                <line x1="16" y1="17" x2="8" y2="17" />
-            </svg>
-            <h3 class="dash-empty__title">No Exams Yet</h3>
-            <p class="dash-empty__sub">There are no exams for this academic year. Create your first exam to get started.</p>
-            <a href="@Url.Action("Create", "Exam")" class="adm-btn adm-btn--primary">Create Exam</a>
+        <div class="er-empty">
+            <div class="er-empty__icon">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                </svg>
+            </div>
+            <h3 class="er-empty__title">No Exams Yet</h3>
+            <p class="er-empty__desc">There are no exams for this academic year. Create your first exam to get started.</p>
+            <div class="er-empty__action">
+                <a href="@Url.Action("Create", "Exam")" class="er-btn er-btn--primary">Create Exam</a>
+            </div>
         </div>
     }
     else
     {
-        <div class="dash-stats">
-            <div class="dash-stat-card">
-                <div class="dash-stat-card__icon dash-stat-card__icon--primary">
+        <div class="er-stats">
+            <div class="er-stat">
+                <div class="er-stat__icon er-stat__icon--primary">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
                 </div>
-                <div class="dash-stat-card__body">
-                    <span class="dash-stat-card__label">Total Exams</span>
-                    <span class="dash-stat-card__value">@Model.Stats.TotalExams</span>
+                <div class="er-stat__body">
+                    <span class="er-stat__label">Total Exams</span>
+                    <span class="er-stat__value">@Model.Stats.TotalExams</span>
                 </div>
             </div>
-            <div class="dash-stat-card">
-                <div class="dash-stat-card__icon dash-stat-card__icon--warning">
+            <div class="er-stat">
+                <div class="er-stat__icon er-stat__icon--warning">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
                 </div>
-                <div class="dash-stat-card__body">
-                    <span class="dash-stat-card__label">Draft</span>
-                    <span class="dash-stat-card__value">@Model.Stats.DraftExams</span>
+                <div class="er-stat__body">
+                    <span class="er-stat__label">Draft</span>
+                    <span class="er-stat__value">@Model.Stats.DraftExams</span>
                 </div>
             </div>
-            <div class="dash-stat-card">
-                <div class="dash-stat-card__icon" style="background:#e8f5e9;color:#2e7d32;">
+            <div class="er-stat">
+                <div class="er-stat__icon er-stat__icon--success">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" /><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" /></svg>
                 </div>
-                <div class="dash-stat-card__body">
-                    <span class="dash-stat-card__label">Published Results</span>
-                    <span class="dash-stat-card__value">@Model.Stats.PublishedExams</span>
+                <div class="er-stat__body">
+                    <span class="er-stat__label">Published Results</span>
+                    <span class="er-stat__value">@Model.Stats.PublishedExams</span>
                 </div>
             </div>
-            <div class="dash-stat-card">
-                <div class="dash-stat-card__icon dash-stat-card__icon--warning">
+            <div class="er-stat">
+                <div class="er-stat__icon er-stat__icon--warning">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
                 </div>
-                <div class="dash-stat-card__body">
-                    <span class="dash-stat-card__label">Scheduled Exams</span>
-                    <span class="dash-stat-card__value">@(Model.Stats.SubmittedExams + Model.Stats.ReviewedExams + Model.Stats.ApprovedExams)</span>
+                <div class="er-stat__body">
+                    <span class="er-stat__label">Scheduled Exams</span>
+                    <span class="er-stat__value">@(Model.Stats.SubmittedExams + Model.Stats.ReviewedExams + Model.Stats.ApprovedExams)</span>
                 </div>
             </div>
-            <div class="dash-stat-card">
-                <div class="dash-stat-card__icon" style="background:#fff3e0;color:#e65100;">
+            <div class="er-stat">
+                <div class="er-stat__icon er-stat__icon--warning">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3" /><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14" /></svg>
                 </div>
-                <div class="dash-stat-card__body">
-                    <span class="dash-stat-card__label">Pending Review</span>
-                    <span class="dash-stat-card__value">@(Model.Stats.SubmittedExams + Model.Stats.ReviewedExams)</span>
+                <div class="er-stat__body">
+                    <span class="er-stat__label">Pending Review</span>
+                    <span class="er-stat__value">@(Model.Stats.SubmittedExams + Model.Stats.ReviewedExams)</span>
                 </div>
             </div>
-            <div class="dash-stat-card">
-                <div class="dash-stat-card__icon" style="background:#e3f2fd;color:#1565c0;">
+            <div class="er-stat">
+                <div class="er-stat__icon er-stat__icon--info">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></svg>
                 </div>
-                <div class="dash-stat-card__body">
-                    <span class="dash-stat-card__label">Students Appeared</span>
-                    <span class="dash-stat-card__value">@Model.Stats.StudentsAppeared</span>
+                <div class="er-stat__body">
+                    <span class="er-stat__label">Students Appeared</span>
+                    <span class="er-stat__value">@Model.Stats.StudentsAppeared</span>
                 </div>
             </div>
-            <div class="dash-stat-card">
-                <div class="dash-stat-card__icon dash-stat-card__icon--info">
+            <div class="er-stat">
+                <div class="er-stat__icon er-stat__icon--info">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" /></svg>
                 </div>
-                <div class="dash-stat-card__body">
-                    <span class="dash-stat-card__label">Active Exams</span>
-                    <span class="dash-stat-card__value">@(Model.Stats.SubmittedExams + Model.Stats.ReviewedExams)</span>
+                <div class="er-stat__body">
+                    <span class="er-stat__label">Active Exams</span>
+                    <span class="er-stat__value">@(Model.Stats.SubmittedExams + Model.Stats.ReviewedExams)</span>
                 </div>
             </div>
-            <div class="dash-stat-card">
-                <div class="dash-stat-card__icon dash-stat-card__icon--success">
+            <div class="er-stat">
+                <div class="er-stat__icon er-stat__icon--success">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12" /></svg>
                 </div>
-                <div class="dash-stat-card__body">
-                    <span class="dash-stat-card__label">Approved Exams</span>
-                    <span class="dash-stat-card__value">@Model.Stats.ApprovedExams</span>
+                <div class="er-stat__body">
+                    <span class="er-stat__label">Approved Exams</span>
+                    <span class="er-stat__value">@Model.Stats.ApprovedExams</span>
                 </div>
             </div>
-            <div class="dash-stat-card">
-                <div class="dash-stat-card__icon" style="background:#fce4ec;color:#c62828;">
+            <div class="er-stat">
+                <div class="er-stat__icon er-stat__icon--danger">
                     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
                 </div>
-                <div class="dash-stat-card__body">
-                    <span class="dash-stat-card__label">Pending Approval</span>
-                    <span class="dash-stat-card__value">@Model.Stats.SubmittedExams</span>
+                <div class="er-stat__body">
+                    <span class="er-stat__label">Pending Approval</span>
+                    <span class="er-stat__value">@Model.Stats.SubmittedExams</span>
                 </div>
             </div>
         </div>
 
         <div class="row g-4 mb-4">
             <div class="col-md-6">
-                <div class="adm-table-card" style="border-radius: var(--adm-radius-lg); padding: 20px;">
-                    <h5 class="mb-3" style="color:var(--adm-text-1);font-weight:600;">Exam Status Distribution</h5>
-                    <canvas id="statusChart" height="250"></canvas>
+                <div class="er-card">
+                    <div class="er-card__header">
+                        <h5 class="er-card__title">Exam Status Distribution</h5>
+                    </div>
+                    <div class="er-card__body">
+                        <canvas id="statusChart" height="250"></canvas>
+                    </div>
                 </div>
             </div>
             <div class="col-md-6">
-                <div class="adm-table-card" style="border-radius: var(--adm-radius-lg); padding: 20px;">
-                    <h5 class="mb-3" style="color:var(--adm-text-1);font-weight:600;">Pass Rate by Exam</h5>
-                    <canvas id="passRateChart" height="250"></canvas>
+                <div class="er-card">
+                    <div class="er-card__header">
+                        <h5 class="er-card__title">Pass Rate by Exam</h5>
+                    </div>
+                    <div class="er-card__body">
+                        <canvas id="passRateChart" height="250"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -187,14 +199,14 @@
         <div class="dash-section">
             <div class="dash-section__header">
                 <h3 class="dash-section__title">Recent Exams</h3>
-                <a href="@Url.Action("Index", "Exam")" class="adm-btn adm-btn--ghost adm-btn--sm">View All</a>
+                <a href="@Url.Action("Index", "Exam")" class="er-btn er-btn--secondary er-btn--sm">View All</a>
             </div>
-            <div class="adm-table-card" style="border-radius: var(--adm-radius-lg);">
-                <div class="adm-table-card__body">
+            <div class="er-card">
+                <div class="er-card__body">
                     @if (Model.RecentExams.Any())
                     {
-                        <div class="table-responsive">
-                            <table class="dash-table">
+                        <div class="er-table-wrap">
+                            <table class="er-table">
                                 <thead>
                                     <tr>
                                         <th>Exam Name</th>
@@ -208,8 +220,8 @@
                                     @foreach (var exam in Model.RecentExams.Take(5))
                                     {
                                         <tr>
-                                            <td><span class="adm-cell-name">@exam.Name</span></td>
-                                            <td><span class="adm-status adm-status--neutral">@exam.Term</span></td>
+                                            <td><span class="er-cell-name">@exam.Name</span></td>
+                                            <td><span class="er-badge er-badge--neutral">@exam.Term</span></td>
                                             <td>
                                                 <span>@exam.StartsOn.ToString("d") – @exam.EndsOn.ToString("d")</span>
                                             </td>
@@ -220,18 +232,18 @@
                                                     var label = "Draft";
                                                     switch (st)
                                                     {
-                                                        case 2: badgeClass = "pending"; label = "Submitted"; break;
-                                                        case 3: badgeClass = "approved"; label = "Reviewed"; break;
-                                                        case 4: badgeClass = "approved"; label = "Approved"; break;
-                                                        case 5: badgeClass = "converted"; label = "Published"; break;
+                                                        case 2: badgeClass = "warning"; label = "Submitted"; break;
+                                                        case 3: badgeClass = "success"; label = "Reviewed"; break;
+                                                        case 4: badgeClass = "success"; label = "Approved"; break;
+                                                        case 5: badgeClass = "success"; label = "Published"; break;
                                                         case 6: badgeClass = "neutral"; label = "Locked"; break;
-                                                        case 7: badgeClass = "rejected"; label = "Unpublished"; break;
+                                                        case 7: badgeClass = "danger"; label = "Unpublished"; break;
                                                     }
                                                 }
-                                                <span class="adm-status adm-status--@badgeClass">@label</span>
+                                                <span class="er-badge er-badge--@badgeClass">@label</span>
                                             </td>
                                             <td class="text-end">
-                                                <a href="@Url.Action("Details", "Exam", new { id = exam.Id })" class="adm-btn adm-btn--ghost adm-btn--sm">Details</a>
+                                                <a href="@Url.Action("Details", "Exam", new { id = exam.Id })" class="er-btn er-btn--secondary er-btn--sm">Details</a>
                                             </td>
                                         </tr>
                                     }
@@ -241,10 +253,12 @@
                     }
                     else
                     {
-                        <div class="dash-empty" style="padding:32px 20px;">
-                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
-                            <h3 class="dash-empty__title">No Recent Exams</h3>
-                            <p class="dash-empty__sub">Exams will appear here once created.</p>
+                        <div class="er-empty">
+                            <div class="er-empty__icon">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                            </div>
+                            <h3 class="er-empty__title">No Recent Exams</h3>
+                            <p class="er-empty__desc">Exams will appear here once created.</p>
                         </div>
                     }
                 </div>
@@ -255,26 +269,32 @@
             <div class="dash-section__header">
                 <h3 class="dash-section__title">Group Performance</h3>
             </div>
-            <div class="adm-table-card" style="border-radius: var(--adm-radius-lg); padding: 20px;">
-                @if (Model.GroupPerformance.Any())
-                {
-                    <canvas id="groupPerformanceChart" height="280"></canvas>
-                }
-                else
-                {
-                    <div class="dash-empty" style="padding:40px 20px;">
-                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M18 20V10" /><path d="M12 20V4" /><path d="M6 20v-6" /></svg>
-                        <h3 class="dash-empty__title">Data Not Available</h3>
-                        <p class="dash-empty__sub">Group performance data is not yet available for the selected academic year.</p>
-                    </div>
-                }
+            <div class="er-card">
+                <div class="er-card__body">
+                    @if (Model.GroupPerformance.Any())
+                    {
+                        <canvas id="groupPerformanceChart" height="280"></canvas>
+                    }
+                    else
+                    {
+                        <div class="er-empty">
+                            <div class="er-empty__icon">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M18 20V10" /><path d="M12 20V4" /><path d="M6 20v-6" /></svg>
+                            </div>
+                            <h3 class="er-empty__title">Data Not Available</h3>
+                            <p class="er-empty__desc">Group performance data is not yet available for the selected academic year.</p>
+                        </div>
+                    }
+                </div>
         </div>
     </div>
 }
 
-    <div id="loadingOverlay" class="adm-loading adm-loading--hidden">
-        <div class="adm-loading__spinner"></div>
-        <div class="adm-loading__text">Loading dashboard…</div>
+    <div id="loadingOverlay" class="er-skeleton er-skeleton--card" style="display:none;">
+        <div class="er-skeleton__spinner" style="display:flex;align-items:center;justify-content:center;height:100%;gap:12px;">
+            <div style="width:24px;height:24px;border:3px solid var(--er-border);border-top-color:var(--er-primary);border-radius:50%;animation:er-spin 0.8s linear infinite;"></div>
+            <span style="color:var(--er-text-3);font-size:13px;">Loading dashboard…</span>
+        </div>
     </div>
 </div>
 
@@ -286,8 +306,7 @@
 
             window.changeYear = function (yearId) {
                 if (overlay) {
-                    overlay.classList.remove('adm-loading--hidden');
-                    overlay.classList.add('adm-loading--visible');
+                    overlay.style.display = 'block';
                 }
                 window.location.href = '@Url.Action("Dashboard")?academicYearId=' + yearId;
             };

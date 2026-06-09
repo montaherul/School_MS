@@ -372,8 +372,8 @@ public static class DbInitializer
         );
 
         modelBuilder.Entity<Student>().HasData(
-            new Student { Id = 1, StudentNo = "STU-2026-0001", FullName = "Sample Student One", DateOfBirth = new DateTime(2018, 2, 1), Gender = "Male", FatherName = "Father One", MotherName = "Mother One", MobileNumber = "01700000010", Nationality = "Bangladeshi", Country = "Bangladesh", MaritalStatus = "Single", Religion = "Islam", ClassId = 1, SectionId = 1, RollNumber = 1, Status = StudentStatus.Active, CreatedAt = createdAt },
-            new Student { Id = 2, StudentNo = "STU-2026-0002", FullName = "Sample Student Two", DateOfBirth = new DateTime(2018, 5, 11), Gender = "Female", FatherName = "Father Two", MotherName = "Mother Two", MobileNumber = "01700000020", Nationality = "Bangladeshi", Country = "Bangladesh", MaritalStatus = "Single", Religion = "Islam", ClassId = 1, SectionId = 1, RollNumber = 2, Status = StudentStatus.Active, CreatedAt = createdAt });
+            new Student { Id = 1, StudentNo = "STU-2026-0001", FullName = "Sample Student One", DateOfBirth = new DateTime(2018, 2, 1), Gender = "Male", FatherName = "Father One", MotherName = "Mother One", MobileNumber = "01700000010", Nationality = "Bangladeshi", Country = "Bangladesh", MaritalStatus = "Single", Religion = "Islam", AssignedReligionSubjectId = 30, ClassId = 1, SectionId = 1, RollNumber = 1, Status = StudentStatus.Active, CreatedAt = createdAt },
+            new Student { Id = 2, StudentNo = "STU-2026-0002", FullName = "Sample Student Two", DateOfBirth = new DateTime(2018, 5, 11), Gender = "Female", FatherName = "Father Two", MotherName = "Mother Two", MobileNumber = "01700000020", Nationality = "Bangladeshi", Country = "Bangladesh", MaritalStatus = "Single", Religion = "Islam", AssignedReligionSubjectId = 30, ClassId = 1, SectionId = 1, RollNumber = 2, Status = StudentStatus.Active, CreatedAt = createdAt });
 
         modelBuilder.Entity<SchoolManagementSystem.Models.Entities.Guardian.Guardian>().HasData(
             new SchoolManagementSystem.Models.Entities.Guardian.Guardian 

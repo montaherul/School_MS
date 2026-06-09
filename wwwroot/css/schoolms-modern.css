@@ -1,0 +1,1134 @@
+/* ═══════════════════════════════════════════════════════════════════
+   SchoolMS — Modern UI Refresh (Exam & Result Module)
+   Adds premium visual polish, micro-animations, glass effects,
+   modern card/table/button design. Include AFTER schoolms-universal.css
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ─────────────────────────────────────────────────────────────────
+   1. DESIGN TOKENS — OVERRIDES
+   ───────────────────────────────────────────────────────────────── */
+:root {
+  /* ── Refined palette ── */
+  --er-primary:     #0f766e;
+  --er-primary-h:   #0d5f58;
+  --er-primary-l:   #14b8a6;
+  --er-primary-bg:  #f0fdfa;
+  --er-accent:      #f59e0b;
+  --er-accent-bg:   #fffbeb;
+  --er-success:     #059669;
+  --er-success-bg:  #ecfdf5;
+  --er-danger:      #dc2626;
+  --er-danger-bg:   #fef2f2;
+  --er-info:        #0284c7;
+  --er-info-bg:     #f0f9ff;
+  --er-warning:     #d97706;
+  --er-warning-bg:  #fffbeb;
+  --er-text:        #0f172a;
+  --er-text-2:      #475569;
+  --er-text-3:      #94a3b8;
+  --er-border:      #e2e8f0;
+  --er-border-h:    #cbd5e1;
+  --er-surface:     #ffffff;
+  --er-surface-2:   #f1f5f9;
+  --er-surface-3:   #f8fafc;
+  --er-shadow-sm:   0 1px 2px rgba(0,0,0,0.04);
+  --er-shadow:      0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+  --er-shadow-lg:   0 8px 24px rgba(0,0,0,0.08);
+  --er-shadow-xl:   0 16px 48px rgba(0,0,0,0.12);
+  --er-radius:      8px;
+  --er-radius-lg:   12px;
+  --er-radius-xl:   16px;
+  --er-transition:  0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   2. ENTRANCE ANIMATIONS
+   ───────────────────────────────────────────────────────────────── */
+@keyframes er-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes er-slide-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes er-slide-down {
+  from { opacity: 0; transform: translateY(-12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes er-scale-in {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes er-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+@keyframes er-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.5; }
+}
+@keyframes er-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   3. LAYOUT — PAGE WRAPPER
+   ───────────────────────────────────────────────────────────────── */
+.er-page {
+  animation: er-fade-in 0.3s ease;
+}
+.er-page--slide {
+  animation: er-slide-up 0.35s ease;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   4. MODERN CARDS
+   ───────────────────────────────────────────────────────────────── */
+.er-card {
+  background: var(--er-surface);
+  border: 1px solid var(--er-border);
+  border-radius: var(--er-radius-lg);
+  box-shadow: var(--er-shadow-sm);
+  transition: box-shadow var(--er-transition), transform var(--er-transition);
+}
+.er-card:hover {
+  box-shadow: var(--er-shadow);
+}
+.er-card--elevated {
+  box-shadow: var(--er-shadow);
+}
+.er-card--elevated:hover {
+  box-shadow: var(--er-shadow-lg);
+  transform: translateY(-2px);
+}
+.er-card--glass {
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.3);
+}
+.er-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
+  border-bottom: 1px solid var(--er-border);
+  gap: 12px;
+}
+.er-card__title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--er-text);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+}
+.er-card__body {
+  padding: 22px;
+}
+.er-card__body--flush {
+  padding: 0;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   5. MODERN TABLE
+   ───────────────────────────────────────────────────────────────── */
+.er-table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--er-border);
+  border-radius: var(--er-radius-lg);
+  background: var(--er-surface);
+  box-shadow: var(--er-shadow-sm);
+}
+.er-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  min-width: 800px;
+}
+.er-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+.er-table thead tr {
+  background: var(--er-surface-2);
+}
+.er-table thead th {
+  padding: 12px 16px;
+  font-size: 11.5px;
+  font-weight: 650;
+  color: var(--er-text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  text-align: left;
+  border-bottom: 1px solid var(--er-border);
+}
+.er-table tbody tr {
+  border-bottom: 1px solid var(--er-border);
+  transition: background var(--er-transition);
+}
+.er-table tbody tr:last-child {
+  border-bottom: none;
+}
+.er-table tbody tr:hover {
+  background: var(--er-primary-bg);
+}
+.er-table tbody td {
+  padding: 13px 16px;
+  vertical-align: middle;
+  color: var(--er-text-2);
+}
+.er-table tbody td:first-child {
+  color: var(--er-text);
+  font-weight: 600;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   6. MODERN BUTTONS
+   ───────────────────────────────────────────────────────────────── */
+.er-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--er-radius);
+  cursor: pointer;
+  transition: all var(--er-transition);
+  text-decoration: none;
+  white-space: nowrap;
+  line-height: 1.4;
+  font-family: inherit;
+  position: relative;
+  overflow: hidden;
+}
+.er-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0);
+  transition: background var(--er-transition);
+}
+.er-btn:hover::after {
+  background: rgba(255,255,255,0.1);
+}
+.er-btn:active::after {
+  background: rgba(0,0,0,0.05);
+}
+.er-btn--primary {
+  background: linear-gradient(135deg, var(--er-primary), var(--er-primary-l));
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(15,118,110,0.25);
+}
+.er-btn--primary:hover {
+  box-shadow: 0 4px 16px rgba(15,118,110,0.35);
+  transform: translateY(-1px);
+  color: #fff;
+}
+.er-btn--primary:active {
+  transform: translateY(0);
+}
+.er-btn--secondary {
+  background: var(--er-surface);
+  color: var(--er-text-2);
+  border: 1px solid var(--er-border);
+}
+.er-btn--secondary:hover {
+  background: var(--er-surface-2);
+  border-color: var(--er-border-h);
+  color: var(--er-text);
+}
+.er-btn--success {
+  background: linear-gradient(135deg, var(--er-success), #10b981);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(5,150,105,0.25);
+}
+.er-btn--success:hover {
+  box-shadow: 0 4px 16px rgba(5,150,105,0.35);
+  transform: translateY(-1px);
+  color: #fff;
+}
+.er-btn--danger {
+  background: linear-gradient(135deg, var(--er-danger), #ef4444);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(220,38,38,0.25);
+}
+.er-btn--danger:hover {
+  box-shadow: 0 4px 16px rgba(220,38,38,0.35);
+  transform: translateY(-1px);
+  color: #fff;
+}
+.er-btn--ghost {
+  background: transparent;
+  color: var(--er-text-2);
+  border: 1px solid transparent;
+}
+.er-btn--ghost:hover {
+  background: var(--er-surface-2);
+  color: var(--er-text);
+}
+.er-btn--sm {
+  padding: 6px 13px;
+  font-size: 12px;
+}
+.er-btn--lg {
+  padding: 12px 24px;
+  font-size: 14.5px;
+}
+.er-btn--icon {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.er-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   7. MODERN FORM CONTROLS
+   ───────────────────────────────────────────────────────────────── */
+.er-label {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 650;
+  color: var(--er-text-2);
+  margin-bottom: 6px;
+  letter-spacing: 0.01em;
+}
+.er-required {
+  color: var(--er-danger);
+}
+.er-input {
+  width: 100%;
+  padding: 9px 13px;
+  font-size: 13.5px;
+  border: 1px solid var(--er-border);
+  border-radius: var(--er-radius);
+  background: var(--er-surface);
+  color: var(--er-text);
+  transition: all var(--er-transition);
+  outline: none;
+  font-family: inherit;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
+}
+.er-input:focus {
+  border-color: var(--er-primary);
+  box-shadow: 0 0 0 3px rgba(15,118,110,0.1);
+}
+.er-input::placeholder {
+  color: var(--er-text-3);
+}
+.er-input--error {
+  border-color: var(--er-danger);
+}
+.er-input--error:focus {
+  box-shadow: 0 0 0 3px rgba(220,38,38,0.1);
+}
+.er-select {
+  width: 100%;
+  padding: 9px 36px 9px 13px;
+  font-size: 13.5px;
+  border: 1px solid var(--er-border);
+  border-radius: var(--er-radius);
+  background: var(--er-surface) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 11px center;
+  color: var(--er-text);
+  appearance: none;
+  cursor: pointer;
+  transition: all var(--er-transition);
+  outline: none;
+  font-family: inherit;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);
+}
+.er-select:focus {
+  border-color: var(--er-primary);
+  box-shadow: 0 0 0 3px rgba(15,118,110,0.1);
+}
+.er-textarea {
+  width: 100%;
+  padding: 9px 13px;
+  font-size: 13.5px;
+  border: 1px solid var(--er-border);
+  border-radius: var(--er-radius);
+  background: var(--er-surface);
+  color: var(--er-text);
+  transition: all var(--er-transition);
+  outline: none;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 80px;
+}
+.er-textarea:focus {
+  border-color: var(--er-primary);
+  box-shadow: 0 0 0 3px rgba(15,118,110,0.1);
+}
+.er-input-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.er-input-group .er-input,
+.er-input-group .er-select {
+  flex: 1;
+}
+.er-error {
+  font-size: 12px;
+  color: var(--er-danger);
+  margin-top: 4px;
+  display: none;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   8. MODERN FILTER BAR
+   ───────────────────────────────────────────────────────────────── */
+.er-filters {
+  background: var(--er-surface);
+  border: 1px solid var(--er-border);
+  border-radius: var(--er-radius-lg);
+  padding: 16px 20px;
+  box-shadow: var(--er-shadow-sm);
+  animation: er-slide-down 0.25s ease;
+}
+.er-filters__row {
+  display: flex;
+  gap: 14px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+.er-filters__group {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 140px;
+}
+.er-filters__group--search {
+  flex: 2;
+  min-width: 200px;
+}
+.er-filters__group--actions {
+  flex: 0 0 auto;
+}
+.er-filters__label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--er-text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 5px;
+}
+.er-filters__input {
+  padding: 7px 12px;
+  font-size: 13px;
+  border: 1px solid var(--er-border);
+  border-radius: var(--er-radius);
+  background: var(--er-surface-2);
+  color: var(--er-text);
+  font-family: inherit;
+  transition: all var(--er-transition);
+  outline: none;
+}
+.er-filters__input:focus {
+  border-color: var(--er-primary);
+  box-shadow: 0 0 0 3px rgba(15,118,110,0.1);
+  background: #fff;
+}
+.er-filters__select {
+  padding: 7px 32px 7px 12px;
+  font-size: 13px;
+  border: 1px solid var(--er-border);
+  border-radius: var(--er-radius);
+  background: var(--er-surface-2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E") no-repeat right 10px center;
+  color: var(--er-text);
+  appearance: none;
+  cursor: pointer;
+  font-family: inherit;
+  outline: none;
+  transition: all var(--er-transition);
+}
+.er-filters__select:focus {
+  border-color: var(--er-primary);
+  box-shadow: 0 0 0 3px rgba(15,118,110,0.1);
+  background-color: #fff;
+}
+.er-filter-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.er-filter-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 100px;
+  background: var(--er-primary-bg);
+  color: var(--er-primary);
+  animation: er-scale-in 0.2s ease;
+}
+.er-filter-badge button {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+  font-size: 13px;
+  line-height: 1;
+  opacity: 0.6;
+  transition: opacity var(--er-transition);
+}
+.er-filter-badge button:hover {
+  opacity: 1;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   9. MODERN STATUS BADGES
+   ───────────────────────────────────────────────────────────────── */
+.er-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 11px;
+  font-size: 11.5px;
+  font-weight: 650;
+  border-radius: 100px;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  transition: all var(--er-transition);
+}
+.er-badge--success { background: var(--er-success-bg); color: var(--er-success); }
+.er-badge--info    { background: var(--er-info-bg);    color: var(--er-info); }
+.er-badge--warning { background: var(--er-warning-bg); color: var(--er-warning); }
+.er-badge--danger  { background: var(--er-danger-bg);  color: var(--er-danger); }
+.er-badge--neutral { background: var(--er-surface-2);  color: var(--er-text-3); }
+.er-badge--primary { background: var(--er-primary-bg); color: var(--er-primary); }
+.er-badge--dot::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+.er-badge--pulse::before {
+  animation: er-pulse 2s ease-in-out infinite;
+}
+.er-badge--count {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  justify-content: center;
+  font-size: 11px;
+  line-height: 22px;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   10. MODERN STATS GRID
+   ───────────────────────────────────────────────────────────────── */
+.er-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
+}
+.er-stat {
+  background: var(--er-surface);
+  border: 1px solid var(--er-border);
+  border-radius: var(--er-radius-lg);
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  box-shadow: var(--er-shadow-sm);
+  transition: box-shadow var(--er-transition), transform var(--er-transition);
+  animation: er-slide-up 0.3s ease both;
+}
+.er-stat:nth-child(1) { animation-delay: 0.02s; }
+.er-stat:nth-child(2) { animation-delay: 0.06s; }
+.er-stat:nth-child(3) { animation-delay: 0.10s; }
+.er-stat:nth-child(4) { animation-delay: 0.14s; }
+.er-stat:nth-child(5) { animation-delay: 0.18s; }
+.er-stat:nth-child(6) { animation-delay: 0.22s; }
+.er-stat:nth-child(7) { animation-delay: 0.26s; }
+.er-stat:nth-child(8) { animation-delay: 0.30s; }
+.er-stat:hover {
+  box-shadow: var(--er-shadow);
+  transform: translateY(-2px);
+}
+.er-stat__icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--er-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 20px;
+}
+.er-stat__icon--primary { background: var(--er-primary-bg); color: var(--er-primary); }
+.er-stat__icon--success { background: var(--er-success-bg); color: var(--er-success); }
+.er-stat__icon--info    { background: var(--er-info-bg);    color: var(--er-info); }
+.er-stat__icon--warning { background: var(--er-warning-bg); color: var(--er-warning); }
+.er-stat__icon--danger  { background: var(--er-danger-bg);  color: var(--er-danger); }
+.er-stat__body { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.er-stat__label { font-size: 11.5px; font-weight: 600; color: var(--er-text-3); text-transform: uppercase; letter-spacing: 0.04em; }
+.er-stat__value { font-size: 26px; font-weight: 800; color: var(--er-text); line-height: 1.1; letter-spacing: -0.03em; }
+.er-stat__unit { font-size: 16px; font-weight: 600; color: var(--er-text-3); }
+
+/* ─────────────────────────────────────────────────────────────────
+   11. MODERN EMPTY STATE
+   ───────────────────────────────────────────────────────────────── */
+.er-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 24px;
+  gap: 14px;
+  color: var(--er-text-3);
+  text-align: center;
+  animation: er-fade-in 0.3s ease;
+}
+.er-empty__icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--er-surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--er-text-3);
+  opacity: 0.5;
+  margin-bottom: 4px;
+}
+.er-empty__title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--er-text-2);
+  margin: 0;
+}
+.er-empty__desc {
+  font-size: 13.5px;
+  color: var(--er-text-3);
+  max-width: 360px;
+  margin: 0;
+  line-height: 1.5;
+}
+.er-empty__action {
+  margin-top: 8px;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   12. MODERN MODAL (glassmorphism)
+   ───────────────────────────────────────────────────────────────── */
+.er-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15,23,42,0.4);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: er-fade-in 0.2s ease;
+}
+.er-modal {
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.4);
+  border-radius: var(--er-radius-xl);
+  box-shadow: var(--er-shadow-xl);
+  width: 100%;
+  max-width: 480px;
+  animation: er-slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.er-modal--lg { max-width: 640px; }
+.er-modal--xl { max-width: 860px; }
+.er-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 20px 24px 16px;
+}
+.er-modal__header-left {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.er-modal__header-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--er-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.er-modal__header-icon--success { background: var(--er-success-bg); color: var(--er-success); }
+.er-modal__header-icon--danger  { background: var(--er-danger-bg);  color: var(--er-danger); }
+.er-modal__title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--er-text);
+  margin: 0;
+}
+.er-modal__sub {
+  font-size: 12.5px;
+  color: var(--er-text-3);
+  margin: 2px 0 0;
+}
+.er-modal__close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: var(--er-radius);
+  background: transparent;
+  color: var(--er-text-3);
+  cursor: pointer;
+  transition: all var(--er-transition);
+}
+.er-modal__close:hover {
+  background: var(--er-surface-2);
+  color: var(--er-text);
+}
+.er-modal__body {
+  padding: 0 24px 20px;
+}
+.er-modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--er-border);
+  border-radius: 0 0 var(--er-radius-xl) var(--er-radius-xl);
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   13. MODERN TABS
+   ───────────────────────────────────────────────────────────────── */
+.er-tabs {
+  display: flex;
+  gap: 2px;
+  background: var(--er-surface-2);
+  border-radius: var(--er-radius);
+  padding: 3px;
+  margin-bottom: 20px;
+}
+.er-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 15px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--er-text-3);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all var(--er-transition);
+}
+.er-tab:hover {
+  color: var(--er-text-2);
+  background: rgba(255,255,255,0.5);
+}
+.er-tab--active {
+  color: var(--er-primary);
+  background: var(--er-surface);
+  box-shadow: var(--er-shadow-sm);
+}
+.er-tab__count {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 100px;
+  background: var(--er-surface-2);
+  color: var(--er-text-3);
+  min-width: 20px;
+  text-align: center;
+  line-height: 18px;
+}
+.er-tab--active .er-tab__count {
+  background: var(--er-primary-bg);
+  color: var(--er-primary);
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   14. MODERN SKELETON LOADING
+   ───────────────────────────────────────────────────────────────── */
+.er-skeleton {
+  background: linear-gradient(90deg,
+    var(--er-surface-2) 25%,
+    var(--er-surface) 50%,
+    var(--er-surface-2) 75%
+  );
+  background-size: 200% 100%;
+  animation: er-shimmer 1.5s ease-in-out infinite;
+  border-radius: var(--er-radius);
+}
+.er-skeleton--text {
+  height: 14px;
+  width: 100%;
+  margin-bottom: 8px;
+}
+.er-skeleton--title {
+  height: 22px;
+  width: 60%;
+  margin-bottom: 12px;
+}
+.er-skeleton--avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+}
+.er-skeleton--card {
+  height: 120px;
+  width: 100%;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   15. MODERN ACTION BUTTONS (row-level)
+   ───────────────────────────────────────────────────────────────── */
+.er-actions {
+  display: inline-flex;
+  gap: 4px;
+  flex-wrap: nowrap;
+}
+.er-action {
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--er-radius);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--er-text-3);
+  cursor: pointer;
+  transition: all var(--er-transition);
+  text-decoration: none;
+  font-size: 14px;
+}
+.er-action:hover {
+  background: var(--er-surface-2);
+  color: var(--er-text-2);
+  border-color: var(--er-border);
+}
+.er-action--edit:hover { background: var(--er-primary-bg); color: var(--er-primary); border-color: var(--er-primary); }
+.er-action--view:hover { background: var(--er-info-bg);    color: var(--er-info);    border-color: var(--er-info); }
+.er-action--delete:hover { background: var(--er-danger-bg);  color: var(--er-danger);  border-color: var(--er-danger); }
+.er-action--success:hover { background: var(--er-success-bg); color: var(--er-success); border-color: var(--er-success); }
+
+/* ─────────────────────────────────────────────────────────────────
+   16. MODERN PROGRESS / WIZARD
+   ───────────────────────────────────────────────────────────────── */
+.er-progress {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 28px;
+}
+.er-progress__step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  position: relative;
+}
+.er-progress__step:not(:last-child)::after {
+  content: '';
+  flex: 1;
+  height: 2px;
+  background: var(--er-border);
+  margin: 0 12px;
+  transition: background var(--er-transition);
+}
+.er-progress__step--done:not(:last-child)::after,
+.er-progress__step--active:not(:last-child)::after {
+  background: var(--er-primary);
+}
+.er-progress__dot {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  background: var(--er-surface-2);
+  color: var(--er-text-3);
+  border: 2px solid var(--er-border);
+  transition: all var(--er-transition);
+  flex-shrink: 0;
+}
+.er-progress__step--active .er-progress__dot {
+  background: var(--er-primary);
+  color: #fff;
+  border-color: var(--er-primary);
+  box-shadow: 0 0 0 4px rgba(15,118,110,0.15);
+}
+.er-progress__step--done .er-progress__dot {
+  background: var(--er-success);
+  color: #fff;
+  border-color: var(--er-success);
+}
+.er-progress__label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--er-text-3);
+  white-space: nowrap;
+}
+.er-progress__step--active .er-progress__label {
+  color: var(--er-primary);
+}
+.er-progress__step--done .er-progress__label {
+  color: var(--er-success);
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   17. MODERN TOAST NOTIFICATIONS
+   ───────────────────────────────────────────────────────────────── */
+.er-toast {
+  animation: er-slide-up 0.3s ease, er-fade-in 0.3s ease;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   18. MODERN PAGE HEADER
+   ───────────────────────────────────────────────────────────────── */
+.er-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+}
+.er-page-header__left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.er-page-header__icon {
+  width: 52px;
+  height: 52px;
+  border-radius: var(--er-radius-lg);
+  background: linear-gradient(135deg, var(--er-primary), var(--er-primary-l));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(15,118,110,0.3);
+}
+.er-page-header__title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--er-text);
+  margin: 0;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+.er-page-header__sub {
+  font-size: 13px;
+  color: var(--er-text-3);
+  margin: 2px 0 0;
+}
+.er-page-header__right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   19. MODERN SEARCH BAR
+   ───────────────────────────────────────────────────────────────── */
+.er-search {
+  position: relative;
+  width: 220px;
+}
+.er-search__icon {
+  position: absolute;
+  left: 11px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--er-text-3);
+  pointer-events: none;
+  font-size: 14px;
+}
+.er-search__input {
+  width: 100%;
+  padding: 7px 13px 7px 34px;
+  font-size: 13px;
+  border: 1px solid var(--er-border);
+  border-radius: 100px;
+  background: var(--er-surface-2);
+  color: var(--er-text);
+  font-family: inherit;
+  outline: none;
+  transition: all var(--er-transition);
+}
+.er-search__input:focus {
+  border-color: var(--er-primary);
+  box-shadow: 0 0 0 3px rgba(15,118,110,0.1);
+  background: #fff;
+}
+.er-search__input::placeholder {
+  color: var(--er-text-3);
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   20. MODERN UTILITIES
+   ───────────────────────────────────────────────────────────────── */
+.er-divider {
+  height: 1px;
+  background: var(--er-border);
+  margin: 20px 0;
+}
+.er-text-mono {
+  font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--er-primary);
+  letter-spacing: 0.01em;
+}
+.er-cell-name {
+  font-weight: 600;
+  color: var(--er-text);
+}
+.er-gap-xs { gap: 4px; }
+.er-gap-sm { gap: 8px; }
+.er-gap-md { gap: 16px; }
+.er-gap-lg { gap: 24px; }
+.er-mt-sm { margin-top: 8px; }
+.er-mt-md { margin-top: 16px; }
+.er-mb-sm { margin-bottom: 8px; }
+.er-mb-md { margin-bottom: 16px; }
+.er-mb-lg { margin-bottom: 24px; }
+.er-p-sm { padding: 8px; }
+.er-p-md { padding: 16px; }
+.er-p-lg { padding: 24px; }
+
+/* ─────────────────────────────────────────────────────────────────
+   21. RESPONSIVE
+   ───────────────────────────────────────────────────────────────── */
+@media (max-width: 1100px) {
+  .er-stats {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+}
+@media (max-width: 767px) {
+  .er-page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .er-page-header__icon {
+    width: 44px;
+    height: 44px;
+  }
+  .er-page-header__title {
+    font-size: 18px;
+  }
+  .er-filters__row {
+    flex-direction: column;
+  }
+  .er-filters__group {
+    width: 100%;
+  }
+  .er-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+  .er-search {
+    width: 100%;
+  }
+  .er-progress__label {
+    display: none;
+  }
+}
+@media (max-width: 480px) {
+  .er-stats {
+    grid-template-columns: 1fr;
+  }
+  .er-progress__step:not(:last-child)::after {
+    margin: 0 6px;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   22. DASHBOARD OVERRIDES
+   ───────────────────────────────────────────────────────────────── */
+.er-dash-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 24px;
+}
+@media (max-width: 1100px) {
+  .er-dash-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   23. MODERN CARD ANIMATIONS
+   ───────────────────────────────────────────────────────────────── */
+.er-card-animate {
+  animation: er-slide-up 0.3s ease both;
+}
+.er-card-animate:nth-child(1) { animation-delay: 0.02s; }
+.er-card-animate:nth-child(2) { animation-delay: 0.06s; }
+.er-card-animate:nth-child(3) { animation-delay: 0.10s; }
+.er-card-animate:nth-child(4) { animation-delay: 0.14s; }
+.er-card-animate:nth-child(5) { animation-delay: 0.18s; }
+.er-card-animate:nth-child(6) { animation-delay: 0.22s; }
+.er-card-animate:nth-child(7) { animation-delay: 0.26s; }
+.er-card-animate:nth-child(8) { animation-delay: 0.30s; }
+
+/* ─────────────────────────────────────────────────────────────────
+   24. TABLE ALERTS / NOTIFICATIONS
+   ───────────────────────────────────────────────────────────────── */
+.er-alert {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: var(--er-radius);
+  font-size: 13px;
+  animation: er-slide-down 0.25s ease;
+}
+.er-alert--success { background: var(--er-success-bg); color: var(--er-success); border: 1px solid rgba(5,150,105,0.15); }
+.er-alert--danger  { background: var(--er-danger-bg);  color: var(--er-danger);  border: 1px solid rgba(220,38,38,0.15); }
+.er-alert--info    { background: var(--er-info-bg);    color: var(--er-info);    border: 1px solid rgba(2,132,199,0.15); }
+.er-alert--warning { background: var(--er-warning-bg); color: var(--er-warning); border: 1px solid rgba(217,119,6,0.15); }
+
+/* ─────────────────────────────────────────────────────────────────
+   25. PRINT OVERRIDES
+   ───────────────────────────────────────────────────────────────── */
+@media print {
+  .er-filters,
+  .er-page-header__right,
+  .er-btn,
+  .er-actions,
+  .er-search { display: none !important; }
+  .er-card { box-shadow: none !important; border: 1px solid #ddd !important; }
+}

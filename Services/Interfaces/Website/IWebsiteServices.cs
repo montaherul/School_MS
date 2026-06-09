@@ -66,3 +66,32 @@ public interface IWebsitePageService
     Task UpdatePageAsync(WebsitePage page, CancellationToken cancellationToken = default);
     Task DeletePageAsync(int id, CancellationToken cancellationToken = default);
 }
+
+public interface IContactMessageService
+{
+    Task<IReadOnlyList<ContactMessage>> GetMessagesAsync(CancellationToken cancellationToken = default);
+    Task<ContactMessage?> GetMessageByIdAsync(int id, CancellationToken cancellationToken = default);
+    Task SaveMessageAsync(ContactMessage message, CancellationToken cancellationToken = default);
+    Task MarkAsReadAsync(int id, CancellationToken cancellationToken = default);
+    Task DeleteMessageAsync(int id, CancellationToken cancellationToken = default);
+    Task<int> GetUnreadCountAsync(CancellationToken cancellationToken = default);
+}
+
+public interface IEmailTemplateService
+{
+    Task<IReadOnlyList<EmailTemplate>> GetTemplatesAsync(CancellationToken cancellationToken = default);
+    Task<EmailTemplate?> GetTemplateByIdAsync(int id, CancellationToken cancellationToken = default);
+    Task CreateTemplateAsync(EmailTemplate template, CancellationToken cancellationToken = default);
+    Task UpdateTemplateAsync(EmailTemplate template, CancellationToken cancellationToken = default);
+    Task DeleteTemplateAsync(int id, CancellationToken cancellationToken = default);
+}
+
+public interface IAdmissionFeeStructureService
+{
+    Task<IReadOnlyList<AdmissionFeeStructure>> GetAllAsync(CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<AdmissionFeeStructure>> GetActiveAsync(CancellationToken cancellationToken = default);
+    Task<AdmissionFeeStructure?> GetByIdAsync(int id, CancellationToken cancellationToken = default);
+    Task CreateAsync(AdmissionFeeStructure fee, CancellationToken cancellationToken = default);
+    Task UpdateAsync(AdmissionFeeStructure fee, CancellationToken cancellationToken = default);
+    Task DeleteAsync(int id, CancellationToken cancellationToken = default);
+}

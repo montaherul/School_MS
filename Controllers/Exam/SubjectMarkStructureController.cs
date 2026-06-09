@@ -5,10 +5,10 @@ using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Models.DTOs.Exam;
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Models.Entities.Exam;
+using SchoolManagementSystem.Models.ViewModels.Exam;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using System.Security.Claims;
-using ExamEntity = SchoolManagementSystem.Models.Entities.Exam.Exam;
 
 namespace SchoolManagementSystem.Controllers.Exam;
 
@@ -25,27 +25,17 @@ public class SubjectMarkStructureController : Controller
     }
 
     [Permission("Exam", "View")]
-    public async Task<IActionResult> Index(int? examId, int? subjectId)
+    public async Task<IActionResult> Index(int? subjectId)
     {
-        ViewBag.Exams = await _uow.Repository<ExamEntity>().Query()
-            .Where(e => !e.IsDeleted)
-            .OrderByDescending(e => e.CreatedAt)
-            .ToListAsync();
-
         ViewBag.Subjects = await _uow.Repository<Subject>().Query()
             .Where(s => !s.IsDeleted)
             .OrderBy(s => s.Name)
             .ToListAsync();
 
-        if (examId.HasValue && examId > 0)
+        if (subjectId.HasValue && subjectId > 0)
         {
-            if (subjectId.HasValue && subjectId > 0)
-            {
-                var structures = await _service.GetBySubjectAsync(examId.Value, subjectId.Value);
-                return View(structures);
-            }
-            var all = await _service.GetByExamAsync(examId.Value);
-            return View(all);
+            var structures = await _service.GetBySubjectAsync(subjectId.Value);
+            return View(structures);
         }
 
         return View(new List<SubjectMarkStructureDto>());
@@ -82,7 +72,7 @@ public class SubjectMarkStructureController : Controller
             var createdBy = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "system";
             await _service.CreateAsync(dto, createdBy);
             TempData["SuccessMessage"] = "Subject mark structure created.";
-            return RedirectToAction(nameof(Index), new { examId = dto.ExamId, subjectId = dto.SubjectId });
+            return RedirectToAction(nameof(Index), new { subjectId = dto.SubjectId });
         }
         catch (InvalidOperationException ex)
         {
@@ -102,7 +92,6 @@ public class SubjectMarkStructureController : Controller
         {
             Id = dto.Id,
             ComponentId = dto.ComponentId,
-            ExamId = dto.ExamId,
             ClassId = dto.ClassId,
             SubjectId = dto.SubjectId,
             StudentGroupId = dto.StudentGroupId,
@@ -112,7 +101,7 @@ public class SubjectMarkStructureController : Controller
             IsActive = dto.IsActive
         };
 
-        await PopulateDropdownsAsync(upsertDto.ExamId, upsertDto.SubjectId, upsertDto.ComponentId);
+        await PopulateDropdownsAsync(upsertDto.SubjectId, upsertDto.ComponentId);
         return View(upsertDto);
     }
 
@@ -134,7 +123,7 @@ public class SubjectMarkStructureController : Controller
             if (result == null) return NotFound();
 
             TempData["SuccessMessage"] = "Subject mark structure updated.";
-            return RedirectToAction(nameof(Index), new { examId = dto.ExamId, subjectId = dto.SubjectId });
+            return RedirectToAction(nameof(Index), new { subjectId = dto.SubjectId });
         }
         catch (InvalidOperationException ex)
         {
@@ -145,9 +134,9 @@ public class SubjectMarkStructureController : Controller
     }
 
     [Permission("Exam", "Edit")]
-    public async Task<IActionResult> BulkEdit(int examId, int subjectId)
+    public async Task<IActionResult> BulkEdit(int subjectId)
     {
-        var existing = await _service.GetBySubjectAsync(examId, subjectId);
+        var existing = await _service.GetBySubjectAsync(subjectId);
         var allComponents = await _uow.Repository<ExamComponent>().Query()
             .Where(c => !c.IsDeleted && c.IsActive)
             .OrderBy(c => c.DisplayOrder)
@@ -155,9 +144,7 @@ public class SubjectMarkStructureController : Controller
 
         var model = new SubjectMarkStructureBulkViewModel
         {
-            ExamId = examId,
             SubjectId = subjectId,
-            ExamName = (await _uow.Repository<ExamEntity>().GetByIdAsync(examId))?.Name ?? "",
             SubjectName = (await _uow.Repository<Subject>().GetByIdAsync(subjectId))?.Name ?? "",
             Components = allComponents.Select(c => new SubjectMarkStructureItemViewModel
             {
@@ -177,7 +164,7 @@ public class SubjectMarkStructureController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     [Permission("Exam", "Edit")]
-    public async Task<IActionResult> BulkEdit(int examId, int subjectId, SubjectMarkStructureBulkViewModel model)
+    public async Task<IActionResult> BulkEdit(int subjectId, SubjectMarkStructureBulkViewModel model)
     {
         var updatedBy = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "system";
         var items = model.Components
@@ -185,7 +172,6 @@ public class SubjectMarkStructureController : Controller
             .Select((c, i) => new SubjectMarkStructureUpsertDto
             {
                 ComponentId = c.ComponentId,
-                ExamId = examId,
                 SubjectId = subjectId,
                 FullMarks = c.FullMarks,
                 PassMarks = c.PassMarks,
@@ -213,9 +199,9 @@ public class SubjectMarkStructureController : Controller
             return View(model);
         }
 
-        await _service.SaveBulkAsync(examId, subjectId, items, updatedBy);
+        await _service.SaveBulkAsync(subjectId, items, updatedBy);
         TempData["SuccessMessage"] = "Subject mark structure saved.";
-        return RedirectToAction(nameof(Index), new { examId, subjectId });
+        return RedirectToAction(nameof(Index), new { subjectId });
     }
 
     [HttpPost]
@@ -230,12 +216,8 @@ public class SubjectMarkStructureController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    private async Task PopulateDropdownsAsync(int? selectedExamId = null, int? selectedSubjectId = null, int? selectedComponentId = null)
+    private async Task PopulateDropdownsAsync(int? selectedSubjectId = null, int? selectedComponentId = null)
     {
-        ViewBag.Exams = await _uow.Repository<ExamEntity>().Query()
-            .Where(e => !e.IsDeleted)
-            .OrderByDescending(e => e.CreatedAt)
-            .ToListAsync();
         ViewBag.Subjects = await _uow.Repository<Subject>().Query()
             .Where(s => !s.IsDeleted)
             .OrderBy(s => s.Name)
@@ -253,24 +235,4 @@ public class SubjectMarkStructureController : Controller
             .OrderBy(g => g.DisplayOrder)
             .ToListAsync();
     }
-}
-
-public class SubjectMarkStructureBulkViewModel
-{
-    public int ExamId { get; set; }
-    public int SubjectId { get; set; }
-    public string ExamName { get; set; } = string.Empty;
-    public string SubjectName { get; set; } = string.Empty;
-    public List<SubjectMarkStructureItemViewModel> Components { get; set; } = [];
-}
-
-public class SubjectMarkStructureItemViewModel
-{
-    public int ComponentId { get; set; }
-    public string ComponentName { get; set; } = string.Empty;
-    public string ComponentCode { get; set; } = string.Empty;
-    public decimal FullMarks { get; set; }
-    public decimal PassMarks { get; set; }
-    public int DisplayOrder { get; set; }
-    public bool IsEnabled { get; set; }
 }

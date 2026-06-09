@@ -25,19 +25,22 @@ public class MarksController : Controller
     private readonly IUnitOfWork _uow;
     private readonly SchoolManagementSystem.Services.Interfaces.Result.IResultAuthorizationService _resultAuthService;
     private readonly ITeacherResultRepository _teacherResultRepository;
+    private readonly ISubjectMarkStructureService _markStructureService;
 
     public MarksController(
         IMarkEntryService markEntryService,
         ITeacherService teacherService,
         IUnitOfWork uow,
         SchoolManagementSystem.Services.Interfaces.Result.IResultAuthorizationService resultAuthService,
-        ITeacherResultRepository teacherResultRepository)
+        ITeacherResultRepository teacherResultRepository,
+        ISubjectMarkStructureService markStructureService)
     {
         _markEntryService = markEntryService;
         _teacherService = teacherService;
         _uow = uow;
         _resultAuthService = resultAuthService;
         _teacherResultRepository = teacherResultRepository;
+        _markStructureService = markStructureService;
     }
 
     [HttpGet]
@@ -124,6 +127,9 @@ public class MarksController : Controller
             }).ToList()
         };
 
+        var columns = await _markStructureService.GetGridColumnsAsync(subjectId, classId);
+        ViewBag.ComponentColumns = columns;
+
         var exam = await _uow.Repository<SchoolManagementSystem.Models.Entities.Exam.Exam>().GetByIdAsync(examId);
         if (exam != null && exam.Status == SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Published)
         {
@@ -201,7 +207,6 @@ public class MarksController : Controller
 
     [HttpPost]
     [Authorize(Roles = "Teacher,Senior Lecturer,Lecturer,Admin,Super Admin,Principal")]
-    [IgnoreAntiforgeryToken]
     public async Task<IActionResult> ImportExcel(int examId, int subjectId, int classId, int sectionId, IFormFile file, bool saveAsDraft, CancellationToken ct)
     {
         var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");

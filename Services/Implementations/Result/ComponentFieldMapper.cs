@@ -62,6 +62,13 @@ public static class ComponentFieldMapper
         if (PropertyCache.TryGetValue(componentCode, out var prop))
             return (decimal?)prop.GetValue(entry);
 
+        if (!string.IsNullOrEmpty(entry.ComponentValues))
+        {
+            var parsed = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, decimal?>>(entry.ComponentValues);
+            if (parsed != null && parsed.TryGetValue(componentCode, out var dynamicVal))
+                return dynamicVal;
+        }
+
         return null;
     }
 

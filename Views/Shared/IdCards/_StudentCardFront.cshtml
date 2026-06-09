@@ -1,0 +1,104 @@
+@using SchoolManagementSystem.Helpers
+@model SchoolManagementSystem.Models.DTOs.Student.StudentUpsertDto
+@{
+    var schoolLogo = !string.IsNullOrEmpty(ViewBag.SchoolLogoPath)
+        ? Url.Content($"~/{ViewBag.SchoolLogoPath.TrimStart('/')}")
+        : null;
+    var principalSign = !string.IsNullOrEmpty(ViewBag.PrincipalSignaturePath)
+        ? Url.Content($"~/{ViewBag.PrincipalSignaturePath.TrimStart('/')}")
+        : null;
+    var photoUrl = !string.IsNullOrEmpty(Model.ProfilePicturePath)
+        ? Url.Content($"~/{Model.ProfilePicturePath.TrimStart('/')}")
+        : null;
+    var today = DateTime.Today.ToString("dd MMM yyyy");
+}
+<div class="id-card id-card-front">
+    <div class="card-header-band">
+        <div class="card-logo">
+            @if (schoolLogo != null)
+            {
+                <img src="@schoolLogo" alt="Logo" />
+            }
+            else
+            {
+                <i class="bi bi-mortarboard-fill card-logo-placeholder"></i>
+            }
+        </div>
+        <div class="card-header-text">
+            @if (!string.IsNullOrEmpty(ViewBag.SchoolNameBn as string))
+            {
+                <div class="card-school-name-bn">@ViewBag.SchoolNameBn</div>
+            }
+            <div class="card-school-name-en">@ViewBag.SchoolNameEn</div>
+            <div class="card-school-meta">
+                <span>EIIN: @ViewBag.SchoolEIIN</span>
+                <span class="sep">|</span>
+                <span>@ViewBag.SchoolWebsite</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-title-bar">
+        <span>Student Identity Card</span>
+    </div>
+
+    <div class="card-body">
+        <div class="card-photo-section">
+            <div class="card-photo">
+                @if (photoUrl != null)
+                {
+                    <img src="@photoUrl" alt="Photo" />
+                }
+                else
+                {
+                    <i class="bi bi-person-fill photo-placeholder"></i>
+                }
+            </div>
+            <div class="card-photo-label">Passport Size</div>
+        </div>
+
+        <div class="card-info-section">
+            <div class="card-info-row">
+                <span class="card-info-label">Name</span>
+                <span class="card-info-value name">@Model.FullName</span>
+            </div>
+            <div class="card-info-row">
+                <span class="card-info-label">ID</span>
+                <span class="card-info-value">@Model.StudentNo</span>
+            </div>
+            <div class="card-info-row">
+                <span class="card-info-label">Roll</span>
+                <span class="card-info-value">@Model.RollNumber.ToString("D3")</span>
+            </div>
+            <div class="card-info-row">
+                <span class="card-info-label">Class</span>
+                <span class="card-info-value">@Model.ClassId</span>
+            </div>
+            <div class="card-info-row">
+                <span class="card-info-label">Section</span>
+                <span class="card-info-value">@(Model.SectionName ?? "---")</span>
+            </div>
+            <div class="card-info-row">
+                <span class="card-info-label">DOB</span>
+                <span class="card-info-value">@Model.DateOfBirth.ToString("dd MMM yyyy")</span>
+            </div>
+            <div class="card-info-row">
+                <span class="card-info-label">Blood</span>
+                <span class="card-info-value @(string.IsNullOrEmpty(Model.BloodGroup) ? "n-a" : "")">
+                    @(!string.IsNullOrEmpty(Model.BloodGroup) ? Model.BloodGroup : "N/A")
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-footer-band">
+        <div class="card-signature-area">
+            <div class="card-signature-line"></div>
+            <div class="card-signature-label">@(ViewBag.PrincipalName ?? "Principal")</div>
+        </div>
+        <div class="card-issue-area">
+            <div class="card-issue-label">Issue Date</div>
+            <div class="card-issue-value">@today</div>
+        </div>
+    </div>
+</div>

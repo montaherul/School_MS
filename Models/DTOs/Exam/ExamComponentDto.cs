@@ -55,8 +55,6 @@ public class SubjectMarkStructureDto
     public int ComponentId { get; set; }
     public string ComponentName { get; set; } = string.Empty;
     public string ComponentCode { get; set; } = string.Empty;
-    public int? ExamId { get; set; }
-    public string? ExamName { get; set; }
     public int? ClassId { get; set; }
     public string? ClassName { get; set; }
     public int? SubjectId { get; set; }
@@ -76,7 +74,6 @@ public class SubjectMarkStructureUpsertDto
 {
     public int? Id { get; set; }
     public int ComponentId { get; set; }
-    public int? ExamId { get; set; }
     public int? ClassId { get; set; }
     public int? SubjectId { get; set; }
     public int? StudentGroupId { get; set; }

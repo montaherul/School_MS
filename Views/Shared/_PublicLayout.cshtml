@@ -1,4 +1,5 @@
 @inject SchoolManagementSystem.Services.Interfaces.Website.ISchoolWebsiteService WebsiteService
+@using Microsoft.AspNetCore.Http.Extensions
 @{
     var websiteSettings = await WebsiteService.GetSettingsAsync(Context.RequestAborted);
 }
@@ -8,6 +9,48 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - @(websiteSettings?.SchoolName ?? "Bangladesh Public School")</title>
+
+    <!-- SEO Meta Tags -->
+    @if (!string.IsNullOrEmpty(websiteSettings?.MetaDescription))
+    {
+        <meta name="description" content="@websiteSettings.MetaDescription" />
+    }
+    @if (!string.IsNullOrEmpty(websiteSettings?.MetaKeywords))
+    {
+        <meta name="keywords" content="@websiteSettings.MetaKeywords" />
+    }
+    <meta name="author" content="@(websiteSettings?.SchoolName ?? "SchoolMS")" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="@(websiteSettings?.OgTitle ?? ViewData["Title"]?.ToString())" />
+    <meta property="og:description" content="@(websiteSettings?.OgDescription ?? websiteSettings?.MetaDescription ?? websiteSettings?.SchoolName)" />
+    @if (!string.IsNullOrEmpty(websiteSettings?.OgImagePath))
+    {
+        <meta property="og:image" content="@websiteSettings.OgImagePath" />
+    }
+    <meta property="og:url" content="@Context.Request.GetEncodedUrl()" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="@websiteSettings?.SchoolName" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="@(websiteSettings?.OgTitle ?? ViewData["Title"]?.ToString())" />
+    <meta name="twitter:description" content="@(websiteSettings?.OgDescription ?? websiteSettings?.MetaDescription ?? websiteSettings?.SchoolName)" />
+    @if (!string.IsNullOrEmpty(websiteSettings?.OgImagePath))
+    {
+        <meta name="twitter:image" content="@websiteSettings.OgImagePath" />
+    }
+
+    <!-- Favicon -->
+    @if (!string.IsNullOrEmpty(websiteSettings?.FaviconPath))
+    {
+        <link rel="icon" type="image/png" href="@websiteSettings.FaviconPath" />
+        <link rel="shortcut icon" href="@websiteSettings.FaviconPath" />
+    }
+    else
+    {
+        <link rel="icon" type="image/png" href="~/favicon.png" />
+    }
 
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -342,11 +385,27 @@
                     <p class="mb-4" style="max-width:320px; font-size:14px; line-height: 1.6;">
                         A premier educational institute of high repute, building enlightened citizens of tomorrow through quality education and character construction in Bangladesh.
                     </p>
-                    <div class="d-flex">
-                        <a href="@(websiteSettings?.FacebookUrl ?? "#")" class="social-btn" target="_blank"><i class="bi bi-facebook"></i></a>
-                        <a href="@(websiteSettings?.YouTubeUrl ?? "#")" class="social-btn" target="_blank"><i class="bi bi-youtube"></i></a>
-                        <a href="#" class="social-btn"><i class="bi bi-twitter-x"></i></a>
-                        <a href="#" class="social-btn"><i class="bi bi-linkedin"></i></a>
+                    <div class="d-flex flex-wrap gap-1">
+                        @if (!string.IsNullOrEmpty(websiteSettings?.FacebookUrl))
+                        {
+                            <a href="@websiteSettings.FacebookUrl" class="social-btn" target="_blank" title="Facebook"><i class="bi bi-facebook"></i></a>
+                        }
+                        @if (!string.IsNullOrEmpty(websiteSettings?.YouTubeUrl))
+                        {
+                            <a href="@websiteSettings.YouTubeUrl" class="social-btn" target="_blank" title="YouTube"><i class="bi bi-youtube"></i></a>
+                        }
+                        @if (!string.IsNullOrEmpty(websiteSettings?.InstagramUrl))
+                        {
+                            <a href="@websiteSettings.InstagramUrl" class="social-btn" target="_blank" title="Instagram"><i class="bi bi-instagram"></i></a>
+                        }
+                        @if (!string.IsNullOrEmpty(websiteSettings?.LinkedInUrl))
+                        {
+                            <a href="@websiteSettings.LinkedInUrl" class="social-btn" target="_blank" title="LinkedIn"><i class="bi bi-linkedin"></i></a>
+                        }
+                        @if (!string.IsNullOrEmpty(websiteSettings?.TwitterUrl))
+                        {
+                            <a href="@websiteSettings.TwitterUrl" class="social-btn" target="_blank" title="Twitter/X"><i class="bi bi-twitter-x"></i></a>
+                        }
                     </div>
                 </div>
 
@@ -386,7 +445,7 @@
             </div>
 
             <div class="edu-footer-bottom d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 text-center">
-                <div>@(websiteSettings?.FooterText ?? "© 2026 Bangladesh Public School. All rights reserved.")</div>
+                <div>@(websiteSettings?.CopyrightText ?? websiteSettings?.FooterText ?? "© 2026 Bangladesh Public School. All rights reserved.")</div>
                 <div class="d-flex gap-4">
                     <a href="/Auth/Login" class="text-white-50 text-decoration-none">Faculty Login</a>
                     <a href="/Auth/Login" class="text-white-50 text-decoration-none">Student Portal</a>

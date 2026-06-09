@@ -199,10 +199,10 @@
         .sidebar,
         .topbar,
         .sidebar-overlay,
-        .adm-header,
+        .er-page-header,
         .no-print,
         .btn,
-        .adm-btn,
+        .er-btn,
         .sidebar-toggle,
         .sidebar-collapse-wrap,
         .sidebar-footer,
@@ -298,7 +298,7 @@
             display: none !important;
         }
 
-        .adm-table-card {
+        .er-card {
             border: 1px solid #e2e8f0 !important;
             border-radius: 6px !important;
             box-shadow: none !important;
@@ -376,15 +376,15 @@
             color: #fff !important;
         }
 
-        .adm-status--approved,
-        .adm-status--success,
+        .er-badge--approved,
+        .er-badge--success,
         .tr-exam-header__badge--pass {
             background: #ecfdf5 !important;
             color: #059669 !important;
             border: 1px solid rgba(5,150,105,0.2) !important;
         }
 
-        .adm-status--rejected,
+        .er-badge--rejected,
         .tr-exam-header__badge--fail {
             background: #fef2f2 !important;
             color: #dc2626 !important;
@@ -408,33 +408,33 @@
             display: table-footer-group;
         }
 
-        .dash-empty {
+        .er-empty {
             padding: 30px 20px !important;
         }
 
-        .dash-empty__title {
+        .er-empty__title {
             font-size: 13px !important;
         }
 
-        .dash-empty__sub {
+        .er-empty__desc {
             font-size: 11px !important;
         }
     }
 </style>
 
-<div class="adm-page">
-    <div class="adm-header no-print">
+<div class="adm-page er-page">
+    <div class="er-page-header no-print">
         <div class="adm-header__left">
-            <div class="adm-header__icon-wrap">
+            <div class="er-page-header__icon">
                 <i class="bi bi-file-earmark-text"></i>
             </div>
             <div>
-                <h1 class="adm-header__title">Student Transcript</h1>
-                <p class="adm-header__sub">Complete academic record</p>
+                <h1 class="er-page-header__title">Student Transcript</h1>
+                <p class="er-page-header__sub">Complete academic record</p>
             </div>
         </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
-            <button type="button" class="adm-btn adm-btn--primary no-print" onclick="window.print()">
+        <div class="er-page-header__right">
+            <button type="button" class="er-btn er-btn--primary no-print" onclick="window.print()">
                 <i class="bi bi-download"></i> Download PDF
             </button>
         </div>
@@ -472,7 +472,7 @@
         </div>
     </div>
 
-    <div class="adm-table-card" style="margin-bottom:20px;border-radius:var(--adm-radius-lg);border-top:1px solid var(--adm-border);">
+    <div class="er-card">
         <div class="tr-section-header">
             <i class="bi bi-person-vcard"></i> Student Details
         </div>
@@ -516,7 +516,7 @@
 
     @if (Model.ExamResults.Any())
     {
-        <div class="adm-table-card" style="margin-bottom:20px;border-radius:var(--adm-radius-lg);border-top:1px solid var(--adm-border);">
+        <div class="er-card">
             <div class="tr-section-header">
                 <i class="bi bi-journal-check"></i> Exam History
             </div>
@@ -571,11 +571,11 @@
                                             <td style="text-align:center;">
                                                 @if (sub.IsPassed)
                                                 {
-                                                    <span class="adm-status adm-status--approved" style="font-size:10px;">Pass</span>
+                                                    <span class="er-badge er-badge--approved" style="font-size:10px;">Pass</span>
                                                 }
                                                 else
                                                 {
-                                                    <span class="adm-status adm-status--rejected" style="font-size:10px;">Fail</span>
+                                                    <span class="er-badge er-badge--rejected" style="font-size:10px;">Fail</span>
                                                 }
                                             </td>
                                         </tr>
@@ -592,11 +592,11 @@
                                         <td style="text-align:center;">
                                             @if (exam.IsPassed)
                                             {
-                                                <span class="adm-status adm-status--approved">Passed</span>
+                                                <span class="er-badge er-badge--approved">Passed</span>
                                             }
                                             else
                                             {
-                                                <span class="adm-status adm-status--rejected">Failed</span>
+                                                <span class="er-badge er-badge--rejected">Failed</span>
                                             }
                                         </td>
                                     </tr>
@@ -626,7 +626,7 @@
 
     @if (Model.SubjectWiseResults.Any())
     {
-        <div class="adm-table-card" style="margin-bottom:20px;border-radius:var(--adm-radius-lg);border-top:1px solid var(--adm-border);">
+        <div class="er-card">
             <div class="tr-section-header">
                 <i class="bi bi-bar-chart"></i> Subject Summary
             </div>
@@ -654,11 +654,11 @@
                                 <td style="text-align:center;">
                                     @if (sub.IsPassed)
                                     {
-                                        <span class="adm-status adm-status--approved" style="font-size:10px;">Pass</span>
+                                        <span class="er-badge er-badge--approved" style="font-size:10px;">Pass</span>
                                     }
                                     else
                                     {
-                                        <span class="adm-status adm-status--rejected" style="font-size:10px;">Fail</span>
+                                        <span class="er-badge er-badge--rejected" style="font-size:10px;">Fail</span>
                                     }
                                 </td>
                             </tr>
@@ -747,8 +747,8 @@
 
     @if (!Model.ExamResults.Any() && !Model.SubjectWiseResults.Any())
     {
-        <div class="adm-table-card" style="border-radius:var(--adm-radius-lg);border-top:1px solid var(--adm-border);">
-            <div class="dash-empty">
+        <div class="er-card">
+            <div class="er-empty">
                 <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                     <polyline points="14 2 14 8 20 8"></polyline>
@@ -756,8 +756,8 @@
                     <line x1="16" y1="17" x2="8" y2="17"></line>
                     <polyline points="10 9 9 9 8 9"></polyline>
                 </svg>
-                <p class="dash-empty__title">No Exam Results Available</p>
-                <p class="dash-empty__sub">There are no published exam results for this student yet. Results will appear here once they are published.</p>
+                <p class="er-empty__title">No Exam Results Available</p>
+                <p class="er-empty__desc">There are no published exam results for this student yet. Results will appear here once they are published.</p>
             </div>
         </div>
     }

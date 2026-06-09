@@ -2,7 +2,8 @@ CREATE OR ALTER PROCEDURE [dbo].[sp_GetMarksEntryList]
     @ExamId INT,
     @ClassId INT,
     @SectionId INT,
-    @SubjectId INT
+    @SubjectId INT,
+    @OptionalSubjectId INT = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -47,6 +48,7 @@ BEGIN
       AND s.SectionId = @SectionId
       AND s.Status = 1 -- Active per StudentStatus enum
       AND s.IsDeleted = 0
+      AND (@OptionalSubjectId IS NULL OR s.OptionalSubjectId = @OptionalSubjectId)
     ORDER BY s.RollNumber;
 END;
 GO

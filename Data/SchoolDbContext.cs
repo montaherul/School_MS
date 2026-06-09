@@ -141,13 +141,15 @@ public class SchoolDbContext : DbContext
     public DbSet<Gallery> Galleries => Set<Gallery>();
     public DbSet<GalleryImage> GalleryImages => Set<GalleryImage>();
     public DbSet<Announcement> Announcements => Set<Announcement>();
+    public DbSet<ContactMessage> ContactMessages => Set<ContactMessage>();
+    public DbSet<EmailTemplate> EmailTemplates => Set<EmailTemplate>();
+    public DbSet<AdmissionFeeStructure> AdmissionFeeStructures => Set<AdmissionFeeStructure>();
 
     public DbSet<ClassSubject> ClassSubjects => Set<ClassSubject>();
 
     // Exam Configuration DbSets
     public DbSet<ExamType> ExamTypes => Set<ExamType>();
     public DbSet<ExamConfiguration> ExamConfigurations => Set<ExamConfiguration>();
-    public DbSet<SubjectComponent> SubjectComponents => Set<SubjectComponent>();
     public DbSet<GpaConfiguration> GpaConfigurations => Set<GpaConfiguration>();
     public DbSet<ExamComponent> ExamComponents => Set<ExamComponent>();
     public DbSet<SubjectMarkStructure> SubjectMarkStructures => Set<SubjectMarkStructure>();
@@ -205,6 +207,7 @@ public class SchoolDbContext : DbContext
         modelBuilder.Entity<Teacher>().HasIndex(x => x.TeacherCode).IsUnique();
         modelBuilder.Entity<FeeInvoice>().HasIndex(x => x.InvoiceNo).IsUnique();
         modelBuilder.Entity<Book>().HasIndex(x => x.AccessionNo).IsUnique();
+        modelBuilder.Entity<AdmissionFeeStructure>().HasIndex(x => x.SchoolClassId).IsUnique();
 
         // Employee Indexes
         modelBuilder.Entity<Employee>().HasIndex(x => x.EmployeeCode).IsUnique();
@@ -268,11 +271,16 @@ public class SchoolDbContext : DbContext
         // Exam Configuration Indexes
         modelBuilder.Entity<ExamType>().HasIndex(x => x.Code).IsUnique();
         modelBuilder.Entity<ExamConfiguration>().HasIndex(x => new { x.ExamTypeId, x.ClassId }).IsUnique();
-        modelBuilder.Entity<SubjectComponent>().HasIndex(x => new { x.ClassSubjectId, x.ComponentName }).IsUnique();
         modelBuilder.Entity<GpaConfiguration>().HasIndex(x => x.Grade).IsUnique();
         modelBuilder.Entity<GpaConfiguration>().HasIndex(x => new { x.MinMarks, x.MaxMarks }).IsUnique();
         modelBuilder.Entity<ExamComponent>().HasIndex(x => x.Code).IsUnique();
-        modelBuilder.Entity<SubjectMarkStructure>().HasIndex(x => new { x.ComponentId, x.ExamId, x.SubjectId, x.StudentGroupId }).IsUnique();
+        modelBuilder.Entity<SubjectMarkStructure>().HasIndex(x => new { x.ComponentId, x.SubjectId, x.StudentGroupId }).IsUnique();
+
+        // ClassSubject unique constraint
+        modelBuilder.Entity<ClassSubject>()
+            .HasIndex(x => new { x.SchoolClassId, x.SubjectId, x.GroupName })
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
 
         // Result Indexes
         modelBuilder.Entity<MarkAuditLog>().HasIndex(x => x.MarkEntryId);
@@ -333,13 +341,6 @@ public class SchoolDbContext : DbContext
             .HasForeignKey(p => p.ToClassId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // Configure ClassSubject relationship with SubjectComponent
-        modelBuilder.Entity<SubjectComponent>()
-            .HasOne(s => s.ClassSubject)
-            .WithMany(c => c.SubjectComponents)
-            .HasForeignKey(s => s.ClassSubjectId)
-            .OnDelete(DeleteBehavior.Cascade);
-
         modelBuilder.Entity<AcademicCalendar>()
             .HasOne(x => x.AcademicYear)
             .WithMany()
@@ -379,12 +380,6 @@ modelBuilder.Entity<SubjectMarkStructure>()
     .HasOne(s => s.Component)
     .WithMany()
     .HasForeignKey(s => s.ComponentId)
-    .OnDelete(DeleteBehavior.Restrict);
-
-modelBuilder.Entity<SubjectMarkStructure>()
-    .HasOne(s => s.Exam)
-    .WithMany()
-    .HasForeignKey(s => s.ExamId)
     .OnDelete(DeleteBehavior.Restrict);
 
 modelBuilder.Entity<SubjectMarkStructure>()

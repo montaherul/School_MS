@@ -6,21 +6,40 @@ public class SchoolClassListItemDto
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
+    public string NameBn { get; set; } = string.Empty;
+    public string Code { get; set; } = string.Empty;
     public int SortOrder { get; set; }
+    public int Capacity { get; set; }
     public bool IsGroupBased { get; set; }
+    public bool IsActive { get; set; }
     public int SectionCount { get; set; }
     public int StudentCount { get; set; }
+    public int SubjectMappingCount { get; set; }
     public int TotalRecords { get; set; }
 }
 
 public class SchoolClassUpsertDto
 {
     public int Id { get; set; }
+
     [Required]
     [StringLength(60)]
     public string Name { get; set; } = string.Empty;
+
+    [StringLength(60)]
+    public string NameBn { get; set; } = string.Empty;
+
+    [StringLength(20)]
+    public string Code { get; set; } = string.Empty;
+
     [Required]
     public int SortOrder { get; set; }
-    public bool IsGroupBased { get; set; }
-}
 
+    public int Capacity { get; set; }
+
+    [StringLength(500)]
+    public string? Description { get; set; }
+
+    public bool IsGroupBased { get; set; }
+    public bool IsActive { get; set; } = true;
+}

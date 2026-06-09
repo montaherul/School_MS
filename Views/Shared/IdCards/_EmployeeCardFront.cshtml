@@ -1,0 +1,98 @@
+@using SchoolManagementSystem.Helpers
+@model SchoolManagementSystem.Models.DTOs.Employee.EmployeeDetailsDto
+@{
+    var schoolLogo = !string.IsNullOrEmpty(ViewBag.SchoolLogoPath)
+        ? Url.Content($"~/{ViewBag.SchoolLogoPath.TrimStart('/')}")
+        : null;
+    var photoUrl = !string.IsNullOrEmpty(Model.ProfilePicturePath)
+        ? Url.Content($"~/{Model.ProfilePicturePath.TrimStart('/')}")
+        : null;
+    var themeColor = GetThemeColor(Model.Designation);
+    var today = DateTime.Today.ToString("dd MMM yyyy");
+}
+<div class="id-card id-card-front">
+    <div class="card-header-band" style="background:linear-gradient(135deg, @themeColor 0%, @themeColor 100%)">
+        <div class="card-logo">
+            @if (schoolLogo != null)
+            {
+                <img src="@schoolLogo" alt="Logo" />
+            }
+            else
+            {
+                <i class="bi bi-mortarboard-fill card-logo-placeholder"></i>
+            }
+        </div>
+        <div class="card-header-text">
+            <div class="card-school-name-en" style="font-size:3mm;">@ViewBag.SchoolNameEn</div>
+            <div class="card-school-meta">
+                <span>EIIN: @ViewBag.SchoolEIIN</span>
+                <span class="sep">|</span>
+                <span>@ViewBag.SchoolWebsite</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-title-bar">
+        <span>Employee Identity Card</span>
+    </div>
+
+    <div class="card-body">
+        <div class="card-photo-section">
+            <div class="card-photo">
+                @if (photoUrl != null)
+                {
+                    <img src="@photoUrl" alt="Photo" />
+                }
+                else
+                {
+                    <i class="bi bi-person-fill photo-placeholder"></i>
+                }
+            </div>
+            <div class="card-photo-label">Passport Size</div>
+        </div>
+
+        <div class="card-info-section">
+            <div class="card-info-row">
+                <span class="card-info-label">Name</span>
+                <span class="card-info-value name">@Model.FullName</span>
+            </div>
+            <div class="card-info-row">
+                <span class="card-info-label">Code</span>
+                <span class="card-info-value">@Model.EmployeeCode</span>
+            </div>
+            <div class="card-info-row">
+                <span class="card-info-label">Designation</span>
+                <span class="card-info-value" style="font-size:2mm;">@Model.Designation</span>
+            </div>
+            <div class="card-info-row">
+                <span class="card-info-label">Department</span>
+                <span class="card-info-value" style="font-size:2mm;">@Model.Department</span>
+            </div>
+            <div class="card-info-row">
+                <span class="card-info-label">Blood</span>
+                <span class="card-info-value @(string.IsNullOrEmpty(Model.BloodGroup) ? "n-a" : "")">
+                    @(!string.IsNullOrEmpty(Model.BloodGroup) ? Model.BloodGroup : "N/A")
+                </span>
+            </div>
+            <div class="card-info-row">
+                <span class="card-info-label">Mobile</span>
+                <span class="card-info-value" style="font-size:1.8mm;">@Model.Phone</span>
+            </div>
+            <div class="card-info-row">
+                <span class="card-info-label">Card No</span>
+                <span class="card-info-value">@(Model.EmployeeCardNumber ?? "---")</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="card-footer-band" style="background:linear-gradient(135deg, @themeColor 0%, @themeColor 100%)">
+        <div class="card-signature-area">
+            <div class="card-signature-line"></div>
+            <div class="card-signature-label">@(ViewBag.PrincipalName ?? "Principal")</div>
+        </div>
+        <div class="card-issue-area">
+            <div class="card-issue-label">Issue Date</div>
+            <div class="card-issue-value">@today</div>
+        </div>
+    </div>
+</div>

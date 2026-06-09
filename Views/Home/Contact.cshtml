@@ -59,32 +59,46 @@
                     <h3 class="fw-bold text-dark mb-3">Send a Message</h3>
                     <p class="text-muted mb-4">Have an inquiry regarding admissions or classes? Fill out the form below and we will get back to you shortly.</p>
                     
-                    <form action="#" method="post" id="contactForm">
+                    <form action="/contact/send" method="post" id="contactForm">
+                        @Html.AntiForgeryToken()
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">Your Name</label>
-                                <input type="text" class="form-control" placeholder="Name" required/>
+                                <input type="text" name="Name" class="form-control" placeholder="Name" required/>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">Your Email</label>
-                                <input type="email" class="form-control" placeholder="Email" required/>
+                                <input type="email" name="Email" class="form-control" placeholder="Email" required/>
                             </div>
                             <div class="col-12">
                                 <label class="form-label fw-semibold">Subject</label>
-                                <input type="text" class="form-control" placeholder="Inquiry Subject" required/>
+                                <input type="text" name="Subject" class="form-control" placeholder="Inquiry Subject" required/>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">Phone (optional)</label>
+                                <input type="text" name="Phone" class="form-control" placeholder="Phone number"/>
                             </div>
                             <div class="col-12">
                                 <label class="form-label fw-semibold">Your Message</label>
-                                <textarea class="form-control" rows="5" placeholder="Write details here..." required></textarea>
+                                <textarea name="Message" class="form-control" rows="5" placeholder="Write details here..." required></textarea>
                             </div>
                             <div class="col-12">
                                 <button type="submit" class="btn btn-edu-navy w-100 py-3">Submit Inquiry <i class="bi bi-send ms-2"></i></button>
                             </div>
                         </div>
                     </form>
-                    <div class="alert alert-success mt-3 d-none" id="successAlert">
-                        <i class="bi bi-check-circle-fill me-2"></i> Your message has been received! Our support desk will reply soon.
-                    </div>
+                    @if (TempData["Success"] != null)
+                    {
+                        <div class="alert alert-success mt-3">
+                            <i class="bi bi-check-circle-fill me-2"></i> @TempData["Success"]
+                        </div>
+                    }
+                    @if (TempData["Error"] != null)
+                    {
+                        <div class="alert alert-danger mt-3">
+                            <i class="bi bi-exclamation-circle-fill me-2"></i> @TempData["Error"]
+                        </div>
+                    }
                 </div>
             </div>
         </div>
@@ -102,15 +116,4 @@
     </div>
 </section>
 
-@section Scripts {
-    <script>
-        document.getElementById('contactForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            this.reset();
-            document.getElementById('successAlert').classList.remove('d-none');
-            setTimeout(() => {
-                document.getElementById('successAlert').classList.add('d-none');
-            }, 6000);
-        });
-    </script>
-}
+

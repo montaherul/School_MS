@@ -34,6 +34,15 @@
                 <li class="nav-item">
                     <button class="nav-link px-4 py-3 fw-bold border-0" id="pages-tab" data-bs-toggle="tab" data-bs-target="#pages-pane" type="button" role="tab"><i class="bi bi-file-earmark-richtext-fill me-1"></i> CMS Pages</button>
                 </li>
+                <li class="nav-item">
+                    <button class="nav-link px-4 py-3 fw-bold border-0" id="messages-tab" data-bs-toggle="tab" data-bs-target="#messages-pane" type="button" role="tab"><i class="bi bi-chat-dots-fill me-1"></i> Contact Inbox</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link px-4 py-3 fw-bold border-0" id="templates-tab" data-bs-toggle="tab" data-bs-target="#templates-pane" type="button" role="tab"><i class="bi bi-envelope-paper-fill me-1"></i> Email Templates</button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link px-4 py-3 fw-bold border-0" id="fees-tab" data-bs-toggle="tab" data-bs-target="#fees-pane" type="button" role="tab"><i class="bi bi-cash-stack me-1"></i> Admission Fees</button>
+                </li>
             </ul>
         </div>
         <div class="card-body p-4">
@@ -82,6 +91,35 @@
                         <a href="/Admin/Website/Pages/CreateEdit" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i> Add Custom Page</a>
                     </div>
                     <div id="pagesGrid"></div>
+                </div>
+
+                <!-- ── 6. Contact Messages Inbox Pane ── -->
+                <div class="tab-pane fade" id="messages-pane" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0">Contact Form Inbox</h5>
+                    </div>
+                    <div id="messagesGrid"></div>
+                </div>
+
+                <!-- ── 7. Email Templates Pane ── -->
+                <div class="tab-pane fade" id="templates-pane" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0">Email Notification Templates</h5>
+                        <a href="/Admin/Website/EmailTemplates/CreateEdit" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i> Add Template</a>
+                    </div>
+                    <div id="templatesGrid"></div>
+                </div>
+
+                <!-- ── 8. Admission Fee Structures Pane ── -->
+                <div class="tab-pane fade" id="fees-pane" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0">Admission Fee Structure</h5>
+                        <div class="d-flex gap-2">
+                            <a href="/admission-info" target="_blank" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye me-1"></i> Preview Page</a>
+                            <a href="/Admin/Website/AdmissionFees/CreateEdit" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i> Add Fee Row</a>
+                        </div>
+                    </div>
+                    <div id="feesGrid"></div>
                 </div>
 
             </div>
@@ -280,6 +318,118 @@
             });
         }
 
+        // Initialize Contact Messages Grid
+        const messagesTable = new Tabulator("#messagesGrid", {
+            ajaxURL: "/Admin/Website/Messages/List",
+            layout: "fitColumns",
+            responsiveLayout: "collapse",
+            placeholder: "No contact messages received",
+            columns: [
+                { title: "Date", field: "createdAt", width: 160, formatter: function(cell) {
+                    return new Date(cell.getValue()).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                }},
+                { title: "Status", field: "status", width: 100, horizAlign: "center", formatter: function(cell) {
+                    return cell.getValue() === "Unread" ? `<span class="badge bg-danger">Unread</span>` : `<span class="badge bg-success">Read</span>`;
+                }},
+                { title: "Name", field: "name" },
+                { title: "Email", field: "email" },
+                { title: "Subject", field: "subject" },
+                { title: "Actions", width: 180, horizAlign: "center", headerSort: false, formatter: function(cell) {
+                    const row = cell.getRow().getData();
+                    const markReadBtn = row.status === "Unread"
+                        ? `<button class="btn btn-sm btn-outline-success" onclick="markRead('/Admin/Website/Messages/MarkRead/${row.id}', messagesTable)"><i class="bi bi-check2"></i></button>`
+                        : '';
+                    return `
+                        <div class="btn-group btn-group-sm">
+                            ${markReadBtn}
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteObject('/Admin/Website/Messages/Delete/${row.id}', messagesTable)"><i class="bi bi-trash"></i></button>
+                        </div>
+                    `;
+                }}
+            ]
+        });
+
+        // Initialize Email Templates Grid
+        const templatesTable = new Tabulator("#templatesGrid", {
+            ajaxURL: "/Admin/Website/EmailTemplates/List",
+            layout: "fitColumns",
+            responsiveLayout: "collapse",
+            placeholder: "No email templates created",
+            columns: [
+                { title: "Template Name", field: "templateName" },
+                { title: "Subject", field: "subject" },
+                { title: "Active", field: "isActive", width: 100, horizAlign: "center", formatter: function(cell) {
+                    return cell.getValue() ? `<span class="badge bg-success">Active</span>` : `<span class="badge bg-secondary">Inactive</span>`;
+                }},
+                { title: "Actions", width: 150, horizAlign: "center", headerSort: false, formatter: function(cell) {
+                    const row = cell.getRow().getData();
+                    return `
+                        <div class="btn-group btn-group-sm">
+                            <a href="/Admin/Website/EmailTemplates/CreateEdit/${row.id}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteObject('/Admin/Website/EmailTemplates/Delete/${row.id}', templatesTable)"><i class="bi bi-trash"></i></button>
+                        </div>
+                    `;
+                }}
+            ]
+        });
+
+        // Initialize Admission Fee Structures Grid
+        const feesTable = new Tabulator("#feesGrid", {
+            ajaxURL: "/Admin/Website/AdmissionFees/List",
+            layout: "fitColumns",
+            responsiveLayout: "collapse",
+            placeholder: "No fee structures configured",
+            columns: [
+                { title: "Order", field: "displayOrder", width: 80, horizAlign: "center" },
+                { title: "Class", field: "className" },
+                { title: "Admission Fee", field: "admissionFee", width: 130, formatter: function(cell) {
+                    return cell.getValue() > 0 ? `BDT ${cell.getValue().toLocaleString()}` : '<span class="text-success">Free</span>';
+                }},
+                { title: "Monthly Fee", field: "monthlyFee", width: 120, formatter: function(cell) {
+                    return cell.getValue() > 0 ? `BDT ${cell.getValue().toLocaleString()}` : '-';
+                }},
+                { title: "Session Fee", field: "sessionFee", width: 120, formatter: function(cell) {
+                    return cell.getValue() > 0 ? `BDT ${cell.getValue().toLocaleString()}` : '-';
+                }},
+                { title: "Exam Fee", field: "examFee", width: 110, formatter: function(cell) {
+                    return cell.getValue() > 0 ? `BDT ${cell.getValue().toLocaleString()}` : '-';
+                }},
+                { title: "Other Fee", field: "otherFee", width: 110, formatter: function(cell) {
+                    return cell.getValue() > 0 ? `BDT ${cell.getValue().toLocaleString()}` : '-';
+                }},
+                { title: "Status", field: "isActive", width: 100, horizAlign: "center", formatter: function(cell) {
+                    return cell.getValue() ? `<span class="badge bg-success">Active</span>` : `<span class="badge bg-secondary">Hidden</span>`;
+                }},
+                { title: "Actions", width: 150, horizAlign: "center", headerSort: false, formatter: function(cell) {
+                    const row = cell.getRow().getData();
+                    return `
+                        <div class="btn-group btn-group-sm">
+                            <a href="/Admin/Website/AdmissionFees/CreateEdit/${row.id}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteObject('/Admin/Website/AdmissionFees/Delete/${row.id}', feesTable)"><i class="bi bi-trash"></i></button>
+                        </div>
+                    `;
+                }}
+            ]
+        });
+
+        // Mark as read helper
+        function markRead(url, targetTable) {
+            const token = getAntiforgeryToken();
+            fetch(url, {
+                method: "POST",
+                headers: {
+                    "RequestVerificationToken": token,
+                    "Content-Type": "application/json"
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    targetTable.setData();
+                }
+            });
+        }
+
         // Fix Bootstrap tab resizing issue with Tabulator
         document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(tabEl => {
             tabEl.addEventListener('shown.bs.tab', function (event) {
@@ -289,6 +439,9 @@
                 else if (targetPane === "#events-pane") eventsTable.redraw();
                 else if (targetPane === "#galleries-pane") galleriesTable.redraw();
                 else if (targetPane === "#pages-pane") pagesTable.redraw();
+                else if (targetPane === "#messages-pane") messagesTable.redraw();
+                else if (targetPane === "#templates-pane") templatesTable.redraw();
+                else if (targetPane === "#fees-pane") feesTable.redraw();
             });
         });
     </script>

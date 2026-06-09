@@ -1,156 +1,642 @@
-/* wwwroot/css/idcard-print.css */
-/* Premium employee ID card print stylesheet */
-@page {
-    size: 85.6mm 53.98mm; /* CR80 dimensions */
-    margin: 0;
+/* ============================================================
+   STUDENT ID CARD - Master Print Stylesheet
+   CR80 Standard: 85.60mm x 53.98mm Landscape
+   ============================================================ */
+
+:root {
+    --card-primary: #1B4D8C;
+    --card-primary-light: #2A6BBF;
+    --card-gold: #C5A55A;
+    --card-gold-light: #E8D5A3;
+    --card-bg: #FFFFFF;
+    --card-text: #1A1A2E;
+    --card-text-muted: #6B7280;
+    --card-border: #E5E7EB;
+    --card-success: #2E7D32;
+    --card-danger: #C62828;
+    --card-width: 85.6mm;
+    --card-height: 53.98mm;
+    --card-radius: 3.5mm;
 }
 
-/* Reset default margins for printing */
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-.id-card-print-document {
-    width: 100%;
-    height: 100vh; /* full page for preview, will be cut to card size when printed */
+/* ── Page Setup ─────────────────────────────────────────── */
+body {
+    background: #F0F2F5;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Arial, sans-serif;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+
+/* ── Card Container ─────────────────────────────────────── */
+.id-card-container {
     display: flex;
+    flex-direction: row;
     justify-content: center;
     align-items: center;
-    background: #f5f5f5; /* light page background */
-    padding: 1rem;
+    gap: 24px;
+    padding: 40px;
+    min-height: 100vh;
 }
 
-.id-card-wrap {
-    width: 85.6mm;
-    height: 53.98mm;
-    border-radius: 6mm;
+.id-card-container.bulk {
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 20px;
+}
+
+/* ── Individual Card ──────────────────────────────────── */
+.id-card {
+    width: var(--card-width);
+    height: var(--card-height);
+    background: var(--card-bg);
+    border-radius: var(--card-radius);
     overflow: hidden;
     position: relative;
-    font-family: 'Inter', sans-serif;
-    background: linear-gradient(135deg, #1B4D8C, #3A7BD5);
-    color: #fff;
-    box-shadow: 0 4px 8px rgba(0,0,0,.15);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    flex-shrink: 0;
 }
 
-.id-card-header {
-    text-align: center;
-    padding: 0.4rem 0.2rem;
-}
-.id-card-header img.logo {
-    height: 24px;
-    margin-bottom: 0.2rem;
-}
-.id-card-header .school-name {
-    font-size: 0.9rem;
-    font-weight: 600;
-}
-.id-card-header .motto {
-    font-size: 0.6rem;
-    font-style: italic;
-    opacity: 0.85;
+/* ── FRONT SIDE ────────────────────────────────────────── */
+.id-card-front {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
+    background: linear-gradient(180deg, #FFFFFF 0%, #F8F9FA 100%);
 }
 
-.id-card-photo {
-    width: 60px;
-    height: 60px;
+/* Watermark */
+.id-card-front::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 80px;
+    height: 80px;
+    transform: translate(-50%, -50%);
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%231B4D8C' opacity='0.04' d='M50 5L95 30v45L50 95 5 75V30z'/%3E%3C/svg%3E") no-repeat center;
+    background-size: contain;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Header Band */
+.card-header-band {
+    background: linear-gradient(135deg, var(--card-primary) 0%, var(--card-primary-light) 100%);
+    padding: 3.5mm 4mm 2.5mm;
+    display: flex;
+    align-items: center;
+    gap: 2.5mm;
+    z-index: 1;
+}
+
+.card-logo {
+    width: 10mm;
+    height: 10mm;
     border-radius: 50%;
-    border: 3px solid #fff;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
     overflow: hidden;
-    box-shadow: 0 2px 6px rgba(0,0,0,.2);
-    margin: 0.4rem auto;
-    background: #e8f1ff; /* fallback */
 }
-.id-card-photo img {
+
+.card-logo img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.card-logo-placeholder {
+    font-size: 6mm;
+    color: var(--card-primary);
+}
+
+.card-header-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.card-school-name-bn {
+    font-size: 3.2mm;
+    font-weight: 700;
+    color: var(--card-gold-light);
+    line-height: 1.2;
+}
+
+.card-school-name-en {
+    font-size: 2.8mm;
+    font-weight: 600;
+    color: white;
+    line-height: 1.2;
+    margin-top: 0.5mm;
+}
+
+.card-school-meta {
+    font-size: 1.8mm;
+    color: rgba(255,255,255,0.85);
+    line-height: 1.3;
+    margin-top: 0.3mm;
+}
+
+.card-school-meta span {
+    display: inline-block;
+}
+
+.card-school-meta .sep {
+    margin: 0 1mm;
+    opacity: 0.5;
+}
+
+/* Title */
+.card-title-bar {
+    background: var(--card-gold);
+    text-align: center;
+    padding: 1.2mm 0;
+    z-index: 1;
+}
+
+.card-title-bar span {
+    font-size: 2.2mm;
+    font-weight: 800;
+    color: white;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+/* Main Content */
+.card-body {
+    flex: 1;
+    display: flex;
+    padding: 2.5mm 3mm;
+    gap: 2.5mm;
+    z-index: 1;
+}
+
+.card-photo-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1mm;
+    flex-shrink: 0;
+}
+
+.card-photo {
+    width: 15mm;
+    height: 18mm;
+    border-radius: 1.5mm;
+    overflow: hidden;
+    border: 0.5mm solid var(--card-border);
+    background: #F3F4F6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card-photo img {
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
-.id-card-details {
+.card-photo .photo-placeholder {
+    font-size: 8mm;
+    color: #D1D5DB;
+}
+
+.card-photo-label {
+    font-size: 1.6mm;
+    color: var(--card-text-muted);
     text-align: center;
-    padding: 0 0.4rem;
-}
-.id-card-details .name {
-    font-size: 0.75rem;
-    font-weight: 700;
-    margin-top: 0.2rem;
-}
-.id-card-details .code {
-    font-size: 0.55rem;
-    opacity: 0.9;
-}
-.id-card-details .meta {
-    font-size: 0.5rem;
-    margin-top: 0.1rem;
+    line-height: 1.2;
 }
 
-.id-card-badge {
-    position: absolute;
-    top: 0.4rem;
-    right: 0.4rem;
-    background: #ffd700; /* default gold, will be overridden inline */
-    color: #000;
-    padding: 0.12rem 0.3rem;
-    border-radius: 0.3rem;
-    font-size: 0.45rem;
+.card-info-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8mm;
+    min-width: 0;
+}
+
+.card-info-row {
+    display: flex;
+    align-items: baseline;
+    font-size: 2mm;
+    line-height: 1.3;
+}
+
+.card-info-label {
+    color: var(--card-text-muted);
+    min-width: 12mm;
+    font-size: 1.8mm;
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+.card-info-value {
+    color: var(--card-text);
     font-weight: 600;
+    font-size: 2.2mm;
+    word-break: break-word;
 }
 
-.id-card-footer {
-    position: absolute;
-    bottom: 0.3rem;
-    left: 0.4rem;
-    right: 0.4rem;
-    font-size: 0.45rem;
+.card-info-value.name {
+    font-size: 2.8mm;
+    font-weight: 700;
+    color: var(--card-primary);
+}
+
+.card-info-value.n-a {
+    color: var(--card-text-muted);
+    font-weight: 400;
+    font-style: italic;
+}
+
+/* Footer */
+.card-footer-band {
+    background: linear-gradient(135deg, var(--card-primary-light) 0%, var(--card-primary) 100%);
+    padding: 1.5mm 3mm;
     display: flex;
     justify-content: space-between;
     align-items: center;
-}
-.id-card-footer .signature {
-    border-top: 1px solid #fff;
-    width: 45%;
-    text-align: center;
-    padding-top: 0.1rem;
-}
-.id-card-footer .card-number {
-    text-align: right;
-    width: 45%;
+    z-index: 1;
 }
 
-/* Back side layout */
+.card-signature-area {
+    text-align: center;
+}
+
+.card-signature-line {
+    width: 14mm;
+    border-top: 0.4mm solid var(--card-gold);
+    margin-bottom: 0.3mm;
+}
+
+.card-signature-label {
+    font-size: 1.5mm;
+    color: rgba(255,255,255,0.9);
+}
+
+.card-issue-area {
+    text-align: right;
+}
+
+.card-issue-label {
+    font-size: 1.5mm;
+    color: rgba(255,255,255,0.7);
+}
+
+.card-issue-value {
+    font-size: 1.8mm;
+    color: white;
+    font-weight: 600;
+}
+
+/* ── BACK SIDE ─────────────────────────────────────────── */
 .id-card-back {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg, #3A7BD5, #1B4D8C);
-    color: #fff;
-    padding: 0.6rem;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
-    font-size: 0.55rem;
+    height: 100%;
+    position: relative;
+    background: linear-gradient(180deg, #F8F9FA 0%, #FFFFFF 100%);
 }
-.id-card-back .branding {
+
+.id-card-back::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 80px;
+    height: 80px;
+    transform: translate(-50%, -50%);
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='%231B4D8C' opacity='0.04' d='M50 5L95 30v45L50 95 5 75V30z'/%3E%3C/svg%3E") no-repeat center;
+    background-size: contain;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Back Header */
+.back-header {
+    background: linear-gradient(135deg, var(--card-primary) 0%, var(--card-primary-light) 100%);
+    padding: 2mm 3mm;
     text-align: center;
-    font-size: 0.7rem;
+    z-index: 1;
+}
+
+.back-header-title {
+    font-size: 2.4mm;
+    font-weight: 700;
+    color: white;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+/* Back Body */
+.back-body {
+    flex: 1;
+    display: flex;
+    padding: 2mm 2.5mm;
+    gap: 2mm;
+    z-index: 1;
+}
+
+.back-info-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1mm;
+}
+
+.back-qr-panel {
+    width: 20mm;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5mm;
+    flex-shrink: 0;
+    border-left: 0.3mm solid var(--card-border);
+    padding-left: 2mm;
+}
+
+.back-qr-image {
+    width: 72px;
+    height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border-radius: 1mm;
+    padding: 1mm;
+}
+
+.back-qr-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.back-qr-label {
+    font-size: 1.4mm;
+    color: var(--card-text-muted);
+    text-align: center;
+    font-weight: 500;
+}
+
+.back-field-group {
+    margin-bottom: 0;
+}
+
+.back-field-group-title {
+    font-size: 1.6mm;
+    font-weight: 700;
+    color: var(--card-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 0.3mm solid var(--card-gold);
+    padding-bottom: 0.3mm;
+    margin-bottom: 0.5mm;
+}
+
+.back-row {
+    display: flex;
+    font-size: 1.8mm;
+    line-height: 1.4;
+}
+
+.back-label {
+    color: var(--card-text-muted);
+    min-width: 11mm;
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+.back-value {
+    color: var(--card-text);
     font-weight: 600;
-    margin-bottom: 0.3rem;
+    word-break: break-word;
 }
-.id-card-back .info-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.25rem;
+
+.back-value.n-a {
+    color: var(--card-text-muted);
+    font-weight: 400;
+    font-style: italic;
 }
-.id-card-back .qr-section {
+
+/* Back Footer */
+.back-footer {
+    background: linear-gradient(135deg, var(--card-primary) 0%, var(--card-primary-light) 100%);
+    padding: 1.2mm 2.5mm;
     text-align: center;
-    margin-top: 0.3rem;
+    z-index: 1;
 }
-.id-card-back .qr-section img {
-    width: 35px;
-    height: 35px;
-    margin-bottom: 0.1rem;
+
+.back-footer-text {
+    font-size: 1.6mm;
+    color: rgba(255,255,255,0.9);
+    line-height: 1.3;
 }
-.id-card-back .notice {
-    font-size: 0.45rem;
+
+.back-footer-text .phone-email {
+    font-weight: 600;
+    color: var(--card-gold-light);
+}
+
+/* ── Controls (Screen Only) ──────────────────────────────── */
+.card-controls {
     text-align: center;
-    margin-top: 0.3rem;
-    opacity: 0.9;
+    margin-bottom: 30px;
+}
+
+.card-controls .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 28px;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.btn-print {
+    background: var(--card-primary);
+    color: white;
+}
+
+.btn-print:hover {
+    background: var(--card-primary-light);
+    transform: translateY(-1px);
+}
+
+.btn-pdf {
+    background: var(--card-danger);
+    color: white;
+}
+
+.btn-pdf:hover {
+    background: #B71C1C;
+    transform: translateY(-1px);
+}
+
+.btn-back {
+    background: #6B7280;
+    color: white;
+}
+
+.btn-back:hover {
+    background: #4B5563;
+    transform: translateY(-1px);
+}
+
+.card-controls .btn i {
+    font-size: 16px;
+}
+
+/* ── Bulk Filter Form ────────────────────────────────────── */
+.bulk-filter-form {
+    max-width: 700px;
+    margin: 0 auto 30px;
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+.bulk-filter-form h4 {
+    color: var(--card-primary);
+    font-weight: 700;
+    margin-bottom: 16px;
+}
+
+.bulk-filter-form .form-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: flex-end;
+}
+
+.bulk-filter-form .form-group {
+    flex: 1;
+    min-width: 150px;
+}
+
+.bulk-filter-form label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--card-text-muted);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.bulk-filter-form select,
+.bulk-filter-form input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 2px solid var(--card-border);
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--card-text);
+    background: white;
+    transition: border-color 0.2s;
+}
+
+.bulk-filter-form select:focus,
+.bulk-filter-form input:focus {
+    outline: none;
+    border-color: var(--card-primary);
+}
+
+.bulk-filter-form .btn-submit {
+    background: var(--card-primary);
+    color: white;
+    border: none;
+    padding: 8px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.bulk-filter-form .btn-submit:hover {
+    background: var(--card-primary-light);
+}
+
+/* ── Loading / Error States ──────────────────────────────── */
+.card-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px;
+    color: var(--card-text-muted);
+}
+
+.card-error {
+    text-align: center;
+    padding: 60px;
+    color: var(--card-danger);
+}
+
+/* ── PRINT STYLES ────────────────────────────────────────── */
+@media print {
+    body {
+        background: white;
+        padding: 0;
+        margin: 0;
+    }
+
+    .id-card-container {
+        padding: 0;
+        margin: 0;
+        gap: 0;
+        min-height: auto;
+        display: block;
+    }
+
+    .id-card-container.bulk {
+        padding: 0;
+        gap: 0;
+    }
+
+    .id-card {
+        box-shadow: none;
+        border: 0.3mm solid #DDD;
+        page-break-inside: avoid;
+        break-inside: avoid;
+        margin: 0;
+    }
+
+    .card-controls {
+        display: none !important;
+    }
+
+    .bulk-filter-form {
+        display: none !important;
+    }
+
+    .no-print {
+        display: none !important;
+    }
+
+    @page {
+        size: 85.6mm 53.98mm landscape;
+        margin: 0;
+    }
 }

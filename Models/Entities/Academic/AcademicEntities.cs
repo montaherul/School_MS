@@ -18,13 +18,24 @@ public class SchoolClass : BaseEntity
     [MaxLength(60)]
     public string Name { get; set; } = string.Empty;
 
+    [MaxLength(60)]
+    public string NameBn { get; set; } = string.Empty;
+
+    [MaxLength(20)]
+    public string Code { get; set; } = string.Empty;
+
     public int SortOrder { get; set; }
+    public int Capacity { get; set; }
+
+    [MaxLength(500)]
+    public string? Description { get; set; }
+
     public bool IsGroupBased { get; set; }
+    public bool IsActive { get; set; } = true;
+    public DateTime? ArchivedAt { get; set; }
+
     public ICollection<Section> Sections { get; set; } = new List<Section>();
-    public SchoolClass(string name) // ✅ matches property
-    {
-        Name = name;
-    }
+    public SchoolClass(string name) { Name = name; }
     public SchoolClass() { }
 }
 
@@ -58,35 +69,23 @@ public class Subject : BaseEntity
     [MaxLength(100)]
     public string Name { get; set; } = string.Empty;
 
-    /// <summary>
-    /// Bangla subject name for Bangladesh curriculum
-    /// </summary>
     [MaxLength(100)]
     public string NameBn { get; set; } = string.Empty;
 
+    [MaxLength(30)]
+    public string ShortName { get; set; } = string.Empty;
+
     [MaxLength(50)]
-    public string SubjectGroup { get; set; } = string.Empty; // Common, Science, Humanities, Business, Religion
+    public string Category { get; set; } = string.Empty; // Core, Elective, Vocational, Religion
+
+    [MaxLength(50)]
+    public string SubjectGroup { get; set; } = string.Empty;
 
     public bool IsMandatory { get; set; } = true;
     public bool IsOptional { get; set; } = false;
     public bool IsReligionSubject { get; set; } = false;
     public bool IsPractical { get; set; } = false;
 
-    // Component flags for flexible mark distribution
-    public bool HasWritten { get; set; } = true;
-    public bool HasMCQ { get; set; } = false;
-    public bool HasCQ { get; set; } = false;
-    public bool HasPractical { get; set; } = false;
-    public bool HasLab { get; set; } = false;
-    public bool HasViva { get; set; } = false;
-    public bool HasOral { get; set; } = false;
-    public bool HasAssignment { get; set; } = false;
-    public bool HasContinuousAssessment { get; set; } = false;
-
-    /// <summary>
-    /// Religion type for multi-religion support:
-    /// Islam, Hindu, Buddhist, Christian
-    /// </summary>
     [MaxLength(50)]
     public string? ReligionType { get; set; }
 
@@ -96,7 +95,6 @@ public class Subject : BaseEntity
     public int DisplayOrder { get; set; } = 0;
     public bool IsActive { get; set; } = true;
 
-    // Navigation
     public virtual ICollection<ClassSubject> ClassSubjects { get; set; } = [];
 }
 

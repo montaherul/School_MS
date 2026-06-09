@@ -288,31 +288,7 @@ public class ResultManagementController : Controller
             }).ToList()
         };
 
-        // Load component columns from SubjectMarkStructure (dynamic), fall back to SubjectComponent
-        var columns = await _markStructureService.GetGridColumnsAsync(examId, subjectId, classId, groupId);
-
-        if (columns.Count == 0)
-        {
-            // Fallback: load from legacy SubjectComponent
-            var classSubject = await _uow.Repository<ClassSubject>().Query()
-                .Include(cs => cs.SubjectComponents)
-                .FirstOrDefaultAsync(cs => cs.SchoolClassId == classId && cs.SubjectId == subjectId && !cs.IsDeleted);
-
-            var components = classSubject?.SubjectComponents
-                .Where(c => !c.IsDeleted && c.IsActive)
-                .OrderBy(c => c.DisplayOrder)
-                .ToList() ?? new List<SubjectComponent>();
-
-            ViewBag.SubjectComponents = components;
-
-            columns = components.Select(c => new ComponentColumnDto
-            {
-                ComponentCode = c.ComponentName,
-                ComponentName = c.ComponentName,
-                FieldName = JsonNamingPolicy.CamelCase.ConvertName(c.ComponentName) + "Marks",
-                FullMarks = c.MaxMarks
-            }).ToList();
-        }
+        var columns = await _markStructureService.GetGridColumnsAsync(subjectId, classId, groupId);
 
         ViewBag.ComponentColumns = columns.Select(c => new {
             name = c.ComponentName,

@@ -4,7 +4,7 @@
     var isEdit = Model.IsEdit;
 }
 
-<div class="adm-page" id="examWizardApp">
+<div class="er-page er-page--slide" id="examWizardApp">
     <div class="adm-header">
         <div class="adm-header__left">
             <div class="adm-header__icon-wrap">
@@ -17,11 +17,11 @@
             </div>
             <div>
                 <h1 class="adm-header__title">@(isEdit ? "Edit Exam" : "Create New Exam")</h1>
-                <p class="adm-header__sub" id="stepDescription">Step 1 of 7 — Exam Information</p>
+                <p class="er-page-header__sub" id="stepDescription">Step 1 of 7 — Exam Information</p>
             </div>
         </div>
         <div class="adm-btn-group">
-            <a href="@Url.Action("Index", "Exam")" class="adm-btn adm-btn--ghost">
+            <a href="@Url.Action("Index", "Exam")" class="er-btn er-btn--secondary">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6" /></svg>
                 Cancel
             </a>
@@ -29,40 +29,35 @@
     </div>
 
     @* ── Progress Bar ── *@
-    <div class="wizard-progress" id="wizardProgress">
-        <div class="wizard-progress__bar">
-            <div class="wizard-progress__fill" id="progressFill"></div>
-        </div>
-        <div class="wizard-steps" id="wizardSteps">
-            <div class="wizard-step" data-step="1" data-label="Exam Info">
-                <div class="wizard-step__circle active" id="stepCircle1">1</div>
-                <span class="wizard-step__label">Exam Info</span>
-            </div>
-            <div class="wizard-step" data-step="2" data-label="Classes">
-                <div class="wizard-step__circle" id="stepCircle2">2</div>
-                <span class="wizard-step__label">Classes</span>
-            </div>
-            <div class="wizard-step" data-step="3" data-label="Sections">
-                <div class="wizard-step__circle" id="stepCircle3">3</div>
-                <span class="wizard-step__label">Sections</span>
-            </div>
-            <div class="wizard-step" data-step="4" data-label="Groups">
-                <div class="wizard-step__circle" id="stepCircle4">4</div>
-                <span class="wizard-step__label">Groups</span>
-            </div>
-            <div class="wizard-step" data-step="5" data-label="Subjects">
-                <div class="wizard-step__circle" id="stepCircle5">5</div>
-                <span class="wizard-step__label">Subjects</span>
-            </div>
-            <div class="wizard-step" data-step="6" data-label="Marks">
-                <div class="wizard-step__circle" id="stepCircle6">6</div>
-                <span class="wizard-step__label">Marks</span>
-            </div>
-            <div class="wizard-step" data-step="7" data-label="Review">
-                <div class="wizard-step__circle" id="stepCircle7">7</div>
-                <span class="wizard-step__label">Review</span>
-            </div>
-        </div>
+    <div class="er-progress" id="wizardProgress">
+      <div class="er-progress__step er-progress__step--active" data-step="1">
+        <div class="er-progress__dot" id="stepCircle1">1</div>
+        <span class="er-progress__label">Exam Info</span>
+      </div>
+      <div class="er-progress__step" data-step="2">
+        <div class="er-progress__dot" id="stepCircle2">2</div>
+        <span class="er-progress__label">Classes</span>
+      </div>
+      <div class="er-progress__step" data-step="3">
+        <div class="er-progress__dot" id="stepCircle3">3</div>
+        <span class="er-progress__label">Sections</span>
+      </div>
+      <div class="er-progress__step" data-step="4">
+        <div class="er-progress__dot" id="stepCircle4">4</div>
+        <span class="er-progress__label">Groups</span>
+      </div>
+      <div class="er-progress__step" data-step="5">
+        <div class="er-progress__dot" id="stepCircle5">5</div>
+        <span class="er-progress__label">Subjects</span>
+      </div>
+      <div class="er-progress__step" data-step="6">
+        <div class="er-progress__dot" id="stepCircle6">6</div>
+        <span class="er-progress__label">Marks</span>
+      </div>
+      <div class="er-progress__step" data-step="7">
+        <div class="er-progress__dot" id="stepCircle7">7</div>
+        <span class="er-progress__label">Review</span>
+      </div>
     </div>
 
     @* ── Step Panels ── *@
@@ -74,22 +69,22 @@
 
             @* ═══════════════ Step 1 — Exam Information ═══════════════ *@
             <div class="wizard-panel active" id="stepPanel1">
-                <div class="adm-table-card">
-                    <div class="adm-table-card__body" style="padding:28px 32px;">
+                <div class="er-card">
+                    <div class="er-card__body">
                         <h3 style="font-size:18px;font-weight:700;margin-bottom:24px;color:var(--adm-text);">
                             <i class="bi bi-info-circle me-2" style="color:var(--adm-primary);"></i>Exam Information
                         </h3>
                         <div class="row g-4">
                             <div class="col-md-6">
-                                <label class="adm-label" for="examName">Exam Name <span style="color:var(--adm-rejected);">*</span></label>
-                                <div class="adm-input-wrap">
-                                    <input class="adm-input" id="examName" name="Name" type="text" placeholder="e.g. Half Yearly Examination 2026" style="padding-left:12px;" required />
+                                <label class="er-label" for="examName">Exam Name <span style="color:var(--adm-rejected);">*</span></label>
+                                <div class="er-input-wrap">
+                                    <input class="er-input" id="examName" name="Name" type="text" placeholder="e.g. Half Yearly Examination 2026" required />
                                 </div>
                                 <div class="field-error" id="errName"></div>
                             </div>
                             <div class="col-md-6">
-                                <label class="adm-label" for="examTerm">Exam Term <span style="color:var(--adm-rejected);">*</span></label>
-                                <select class="adm-select" id="examTerm" name="Term" required>
+                                <label class="er-label" for="examTerm">Exam Term <span style="color:var(--adm-rejected);">*</span></label>
+                                <select class="er-select" id="examTerm" name="Term" required>
                                     <option value="">Select Term</option>
                                     <option value="HalfYearly">Half Yearly</option>
                                     <option value="Annual">Annual</option>
@@ -103,29 +98,29 @@
                                 <div class="field-error" id="errTerm"></div>
                             </div>
                             <div class="col-md-6">
-                                <label class="adm-label" for="examAcademicYear">Academic Year <span style="color:var(--adm-rejected);">*</span></label>
-                                <select class="adm-select" id="examAcademicYear" name="AcademicYearId" required>
+                                <label class="er-label" for="examAcademicYear">Academic Year <span style="color:var(--adm-rejected);">*</span></label>
+                                <select class="er-select" id="examAcademicYear" name="AcademicYearId" required>
                                     <option value="">Loading...</option>
                                 </select>
                                 <div class="field-error" id="errYear"></div>
                             </div>
                             <div class="col-md-3">
-                                <label class="adm-label" for="examStartsOn">Starts On <span style="color:var(--adm-rejected);">*</span></label>
-                                <div class="adm-input-wrap">
-                                    <input class="adm-input" id="examStartsOn" name="StartsOn" type="date" style="padding-left:12px;" required />
+                                <label class="er-label" for="examStartsOn">Starts On <span style="color:var(--adm-rejected);">*</span></label>
+                                <div class="er-input-wrap">
+                                    <input class="er-input" id="examStartsOn" name="StartsOn" type="date" required />
                                 </div>
                                 <div class="field-error" id="errStarts"></div>
                             </div>
                             <div class="col-md-3">
-                                <label class="adm-label" for="examEndsOn">Ends On <span style="color:var(--adm-rejected);">*</span></label>
-                                <div class="adm-input-wrap">
-                                    <input class="adm-input" id="examEndsOn" name="EndsOn" type="date" style="padding-left:12px;" required />
+                                <label class="er-label" for="examEndsOn">Ends On <span style="color:var(--adm-rejected);">*</span></label>
+                                <div class="er-input-wrap">
+                                    <input class="er-input" id="examEndsOn" name="EndsOn" type="date" required />
                                 </div>
                                 <div class="field-error" id="errEnds"></div>
                             </div>
                             <div class="col-12">
-                                <label class="adm-label" for="examDescription">Description / Remarks</label>
-                                <textarea class="adm-input" id="examDescription" rows="3" placeholder="Optional notes about this exam..." style="padding-left:12px;resize:vertical;min-height:80px;"></textarea>
+                                <label class="er-label" for="examDescription">Description / Remarks</label>
+                                <textarea class="er-input" id="examDescription" rows="3" placeholder="Optional notes about this exam..." style="resize:vertical;min-height:80px;"></textarea>
                             </div>
                         </div>
                     </div>
@@ -134,15 +129,15 @@
 
             @* ═══════════════ Step 2 — Class Selection ═══════════════ *@
             <div class="wizard-panel" id="stepPanel2">
-                <div class="adm-table-card">
-                    <div class="adm-table-card__body" style="padding:28px 32px;">
+                <div class="er-card">
+                    <div class="er-card__body">
                         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
                             <h3 style="font-size:18px;font-weight:700;margin:0;color:var(--adm-text);">
                                 <i class="bi bi-building me-2" style="color:var(--adm-primary);"></i>Select Classes
                             </h3>
                             <div>
-                                <button type="button" class="adm-btn adm-btn--ghost" onclick="toggleAllClasses(true)" style="font-size:12px;padding:5px 12px;">Select All</button>
-                                <button type="button" class="adm-btn adm-btn--ghost" onclick="toggleAllClasses(false)" style="font-size:12px;padding:5px 12px;">Deselect All</button>
+                                <button type="button" class="er-btn er-btn--secondary" onclick="toggleAllClasses(true)" style="font-size:12px;padding:5px 12px;">Select All</button>
+                                <button type="button" class="er-btn er-btn--secondary" onclick="toggleAllClasses(false)" style="font-size:12px;padding:5px 12px;">Deselect All</button>
                             </div>
                         </div>
                         <div class="field-error" id="errClasses"></div>
@@ -157,15 +152,15 @@
 
             @* ═══════════════ Step 3 — Section Selection ═══════════════ *@
             <div class="wizard-panel" id="stepPanel3">
-                <div class="adm-table-card">
-                    <div class="adm-table-card__body" style="padding:28px 32px;">
+                <div class="er-card">
+                    <div class="er-card__body">
                         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
                             <h3 style="font-size:18px;font-weight:700;margin:0;color:var(--adm-text);">
                                 <i class="bi bi-layers me-2" style="color:var(--adm-primary);"></i>Select Sections
                             </h3>
                             <div>
-                                <button type="button" class="adm-btn adm-btn--ghost" onclick="toggleAllSections(true)" style="font-size:12px;padding:5px 12px;">Select All</button>
-                                <button type="button" class="adm-btn adm-btn--ghost" onclick="toggleAllSections(false)" style="font-size:12px;padding:5px 12px;">Deselect All</button>
+                                <button type="button" class="er-btn er-btn--secondary" onclick="toggleAllSections(true)" style="font-size:12px;padding:5px 12px;">Select All</button>
+                                <button type="button" class="er-btn er-btn--secondary" onclick="toggleAllSections(false)" style="font-size:12px;padding:5px 12px;">Deselect All</button>
                             </div>
                         </div>
                         <div class="field-error" id="errSections"></div>
@@ -180,15 +175,15 @@
 
             @* ═══════════════ Step 4 — Group Selection ═══════════════ *@
             <div class="wizard-panel" id="stepPanel4">
-                <div class="adm-table-card">
-                    <div class="adm-table-card__body" style="padding:28px 32px;">
+                <div class="er-card">
+                    <div class="er-card__body">
                         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
                             <h3 style="font-size:18px;font-weight:700;margin:0;color:var(--adm-text);">
                                 <i class="bi bi-people me-2" style="color:var(--adm-primary);"></i>Select Groups
                             </h3>
                             <div>
-                                <button type="button" class="adm-btn adm-btn--ghost" onclick="toggleAllGroups(true)" style="font-size:12px;padding:5px 12px;">Select All</button>
-                                <button type="button" class="adm-btn adm-btn--ghost" onclick="toggleAllGroups(false)" style="font-size:12px;padding:5px 12px;">Deselect All</button>
+                                <button type="button" class="er-btn er-btn--secondary" onclick="toggleAllGroups(true)" style="font-size:12px;padding:5px 12px;">Select All</button>
+                                <button type="button" class="er-btn er-btn--secondary" onclick="toggleAllGroups(false)" style="font-size:12px;padding:5px 12px;">Deselect All</button>
                             </div>
                         </div>
                         <div class="field-error" id="errGroups"></div>
@@ -203,15 +198,15 @@
 
             @* ═══════════════ Step 5 — Subject Selection ═══════════════ *@
             <div class="wizard-panel" id="stepPanel5">
-                <div class="adm-table-card">
-                    <div class="adm-table-card__body" style="padding:28px 32px;">
+                <div class="er-card">
+                    <div class="er-card__body">
                         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
                             <h3 style="font-size:18px;font-weight:700;margin:0;color:var(--adm-text);">
                                 <i class="bi bi-book me-2" style="color:var(--adm-primary);"></i>Select Subjects
                             </h3>
                             <div>
-                                <button type="button" class="adm-btn adm-btn--ghost" onclick="toggleAllSubjects(true)" style="font-size:12px;padding:5px 12px;">Select All</button>
-                                <button type="button" class="adm-btn adm-btn--ghost" onclick="toggleAllSubjects(false)" style="font-size:12px;padding:5px 12px;">Deselect All</button>
+                                <button type="button" class="er-btn er-btn--secondary" onclick="toggleAllSubjects(true)" style="font-size:12px;padding:5px 12px;">Select All</button>
+                                <button type="button" class="er-btn er-btn--secondary" onclick="toggleAllSubjects(false)" style="font-size:12px;padding:5px 12px;">Deselect All</button>
                             </div>
                         </div>
                         <div class="field-error" id="errSubjects"></div>
@@ -224,13 +219,16 @@
                 </div>
             </div>
 
-            @* ═══════════════ Step 6 — Mark Structure ═══════════════ *@
+            @* ═══════════════ Step 6 — Marks Review ═══════════════ *@
             <div class="wizard-panel" id="stepPanel6">
-                <div class="adm-table-card">
-                    <div class="adm-table-card__body" style="padding:28px 32px;">
+                <div class="er-card">
+                    <div class="er-card__body">
                         <h3 style="font-size:18px;font-weight:700;margin-bottom:20px;color:var(--adm-text);">
-                            <i class="bi bi-sliders me-2" style="color:var(--adm-primary);"></i>Mark Structure
+                            <i class="bi bi-sliders me-2" style="color:var(--adm-primary);"></i>Marks Review
                         </h3>
+                        <p style="font-size:13px;color:var(--adm-text-3);margin-bottom:16px;">
+                            Full Marks and Pass Marks are pre-configured from subject mappings and can be adjusted if needed.
+                        </p>
                         <div id="marksContainer">
                             <div class="text-center" style="padding:40px 0;color:var(--adm-text-3);">
                                 <i class="bi bi-arrow-left-circle me-2"></i>Select subjects first in Step 5.
@@ -242,8 +240,8 @@
 
             @* ═══════════════ Step 7 — Review & Submit ═══════════════ *@
             <div class="wizard-panel" id="stepPanel7">
-                <div class="adm-table-card">
-                    <div class="adm-table-card__body" style="padding:28px 32px;">
+                <div class="er-card">
+                    <div class="er-card__body">
                         <h3 style="font-size:18px;font-weight:700;margin-bottom:24px;color:var(--adm-text);">
                             <i class="bi bi-check2-circle me-2" style="color:var(--adm-success);"></i>Review &amp; Submit
                         </h3>
@@ -258,12 +256,12 @@
 
     @* ── Navigation ── *@
     <div class="wizard-nav" id="wizardNav">
-        <button type="button" class="adm-btn adm-btn--ghost" id="btnPrev" onclick="prevStep()" disabled>
+        <button type="button" class="er-btn er-btn--secondary" id="btnPrev" onclick="prevStep()" disabled>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6" /></svg>
             Previous
         </button>
         <div class="wizard-nav__right">
-            <button type="button" class="adm-btn adm-btn--primary" id="btnNext" onclick="nextStep()">
+            <button type="button" class="er-btn er-btn--primary" id="btnNext" onclick="nextStep()">
                 Next
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
             </button>
@@ -372,12 +370,18 @@
                 selectedGroups: [],
                 selectedSubjects: [],
                 subjectMarks: {},
+                componentPreviews: {},
                 academicYears: []
             };
 
-            var cache = { classes: null, sections: {}, groups: {}, subjects: {}, years: null };
+            var cache = { classes: null, sections: {}, groups: {}, subjects: {}, years: null, componentPreviews: {} };
 
             function $(id) { return document.getElementById(id); }
+            function getSelectedStudentGroupId() {
+                if (state.selectedGroups.length === 0) return null;
+                var g = state.groups.find(function(g) { return g.id === state.selectedGroups[0]; });
+                return g && g.studentGroupId ? g.studentGroupId : null;
+            }
             var panels = {};
             var circles = {};
             var steps = {};
@@ -478,7 +482,7 @@
                         var sid = parseInt(cb.value);
                         state.selectedSubjects.push(sid);
                         if (!state.subjectMarks[sid]) {
-                            state.subjectMarks[sid] = { fullMarks: 100, passMarks: 33, hasWritten: true, hasMCQ: false, hasPractical: false, hasViva: false, hasLab: false, hasOral: false, hasAssignment: false, hasContinuousAssessment: false };
+                            state.subjectMarks[sid] = { fullMarks: 100, passMarks: 33 };
                         }
                     });
                     return true;
@@ -498,11 +502,6 @@
                             if (isNaN(pv) || pv < 0) { marksValid = false; pm.style.borderColor = 'var(--adm-rejected)'; }
                             else { pm.style.borderColor = ''; state.subjectMarks[sid].passMarks = pv; }
                         }
-                        var toggles = ['hasWritten', 'hasMCQ', 'hasPractical', 'hasViva', 'hasLab', 'hasOral', 'hasAssignment', 'hasContinuousAssessment'];
-                        toggles.forEach(function (t) {
-                            var el = $(t + '_' + sid);
-                            if (el) state.subjectMarks[sid][t] = el.checked;
-                        });
                     });
                     if (!marksValid) { showError('errSubjects', 'Please fix invalid mark values'); return false; }
                     return true;
@@ -544,12 +543,48 @@
                 if (step === 3) loadSectionsForSelectedClasses();
                 if (step === 4) loadGroupsForSelectedClasses();
                 if (step === 5) loadSubjectsForSelectedClasses();
-                if (step === 6) renderMarks();
+                if (step === 6) { renderMarks(); loadComponentPreviews(); }
                 if (step === 7) renderReview();
             }
 
+            function loadComponentPreviews() {
+                var selected = state.selectedSubjects;
+                if (!selected || selected.length === 0) return;
+                var cacheKey = selected.sort().join(',');
+                if (cache.componentPreviews[cacheKey]) {
+                    applyComponentPreviews(cache.componentPreviews[cacheKey]);
+                    return;
+                }
+                fetch('/api/ExamAdmin/component-preview', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(selected)
+                }).then(function (r) { return r.json(); }).then(function (res) {
+                    if (res.success && res.data) {
+                        cache.componentPreviews[cacheKey] = res.data;
+                        applyComponentPreviews(res.data);
+                    }
+                }).catch(function () {});
+            }
+
+            function applyComponentPreviews(previews) {
+                previews.forEach(function (p) {
+                    state.componentPreviews[p.subjectId] = p;
+                    var loadingEl = document.getElementById('compLoading_' + p.subjectId);
+                    if (loadingEl) {
+                        var badges = p.components.map(function(c) {
+                            return '<span class="review-badge review-badge--info" title="' + escapeHtml(c.name) + '">' + escapeHtml(c.name) + '(' + c.fullMarks + ')</span>';
+                        }).join(' ');
+                        loadingEl.outerHTML = badges || '<span class="text-muted small">No components</span>';
+                    }
+                });
+            }
+
             function fetchJson(url) {
-                return fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } }).then(function (r) { return r.json(); });
+                return fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } }).then(function (r) {
+                    if (!r.ok) { throw new Error('HTTP ' + r.status + ' for ' + url); }
+                    return r.json();
+                });
             }
 
             function loadAcademicYears() {
@@ -718,6 +753,18 @@
                         });
                     });
                     state.groups = allGroups;
+                    if (state.selectedGroups.length > 0 && allGroups.length > 0) {
+                        var firstId = state.selectedGroups[0];
+                        var found = allGroups.some(function(g) { return g.id === firstId; });
+                        if (!found) {
+                            var mapped = [];
+                            state.selectedGroups.forEach(function(sgid) {
+                                var g = allGroups.find(function(g) { return g.studentGroupId === sgid; });
+                                if (g) mapped.push(g.id);
+                            });
+                            if (mapped.length > 0) state.selectedGroups = mapped;
+                        }
+                    }
                     renderGroupCheckboxes(allGroups);
                 }).catch(function () {
                     $('groupsContainer').innerHTML = '<div class="text-center" style="padding:40px 0;color:var(--adm-rejected);">Failed to load groups.</div>';
@@ -744,16 +791,40 @@
 
             function loadSubjectsForSelectedClasses() {
                 var classIds = state.selectedClasses;
+                var groupIds = state.selectedGroups;
                 if (classIds.length === 0) {
                     $('subjectsContainer').innerHTML = '<div class="text-center" style="padding:40px 0;color:var(--adm-text-3);"><i class="bi bi-arrow-left-circle me-2"></i>Select classes first.</div>';
                     return;
                 }
-                var promises = classIds.map(function (cid) {
-                    if (cache.subjects[cid]) return Promise.resolve({ classId: cid, data: cache.subjects[cid] });
-                    return fetchJson('/ClassSubjectMapping/GetList?page=1&size=1000&classId=' + cid).then(function (res) {
-                        cache.subjects[cid] = res.data || [];
-                        return { classId: cid, data: res.data || [] };
-                    }).catch(function () { return { classId: cid, data: [] }; });
+                var promises = [];
+                classIds.forEach(function (cid) {
+                    var cls = state.classes.find(function(c) { return c.id === cid; });
+                    var isGroupBased = cls && cls.isGroupBased;
+                    if (isGroupBased && groupIds.length > 0) {
+                        groupIds.forEach(function (gid) {
+                            var group = state.groups.find(function(g) { return g.id === gid; });
+                            var groupName = group ? group.name : '';
+                            var cacheKey = cid + '_' + gid;
+                            if (cache.subjects[cacheKey]) {
+                                promises.push(Promise.resolve({ classId: cid, data: cache.subjects[cacheKey] }));
+                            } else {
+                                var url = '/ClassSubjectMapping/GetList?page=1&size=1000&classId=' + cid + '&groupName=' + encodeURIComponent(groupName);
+                                promises.push(fetchJson(url).then(function (res) {
+                                    cache.subjects[cacheKey] = res.data || [];
+                                    return { classId: cid, data: res.data || [] };
+                                }).catch(function () { return { classId: cid, data: [] }; }));
+                            }
+                        });
+                    } else {
+                        if (cache.subjects[cid]) {
+                            promises.push(Promise.resolve({ classId: cid, data: cache.subjects[cid] }));
+                        } else {
+                            promises.push(fetchJson('/ClassSubjectMapping/GetList?page=1&size=1000&classId=' + cid).then(function (res) {
+                                cache.subjects[cid] = res.data || [];
+                                return { classId: cid, data: res.data || [] };
+                            }).catch(function () { return { classId: cid, data: [] }; }));
+                        }
+                    }
                 });
                 Promise.all(promises).then(function (results) {
                     var allSubjects = [];
@@ -813,36 +884,25 @@
                 }
                 var subjMap = {};
                 state.subjects.forEach(function (s) { subjMap[s.id || s.subjectId] = s; });
-                var html = '<div class="table-responsive"><table class="marks-table"><thead><tr><th style="min-width:120px;">Subject</th><th style="width:80px;">Full Marks</th><th style="width:80px;">Pass Marks</th><th style="min-width:200px;">Components</th></tr></thead><tbody>';
+                var html = '<div class="table-responsive"><table class="marks-table"><thead><tr><th style="min-width:120px;">Subject</th><th style="width:80px;">Full Marks</th><th style="width:80px;">Pass Marks</th><th style="min-width:200px;">Components (read-only)</th></tr></thead><tbody>';
                 selected.forEach(function (sid) {
                     var s = subjMap[sid] || {};
                     var name = s.subjectName || s.name || 'Subject #' + sid;
                     var code = s.subjectCode || s.code || '';
-                    var displayName = code ? code + ' â€” ' + name : name;
-                    var marks = state.subjectMarks[sid] || { fullMarks: 100, passMarks: 33, hasWritten: true, hasMCQ: false, hasPractical: false, hasViva: false, hasLab: false, hasOral: false, hasAssignment: false, hasContinuousAssessment: false };
+                    var displayName = code ? code + ' \u2014 ' + name : name;
+                    var marks = state.subjectMarks[sid] || { fullMarks: 100, passMarks: 33 };
                     var defFm = s.defaultFullMarks || s.fullMarks || 100;
                     var defPm = s.defaultPassMarks || s.passMarks || 33;
                     var fm = marks.fullMarks || defFm;
                     var pm = marks.passMarks || defPm;
+                    var preview = state.componentPreviews[sid];
+                    var compHtml = preview ? preview.components.map(function(c) {
+                        return '<span class="review-badge review-badge--info" title="' + escapeHtml(c.name) + '">' + escapeHtml(c.name) + '(' + c.fullMarks + ')</span>';
+                    }).join(' ') : '<span class="text-muted small" id="compLoading_' + sid + '">Loading...</span>';
                     html += '<tr><td><strong class="bangla" style="font-size:13px;">' + escapeHtml(displayName) + '</strong></td>';
                     html += '<td><input class="marks-input" id="fm_' + sid + '" type="number" value="' + fm + '" min="1" step="0.5"></td>';
                     html += '<td><input class="marks-input" id="pm_' + sid + '" type="number" value="' + pm + '" min="0" step="0.5"></td>';
-                    html += '<td><div style="display:flex;flex-wrap:wrap;gap:6px;">';
-                    var components = [
-                        { key: 'hasWritten', label: 'Written' },
-                        { key: 'hasMCQ', label: 'MCQ' },
-                        { key: 'hasPractical', label: 'Practical' },
-                        { key: 'hasViva', label: 'Viva' },
-                        { key: 'hasLab', label: 'Lab' },
-                        { key: 'hasOral', label: 'Oral' },
-                        { key: 'hasAssignment', label: 'Assignment' },
-                        { key: 'hasContinuousAssessment', label: 'CA' }
-                    ];
-                    components.forEach(function (c) {
-                        var checked = marks[c.key] ? 'checked' : '';
-                        html += '<label class="marks-toggle"><input type="checkbox" id="' + c.key + '_' + sid + '" ' + checked + '>' + c.label + '</label>';
-                    });
-                    html += '</div></td></tr>';
+                    html += '<td style="font-size:12px;">' + compHtml + '</td></tr>';
                 });
                 html += '</tbody></table></div>';
                 container.innerHTML = html;
@@ -904,18 +964,13 @@
                     var code = s.subjectCode || s.code || '';
                     var displayName = code ? code + ' â€” ' + name : name;
                     var marks = state.subjectMarks[sid] || { fullMarks: 100, passMarks: 33 };
-                    var comps = [];
-                    if (marks.hasWritten) comps.push('Written');
-                    if (marks.hasMCQ) comps.push('MCQ');
-                    if (marks.hasPractical) comps.push('Practical');
-                    if (marks.hasViva) comps.push('Viva');
-                    if (marks.hasLab) comps.push('Lab');
-                    if (marks.hasOral) comps.push('Oral');
-                    if (marks.hasAssignment) comps.push('Assignment');
-                    if (marks.hasContinuousAssessment) comps.push('CA');
+                    var compPreview = state.componentPreviews[sid];
+                    var compHtml = compPreview ? compPreview.components.map(function(c) {
+                        return '<span class="review-badge review-badge--info" title="' + escapeHtml(c.name) + '">' + escapeHtml(c.name) + '(' + c.fullMarks + ')</span>';
+                    }).join(' ') : '';
                     html += '<div class="review-section-card"><div class="review-section-card__title bangla">' + escapeHtml(displayName) + '</div>';
                     html += '<div class="review-section-card__item"><span>Full Marks: <strong>' + marks.fullMarks + '</strong></span><span>Pass Marks: <strong>' + marks.passMarks + '</strong></span></div>';
-                    if (comps.length > 0) html += '<div style="font-size:12px;color:var(--adm-text-3);margin-top:4px;">Components: ' + comps.join(', ') + '</div>';
+                    if (compHtml) html += '<div style="font-size:12px;color:var(--adm-text-3);margin-top:4px;">Components: ' + compHtml + '</div>';
                     html += '</div>';
                 });
                 html += '</div>';
@@ -935,15 +990,7 @@
                         subjectId: sid,
                         fullMarks: marks.fullMarks || 100,
                         passMarks: marks.passMarks || 33,
-                        isOptional: marks.isOptional || false,
-                        hasWritten: marks.hasWritten || false,
-                        hasMCQ: marks.hasMCQ || false,
-                        hasPractical: marks.hasPractical || false,
-                        hasViva: marks.hasViva || false,
-                        hasLab: marks.hasLab || false,
-                        hasOral: marks.hasOral || false,
-                        hasAssignment: marks.hasAssignment || false,
-                        hasContinuousAssessment: marks.hasContinuousAssessment || false
+                        isOptional: marks.isOptional || false
                     };
                 });
 
@@ -953,7 +1000,7 @@
                     academicYearId: parseInt(state.exam.academicYearId, 10),
                     startsOn: state.exam.startsOn,
                     endsOn: state.exam.endsOn,
-                    studentGroupId: state.selectedGroups.length > 0 ? state.selectedGroups[0] : null,
+                    studentGroupId: getSelectedStudentGroupId(),
                     status: state.exam.id ? state.exam.status : 1,
                     selectedClassIds: state.selectedClasses,
                     selectedSectionIds: state.selectedSections,
@@ -968,23 +1015,36 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 })
-                .then(function (r) { return r.json(); })
+                .then(function (r) {
+                    if (!r.ok) {
+                        return r.text().then(function (text) {
+                            try { var j = JSON.parse(text); return j; }
+                            catch (_) { return { success: false, message: 'HTTP ' + r.status + ': ' + text.substring(0, 200) }; }
+                        });
+                    }
+                    return r.json().catch(function () {
+                        return r.text().then(function (text) {
+                            return { success: false, message: 'Invalid response (not JSON): ' + text.substring(0, 200) };
+                        });
+                    });
+                })
                 .then(function (r) {
                     btn.disabled = false;
                     submitSpinner.style.display = 'none';
                     submitText.textContent = state.exam.id ? 'Update Exam' : 'Create Exam';
-                    if (r.success) {
+                    if (r && r.success) {
                         if (typeof showExamToast === 'function') showExamToast(r.message || 'Exam saved successfully', 'success');
                         setTimeout(function () { window.location.href = '@Url.Action("Dashboard", "Exam")'; }, 900);
                     } else {
-                        if (typeof showExamToast === 'function') showExamToast(r.message || 'Save failed', 'error');
+                        if (typeof showExamToast === 'function') showExamToast(r && r.message || 'Save failed', 'error');
                     }
                 })
                 .catch(function (e) {
                     btn.disabled = false;
                     submitSpinner.style.display = 'none';
                     submitText.textContent = state.exam.id ? 'Update Exam' : 'Create Exam';
-                    if (typeof showExamToast === 'function') showExamToast('Network error: ' + e, 'error');
+                    var msg = (e && e.message) ? e.message : String(e);
+                    if (typeof showExamToast === 'function') showExamToast('Network error: ' + msg, 'error');
                 });
             };
 

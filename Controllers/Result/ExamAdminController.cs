@@ -22,6 +22,8 @@ public class ExamAdminController : ControllerBase
     private readonly IResultPublicationService _publicationService;
     private readonly IMeritCalculationService _meritCalculationService;
     private readonly IAcademicYearService _academicYearService;
+    private readonly IExamValidationService _examValidationService;
+    private readonly ISubjectMarkStructureService _markStructureService;
     private readonly ILogger<ExamAdminController> _logger;
 
     public ExamAdminController(
@@ -29,12 +31,16 @@ public class ExamAdminController : ControllerBase
         IResultPublicationService publicationService,
         IMeritCalculationService meritCalculationService,
         IAcademicYearService academicYearService,
+        IExamValidationService examValidationService,
+        ISubjectMarkStructureService markStructureService,
         ILogger<ExamAdminController> logger)
     {
         _examService = examService;
         _publicationService = publicationService;
         _meritCalculationService = meritCalculationService;
         _academicYearService = academicYearService;
+        _examValidationService = examValidationService;
+        _markStructureService = markStructureService;
         _logger = logger;
     }
 
@@ -68,6 +74,9 @@ public class ExamAdminController : ControllerBase
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
+            if (dto.Subjects != null && dto.Subjects.Count > 0)
+                await _examValidationService.ThrowIfSubjectMarkStructureMissingAsync(dto.Subjects.Select(s => s.SubjectId).ToList(), ct);
+
             var exam = await _examService.CreateExamAsync(dto, ct);
             _logger.LogInformation("Exam created successfully");
             return Ok(new { success = true, message = "Exam created successfully", data = exam });
@@ -89,6 +98,9 @@ public class ExamAdminController : ControllerBase
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
+
+            if (dto.Subjects != null && dto.Subjects.Count > 0)
+                await _examValidationService.ThrowIfSubjectMarkStructureMissingAsync(dto.Subjects.Select(s => s.SubjectId).ToList(), ct);
 
             var exam = await _examService.UpdateExamAsync(id, dto, ct);
             _logger.LogInformation($"Exam updated: {id}");
@@ -398,6 +410,25 @@ public class ExamAdminController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error fetching sections");
+            return BadRequest(new { success = false, message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Get component preview for selected subjects (read-only display for exam wizard)
+    /// </summary>
+    [HttpPost("component-preview")]
+    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    public async Task<IActionResult> GetComponentPreview([FromBody] List<int> subjectIds, CancellationToken ct = default)
+    {
+        try
+        {
+            var previews = await _markStructureService.GetComponentPreviewsAsync(subjectIds, ct);
+            return Ok(new { success = true, data = previews });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching component preview");
             return BadRequest(new { success = false, message = ex.Message });
         }
     }

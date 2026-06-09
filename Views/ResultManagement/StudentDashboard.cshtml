@@ -17,15 +17,15 @@
     }
 }
 
-<div class="adm-page">
-    <div class="adm-header">
-        <div class="adm-header__left">
-            <div class="adm-header__icon-wrap">
+<div class="er-page">
+    <div class="er-page-header">
+        <div class="er-page-header__left">
+            <div class="er-page-header__icon">
                 <i class="bi bi-bar-chart-line"></i>
             </div>
             <div>
-                <h1 class="adm-header__title">My Academic Results</h1>
-                <p class="adm-header__sub">
+                <h1 class="er-page-header__title">My Academic Results</h1>
+                <p class="er-page-header__sub">
                     @Model.StudentName
                     @if (!string.IsNullOrEmpty(Model.ClassName))
                     {
@@ -42,8 +42,8 @@
 
     @if (!Model.ExamResults.Any())
     {
-        <div class="adm-table-card" style="border-radius:var(--adm-radius-lg);border-top:1px solid var(--adm-border);">
-            <div class="dash-empty">
+        <div class="er-card" style="border-radius:var(--adm-radius-lg);border-top:1px solid var(--adm-border);">
+            <div class="er-empty">
                 <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                     <polyline points="14 2 14 8 20 8"></polyline>
@@ -51,59 +51,59 @@
                     <line x1="16" y1="17" x2="8" y2="17"></line>
                     <polyline points="10 9 9 9 8 9"></polyline>
                 </svg>
-                <p class="dash-empty__title">No Results Published Yet</p>
-                <p class="dash-empty__sub">Your exam results will appear here once they are officially released by the school administration.</p>
+                <p class="er-empty__title">No Results Published Yet</p>
+                <p class="er-empty__desc">Your exam results will appear here once they are officially released by the school administration.</p>
             </div>
         </div>
     }
     else
     {
-        <div class="dash-stats">
-            <div class="dash-stat-card">
-                <div class="dash-stat-card__icon dash-stat-card__icon--primary">
+        <div class="er-stats">
+            <div class="er-stat">
+                <div class="er-stat__icon er-stat__icon--primary">
                     <i class="bi bi-journal"></i>
                 </div>
-                <div class="dash-stat-card__body">
-                    <span class="dash-stat-card__label">Total Exams Taken</span>
-                    <span class="dash-stat-card__value">@totalExams</span>
+                <div class="er-stat__body">
+                    <span class="er-stat__label">Total Exams Taken</span>
+                    <span class="er-stat__value">@totalExams</span>
                 </div>
             </div>
-            <div class="dash-stat-card">
-                <div class="dash-stat-card__icon dash-stat-card__icon--success">
+            <div class="er-stat">
+                <div class="er-stat__icon er-stat__icon--success">
                     <i class="bi bi-check-circle"></i>
                 </div>
-                <div class="dash-stat-card__body">
-                    <span class="dash-stat-card__label">Total Passed</span>
-                    <span class="dash-stat-card__value">
+                <div class="er-stat__body">
+                    <span class="er-stat__label">Total Passed</span>
+                    <span class="er-stat__value">
                         @passedExams
                         @if (totalExams > 0)
                         {
-                            <span class="dash-stat-card__unit" style="font-size:14px;">/ @totalExams</span>
+                            <span class="er-stat__unit" style="font-size:14px;">/ @totalExams</span>
                         }
                     </span>
                 </div>
             </div>
-            <div class="dash-stat-card">
-                <div class="dash-stat-card__icon dash-stat-card__icon--warning">
+            <div class="er-stat">
+                <div class="er-stat__icon er-stat__icon--warning">
                     <i class="bi bi-star"></i>
                 </div>
-                <div class="dash-stat-card__body">
-                    <span class="dash-stat-card__label">Best GPA</span>
-                    <span class="dash-stat-card__value">@bestGpa.ToString("F2")</span>
+                <div class="er-stat__body">
+                    <span class="er-stat__label">Best GPA</span>
+                    <span class="er-stat__value">@bestGpa.ToString("F2")</span>
                 </div>
             </div>
-            <div class="dash-stat-card">
-                <div class="dash-stat-card__icon dash-stat-card__icon--info">
+            <div class="er-stat">
+                <div class="er-stat__icon er-stat__icon--info">
                     <i class="bi bi-graph-up-arrow"></i>
                 </div>
-                <div class="dash-stat-card__body">
-                    <span class="dash-stat-card__label">Latest GPA</span>
-                    <span class="dash-stat-card__value">@latestGpa.ToString("F2")</span>
+                <div class="er-stat__body">
+                    <span class="er-stat__label">Latest GPA</span>
+                    <span class="er-stat__value">@latestGpa.ToString("F2")</span>
                 </div>
             </div>
         </div>
 
-        <div class="adm-table-card" style="border-radius:var(--adm-radius-lg);border-top:1px solid var(--adm-border);">
+        <div class="er-card" style="border-radius:var(--adm-radius-lg);border-top:1px solid var(--adm-border);">
             <div style="overflow-x:auto;">
                 <table class="dash-table">
                     <thead>
@@ -144,24 +144,24 @@
                                 <td style="text-align:center;">
                                     @if (exam.IsPassed)
                                     {
-                                        <span class="adm-status adm-status--approved">Pass</span>
+                                        <span class="er-badge er-badge--approved">Pass</span>
                                     }
                                     else
                                     {
-                                        <span class="adm-status adm-status--rejected">Fail</span>
+                                        <span class="er-badge er-badge--rejected">Fail</span>
                                     }
                                 </td>
                                 <td style="text-align:center;">
-                                    <div class="adm-actions">
-                                        <a href="/ResultManagement/StudentIndex" class="adm-action adm-action--view" title="View Details">
+                                    <div class="er-actions">
+                                        <a href="/ResultManagement/StudentIndex" class="er-action er-action--view" title="View Details">
                                             <i class="bi bi-eye"></i>
                                         </a>
-                                        <a href="/ReportCard/Download?examId=@exam.ExamId&studentId=@Model.StudentId" class="adm-action adm-action--edit" title="Download Report Card">
+                                        <a href="/ReportCard/Download?examId=@exam.ExamId&studentId=@Model.StudentId" class="er-action er-action--edit" title="Download Report Card">
                                             <i class="bi bi-file-earmark-pdf"></i>
                                         </a>
                                         @if (Model.Transcript != null)
                                         {
-                                            <a href="/Transcript/MyTranscript?academicYearId=1" class="adm-action adm-action--convert" title="Download Transcript">
+                                            <a href="/Transcript/MyTranscript?academicYearId=1" class="er-action er-action--convert" title="Download Transcript">
                                                 <i class="bi bi-journal-text"></i>
                                             </a>
                                         }

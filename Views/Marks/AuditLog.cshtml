@@ -4,31 +4,31 @@
     var exams = Model.Exams;
 }
 
-<div class="adm-page">
-    <div class="adm-header">
+<div class="er-page adm-page">
+    <div class="er-page-header">
         <div class="adm-header__left">
-            <div class="adm-header__icon-wrap">
+            <div class="er-page-header__icon">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="10" />
                     <polyline points="12 6 12 12 16 14" />
                 </svg>
             </div>
             <div>
-                <h1 class="adm-header__title">Marks Modification Audit Logs</h1>
-                <p class="adm-header__sub">Track changes, modifications, and updates to marks entered by teachers.</p>
+                <h1 class="er-page-header__title">Marks Modification Audit Logs</h1>
+                <p class="er-page-header__sub">Track changes, modifications, and updates to marks entered by teachers.</p>
             </div>
         </div>
-        <div class="adm-btn-group">
-            <a href="@Url.Action("Index")" class="adm-btn adm-btn--ghost">Back</a>
+        <div class="er-page-header__right">
+            <a href="@Url.Action("Index")" class="er-btn er-btn--secondary">Back</a>
         </div>
     </div>
 
     <!-- ── Filter Selector Panel ── -->
-    <div class="adm-table-card" style="margin-bottom: 24px; padding: 20px; border-radius: var(--adm-radius-lg);">
+    <div class="er-card">
         <form method="get" action="@Url.Action("AuditLog")" class="row g-3">
             <div class="col-md-8">
-                <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Filter by Examination</label>
-                <select name="examId" class="form-select adm-select">
+                <label class="form-label er-label">Filter by Examination</label>
+                <select name="examId" class="form-select er-filters__select">
                     <option value="">-- All Exams --</option>
                     @if (exams != null)
                     {
@@ -40,7 +40,7 @@
                 </select>
             </div>
             <div class="col-md-4 d-flex align-items-end">
-                <button type="submit" class="adm-btn adm-btn--primary w-100" style="height: 38px;">
+                <button type="submit" class="er-btn er-btn--primary w-100">
                     Search Records
                 </button>
             </div>
@@ -48,11 +48,11 @@
     </div>
 
     <!-- ── Audit Log Table ── -->
-    <div class="adm-table-card" style="border-radius: var(--adm-radius-lg); border-top: 1px solid var(--adm-border);">
-        <div class="adm-table-card__body">
+    <div class="er-card">
+        <div class="er-card__body">
             @if (Model.Logs != null && Model.Logs.Any())
             {
-                <div class="table-responsive" style="border-radius: var(--adm-radius-lg);">
+                <div class="table-responsive">
                     <table class="dash-table">
                         <thead>
                             <tr>
@@ -77,23 +77,23 @@
                                     <td>
                                         <div class="d-flex flex-column">
                                             <span class="adm-cell-name">@log.Student.FullName</span>
-                                            <small style="color: var(--adm-text-3);">ID: @log.Student.StudentNo</small>
+                                            <small>ID: @log.Student.StudentNo</small>
                                         </div>
                                     </td>
                                     <td><span class="adm-cell-name">@log.Subject.Name</span></td>
-                                    <td class="text-center font-weight-bold" style="color: var(--adm-text-3);">@log.OldMarks.ToString("F2")</td>
+                                    <td class="text-center font-weight-bold">@log.OldMarks.ToString("F2")</td>
                                     <td class="text-center font-weight-bold text-success">@log.NewMarks.ToString("F2")</td>
                                     <td>
                                         @if (log.NewMarks > log.OldMarks)
                                         {
-                                            <span class="adm-status adm-status--converted">Marks Increased</span>
+                                            <span class="er-badge er-badge--converted">Marks Increased</span>
                                         }
                                         else
                                         {
-                                            <span class="adm-status adm-status--rejected">Marks Decreased</span>
+                                            <span class="er-badge er-badge--rejected">Marks Decreased</span>
                                         }
                                     </td>
-                                    <td><span style="color: var(--adm-text-2);">@log.Reason</span></td>
+                                    <td><span>@log.Reason</span></td>
                                 </tr>
                             }
                         </tbody>
@@ -102,10 +102,10 @@
             }
             else
             {
-                <div class="dash-empty">
+                <div class="er-empty">
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="12 6 12 12 16 14" /><circle cx="12" cy="12" r="10" /></svg>
-                    <h3 class="dash-empty__title">No Audit Logs Found</h3>
-                    <p class="dash-empty__sub">No marks modifications have been recorded under current filters.</p>
+                    <h3 class="er-empty__title">No Audit Logs Found</h3>
+                    <p class="er-empty__desc">No marks modifications have been recorded under current filters.</p>
                 </div>
             }
         </div>

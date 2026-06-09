@@ -45,6 +45,11 @@ public class AuthService : IAuthService
             return (false, $"Account locked. Try again after {user.LockoutUntil.Value:HH:mm} UTC.", null);
         }
 
+        if (user.PasswordHash == "ChangeThisHash")
+        {
+            return (false, "Your password has not been set. Please use the 'Forgot Password' option to set up your account.", null);
+        }
+
         if (!_passwordHashService.VerifyPassword(model.Password, user.PasswordHash))
         {
             user.FailedLoginAttempts += 1;
@@ -56,8 +61,6 @@ public class AuthService : IAuthService
             await _unitOfWork.SaveChangesAsync(ct);
             return (false, "Invalid login attempt.", null);
         }
-
-        if (user.PasswordHash == "ChangeThisHash") user.PasswordHash = _passwordHashService.HashPassword(model.Password);
         user.FailedLoginAttempts = 0;
         user.LockoutUntil = null;
         user.LastLoginAt = DateTime.UtcNow;
