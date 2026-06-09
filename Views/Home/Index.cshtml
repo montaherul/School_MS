@@ -76,13 +76,20 @@
     <div class="container d-flex align-items-center">
         <span class="text-uppercase bg-danger text-white px-2 py-1 rounded me-3 text-nowrap animate__animated animate__pulse animate__infinite" style="font-size:12px;"><i class="bi bi-megaphone-fill me-1"></i> Latest Alert:</span>
         <marquee behavior="scroll" direction="left" onmouseover="this.stop();" onmouseout="this.start();">
-            @foreach (var n in Model.LatestNotices)
+            @foreach (var a in Model.Announcements)
             {
-                <span class="me-5"><i class="bi bi-dot mx-2 text-primary fs-4"></i> <a href="/notice/details/@n.Id" class="text-dark text-decoration-none">@n.Title (@n.PublishAt.ToString("dd MMM yyyy"))</a></span>
+                <span class="me-5"><i class="bi bi-megaphone-fill mx-2 text-danger fs-5"></i> <strong>@a.Title:</strong> @a.Content</span>
             }
-            @if (Model.LatestNotices.Count == 0)
+            @if (Model.Announcements.Count == 0)
             {
-                <span>Welcome to our new school portal system! Admissions for the current academic session are now officially open. Submit your applications online!</span>
+                @foreach (var n in Model.LatestNotices)
+                {
+                    <span class="me-5"><i class="bi bi-dot mx-2 text-primary fs-4"></i> <a href="/notice/details/@n.Id" class="text-dark text-decoration-none">@n.Title (@n.PublishAt.ToString("dd MMM yyyy"))</a></span>
+                }
+                @if (Model.LatestNotices.Count == 0)
+                {
+                    <span>Welcome to our new school portal system! Admissions for the current academic session are now officially open. Submit your applications online!</span>
+                }
             }
         </marquee>
     </div>
@@ -95,10 +102,10 @@
     <div class="container py-3">
         <div class="row g-5 align-items-center">
             <div class="col-lg-7">
-                <span class="text-warning fw-extrabold text-uppercase letter-spacing-1 d-block mb-2">Welcome Address</span>
-                <h2 class="display-5 fw-bold text-dark mb-4" style="line-height: 1.2;">Nurturing Brilliance, Cultivating Leadership</h2>
+                <span class="text-warning fw-extrabold text-uppercase letter-spacing-1 d-block mb-2">@(settings.WelcomeTagline ?? "Welcome Address")</span>
+                <h2 class="display-5 fw-bold text-dark mb-4" style="line-height: 1.2;">@(settings.WelcomeHeading ?? "Nurturing Brilliance, Cultivating Leadership")</h2>
                 <p class="lead text-muted mb-4">
-                    On behalf of the students, faculty, and administration, we welcome you to the official gateway of our historic institution. We believe in providing an educational foundation that couples rigorous academic challenges with moral values.
+                    @(settings.WelcomeText ?? "On behalf of the students, faculty, and administration, we welcome you to the official gateway of our historic institution. We believe in providing an educational foundation that couples rigorous academic challenges with moral values.")
                 </p>
                 <div class="row g-4 mb-4">
                     <div class="col-sm-6">
@@ -115,7 +122,7 @@
                             <div class="p-3 bg-light rounded-circle text-primary"><i class="bi bi-clock-history fs-3"></i></div>
                             <div>
                                 <h5 class="fw-bold mb-0">Office Hours</h5>
-                                <p class="text-muted mb-0 small">Sat - Thu (8:00 AM - 2:00 PM)</p>
+                                <p class="text-muted mb-0 small">@(settings.OfficeHours ?? "Sat - Thu (8:00 AM - 2:00 PM)")</p>
                             </div>
                         </div>
                     </div>
@@ -142,7 +149,7 @@
                             }
                         </div>
                         <h4 class="fw-bold text-dark mb-1">@Model.Settings.PrincipalName</h4>
-                        <p class="text-warning fw-semibold mb-3">Head Teacher / Principal</p>
+                        <p class="text-warning fw-semibold mb-3">@(Model.Settings.PrincipalDesignation ?? "Head Teacher / Principal")</p>
                         <p class="text-muted italic small mb-4 px-2" style="font-style: italic;">
                             "@(Model.Settings.PrincipalMessage?.Length > 200 ? Model.Settings.PrincipalMessage.Substring(0, 197) + "..." : Model.Settings.PrincipalMessage)"
                         </p>
@@ -253,7 +260,7 @@
                         <i class="bi bi-people-fill fs-2"></i>
                     </div>
                     <h2 class="display-5 fw-extrabold text-white mb-1">@Model.StudentCount+</h2>
-                    <span class="text-white-50 text-uppercase fw-semibold" style="font-size:13px;">Active Students</span>
+                    <span class="text-white-50 text-uppercase fw-semibold" style="font-size:13px;">@(settings.StudentLabel ?? "Active Students")</span>
                 </div>
             </div>
             <div class="col-6 col-md-3">
@@ -262,7 +269,7 @@
                         <i class="bi bi-person-workspace fs-2"></i>
                     </div>
                     <h2 class="display-5 fw-extrabold text-white mb-1">@Model.TeacherCount+</h2>
-                    <span class="text-white-50 text-uppercase fw-semibold" style="font-size:13px;">Honorable Teachers</span>
+                    <span class="text-white-50 text-uppercase fw-semibold" style="font-size:13px;">@(settings.TeacherLabel ?? "Honorable Teachers")</span>
                 </div>
             </div>
             <div class="col-6 col-md-3">
@@ -271,7 +278,7 @@
                         <i class="bi bi-building fs-2"></i>
                     </div>
                     <h2 class="display-5 fw-extrabold text-white mb-1">@Model.ClassCount+</h2>
-                    <span class="text-white-50 text-uppercase fw-semibold" style="font-size:13px;">Classrooms</span>
+                    <span class="text-white-50 text-uppercase fw-semibold" style="font-size:13px;">@(settings.ClassLabel ?? "Classrooms")</span>
                 </div>
             </div>
             <div class="col-6 col-md-3">
@@ -280,7 +287,7 @@
                         <i class="bi bi-mortarboard fs-2"></i>
                     </div>
                     <h2 class="display-5 fw-extrabold text-white mb-1">@Model.EmployeeCount+</h2>
-                    <span class="text-white-50 text-uppercase fw-semibold" style="font-size:13px;">Staff Members</span>
+                    <span class="text-white-50 text-uppercase fw-semibold" style="font-size:13px;">@(settings.EmployeeLabel ?? "Staff Members")</span>
                 </div>
             </div>
         </div>
@@ -349,10 +356,10 @@
         <div class="bg-white p-5 shadow rounded-lg" style="border-left: 8px solid var(--edu-gold); border-radius: 12px;">
             <div class="row g-4 align-items-center">
                 <div class="col-lg-8">
-                    <span class="badge bg-warning text-dark text-uppercase px-3 py-2 mb-3">Admission is Ongoing</span>
-                    <h2 class="fw-bold text-dark mb-2">Apply for Admission in 2026 Academic Year</h2>
+                    <span class="badge bg-warning text-dark text-uppercase px-3 py-2 mb-3">@(settings.AdmissionCtaTitle ?? "Admission is Ongoing")</span>
+                    <h2 class="fw-bold text-dark mb-2">@(Model.Settings.AdmissionTitle ?? "Apply for Admission")</h2>
                     <p class="text-muted mb-0 lead" style="font-size:16px;">
-                        Quick and seamless online registration. Connects directly to our centralized admission processing system. Review the requirements and get enrolled.
+                        @(settings.AdmissionCtaText ?? "Quick and seamless online registration. Connects directly to our centralized admission processing system. Review the requirements and get enrolled.")
                     </p>
                 </div>
                 <div class="col-lg-4 text-lg-end">

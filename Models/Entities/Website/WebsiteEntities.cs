@@ -133,6 +133,35 @@ public class SchoolSetting : BaseEntity
     [MaxLength(500)]
     public string? OgDescription { get; set; }
 
+    // Welcome / Homepage Content
+    [MaxLength(200)]
+    public string? WelcomeHeading { get; set; }
+
+    [MaxLength(500)]
+    public string? WelcomeTagline { get; set; }
+
+    [MaxLength(4000)]
+    public string? WelcomeText { get; set; }
+
+    [MaxLength(4000)]
+    public string? SchoolHistory { get; set; }
+
+    [MaxLength(200)]
+    public string? OfficeHours { get; set; }
+
+    // Statistics Labels
+    [MaxLength(100)]
+    public string? StudentLabel { get; set; }
+
+    [MaxLength(100)]
+    public string? TeacherLabel { get; set; }
+
+    [MaxLength(100)]
+    public string? EmployeeLabel { get; set; }
+
+    [MaxLength(100)]
+    public string? ClassLabel { get; set; }
+
     // Homepage Section Visibility Toggles
     public bool ShowSlider { get; set; } = true;
     public bool ShowPrincipalMessage { get; set; } = true;

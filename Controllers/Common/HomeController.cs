@@ -12,7 +12,10 @@ using SchoolManagementSystem.Models.Entities.Student;
 using SchoolManagementSystem.Models.Entities.Employee;
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Services.Interfaces.Website;
+using SchoolManagementSystem.Services.Interfaces.Email;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
+using SchoolManagementSystem.Helpers.Email;
+using SchoolManagementSystem.Models.Entities.Website;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.EntityFrameworkCore;
 
@@ -26,6 +29,9 @@ public class HomeController : Controller
     private readonly IEventService _eventService;
     private readonly IGalleryService _galleryService;
     private readonly IContactMessageService _contactService;
+    private readonly IAnnouncementService _announcementService;
+    private readonly IEmailSender _emailSender;
+    private readonly IEmailTemplateService _emailTemplateService;
     private readonly IUnitOfWork _uow;
 
     public HomeController(
@@ -35,6 +41,9 @@ public class HomeController : Controller
         IEventService eventService,
         IGalleryService galleryService,
         IContactMessageService contactService,
+        IAnnouncementService announcementService,
+        IEmailSender emailSender,
+        IEmailTemplateService emailTemplateService,
         IUnitOfWork uow)
     {
         _websiteService = websiteService;
@@ -43,6 +52,9 @@ public class HomeController : Controller
         _eventService = eventService;
         _galleryService = galleryService;
         _contactService = contactService;
+        _announcementService = announcementService;
+        _emailSender = emailSender;
+        _emailTemplateService = emailTemplateService;
         _uow = uow;
     }
 
@@ -53,6 +65,7 @@ public class HomeController : Controller
         var notices = await _noticeService.GetLatestNoticesAsync(5, ct);
         var events = await _eventService.GetUpcomingEventsAsync(3, ct);
         var albums = await _galleryService.GetAllAlbumsAsync(ct);
+        var announcements = await _announcementService.GetActiveAnnouncementsAsync(ct);
 
         // Fetch counts for the stats block
         int studentCount = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().CountAsync(s => !s.IsDeleted, ct);
@@ -67,6 +80,7 @@ public class HomeController : Controller
             LatestNotices = notices,
             UpcomingEvents = events,
             Albums = albums.Take(3).ToList(),
+            Announcements = announcements,
             StudentCount = studentCount > 0 ? studentCount : 350, // realistic fallback counts if seeder is fresh
             EmployeeCount = employeeCount > 0 ? employeeCount : 25,
             TeacherCount = teacherCount > 0 ? teacherCount : 18,
@@ -125,6 +139,52 @@ public class HomeController : Controller
         }
 
         await _contactService.SaveMessageAsync(model, ct);
+
+        // Send email notification to school admin using EmailTemplate system
+        try
+        {
+            var settings = await _websiteService.GetSettingsAsync(ct);
+            if (!string.IsNullOrEmpty(settings.Email))
+            {
+                var placeholders = new Dictionary<string, string>
+                {
+                    { "SchoolName", settings.SchoolName },
+                    { "Name", model.Name },
+                    { "Email", model.Email },
+                    { "Phone", model.Phone ?? "N/A" },
+                    { "Subject", model.Subject },
+                    { "Message", model.Message },
+                    { "Timestamp", DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss") }
+                };
+
+                var subject = await _emailTemplateService.RenderTemplateSubjectAsync("ContactNotification", placeholders, ct);
+                var body = await _emailTemplateService.RenderTemplateAsync("ContactNotification", placeholders, ct);
+
+                if (!string.IsNullOrEmpty(subject) && !string.IsNullOrEmpty(body))
+                {
+                    await _emailSender.SendAsync(settings.Email, subject, body, ct);
+                }
+                else
+                {
+                    // Fallback to hardcoded template if template not found
+                    var emailBody = $@"
+<h2>New Contact Form Message</h2>
+<p><strong>From:</strong> {model.Name} ({model.Email})</p>
+<p><strong>Phone:</strong> {model.Phone ?? "N/A"}</p>
+<p><strong>Subject:</strong> {model.Subject}</p>
+<p><strong>Message:</strong></p>
+<p>{model.Message}</p>
+<hr/>
+<p><small>Sent via {settings.SchoolName} contact form</small></p>";
+                    await _emailSender.SendAsync(settings.Email, $"New Contact Message: {model.Subject}", emailBody, ct);
+                }
+            }
+        }
+        catch
+        {
+            // Email failure should not block the user experience
+        }
+
         TempData["Success"] = "Your message has been received! Our support desk will reply soon.";
         return RedirectToAction(nameof(Contact));
     }

@@ -308,6 +308,10 @@
                 {
                     <span>Government</span>@("School")
                 }
+                @if (!string.IsNullOrEmpty(websiteSettings?.SchoolMotto))
+                {
+                    <small class="d-none d-md-block text-muted ms-2" style="font-size:11px; max-width:200px; line-height:1.2;">@websiteSettings.SchoolMotto</small>
+                }
             </a>
             <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
                 <i class="bi bi-list fs-1 text-dark"></i>
@@ -383,7 +387,7 @@
                         }
                     </div>
                     <p class="mb-4" style="max-width:320px; font-size:14px; line-height: 1.6;">
-                        A premier educational institute of high repute, building enlightened citizens of tomorrow through quality education and character construction in Bangladesh.
+                        @(websiteSettings?.FooterText ?? "A premier educational institute of high repute, building enlightened citizens of tomorrow through quality education and character construction in Bangladesh.")
                     </p>
                     <div class="d-flex flex-wrap gap-1">
                         @if (!string.IsNullOrEmpty(websiteSettings?.FacebookUrl))

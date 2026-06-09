@@ -168,6 +168,7 @@ public static class ServiceRegistration
         services.AddScoped<IContactMessageService, ContactMessageService>();
         services.AddScoped<IEmailTemplateService, EmailTemplateService>();
         services.AddScoped<IAdmissionFeeStructureService, AdmissionFeeStructureService>();
+        services.AddScoped<IAnnouncementService, AnnouncementService>();
         services.AddScoped<IAuditLogService, AuditLogService>();
         services.AddScoped<IPasswordHashService, Pbkdf2PasswordHashService>();
         services.AddScoped<IFileStorageService, LocalFileStorageService>();

@@ -41,6 +41,9 @@
                     <button class="nav-link px-4 py-3 fw-bold border-0" id="templates-tab" data-bs-toggle="tab" data-bs-target="#templates-pane" type="button" role="tab"><i class="bi bi-envelope-paper-fill me-1"></i> Email Templates</button>
                 </li>
                 <li class="nav-item">
+                    <button class="nav-link px-4 py-3 fw-bold border-0" id="announcements-tab" data-bs-toggle="tab" data-bs-target="#announcements-pane" type="button" role="tab"><i class="bi bi-megaphone me-1"></i> Announcements</button>
+                </li>
+                <li class="nav-item">
                     <button class="nav-link px-4 py-3 fw-bold border-0" id="fees-tab" data-bs-toggle="tab" data-bs-target="#fees-pane" type="button" role="tab"><i class="bi bi-cash-stack me-1"></i> Admission Fees</button>
                 </li>
             </ul>
@@ -110,7 +113,16 @@
                     <div id="templatesGrid"></div>
                 </div>
 
-                <!-- ── 8. Admission Fee Structures Pane ── -->
+                <!-- ── 8. Announcements Pane ── -->
+                <div class="tab-pane fade" id="announcements-pane" role="tabpanel">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="fw-bold mb-0">Website Announcements</h5>
+                        <a href="/Admin/Website/Announcements/CreateEdit" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i> Add Announcement</a>
+                    </div>
+                    <div id="announcementsGrid"></div>
+                </div>
+
+                <!-- ── 9. Admission Fee Structures Pane ── -->
                 <div class="tab-pane fade" id="fees-pane" role="tabpanel">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="fw-bold mb-0">Admission Fee Structure</h5>
@@ -373,6 +385,33 @@
             ]
         });
 
+        // Initialize Announcements Grid
+        const announcementsTable = new Tabulator("#announcementsGrid", {
+            ajaxURL: "/Admin/Website/Announcements/List",
+            layout: "fitColumns",
+            responsiveLayout: "collapse",
+            placeholder: "No announcements created",
+            columns: [
+                { title: "Title", field: "title" },
+                { title: "Content", field: "content", width: 300, formatter: function(cell) {
+                    const val = cell.getValue() || "";
+                    return val.length > 80 ? val.substring(0, 80) + "..." : val;
+                }},
+                { title: "Status", field: "isActive", width: 100, horizAlign: "center", formatter: function(cell) {
+                    return cell.getValue() ? `<span class="badge bg-success">Active</span>` : `<span class="badge bg-secondary">Inactive</span>`;
+                }},
+                { title: "Actions", width: 150, horizAlign: "center", headerSort: false, formatter: function(cell) {
+                    const row = cell.getRow().getData();
+                    return `
+                        <div class="btn-group btn-group-sm">
+                            <a href="/Admin/Website/Announcements/CreateEdit/${row.id}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteObject('/Admin/Website/Announcements/Delete/${row.id}', announcementsTable)"><i class="bi bi-trash"></i></button>
+                        </div>
+                    `;
+                }}
+            ]
+        });
+
         // Initialize Admission Fee Structures Grid
         const feesTable = new Tabulator("#feesGrid", {
             ajaxURL: "/Admin/Website/AdmissionFees/List",
@@ -441,6 +480,7 @@
                 else if (targetPane === "#pages-pane") pagesTable.redraw();
                 else if (targetPane === "#messages-pane") messagesTable.redraw();
                 else if (targetPane === "#templates-pane") templatesTable.redraw();
+                else if (targetPane === "#announcements-pane") announcementsTable.redraw();
                 else if (targetPane === "#fees-pane") feesTable.redraw();
             });
         });

@@ -11,6 +11,7 @@ public class HomepageViewModel
     public IReadOnlyList<Notice> LatestNotices { get; set; } = [];
     public IReadOnlyList<Event> UpcomingEvents { get; set; } = [];
     public IReadOnlyList<Gallery> Albums { get; set; } = [];
+    public IReadOnlyList<Announcement> Announcements { get; set; } = [];
     
     // School Statistics
     public int StudentCount { get; set; }

@@ -1,3 +1,5 @@
+@inject SchoolManagementSystem.Services.Interfaces.Website.ISchoolWebsiteService WebsiteService
+@{ var authSettings = await WebsiteService.GetSettingsAsync(); }
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -54,8 +56,15 @@
 <body>
     <div class="auth-container">
         <a href="/" class="brand-logo">
-            <i class="bi bi-mortarboard-fill"></i>
-            <span>SchoolMS</span>
+            @if (!string.IsNullOrEmpty(authSettings?.LoginLogoPath))
+            {
+                <img src="@authSettings.LoginLogoPath" alt="Logo" style="height:40px; object-fit:contain;" />
+            }
+            else
+            {
+                <i class="bi bi-mortarboard-fill"></i>
+            }
+            <span>@(authSettings?.ShortName ?? "SchoolMS")</span>
         </a>
         <div class="auth-card">
             @RenderBody()

@@ -26,6 +26,7 @@ public class WebsiteAdminController : Controller
     private readonly IContactMessageService _contactService;
     private readonly IEmailTemplateService _emailTemplateService;
     private readonly IAdmissionFeeStructureService _feeService;
+    private readonly IAnnouncementService _announcementService;
     private readonly IFileStorageService _fileService;
 
     public WebsiteAdminController(
@@ -38,6 +39,7 @@ public class WebsiteAdminController : Controller
         IContactMessageService contactService,
         IEmailTemplateService emailTemplateService,
         IAdmissionFeeStructureService feeService,
+        IAnnouncementService announcementService,
         IFileStorageService fileService)
     {
         _settingsService = settingsService;
@@ -49,6 +51,7 @@ public class WebsiteAdminController : Controller
         _contactService = contactService;
         _emailTemplateService = emailTemplateService;
         _feeService = feeService;
+        _announcementService = announcementService;
         _fileService = fileService;
     }
 
@@ -531,6 +534,52 @@ public class WebsiteAdminController : Controller
     public async Task<IActionResult> AdmissionFeeDelete(int id, CancellationToken ct)
     {
         await _feeService.DeleteAsync(id, ct);
+        return Json(new { success = true });
+    }
+
+    // ── Announcements ──
+    [HttpGet("Announcements/List")]
+    public async Task<IActionResult> AnnouncementsList(CancellationToken ct)
+    {
+        var list = await _announcementService.GetAllAnnouncementsAsync(ct);
+        return Json(list);
+    }
+
+    [HttpGet("Announcements/CreateEdit/{id?}")]
+    public async Task<IActionResult> AnnouncementCreateEdit(int? id, CancellationToken ct)
+    {
+        if (id.HasValue && id > 0)
+        {
+            var item = await _announcementService.GetAnnouncementByIdAsync(id.Value, ct);
+            if (item == null) return NotFound();
+            return View(item);
+        }
+        return View(new Announcement());
+    }
+
+    [HttpPost("Announcements/CreateEdit/{id?}")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AnnouncementCreateEdit(int? id, Announcement model, CancellationToken ct)
+    {
+        if (id.HasValue && id > 0)
+        {
+            model.Id = id.Value;
+            await _announcementService.UpdateAnnouncementAsync(model, ct);
+            TempData["SuccessMessage"] = "Announcement updated successfully.";
+        }
+        else
+        {
+            await _announcementService.CreateAnnouncementAsync(model, ct);
+            TempData["SuccessMessage"] = "Announcement created successfully.";
+        }
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost("Announcements/Delete/{id}")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AnnouncementDelete(int id, CancellationToken ct)
+    {
+        await _announcementService.DeleteAnnouncementAsync(id, ct);
         return Json(new { success = true });
     }
 

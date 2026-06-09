@@ -98,6 +98,15 @@ public class SchoolWebsiteService : ISchoolWebsiteService
             if (!string.IsNullOrEmpty(settings.OgImagePath)) existing.OgImagePath = settings.OgImagePath;
             existing.OgTitle = settings.OgTitle;
             existing.OgDescription = settings.OgDescription;
+            existing.WelcomeHeading = settings.WelcomeHeading;
+            existing.WelcomeTagline = settings.WelcomeTagline;
+            existing.WelcomeText = settings.WelcomeText;
+            existing.SchoolHistory = settings.SchoolHistory;
+            existing.OfficeHours = settings.OfficeHours;
+            existing.StudentLabel = settings.StudentLabel;
+            existing.TeacherLabel = settings.TeacherLabel;
+            existing.EmployeeLabel = settings.EmployeeLabel;
+            existing.ClassLabel = settings.ClassLabel;
             existing.ShowSlider = settings.ShowSlider;
             existing.ShowPrincipalMessage = settings.ShowPrincipalMessage;
             existing.ShowNotices = settings.ShowNotices;
@@ -228,6 +237,12 @@ public class EmailTemplateService : IEmailTemplateService
         return await _repo.GetByIdAsync(id, cancellationToken);
     }
 
+    public async Task<EmailTemplate?> GetTemplateByNameAsync(string name, CancellationToken cancellationToken = default)
+    {
+        var templates = await _repo.ListAsync(t => !t.IsDeleted && t.TemplateName == name && t.IsActive, cancellationToken);
+        return templates.FirstOrDefault();
+    }
+
     public async Task CreateTemplateAsync(EmailTemplate template, CancellationToken cancellationToken = default)
     {
         template.CreatedAt = DateTime.UtcNow;
@@ -264,6 +279,44 @@ public class EmailTemplateService : IEmailTemplateService
             _repo.Update(existing);
             await _uow.SaveChangesAsync(cancellationToken);
         }
+    }
+
+    public async Task<string> RenderTemplateAsync(string templateName, Dictionary<string, string> placeholders, CancellationToken cancellationToken = default)
+    {
+        var template = await GetTemplateByNameAsync(templateName, cancellationToken);
+        if (template == null)
+        {
+            return string.Empty;
+        }
+
+        var body = template.Body;
+        if (placeholders != null)
+        {
+            foreach (var kvp in placeholders)
+            {
+                body = body.Replace($"{{{kvp.Key}}}", kvp.Value);
+            }
+        }
+        return body;
+    }
+
+    public async Task<string> RenderTemplateSubjectAsync(string templateName, Dictionary<string, string> placeholders, CancellationToken cancellationToken = default)
+    {
+        var template = await GetTemplateByNameAsync(templateName, cancellationToken);
+        if (template == null)
+        {
+            return string.Empty;
+        }
+
+        var subject = template.Subject;
+        if (placeholders != null)
+        {
+            foreach (var kvp in placeholders)
+            {
+                subject = subject.Replace($"{{{kvp.Key}}}", kvp.Value);
+            }
+        }
+        return subject;
     }
 }
 
@@ -710,6 +763,69 @@ public class AdmissionFeeStructureService : IAdmissionFeeStructureService
             existing.UpdatedAt = DateTime.UtcNow;
             existing.UpdatedBy = "admin";
             _uow.Repository<AdmissionFeeStructure>().Update(existing);
+            await _uow.SaveChangesAsync(cancellationToken);
+        }
+    }
+}
+
+public class AnnouncementService : IAnnouncementService
+{
+    private readonly IUnitOfWork _uow;
+
+    public AnnouncementService(IUnitOfWork uow)
+    {
+        _uow = uow;
+    }
+
+    public async Task<IReadOnlyList<Announcement>> GetActiveAnnouncementsAsync(CancellationToken cancellationToken = default)
+    {
+        return await _uow.Repository<Announcement>()
+            .ListAsync(a => a.IsActive && !a.IsDeleted, cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<Announcement>> GetAllAnnouncementsAsync(CancellationToken cancellationToken = default)
+    {
+        return await _uow.Repository<Announcement>()
+            .ListAsync(a => !a.IsDeleted, cancellationToken);
+    }
+
+    public async Task<Announcement?> GetAnnouncementByIdAsync(int id, CancellationToken cancellationToken = default)
+    {
+        return await _uow.Repository<Announcement>().GetByIdAsync(id, cancellationToken);
+    }
+
+    public async Task CreateAnnouncementAsync(Announcement announcement, CancellationToken cancellationToken = default)
+    {
+        announcement.CreatedAt = DateTime.UtcNow;
+        announcement.CreatedBy = "admin";
+        await _uow.Repository<Announcement>().AddAsync(announcement, cancellationToken);
+        await _uow.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task UpdateAnnouncementAsync(Announcement announcement, CancellationToken cancellationToken = default)
+    {
+        var existing = await _uow.Repository<Announcement>().GetByIdAsync(announcement.Id, cancellationToken);
+        if (existing != null)
+        {
+            existing.Title = announcement.Title;
+            existing.Content = announcement.Content;
+            existing.IsActive = announcement.IsActive;
+            existing.UpdatedAt = DateTime.UtcNow;
+            existing.UpdatedBy = "admin";
+            _uow.Repository<Announcement>().Update(existing);
+            await _uow.SaveChangesAsync(cancellationToken);
+        }
+    }
+
+    public async Task DeleteAnnouncementAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var existing = await _uow.Repository<Announcement>().GetByIdAsync(id, cancellationToken);
+        if (existing != null)
+        {
+            existing.IsDeleted = true;
+            existing.UpdatedAt = DateTime.UtcNow;
+            existing.UpdatedBy = "admin";
+            _uow.Repository<Announcement>().Update(existing);
             await _uow.SaveChangesAsync(cancellationToken);
         }
     }

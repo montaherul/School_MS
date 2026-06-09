@@ -30,14 +30,27 @@ public class WebsiteSeeder
                 Phone = "+880 31 610429",
                 Address = "Ice Factory Road, Double Mooring, Chattogram, Bangladesh",
                 PrincipalName = "Prof. Muhammad Ashraful Islam",
+                PrincipalDesignation = "Principal",
                 PrincipalMessage = "Welcome to CCSC. For over a century, our institution has stood as a beacon of standard education, character cultivation, and national values in Bangladesh. We welcome all parents and students to join our progressive academic family.",
                 PrincipalImagePath = "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&q=80&w=400",
                 LogoPath = "/images/default-logo.png",
                 FaviconPath = "/favicon.ico",
+                LoginLogoPath = "/images/default-login-logo.png",
+                FooterLogoPath = "/images/default-footer-logo.png",
                 FacebookUrl = "https://facebook.com/collegiate.school",
                 YouTubeUrl = "https://youtube.com/collegiate.school",
                 Mission = "To provide balanced, modern, and value-based education that equips students with critical thinking skills, high moral standards, and patriotic feelings.",
                 Vision = "To remain a premier academic center of secondary and higher education in Bangladesh, forming leaders of tomorrow through innovation and comprehensive extracurricular excellence.",
+                SchoolMotto = "Knowledge, Discipline, Excellence",
+                WelcomeHeading = "Welcome to Our Academic Portal",
+                WelcomeTagline = "Gateway to Knowledge & Excellence",
+                WelcomeText = "We are delighted to welcome you to the official academic portal of Chattogram Collegiate School & College. Our institution, established in 1836, stands as a testament to Bangladesh's commitment to quality education and character development. Through our comprehensive curriculum and dedicated faculty, we strive to nurture critical thinkers, responsible citizens, and future leaders who will contribute meaningfully to society.",
+                SchoolHistory = "Founded in 1836 as Chittagong Government High School, Chattogram Collegiate School & College has been a beacon of education in Bangladesh for nearly two centuries. The institution has evolved through various phases of Bangladesh's history, maintaining its commitment to academic excellence and character building. Today, it stands as one of the most prestigious educational institutions in the country, producing leaders in various fields including politics, academia, business, and public service.",
+                OfficeHours = "Sat - Thu (8:00 AM - 2:00 PM)",
+                StudentLabel = "Active Students",
+                TeacherLabel = "Honorable Teachers",
+                EmployeeLabel = "Staff Members",
+                ClassLabel = "Classrooms",
                 GoogleMapEmbed = "<iframe src=\"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3690.3129598285514!2d91.82390297592472!3d22.341819341499596!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x30acd89686036329%3A0xe100c5c56c2d1b09!2sChattogram%20Collegiate%20School!5e0!3m2!1sen!2sbd!4v1700000000000!5m2!1sen!2sbd\" width=\"100%\" height=\"350\" style=\"border:0;\" allowfullscreen=\"\" loading=\"lazy\"></iframe>",
                 FooterText = "© 2026 Chattogram Collegiate School & College. All rights reserved. Managed by Ministry of Education, Bangladesh.",
                 CreatedBy = "seeder",
@@ -252,6 +265,63 @@ public class WebsiteSeeder
                 }
             };
             await _db.EmailTemplates.AddRangeAsync(templates);
+        }
+
+        // 7. Seed Announcements
+        if (!await _db.Announcements.AnyAsync(a => !a.IsDeleted))
+        {
+            var announcements = new[]
+            {
+                new Announcement
+                {
+                    Title = "Admission Open for Session 2026",
+                    Content = "Admissions are now open for Classes VI-XII for the 2026 academic session. Apply online through our admission portal. Deadline: 31 December 2026.",
+                    IsActive = true,
+                    CreatedBy = "seeder",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new Announcement
+                {
+                    Title = "Annual Sports Day 2026",
+                    Content = "Our Annual Sports Day will be held on 15th February 2026. All students are encouraged to participate. Registration opens 1st February.",
+                    IsActive = true,
+                    CreatedBy = "seeder",
+                    CreatedAt = DateTime.UtcNow
+                },
+                new Announcement
+                {
+                    Title = "SSC Examination Schedule Published",
+                    Content = "The SSC Examination 2026 schedule has been published. Students can download the routine from the Notice Board section.",
+                    IsActive = true,
+                    CreatedBy = "seeder",
+                    CreatedAt = DateTime.UtcNow
+                }
+            };
+            await _db.Announcements.AddRangeAsync(announcements);
+        }
+
+        // 8. Seed Contact Notification Email Template
+        if (!await _db.EmailTemplates.AnyAsync(t => t.TemplateName == "ContactNotification" && !t.IsDeleted))
+        {
+            var contactTemplate = new EmailTemplate
+            {
+                TemplateName = "ContactNotification",
+                Subject = "New Contact Form Submission - {SchoolName}",
+                Body = @"<h2>New Contact Form Submission</h2>
+<p><strong>School:</strong> {SchoolName}</p>
+<p><strong>From:</strong> {Name} ({Email})</p>
+<p><strong>Phone:</strong> {Phone}</p>
+<p><strong>Subject:</strong> {Subject}</p>
+<p><strong>Message:</strong></p>
+<p>{Message}</p>
+<hr/>
+<p><small>Submitted on {Timestamp}</small></p>",
+                Placeholders = "{SchoolName},{Name},{Email},{Phone},{Subject},{Message},{Timestamp}",
+                IsActive = true,
+                CreatedBy = "seeder",
+                CreatedAt = DateTime.UtcNow
+            };
+            await _db.EmailTemplates.AddAsync(contactTemplate);
         }
 
         await _db.SaveChangesAsync();

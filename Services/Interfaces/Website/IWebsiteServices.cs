@@ -81,9 +81,22 @@ public interface IEmailTemplateService
 {
     Task<IReadOnlyList<EmailTemplate>> GetTemplatesAsync(CancellationToken cancellationToken = default);
     Task<EmailTemplate?> GetTemplateByIdAsync(int id, CancellationToken cancellationToken = default);
+    Task<EmailTemplate?> GetTemplateByNameAsync(string name, CancellationToken cancellationToken = default);
     Task CreateTemplateAsync(EmailTemplate template, CancellationToken cancellationToken = default);
     Task UpdateTemplateAsync(EmailTemplate template, CancellationToken cancellationToken = default);
     Task DeleteTemplateAsync(int id, CancellationToken cancellationToken = default);
+    Task<string> RenderTemplateAsync(string templateName, Dictionary<string, string> placeholders, CancellationToken cancellationToken = default);
+    Task<string> RenderTemplateSubjectAsync(string templateName, Dictionary<string, string> placeholders, CancellationToken cancellationToken = default);
+}
+
+public interface IAnnouncementService
+{
+    Task<IReadOnlyList<Announcement>> GetActiveAnnouncementsAsync(CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Announcement>> GetAllAnnouncementsAsync(CancellationToken cancellationToken = default);
+    Task<Announcement?> GetAnnouncementByIdAsync(int id, CancellationToken cancellationToken = default);
+    Task CreateAnnouncementAsync(Announcement announcement, CancellationToken cancellationToken = default);
+    Task UpdateAnnouncementAsync(Announcement announcement, CancellationToken cancellationToken = default);
+    Task DeleteAnnouncementAsync(int id, CancellationToken cancellationToken = default);
 }
 
 public interface IAdmissionFeeStructureService
