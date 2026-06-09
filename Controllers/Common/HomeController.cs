@@ -77,7 +77,6 @@ public class HomeController : Controller
     }
 
     [HttpGet("/about")]
-    [HttpGet]
     public async Task<IActionResult> About(CancellationToken ct)
     {
         var settings = await _websiteService.GetSettingsAsync(ct);
