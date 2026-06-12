@@ -14,31 +14,40 @@ public class ResultPublicationService : IResultPublicationService
 {
     private readonly IUnitOfWork _uow;
     private readonly IMeritCalculationService _meritCalculationService;
-    private readonly IResultCalculationService _resultCalculationService;
     private readonly IExamRepository _examRepository;
     private readonly IMarkEntryRepository _markEntryRepository;
     private readonly IResultPublicationRepository _resultPublicationRepository;
     private readonly IStudentSubjectResultRepository _subjectResultRepository;
     private readonly IStudentExamResultRepository _examResultRepository;
+    private readonly IGradingRuleRepository _gradingRuleRepository;
+    private readonly IGradeCalculator _gradeCalculator;
+    private readonly IComponentAggregator _componentAggregator;
+    private readonly IPassFailPolicy _passFailPolicy;
 
     public ResultPublicationService(
         IUnitOfWork uow,
         IMeritCalculationService meritCalculationService,
-        IResultCalculationService resultCalculationService,
         IExamRepository examRepository,
         IMarkEntryRepository markEntryRepository,
         IResultPublicationRepository resultPublicationRepository,
         IStudentSubjectResultRepository subjectResultRepository,
-        IStudentExamResultRepository examResultRepository)
+        IStudentExamResultRepository examResultRepository,
+        IGradingRuleRepository gradingRuleRepository,
+        IGradeCalculator gradeCalculator,
+        IComponentAggregator componentAggregator,
+        IPassFailPolicy passFailPolicy)
     {
         _uow = uow;
         _meritCalculationService = meritCalculationService;
-        _resultCalculationService = resultCalculationService;
         _examRepository = examRepository;
         _markEntryRepository = markEntryRepository;
         _resultPublicationRepository = resultPublicationRepository;
         _subjectResultRepository = subjectResultRepository;
         _examResultRepository = examResultRepository;
+        _gradingRuleRepository = gradingRuleRepository;
+        _gradeCalculator = gradeCalculator;
+        _componentAggregator = componentAggregator;
+        _passFailPolicy = passFailPolicy;
     }
 
     public async Task SubmitExamResultsAsync(int examId, int classId)
@@ -84,16 +93,28 @@ public class ResultPublicationService : IResultPublicationService
         if (exam.Status == ResultWorkflowStatus.Locked)
             throw new InvalidOperationException("Exam results are locked and cannot be published");
 
-        // Calculate Ranking / GPA / Position
-        await _meritCalculationService.RecalculateMeritPositionsAsync(dto.ExamId);
-
-        // Get Marks
+        // Get Marks and preload needed data
         var marks = await _markEntryRepository.Query()
             .Include(x => x.Subject)
             .Where(x => x.ExamId == dto.ExamId)
             .ToListAsync();
 
-        // Update Mark Status + Create StudentSubjectResults
+        var gradingRules = await _gradingRuleRepository.ListAsync();
+        var examSubjects = await _uow.Repository<ExamSubject>().Query()
+            .Where(es => es.ExamId == dto.ExamId)
+            .ToDictionaryAsync(es => es.SubjectId);
+
+        // Preload ClassSubject mappings for class-specific pass/full marks
+        var classIds = marks.Where(m => m.ClassId > 0).Select(m => m.ClassId).Distinct().ToList();
+        var subjectIds = marks.Select(m => m.SubjectId).Distinct().ToList();
+        var classSubjects = await _uow.Repository<ClassSubject>().Query()
+            .Where(cs => classIds.Contains(cs.SchoolClassId) && subjectIds.Contains(cs.SubjectId) && !cs.IsDeleted && cs.IsActive)
+            .ToListAsync();
+        var classSubjectLookup = classSubjects
+            .GroupBy(cs => (cs.SchoolClassId, cs.SubjectId))
+            .ToDictionary(g => g.Key, g => g.First());
+
+        // Update Mark Status + Create StudentSubjectResults using GradeCalculator
         foreach (var mark in marks)
         {
             // Lock Result
@@ -101,10 +122,13 @@ public class ResultPublicationService : IResultPublicationService
 
             // Publish Status
             if (mark.Status == ResultWorkflowStatus.Published)
-                continue; // Skip already-published entries
+                continue;
 
             mark.Status = ResultWorkflowStatus.Published;
             _markEntryRepository.Update(mark);
+
+            var cs = classSubjectLookup.GetValueOrDefault((mark.ClassId, mark.SubjectId));
+            examSubjects.TryGetValue(mark.SubjectId, out var examSubject);
 
             // Prevent Duplicate Result Insert
             bool exists = await _subjectResultRepository.AnyAsync(x =>
@@ -114,6 +138,10 @@ public class ResultPublicationService : IResultPublicationService
 
             if (!exists)
             {
+                decimal totalMarks = _componentAggregator.AggregateAll(mark);
+                var (grade, gradePoint) = _gradeCalculator.CalculateGrade(totalMarks, gradingRules);
+                bool isPassed = totalMarks >= (examSubject?.PassMarks ?? cs?.PassMarks ?? 33);
+
                 var subjectResult = new StudentSubjectResult
                 {
                     ExamId = mark.ExamId,
@@ -122,19 +150,23 @@ public class ResultPublicationService : IResultPublicationService
                     AcademicYearId = mark.AcademicYearId,
                     ClassId = mark.ClassId,
                     SectionId = mark.SectionId,
-                    MarksObtained = mark.MarksObtained,
-                    Grade = mark.Grade ?? "",
-                    GradePoint = mark.GradePoint ?? 0,
-                    IsPassed = mark.MarksObtained >= mark.Subject.DefaultPassMarks,
-                    FullMarks = mark.Subject.DefaultFullMarks,
-                    PassMarks = mark.Subject.DefaultPassMarks,
-                    CreatedAt = DateTime.UtcNow,
-                    CreatedBy = "system",
-                    IsDeleted = false
+                    StudentGroupId = null,
+                    IsOptionalSubject = cs?.IsOptional ?? false,
+                    IsReligionSubject = cs?.IsReligionSubject ?? false,
+                    MarksObtained = totalMarks,
+                    FullMarks = examSubject?.FullMarks ?? cs?.FullMarks ?? 100,
+                    PassMarks = examSubject?.PassMarks ?? cs?.PassMarks ?? 33,
+                    Grade = grade ?? "F",
+                    GradePoint = gradePoint ?? 0,
+                    IsPassed = isPassed,
+                    CalculatedAt = DateTime.Now
                 };
                 await _subjectResultRepository.AddAsync(subjectResult);
             }
         }
+
+        // Calculate Ranking / GPA / Position after subject results are created
+        await _meritCalculationService.RecalculateMeritPositionsAsync(dto.ExamId);
 
         // Update Exam Status
         exam.Status = ResultWorkflowStatus.Published;
@@ -349,15 +381,4 @@ public class ResultPublicationService : IResultPublicationService
             IsPassed = r.IsPassed
         });
     }
-
-    public async Task RecalculateResultsAsync(int examId)
-    {
-        await _resultCalculationService.CalculateExamResultsAsync(examId);
-    }
-
-    public async Task RecalculateMeritPositionsAsync(int examId)
-    {
-        await _meritCalculationService.RecalculateMeritPositionsAsync(examId);
-    }
 }
-

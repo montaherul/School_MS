@@ -31,8 +31,8 @@
 
         // Build Tabulator columns
         const columns = [
-            { title: "Roll", field: "RollNumber", width: 80, headerSort: true },
-            { title: "Student Name", field: "StudentName", width: 250 },
+            { title: "Roll", field: "rollNumber", width: 80, headerSort: true },
+            { title: "Student Name", field: "studentName", width: 250 },
             ...componentColumns.map(c => ({
                 title: c.name + " (" + c.max + ")",
                 field: c.field,
@@ -44,17 +44,12 @@
                     autoCalculateTotal(cell.getRow());
                 }
             })),
-            { title: "Total", field: "MarksObtained", width: 100, formatter: "money", formatterParams: { precision: 1 } },
-            { title: "Grade", field: "Grade", width: 80 },
-            { title: "Status", field: "Status", width: 100, formatter: function(cell) {
-                const v = cell.getValue();
-                if (v === "Draft") return '<span class="badge bg-warning">Draft</span>';
-                if (v === "Submitted") return '<span class="badge bg-info">Submitted</span>';
-                if (v === "Reviewed") return '<span class="badge bg-primary">Reviewed</span>';
-                if (v === "Approved") return '<span class="badge bg-success">Approved</span>';
-                if (v === "Published") return '<span class="badge bg-secondary">Published</span>';
-                if (v === "Locked") return '<span class="badge bg-dark">Locked</span>';
-                if (v === "Unpublished") return '<span class="badge bg-danger">Unpublished</span>';
+            { title: "Total", field: "marksObtained", width: 100, formatter: "money", formatterParams: { precision: 1 } },
+            { title: "Grade", field: "grade", width: 80 },
+            { title: "Status", field: "status", width: 100, formatter: function(cell) {
+                const row = cell.getRow().getData();
+                if (row.isLocked) return '<span class="badge bg-dark">Locked</span>';
+                if (row.marksObtained != null && row.marksObtained > 0) return '<span class="badge bg-info">Entered</span>';
                 return '<span class="badge bg-warning">Draft</span>';
             }}
         ];
@@ -76,15 +71,15 @@
                 const val = parseFloat(row.getCell(c.field).getValue()) || 0;
                 total += val;
             });
-            row.getCell("MarksObtained").setValue(total);
+            row.getCell("marksObtained").setValue(total);
         }
 
         function saveAllMarks() {
-            const data = table.getData().filter(r => !r.IsLocked);
+            const data = table.getData().filter(r => !r.isLocked);
             const marks = data.map(r => {
                 const mark = {
-                    studentId: r.StudentId,
-                    marksObtained: parseFloat(r.MarksObtained) || 0
+                    studentId: r.studentId,
+                    marksObtained: parseFloat(r.marksObtained) || 0
                 };
                 componentColumns.forEach(c => {
                     if (c.field.startsWith('cmp_')) {

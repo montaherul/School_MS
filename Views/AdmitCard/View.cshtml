@@ -1,0 +1,165 @@
+@model SchoolManagementSystem.Models.ViewModels.Exam.AdmitCardViewModel
+@{
+    ViewData["Title"] = "Admit Card";
+    Layout = "_AdminLayout";
+}
+
+<div class="container">
+    <div class="mb-3">
+        <a href="javascript:history.back()" class="btn btn-outline-secondary rounded-pill shadow-sm">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+        <button onclick="window.print()" class="btn btn-primary rounded-pill shadow-sm">
+            <i class="bi bi-printer"></i> Print
+        </button>
+        <a href="@Url.Action("DownloadPdf", new { examId = Model.ExamId, studentId = Model.StudentId })"
+           class="btn btn-success rounded-pill shadow-sm" target="_blank">
+            <i class="bi bi-file-earmark-pdf"></i> Download PDF
+        </a>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4" id="admitCard">
+        <div class="card-body p-4">
+            <div class="text-center mb-4">
+                @if (!string.IsNullOrEmpty(Model.SchoolLogo))
+                {
+                    <img src="@Model.SchoolLogo" alt="School Logo" style="height: 80px;" class="mb-2" />
+                }
+                <h2 class="fw-bold mb-0">@Model.SchoolName</h2>
+                <p class="text-muted mb-0">@Model.SchoolAddress</p>
+                <p class="text-muted">EIIN: @Model.EIIN</p>
+                <hr />
+                <h3 class="fw-bold text-primary">ADMIT CARD</h3>
+                <h5 class="text-uppercase">@Model.ExamName</h5>
+                <span class="badge bg-@(Model.IsIssued ? "success" : "warning") rounded-pill">
+                    @(Model.IsIssued ? "Issued" : "Not Issued")
+                </span>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <table class="table table-borderless">
+                        <tr>
+                            <td class="fw-bold" style="width: 180px;">Student Name:</td>
+                            <td>@Model.StudentName</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Admit Card No:</td>
+                            <td>@Model.AdmitCardNumber</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Roll Number:</td>
+                            <td>@Model.RollNumber</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Class:</td>
+                            <td>@Model.ClassName</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Section:</td>
+                            <td>@Model.SectionName</td>
+                        </tr>
+                        @if (!string.IsNullOrEmpty(Model.GroupName))
+                        {
+                            <tr>
+                                <td class="fw-bold">Group:</td>
+                                <td>@Model.GroupName</td>
+                            </tr>
+                        }
+                        <tr>
+                            <td class="fw-bold">Seat Number:</td>
+                            <td>@(Model.SeatNumber ?? "N/A")</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Academic Year:</td>
+                            <td>@Model.AcademicYear</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Exam Date:</td>
+                            <td>@Model.ExamStartDate.ToString("dd MMM yyyy") - @Model.ExamEndDate.ToString("dd MMM yyyy")</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-md-4 text-center">
+                    @if (!string.IsNullOrEmpty(Model.StudentPhotoPath))
+                    {
+                        <img src="@Model.StudentPhotoPath" alt="Student Photo" style="width: 120px; height: 140px; object-fit: cover; border: 2px solid #dee2e6; border-radius: 8px;" />
+                    }
+                    else
+                    {
+                        <div style="width: 120px; height: 140px; border: 2px dashed #dee2e6; border-radius: 8px; display: inline-flex; align-items: center; justify-content: center; color: #adb5bd;">
+                            <i class="bi bi-person" style="font-size: 3rem;"></i>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <h5 class="fw-bold mb-3">EXAMINATION SCHEDULE</h5>
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead class="table-primary">
+                        <tr>
+                            <th>#</th>
+                            <th>Subject</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Duration</th>
+                            <th>Room</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.SubjectSchedules.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">No schedule configured.</td>
+                            </tr>
+                        }
+                        @for (int i = 0; i < Model.SubjectSchedules.Count; i++)
+                        {
+                            var s = Model.SubjectSchedules[i];
+                            <tr>
+                                <td>@(i + 1)</td>
+                                <td>@s.SubjectName</td>
+                                <td>@(s.ExamDate == default ? "TBD" : s.ExamDate.ToString("dd MMM yyyy"))</td>
+                                <td>@(string.IsNullOrEmpty(s.StartTime) ? "TBD" : s.StartTime)</td>
+                                <td>@(string.IsNullOrEmpty(s.Duration) ? "—" : s.Duration + " min")</td>
+                                <td>@(string.IsNullOrEmpty(s.RoomNumber) ? "—" : s.RoomNumber)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mt-4 p-3 bg-light rounded-3">
+                <h6 class="fw-bold">Instructions:</h6>
+                <ul class="mb-0 small">
+                    <li>Bring this admit card to the examination hall.</li>
+                    <li>Report to your seat 15 minutes before the exam starts.</li>
+                    <li>Mobile phones and electronic devices are strictly prohibited.</li>
+                    <li>Write your roll number clearly on the answer script.</li>
+                </ul>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-6 text-center">
+                    <div style="border-top: 1px solid #000; display: inline-block; padding: 0 40px; margin-top: 40px;">
+                        <p class="mb-0 mt-1 text-muted small">Principal's Signature</p>
+                    </div>
+                </div>
+                <div class="col-6 text-center">
+                    <div style="border-top: 1px solid #000; display: inline-block; padding: 0 40px; margin-top: 40px;">
+                        <p class="mb-0 mt-1 text-muted small">Controller of Examinations</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style media="print">
+    .btn, .no-print { display: none !important; }
+    .card { border: none !important; box-shadow: none !important; }
+    .container { max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
+    body { font-size: 12pt; }
+    table { font-size: 11pt; }
+</style>

@@ -17,6 +17,7 @@ public class ReportCardService : IReportCardService
     private readonly IStudentExamResultRepository _examResultRepository;
     private readonly IMarkEntryRepository _markEntryRepository;
     private readonly ISchoolSettingRepository _schoolSettingRepository;
+    private readonly IStudentSubjectFilterService _subjectFilter;
 
 
     public ReportCardService(
@@ -24,7 +25,8 @@ public class ReportCardService : IReportCardService
         IPdfGenerator pdfGenerator,
         IStudentExamResultRepository examResultRepository,
         IMarkEntryRepository markEntryRepository,
-        ISchoolSettingRepository schoolSettingRepository
+        ISchoolSettingRepository schoolSettingRepository,
+        IStudentSubjectFilterService subjectFilter
         )
     {
         _uow = uow;
@@ -32,6 +34,7 @@ public class ReportCardService : IReportCardService
         _examResultRepository = examResultRepository;
         _markEntryRepository = markEntryRepository;
         _schoolSettingRepository = schoolSettingRepository;
+        _subjectFilter = subjectFilter;
     }
 
     public async Task<byte[]?> GenerateReportCardPdfAsync(int examId, int studentId, CancellationToken ct = default)
@@ -44,60 +47,21 @@ public class ReportCardService : IReportCardService
 
         if (result == null) return null;
 
-        // Get student's assigned subjects for filtering
+        // Get the full student entity for subject filtering
         var student = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query()
             .AsNoTracking()
             .Where(s => s.Id == studentId)
-            .Select(s => new
-            {
-                s.AssignedReligionSubjectId,
-                s.OptionalSubjectId,
-                s.StudentGroupId,
-                s.ClassId
-            })
             .FirstOrDefaultAsync(ct);
 
-        // Get class-subject mappings to determine which subjects are valid for this student
-        var validSubjectIds = new HashSet<int>();
-        if (student != null)
-        {
-            var classSubjects = await _uow.Repository<ClassSubject>().Query()
-                .AsNoTracking()
-                .Where(cs => cs.SchoolClassId == student.ClassId && !cs.IsDeleted && cs.IsActive)
-                .ToListAsync(ct);
-
-            foreach (var cs in classSubjects)
-            {
-                // Skip religion subjects not matching student's religion
-                if (cs.IsReligionSubject)
-                {
-                    if (student.AssignedReligionSubjectId.HasValue && cs.SubjectId == student.AssignedReligionSubjectId.Value)
-                        validSubjectIds.Add(cs.SubjectId);
-                    continue;
-                }
-
-                // Skip group subjects not matching student's group
-                if (cs.IsGroupSubject)
-                {
-                    if (cs.StudentGroupId.HasValue && student.StudentGroupId.HasValue &&
-                        cs.StudentGroupId.Value == student.StudentGroupId.Value)
-                        validSubjectIds.Add(cs.SubjectId);
-                    continue;
-                }
-
-                // Include common subjects
-                validSubjectIds.Add(cs.SubjectId);
-            }
-        }
+        // Get valid subject IDs for this student based on curriculum
+        var validSubjectIds = student != null
+            ? await _subjectFilter.GetValidSubjectIdsForStudentAsync(student, ct)
+            : new HashSet<int>();
 
         var marks = await _markEntryRepository.Query()
             .Include(m => m.Subject)
             .Where(m => m.ExamId == examId && m.StudentId == studentId && !m.IsDeleted)
             .ToListAsync(ct);
-
-        // Include the student's optional subject if assigned
-        if (student != null && student.OptionalSubjectId.HasValue)
-            validSubjectIds.Add(student.OptionalSubjectId.Value);
 
         // Filter marks to only show valid subjects for this student
         if (validSubjectIds.Count > 0)

@@ -106,14 +106,15 @@ public class SectionService : ISectionService
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task<IEnumerable<SectionOptionDto>> GetByClassIdAsync(int classId, CancellationToken ct = default)
+    public async Task<IEnumerable<SectionOptionDto>> GetByClassIdAsync(int classId, int? studentGroupId = null, CancellationToken ct = default)
     {
-        // Fetch leaf sections (sections that are NOT groups, or are groups themselves if they have no children?)
-        // In this system, sections can have ParentSectionId.
-        // We want sections that students can actually be in.
-        
-        var sections = await _unitOfWork.Repository<Section>().Query()
-            .Where(s => s.SchoolClassId == classId && !s.IsDeleted)
+        var query = _unitOfWork.Repository<Section>().Query()
+            .Where(s => s.SchoolClassId == classId && !s.IsDeleted);
+
+        if (studentGroupId.HasValue)
+            query = query.Where(s => s.StudentGroupId == studentGroupId.Value);
+
+        var sections = await query
             .Include(s => s.ParentSection)
             .ToListAsync(ct);
 
@@ -150,6 +151,30 @@ public class SectionService : ISectionService
                 StudentGroupId = s.StudentGroupId
             })
             .ToListAsync(ct);
+    }
+
+    public async Task<IEnumerable<SectionListItemDto>> GetStudentGroupsByClassIdAsync(int classId, CancellationToken ct = default)
+    {
+        var schoolClass = await _unitOfWork.Repository<SchoolClass>().Query()
+            .Where(c => c.Id == classId && !c.IsDeleted)
+            .FirstOrDefaultAsync(ct);
+
+        if (schoolClass == null)
+            return [];
+
+        var groups = await _unitOfWork.Repository<StudentGroup>().Query()
+            .Where(g => g.IsActive && !g.IsDeleted
+                && g.MinClass <= schoolClass.SortOrder
+                && g.MaxClass >= schoolClass.SortOrder)
+            .OrderBy(g => g.DisplayOrder)
+            .ToListAsync(ct);
+
+        return groups.Select(g => new SectionListItemDto
+        {
+            Id = g.Id,
+            Name = g.Name,
+            StudentGroupId = g.Id
+        }).ToList();
     }
 
     public async Task<int> CreateAjaxAsync(int classId, string name, int? parentId, string createdBy, CancellationToken ct = default)
@@ -228,7 +253,7 @@ public class SectionService : ISectionService
         return await _unitOfWork.Repository<SchoolClass>().Query()
             .Where(c => !c.IsDeleted && _unitOfWork.Repository<Section>().Query().Any(s => s.SchoolClassId == c.Id && !s.IsDeleted))
             .OrderBy(c => c.SortOrder)
-            .Select(c => (dynamic)new { Id = c.Id, Name = c.Name, IsGroupBased = c.IsGroupBased })
+            .Select(c => (dynamic)new { Id = c.Id, Name = c.Name, SortOrder = c.SortOrder, IsGroupBased = c.IsGroupBased })
             .ToListAsync(ct);
     }
 }

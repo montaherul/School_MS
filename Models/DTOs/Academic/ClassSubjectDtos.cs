@@ -14,7 +14,7 @@ public class ClassSubjectListItemDto
     public string SubjectNameBn { get; set; } = string.Empty;
 
     public int? StudentGroupId { get; set; }
-    public string? GroupName { get; set; }
+    public string GroupName { get; set; } = string.Empty;
 
     public decimal FullMarks { get; set; }
     public decimal PassMarks { get; set; }
@@ -39,7 +39,9 @@ public class ClassSubjectUpsertDto
     public int SubjectId { get; set; }
 
     public int? StudentGroupId { get; set; }
-    public string? GroupName { get; set; }
+
+    [RegularExpression("^(General|Science|BusinessStudies|Humanities)$", ErrorMessage = "Group must be General, Science, BusinessStudies, or Humanities.")]
+    public string GroupName { get; set; } = string.Empty;
 
     [Required]
     [Range(0, 500)]
@@ -64,7 +66,8 @@ public class ClassSubjectAssignmentDto
     [Required]
     public int SchoolClassId { get; set; }
 
-    public string? GroupName { get; set; }
+    [RegularExpression("^(General|Science|BusinessStudies|Humanities)$", ErrorMessage = "Group must be General, Science, BusinessStudies, or Humanities.")]
+    public string GroupName { get; set; } = string.Empty;
 
     [Required]
     [MinLength(1, ErrorMessage = "Please select at least one subject to map.")]

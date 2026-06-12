@@ -27,7 +27,7 @@ public class TeacherAssignmentService : ITeacherAssignmentService
                 ClassName = a.Class != null ? a.Class.Name : string.Empty,
                 IsGroupBased = a.Class != null && a.Class.IsGroupBased,
                 GroupId = a.GroupId,
-                GroupName = a.Group != null ? a.Group.Name : null,
+                GroupName = a.Group != null ? a.Group.Name : "General",
                 SectionId = a.SectionId,
                 SectionName = a.Section != null ? a.Section.Name : string.Empty
             })
@@ -51,7 +51,7 @@ public class TeacherAssignmentService : ITeacherAssignmentService
                 ClassId = a.ClassId,
                 SectionId = a.SectionId,
                 GroupId = a.GroupId,
-                GroupName = a.Group != null ? a.Group.Name : null
+                GroupName = a.Group != null ? a.Group.Name : "General"
             })
             .ToListAsync(ct);
     }
@@ -99,23 +99,23 @@ public class TeacherAssignmentService : ITeacherAssignmentService
         return await query.Select(a => a.Subject!).Distinct().ToListAsync(ct);
     }
 
-    public async Task<bool> AssignClassAsync(int teacherId, int classId, int sectionId, int academicYearId, string createdBy)
+    public async Task<bool> AssignClassAsync(int teacherId, int classId, int? groupId, int sectionId, int academicYearId, string createdBy)
     {
         var repo = _unitOfWork.Repository<TeacherClassAssignment>();
-        if (await repo.AnyAsync(a => a.TeacherId == teacherId && a.ClassId == classId && a.SectionId == sectionId && a.AcademicYearId == academicYearId && !a.IsDeleted)) return false;
+        if (await repo.AnyAsync(a => a.TeacherId == teacherId && a.ClassId == classId && a.GroupId == groupId && a.SectionId == sectionId && a.AcademicYearId == academicYearId && !a.IsDeleted)) return false;
 
-        var assignment = new TeacherClassAssignment { TeacherId = teacherId, ClassId = classId, SectionId = sectionId, AcademicYearId = academicYearId, CreatedBy = createdBy, CreatedAt = DateTime.UtcNow };
+        var assignment = new TeacherClassAssignment { TeacherId = teacherId, ClassId = classId, GroupId = groupId, SectionId = sectionId, AcademicYearId = academicYearId, CreatedBy = createdBy, CreatedAt = DateTime.UtcNow };
         await repo.AddAsync(assignment);
         await _unitOfWork.SaveChangesAsync();
         return true;
     }
 
-    public async Task<bool> AssignSubjectAsync(int teacherId, int subjectId, int classId, int sectionId, int academicYearId, string createdBy)
+    public async Task<bool> AssignSubjectAsync(int teacherId, int subjectId, int? groupId, int classId, int sectionId, int academicYearId, string createdBy)
     {
         var repo = _unitOfWork.Repository<TeacherSubjectAssignment>();
-        if (await repo.AnyAsync(a => a.TeacherId == teacherId && a.SubjectId == subjectId && a.ClassId == classId && a.SectionId == sectionId && a.AcademicYearId == academicYearId && !a.IsDeleted)) return false;
+        if (await repo.AnyAsync(a => a.TeacherId == teacherId && a.SubjectId == subjectId && a.ClassId == classId && a.GroupId == groupId && a.SectionId == sectionId && a.AcademicYearId == academicYearId && !a.IsDeleted)) return false;
 
-        var assignment = new TeacherSubjectAssignment { TeacherId = teacherId, SubjectId = subjectId, ClassId = classId, SectionId = sectionId, AcademicYearId = academicYearId, CreatedBy = createdBy, CreatedAt = DateTime.UtcNow };
+        var assignment = new TeacherSubjectAssignment { TeacherId = teacherId, SubjectId = subjectId, ClassId = classId, GroupId = groupId, SectionId = sectionId, AcademicYearId = academicYearId, CreatedBy = createdBy, CreatedAt = DateTime.UtcNow };
         await repo.AddAsync(assignment);
         await _unitOfWork.SaveChangesAsync();
         return true;
@@ -159,6 +159,11 @@ public class TeacherAssignmentService : ITeacherAssignmentService
     public async Task<IEnumerable<Subject>> GetSubjectsAsync(CancellationToken ct = default)
     {
         return await _unitOfWork.Repository<Subject>().Query().Where(x => !x.IsDeleted).OrderBy(x => x.Name).ToListAsync(ct);
+    }
+
+    public async Task<IEnumerable<StudentGroup>> GetStudentGroupsAsync(CancellationToken ct = default)
+    {
+        return await _unitOfWork.Repository<StudentGroup>().Query().Where(x => x.IsActive && !x.IsDeleted).OrderBy(x => x.DisplayOrder).ToListAsync(ct);
     }
 }
 

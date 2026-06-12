@@ -41,6 +41,30 @@ public class SchoolClassService : ISchoolClassService
             })
             .ToListAsync(ct);
 
+        if (items.Count > 0)
+        {
+            var ids = items.Select(i => i.Id).ToList();
+            var studentCounts = await _unitOfWork.Repository<Student>().Query()
+                .Where(st => ids.Contains(st.ClassId) && !st.IsDeleted)
+                .GroupBy(st => st.ClassId)
+                .Select(g => new { ClassId = g.Key, Count = g.Count() })
+                .ToListAsync(ct);
+            var subjectCounts = await _unitOfWork.Repository<ClassSubject>().Query()
+                .Where(cs => ids.Contains(cs.SchoolClassId) && !cs.IsDeleted)
+                .GroupBy(cs => cs.SchoolClassId)
+                .Select(g => new { ClassId = g.Key, Count = g.Count() })
+                .ToListAsync(ct);
+
+            var studentLookup = studentCounts.ToDictionary(x => x.ClassId, x => x.Count);
+            var subjectLookup = subjectCounts.ToDictionary(x => x.ClassId, x => x.Count);
+
+            foreach (var item in items)
+            {
+                item.StudentCount = studentLookup.GetValueOrDefault(item.Id, 0);
+                item.SubjectMappingCount = subjectLookup.GetValueOrDefault(item.Id, 0);
+            }
+        }
+
         return new PagedResult<SchoolClassListItemDto>
         {
             Items = items,

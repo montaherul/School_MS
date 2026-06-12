@@ -11,7 +11,7 @@ using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Services.Interfaces.Email;
 using SchoolManagementSystem.Services.Interfaces.Admissions;
 using SchoolManagementSystem.Services.Interfaces.Students;
-using SchoolManagementSystem.Services.Guardian;
+using SchoolManagementSystem.Services.Interfaces.Guardian;
 using SchoolManagementSystem.Repositories.Interfaces.Auth;
 using SchoolManagementSystem.Repositories.Interfaces.Academic;
 using SchoolManagementSystem.Repositories.Interfaces.Students;
@@ -32,6 +32,7 @@ public class AdmissionService : IAdmissionService
     private readonly IUserRoleRepository _userRoleRepository;
     private readonly ISchoolClassRepository _classRepository;
     private readonly IStudentRepository _studentRepository;
+    private readonly ISectionRepository _sectionRepository;
     private readonly IGuardianService _guardianService;
     private readonly ILogger<AdmissionService> _logger;
 
@@ -45,6 +46,7 @@ public class AdmissionService : IAdmissionService
         IUserRoleRepository userRoleRepository,
         ISchoolClassRepository classRepository,
         IStudentRepository studentRepository,
+        ISectionRepository sectionRepository,
         IGuardianService guardianService,
         ILogger<AdmissionService> logger)
     {
@@ -57,6 +59,7 @@ public class AdmissionService : IAdmissionService
         _userRoleRepository = userRoleRepository;
         _classRepository = classRepository;
         _studentRepository = studentRepository;
+        _sectionRepository = sectionRepository;
         _guardianService = guardianService;
         _logger = logger;
     }
@@ -161,6 +164,7 @@ public class AdmissionService : IAdmissionService
             PermanentDistrict = dto.PermanentDistrict?.Trim(),
             ProfilePicturePath = dto.ProfilePicturePath,
             AppliedClassId = dto.AppliedClassId,
+            AppliedStudentGroupId = dto.AppliedStudentGroupId,
             LinkedGuardianId = dto.LinkedGuardianId,
             Status = AdmissionStatus.Pending,
             CreatedBy = createdBy
@@ -243,6 +247,26 @@ public class AdmissionService : IAdmissionService
 
             var rollNumber = await NextRollAsync(application.AppliedClassId, sectionId, cancellationToken);
 
+            // Derive group from section's StudentGroupId or application preference
+            var section = await _sectionRepository.GetByIdAsync(sectionId, cancellationToken);
+            var studentGroupId = section?.StudentGroupId ?? application.AppliedStudentGroupId;
+
+            // Fallback: if no group set and exactly one StudentGroup matches this class, auto-assign
+            if (!studentGroupId.HasValue)
+            {
+                var schoolClass = await _classRepository.GetByIdAsync(application.AppliedClassId, cancellationToken);
+                if (schoolClass != null)
+                {
+                    var matchingGroups = await _unitOfWork.Repository<StudentGroup>().Query()
+                        .Where(g => g.IsActive && !g.IsDeleted
+                            && g.MinClass <= schoolClass.SortOrder
+                            && g.MaxClass >= schoolClass.SortOrder)
+                        .ToListAsync(cancellationToken);
+                    if (matchingGroups.Count == 1)
+                        studentGroupId = matchingGroups[0].Id;
+                }
+            }
+
             // PHASE 6: Ensure Guardian (auto-create or auto-link) BEFORE student creation
             // so the student can be linked to a valid guardian.
             var guardian = await _guardianService.EnsureGuardianFromAdmissionAsync(application, cancellationToken);
@@ -264,7 +288,7 @@ public class AdmissionService : IAdmissionService
                 PresentDistrict = application.PresentDistrict, PermanentVillage = application.PermanentVillage,
                 PermanentPostOffice = application.PermanentPostOffice, PermanentThana = application.PermanentThana,
                 PermanentDistrict = application.PermanentDistrict, ClassId = application.AppliedClassId,
-                SectionId = sectionId, RollNumber = rollNumber, UserId = pendingUser.Id,
+                SectionId = sectionId, StudentGroupId = studentGroupId, RollNumber = rollNumber, UserId = pendingUser.Id,
                 LinkedGuardianId = guardian.Id
             }, approvedBy, cancellationToken);
 
@@ -382,6 +406,7 @@ public class AdmissionService : IAdmissionService
         application.PaymentMethod = dto.PaymentMethod?.Trim();
         application.TransactionDetails = dto.TransactionDetails?.Trim();
         application.AppliedClassId = dto.AppliedClassId;
+        application.AppliedStudentGroupId = dto.AppliedStudentGroupId;
         application.LinkedGuardianId = dto.LinkedGuardianId;
         application.UpdatedAt = DateTime.UtcNow;
         application.UpdatedBy = updatedBy;

@@ -1,0 +1,126 @@
+@model List<SchoolManagementSystem.Models.DTOs.Exam.ExamScheduleDto>
+@{
+    ViewData["Title"] = "Exam Schedule";
+    Layout = "_AdminLayout";
+    int examId = ViewBag.ExamId;
+}
+
+<div class="container-fluid">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">@Html.ActionLink("Exams", "Index", "Exam")</li>
+            <li class="breadcrumb-item">@Html.ActionLink("Schedule", "Schedule", "ExamSubject", new { examId })</li>
+            <li class="breadcrumb-item active">Manage Schedule</li>
+        </ol>
+    </nav>
+
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-header bg-transparent py-3">
+            <h4 class="fw-bold mb-0"><i class="bi bi-calendar-event"></i> Exam Schedule</h4>
+        </div>
+        <div class="card-body">
+            <form id="scheduleForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="examId" value="@examId" />
+
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Subject</th>
+                                <th style="width: 160px;">Exam Date</th>
+                                <th style="width: 120px;">Start Time</th>
+                                <th style="width: 120px;">End Time</th>
+                                <th style="width: 120px;">Room Number</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Count == 0)
+                            {
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">No schedule entries. Add subjects first.</td>
+                                </tr>
+                            }
+                            @for (int i = 0; i < Model.Count; i++)
+                            {
+                                var s = Model[i];
+                                <tr>
+                                    <td>
+                                        @s.SubjectName
+                                        <input type="hidden" name="Schedules[@i].SubjectId" value="@s.SubjectId" />
+                                        <input type="hidden" name="Schedules[@i].SubjectName" value="@s.SubjectName" />
+                                    </td>
+                                    <td>
+                                        <input type="date" class="form-control form-control-sm"
+                                               name="Schedules[@i].ExamDate" value="@(s.ExamDate == default ? "" : s.ExamDate.ToString("yyyy-MM-dd"))" />
+                                    </td>
+                                    <td>
+                                        <input type="time" class="form-control form-control-sm"
+                                               name="Schedules[@i].StartTime" value="@(s.StartTime == default ? "" : s.StartTime.ToString(@"hh\:mm"))" />
+                                    </td>
+                                    <td>
+                                        <input type="time" class="form-control form-control-sm"
+                                               name="Schedules[@i].EndTime" value="@(s.EndTime == default ? "" : s.EndTime.ToString(@"hh\:mm"))" />
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control form-control-sm"
+                                               name="Schedules[@i].RoomNumber" value="@s.RoomNumber" />
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="d-flex gap-2 mt-3">
+                    <button type="submit" class="btn btn-primary rounded-pill shadow-sm">
+                        <i class="bi bi-check-lg"></i> Save Schedule
+                    </button>
+                    <a href="javascript:history.back()" class="btn btn-outline-secondary rounded-pill shadow-sm">
+                        <i class="bi bi-x-lg"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('scheduleForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const schedules = [];
+            let idx = 0;
+            while (formData.has(`Schedules[${idx}].SubjectId`)) {
+                schedules.push({
+                    subjectId: parseInt(formData.get(`Schedules[${idx}].SubjectId`)),
+                    subjectName: formData.get(`Schedules[${idx}].SubjectName`),
+                    examDate: formData.get(`Schedules[${idx}].ExamDate`) || null,
+                    startTime: formData.get(`Schedules[${idx}].StartTime`) || null,
+                    endTime: formData.get(`Schedules[${idx}].EndTime`) || null,
+                    roomNumber: formData.get(`Schedules[${idx}].RoomNumber`) || ''
+                });
+                idx++;
+            }
+
+            fetch('@Url.Action("SaveSchedule", "ExamSubject")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify({ examId: @examId, schedules: schedules })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = '@Url.Action("Details", "Exam", new { id = examId })';
+                } else {
+                    alert(data.message || 'Save failed.');
+                }
+            })
+            .catch(() => alert('Network error.'));
+        });
+    </script>
+}

@@ -279,7 +279,7 @@
                 <span><i class="bi bi-envelope-fill text-warning me-1"></i> @(websiteSettings?.Email ?? "info@school.gov.bd")</span>
             </div>
             <div class="d-flex align-items-center gap-3">
-                <a href="/events"><i class="bi bi-calendar-event me-1"></i> Academic Calendar</a>
+                <a href="/academic-calendar"><i class="bi bi-calendar-event me-1"></i> Academic Calendar</a>
                 <a href="/admission-info"><i class="bi bi-info-circle me-1"></i> Admission Info</a>
                 @if (User.Identity?.IsAuthenticated == true)
                 {
@@ -333,6 +333,7 @@
 
                     <li class="nav-item"><a class="nav-link edu-nav-link" href="/notices">Notices</a></li>
                     <li class="nav-item"><a class="nav-link edu-nav-link" href="/events">Events</a></li>
+                    <li class="nav-item"><a class="nav-link edu-nav-link" href="/academic-calendar">Academic Calendar</a></li>
                     <li class="nav-item"><a class="nav-link edu-nav-link" href="/gallery">Gallery</a></li>
                     
                     <li class="nav-item dropdown">
@@ -426,6 +427,7 @@
                     <h5 class="edu-footer-title">Academic Links</h5>
                     <a href="/notices" class="edu-footer-link">Notice Board</a>
                     <a href="/events" class="edu-footer-link">Upcoming Events</a>
+                    <a href="/academic-calendar" class="edu-footer-link">Academic Calendar</a>
                     <a href="/gallery" class="edu-footer-link">Photo Gallery</a>
                     <a href="/admission-info" class="edu-footer-link">Admission Guidelines</a>
                     <a href="/Admission/Apply" class="edu-footer-link">Online Admission Form</a>

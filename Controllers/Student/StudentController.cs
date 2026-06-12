@@ -19,6 +19,7 @@ public class StudentController : Controller
     private readonly IStudentService _studentService;
     private readonly ITeacherService _teacherService;
     private readonly ISectionService _sectionService;
+    private readonly ISchoolClassService _classService;
     private readonly ISchoolWebsiteService _websiteService;
     private readonly IViewRendererService _viewRenderer;
     private readonly IPdfGenerator _pdfGenerator;
@@ -27,6 +28,7 @@ public class StudentController : Controller
         IStudentService studentService,
         ITeacherService teacherService,
         ISectionService sectionService,
+        ISchoolClassService classService,
         ISchoolWebsiteService websiteService,
         IViewRendererService viewRenderer,
         IPdfGenerator pdfGenerator
@@ -35,6 +37,7 @@ public class StudentController : Controller
         _studentService = studentService;
         _teacherService = teacherService;
         _sectionService = sectionService;
+        _classService = classService;
         _websiteService = websiteService;
         _viewRenderer = viewRenderer;
         _pdfGenerator = pdfGenerator;
@@ -335,7 +338,10 @@ public class StudentController : Controller
     {
         if (User.IsInRole("Student")) return Forbid();
 
-        var sections = await _sectionService.GetByClassIdAsync(0, ct); // Get all or handle by class
+        var classes = await _classService.GetAllAsync(ct);
+        ViewBag.Classes = classes;
+
+        var sections = await _sectionService.GetByClassIdAsync(0, null, ct); // Get all or handle by class
         var selectList = sections.Select(s => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
         {
             Value = s.Id.ToString(),

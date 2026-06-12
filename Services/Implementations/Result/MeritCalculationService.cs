@@ -18,18 +18,15 @@ public class MeritCalculationService : IMeritCalculationService
 {
     private readonly IUnitOfWork _uow;
     private readonly IStudentExamResultRepository _examResultRepository;
-    private readonly IMeritResultRepository _meritResultRepository;
     private readonly IExamRepository _examRepository;
 
     public MeritCalculationService(
         IUnitOfWork uow,
         IStudentExamResultRepository examResultRepository,
-        IMeritResultRepository meritResultRepository,
         IExamRepository examRepository)
     {
         _uow = uow;
         _examResultRepository = examResultRepository;
-        _meritResultRepository = meritResultRepository;
         _examRepository = examRepository;
     }
 
@@ -107,53 +104,6 @@ public class MeritCalculationService : IMeritCalculationService
         await _uow.SaveChangesAsync();
     }
 
-    public async Task CalculateSchoolMeritPositionsAsync(int examId)
-    {
-        var allResults = await _examResultRepository.Query()
-            .Include(r => r.Student)
-            .Where(r => r.ExamId == examId)
-            .OrderByDescending(r => r.Gpa)
-            .ThenByDescending(r => r.TotalMarks)
-            .ThenBy(r => r.Student.RollNumber)
-            .ToListAsync();
-
-        var existingMeritResults = await _meritResultRepository.Query()
-            .Where(m => m.ExamId == examId)
-            .ToDictionaryAsync(m => m.StudentId);
-
-        int position = 1;
-        foreach (var result in allResults)
-        {
-            if (!existingMeritResults.TryGetValue(result.StudentId, out var meritResult))
-            {
-                meritResult = new MeritResult
-                {
-                    ExamId = examId,
-                    StudentId = result.StudentId,
-                    SectionId = result.Student.SectionId,
-                    Position = position,
-                    Gpa = result.Gpa,
-                    TotalMarks = result.TotalMarks,
-                    Grade = result.Grade,
-                    CalculatedAt = DateTime.Now
-                };
-                await _meritResultRepository.AddAsync(meritResult);
-            }
-            else
-            {
-                meritResult.Position = position;
-                meritResult.Gpa = result.Gpa;
-                meritResult.TotalMarks = result.TotalMarks;
-                meritResult.Grade = result.Grade;
-                meritResult.CalculatedAt = DateTime.Now;
-                _meritResultRepository.Update(meritResult);
-            }
-            position++;
-        }
-
-        await _uow.SaveChangesAsync();
-    }
-
     public async Task RecalculateMeritPositionsAsync(int examId)
     {
         var exam = await _examRepository.Query()
@@ -174,7 +124,6 @@ public class MeritCalculationService : IMeritCalculationService
         await CalculateClassMeritPositionsAsync(examId, classId);
         await CalculateSectionMeritPositionsAsync(examId, classId);
         await CalculateGroupMeritPositionsAsync(examId);
-        await CalculateSchoolMeritPositionsAsync(examId);
     }
 
     public async Task<IEnumerable<MeritListItem>> GetMeritListAsync(int examId, MeritCategory category)

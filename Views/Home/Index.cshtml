@@ -247,7 +247,49 @@
 </section>
 }
 
-<!-- ── 5. Dynamic Stats Block Section ── -->
+<!-- ── 5. Academic Calendar Widget ── -->
+<section class="py-5 bg-white border-top">
+    <div class="container py-3">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <span class="text-warning fw-bold text-uppercase fs-6">Mark Your Dates</span>
+                <h3 class="fw-bold text-dark mb-0">Academic Calendar</h3>
+            </div>
+            <a href="/academic-calendar" class="btn btn-sm btn-outline-primary px-3 rounded-pill">View Full Calendar <i class="bi bi-arrow-right"></i></a>
+        </div>
+        <div class="row g-3">
+            @if (Model.UpcomingCalendarEvents.Count > 0)
+            {
+                @foreach (var cal in Model.UpcomingCalendarEvents)
+                {
+                    var badgeBg = cal.IsHoliday ? "#dc3545" : cal.IsExamDay ? "#007bff" : "#fd7e14";
+                    var badgeText = cal.IsHoliday ? "Holiday" : cal.IsExamDay ? "Exam" : "Event";
+                    <div class="col-md-4 col-lg">
+                        <div class="card border-0 shadow-sm text-center transition-hover" style="border-radius: 12px; border-top: 3px solid @badgeBg;">
+                            <div class="card-body p-4">
+                                <div class="mb-2">
+                                    <span class="display-6 fw-extrabold" style="color: var(--edu-navy);">@cal.Date.Day</span>
+                                </div>
+                                <div class="text-uppercase fw-bold small mb-1" style="color: var(--edu-gold);">@cal.Date.ToString("MMM yyyy")</div>
+                                <h6 class="fw-bold text-dark mb-2" style="font-size:14px;">@cal.Title</h6>
+                                <span class="badge" style="background:@badgeBg; font-size:11px;">@badgeText@(cal.HolidayType != null ? " - " + cal.HolidayType : "")</span>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12 text-center p-4 text-muted bg-light rounded">
+                    <i class="bi bi-calendar-check fs-1 mb-2 d-block text-black-50"></i>
+                    No upcoming academic events scheduled. <a href="/academic-calendar">View full calendar</a>.
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- ── 6. Dynamic Stats Block Section ── -->
 @if (settings.ShowStatistics)
 {
 <section class="py-5 text-white" style="background: linear-gradient(135deg, var(--edu-navy), var(--edu-dark)); position: relative;">
@@ -348,7 +390,74 @@
 </section>
 }
 
-<!-- ── 7. Admission CTA Banner ── -->
+<!-- ── 7. Admission Fee Structures Widget ── -->
+@if (settings.ShowAdmissionFees)
+{
+<section class="py-5 bg-light">
+    <div class="container py-3">
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <div>
+                <span class="text-warning fw-bold text-uppercase fs-6">Fee Structure</span>
+                <h2 class="fw-bold text-dark mb-0">Admission & Tuition Fees</h2>
+            </div>
+            <a href="/admission-info" class="btn btn-edu-navy">View All Fees</a>
+        </div>
+        
+        <div class="row g-4">
+            @if (Model.AdmissionFees != null && Model.AdmissionFees.Any())
+            {
+                @foreach (var fee in Model.AdmissionFees.OrderBy(f => f.DisplayOrder).Take(6))
+                {
+                    <div class="col-md-4">
+                        <div class="card border-0 shadow-sm transition-hover" style="border-radius: 12px; border-top: 4px solid var(--edu-gold);">
+                            <div class="card-body p-4">
+                                <div class="d-flex justify-content-between align-items-start mb-3">
+                                    <h5 class="fw-bold text-dark mb-0">@fee.ClassName</h5>
+                                    <span class="badge bg-warning text-dark">@fee.DisplayOrder</span>
+                                </div>
+                                <div class="mt-3">
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="small text-muted">Admission Fee:</span>
+                                        <span class="fw-bold text-primary">BDT @fee.AdmissionFee.ToString("N0")</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="small text-muted">Monthly Fee:</span>
+                                        <span class="fw-bold">BDT @fee.MonthlyFee.ToString("N0")</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="small text-muted">Session Fee:</span>
+                                        <span class="fw-bold">BDT @fee.SessionFee.ToString("N0")</span>
+                                    </div>
+                                    <div class="d-flex justify-content-between mb-2">
+                                        <span class="small text-muted">Exam Fee:</span>
+                                        <span class="fw-bold">BDT @fee.ExamFee.ToString("N0")</span>
+                                    </div>
+                                </div>
+                                <div class="mt-3 pt-3 border-top">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="small fw-bold">Total First Year:</span>
+                                        <span class="h5 fw-bold text-success mb-0">BDT @(fee.AdmissionFee + (fee.MonthlyFee * 12) + fee.SessionFee + fee.ExamFee).ToString("N0")</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12 text-center p-5 text-muted bg-white rounded shadow-sm">
+                    <i class="bi bi-cash-stack fs-1 mb-3 d-block text-warning"></i>
+                    <h5 class="mb-2">Admission Fee Structures Not Available</h5>
+                    <p>Please contact the admission office for fee information.</p>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+}
+
+<!-- ── 8. Admission CTA Banner ── -->
 @if (settings.ShowAdmissionCTA)
 {
 <section class="py-5" style="background-color: var(--edu-light);">

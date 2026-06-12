@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using SchoolManagementSystem.Models.Entities.Exam;
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
-using SchoolManagementSystem.Models.ViewModels.Shared;
+using ExamEntity = SchoolManagementSystem.Models.Entities.Exam.Exam;
+using ExamScheduleEntity = SchoolManagementSystem.Models.Entities.Exam.ExamSchedule;
 
 namespace SchoolManagementSystem.Controllers.Exam;
 
@@ -19,53 +19,63 @@ public class ExamScheduleController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Index(int? examId, int? classId, CancellationToken ct)
+    public async Task<IActionResult> Index(int? examId, int? classId, int? groupId, CancellationToken ct)
     {
-        var exams = await _uow.Repository<SchoolManagementSystem.Models.Entities.Exam.Exam>().ListAsync(x => !x.IsDeleted);
-        var classes = await _uow.Repository<SchoolClass>().ListAsync(x => !x.IsDeleted);
+        var exams = await _uow.Repository<ExamEntity>().ListAsync(x => !x.IsDeleted, ct);
+        var classes = await _uow.Repository<SchoolClass>().ListAsync(x => !x.IsDeleted, ct);
+        var groups = await _uow.Repository<StudentGroup>().ListAsync(x => x.IsActive && !x.IsDeleted, ct);
 
         ViewBag.Exams = exams;
         ViewBag.Classes = classes;
+        ViewBag.Groups = groups;
         ViewBag.SelectedExamId = examId;
         ViewBag.SelectedClassId = classId;
+        ViewBag.SelectedGroupId = groupId;
 
-        var query = _uow.Repository<ExamSchedule>().Query()
+        var query = _uow.Repository<ExamScheduleEntity>().Query()
             .Include(s => s.Exam)
-            .Include(s => s.Subject).ThenInclude(sub => sub.ClassSubjects).ThenInclude(cs => cs.SchoolClass)
+            .Include(s => s.Subject)
+            .Include(s => s.Class)
+            .Include(s => s.StudentGroup)
+            .Include(s => s.Section)
             .Where(s => !s.IsDeleted);
 
         if (examId.HasValue && examId > 0)
-        {
             query = query.Where(s => s.ExamId == examId.Value);
-        }
-
         if (classId.HasValue && classId > 0)
-        {
-            query = query.Where(s => s.Subject.ClassSubjects.Any(cs => cs.SchoolClassId == classId.Value));
-        }
+            query = query.Where(s => s.ClassId == classId.Value);
+        if (groupId.HasValue && groupId > 0)
+            query = query.Where(s => s.StudentGroupId == groupId.Value);
 
         var schedules = await query.OrderBy(s => s.ExamDate).ThenBy(s => s.StartsAt).ToListAsync(ct);
         return View(schedules);
     }
 
     [HttpGet]
-    public async Task<IActionResult> Routine(int examId, int classId, CancellationToken ct)
+    public async Task<IActionResult> Routine(int examId, int classId, int? groupId, CancellationToken ct)
     {
-        var exam = await _uow.Repository<SchoolManagementSystem.Models.Entities.Exam.Exam>().GetByIdAsync(examId);
-        var schoolClass = await _uow.Repository<SchoolClass>().GetByIdAsync(classId);
+        var exam = await _uow.Repository<ExamEntity>().GetByIdAsync(examId, ct);
+        var schoolClass = await _uow.Repository<SchoolClass>().GetByIdAsync(classId, ct);
 
         if (exam == null || schoolClass == null)
             return NotFound("Exam or Class not found.");
 
-        var schedules = await _uow.Repository<ExamSchedule>().Query()
-            .Include(s => s.Subject).ThenInclude(sub => sub.ClassSubjects).ThenInclude(cs => cs.SchoolClass)
-            .Where(s => s.ExamId == examId && s.Subject.ClassSubjects.Any(cs => cs.SchoolClassId == classId) && !s.IsDeleted)
-            .OrderBy(s => s.ExamDate)
-            .ThenBy(s => s.StartsAt)
+        var query = _uow.Repository<ExamScheduleEntity>().Query()
+            .Include(s => s.Subject)
+            .Include(s => s.StudentGroup)
+            .Include(s => s.Section)
+            .Where(s => s.ExamId == examId && s.ClassId == classId && !s.IsDeleted);
+
+        if (groupId.HasValue && groupId > 0)
+            query = query.Where(s => s.StudentGroupId == groupId.Value);
+
+        var schedules = await query
+            .OrderBy(s => s.ExamDate).ThenBy(s => s.StartsAt)
             .ToListAsync(ct);
 
         ViewBag.Exam = exam;
         ViewBag.Class = schoolClass;
+        ViewBag.SelectedGroupId = groupId;
 
         return View(schedules);
     }
@@ -73,7 +83,9 @@ public class ExamScheduleController : Controller
     [HttpGet]
     public async Task<IActionResult> Create(CancellationToken ct)
     {
-        var exams = await _uow.Repository<SchoolManagementSystem.Models.Entities.Exam.Exam>().ListAsync(x => !x.IsDeleted);
+        var exams = await _uow.Repository<ExamEntity>().ListAsync(x => !x.IsDeleted, ct);
+        var classes = await _uow.Repository<SchoolClass>().ListAsync(x => !x.IsDeleted, ct);
+        var groups = await _uow.Repository<StudentGroup>().ListAsync(x => x.IsActive && !x.IsDeleted, ct);
         var subjects = await _uow.Repository<ClassSubject>().Query()
             .Include(cs => cs.Subject)
             .Include(cs => cs.SchoolClass)
@@ -81,93 +93,133 @@ public class ExamScheduleController : Controller
             .ToListAsync(ct);
 
         ViewBag.Exams = exams;
+        ViewBag.Classes = classes;
+        ViewBag.Groups = groups;
         ViewBag.Subjects = subjects;
 
-        return View(new ExamSchedule());
+        return View(new ExamScheduleEntity());
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(ExamSchedule model, CancellationToken ct)
+    public async Task<IActionResult> Create(ExamScheduleEntity model, CancellationToken ct)
     {
         if (ModelState.IsValid)
         {
-            // Validate Schedule Conflict
-            var conflict = await _uow.Repository<ExamSchedule>().Query()
-                .AnyAsync(s => s.ExamDate == model.ExamDate && 
-                               s.RoomNo == model.RoomNo && 
-                               s.StartsAt < model.EndsAt && 
-                               s.EndsAt > model.StartsAt && 
+            // Validate: same class + same subject + same group cannot be double-booked
+            var duplicate = await _uow.Repository<ExamScheduleEntity>().Query()
+                .AnyAsync(s => s.ExamId == model.ExamId &&
+                               s.ClassId == model.ClassId &&
+                               s.SubjectId == model.SubjectId &&
+                               s.StudentGroupId == model.StudentGroupId &&
+                               s.ExamDate == model.ExamDate &&
                                !s.IsDeleted, ct);
 
-            if (conflict)
+            if (duplicate)
             {
-                ModelState.AddModelError("", "Room conflict detected! Another exam is scheduled in this room at the same time.");
-                var exams = await _uow.Repository<SchoolManagementSystem.Models.Entities.Exam.Exam>().ListAsync(x => !x.IsDeleted);
-                var subjects = await _uow.Repository<ClassSubject>().Query().Include(cs => cs.Subject).Include(cs => cs.SchoolClass).Where(cs => !cs.IsDeleted).ToListAsync(ct);
-                ViewBag.Exams = exams;
-                ViewBag.Subjects = subjects;
+                ModelState.AddModelError("", "This subject is already scheduled for this class and group on this date.");
+                await LoadFormViewBags(ct);
+                return View(model);
+            }
+
+            // Validate Room Conflict: same date + same room + overlapping time
+            var roomConflict = await _uow.Repository<ExamScheduleEntity>().Query()
+                .AnyAsync(s => s.ExamDate == model.ExamDate &&
+                               s.RoomNo == model.RoomNo &&
+                               s.StartsAt < model.EndsAt &&
+                               s.EndsAt > model.StartsAt &&
+                               !s.IsDeleted, ct);
+
+            if (roomConflict)
+            {
+                ModelState.AddModelError("", "Room conflict detected! Another exam is scheduled in this room at this time.");
+                await LoadFormViewBags(ct);
                 return View(model);
             }
 
             model.CreatedAt = DateTime.UtcNow;
-            await _uow.Repository<ExamSchedule>().AddAsync(model);
-            await _uow.SaveChangesAsync();
+            await _uow.Repository<ExamScheduleEntity>().AddAsync(model, ct);
+            await _uow.SaveChangesAsync(ct);
             return RedirectToAction(nameof(Index));
         }
 
-        var listExams = await _uow.Repository<SchoolManagementSystem.Models.Entities.Exam.Exam>().ListAsync(x => !x.IsDeleted);
-        var listSubjects = await _uow.Repository<ClassSubject>().Query().Include(cs => cs.Subject).Include(cs => cs.SchoolClass).Where(cs => !cs.IsDeleted).ToListAsync(ct);
-        ViewBag.Exams = listExams;
-        ViewBag.Subjects = listSubjects;
+        await LoadFormViewBags(ct);
         return View(model);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Details(int id, CancellationToken ct)
+    {
+        var schedule = await _uow.Repository<ExamScheduleEntity>().Query()
+            .Include(s => s.Exam)
+            .Include(s => s.Subject)
+            .Include(s => s.Class)
+            .Include(s => s.StudentGroup)
+            .Include(s => s.Section)
+            .FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted, ct);
+
+        if (schedule == null) return NotFound();
+
+        return View(schedule);
     }
 
     [HttpGet]
     public async Task<IActionResult> Edit(int id, CancellationToken ct)
     {
-        var schedule = await _uow.Repository<ExamSchedule>().GetByIdAsync(id);
+        var schedule = await _uow.Repository<ExamScheduleEntity>().GetByIdAsync(id, ct);
         if (schedule == null) return NotFound();
 
-        var exams = await _uow.Repository<SchoolManagementSystem.Models.Entities.Exam.Exam>().ListAsync(x => !x.IsDeleted);
-        var subjects = await _uow.Repository<ClassSubject>().Query().Include(cs => cs.Subject).Include(cs => cs.SchoolClass).Where(cs => !cs.IsDeleted).ToListAsync(ct);
-
-        ViewBag.Exams = exams;
-        ViewBag.Subjects = subjects;
-
+        await LoadFormViewBags(ct);
         return View(schedule);
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(ExamSchedule model, CancellationToken ct)
+    public async Task<IActionResult> Edit(ExamScheduleEntity model, CancellationToken ct)
     {
         if (ModelState.IsValid)
         {
-            var existing = await _uow.Repository<ExamSchedule>().GetByIdAsync(model.Id);
+            var existing = await _uow.Repository<ExamScheduleEntity>().GetByIdAsync(model.Id, ct);
             if (existing == null) return NotFound();
 
-            // Validate Schedule Conflict
-            var conflict = await _uow.Repository<ExamSchedule>().Query()
+            // Validate duplicate
+            var duplicate = await _uow.Repository<ExamScheduleEntity>().Query()
                 .AnyAsync(s => s.Id != model.Id &&
-                               s.ExamDate == model.ExamDate && 
-                               s.RoomNo == model.RoomNo && 
-                               s.StartsAt < model.EndsAt && 
-                               s.EndsAt > model.StartsAt && 
+                               s.ExamId == model.ExamId &&
+                               s.ClassId == model.ClassId &&
+                               s.SubjectId == model.SubjectId &&
+                               s.StudentGroupId == model.StudentGroupId &&
+                               s.ExamDate == model.ExamDate &&
                                !s.IsDeleted, ct);
 
-            if (conflict)
+            if (duplicate)
             {
-                ModelState.AddModelError("", "Room conflict detected! Another exam is scheduled in this room at the same time.");
-                var exams = await _uow.Repository<SchoolManagementSystem.Models.Entities.Exam.Exam>().ListAsync(x => !x.IsDeleted);
-                var subjects = await _uow.Repository<ClassSubject>().Query().Include(cs => cs.Subject).Include(cs => cs.SchoolClass).Where(cs => !cs.IsDeleted).ToListAsync(ct);
-                ViewBag.Exams = exams;
-                ViewBag.Subjects = subjects;
+                ModelState.AddModelError("", "This subject is already scheduled for this class and group on this date.");
+                await LoadFormViewBags(ct);
+                return View(model);
+            }
+
+            // Validate Room Conflict
+            var roomConflict = await _uow.Repository<ExamScheduleEntity>().Query()
+                .AnyAsync(s => s.Id != model.Id &&
+                               s.ExamDate == model.ExamDate &&
+                               s.RoomNo == model.RoomNo &&
+                               s.StartsAt < model.EndsAt &&
+                               s.EndsAt > model.StartsAt &&
+                               !s.IsDeleted, ct);
+
+            if (roomConflict)
+            {
+                ModelState.AddModelError("", "Room conflict detected! Another exam is scheduled in this room at this time.");
+                await LoadFormViewBags(ct);
                 return View(model);
             }
 
             existing.ExamId = model.ExamId;
             existing.SubjectId = model.SubjectId;
+            existing.ClassId = model.ClassId;
+            existing.StudentGroupId = model.StudentGroupId;
+            existing.SectionId = model.SectionId;
             existing.ExamDate = model.ExamDate;
             existing.StartsAt = model.StartsAt;
             existing.EndsAt = model.EndsAt;
@@ -175,15 +227,12 @@ public class ExamScheduleController : Controller
             existing.Instructions = model.Instructions;
             existing.UpdatedAt = DateTime.UtcNow;
 
-            _uow.Repository<ExamSchedule>().Update(existing);
-            await _uow.SaveChangesAsync();
+            _uow.Repository<ExamScheduleEntity>().Update(existing);
+            await _uow.SaveChangesAsync(ct);
             return RedirectToAction(nameof(Index));
         }
 
-        var listExams = await _uow.Repository<SchoolManagementSystem.Models.Entities.Exam.Exam>().ListAsync(x => !x.IsDeleted);
-        var listSubjects = await _uow.Repository<ClassSubject>().Query().Include(cs => cs.Subject).Include(cs => cs.SchoolClass).Where(cs => !cs.IsDeleted).ToListAsync(ct);
-        ViewBag.Exams = listExams;
-        ViewBag.Subjects = listSubjects;
+        await LoadFormViewBags(ct);
         return View(model);
     }
 
@@ -191,13 +240,25 @@ public class ExamScheduleController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int id)
     {
-        var schedule = await _uow.Repository<ExamSchedule>().GetByIdAsync(id);
+        var schedule = await _uow.Repository<ExamScheduleEntity>().GetByIdAsync(id);
         if (schedule == null) return Json(new { success = false, message = "Schedule not found" });
 
         schedule.IsDeleted = true;
-        _uow.Repository<ExamSchedule>().Update(schedule);
+        _uow.Repository<ExamScheduleEntity>().Update(schedule);
         await _uow.SaveChangesAsync();
 
         return Json(new { success = true });
+    }
+
+    private async Task LoadFormViewBags(CancellationToken ct)
+    {
+        ViewBag.Exams = await _uow.Repository<ExamEntity>().ListAsync(x => !x.IsDeleted, ct);
+        ViewBag.Classes = await _uow.Repository<SchoolClass>().ListAsync(x => !x.IsDeleted, ct);
+        ViewBag.Groups = await _uow.Repository<StudentGroup>().ListAsync(x => x.IsActive && !x.IsDeleted, ct);
+        ViewBag.Subjects = await _uow.Repository<ClassSubject>().Query()
+            .Include(cs => cs.Subject)
+            .Include(cs => cs.SchoolClass)
+            .Where(cs => !cs.IsDeleted)
+            .ToListAsync(ct);
     }
 }

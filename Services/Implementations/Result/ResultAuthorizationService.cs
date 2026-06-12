@@ -21,7 +21,7 @@ public class ResultAuthorizationService : IResultAuthorizationService
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public async Task<bool> IsAuthorizedToEnterMarksAsync(int teacherId, int subjectId, int classId, int sectionId, int academicYearId, CancellationToken ct = default)
+    public async Task<bool> IsAuthorizedToEnterMarksAsync(int teacherId, int subjectId, int classId, int sectionId, int academicYearId, int? groupId = null, CancellationToken ct = default)
     {
         if (academicYearId == 0)
         {
@@ -31,10 +31,12 @@ public class ResultAuthorizationService : IResultAuthorizationService
             academicYearId = activeYear.Id;
         }
 
-        // Check group-based authorization for class 9-10
-        var studentGroupId = await GetSectionGroupIdAsync(sectionId, ct);
+        // Determine effective groupId: explicit > section-derived > null
+        var studentGroupId = groupId ?? await GetSectionGroupIdAsync(sectionId, ct);
 
         var repo = _unitOfWork.Repository<TeacherSubjectAssignment>();
+
+        // Check section-level assignment first
         var isAuthorized = await repo.AnyAsync(a => 
             a.TeacherId == teacherId && 
             a.SubjectId == subjectId && 
@@ -44,7 +46,6 @@ public class ResultAuthorizationService : IResultAuthorizationService
             a.IsActive && 
             !a.IsDeleted, ct);
 
-        // If authorized via exact section match, return true
         if (isAuthorized) return true;
 
         // For group-based classes, also check group-level assignment
@@ -72,10 +73,10 @@ public class ResultAuthorizationService : IResultAuthorizationService
             EntityName = "SubjectTeacherAssignment",
             Timestamp = DateTime.UtcNow,
             IPAddress = ipAddress,
-            Remarks = $"Failed marks authorization for SubjectId: {subjectId}, ClassId: {classId}, SectionId: {sectionId}, AcademicYearId: {academicYearId}"
+            Remarks = $"Failed marks authorization for SubjectId: {subjectId}, ClassId: {classId}, SectionId: {sectionId}, AcademicYearId: {academicYearId}, GroupId: {groupId}"
         };
         await logRepo.AddAsync(log);
-        await _unitOfWork.SaveChangesAsync(); // Save the log
+        await _unitOfWork.SaveChangesAsync();
 
         return false;
     }
@@ -89,11 +90,9 @@ public class ResultAuthorizationService : IResultAuthorizationService
 
         if (section == null) return null;
 
-        // Direct group assignment
         if (section.StudentGroupId.HasValue)
             return section.StudentGroupId.Value;
 
-        // Parent section group assignment (for sub-sections)
         if (section.ParentSectionId.HasValue)
         {
             var parent = await _unitOfWork.Repository<Section>()

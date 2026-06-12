@@ -19,6 +19,7 @@ public class MarkEntry : BaseEntity
     public int AcademicYearId { get; set; }
     public int ClassId { get; set; }
     public int SectionId { get; set; }
+    public int? StudentGroupId { get; set; }
 
     /// <summary>
     /// Component-wise marks entry
@@ -71,67 +72,6 @@ public class MarkEntry : BaseEntity
     /// </summary>
     public string? ComponentValues { get; set; }
 
-    /// <summary>
-    /// Audit trail for mark changes
-    /// </summary>
-    public virtual ICollection<MarkAuditLog> AuditLogs { get; set; } = [];
-}
-
-/// <summary>
-/// Mark Audit Log: Tracks all changes to mark entries for compliance and auditing
-/// </summary>
-public class MarkAuditLog : BaseEntity
-{
-    public int MarkEntryId { get; set; }
-    public decimal OldMarks { get; set; }
-    public decimal NewMarks { get; set; }
-    public int ChangedByUserId { get; set; }
-    [MaxLength(260)]
-    public string? Reason { get; set; }
-
-    public virtual MarkEntry MarkEntry { get; set; } = null!;
-}
-
-/// <summary>
-/// Mark Entry Draft: Temporary storage for bulk mark uploads and draft entries
-/// </summary>
-public class MarkEntryDraft : BaseEntity
-{
-    public int ExamId { get; set; }
-    public int StudentId { get; set; }
-    public int SubjectId { get; set; }
-
-    // Denormalized fields for query performance
-    public int AcademicYearId { get; set; }
-    public int ClassId { get; set; }
-    public int SectionId { get; set; }
-
-    /// <summary>
-    /// Component-wise marks in draft
-    /// </summary>
-    public decimal? WrittenMarks { get; set; }
-    public decimal? MCQMarks { get; set; }
-    public decimal? CQMarks { get; set; }
-    public decimal? PracticalMarks { get; set; }
-    public decimal? VivaMarks { get; set; }
-    public decimal? LabMarks { get; set; }
-    public decimal? OralMarks { get; set; }
-
-    public decimal TotalMarks { get; set; } = 0;
-    [MaxLength(500)]
-    public string? Notes { get; set; }
-
-    public bool IsApproved { get; set; } = false;
-    public bool IsRejected { get; set; } = false;
-    [MaxLength(260)]
-    public string? RejectionReason { get; set; }
-
-    public int CreatedByTeacherId { get; set; }
-    public DateTime DraftSavedAt { get; set; } = DateTime.Now;
-
-    public virtual Exam.Exam Exam { get; set; } = null!;
-    public virtual Student.Student Student { get; set; } = null!;
-    public virtual Academic.Subject Subject { get; set; } = null!;
 }
 
 /// <summary>
@@ -195,21 +135,6 @@ public class ResultLock : BaseEntity
     public virtual Exam.Exam Exam { get; set; } = null!;
 }
 
-public class ReportCard : BaseEntity
-{
-    public int ExamId { get; set; }
-    public int StudentId { get; set; }
-
-    [MaxLength(260)]
-    public string PdfPath { get; set; } = string.Empty;
-
-    public decimal Gpa { get; set; }
-
-    // Navigation Properties
-    public virtual Exam.Exam Exam { get; set; } = null!;
-    public virtual Student.Student Student { get; set; } = null!;
-}
-
 /// <summary>
 /// Student Subject Result: Result for a single subject in an exam
 /// Calculated from MarkEntry after final marks are submitted
@@ -224,6 +149,7 @@ public class StudentSubjectResult : BaseEntity
     public int AcademicYearId { get; set; }
     public int ClassId { get; set; }
     public int SectionId { get; set; }
+    public int? StudentGroupId { get; set; }
 
     /// <summary>
     /// Whether this subject is optional per ClassSubject mapping
@@ -371,49 +297,6 @@ public class PromotionHistory : BaseEntity
 }
 
 /// <summary>
-/// Merit Result: Calculated merit list with positions for various categories
-/// </summary>
-public class MeritResult : BaseEntity
-{
-    public int ExamId { get; set; }
-    public int StudentId { get; set; }
-    public int SectionId { get; set; }
-
-    // Denormalized fields for merit list queries
-    public int AcademicYearId { get; set; }
-    public int ClassId { get; set; }
-    public int? StudentGroupId { get; set; }
-
-    /// <summary>
-    /// Overall position in section
-    /// </summary>
-    public int Position { get; set; } = 0;
-
-    /// <summary>
-    /// Position in entire class
-    /// </summary>
-    public int ClassPosition { get; set; } = 0;
-
-    /// <summary>
-    /// Position in group for class 9-10
-    /// </summary>
-    public int? GroupPosition { get; set; }
-
-    public decimal TotalMarks { get; set; } = 0;
-    public decimal Gpa { get; set; } = 0;
-
-    [MaxLength(10)]
-    public string Grade { get; set; } = string.Empty;
-
-    public DateTime CalculatedAt { get; set; } = DateTime.Now;
-
-    // Navigation Properties
-    public virtual Exam.Exam Exam { get; set; } = null!;
-    public virtual Student.Student Student { get; set; } = null!;
-    public virtual Academic.Section Section { get; set; } = null!;
-}
-
-/// <summary>
 /// Result Audit Log: Comprehensive audit trail for all result modifications
 /// Ensures compliance and provides history of changes
 /// </summary>
@@ -535,51 +418,6 @@ public class ResultSetting : BaseEntity
     public int GpaRoundingPrecision { get; set; } = 2;
 
     public bool IsActive { get; set; } = true;
-}
-
-/// <summary>
-/// Roll Number Assignment: Tracks roll number generation and assignment for promoted students
-/// Enables tracking of automatic roll generation based on merit ranking
-/// </summary>
-public class RollNumberAssignment : BaseEntity
-{
-    public int AcademicYearId { get; set; }
-    public int StudentId { get; set; }
-    public int FromClassId { get; set; }
-    public int ToClassId { get; set; }
-    public int SectionId { get; set; }
-
-    /// <summary>
-    /// Roll number assigned to student in new class
-    /// </summary>
-    public int RollNumber { get; set; }
-
-    /// <summary>
-    /// Merit position based on which roll was assigned
-    /// </summary>
-    public int MeritPosition { get; set; }
-
-    /// <summary>
-    /// GPA/Total Marks used for merit calculation
-    /// </summary>
-    public decimal MeritValue { get; set; } = 0;
-
-    /// <summary>
-    /// Who generated the roll numbers
-    /// </summary>
-    public int GeneratedByUserId { get; set; }
-
-    public DateTime GeneratedAt { get; set; } = DateTime.Now;
-
-    [MaxLength(260)]
-    public string? Remarks { get; set; }
-
-    // Navigation Properties
-    public virtual Academic.AcademicYear AcademicYear { get; set; } = null!;
-    public virtual Student.Student Student { get; set; } = null!;
-    public virtual Academic.SchoolClass FromClass { get; set; } = null!;
-    public virtual Academic.SchoolClass ToClass { get; set; } = null!;
-    public virtual Academic.Section Section { get; set; } = null!;
 }
 
 /// <summary>

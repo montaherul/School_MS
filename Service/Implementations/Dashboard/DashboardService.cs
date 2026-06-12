@@ -6,7 +6,7 @@ using SchoolManagementSystem.Service.Interfaces.Dashboard;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using SchoolManagementSystem.Repositories.Interfaces.Dashboard;
 using SchoolManagementSystem.Models.DTOs.Attendance;
-using SchoolManagementSystem.Services.Guardian;
+using SchoolManagementSystem.Services.Interfaces.Guardian;
 
 namespace SchoolManagementSystem.Service.Implementations.Dashboard;
 
@@ -167,6 +167,16 @@ public class DashboardService : IDashboardService
             .Where(a => a.TeacherId == teacher.Id && !a.IsDeleted)
             .ToListAsync(cancellationToken);
 
+        var employeeId = teacher.EmployeeId;
+        var now = DateTime.Today;
+        var monthStart = new DateTime(now.Year, now.Month, 1);
+        var attendanceRecords = await _uow.Repository<SchoolManagementSystem.Models.Entities.Attendance.EmployeeAttendance>().Query()
+            .Where(a => a.EmployeeId == employeeId && a.AttendanceDate >= monthStart && a.AttendanceDate <= now && !a.IsDeleted)
+            .ToListAsync(cancellationToken);
+        var totalDays = attendanceRecords.Count;
+        var presentDays = attendanceRecords.Count(a => a.Status == AttendanceStatus.Present || a.Status == AttendanceStatus.Late);
+        var attendanceRate = totalDays > 0 ? Math.Round((decimal)presentDays / totalDays * 100, 2) : 0m;
+
         var model = new TeacherDashboardViewModel
         {
             TeacherId = teacher.Id,
@@ -179,7 +189,7 @@ public class DashboardService : IDashboardService
             MySubjectsCount = subjectAssignments.Count,
             MyClasses = classAssignments.Select(a => $"{a.Class?.Name} {a.Section?.Name}").ToList(),
             MySubjects = subjectAssignments.Select(a => $"{a.Subject?.Name} ({a.Class?.Name}{a.Section?.Name})").ToList(),
-            AttendanceRate = 95.5m
+            AttendanceRate = attendanceRate
         };
 
         var notices = await _uow.Repository<SchoolManagementSystem.Models.Entities.Communication.Notice>().Query()

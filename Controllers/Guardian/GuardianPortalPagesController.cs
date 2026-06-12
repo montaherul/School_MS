@@ -11,7 +11,7 @@ using SchoolManagementSystem.Models.Entities.Result;
 using SchoolManagementSystem.Models.Enums;
 using GuardianEntity = SchoolManagementSystem.Models.Entities.Guardian.Guardian;
 using SchoolManagementSystem.Repositories.Interfaces.Result;
-using SchoolManagementSystem.Services.Guardian;
+using SchoolManagementSystem.Services.Interfaces.Guardian;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using System.Security.Claims;

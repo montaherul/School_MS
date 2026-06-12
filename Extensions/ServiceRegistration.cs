@@ -17,6 +17,8 @@ using SchoolManagementSystem.Repositories.Implementations.Students;
 using SchoolManagementSystem.Repositories.Implementations.Teachers;
 using SchoolManagementSystem.Repositories.Implementations.Website;
 using SchoolManagementSystem.Repositories.Interfaces;
+using SchoolManagementSystem.Services.Implementations.Exam;
+using SchoolManagementSystem.Services.Interfaces.Exam;
 using SchoolManagementSystem.Repositories.Interfaces.Academic;
 using SchoolManagementSystem.Repositories.Interfaces.Admission;
 using SchoolManagementSystem.Repositories.Interfaces.Attendance;
@@ -30,7 +32,7 @@ using SchoolManagementSystem.Repositories.Interfaces.Teachers;
 using SchoolManagementSystem.Repositories.Interfaces.Website;
 using SchoolManagementSystem.Service.Implementations.Dashboard;
 using SchoolManagementSystem.Service.Interfaces.Dashboard;
-using SchoolManagementSystem.Services.Guardian;
+using SchoolManagementSystem.Services.Interfaces.Guardian;
 using SchoolManagementSystem.Services.Implementations.Academic;
 using SchoolManagementSystem.Services.Implementations.Admin;
 using SchoolManagementSystem.Services.Implementations.Admissions;
@@ -101,7 +103,6 @@ public static class ServiceRegistration
         services.AddScoped<IStudentExamResultRepository, StudentExamResultRepository>();
         services.AddScoped<IReEvaluationRequestRepository, ReEvaluationRequestRepository>();
         services.AddScoped<IResultAuditLogRepository, ResultAuditLogRepository>();
-        services.AddScoped<IMeritResultRepository, MeritResultRepository>();
         services.AddScoped<IFinalResultRepository, FinalResultRepository>();
         services.AddScoped<IPromotionHistoryRepository, PromotionHistoryRepository>();
         services.AddScoped<ITeacherResultRepository, TeacherResultRepository>();
@@ -146,7 +147,6 @@ public static class ServiceRegistration
         services.AddScoped<IComponentAggregator, ComponentAggregator>();
         services.AddScoped<IPassFailPolicy, PassFailPolicy>();
         services.AddScoped<IAuditLogger, AuditLogger>();
-        services.AddScoped<IGPACalculationService, GPACalculationService>();
         services.AddScoped<IMeritCalculationService, MeritCalculationService>();
         services.AddScoped<IMarkEntryService, MarkEntryService>();
         services.AddScoped<IPromotionService, PromotionService>();
@@ -157,6 +157,10 @@ public static class ServiceRegistration
         services.AddScoped<IExamComponentService, ExamComponentService>();
         services.AddScoped<ISubjectMarkStructureService, SubjectMarkStructureService>();
         services.AddScoped<IExamValidationService, ExamValidationService>();
+        services.AddScoped<IAdmitCardService, AdmitCardService>();
+        services.AddScoped<IExamSubjectService, ExamSubjectService>();
+        services.AddScoped<IStudentSubjectFilterService, StudentSubjectFilterService>();
+        services.AddScoped<ITranscriptService, TranscriptService>();
 
         // Register Public Website Services
         services.AddScoped<ISchoolWebsiteService, SchoolWebsiteService>();

@@ -5,7 +5,7 @@ using SchoolManagementSystem.Models.Entities.Student;
 using SchoolManagementSystem.Models.ViewModels.Dashboard;
 using SchoolManagementSystem.Repositories.Guardian;
 using SchoolManagementSystem.Service.Interfaces.Dashboard;
-using SchoolManagementSystem.Services.Guardian;
+using SchoolManagementSystem.Services.Interfaces.Guardian;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using System.Security.Claims;
 

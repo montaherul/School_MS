@@ -151,7 +151,7 @@ public class GuardianChildAttendanceSummaryDto
     public int PresentCount { get; set; }
     public int AbsentCount { get; set; }
     public int TotalDays { get; set; }
-    public double AttendancePercentage => TotalDays > 0 ? (double)PresentCount / TotalDays * 100 : 0;
+    public double AttendancePercentage => TotalDays > 0 ? (double)(TotalDays - AbsentCount) / TotalDays * 100 : 0;
 }
 
 public class GuardianRecentNoticeDto

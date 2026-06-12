@@ -1,0 +1,605 @@
+@{
+    Layout = "~/Views/Shared/_PublicLayout.cshtml";
+    ViewData["Title"] = "Academic Calendar";
+}
+
+@section Styles {
+<style>
+    :root {
+        --cal-holiday: #dc3545;
+        --cal-working: #28a745;
+        --cal-exam: #007bff;
+        --cal-event: #fd7e14;
+        --cal-today: #D4AF37;
+    }
+
+    .cal-hero {
+        background: linear-gradient(135deg, var(--edu-navy), var(--edu-blue));
+        padding: 60px 0 40px;
+        color: #fff;
+        text-align: center;
+    }
+    .cal-hero h1 { font-family: var(--font-display); font-weight: 800; margin-bottom: 10px; }
+    .cal-hero p { color: rgba(255,255,255,0.7); font-size: 16px; }
+
+    .cal-container { max-width: 1100px; margin: -30px auto 40px; position: relative; z-index: 2; }
+
+    .cal-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+        overflow: visible; /* Allow tooltips to escape */
+    }
+
+    .cal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 20px 30px;
+        background: var(--edu-navy);
+        color: #fff;
+    }
+    .cal-header h3 { margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 22px; }
+    .cal-header .cal-nav { display: flex; gap: 8px; }
+    .cal-header .cal-nav button {
+        background: rgba(255,255,255,0.15);
+        border: none;
+        color: #fff;
+        width: 38px;
+        height: 38px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 18px;
+        transition: background 0.2s;
+    }
+    .cal-header .cal-nav button:hover { background: var(--edu-gold); color: var(--edu-dark); }
+    .cal-header .cal-nav .btn-today {
+        width: auto;
+        padding: 0 16px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .cal-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+    }
+    .cal-grid-header {
+        background: var(--edu-light);
+        padding: 12px 8px;
+        text-align: center;
+        font-weight: 700;
+        font-size: 13px;
+        color: var(--edu-navy);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .cal-day {
+        min-height: 90px;
+        padding: 8px;
+        border: 1px solid #f0f0f0;
+        position: relative;
+        cursor: pointer;
+        transition: background 0.2s;
+    }
+    .cal-day:hover { background: #f8f9fa; }
+    .cal-day.empty { background: #fafafa; cursor: default; }
+    .cal-day.today { box-shadow: inset 0 0 0 2px var(--cal-today); }
+    .cal-day-num {
+        font-weight: 700;
+        font-size: 14px;
+        color: #333;
+        margin-bottom: 4px;
+    }
+    .cal-day.today .cal-day-num {
+        background: var(--cal-today);
+        color: #fff;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .cal-badge-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 3px;
+        margin-top: 2px;
+    }
+    .cal-badge {
+        display: inline-block;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: 600;
+        color: #fff;
+        line-height: 1.3;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        margin: 0;
+    }
+    .cal-badge.holiday { background: var(--cal-holiday); }
+    .cal-badge.working { background: var(--cal-working); }
+    .cal-badge.exam { background: var(--cal-exam); }
+    .cal-badge.event { background: var(--cal-event); }
+    .cal-badge.more {
+        background: #6c757d;
+        font-style: italic;
+        cursor: help;
+    }
+
+    .cal-tooltip {
+        display: none;
+        position: fixed;
+        z-index: 99999;
+        background: var(--edu-dark);
+        color: #fff;
+        padding: 14px 18px;
+        border-radius: 10px;
+        font-size: 13px;
+        min-width: 240px;
+        max-width: 300px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        pointer-events: none;
+    }
+    .cal-tooltip::after {
+        content: '';
+        position: absolute;
+        border: 6px solid transparent;
+    }
+    .cal-tooltip.top {
+        bottom: auto;
+        top: -10px;
+        margin-bottom: 10px;
+    }
+    .cal-tooltip.top::after {
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border-top-color: var(--edu-dark);
+    }
+    .cal-tooltip.bottom {
+        top: auto;
+        bottom: -10px;
+        margin-top: 10px;
+    }
+    .cal-tooltip.bottom::after {
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border-bottom-color: var(--edu-dark);
+    }
+    .cal-tooltip.left {
+        right: 100%;
+        left: auto;
+        margin-right: 10px;
+    }
+    .cal-tooltip.left::after {
+        left: 100%;
+        top: 50%;
+        transform: translateY(-50%);
+        border-left-color: var(--edu-dark);
+    }
+    .cal-tooltip.right {
+        left: 100%;
+        right: auto;
+        margin-left: 10px;
+    }
+    .cal-tooltip.right::after {
+        right: 100%;n        top: 50%;
+        transform: translateY(-50%);
+        border-right-color: var(--edu-dark);
+    }
+    .cal-day:hover .cal-tooltip { display: block; }
+    .cal-tooltip h6 { margin: 0 0 6px; font-weight: 700; color: var(--edu-gold); }
+    .cal-tooltip p { margin: 2px 0; color: rgba(255,255,255,0.8); }
+    .cal-tooltip .tt-type { font-size: 11px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+
+    .cal-legend {
+        display: flex;
+        gap: 20px;
+        padding: 16px 30px;
+        border-top: 1px solid #f0f0f0;
+        flex-wrap: wrap;
+    }
+    .cal-legend-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #555;
+    }
+    .cal-legend-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 3px;
+    }
+
+    .upcoming-section { margin-top: 40px; }
+    .upcoming-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.08);
+        padding: 30px;
+    }
+    .upcoming-item {
+        display: flex;
+        gap: 16px;
+        align-items: flex-start;
+        padding: 16px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .upcoming-item:last-child { border-bottom: none; }
+    .upcoming-date-box {
+        min-width: 70px;
+        text-align: center;
+        padding: 10px;
+        border-radius: 10px;
+        background: var(--edu-light);
+    }
+    .upcoming-date-box .day { font-size: 24px; font-weight: 800; color: var(--edu-navy); line-height: 1; }
+    .upcoming-date-box .month { font-size: 12px; font-weight: 700; color: var(--edu-gold); text-transform: uppercase; }
+    .upcoming-info h6 { margin: 0 0 4px; font-weight: 700; color: #333; }
+    .upcoming-info p { margin: 0; font-size: 13px; color: #888; }
+    .upcoming-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 10px;
+        font-weight: 700;
+        color: #fff;
+        margin-top: 4px;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #aaa;
+    }
+    .empty-state i { font-size: 48px; margin-bottom: 16px; display: block; }
+
+    @@media (max-width: 991px) {
+        .cal-day { min-height: 70px; padding: 6px; }
+        .cal-badge { font-size: 9px; padding: 1px 4px; }
+        .cal-day-num { font-size: 12px; }
+        .cal-header h3 { font-size: 18px; }
+    }
+    @@media (max-width: 767px) {
+        .cal-hero { padding: 40px 0 30px; }
+        .cal-hero h1 { font-size: 28px; }
+        .cal-container { margin: -20px 12px 30px; width: 90vw; max-width: 90vw; }
+        .cal-header { padding: 14px 16px; flex-wrap: wrap; gap: 10px; }
+        .cal-header h3 { font-size: 16px; }
+        .cal-grid-header { font-size: 11px; padding: 8px 4px; }
+        .cal-day { min-height: 56px; padding: 4px; }
+        .cal-day-num { font-size: 11px; }
+        .cal-badge { display: none; }
+        .cal-day.has-event::after {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            position: absolute;
+            bottom: 4px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .cal-day.has-holiday::after { background: var(--cal-holiday); }
+        .cal-day.has-exam::after { background: var(--cal-exam); }
+        .cal-day.has-event-day::after { background: var(--cal-event); }
+        .cal-legend { padding: 12px 16px; gap: 12px; }
+        .cal-tooltip { min-width: 200px; font-size: 12px; }
+        .upcoming-card { padding: 20px; }
+    }
+</style>
+}
+
+<!-- Hero -->
+<section class="cal-hero">
+    <div class="container">
+        <h1><i class="bi bi-calendar3 me-2"></i>Academic Calendar</h1>
+        <p>Stay informed about holidays, examinations, and school events</p>
+    </div>
+</section>
+
+<!-- Calendar -->
+<div class="cal-container container">
+    <div class="cal-card">
+        <div class="cal-header">
+            <div class="cal-nav">
+                <button onclick="calNav(-1)" title="Previous Month"><i class="bi bi-chevron-left"></i></button>
+                <button class="btn-today" onclick="calToday()">Today</button>
+                <button onclick="calNav(1)" title="Next Month"><i class="bi bi-chevron-right"></i></button>
+            </div>
+            <h3 id="calTitle"></h3>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+        <div class="cal-legend">
+            <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--cal-working)"></div> Working Day</div>
+            <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--cal-holiday)"></div> Holiday</div>
+            <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--cal-exam)"></div> Exam Day</div>
+            <div class="cal-legend-item"><div class="cal-legend-dot" style="background:var(--cal-event)"></div> Event Day</div>
+        </div>
+    </div>
+
+    <!-- Upcoming Events -->
+    <div class="upcoming-section">
+        <div class="upcoming-card">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <span class="text-warning fw-bold text-uppercase fs-6">Don't Miss Out</span>
+                    <h3 class="fw-bold text-dark mb-0">Upcoming Events</h3>
+                </div>
+                <a href="/academic-calendar" class="btn btn-sm btn-edu-navy px-3 rounded-pill">Full Calendar</a>
+            </div>
+            <div id="upcomingList"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+(function(){
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    let currentYear = new Date().getFullYear();
+    let currentMonth = new Date().getMonth();
+    let calendarData = {};
+
+    function getEventTypeClass(isHoliday, isExamDay, isEventDay) {
+        if (isHoliday) return 'holiday';
+        if (isExamDay) return 'exam';
+        if (isEventDay) return 'event';
+        return 'working';
+    }
+
+    function getEventTypeLabel(isHoliday, isExamDay, isEventDay) {
+        if (isHoliday) return 'Holiday';
+        if (isExamDay) return 'Exam';
+        if (isEventDay) return 'Event';
+        return 'Working';
+    }
+
+    function getEventTypeColor(isHoliday, isExamDay, isEventDay) {
+        if (isHoliday) return 'var(--cal-holiday)';
+        if (isExamDay) return 'var(--cal-exam)';
+        if (isEventDay) return 'var(--cal-event)';
+        return 'var(--cal-working)';
+    }
+
+    function getEventTypeLabelWithType(isHoliday, isExamDay, isEventDay, holidayType) {
+        let label = getEventTypeLabel(isHoliday, isExamDay, isEventDay);
+        if (isHoliday && holidayType) label += ' - ' + holidayType;
+        return label;
+    }
+
+    function showDayDetails(dateStr, info) {
+        const holidayBadge = info.isHoliday ? `
+            <span class="badge" style="background: var(--cal-holiday); font-size: 12px; font-weight: 600;">
+                <i class="bi bi-calendar-event me-1"></i> Vacation
+            </span>
+        ` : '';
+        
+        const modalHtml = `
+            <div class="modal fade" id="dayModal" tabindex="-1" aria-labelledby="dayModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-lg">
+                    <div class="modal-content border-0 shadow-lg">
+                        <div class="modal-header border-0 pb-0" style="background: linear-gradient(135deg, var(--edu-navy), var(--edu-blue)); color: white;">
+                            <h5 class="modal-title fw-bold" id="dayModalLabel">
+                                <i class="bi bi-calendar3 me-2"></i>
+                                ${info.title || 'Calendar Day'}
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <div class="row g-4">
+                                <div class="col-md-5">
+                                    <div class="text-center">
+                                        <div class="bg-light rounded-3 p-4 mb-3" style="border: 2px solid var(--edu-light);">
+                                            <h1 class="display-3 fw-bold text-primary mb-2">${info.date ? info.date.split(' ')[0] : ''}</h1>
+                                            <div class="text-muted text-uppercase small fw-bold mb-3">
+                                                ${info.date ? info.date.split(' ').slice(1).join(' ') : ''}
+                                            </div>
+                                            <div class="d-flex justify-content-center gap-2 flex-wrap">
+                                                ${info.isHoliday ? `<span class="badge" style="background: var(--cal-holiday); font-size: 11px; padding: 6px 12px;">Holiday</span>` : ''}
+                                                ${info.isExamDay ? `<span class="badge" style="background: var(--cal-exam); font-size: 11px; padding: 6px 12px;">Exam</span>` : ''}
+                                                ${info.isEventDay ? `<span class="badge" style="background: var(--cal-event); font-size: 11px; padding: 6px 12px;">Event</span>` : ''}
+                                                ${info.isWorkingDay && !info.isHoliday && !info.isExamDay && !info.isEventDay ? `<span class="badge" style="background: var(--cal-working); font-size: 11px; padding: 6px 12px;">Working</span>` : ''}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-7">
+                                    ${info.title ? `<h6 class="fw-bold mb-3 text-dark">${info.title}</h6>` : ''}
+                                    ${info.description ? `
+                                        <div class="mb-3">
+                                            <h6 class="fw-bold text-muted mb-2">
+                                                <i class="bi bi-info-circle me-2 text-primary"></i>Description
+                                            </h6>
+                                            <p class="text-dark ps-4">${info.description}</p>
+                                        </div>
+                                    ` : ''}
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-sm-6">
+                                            <h6 class="fw-bold text-muted mb-2">
+                                                <i class="bi bi-calendar-date me-2 text-primary"></i>Date
+                                            </h6>
+                                            <p class="text-dark ps-4 fw-medium">${info.date}</p>
+                                        </div>
+                                        ${info.holidayType ? `
+                                            <div class="col-sm-6">
+                                                <h6 class="fw-bold text-muted mb-2">
+                                                    <i class="bi bi-tag me-2 text-primary"></i>Holiday Type
+                                                </h6>
+                                                <p class="text-dark ps-4 fw-medium">${info.holidayType}</p>
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                    ${info.remarks ? `
+                                        <div class="mt-3 p-3 bg-light rounded-3 border-start border-4 border-warning">
+                                            <h6 class="fw-bold text-dark mb-2">
+                                                <i class="bi bi-chat-left-text me-2 text-warning"></i>Remarks
+                                            </h6>
+                                            <p class="text-dark ps-4 mb-0 small italic">${info.remarks}</p>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer border-0 pt-0">
+                            <button type="button" class="btn btn-outline-secondary px-4" data-bs-dismiss="modal">
+                                <i class="bi bi-x-lg me-2"></i>Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        let modalContainer = document.getElementById('modalContainer');
+        if (!modalContainer) {
+            modalContainer = document.createElement('div');
+            modalContainer.id = 'modalContainer';
+            document.body.appendChild(modalContainer);
+        }
+
+        modalContainer.innerHTML = modalHtml;
+
+        const modal = new bootstrap.Modal(document.getElementById('dayModal'));
+        modal.show();
+
+        document.getElementById('dayModal').addEventListener('hidden.bs.modal', function() {
+            modalContainer.innerHTML = '';
+        });
+    }
+
+    function renderCalendar() {
+        const title = document.getElementById('calTitle');
+        const grid = document.getElementById('calGrid');
+        title.textContent = monthNames[currentMonth] + ' ' + currentYear;
+
+        grid.innerHTML = '';
+        dayNames.forEach(d => {
+            const hdr = document.createElement('div');
+            hdr.className = 'cal-grid-header';
+            hdr.textContent = d;
+            grid.appendChild(hdr);
+        });
+
+        const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+        const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+        const today = new Date();
+        const todayStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+
+        for (let i = 0; i < firstDay; i++) {
+            const empty = document.createElement('div');
+            empty.className = 'cal-day empty';
+            grid.appendChild(empty);
+        }
+
+        for (let d = 1; d <= daysInMonth; d++) {
+            const dateStr = currentYear + '-' + String(currentMonth+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+            const dayEl = document.createElement('div');
+            dayEl.className = 'cal-day';
+            if (dateStr === todayStr) dayEl.classList.add('today');
+
+            const numEl = document.createElement('div');
+            numEl.className = 'cal-day-num';
+            numEl.textContent = d;
+            dayEl.appendChild(numEl);
+
+            const info = calendarData[dateStr];
+            if (info) {
+                const eventTypes = [];
+                const typeClass = getEventTypeClass(info.isHoliday, info.isExamDay, info.isEventDay);
+                eventTypes.push({ type: typeClass, label: getEventTypeLabel(info.isHoliday, info.isExamDay, info.isEventDay), holidayType: info.holidayType, title: info.title, description: info.description, remarks: info.remarks });
+
+                const badgeGroup = document.createElement('div');
+                badgeGroup.className = 'cal-badge-group';
+
+                if (eventTypes.length > 0) {
+                    const firstBadge = document.createElement('span');
+                    firstBadge.className = 'cal-badge ' + eventTypes[0].type;
+                    firstBadge.textContent = eventTypes[0].label;
+                    badgeGroup.appendChild(firstBadge);
+
+                    if (eventTypes.length > 1) {
+                        const moreBadge = document.createElement('span');
+                        moreBadge.className = 'cal-badge more';
+                        moreBadge.textContent = '+' + (eventTypes.length - 1) + ' more';
+                        moreBadge.title = eventTypes.slice(1).map(e => e.label + (e.holidayType ? ' - ' + e.holidayType : '')).join(', ');
+                        badgeGroup.appendChild(moreBadge);
+                    }
+
+                    dayEl.appendChild(badgeGroup);
+                    dayEl.classList.add('has-' + typeClass);
+
+                    dayEl.addEventListener('click', function() {
+                        showDayDetails(dateStr, info);
+                    });
+                }
+            }
+
+            grid.appendChild(dayEl);
+        }
+    }
+
+    function loadMonth(year, month) {
+        fetch('/api/website/academic-calendar?year=' + year + '&month=' + (month + 1))
+            .then(r => r.json())
+            .then(data => {
+                calendarData = {};
+                data.forEach(d => { calendarData[d.date] = d; });
+                renderCalendar();
+            });
+    }
+
+    window.calNav = function(dir) {
+        currentMonth += dir;
+        if (currentMonth > 11) { currentMonth = 0; currentYear++; }
+        if (currentMonth < 0) { currentMonth = 11; currentYear--; }
+        loadMonth(currentYear, currentMonth);
+    };
+
+    window.calToday = function() {
+        currentYear = new Date().getFullYear();
+        currentMonth = new Date().getMonth();
+        loadMonth(currentYear, currentMonth);
+    };
+
+    function loadUpcoming() {
+        fetch('/api/website/academic-calendar/upcoming?count=10')
+            .then(r => r.json())
+            .then(data => {
+                const list = document.getElementById('upcomingList');
+                if (!data || data.length === 0) {
+                    list.innerHTML = '<div class="empty-state"><i class="bi bi-calendar-check"></i><p>No upcoming events scheduled.</p></div>';
+                    return;
+                }
+                list.innerHTML = data.map(ev => {
+                    const parts = ev.date.split(' ');
+                    const dayNum = parts[0];
+                    const monthShort = parts[1];
+                    let badgeClass = ev.isHoliday ? 'background:var(--cal-holiday)' : ev.isExamDay ? 'background:var(--cal-exam)' : 'background:var(--cal-event)';
+                    let badgeText = ev.isHoliday ? 'Holiday' : ev.isExamDay ? 'Exam' : 'Event';
+                    return '<div class="upcoming-item">'
+                        + '<div class="upcoming-date-box"><div class="day">' + dayNum + '</div><div class="month">' + monthShort + '</div></div>'
+                        + '<div class="upcoming-info">'
+                        + '<h6>' + (ev.title || badgeText) + '</h6>'
+                        + '<p>' + (ev.description || '') + (ev.holidayType ? ' (' + ev.holidayType + ')' : '') + '</p>'
+                        + '<span class="upcoming-badge" style="' + badgeClass + '">' + badgeText + '</span>'
+                        + '</div></div>';
+                }).join('');
+            });
+    }
+
+    loadMonth(currentYear, currentMonth);
+    loadUpcoming();
+})();
+</script>
+}

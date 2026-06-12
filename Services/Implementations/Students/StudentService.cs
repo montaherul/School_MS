@@ -41,6 +41,24 @@ public class StudentService : IStudentService
                 throw new InvalidOperationException($"Cannot assign student. Section '{section.Name}' capacity ({section.Capacity}) reached.");
         }
 
+        var groupId = dto.StudentGroupId ?? section?.StudentGroupId;
+
+        // Fallback: if no group set and exactly one StudentGroup matches this class, auto-assign
+        if (!groupId.HasValue)
+        {
+            var schoolClass = await _classRepository.GetByIdAsync(dto.ClassId, cancellationToken);
+            if (schoolClass != null)
+            {
+                var matchingGroups = await _unitOfWork.Repository<StudentGroup>().Query()
+                    .Where(g => g.IsActive && !g.IsDeleted
+                        && g.MinClass <= schoolClass.SortOrder
+                        && g.MaxClass >= schoolClass.SortOrder)
+                    .ToListAsync(cancellationToken);
+                if (matchingGroups.Count == 1)
+                    groupId = matchingGroups[0].Id;
+            }
+        }
+
         var student = new Student
         {
             StudentNo = await GenerateStudentNoAsync(cancellationToken),
@@ -72,6 +90,7 @@ public class StudentService : IStudentService
             ProfilePicturePath = dto.ProfilePicturePath,
             ClassId = dto.ClassId,
             SectionId = dto.SectionId,
+            StudentGroupId = groupId,
             RollNumber = dto.RollNumber,
             UserId = dto.UserId,
             CreatedAt = DateTime.UtcNow,
@@ -123,6 +142,26 @@ public class StudentService : IStudentService
 
         await _studentRepository.AddAsync(student, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        if (groupId.HasValue)
+        {
+            var activeYear = await _unitOfWork.Repository<AcademicYear>().FirstOrDefaultAsync(x => x.IsActive, cancellationToken);
+            if (activeYear != null)
+            {
+                var assignment = new StudentGroupAssignment
+                {
+                    StudentId = student.Id,
+                    StudentGroupId = groupId.Value,
+                    SchoolClassId = dto.ClassId,
+                    AcademicYearId = activeYear.Id,
+                    AssignedDate = DateTime.UtcNow
+                };
+                var assignmentRepo = _unitOfWork.Repository<StudentGroupAssignment>();
+                await assignmentRepo.AddAsync(assignment, cancellationToken);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+            }
+        }
+
         return student.Id;
     }
 
@@ -174,6 +213,9 @@ public class StudentService : IStudentService
         student.BirthCertificateNo = dto.BirthCertificateNo;
         student.ClassId = dto.ClassId;
         student.SectionId = dto.SectionId;
+        student.StudentGroupId = dto.StudentGroupId ?? (dto.SectionId > 0
+            ? (await _sectionRepository.GetByIdAsync(dto.SectionId, cancellationToken))?.StudentGroupId
+            : null);
         student.RollNumber = dto.RollNumber;
         student.UpdatedAt = DateTime.UtcNow;
         student.UpdatedBy = updatedBy;
@@ -197,6 +239,39 @@ public class StudentService : IStudentService
         }
         
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        // Update StudentGroupAssignment
+        var assignmentRepo = _unitOfWork.Repository<StudentGroupAssignment>();
+        var existingAssignment = await assignmentRepo.Query()
+            .FirstOrDefaultAsync(a => a.StudentId == student.Id, cancellationToken);
+        if (student.StudentGroupId.HasValue)
+        {
+            var activeYear = await _unitOfWork.Repository<AcademicYear>().FirstOrDefaultAsync(x => x.IsActive, cancellationToken);
+            if (existingAssignment != null)
+            {
+                existingAssignment.StudentGroupId = student.StudentGroupId.Value;
+                existingAssignment.SchoolClassId = dto.ClassId;
+                existingAssignment.AcademicYearId = activeYear?.Id ?? existingAssignment.AcademicYearId;
+                existingAssignment.AssignedDate = DateTime.UtcNow;
+            }
+            else if (activeYear != null)
+            {
+                await assignmentRepo.AddAsync(new StudentGroupAssignment
+                {
+                    StudentId = student.Id,
+                    StudentGroupId = student.StudentGroupId.Value,
+                    SchoolClassId = dto.ClassId,
+                    AcademicYearId = activeYear.Id,
+                    AssignedDate = DateTime.UtcNow
+                });
+            }
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+        }
+        else if (existingAssignment != null)
+        {
+            assignmentRepo.Remove(existingAssignment);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+        }
     }
 
     public async Task<StudentUpsertDto?> GetForEditAsync(int id, CancellationToken cancellationToken = default)

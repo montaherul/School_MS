@@ -375,8 +375,8 @@
 
                             <!-- Section / Group -->
                             <div class="col-md-4" id="sectionContainer" style="display:none;">
-                                <label class="form-label fw-bold">Select Section / Group</label>
-                                <select name="SectionId" class="form-select form-select-lg">
+                                <label asp-for="AppliedStudentGroupId" class="form-label fw-bold">Select Group</label>
+                                <select asp-for="AppliedStudentGroupId" class="form-select form-select-lg">
                                     <option value="">Select Group</option>
                                 </select>
                             </div>
@@ -447,31 +447,54 @@
         const groupSelect = sectionContainer.querySelector('select');
 
         function updateGroups(classId) {
-            var selectedOption = classDropdown && classDropdown.options[classDropdown.selectedIndex];
-            var isGroupBased = selectedOption && selectedOption.dataset.isGroupBased === 'true';
-            if (isGroupBased) {
-                sectionContainer.style.display = "block";
-                groupSelect.innerHTML = '<option value="">Loading...</option>';
-                fetch(`/Section/GetGroupsForClass?classId=${classId}`)
-                    .then(res => res.json())
-                    .then(groups => {
-                        groupSelect.innerHTML = '<option value="">Select Group</option>';
-                        groups.forEach(g => {
-                            const opt = document.createElement('option');
-                            opt.value = g.id;
-                            opt.textContent = g.name;
-                            groupSelect.appendChild(opt);
-                        });
+            if (!classId) { sectionContainer.style.display = "none"; return; }
+            sectionContainer.style.display = "block";
+            groupSelect.innerHTML = '<option value="">Loading...</option>';
+            fetch(`/Section/GetStudentGroupsForClass?classId=${classId}`)
+                .then(res => res.json())
+                .then(groups => {
+                    if (!groups || groups.length === 0) {
+                        sectionContainer.style.display = "none";
+                        groupSelect.value = '';
+                        return;
+                    }
+                    if (groups.length === 1) {
+                        // Only one group — auto-assign, show as read-only label
+                        sectionContainer.style.display = "block";
+                        groupSelect.innerHTML = '';
+                        var label = document.createElement('div');
+                        label.className = 'form-control-plaintext fw-semibold';
+                        label.textContent = groups[0].name;
+                        groupSelect.appendChild(label);
+                        // Set hidden backing field via a hidden input right after the select
+                        var hidden = document.createElement('input');
+                        hidden.type = 'hidden';
+                        hidden.name = groupSelect.name || 'AppliedStudentGroupId';
+                        hidden.value = groups[0].id;
+                        groupSelect.appendChild(hidden);
+                        return;
+                    }
+                    // Multiple groups — show dropdown
+                    groupSelect.innerHTML = '<option value="">Select Group</option>';
+                    var currentVal = groupSelect.dataset.selectedValue;
+                    groups.forEach(g => {
+                        const opt = document.createElement('option');
+                        opt.value = g.id;
+                        opt.textContent = g.name;
+                        if (currentVal && parseInt(currentVal) === g.id) opt.selected = true;
+                        groupSelect.appendChild(opt);
                     });
-            } else {
-                sectionContainer.style.display = "none";
-            }
+                });
         }
 
         classDropdown.addEventListener("change", function () {
             updateGroups(parseInt(this.value));
         });
-
+        // Store initially selected value for edit mode
+        (function () {
+            var sel = document.querySelector('#sectionContainer select');
+            if (sel && sel.value) sel.dataset.selectedValue = sel.value;
+        })();
         if (classDropdown.value) updateGroups(parseInt(classDropdown.value));
     });
 

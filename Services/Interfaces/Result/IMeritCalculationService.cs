@@ -20,11 +20,6 @@ public interface IMeritCalculationService
     Task CalculateGroupMeritPositionsAsync(int examId);
 
     /// <summary>
-    /// Calculates overall school merit list
-    /// </summary>
-    Task CalculateSchoolMeritPositionsAsync(int examId);
-
-    /// <summary>
     /// Recalculates positions after result changes
     /// </summary>
     Task RecalculateMeritPositionsAsync(int examId);

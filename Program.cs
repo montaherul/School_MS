@@ -106,8 +106,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         //options.Cookie.SameSite = SameSiteMode.Strict;// by localhostlogin
       //  options.Cookie.SameSite = SameSiteMode.Lax;//by ip login
         options.Cookie.SameSite = SameSiteMode.Lax;
-        /*  options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;*/
-        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
     });
 
 builder.Services.Configure<CookiePolicyOptions>(options =>
@@ -141,6 +140,7 @@ builder.Services.AddScoped<IAssignmentService, AssignmentService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<ClassSubjectMappingSeeder>();
 builder.Services.AddScoped<SchoolManagementSystem.Services.Implementations.Website.WebsiteSeeder>();
+builder.Services.AddScoped<SchoolManagementSystem.Services.Implementations.Result.SubjectMarkStructureSeeder>();
 builder.Services.AddScoped<IAttendanceRecordService, AttendanceRecordService>();
 builder.Services.AddScoped<IStudentAttendanceService, StudentAttendanceService>();
 
@@ -210,6 +210,9 @@ await using (var scope = app.Services.CreateAsyncScope())
 
     var seederWebsite = scope.ServiceProvider.GetRequiredService<SchoolManagementSystem.Services.Implementations.Website.WebsiteSeeder>();
     await seederWebsite.SeedAsync();
+
+    var seederSubjectMark = scope.ServiceProvider.GetRequiredService<SchoolManagementSystem.Services.Implementations.Result.SubjectMarkStructureSeeder>();
+    await seederSubjectMark.SeedAsync();
 
     await FinanceRbacSeeder.SeedAsync(db);
 

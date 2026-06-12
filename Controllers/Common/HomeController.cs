@@ -12,6 +12,7 @@ using SchoolManagementSystem.Models.Entities.Student;
 using SchoolManagementSystem.Models.Entities.Employee;
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Services.Interfaces.Website;
+using SchoolManagementSystem.Services.Interfaces.Academic;
 using SchoolManagementSystem.Services.Interfaces.Email;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using SchoolManagementSystem.Helpers.Email;
@@ -30,6 +31,8 @@ public class HomeController : Controller
     private readonly IGalleryService _galleryService;
     private readonly IContactMessageService _contactService;
     private readonly IAnnouncementService _announcementService;
+    private readonly IAcademicCalendarService _calendarService;
+    private readonly IAdmissionFeeStructureService _admissionFeeService;
     private readonly IEmailSender _emailSender;
     private readonly IEmailTemplateService _emailTemplateService;
     private readonly IUnitOfWork _uow;
@@ -42,6 +45,8 @@ public class HomeController : Controller
         IGalleryService galleryService,
         IContactMessageService contactService,
         IAnnouncementService announcementService,
+        IAcademicCalendarService calendarService,
+        IAdmissionFeeStructureService admissionFeeService,
         IEmailSender emailSender,
         IEmailTemplateService emailTemplateService,
         IUnitOfWork uow)
@@ -53,6 +58,8 @@ public class HomeController : Controller
         _galleryService = galleryService;
         _contactService = contactService;
         _announcementService = announcementService;
+        _calendarService = calendarService;
+        _admissionFeeService = admissionFeeService;
         _emailSender = emailSender;
         _emailTemplateService = emailTemplateService;
         _uow = uow;
@@ -66,6 +73,20 @@ public class HomeController : Controller
         var events = await _eventService.GetUpcomingEventsAsync(3, ct);
         var albums = await _galleryService.GetAllAlbumsAsync(ct);
         var announcements = await _announcementService.GetActiveAnnouncementsAsync(ct);
+
+        // Academic Calendar - next 5 upcoming events
+        var today = DateOnly.FromDateTime(DateTime.Today);
+        var calDays = await _calendarService.GetCalendarDaysAsync(
+            today.ToDateTime(TimeOnly.MinValue),
+            today.AddDays(90).ToDateTime(TimeOnly.MaxValue), ct);
+        var calendarEvents = calDays
+            .Where(d => d.IsActive && d.Date >= today && (d.IsHoliday || d.IsExamDay || d.IsEventDay))
+            .OrderBy(d => d.Date)
+            .Take(5)
+            .ToList();
+
+        // Admission Fee Structures - show first 6 classes
+        var admissionFees = await _admissionFeeService.GetAllAsync(ct);
 
         // Fetch counts for the stats block
         int studentCount = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().CountAsync(s => !s.IsDeleted, ct);
@@ -81,7 +102,9 @@ public class HomeController : Controller
             UpcomingEvents = events,
             Albums = albums.Take(3).ToList(),
             Announcements = announcements,
-            StudentCount = studentCount > 0 ? studentCount : 350, // realistic fallback counts if seeder is fresh
+            UpcomingCalendarEvents = calendarEvents,
+            AdmissionFees = admissionFees.OrderBy(f => f.DisplayOrder).Take(6).ToList(),
+            StudentCount = studentCount > 0 ? studentCount : 350,
             EmployeeCount = employeeCount > 0 ? employeeCount : 25,
             TeacherCount = teacherCount > 0 ? teacherCount : 18,
             ClassCount = classCount > 0 ? classCount : 10

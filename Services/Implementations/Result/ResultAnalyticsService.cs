@@ -33,7 +33,7 @@ public class ResultAnalyticsService : IResultAnalyticsService
     {
         var activeYear = await _uow.Repository<AcademicYear>().FirstOrDefaultAsync(x => x.IsActive);
         var stats = new ResultSummaryDto();
-        var exams = new List<Exam>();
+        var exams = new List<Models.Entities.Exam.Exam>();
 
         if (activeYear != null)
         {

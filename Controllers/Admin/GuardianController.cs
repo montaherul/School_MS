@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using SchoolManagementSystem.Models.DTOs.Guardian;
-using SchoolManagementSystem.Services.Guardian;
+using SchoolManagementSystem.Services.Interfaces.Guardian;
 using SchoolManagementSystem.Filters;
 using Microsoft.AspNetCore.Authorization;
 using SchoolManagementSystem.Models.Entities.Guardian;

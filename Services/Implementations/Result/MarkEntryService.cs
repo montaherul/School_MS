@@ -133,6 +133,21 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
         var configuredComponents = await _markStructureService.GetGridColumnsAsync(
             dto.SubjectId);
 
+        // Validate marks against full marks and negative values
+        var subject = await _subjectRepository.GetByIdAsync(dto.SubjectId);
+        var examSubject = await _unitOfWork.Repository<ExamSubject>().Query()
+            .FirstOrDefaultAsync(es => es.ExamId == dto.ExamId && es.SubjectId == dto.SubjectId);
+
+        foreach (var markDto in dto.Marks)
+        {
+            if (markDto.MarksObtained < 0)
+                throw new InvalidOperationException($"Marks cannot be negative for student {markDto.StudentId}.");
+            if (examSubject != null && markDto.MarksObtained > examSubject.FullMarks)
+                throw new InvalidOperationException($"Marks ({markDto.MarksObtained}) exceed full marks ({examSubject.FullMarks}) for student {markDto.StudentId}.");
+            if (subject != null && examSubject == null && markDto.MarksObtained > subject.DefaultFullMarks)
+                throw new InvalidOperationException($"Marks ({markDto.MarksObtained}) exceed full marks ({subject.DefaultFullMarks}) for student {markDto.StudentId}.");
+        }
+
         foreach (var markDto in dto.Marks)
         {
             var existingMark = (await _markRepository
@@ -164,9 +179,10 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
                     ExamId = dto.ExamId,
                     StudentId = markDto.StudentId,
                     SubjectId = dto.SubjectId,
-                    AcademicYearId = dto.ExamId > 0 ? (await _examRepository.GetByIdAsync(dto.ExamId))?.AcademicYearId ?? 0 : 0,
+                    AcademicYearId = exam?.AcademicYearId ?? 0,
                     ClassId = student?.ClassId ?? 0,
                     SectionId = student?.SectionId ?? 0,
+                    StudentGroupId = student?.StudentGroupId,
                     MarksObtained = totalMarks ?? 0,
                     Grade = gradeResult.Grade,
                     GradePoint = gradeResult.GradePoint,
@@ -526,4 +542,105 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
         return query;
     }
 
+    public async Task LockMarksAsync(int examId, int subjectId, int classId, int sectionId)
+    {
+        var entries = await _unitOfWork.Repository<MarkEntry>().Query()
+            .Where(m => m.ExamId == examId && m.SubjectId == subjectId
+                && m.ClassId == classId && m.SectionId == sectionId)
+            .ToListAsync();
+
+        foreach (var entry in entries)
+        {
+            if (!entry.IsLocked)
+            {
+                await _auditLogger.LogMarkChangeAsync(examId, entry.StudentId, subjectId,
+                    entry.MarksObtained, entry.MarksObtained, entry.EnteredByTeacherId, "Marks locked");
+            }
+            entry.IsLocked = true;
+            entry.LockedAt = DateTime.UtcNow;
+            entry.Status = ResultWorkflowStatus.Locked;
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task UnlockMarksAsync(int examId, int subjectId, int classId, int sectionId)
+    {
+        var entries = await _unitOfWork.Repository<MarkEntry>().Query()
+            .Where(m => m.ExamId == examId && m.SubjectId == subjectId
+                && m.ClassId == classId && m.SectionId == sectionId)
+            .ToListAsync();
+
+        foreach (var entry in entries)
+        {
+            await _auditLogger.LogMarkChangeAsync(examId, entry.StudentId, subjectId,
+                entry.MarksObtained, entry.MarksObtained, entry.EnteredByTeacherId, "Marks unlocked");
+            entry.IsLocked = false;
+            entry.LockedAt = null;
+            entry.Status = ResultWorkflowStatus.Submitted;
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task<EntryStatusSummaryDto> GetEntryStatusAsync(int examId, int? classId = null)
+    {
+        var exam = await _examRepository.GetByIdAsync(examId);
+        var classSubjects = await _unitOfWork.Repository<ClassSubject>().Query()
+            .Include(cs => cs.Subject)
+            .Include(cs => cs.SchoolClass)
+            .Where(cs => !cs.IsDeleted)
+            .ToListAsync();
+
+        var markEntries = await _unitOfWork.Repository<MarkEntry>().Query()
+            .Where(m => m.ExamId == examId)
+            .ToListAsync();
+
+        var students = await _unitOfWork.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query()
+            .Where(s => !s.IsDeleted)
+            .ToListAsync();
+
+        var classes = classSubjects
+            .Select(cs => cs.SchoolClass)
+            .Distinct()
+            .Where(c => classId == null || c.Id == classId)
+            .OrderBy(c => c.Name)
+            .Select(c => new EntryStatusClassDto
+            {
+                ClassId = c.Id,
+                ClassName = c.Name,
+                StudentCount = students.Count(s => s.ClassId == c.Id && (classId == null || s.ClassId == classId)),
+                Subjects = classSubjects
+                    .Where(cs => cs.SchoolClassId == c.Id)
+                    .Select(cs => cs.Subject)
+                    .Distinct()
+                    .OrderBy(s => s.Name)
+                    .Select(s =>
+                    {
+                        var filtered = markEntries.Where(m =>
+                            m.ClassId == c.Id && m.SubjectId == s.Id).ToList();
+                        return new EntryStatusSubjectDto
+                        {
+                            SubjectId = s.Id,
+                            SubjectName = s.Name,
+                            TotalStudents = students.Count(st => st.ClassId == c.Id),
+                            EnteredCount = filtered.Count(m => m.MarksObtained > 0),
+                            LockedCount = filtered.Count(m => m.IsLocked),
+                            IsLocked = filtered.Count > 0 && filtered.All(m => m.IsLocked),
+                            EntryPercentage = filtered.Count > 0
+                                ? Math.Round((decimal)filtered.Count(m => m.MarksObtained > 0) / students.Count(st => st.ClassId == c.Id) * 100, 1)
+                                : 0
+                        };
+                    })
+                    .ToList()
+            })
+            .ToList();
+
+        return new EntryStatusSummaryDto
+        {
+            ExamId = examId,
+            ExamName = exam?.Name ?? "",
+            Classes = classes
+        };
+    }
 }

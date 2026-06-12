@@ -11,7 +11,7 @@ using SchoolManagementSystem.Models.Entities.Attendance;
 using SchoolManagementSystem.Models.Entities.Result;
 using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Repositories.Guardian;
-using SchoolManagementSystem.Services.Guardian;
+using SchoolManagementSystem.Services.Interfaces.Guardian;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 
 namespace SchoolManagementSystem.Services.Implementations.Guardian;

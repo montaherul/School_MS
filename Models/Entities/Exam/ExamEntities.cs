@@ -110,28 +110,6 @@ public class SubjectMarkStructure : BaseEntity
 }
 
 /// <summary>
-/// GPA Configuration: Defines how GPA is calculated
-/// Supports Bangladesh grading system:
-/// 80-100 = A+ = 5.00, 70-79 = A = 4.00, 60-69 = A- = 3.50, 50-59 = B = 3.00, 
-/// 40-49 = C = 2.00, 33-39 = D = 1.00, 0-32 = F = 0.00
-/// </summary>
-public class GpaConfiguration : BaseEntity
-{
-    [MaxLength(10)]
-    public string Grade { get; set; } = string.Empty;
-
-    public decimal MinMarks { get; set; } = 0;
-    public decimal MaxMarks { get; set; } = 100;
-    public decimal GradePoint { get; set; } = 0;
-
-    [MaxLength(50)]
-    public string Description { get; set; } = string.Empty;
-
-    public int DisplayOrder { get; set; } = 0;
-    public bool IsActive { get; set; } = true;
-}
-
-/// <summary>
 /// Main Exam Entity
 /// </summary>
 public class Exam : BaseEntity
@@ -143,6 +121,13 @@ public class Exam : BaseEntity
     public ResultWorkflowStatus Status { get; set; } = ResultWorkflowStatus.Draft;
 
     public int AcademicYearId { get; set; }
+
+    /// <summary>Required: the primary class this exam belongs to.</summary>
+    public int ClassId { get; set; }
+
+    /// <summary>Nullable: section filter for this exam.</summary>
+    public int? SectionId { get; set; }
+
     public int? StudentGroupId { get; set; }
     public DateOnly StartsOn { get; set; }
     public DateOnly EndsOn { get; set; }
@@ -154,6 +139,8 @@ public class Exam : BaseEntity
     // Navigation
     public virtual ICollection<ExamSubject> ExamSubjects { get; set; } = [];
     public virtual ICollection<ExamSchedule> ExamSchedules { get; set; } = [];
+    public virtual Academic.SchoolClass Class { get; set; } = null!;
+    public virtual Academic.Section? Section { get; set; }
     public virtual Academic.StudentGroup? StudentGroup { get; set; }
 }
 
@@ -169,18 +156,42 @@ public class ExamSubject : BaseEntity
     public decimal PassMarks { get; set; } = 33;
     public bool IsOptional { get; set; } = false;
 
+    public int? TeacherId { get; set; }
+    public int TotalWrittenMarks { get; set; }
+    public int TotalMCQMarks { get; set; }
+    public int TotalPracticalMarks { get; set; }
+    public int TotalVivaMarks { get; set; }
+    public int TotalAssignmentMarks { get; set; }
+    public DateOnly? ExamDate { get; set; }
+    public TimeOnly? ExamStartTime { get; set; }
+    public int? ExamDuration { get; set; }
+    [MaxLength(50)]
+    public string? RoomNumber { get; set; }
+    public bool IsActive { get; set; } = true;
+
     // Navigation
     public virtual Exam Exam { get; set; } = null!;
     public virtual Subject Subject { get; set; } = null!;
+    public virtual Teachers.Teacher? Teacher { get; set; }
 }
 
 /// <summary>
 /// Exam Schedule: Date, time, and room assignment for each subject's exam
+/// Supports class/group/section context for independent group scheduling (SSC routine).
 /// </summary>
 public class ExamSchedule : BaseEntity
 {
     public int ExamId { get; set; }
     public int SubjectId { get; set; }
+
+    /// <summary>Required: the class this schedule entry belongs to.</summary>
+    public int ClassId { get; set; }
+
+    /// <summary>Nullable: for group-based classes (9-10), identifies Science/BusinessStudies/Humanities.</summary>
+    public int? StudentGroupId { get; set; }
+
+    /// <summary>Nullable: for section-specific scheduling.</summary>
+    public int? SectionId { get; set; }
 
     public DateOnly ExamDate { get; set; }
     public TimeOnly StartsAt { get; set; }
@@ -195,6 +206,9 @@ public class ExamSchedule : BaseEntity
     // Navigation
     public virtual Exam Exam { get; set; } = null!;
     public virtual Subject Subject { get; set; } = null!;
+    public virtual SchoolClass Class { get; set; } = null!;
+    public virtual StudentGroup? StudentGroup { get; set; }
+    public virtual Section? Section { get; set; }
 }
 
 /// <summary>
@@ -208,24 +222,22 @@ public class AdmitCard : BaseEntity
     [MaxLength(40)]
     public string CardNo { get; set; } = string.Empty;
 
+    [MaxLength(50)]
+    public string? AdmitCardNumber { get; set; }
+
+    public int? RollNumber { get; set; }
+
+    [MaxLength(20)]
+    public string? SeatNumber { get; set; }
+
+    public bool IsIssued { get; set; } = false;
+    public DateTime? IssuedAt { get; set; }
     public DateTime? PrintedAt { get; set; }
     public bool IsGenerated { get; set; } = false;
+
+    // Navigation
+    public virtual Exam Exam { get; set; } = null!;
+    public virtual Student.Student Student { get; set; } = null!;
 }
 
-/// <summary>
-/// Seating Plan: Seat assignment for exam hall management
-/// </summary>
-public class SeatingPlan : BaseEntity
-{
-    public int ExamId { get; set; }
-    public int StudentId { get; set; }
 
-    [MaxLength(40)]
-    public string SeatNo { get; set; } = string.Empty;
-
-    [MaxLength(100)]
-    public string HallNo { get; set; } = string.Empty;
-
-    public int? BlockNo { get; set; }
-    public int? RowNo { get; set; }
-}

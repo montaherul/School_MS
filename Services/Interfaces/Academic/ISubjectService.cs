@@ -10,7 +10,7 @@ public interface ISubjectService
     Task<int> CreateAsync(SubjectUpsertDto dto, string createdBy, CancellationToken cancellationToken = default);
     Task UpdateAsync(SubjectUpsertDto dto, string updatedBy, CancellationToken cancellationToken = default);
     Task DeleteAsync(int id, string updatedBy, CancellationToken cancellationToken = default);
-    Task<IDictionary<string?, List<SubjectListItemDto>>> GetGroupedSubjectsAsync(CancellationToken ct = default);
+    Task<IDictionary<string, List<SubjectListItemDto>>> GetGroupedSubjectsAsync(CancellationToken ct = default);
     Task ToggleActiveAsync(int id, string updatedBy, CancellationToken cancellationToken = default);
     Task BulkActivateAsync(List<int> ids, string updatedBy, CancellationToken cancellationToken = default);
     Task BulkDeactivateAsync(List<int> ids, string updatedBy, CancellationToken cancellationToken = default);

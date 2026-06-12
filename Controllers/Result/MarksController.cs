@@ -87,10 +87,14 @@ public class MarksController : Controller
 
         if (teacher != null && !User.IsInRole("Admin") && !User.IsInRole("Super Admin") && !User.IsInRole("Principal"))
         {
-            var isAuthorized = await _resultAuthService.IsAuthorizedToEnterMarksAsync(teacher.Id, subjectId, classId, sectionId, 0, ct);
+            var isAuthorized = await _resultAuthService.IsAuthorizedToEnterMarksAsync(teacher.Id, subjectId, classId, sectionId, 0, null, ct);
             if (!isAuthorized) return Forbid();
         }
 
+        var student = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query()
+            .Where(s => s.ClassId == classId && s.SectionId == sectionId)
+            .Select(s => s.StudentGroupId)
+            .FirstOrDefaultAsync(ct);
         var dto = await _markEntryService.GetMarkEntryDataAsync(examId, subjectId, classId, sectionId);
         var vm = new MarkEntryViewModel
         {
@@ -146,7 +150,6 @@ public class MarksController : Controller
 
     [HttpPost]
     [Authorize(Roles = "Teacher,Senior Lecturer,Lecturer,Admin,Super Admin,Principal")]
-    [IgnoreAntiforgeryToken]
     public async Task<IActionResult> Save([FromBody] MarkBatchDto dto, CancellationToken ct)
     {
         try
@@ -170,7 +173,7 @@ public class MarksController : Controller
 
                     foreach (var cs in classSections)
                     {
-                        var isAuthorized = await _resultAuthService.IsAuthorizedToEnterMarksAsync(teacher.Id, dto.SubjectId, cs.ClassId, cs.SectionId, 0, ct);
+                        var isAuthorized = await _resultAuthService.IsAuthorizedToEnterMarksAsync(teacher.Id, dto.SubjectId, cs.ClassId, cs.SectionId, 0, null, ct);
                         if (!isAuthorized) return Forbid();
                     }
                 }
@@ -187,7 +190,48 @@ public class MarksController : Controller
 
     [HttpPost]
     [Authorize(Roles = "Teacher,Senior Lecturer,Lecturer,Admin,Super Admin,Principal")]
-    [IgnoreAntiforgeryToken]
+    public async Task<IActionResult> SaveRow([FromBody] MarkEntryDto dto, CancellationToken ct)
+    {
+        try
+        {
+            var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+            var teacher = await _teacherService.GetByUserIdAsync(currentUserId, ct);
+
+            if (teacher != null && !User.IsInRole("Admin") && !User.IsInRole("Super Admin") && !User.IsInRole("Principal"))
+            {
+                var student = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>()
+                    .Query()
+                    .Where(s => s.Id == dto.StudentId)
+                    .Select(s => new { s.ClassId, s.SectionId })
+                    .FirstOrDefaultAsync(ct);
+
+                if (student != null)
+                {
+                    var isAuthorized = await _resultAuthService.IsAuthorizedToEnterMarksAsync(
+                        teacher.Id, dto.SubjectId, student.ClassId, student.SectionId, 0, null, ct);
+                    if (!isAuthorized) return Forbid();
+                }
+            }
+
+            var batch = new MarkBatchDto
+            {
+                ExamId = dto.ExamId,
+                SubjectId = dto.SubjectId,
+                TeacherId = teacher?.Id ?? 1,
+                Marks = [dto]
+            };
+
+            await _markEntryService.SubmitMarksBatchAsync(batch);
+            return Json(new { success = true });
+        }
+        catch (Exception ex)
+        {
+            return Json(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Teacher,Senior Lecturer,Lecturer,Admin,Super Admin,Principal")]
     public async Task<IActionResult> SaveDraft([FromBody] MarkBatchDto dto, CancellationToken ct)
     {
         try
@@ -215,7 +259,7 @@ public class MarksController : Controller
 
         if (!User.IsInRole("Admin") && !User.IsInRole("Super Admin") && !User.IsInRole("Principal"))
         {
-            var authorized = await _resultAuthService.IsAuthorizedToEnterMarksAsync(teacherId, subjectId, classId, sectionId, 0, ct);
+            var authorized = await _resultAuthService.IsAuthorizedToEnterMarksAsync(teacherId, subjectId, classId, sectionId, 0, null, ct);
             if (!authorized) return Forbid();
         }
 
@@ -235,7 +279,7 @@ public class MarksController : Controller
         var teacher = await _teacherService.GetByUserIdAsync(currentUserId, ct);
         if (!User.IsInRole("Admin") && !User.IsInRole("Super Admin") && !User.IsInRole("Principal"))
         {
-            var authorized = await _resultAuthService.IsAuthorizedToEnterMarksAsync(teacher?.Id ?? 0, subjectId, classId, sectionId, 0, ct);
+            var authorized = await _resultAuthService.IsAuthorizedToEnterMarksAsync(teacher?.Id ?? 0, subjectId, classId, sectionId, 0, null, ct);
             if (!authorized) return Forbid();
         }
         var data = await _markEntryService.GenerateImportTemplateAsync(examId, subjectId, classId, sectionId);
@@ -251,7 +295,7 @@ public class MarksController : Controller
         var teacher = await _teacherService.GetByUserIdAsync(currentUserId, ct);
         if (!User.IsInRole("Admin") && !User.IsInRole("Super Admin") && !User.IsInRole("Principal"))
         {
-            var authorized = await _resultAuthService.IsAuthorizedToEnterMarksAsync(teacher?.Id ?? 0, subjectId, classId, sectionId, groupId ?? 0, ct);
+            var authorized = await _resultAuthService.IsAuthorizedToEnterMarksAsync(teacher?.Id ?? 0, subjectId, classId, sectionId, 0, groupId, ct);
             if (!authorized) return Forbid();
         }
         var data = await _markEntryService.ExportMarksToExcelAsync(examId, subjectId, classId, sectionId, groupId);
@@ -267,7 +311,7 @@ public class MarksController : Controller
         var teacher = await _teacherService.GetByUserIdAsync(currentUserId, ct);
         if (!User.IsInRole("Admin") && !User.IsInRole("Super Admin") && !User.IsInRole("Principal"))
         {
-            var authorized = await _resultAuthService.IsAuthorizedToEnterMarksAsync(teacher?.Id ?? 0, subjectId, classId, sectionId, groupId ?? 0, ct);
+            var authorized = await _resultAuthService.IsAuthorizedToEnterMarksAsync(teacher?.Id ?? 0, subjectId, classId, sectionId, 0, groupId, ct);
             if (!authorized) return Forbid();
         }
         var data = await _markEntryService.ExportMarksToCsvAsync(examId, subjectId, classId, sectionId, groupId);
@@ -292,6 +336,11 @@ public class MarksController : Controller
             .Where(a => a.TeacherId == teacher.Id && a.IsActive && !a.IsDeleted && a.AcademicYearId == activeYearId)
             .ToListAsync(ct);
 
+        var allMarkEntries = await _uow.Repository<MarkEntry>().Query()
+            .Where(m => examIds.Contains(m.ExamId))
+            .Select(m => new { m.ExamId, m.SubjectId, m.ClassId, m.Status })
+            .ToListAsync(ct);
+
         int pendingEntries = 0;
         int submittedEntries = 0;
         int totalEntries = 0;
@@ -305,12 +354,10 @@ public class MarksController : Controller
             {
                 totalEntries++;
                 examCount++;
-                var count = await _uow.Repository<MarkEntry>().Query()
-                    .CountAsync(m => m.ExamId == examId && m.SubjectId == a.SubjectId && m.ClassId == a.ClassId, ct);
-                if (count == 0) pendingEntries++;
-                else if (await _uow.Repository<MarkEntry>().Query()
-                    .AnyAsync(m => m.ExamId == examId && m.SubjectId == a.SubjectId && m.ClassId == a.ClassId
-                        && m.Status == ResultWorkflowStatus.Submitted, ct))
+                var examMarks = allMarkEntries.Where(m =>
+                    m.ExamId == examId && m.SubjectId == a.SubjectId && m.ClassId == a.ClassId).ToList();
+                if (examMarks.Count == 0) pendingEntries++;
+                else if (examMarks.Any(m => m.Status == ResultWorkflowStatus.Submitted))
                 {
                     submittedEntries++;
                     examSubmitted++;
@@ -331,6 +378,46 @@ public class MarksController : Controller
         };
 
         return View(model);
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    public async Task<IActionResult> Lock(int examId, int subjectId, int classId, int sectionId)
+    {
+        try
+        {
+            await _markEntryService.LockMarksAsync(examId, subjectId, classId, sectionId);
+            return Json(new { success = true });
+        }
+        catch (Exception ex)
+        {
+            return Json(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpPost]
+    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    public async Task<IActionResult> Unlock(int examId, int subjectId, int classId, int sectionId)
+    {
+        try
+        {
+            await _markEntryService.UnlockMarksAsync(examId, subjectId, classId, sectionId);
+            return Json(new { success = true });
+        }
+        catch (Exception ex)
+        {
+            return Json(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpGet]
+    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    public async Task<IActionResult> EntryStatus(int examId, int? classId, CancellationToken ct)
+    {
+        var dto = await _markEntryService.GetEntryStatusAsync(examId, classId);
+        var exam = await _uow.Repository<SchoolManagementSystem.Models.Entities.Exam.Exam>().GetByIdAsync(examId);
+        ViewBag.ExamName = exam?.Name ?? "";
+        return View(dto);
     }
 
     [HttpGet]

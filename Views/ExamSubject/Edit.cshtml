@@ -1,0 +1,155 @@
+@model SchoolManagementSystem.Models.DTOs.Exam.ExamSubjectConfigDto
+@{
+    ViewData["Title"] = "Edit Subject Configuration";
+}
+
+<div class="adm-page er-page er-page--slide">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Edit Subject Configuration</h1>
+                <p class="er-page-header__sub">@Model.SubjectName</p>
+            </div>
+        </div>
+        <div class="adm-btn-group">
+            <a href="javascript:history.back()" class="er-btn er-btn--secondary">Cancel</a>
+        </div>
+    </div>
+
+    <div class="er-card" style="margin-top:20px;">
+        <div class="er-card__body">
+            <form id="subjectEditForm" method="post" onsubmit="event.preventDefault(); saveSubject();">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="SubjectId" value="@Model.SubjectId" />
+                <input type="hidden" name="SubjectName" value="@Model.SubjectName" />
+
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label class="er-label">Teacher</label>
+                        <select class="er-select" name="TeacherId" required>
+                            <option value="">Select Teacher</option>
+                            @if (Model.Teachers != null)
+                            {
+                                foreach (var t in Model.Teachers)
+                                {
+                                    <option value="@t.Id" selected="@(t.Id == Model.TeacherId)">@t.Name</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="er-label">Written Marks</label>
+                        <input class="er-input" name="TotalWrittenMarks" type="number" value="@Model.TotalWrittenMarks" min="0" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="er-label">MCQ Marks</label>
+                        <input class="er-input" name="TotalMCQMarks" type="number" value="@Model.TotalMCQMarks" min="0" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="er-label">Practical Marks</label>
+                        <input class="er-input" name="TotalPracticalMarks" type="number" value="@Model.TotalPracticalMarks" min="0" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="er-label">Viva Marks</label>
+                        <input class="er-input" name="TotalVivaMarks" type="number" value="@Model.TotalVivaMarks" min="0" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="er-label">Assignment Marks</label>
+                        <input class="er-input" name="TotalAssignmentMarks" type="number" value="@Model.TotalAssignmentMarks" min="0" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="er-label">Pass Mark</label>
+                        <input class="er-input" name="PassMark" type="number" value="@Model.PassMark" min="0" step="0.5" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="er-label">Exam Date</label>
+                        <input class="er-input" name="ExamDate" type="date" value="@Model.ExamDate?.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="er-label">Start Time</label>
+                        <input class="er-input" name="ExamStartTime" type="time" value="@Model.ExamStartTime?.ToString(@"hh\:mm")" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="er-label">Duration (minutes)</label>
+                        <input class="er-input" name="ExamDuration" type="number" value="@Model.ExamDuration" min="0" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="er-label">Room Number</label>
+                        <input class="er-input" name="RoomNumber" value="@Model.RoomNumber" />
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end gap-3">
+                        <label class="marks-toggle">
+                            <input type="checkbox" name="IsOptional" value="true" checked="@Model.IsOptional" />
+                            Optional Subject
+                        </label>
+                        <label class="marks-toggle">
+                            <input type="checkbox" name="IsActive" value="true" checked="@Model.IsActive" />
+                            Active
+                        </label>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2" style="margin-top:24px;padding-top:16px;border-top:1px solid var(--adm-border);">
+                    <button type="submit" class="er-btn er-btn--primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function saveSubject() {
+            var form = document.getElementById('subjectEditForm');
+            var data = {
+                subjectId: parseInt(form.querySelector('[name="SubjectId"]').value),
+                subjectName: form.querySelector('[name="SubjectName"]').value,
+                teacherId: parseInt(form.querySelector('[name="TeacherId"]').value) || null,
+                totalWrittenMarks: parseInt(form.querySelector('[name="TotalWrittenMarks"]').value) || 0,
+                totalMCQMarks: parseInt(form.querySelector('[name="TotalMCQMarks"]').value) || 0,
+                totalPracticalMarks: parseInt(form.querySelector('[name="TotalPracticalMarks"]').value) || 0,
+                totalVivaMarks: parseInt(form.querySelector('[name="TotalVivaMarks"]').value) || 0,
+                totalAssignmentMarks: parseInt(form.querySelector('[name="TotalAssignmentMarks"]').value) || 0,
+                passMark: parseFloat(form.querySelector('[name="PassMark"]').value) || 0,
+                examDate: form.querySelector('[name="ExamDate"]').value || null,
+                examStartTime: form.querySelector('[name="ExamStartTime"]').value || null,
+                examDuration: parseInt(form.querySelector('[name="ExamDuration"]').value) || null,
+                roomNumber: form.querySelector('[name="RoomNumber"]').value || null,
+                isOptional: form.querySelector('[name="IsOptional"]').checked,
+                isActive: form.querySelector('[name="IsActive"]').checked
+            };
+
+            var btn = form.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.textContent = 'Saving...';
+
+            fetch(window.location.pathname, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(res) {
+                if (res.success) {
+                    if (typeof showExamToast === 'function') showExamToast('Subject configuration updated.', 'success');
+                    setTimeout(function() { window.location.href = '@Url.Action("Setup", new { examId = -1 })'.replace('-1', '@ViewBag.ExamId ?? 0'); }, 800);
+                } else {
+                    if (typeof showExamToast === 'function') showExamToast(res.message || 'Save failed', 'error');
+                    btn.disabled = false;
+                    btn.textContent = 'Save Changes';
+                }
+            })
+            .catch(function(e) {
+                if (typeof showExamToast === 'function') showExamToast('Error: ' + e.message, 'error');
+                btn.disabled = false;
+                btn.textContent = 'Save Changes';
+            });
+        }
+    </script>
+}

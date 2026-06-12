@@ -172,9 +172,16 @@ public class ReportCardController : Controller
             }
         }
 
+        var examResult = await _uow.Repository<StudentExamResult>()
+            .FirstOrDefaultAsync(r => r.ExamId == examId && r.StudentId == studentId && !r.IsDeleted
+                && (r.Status == ResultWorkflowStatus.Published || r.Status == ResultWorkflowStatus.Locked), ct);
+
+        if (examResult == null)
+            return NotFound("Report card has not been calculated or published yet.");
+
         var dto = await _studentExamResultRepository.GetReportCardAsync(examId, studentId, ct);
         if (dto == null)
-            return NotFound("Report card has not been calculated or published yet.");
+            return NotFound("Report card could not be generated.");
 
         return View(dto);
     }

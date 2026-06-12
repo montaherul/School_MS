@@ -153,6 +153,8 @@ public class AdmissionApplication : BaseEntity
     [Required]
     public int AppliedClassId { get; set; }
 
+    public int? AppliedStudentGroupId { get; set; }
+
     [Required]
     public AdmissionStatus Status { get; set; } = AdmissionStatus.Pending;
 

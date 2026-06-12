@@ -10,7 +10,7 @@ public class SubjectListItemDto
     public string NameBn { get; set; } = string.Empty;
     public string ShortName { get; set; } = string.Empty;
     public string? Category { get; set; }
-    public string? SubjectGroup { get; set; }
+    public string SubjectGroup { get; set; } = string.Empty;
     public bool IsReligionSubject { get; set; }
     public string? ReligionType { get; set; }
     public bool IsOptional { get; set; }
@@ -43,7 +43,9 @@ public class SubjectUpsertDto
     [StringLength(50)]
     public string Category { get; set; } = string.Empty;
 
-    public string? SubjectGroup { get; set; }
+    [Required(ErrorMessage = "Subject Group is required. Select General for classes 1-8 or the appropriate stream for classes 9-10.")]
+    [RegularExpression("^(General|Science|BusinessStudies|Humanities|Religion|Optional)$", ErrorMessage = "Subject Group must be one of: General, Science, BusinessStudies, Humanities, Religion, Optional.")]
+    public string SubjectGroup { get; set; } = string.Empty;
     public bool IsReligionSubject { get; set; }
     public string? ReligionType { get; set; }
     public bool IsOptional { get; set; }

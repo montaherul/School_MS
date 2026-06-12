@@ -3,12 +3,13 @@
     ViewData["Title"] = "Exam Routine";
     var exam = ViewBag.Exam as SchoolManagementSystem.Models.Entities.Exam.Exam;
     var schoolClass = ViewBag.Class as SchoolManagementSystem.Models.Entities.Academic.SchoolClass;
+    var groupId = ViewBag.SelectedGroupId as int?;
+    var groupName = Model?.FirstOrDefault()?.StudentGroup?.Name;
 }
 
 <div class="adm-page">
-    <!-- ── Routine Card ── -->
     <div class="adm-table-card" style="border-radius: var(--adm-radius-lg); padding: 40px; border: 1px solid var(--adm-border); background-color: var(--adm-surface);">
-        
+
         <!-- Header area for printability -->
         <div class="d-flex justify-content-between align-items-center mb-5 pb-4 border-bottom border-secondary">
             <div>
@@ -16,6 +17,10 @@
                 <h4 style="font-weight: 500; color: var(--adm-primary); margin-top: 5px;">Class Exam Routine</h4>
                 <p style="color: var(--adm-text-3); margin-top: 5px; margin-bottom: 0;">
                     Exam: <strong>@exam?.Name</strong> | Class: <strong>@schoolClass?.Name</strong>
+                    @if (!string.IsNullOrEmpty(groupName))
+                    {
+                        <span> | Group: <strong>@groupName</strong></span>
+                    }
                 </p>
             </div>
             <div class="no-print">
@@ -73,7 +78,6 @@
                 </table>
             </div>
 
-            <!-- Routine bottom disclaimer -->
             <div class="mt-5 pt-4 border-top border-secondary text-center text-md-start row">
                 <div class="col-md-8">
                     <h6 style="color: var(--adm-text-2); font-weight: 600;">Important Guidelines:</h6>

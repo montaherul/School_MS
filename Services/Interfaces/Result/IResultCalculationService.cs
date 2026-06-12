@@ -1,3 +1,4 @@
+using SchoolManagementSystem.Models.DTOs.Result;
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Models.Entities.Exam;
 using SchoolManagementSystem.Models.Entities.Result;
@@ -21,11 +22,6 @@ public interface IResultCalculationService
     Task CalculateSubjectResultsAsync(int examId);
 
     /// <summary>
-    /// Calculates merit positions for entire class, sections, and groups
-    /// </summary>
-    Task CalculateMeritPositionsAsync(int examId);
-
-    /// <summary>
     /// Calculates GPA for Bangladesh grading system (80-100=A+, 70-79=A, etc.)
     /// </summary>
     Task<decimal> CalculateGpaAsync(IEnumerable<StudentSubjectResult> subjectResults);
@@ -34,6 +30,12 @@ public interface IResultCalculationService
     /// Calculates final GPA for entire academic year
     /// </summary>
     Task<decimal> CalculateFinalGpaAsync(int studentId, int academicYearId);
+
+    /// <summary>
+    /// Generates FinalResult records for all students in an academic year
+    /// Aggregates exam-level results into year-level final GPA, grade, and pass/fail
+    /// </summary>
+    Task<FinalResultGenerationResult> GenerateFinalResultsAsync(int academicYearId);
 
     /// <summary>
     /// Determines if student passed the exam based on subject failures

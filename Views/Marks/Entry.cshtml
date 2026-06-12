@@ -97,11 +97,13 @@
 </div>
 
 @section Scripts {
+    @Html.AntiForgeryToken()
     <script>
         var componentColumns = @Html.Raw(Json.Serialize(columns));
         var studentData = @Html.Raw(Json.Serialize(Model.Students));
         var examId = @Model.ExamId;
         var subjectId = @Model.SubjectId;
+        var antiforgeryToken = $('input[name="__RequestVerificationToken"]').val();
 
         function getStudentValue(student, field, code) {
             if (field.startsWith('cmp_')) {
@@ -179,6 +181,7 @@
                     url: url,
                     type: 'POST',
                     contentType: 'application/json',
+                    headers: { 'RequestVerificationToken': antiforgeryToken },
                     data: JSON.stringify(payload),
                     success: function(res) {
                         if (res.success) {

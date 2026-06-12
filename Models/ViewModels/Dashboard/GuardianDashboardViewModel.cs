@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using SchoolManagementSystem.Models.DTOs.Attendance;
 using SchoolManagementSystem.Models.DTOs.Guardian;
-using SchoolManagementSystem.Services.Guardian;
+using SchoolManagementSystem.Services.Interfaces.Guardian;
 
 namespace SchoolManagementSystem.Models.ViewModels.Dashboard
 {

@@ -2,7 +2,8 @@
 @{
     ViewData["Title"] = "Edit Exam Schedule";
     var exams = ViewBag.Exams as IEnumerable<SchoolManagementSystem.Models.Entities.Exam.Exam>;
-    var subjects = ViewBag.Subjects as IEnumerable<SchoolManagementSystem.Models.Entities.Academic.ClassSubject>;
+    var classes = ViewBag.Classes as IEnumerable<SchoolManagementSystem.Models.Entities.Academic.SchoolClass>;
+    var groups = ViewBag.Groups as IEnumerable<SchoolManagementSystem.Models.Entities.Academic.StudentGroup>;
 }
 
 <div class="adm-page">
@@ -46,13 +47,34 @@
                 </div>
 
                 <div class="col-md-6">
-                    <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Select Subject</label>
-                    <select name="SubjectId" class="form-select adm-select" required>
-                        @if (subjects != null)
+                    <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Select Class</label>
+                    <select name="ClassId" id="classSelect" class="form-select adm-select" required>
+                        @if (classes != null)
                         {
-                            foreach (var s in subjects)
+                            foreach (var c in classes)
                             {
-                                <!option value="@s.SubjectId" @(Model.SubjectId == s.SubjectId ? "selected" : "")>@s.Subject?.Name (@s.SchoolClass?.Name)</!option>
+                                <!option value="@c.Id" @(Model.ClassId == c.Id ? "selected" : "")>@c.Name</!option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Select Subject</label>
+                    <select name="SubjectId" id="subjectSelect" class="form-select adm-select" required>
+                        <option value="">-- Choose Subject --</option>
+                    </select>
+                </div>
+
+                <div class="col-md-6" id="groupField" style="@(Model.ClassId == 9 || Model.ClassId == 10 ? "" : "display:none;")">
+                    <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Student Group</label>
+                    <select name="StudentGroupId" class="form-select adm-select">
+                        <option value="">-- Select Group --</option>
+                        @if (groups != null)
+                        {
+                            foreach (var g in groups)
+                            {
+                                <!option value="@g.Id" @(Model.StudentGroupId == g.Id ? "selected" : "")>@g.Name</!option>
                             }
                         }
                     </select>
@@ -92,3 +114,43 @@
         </form>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        var subjectsByClass = @Html.Raw(Json.Serialize(
+            ((IEnumerable<SchoolManagementSystem.Models.Entities.Academic.ClassSubject>)ViewBag.Subjects)?
+                .GroupBy(cs => cs.SchoolClassId)
+                .ToDictionary(g => g.Key.ToString(), g => (object)g.Select(cs => new { cs.SubjectId, SubjectName = cs.Subject?.Name ?? "Unknown" }).ToList())
+                ?? new Dictionary<string, object>()
+        ));
+
+        function populateSubjects(classId, selectedSubjectId) {
+            var $subjectSelect = $('#subjectSelect');
+            $subjectSelect.empty().append('<option value="">-- Choose Subject --</option>');
+            if (classId && subjectsByClass[classId]) {
+                $.each(subjectsByClass[classId], function (i, subj) {
+                    var selected = subj.SubjectId === selectedSubjectId ? ' selected' : '';
+                    $subjectSelect.append('<option value="' + subj.SubjectId + '"' + selected + '>' + subj.SubjectName + '</option>');
+                });
+            }
+        }
+
+        var initialClassId = '@Model.ClassId';
+        if (initialClassId && initialClassId !== '0') {
+            populateSubjects(initialClassId, @Model.SubjectId);
+        }
+
+        $('#classSelect').on('change', function () {
+            var classId = $(this).val();
+            var $groupField = $('#groupField');
+            populateSubjects(classId, null);
+
+            var numClassId = parseInt(classId, 10);
+            if (numClassId === 9 || numClassId === 10) {
+                $groupField.show();
+            } else {
+                $groupField.hide().find('select').val('');
+            }
+        });
+    </script>
+}

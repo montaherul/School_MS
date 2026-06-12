@@ -29,6 +29,10 @@ public class ExamUpsertDto
     [Required(ErrorMessage = "Academic year is required")]
     public int AcademicYearId { get; set; }
 
+    [Required(ErrorMessage = "Class is required")]
+    public int ClassId { get; set; }
+
+    public int? SectionId { get; set; }
     public int? StudentGroupId { get; set; }
 
     [Required(ErrorMessage = "Start date is required")]
@@ -444,4 +448,14 @@ public class TopPerformer
     public decimal GPA { get; set; }
     public string Grade { get; set; } = string.Empty;
     public int Position { get; set; }
+}
+
+public class FinalResultGenerationResult
+{
+    public int AcademicYearId { get; set; }
+    public int TotalStudents { get; set; }
+    public int GeneratedCount { get; set; }
+    public int UpdatedCount { get; set; }
+    public int FailedCount { get; set; }
+    public List<string> Errors { get; set; } = [];
 }

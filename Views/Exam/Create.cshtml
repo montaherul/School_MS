@@ -62,7 +62,7 @@
 
     @* ── Step Panels ── *@
     <div class="wizard-body">
-        <form id="examForm" method="post" action="@Url.Action("Save", "Exam")">
+        <form id="examForm" onsubmit="event.preventDefault(); return false;">
             @Html.AntiForgeryToken()
             <input type="hidden" name="Id" id="formExamId" value="@(Model.ExamId ?? 0)" />
             <input type="hidden" name="Status" value="Draft" />
@@ -380,7 +380,7 @@
             function getSelectedStudentGroupId() {
                 if (state.selectedGroups.length === 0) return null;
                 var g = state.groups.find(function(g) { return g.id === state.selectedGroups[0]; });
-                return g && g.studentGroupId ? g.studentGroupId : null;
+                return g && g.studentGroupId != null ? g.studentGroupId : null;
             }
             var panels = {};
             var circles = {};
@@ -390,7 +390,6 @@
                 circles[i] = $('stepCircle' + i);
                 steps[i] = document.querySelector('.wizard-step[data-step="' + i + '"]');
             }
-            var progressFill = $('progressFill');
             var stepDesc = $('stepDescription');
             var btnPrev = $('btnPrev');
             var btnNext = $('btnNext');
@@ -416,8 +415,6 @@
                 circles[step].classList.add('active');
                 if (steps[step]) steps[step].classList.add('active');
                 stepDesc.innerHTML = STEP_DESCRIPTIONS[step];
-                var pct = ((step - 1) / (7 - 1)) * 100;
-                progressFill.style.width = pct + '%';
                 btnPrev.disabled = step === 1;
                 if (step === 7) {
                     btnNext.style.display = 'none';
@@ -469,9 +466,18 @@
                     return true;
                 }
                 if (step === 4) {
+                    var hasSecondary = hasAnyClassInRange(9, 10);
                     var checkedGroups = document.querySelectorAll('#groupsContainer .wizard-checkbox input:checked');
                     state.selectedGroups = [];
                     checkedGroups.forEach(function (cb) { state.selectedGroups.push(parseInt(cb.value)); });
+                    // If classes 9-10 are selected, group is required
+                    if (hasSecondary && state.selectedGroups.length === 0) {
+                        var hasGroupOptions = document.querySelectorAll('#groupsContainer .wizard-checkbox').length > 0;
+                        if (hasGroupOptions) {
+                            showError('errGroups', 'Please select a group (Science, Business Studies, or Humanities) for Classes 9-10.');
+                            return false;
+                        }
+                    }
                     return true;
                 }
                 if (step === 5) {
@@ -730,15 +736,85 @@
                 });
             };
 
+            function isClassRange(start, end) {
+                var classIds = state.selectedClasses;
+                if (!classIds || classIds.length === 0) return false;
+                var classNums = classIds.map(function (cid) {
+                    var cls = state.classes.find(function(c) { return c.id === cid; });
+                    if (!cls) return 0;
+                    var name = cls.name || cls.className || '';
+                    var digits = name.replace(/[^0-9]/g, '');
+                    return parseInt(digits) || 0;
+                });
+                return classNums.some(function(n) { return n >= start && n <= end; });
+            }
+
+            function hasAnyClassInRange(start, end) {
+                var classIds = state.selectedClasses;
+                if (!classIds || classIds.length === 0) return false;
+                var classNums = classIds.map(function (cid) {
+                    var cls = state.classes.find(function(c) { return c.id === cid; });
+                    if (!cls) return 0;
+                    var name = cls.name || cls.className || '';
+                    var digits = name.replace(/[^0-9]/g, '');
+                    return parseInt(digits) || 0;
+                });
+                return classNums.some(function(n) { return n >= start && n <= end; });
+            }
+
             function loadGroupsForSelectedClasses() {
                 var classIds = state.selectedClasses;
                 if (classIds.length === 0) {
                     $('groupsContainer').innerHTML = '<div class="text-center" style="padding:40px 0;color:var(--adm-text-3);"><i class="bi bi-info-circle me-2"></i>Groups are typically available for classes 9 &amp; 10.</div>';
                     return;
                 }
+
+                // If any class is 1-8, automatically set group to General (null) and disable selection
+                var hasLowerSecondary = hasAnyClassInRange(1, 8);
+                var hasSecondary = hasAnyClassInRange(9, 10);
+
+                if (hasLowerSecondary && !hasSecondary) {
+                    // Classes 1-8 only → General, no group selection
+                    state.selectedGroups = [];
+                    renderGroupGeneralOnly();
+                    return;
+                }
+
+                if (hasSecondary) {
+                    // Classes 9-10 → show valid group options (Science, Business Studies, Humanities)
+                    var promises = classIds.map(function (cid) {
+                        if (cache.groups[cid]) return Promise.resolve({ classId: cid, data: cache.groups[cid] });
+                        return fetchJson('/Section/GetStudentGroupsForClass?classId=' + cid).then(function (data) {
+                            cache.groups[cid] = data;
+                            return { classId: cid, data: data };
+                        }).catch(function () { return { classId: cid, data: [] }; });
+                    });
+                    Promise.all(promises).then(function (results) {
+                        var allGroups = [];
+                        var seen = {};
+                        results.forEach(function (r) {
+                            var items = Array.isArray(r.data) ? r.data : [];
+                            items.forEach(function (g) {
+                                if (!seen[g.id]) { seen[g.id] = true; allGroups.push(g); }
+                            });
+                        });
+                        // Filter to only valid Bangladesh groups
+                        var validGroupNames = ['Science', 'Business Studies', 'BusinessStudies', 'Humanities'];
+                        var validGroups = allGroups.filter(function(g) {
+                            return validGroupNames.some(function(vn) { return g.name === vn || g.name.indexOf(vn) >= 0; });
+                        });
+                        state.groups = validGroups;
+                        renderGroupCheckboxes(validGroups);
+                    }).catch(function () {
+                        $('groupsContainer').innerHTML = '<div class="text-center" style="padding:40px 0;color:var(--adm-rejected);">Failed to load groups.</div>';
+                    });
+                    return;
+                }
+
+                // Fallback: show all groups
                 var promises = classIds.map(function (cid) {
                     if (cache.groups[cid]) return Promise.resolve({ classId: cid, data: cache.groups[cid] });
-                    return fetchJson('/Section/GetGroupsForClass?classId=' + cid).then(function (data) {
+                    return fetchJson('/Section/GetStudentGroupsForClass?classId=' + cid).then(function (data) {
                         cache.groups[cid] = data;
                         return { classId: cid, data: data };
                     }).catch(function () { return { classId: cid, data: [] }; });
@@ -753,22 +829,22 @@
                         });
                     });
                     state.groups = allGroups;
-                    if (state.selectedGroups.length > 0 && allGroups.length > 0) {
-                        var firstId = state.selectedGroups[0];
-                        var found = allGroups.some(function(g) { return g.id === firstId; });
-                        if (!found) {
-                            var mapped = [];
-                            state.selectedGroups.forEach(function(sgid) {
-                                var g = allGroups.find(function(g) { return g.studentGroupId === sgid; });
-                                if (g) mapped.push(g.id);
-                            });
-                            if (mapped.length > 0) state.selectedGroups = mapped;
-                        }
-                    }
                     renderGroupCheckboxes(allGroups);
                 }).catch(function () {
                     $('groupsContainer').innerHTML = '<div class="text-center" style="padding:40px 0;color:var(--adm-rejected);">Failed to load groups.</div>';
                 });
+            }
+
+            function renderGroupGeneralOnly() {
+                var container = $('groupsContainer');
+                var html = '<div class="alert alert-info" style="padding:12px 16px;border-radius:8px;background:var(--adm-primary-bg);border:1px solid var(--adm-primary-l);color:var(--adm-text);font-size:13px;">';
+                html += '<i class="bi bi-info-circle me-2"></i>';
+                html += '<strong>General</strong> — No group selection required for Classes 1-8.';
+                html += '</div>';
+                html += '<input type="hidden" id="generalGroupFlag" value="true">';
+                container.innerHTML = html;
+                state.groups = [];
+                state.selectedGroups = [];
             }
 
             function renderGroupCheckboxes(groups) {
@@ -994,14 +1070,19 @@
                     };
                 });
 
+                var firstClassId = state.selectedClasses.length > 0 ? state.selectedClasses[0] : 0;
+                var firstSectionId = state.selectedSections.length > 0 ? state.selectedSections[0] : null;
+
                 var payload = {
                     name: state.exam.name,
                     term: state.exam.term,
                     academicYearId: parseInt(state.exam.academicYearId, 10),
+                    classId: firstClassId,
+                    sectionId: firstSectionId,
                     startsOn: state.exam.startsOn,
                     endsOn: state.exam.endsOn,
                     studentGroupId: getSelectedStudentGroupId(),
-                    status: state.exam.id ? state.exam.status : 1,
+                    status: state.exam.id ? state.exam.status : 'Draft',
                     selectedClassIds: state.selectedClasses,
                     selectedSectionIds: state.selectedSections,
                     subjects: subjects
@@ -1073,7 +1154,7 @@
                     state.exam.startsOn = examData.startsOn || '';
                     state.exam.endsOn = examData.endsOn || '';
                     state.exam.description = examData.description || '';
-                    state.exam.status = examData.status || 1;
+                    state.exam.status = examData.status || 'Draft';
                     if (examData.selectedClasses) state.selectedClasses = examData.selectedClasses;
                     if (examData.selectedSections) state.selectedSections = examData.selectedSections;
                     if (examData.selectedGroups) state.selectedGroups = examData.selectedGroups;

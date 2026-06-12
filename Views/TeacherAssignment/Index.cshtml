@@ -23,36 +23,47 @@
                     <i class="bi bi-plus-lg me-1"></i>Add Class
                 </button>
             </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="bg-light">
-                            <tr>
-                                <th class="small py-3 px-4">Class & Section</th>
-                                <th class="small py-3">Academic Year</th>
-                                <th class="small py-3 text-end px-4">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var a in Model.ClassAssignments.Where(x => !x.IsDeleted))
-                            {
-                                <tr id="class-row-@a.Id">
-                                    <td class="px-4">
-                                        <div class="fw-bold">@a.Class?.Name</div>
-                                        <div class="x-small text-muted">@a.Section?.Name</div>
-                                    </td>
-                                    <td>2026</td>
-                                    <td class="text-end px-4">
-                                        <button class="btn btn-sm btn-light text-danger" onclick="removeAssignment('Class', @a.Id)">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </td>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="small py-3 px-4">Class & Section</th>
+                                    <th class="small py-3">Group</th>
+                                    <th class="small py-3">Academic Year</th>
+                                    <th class="small py-3 text-end px-4">Action</th>
                                 </tr>
-                            }
+                            </thead>
+                            <tbody>
+                                @foreach (var a in Model.ClassAssignments.Where(x => !x.IsDeleted))
+                                {
+                                    <tr id="class-row-@a.Id">
+                                        <td class="px-4">
+                                            <div class="fw-bold">@a.Class?.Name</div>
+                                            <div class="x-small text-muted">@a.Section?.Name</div>
+                                        </td>
+                                        <td>
+                                            @if (a.Class?.IsGroupBased == true && a.Group != null)
+                                            {
+                                                <span class="badge bg-info">@a.Group.Name</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">General</span>
+                                            }
+                                        </td>
+                                        <td>2026</td>
+                                        <td class="text-end px-4">
+                                            <button class="btn btn-sm btn-light text-danger" onclick="removeAssignment('Class', @a.Id)">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
                             @if (!Model.ClassAssignments.Any(x => !x.IsDeleted))
                             {
                                 <tr>
-                                    <td colspan="3" class="text-center py-5 text-muted small">No class assignments found.</td>
+                                    <td colspan="4" class="text-center py-5 text-muted small">No class assignments found.</td>
                                 </tr>
                             }
                         </tbody>
@@ -73,37 +84,48 @@
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="bg-light">
-                            <tr>
-                                <th class="small py-3 px-4">Subject</th>
-                                <th class="small py-3">Class/Section</th>
-                                <th class="small py-3 text-end px-4">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var a in Model.SubjectAssignments.Where(x => !x.IsDeleted))
-                            {
-                                <tr id="subject-row-@a.Id">
-                                    <td class="px-4">
-                                        <div class="fw-bold text-success">@a.Subject?.Name</div>
-                                        <div class="x-small text-muted">Core Subject</div>
-                                    </td>
-                                    <td>
-                                        <div class="small">@a.Class?.Name</div>
-                                        <div class="x-small text-muted">@a.Section?.Name</div>
-                                    </td>
-                                    <td class="text-end px-4">
-                                        <button class="btn btn-sm btn-light text-danger" onclick="removeAssignment('Subject', @a.Id)">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </td>
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="small py-3 px-4">Subject</th>
+                                    <th class="small py-3">Class/Section</th>
+                                    <th class="small py-3">Group</th>
+                                    <th class="small py-3 text-end px-4">Action</th>
                                 </tr>
-                            }
+                            </thead>
+                            <tbody>
+                                @foreach (var a in Model.SubjectAssignments.Where(x => !x.IsDeleted))
+                                {
+                                    <tr id="subject-row-@a.Id">
+                                        <td class="px-4">
+                                            <div class="fw-bold text-success">@a.Subject?.Name</div>
+                                            <div class="x-small text-muted">Core Subject</div>
+                                        </td>
+                                        <td>
+                                            <div class="small">@a.Class?.Name</div>
+                                            <div class="x-small text-muted">@a.Section?.Name</div>
+                                        </td>
+                                        <td>
+                                            @if (a.Group != null)
+                                            {
+                                                <span class="badge bg-info">@a.Group.Name</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="badge bg-secondary">General</span>
+                                            }
+                                        </td>
+                                        <td class="text-end px-4">
+                                            <button class="btn btn-sm btn-light text-danger" onclick="removeAssignment('Subject', @a.Id)">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
                             @if (!Model.SubjectAssignments.Any(x => !x.IsDeleted))
                             {
                                 <tr>
-                                    <td colspan="3" class="text-center py-5 text-muted small">No subject assignments found.</td>
+                                    <td colspan="4" class="text-center py-5 text-muted small">No subject assignments found.</td>
                                 </tr>
                             }
                         </tbody>
@@ -127,15 +149,22 @@
                 <div class="modal-body p-4">
                     <div class="mb-3">
                         <label class="form-label small fw-bold">Select Class</label>
-                        <select name="classId" class="form-select" required onchange="loadSections(this.value, 'class-section-select')">
+                        <select name="classId" class="form-select" required onchange="loadSections(this.value, 'class-section-select'); toggleGroupDropdown(this, 'class-group-select')">
                             <option value="">Choose Class...</option>
-                            @foreach(var c in ViewBag.Classes) { <option value="@c.Id">@c.Name</option> }
+                            @foreach(var c in ViewBag.Classes) { <option value="@c.Id" data-group-based="@c.IsGroupBased.ToString().ToLower()">@c.Name</option> }
                         </select>
                     </div>
                     <div class="mb-3">
                         <label class="form-label small fw-bold">Select Section</label>
                         <select name="sectionId" id="class-section-select" class="form-select" required>
                             <option value="">Choose Section...</option>
+                        </select>
+                    </div>
+                    <div class="mb-3" id="class-group-wrapper" style="display:none;">
+                        <label class="form-label small fw-bold">Select Group</label>
+                        <select name="groupId" id="class-group-select" class="form-select">
+                            <option value="">Choose Group...</option>
+                            @foreach(var g in ViewBag.Groups) { <option value="@g.Id">@g.Name</option> }
                         </select>
                     </div>
                     <div class="mb-0">
@@ -167,15 +196,22 @@
                 <div class="modal-body p-4">
                     <div class="mb-3">
                         <label class="form-label small fw-bold">Select Class</label>
-                        <select name="classId" class="form-select" required onchange="loadSectionsAndSubjects(this.value)">
+                        <select name="classId" class="form-select" required onchange="loadSectionsAndSubjects(this.value); toggleGroupDropdown(this, 'subj-group-select')">
                             <option value="">Choose Class...</option>
-                            @foreach(var c in ViewBag.Classes) { <option value="@c.Id">@c.Name</option> }
+                            @foreach(var c in ViewBag.Classes) { <option value="@c.Id" data-group-based="@c.IsGroupBased.ToString().ToLower()">@c.Name</option> }
                         </select>
                     </div>
                     <div class="mb-3">
                         <label class="form-label small fw-bold">Select Section</label>
                         <select name="sectionId" id="subj-section-select" class="form-select" required>
                             <option value="">Choose Section...</option>
+                        </select>
+                    </div>
+                    <div class="mb-3" id="subj-group-wrapper" style="display:none;">
+                        <label class="form-label small fw-bold">Select Group</label>
+                        <select name="groupId" id="subj-group-select" class="form-select">
+                            <option value="">Choose Group...</option>
+                            @foreach(var g in ViewBag.Groups) { <option value="@g.Id">@g.Name</option> }
                         </select>
                     </div>
                     <div class="mb-3">
@@ -204,6 +240,14 @@
 
 @section Scripts {
     <script>
+        function toggleGroupDropdown(classSelect, groupSelectId) {
+            var option = classSelect.options[classSelect.selectedIndex];
+            var isGroupBased = option && option.dataset.groupBased === 'true';
+            var wrapper = document.getElementById(groupSelectId === 'class-group-select' ? 'class-group-wrapper' : 'subj-group-wrapper');
+            if (wrapper) wrapper.style.display = isGroupBased ? '' : 'none';
+            if (!isGroupBased) document.getElementById(groupSelectId).value = '';
+        }
+
         function loadSections(classId, targetId) {
             if (!classId) return;
             // First try sections (if class has sub-sections)
@@ -216,7 +260,7 @@
                         data.forEach(s => sel.innerHTML += `<option value="${s.id}">${s.name}</option>`);
                     } else {
                         // If no sub-sections, try top-level groups
-                        fetch('@Url.Action("GetGroupsForClass", "Section")?classId=' + classId)
+                        fetch('@Url.Action("GetStudentGroupsForClass", "Section")?classId=' + classId)
                             .then(r2 => r2.json())
                             .then(data2 => {
                                 data2.forEach(s => sel.innerHTML += `<option value="${s.id}">${s.name}</option>`);

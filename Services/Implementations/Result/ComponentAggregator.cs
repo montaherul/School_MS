@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using SchoolManagementSystem.Models.DTOs.Exam;
 using SchoolManagementSystem.Models.Entities.Result;
 using SchoolManagementSystem.Services.Interfaces.Result;
@@ -6,18 +7,31 @@ namespace SchoolManagementSystem.Services.Implementations.Result;
 
 public class ComponentAggregator : IComponentAggregator
 {
+    private readonly ILogger<ComponentAggregator> _logger;
+
+    public ComponentAggregator(ILogger<ComponentAggregator> logger)
+    {
+        _logger = logger;
+    }
+
+    private Dictionary<string, decimal?>? DeserializeComponentValues(string? raw, int entryId)
+    {
+        if (string.IsNullOrEmpty(raw)) return null;
+        try
+        {
+            return System.Text.Json.JsonSerializer
+                .Deserialize<Dictionary<string, decimal?>>(raw);
+        }
+        catch (System.Text.Json.JsonException ex)
+        {
+            _logger.LogWarning(ex, "Malformed ComponentValues JSON on MarkEntry {EntryId}", entryId);
+            return null;
+        }
+    }
+
     public decimal Aggregate(MarkEntry entry, List<ComponentColumnDto> components)
     {
-        Dictionary<string, decimal?>? dynamicValues = null;
-        if (!string.IsNullOrEmpty(entry.ComponentValues))
-        {
-            try
-            {
-                dynamicValues = System.Text.Json.JsonSerializer
-                    .Deserialize<Dictionary<string, decimal?>>(entry.ComponentValues);
-            }
-            catch { }
-        }
+        var dynamicValues = DeserializeComponentValues(entry.ComponentValues, entry.Id);
 
         decimal total = 0;
         foreach (var component in components)
@@ -31,16 +45,7 @@ public class ComponentAggregator : IComponentAggregator
 
     public decimal AggregateAll(MarkEntry entry)
     {
-        Dictionary<string, decimal?>? dynamicValues = null;
-        if (!string.IsNullOrEmpty(entry.ComponentValues))
-        {
-            try
-            {
-                dynamicValues = System.Text.Json.JsonSerializer
-                    .Deserialize<Dictionary<string, decimal?>>(entry.ComponentValues);
-            }
-            catch { }
-        }
+        var dynamicValues = DeserializeComponentValues(entry.ComponentValues, entry.Id);
 
         decimal total = ComponentFieldMapper.ComputeTotal(entry);
 

@@ -108,7 +108,7 @@ namespace SchoolManagementSystem.Controllers.Attendance
         
         [HttpPost]
         [ValidateAntiForgeryToken]
-        // [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Approve(int id, string remarks, CancellationToken ct)
         {
             try
@@ -124,7 +124,7 @@ namespace SchoolManagementSystem.Controllers.Attendance
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-      //  [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Reject(int id, string remarks, CancellationToken ct)
         {
             try

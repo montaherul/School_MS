@@ -26,6 +26,7 @@ public class TeacherAssignmentController : Controller
         ViewBag.Classes = await _service.GetClassesAsync(ct);
         ViewBag.AcademicYears = await _service.GetAcademicYearsAsync(ct);
         ViewBag.Subjects = await _service.GetSubjectsAsync(ct);
+        ViewBag.Groups = await _service.GetStudentGroupsAsync(ct);
 
         return View(teacher);
     }
@@ -116,7 +117,7 @@ public class TeacherAssignmentController : Controller
                     {
                         className      = ca.ClassName,
                         sectionName    = ca.SectionName,
-                        subjectName    = (string?)"—",
+                        subjectName    = "—",
                         isClassTeacher = true,
                         groupName      = ca.GroupName
                     });
@@ -130,11 +131,11 @@ public class TeacherAssignmentController : Controller
     [HttpPost("AssignClass")]
     [RequirePermission("Teachers.Assign")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> AssignClass(int teacherId, int classId, int sectionId, int academicYearId)
+    public async Task<IActionResult> AssignClass(int teacherId, int classId, int? groupId, int sectionId, int academicYearId)
     {
         try
         {
-            var success = await _service.AssignClassAsync(teacherId, classId, sectionId, academicYearId, User.Identity?.Name ?? "System");
+            var success = await _service.AssignClassAsync(teacherId, classId, groupId, sectionId, academicYearId, User.Identity?.Name ?? "System");
             TempData[success ? "SuccessMessage" : "ErrorMessage"] = success ? "Class assigned successfully." : "This assignment already exists.";
         }
         catch (Exception ex)
@@ -147,11 +148,11 @@ public class TeacherAssignmentController : Controller
     [HttpPost("AssignSubject")]
     [RequirePermission("Teachers.Assign")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> AssignSubject(int teacherId, int subjectId, int classId, int sectionId, int academicYearId)
+    public async Task<IActionResult> AssignSubject(int teacherId, int subjectId, int? groupId, int classId, int sectionId, int academicYearId)
     {
         try
         {
-            var success = await _service.AssignSubjectAsync(teacherId, subjectId, classId, sectionId, academicYearId, User.Identity?.Name ?? "System");
+            var success = await _service.AssignSubjectAsync(teacherId, subjectId, groupId, classId, sectionId, academicYearId, User.Identity?.Name ?? "System");
             TempData[success ? "SuccessMessage" : "ErrorMessage"] = success ? "Subject assigned successfully." : "This assignment already exists.";
         }
         catch (Exception ex)

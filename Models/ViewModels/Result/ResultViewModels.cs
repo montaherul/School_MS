@@ -139,15 +139,6 @@ public class ResultDashboardViewModel
     public string ChartDataJson { get; set; } = "{}";
 }
 
-public class MeritListPageViewModel
-{
-    public ExamEntity Exam { get; set; } = null!;
-    public List<MeritListItem> ClassMerit { get; set; } = new();
-    public List<MeritListItem> SectionMerit { get; set; } = new();
-    public List<MeritListItem> GroupMerit { get; set; } = new();
-    public List<MeritListItem> SchoolMerit { get; set; } = new();
-}
-
 public class TeacherEntryViewModel
 {
     public int TeacherId { get; set; }

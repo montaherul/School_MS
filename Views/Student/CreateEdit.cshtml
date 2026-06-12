@@ -270,8 +270,23 @@
                     <div class="row g-3">
                         <div class="col-md-4">
                             <label asp-for="ClassId" class="form-label">Class <span class="text-danger">*</span></label>
-                            <input asp-for="ClassId" class="form-control" type="number" min="1" />
+                            <select asp-for="ClassId" class="form-select" id="studentClassId">
+                                <option value="">-- Select Class --</option>
+                                @if (ViewBag.Classes != null)
+                                {
+                                    foreach (var c in ViewBag.Classes)
+                                    {
+                                        <option value="@c.Id" data-is-group-based="@(c.IsGroupBased.ToString().ToLower())">@c.Name</option>
+                                    }
+                                }
+                            </select>
                             <span asp-validation-for="ClassId" class="text-danger small"></span>
+                        </div>
+                        <div class="col-md-4" id="studentGroupContainer" style="display:none;">
+                            <label asp-for="StudentGroupId" class="form-label">Group</label>
+                            <select asp-for="StudentGroupId" class="form-select" id="studentGroupId">
+                                <option value="">-- Select Group --</option>
+                            </select>
                         </div>
                         <div class="col-md-4">
                             <label asp-for="SectionId" class="form-label">
@@ -370,6 +385,92 @@
                         document.getElementById("PresentDistrict").value;
                 }
             });
+
+            // Class → Group → Section cascade
+            const classSelect = document.getElementById('studentClassId');
+            if (!classSelect) return;
+            const groupContainer = document.getElementById('studentGroupContainer');
+            const groupSelect = document.getElementById('studentGroupId');
+            const sectionSelect = document.getElementById('SectionId');
+
+            function loadGroups(classId, selectedGroupId) {
+                if (!classId) { groupContainer.style.display = 'none'; return; }
+                groupSelect.innerHTML = '<option value="">Loading...</option>';
+                fetch('/Section/GetStudentGroupsForClass?classId=' + classId)
+                    .then(r => r.json())
+                    .then(groups => {
+                        if (!groups || groups.length === 0) {
+                            groupContainer.style.display = 'none';
+                            groupSelect.value = '';
+                            filterSections();
+                            return;
+                        }
+                        if (groups.length === 1) {
+                            // Auto-assign single group, show as label
+                            groupContainer.style.display = 'block';
+                            groupSelect.innerHTML = '';
+                            var label = document.createElement('div');
+                            label.className = 'form-control-plaintext fw-semibold';
+                            label.textContent = groups[0].name;
+                            groupSelect.appendChild(label);
+                            var hidden = document.createElement('input');
+                            hidden.type = 'hidden';
+                            hidden.name = 'StudentGroupId';
+                            hidden.value = groups[0].id;
+                            groupSelect.appendChild(hidden);
+                            filterSections();
+                            return;
+                        }
+                        // Multiple groups — show dropdown
+                        groupContainer.style.display = 'block';
+                        groupSelect.innerHTML = '<option value="">-- Select Group --</option>';
+                        groups.forEach(function (g) {
+                            var o = document.createElement('option');
+                            o.value = g.id;
+                            o.textContent = g.name;
+                            if (selectedGroupId && parseInt(selectedGroupId) === g.id) o.selected = true;
+                            groupSelect.appendChild(o);
+                        });
+                        filterSections();
+                    });
+            }
+
+            function filterSections() {
+                var classId = classSelect.value;
+                var groupId = groupSelect.value;
+                if (!classId) {
+                    sectionSelect.innerHTML = '<option value="">-- Select Section --</option>';
+                    return;
+                }
+                sectionSelect.innerHTML = '<option value="">Loading...</option>';
+                var url = '/Section/GetSectionsByClass?classId=' + classId;
+                if (groupId) url += '&studentGroupId=' + groupId;
+                fetch(url)
+                    .then(r => r.json())
+                    .then(sections => {
+                        sectionSelect.innerHTML = '<option value="">-- Select Section --</option>';
+                        sections.forEach(function (s) {
+                            var o = document.createElement('option');
+                            o.value = s.id;
+                            o.textContent = s.name + ' (' + s.studentCount + '/' + s.capacity + ')' + (s.isFull ? ' - FULL' : '');
+                            if (s.isFull) { o.disabled = true; o.style.color = '#dc3545'; }
+                            sectionSelect.appendChild(o);
+                        });
+                    });
+            }
+
+            classSelect.addEventListener('change', function () {
+                loadGroups(parseInt(this.value), null);
+            });
+            groupSelect.addEventListener('change', function () {
+                filterSections();
+            });
+
+            // On edit: restore group + sections
+            if (classSelect.value) {
+                var initialGroupId = groupSelect.value;
+                loadGroups(parseInt(classSelect.value), initialGroupId || null);
+            }
 
         });
       

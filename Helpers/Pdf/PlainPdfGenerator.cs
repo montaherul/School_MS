@@ -70,11 +70,13 @@ public class PlainPdfGenerator : IPdfGenerator
 
         foreach (var mark in marks)
         {
+            var fullMarks = mark.Subject?.DefaultFullMarks ?? 100;
+            var passMarks = mark.Subject?.DefaultPassMarks ?? 33;
             table.AddCell(GetBodyCell(mark.Subject.Name));
-            table.AddCell(GetBodyCell($"{mark.MarksObtained} / 100"));
+            table.AddCell(GetBodyCell($"{mark.MarksObtained} / {fullMarks}"));
             table.AddCell(GetBodyCell(mark.Grade ?? "N/A"));
             table.AddCell(GetBodyCell((mark.GradePoint ?? 0).ToString("F2")));
-            table.AddCell(GetBodyCell(mark.MarksObtained >= 33 ? "PASSED" : "FAILED"));
+            table.AddCell(GetBodyCell(mark.MarksObtained >= passMarks ? "PASSED" : "FAILED"));
         }
         document.Add(table);
 
@@ -170,6 +172,11 @@ public class PlainPdfGenerator : IPdfGenerator
     }
 
     public byte[] GenerateBulkEmployeeIdCardPdfFromHtml(string html)
+    {
+        return ConvertHtmlToPdf(html, singleCard: false);
+    }
+
+    public byte[] GenerateFromHtml(string html)
     {
         return ConvertHtmlToPdf(html, singleCard: false);
     }

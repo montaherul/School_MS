@@ -94,6 +94,7 @@ public class AdmissionCreateDto
         public IFormFile? PaymentSlipFile { get; set; }
 
         public int AppliedClassId { get; set; }
+        public int? AppliedStudentGroupId { get; set; }
         // Present
         public string? PresentVillage { get; set; }
         public string? PresentPostOffice { get; set; }

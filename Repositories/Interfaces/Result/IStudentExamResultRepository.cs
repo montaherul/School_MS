@@ -13,5 +13,4 @@ public interface IStudentExamResultRepository : IBaseRepository<StudentExamResul
     Task<List<TopStudentDto>> GetTopStudentsAsync(int examId, CancellationToken ct);
     Task<(List<StudentResultExamDto> Exams, List<StudentResultSubjectDto> Subjects)> GetStudentResultsAsync(int studentId, int? academicYearId, CancellationToken ct);
     Task<ReportCardDto?> GetReportCardAsync(int examId, int studentId, CancellationToken ct);
-    Task<(TranscriptStudentInfoDto? Info, List<TranscriptExamResultDto> Exams, List<TranscriptSubjectResultDto> Subjects, TranscriptOverallStatsDto? Stats)> GetTranscriptAsync(int studentId, CancellationToken ct);
 }

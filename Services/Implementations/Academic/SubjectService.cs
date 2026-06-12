@@ -31,6 +31,7 @@ public class SubjectService : ISubjectService
                 query = query.Where(x => x.SubjectGroup == group);
         }
 
+
         if (!string.IsNullOrEmpty(status))
         {
             if (status.Equals("active", StringComparison.OrdinalIgnoreCase)) query = query.Where(x => x.IsActive);
@@ -99,7 +100,7 @@ public class SubjectService : ISubjectService
             NameBn = dto.NameBn.Trim(),
             ShortName = dto.ShortName?.Trim() ?? "",
             Category = dto.Category?.Trim() ?? "",
-            SubjectGroup = dto.SubjectGroup,
+            SubjectGroup = dto.SubjectGroup ?? string.Empty,
             IsReligionSubject = dto.IsReligionSubject,
             ReligionType = dto.ReligionType,
             IsOptional = dto.IsOptional,
@@ -130,7 +131,7 @@ public class SubjectService : ISubjectService
         entity.NameBn = dto.NameBn.Trim();
         entity.ShortName = dto.ShortName?.Trim() ?? "";
         entity.Category = dto.Category?.Trim() ?? "";
-        entity.SubjectGroup = dto.SubjectGroup;
+        entity.SubjectGroup = dto.SubjectGroup ?? string.Empty;
         entity.IsReligionSubject = dto.IsReligionSubject;
         entity.ReligionType = dto.ReligionType;
         entity.IsOptional = dto.IsOptional;
@@ -155,7 +156,7 @@ public class SubjectService : ISubjectService
         await _unitOfWork.SaveChangesAsync(ct);
     }
 
-    public async Task<IDictionary<string?, List<SubjectListItemDto>>> GetGroupedSubjectsAsync(CancellationToken ct = default)
+    public async Task<IDictionary<string, List<SubjectListItemDto>>> GetGroupedSubjectsAsync(CancellationToken ct = default)
     {
         var subjects = await _unitOfWork.Repository<Subject>().Query()
             .AsNoTracking()
@@ -182,7 +183,7 @@ public class SubjectService : ISubjectService
             .ToListAsync(ct);
 
         return subjects
-            .GroupBy(s => s.SubjectGroup ?? "General")
+            .GroupBy(s => string.IsNullOrEmpty(s.SubjectGroup) ? "General" : s.SubjectGroup)
             .OrderBy(g => g.Key)
             .ToDictionary(g => g.Key, g => g.ToList());
     }
@@ -228,7 +229,7 @@ public class SubjectService : ISubjectService
                 NameBn = dto.NameBn.Trim(),
                 ShortName = dto.ShortName?.Trim() ?? "",
                 Category = dto.Category?.Trim() ?? "",
-                SubjectGroup = dto.SubjectGroup,
+                SubjectGroup = dto.SubjectGroup ?? string.Empty,
                 IsReligionSubject = dto.IsReligionSubject,
                 ReligionType = dto.ReligionType,
                 IsOptional = dto.IsOptional,

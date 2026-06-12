@@ -218,7 +218,14 @@ public class ExamRepository : BaseRepository<Exam>, IExamRepository
     {
         var exam = await _db.Exams.AsNoTracking()
             .Where(e => e.Id == examId && !e.IsDeleted)
-            .Select(e => new { e.Id, e.Name, e.Term, e.StartsOn, e.EndsOn, e.Status, e.AcademicYearId, e.StudentGroupId, e.IsLocked, e.LockedAt, e.CreatedAt, e.CreatedBy, StudentGroupName = e.StudentGroup != null ? e.StudentGroup.Name : (string?)null })
+            .Select(e => new {
+                e.Id, e.Name, e.Term, e.StartsOn, e.EndsOn, e.Status,
+                e.AcademicYearId, e.ClassId, e.SectionId, e.StudentGroupId,
+                e.IsLocked, e.LockedAt, e.CreatedAt, e.CreatedBy,
+                StudentGroupName = e.StudentGroup != null ? e.StudentGroup.Name : (string?)null,
+                ClassName = e.Class.Name,
+                SectionName = e.Section != null ? e.Section.Name : (string?)null
+            })
             .FirstOrDefaultAsync(ct);
 
         if (exam == null) return null;
@@ -232,6 +239,13 @@ public class ExamRepository : BaseRepository<Exam>, IExamRepository
         var subjectCount = await _db.ExamSubjects
             .AsNoTracking()
             .CountAsync(es => es.ExamId == examId && !es.IsDeleted, ct);
+
+        var subjectNames = await _db.ExamSubjects
+            .AsNoTracking()
+            .Include(es => es.Subject)
+            .Where(es => es.ExamId == examId && !es.IsDeleted)
+            .Select(es => es.Subject != null ? es.Subject.Name : "")
+            .ToListAsync(ct);
 
         var studentResultCount = await _db.StudentExamResults
             .AsNoTracking()
@@ -247,11 +261,16 @@ public class ExamRepository : BaseRepository<Exam>, IExamRepository
             Status = exam.Status,
             AcademicYearId = exam.AcademicYearId,
             AcademicYearName = academicYearName ?? string.Empty,
+            ClassId = exam.ClassId,
+            ClassName = exam.ClassName,
+            SectionId = exam.SectionId,
+            SectionName = exam.SectionName,
             StudentGroupId = exam.StudentGroupId,
             StudentGroupName = exam.StudentGroupName,
             IsLocked = exam.IsLocked,
             LockedAt = exam.LockedAt,
             SubjectCount = subjectCount,
+            SubjectNames = subjectNames,
             StudentResultCount = studentResultCount,
             CreatedAt = exam.CreatedAt,
             CreatedBy = exam.CreatedBy

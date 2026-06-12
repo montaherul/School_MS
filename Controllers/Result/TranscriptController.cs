@@ -40,7 +40,7 @@ public class TranscriptController : Controller
     }
 
     [HttpGet]
-    [Authorize]
+    [Authorize(Roles = "Student")]
     public async Task<IActionResult> MyTranscript(int academicYearId)
     {
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");

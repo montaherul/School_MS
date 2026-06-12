@@ -1,7 +1,7 @@
 @model IEnumerable<SchoolManagementSystem.Models.Entities.Result.StudentExamResult>
 @using SchoolManagementSystem.Models.Entities.Result
 @using SchoolManagementSystem.Models.Enums
-@inject SchoolManagementSystem.Services.Guardian.IGuardianService GuardianSvc
+@inject SchoolManagementSystem.Services.Interfaces.Guardian.IGuardianService GuardianSvc
 @{
     ViewData["Title"] = "Results";
     var studentId = (int)(ViewBag.StudentId ?? 0);

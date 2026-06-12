@@ -14,11 +14,13 @@ public class TranscriptService : ITranscriptService
 {
     private readonly IUnitOfWork _uow;
     private readonly IPdfGenerator _pdfGenerator;
+    private readonly IStudentSubjectFilterService _subjectFilter;
 
-    public TranscriptService(IUnitOfWork uow, IPdfGenerator pdfGenerator)
+    public TranscriptService(IUnitOfWork uow, IPdfGenerator pdfGenerator, IStudentSubjectFilterService subjectFilter)
     {
         _uow = uow;
         _pdfGenerator = pdfGenerator;
+        _subjectFilter = subjectFilter;
     }
 
     public async Task<StudentTranscriptDto?> GetStudentTranscriptAsync(int studentId, int academicYearId)
@@ -51,7 +53,7 @@ public class TranscriptService : ITranscriptService
             .ToListAsync();
 
         // Filter subject results based on student's curriculum
-        var validSubjectIds = await GetValidSubjectIdsForStudentAsync(student);
+        var validSubjectIds = await _subjectFilter.GetValidSubjectIdsForStudentAsync(student);
         if (validSubjectIds.Count > 0)
         {
             subjectResults = subjectResults.Where(sr => validSubjectIds.Contains(sr.SubjectId)).ToList();
@@ -119,8 +121,8 @@ public class TranscriptService : ITranscriptService
                     {
                         SubjectName = first.Subject?.Name ?? "",
                         SubjectNameBn = first.Subject?.NameBn ?? "",
-                        TotalMarks = g.Average(s => s.MarksObtained),
-                        FullMarks = g.Average(s => s.FullMarks),
+                        TotalMarks = g.Sum(s => s.MarksObtained),
+                        FullMarks = g.Sum(s => s.FullMarks),
                         Grade = g.OrderByDescending(s => s.GradePoint).First().Grade,
                         GradePoint = g.Average(s => s.GradePoint),
                         IsPassed = g.All(s => s.IsPassed),
@@ -138,44 +140,5 @@ public class TranscriptService : ITranscriptService
         if (transcript == null) return null;
 
         return _pdfGenerator.GenerateTranscript(transcript);
-    }
-
-    private async Task<HashSet<int>> GetValidSubjectIdsForStudentAsync(SchoolManagementSystem.Models.Entities.Student.Student student)
-    {
-        var validIds = new HashSet<int>();
-
-        var classSubjects = await _uow.Repository<ClassSubject>().Query()
-            .AsNoTracking()
-            .Where(cs => cs.SchoolClassId == student.ClassId && !cs.IsDeleted && cs.IsActive)
-            .ToListAsync();
-
-        foreach (var cs in classSubjects)
-        {
-            // Skip religion subjects not matching student's religion
-            if (cs.IsReligionSubject)
-            {
-                if (student.AssignedReligionSubjectId.HasValue && cs.SubjectId == student.AssignedReligionSubjectId.Value)
-                    validIds.Add(cs.SubjectId);
-                continue;
-            }
-
-            // Skip group subjects not matching student's group
-            if (cs.IsGroupSubject)
-            {
-                if (cs.StudentGroupId.HasValue && student.StudentGroupId.HasValue &&
-                    cs.StudentGroupId.Value == student.StudentGroupId.Value)
-                    validIds.Add(cs.SubjectId);
-                continue;
-            }
-
-            // Include common (non-religion, non-group) subjects
-            validIds.Add(cs.SubjectId);
-        }
-
-        // Include the student's optional subject if assigned
-        if (student.OptionalSubjectId.HasValue)
-            validIds.Add(student.OptionalSubjectId.Value);
-
-        return validIds;
     }
 }

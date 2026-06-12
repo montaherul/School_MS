@@ -231,7 +231,7 @@ public class ClassSubjectMappingSeeder
             GetGroupId(groupLookup, "SCIENCE");
 
         var businessGroupId =
-            GetGroupId(groupLookup, "BUSINESS STUDIES");
+            GetGroupId(groupLookup, "BusinessStudies");
 
         var humanitiesGroupId =
             GetGroupId(groupLookup, "HUMANITIES");
@@ -317,7 +317,7 @@ public class ClassSubjectMappingSeeder
                         classIds[classId],
                         GetSubjectId(subjectLookup, subjectCode),
                         studentGroupId: businessGroupId,
-                        groupName: "Business Studies"));
+                        groupName: "BusinessStudies"));
             }
 
             // Humanities Group

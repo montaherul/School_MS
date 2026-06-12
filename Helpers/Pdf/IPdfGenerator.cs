@@ -14,4 +14,5 @@ public interface IPdfGenerator
     byte[] GenerateEmployeeIdCardFromHtml(string html);
     byte[] GenerateBulkEmployeeIdCardPdfFromHtml(string html);
     byte[] GenerateTranscript(SchoolManagementSystem.Models.DTOs.Result.StudentTranscriptDto transcript);
+    byte[] GenerateFromHtml(string html);
 }

@@ -37,6 +37,8 @@ public class ClassSubjectMappingService : IClassSubjectMappingService
         {
             if (groupName.Equals("General", StringComparison.OrdinalIgnoreCase))
                 query = query.Where(x => string.IsNullOrEmpty(x.GroupName) || x.GroupName == "General");
+            else if (groupName.Equals("BusinessStudies", StringComparison.OrdinalIgnoreCase))
+                query = query.Where(x => x.GroupName == "BusinessStudies" || x.GroupName == "Business Studies" || (x.StudentGroup != null && (x.StudentGroup.Name == "BusinessStudies" || x.StudentGroup.Name == "Business Studies")));
             else
                 query = query.Where(x => x.GroupName == groupName || (x.StudentGroup != null && x.StudentGroup.Name == groupName));
         }
@@ -121,11 +123,14 @@ public class ClassSubjectMappingService : IClassSubjectMappingService
     public async Task<int> CreateOrUpdateAsync(ClassSubjectUpsertDto dto, string userId, CancellationToken ct = default)
     {
         var repo = _unitOfWork.Repository<ClassSubject>();
+        var groupName = string.IsNullOrEmpty(dto.GroupName) ? "General" : dto.GroupName;
+
+        await ValidateGroupForClassAsync(dto.SchoolClassId, groupName, ct);
 
         int? resolvedGroupId = null;
-        if (!string.IsNullOrEmpty(dto.GroupName))
+        if (!string.IsNullOrEmpty(groupName) && !groupName.Equals("General", StringComparison.OrdinalIgnoreCase))
         {
-            var grp = await _unitOfWork.Repository<StudentGroup>().FirstOrDefaultAsync(x => x.Name.Trim().ToUpper() == dto.GroupName.Trim().ToUpper() && !x.IsDeleted, ct);
+            var grp = await _unitOfWork.Repository<StudentGroup>().FirstOrDefaultAsync(x => x.Name.Trim().ToUpper() == groupName.Trim().ToUpper() && !x.IsDeleted, ct);
             resolvedGroupId = grp?.Id;
         }
 
@@ -134,7 +139,7 @@ public class ClassSubjectMappingService : IClassSubjectMappingService
             var entity = await repo.FirstOrDefaultAsync(x => x.Id == dto.Id && !x.IsDeleted, ct)
                 ?? throw new InvalidOperationException("Class-Subject mapping not found.");
 
-            entity.GroupName = dto.GroupName;
+            entity.GroupName = groupName;
             entity.StudentGroupId = resolvedGroupId ?? dto.StudentGroupId;
             entity.FullMarks = dto.FullMarks;
             entity.PassMarks = dto.PassMarks;
@@ -155,7 +160,7 @@ public class ClassSubjectMappingService : IClassSubjectMappingService
             var duplicate = await repo.AnyAsync(x =>
                 x.SchoolClassId == dto.SchoolClassId &&
                 x.SubjectId == dto.SubjectId &&
-                x.GroupName == dto.GroupName &&
+                x.GroupName == groupName &&
                 !x.IsDeleted, ct);
 
             if (duplicate)
@@ -169,7 +174,7 @@ public class ClassSubjectMappingService : IClassSubjectMappingService
                 SchoolClassId = dto.SchoolClassId,
                 SubjectId = dto.SubjectId,
                 StudentGroupId = resolvedGroupId ?? dto.StudentGroupId,
-                GroupName = dto.GroupName,
+                GroupName = groupName,
                 FullMarks = dto.FullMarks,
                 PassMarks = dto.PassMarks,
                 DisplayOrder = dto.DisplayOrder,
@@ -190,11 +195,14 @@ public class ClassSubjectMappingService : IClassSubjectMappingService
     public async Task SaveAssignmentsAsync(ClassSubjectAssignmentDto dto, string userId, CancellationToken ct = default)
     {
         var repo = _unitOfWork.Repository<ClassSubject>();
+        var groupName = string.IsNullOrEmpty(dto.GroupName) ? "General" : dto.GroupName;
+
+        await ValidateGroupForClassAsync(dto.SchoolClassId, groupName, ct);
 
         int? resolvedGroupId = null;
-        if (!string.IsNullOrEmpty(dto.GroupName))
+        if (!string.IsNullOrEmpty(groupName) && !groupName.Equals("General", StringComparison.OrdinalIgnoreCase))
         {
-            var grp = await _unitOfWork.Repository<StudentGroup>().FirstOrDefaultAsync(x => x.Name.Trim().ToUpper() == dto.GroupName.Trim().ToUpper() && !x.IsDeleted, ct);
+            var grp = await _unitOfWork.Repository<StudentGroup>().FirstOrDefaultAsync(x => x.Name.Trim().ToUpper() == groupName.Trim().ToUpper() && !x.IsDeleted, ct);
             resolvedGroupId = grp?.Id;
         }
 
@@ -203,7 +211,7 @@ public class ClassSubjectMappingService : IClassSubjectMappingService
             var existing = await repo.FirstOrDefaultAsync(x =>
                 x.SchoolClassId == dto.SchoolClassId &&
                 x.SubjectId == subId &&
-                x.GroupName == dto.GroupName, ct);
+                x.GroupName == groupName, ct);
 
             if (existing != null)
             {
@@ -224,7 +232,7 @@ public class ClassSubjectMappingService : IClassSubjectMappingService
                 {
                     SchoolClassId = dto.SchoolClassId,
                     SubjectId = subId,
-                    GroupName = dto.GroupName,
+                    GroupName = groupName,
                     StudentGroupId = resolvedGroupId,
                     FullMarks = dto.FullMarks,
                     PassMarks = dto.PassMarks,
@@ -240,6 +248,25 @@ public class ClassSubjectMappingService : IClassSubjectMappingService
         }
 
         await _unitOfWork.SaveChangesAsync(ct);
+    }
+
+    private async Task ValidateGroupForClassAsync(int classId, string groupName, CancellationToken ct)
+    {
+        var schoolClass = await _unitOfWork.Repository<SchoolClass>().FirstOrDefaultAsync(x => x.Id == classId && !x.IsDeleted, ct);
+        if (schoolClass == null) throw new InvalidOperationException("Class not found.");
+
+        var isSecondary = schoolClass.SortOrder >= 9;
+        var allowed = isSecondary
+            ? new[] { "General", "Science", "BusinessStudies", "Humanities" }
+            : new[] { "General" };
+
+        if (!allowed.Contains(groupName, StringComparer.OrdinalIgnoreCase))
+        {
+            var msg = isSecondary
+                ? $"Class {schoolClass.SortOrder} allows groups: General, Science, BusinessStudies, Humanities."
+                : $"Class {schoolClass.SortOrder} only allows General group.";
+            throw new InvalidOperationException($"Invalid group '{groupName}' for {schoolClass.Name}. {msg}");
+        }
     }
 
     public async Task DeleteAsync(int id, string userId, CancellationToken ct = default)

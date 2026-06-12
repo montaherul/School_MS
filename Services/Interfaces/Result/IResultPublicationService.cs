@@ -15,7 +15,5 @@ public interface IResultPublicationService
     Task<IEnumerable<ResultPublicationDto>> GetResultPublicationsAsync();
     Task<StudentPortalResultDto> GetStudentResultsAsync(int studentId);
     Task<IEnumerable<StudentExamResultDto>> GetAllResultsAsync(int? examId, int? classId, string? status);
-    Task RecalculateResultsAsync(int examId);
-    Task RecalculateMeritPositionsAsync(int examId);
 }
 

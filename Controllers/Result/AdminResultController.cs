@@ -23,6 +23,7 @@ public class AdminResultController : Controller
 {
     private readonly IResultAnalyticsService _analyticsService;
     private readonly IResultPublicationService _publicationService;
+    private readonly IResultCalculationService _resultCalculationService;
     private readonly IExamService _examService;
     private readonly IMeritCalculationService _meritCalculationService;
     private readonly ISubjectService _subjectService;
@@ -33,6 +34,7 @@ public class AdminResultController : Controller
     public AdminResultController(
         IResultAnalyticsService analyticsService,
         IResultPublicationService publicationService,
+        IResultCalculationService resultCalculationService,
         IExamService examService,
         IMeritCalculationService meritCalculationService,
         ISubjectService subjectService,
@@ -42,6 +44,7 @@ public class AdminResultController : Controller
     {
         _analyticsService = analyticsService;
         _publicationService = publicationService;
+        _resultCalculationService = resultCalculationService;
         _examService = examService;
         _meritCalculationService = meritCalculationService;
         _subjectService = subjectService;
@@ -162,7 +165,7 @@ public class AdminResultController : Controller
     public async Task<IActionResult> AllSubjects(CancellationToken ct)
     {
         var groupedSubjects = await _subjectService.GetGroupedSubjectsAsync(ct);
-        var dict = new Dictionary<string?, List<SchoolManagementSystem.Models.DTOs.Academic.SubjectListItemDto>>();
+        var dict = new Dictionary<string, List<SchoolManagementSystem.Models.DTOs.Academic.SubjectListItemDto>>();
         foreach (var kvp in groupedSubjects)
             dict[kvp.Key] = kvp.Value.ToList();
         var allSubjects = dict.SelectMany(g => g.Value).ToList();
@@ -212,21 +215,9 @@ public class AdminResultController : Controller
 
     [HttpGet]
     [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
-    public async Task<IActionResult> MeritLists(int examId, CancellationToken ct)
+    public IActionResult MeritLists(int examId)
     {
-        var exam = await _examService.GetExamByIdAsync(examId, ct) as SchoolManagementSystem.Models.Entities.Exam.Exam;
-        if (exam == null) return NotFound();
-
-        var model = new SchoolManagementSystem.Models.ViewModels.Result.MeritListPageViewModel
-        {
-            Exam = exam,
-            ClassMerit = (await _meritCalculationService.GetMeritListAsync(examId, MeritCategory.Class)).Take(50).ToList(),
-            SectionMerit = (await _meritCalculationService.GetMeritListAsync(examId, MeritCategory.Section)).Take(50).ToList(),
-            GroupMerit = (await _meritCalculationService.GetMeritListAsync(examId, MeritCategory.Group)).Take(50).ToList(),
-            SchoolMerit = (await _meritCalculationService.GetMeritListAsync(examId, MeritCategory.School)).Take(50).ToList()
-        };
-
-        return View(model);
+        return RedirectToAction("Index", "MeritList", new { examId });
     }
 
     [HttpGet]
@@ -377,7 +368,6 @@ public class AdminResultController : Controller
 
     [HttpPost]
     [Authorize(Roles = "Admin,Super Admin,Principal")]
-    [IgnoreAntiforgeryToken]
     public async Task<IActionResult> ApproveResults([FromBody] PublishRequest request)
     {
         try
@@ -394,7 +384,6 @@ public class AdminResultController : Controller
 
     [HttpPost]
     [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
-    [IgnoreAntiforgeryToken]
     public async Task<IActionResult> RejectResults([FromBody] RejectRequest request)
     {
         try
@@ -442,7 +431,7 @@ public class AdminResultController : Controller
     {
         try
         {
-            await _publicationService.RecalculateResultsAsync(examId);
+            await _resultCalculationService.CalculateExamResultsAsync(examId);
             TempData["Success"] = "Results recalculated successfully.";
         }
         catch (Exception ex)
@@ -458,7 +447,7 @@ public class AdminResultController : Controller
     {
         try
         {
-            await _publicationService.RecalculateMeritPositionsAsync(examId);
+            await _meritCalculationService.RecalculateMeritPositionsAsync(examId);
             TempData["Success"] = "Merit positions recalculated successfully.";
         }
         catch (Exception ex)

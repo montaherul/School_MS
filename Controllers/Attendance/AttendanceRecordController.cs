@@ -168,7 +168,7 @@ public class AttendanceRecordController : Controller
             await LogAttendanceActionAsync("Unauthorized Access Attempt - GetSectionsByClass", "AttendanceRecord", 0, ct);
             return Forbid();
         }
-        var sections = await _sectionService.GetByClassIdAsync(classId, ct);
+        var sections = await _sectionService.GetByClassIdAsync(classId, null, ct);
         return Json(sections.Select(s => new { id = s.Id, name = s.Name }));
     }
 

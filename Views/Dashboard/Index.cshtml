@@ -206,14 +206,14 @@
                     <div class="card bg-dark text-white border-secondary p-3 h-100" style="background: rgba(15, 118, 110, 0.05) !important;">
                         <h5 class="card-title text-danger"><i class="bi bi-grid-3x3"></i> Tabulation Matrix</h5>
                         <p class="card-text text-muted" style="font-size: 0.85rem; margin-bottom: 12px;">Standard full-view dynamic subject-by-subject school grade book tabulation sheets.</p>
-                        <a href="/AcademicAnalytics/TabulationSheet" class="btn btn-outline-danger btn-sm mt-auto w-100">Generate Grade Book</a>
+                        <a href="/AdminResult/TabulationSheet" class="btn btn-outline-danger btn-sm mt-auto w-100">Generate Grade Book</a>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="card bg-dark text-white border-secondary p-3 h-100" style="background: rgba(15, 118, 110, 0.05) !important;">
                         <h5 class="card-title text-primary"><i class="bi bi-pie-chart"></i> Subject Analytics</h5>
                         <p class="card-text text-muted" style="font-size: 0.85rem; margin-bottom: 12px;">Deep exam analysis including subject pass-percentages and average/min/max metrics.</p>
-                        <a href="/AcademicAnalytics/Index" class="btn btn-outline-primary btn-sm mt-auto w-100">Analytics Dashboard</a>
+                        <a href="/AdminResult/Dashboard" class="btn btn-outline-primary btn-sm mt-auto w-100">Analytics Dashboard</a>
                     </div>
                 </div>
             </div>
@@ -244,7 +244,7 @@
                 <a class="dash-module-btn" href="/Marks/Index"><i class="bi bi-pen"></i> Marks Entry</a>
                 <a class="dash-module-btn" href="/ReportCard/Index"><i class="bi bi-file-earmark-pdf"></i> Report Cards</a>
                 <a class="dash-module-btn" href="/MeritList/Index"><i class="bi bi-trophy"></i> Rankings</a>
-                <a class="dash-module-btn" href="/AcademicAnalytics/Index"><i class="bi bi-bar-chart-line"></i> Exam Analytics</a>
+                <a class="dash-module-btn" href="/AdminResult/Dashboard"><i class="bi bi-bar-chart-line"></i> Exam Analytics</a>
                 @if (User.IsInRole("Super Admin") || User.IsInRole("Principal"))
                 {
                     <a class="dash-module-btn dash-module-btn--primary" href="/ResultManagement/AdminIndex"><i class="bi bi-shield-check"></i> Result Management</a>

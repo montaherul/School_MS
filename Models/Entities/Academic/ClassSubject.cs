@@ -31,7 +31,7 @@ public class ClassSubject : BaseEntity
     public string? ReligionType { get; set; }
 
     [MaxLength(50)]
-    public string? GroupName { get; set; }
+    public string GroupName { get; set; } = string.Empty;
 
     public bool IsActive { get; set; } = true;
 

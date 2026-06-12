@@ -15,7 +15,6 @@ namespace SchoolManagementSystem.Controllers.Result;
 [Authorize(Roles = "Admin,Super Admin,Principal")]
 [Route("api/[controller]")]
 [ApiController]
-[IgnoreAntiforgeryToken]
 public class ExamAdminController : ControllerBase
 {
     private readonly IExamService _examService;
@@ -24,6 +23,7 @@ public class ExamAdminController : ControllerBase
     private readonly IAcademicYearService _academicYearService;
     private readonly IExamValidationService _examValidationService;
     private readonly ISubjectMarkStructureService _markStructureService;
+    private readonly IResultCalculationService _resultCalculationService;
     private readonly ILogger<ExamAdminController> _logger;
 
     public ExamAdminController(
@@ -33,6 +33,7 @@ public class ExamAdminController : ControllerBase
         IAcademicYearService academicYearService,
         IExamValidationService examValidationService,
         ISubjectMarkStructureService markStructureService,
+        IResultCalculationService resultCalculationService,
         ILogger<ExamAdminController> logger)
     {
         _examService = examService;
@@ -41,6 +42,7 @@ public class ExamAdminController : ControllerBase
         _academicYearService = academicYearService;
         _examValidationService = examValidationService;
         _markStructureService = markStructureService;
+        _resultCalculationService = resultCalculationService;
         _logger = logger;
     }
 
@@ -72,7 +74,12 @@ public class ExamAdminController : ControllerBase
         try
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            {
+                var errors = string.Join("; ", ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage));
+                return BadRequest(new { success = false, message = $"Validation failed: {errors}" });
+            }
 
             if (dto.Subjects != null && dto.Subjects.Count > 0)
                 await _examValidationService.ThrowIfSubjectMarkStructureMissingAsync(dto.Subjects.Select(s => s.SubjectId).ToList(), ct);
@@ -97,7 +104,12 @@ public class ExamAdminController : ControllerBase
         try
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            {
+                var errors = string.Join("; ", ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage));
+                return BadRequest(new { success = false, message = $"Validation failed: {errors}" });
+            }
 
             if (dto.Subjects != null && dto.Subjects.Count > 0)
                 await _examValidationService.ThrowIfSubjectMarkStructureMissingAsync(dto.Subjects.Select(s => s.SubjectId).ToList(), ct);
@@ -160,7 +172,12 @@ public class ExamAdminController : ControllerBase
         try
         {
             if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            {
+                var errors = string.Join("; ", ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage));
+                return BadRequest(new { success = false, message = $"Validation failed: {errors}" });
+            }
 
             var rule = await _examService.UpsertGradingRuleAsync(dto, ct);
             _logger.LogInformation("Grading rule saved successfully");
@@ -270,19 +287,17 @@ public class ExamAdminController : ControllerBase
     }
 
     /// <summary>
-    /// Publish exam results (Admin only)
+    /// Publish exam results — delegated to AdminResultController
     /// </summary>
     [HttpPost("publish-results/{examId}")]
-    public async Task<IActionResult> PublishResults(int examId, [FromBody] ResultPublishDto dto, CancellationToken ct = default)
+    public async Task<IActionResult> PublishResults(int examId, [FromBody] ResultPublishDto dto)
     {
         try
         {
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
-            // Set exam ID and user ID in dto before publishing
             dto.ExamId = examId;
             await _publicationService.PublishResultsAsync(dto);
             _logger.LogInformation($"Results published for exam: {examId}");
-            return Ok(new { success = true, message = "Results published successfully" });
+            return Ok(new { success = true, message = "Results published successfully." });
         }
         catch (Exception ex)
         {
@@ -292,14 +307,13 @@ public class ExamAdminController : ControllerBase
     }
 
     [HttpPost("review-results/{examId}")]
-    public async Task<IActionResult> ReviewResults(int examId, CancellationToken ct = default)
+    public async Task<IActionResult> ReviewResults(int examId)
     {
         try
         {
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
-            await _publicationService.ReviewExamResultsAsync(examId, userId);
-            _logger.LogInformation($"Results reviewed for exam: {examId} by user {userId}");
-            return Ok(new { success = true, message = "Results reviewed successfully" });
+            await _publicationService.ReviewExamResultsAsync(examId, int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0"));
+            _logger.LogInformation($"Exam reviewed: {examId}");
+            return Ok(new { success = true, message = "Exam results reviewed." });
         }
         catch (Exception ex)
         {
@@ -309,14 +323,13 @@ public class ExamAdminController : ControllerBase
     }
 
     [HttpPost("approve-results/{examId}")]
-    public async Task<IActionResult> ApproveResults(int examId, CancellationToken ct = default)
+    public async Task<IActionResult> ApproveResults(int examId)
     {
         try
         {
-            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
-            await _publicationService.ApproveReviewedResultsAsync(examId, userId);
-            _logger.LogInformation($"Results approved for exam: {examId} by user {userId}");
-            return Ok(new { success = true, message = "Results approved successfully" });
+            await _publicationService.ApproveReviewedResultsAsync(examId, int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0"));
+            _logger.LogInformation($"Exam approved: {examId}");
+            return Ok(new { success = true, message = "Exam results approved." });
         }
         catch (Exception ex)
         {
@@ -326,13 +339,13 @@ public class ExamAdminController : ControllerBase
     }
 
     [HttpPost("unpublish-results/{examId}")]
-    public async Task<IActionResult> UnpublishResults(int examId, CancellationToken ct = default)
+    public async Task<IActionResult> UnpublishResults(int examId)
     {
         try
         {
             await _publicationService.UnpublishResultsAsync(examId);
-            _logger.LogInformation($"Results unpublished for exam: {examId}");
-            return Ok(new { success = true, message = "Results unpublished successfully" });
+            _logger.LogInformation($"Exam unpublished: {examId}");
+            return Ok(new { success = true, message = "Exam results unpublished." });
         }
         catch (Exception ex)
         {
@@ -342,13 +355,13 @@ public class ExamAdminController : ControllerBase
     }
 
     [HttpPost("republish-results/{examId}")]
-    public async Task<IActionResult> RepublishResults(int examId, CancellationToken ct = default)
+    public async Task<IActionResult> RepublishResults(int examId)
     {
         try
         {
             await _publicationService.RepublishResultsAsync(examId);
-            _logger.LogInformation($"Results republished for exam: {examId}");
-            return Ok(new { success = true, message = "Results republished successfully" });
+            _logger.LogInformation($"Exam republished: {examId}");
+            return Ok(new { success = true, message = "Exam results republished." });
         }
         catch (Exception ex)
         {
@@ -429,6 +442,25 @@ public class ExamAdminController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error fetching component preview");
+            return BadRequest(new { success = false, message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Generate FinalResult records for all students in an academic year
+    /// </summary>
+    [HttpPost("generate-final-results/{academicYearId}")]
+    public async Task<IActionResult> GenerateFinalResults(int academicYearId, CancellationToken ct = default)
+    {
+        try
+        {
+            var result = await _resultCalculationService.GenerateFinalResultsAsync(academicYearId);
+            _logger.LogInformation($"FinalResults generated for academic year {academicYearId}: {result.GeneratedCount} generated, {result.UpdatedCount} updated");
+            return Ok(new { success = true, data = result });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error generating final results");
             return BadRequest(new { success = false, message = ex.Message });
         }
     }

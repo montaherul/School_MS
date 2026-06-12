@@ -58,7 +58,7 @@
                         <option value="">-- All Groups --</option>
                         <option value="General">General (General Education)</option>
                         <option value="Science">Science Group</option>
-                        <option value="Business Studies">Business Studies Group</option>
+                        <option value="BusinessStudies">Business Studies Group</option>
                         <option value="Humanities">Humanities Group</option>
                     </select>
                 </div>
@@ -138,7 +138,8 @@
                 minWidth: 120,
                 formatter: function(cell) {
                     const val = cell.getValue();
-                    if (!val) return `<span class="badge bg-light text-muted border border-light-subtle rounded-pill">General</span>`;
+                    if (!val || val === 'General') return `<span class="badge bg-light text-muted border border-light-subtle rounded-pill">General</span>`;
+                    if (val === 'BusinessStudies') return `<span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill">Business Studies</span>`;
                     return `<span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill">${val}</span>`;
                 }
             },
@@ -224,7 +225,8 @@
                     }
                     if (e.target.closest('.delete-btn')) {
                         pendingUnmapId = data.id;
-                        document.getElementById('unmapDetails').textContent = `${data.subjectNameEn} for Class: ${data.schoolClassName} (${data.groupName || 'General'})`;
+                        const groupDisplay = !data.groupName || data.groupName === 'General' ? 'General' : data.groupName === 'BusinessStudies' ? 'Business Studies' : data.groupName;
+                        document.getElementById('unmapDetails').textContent = `${data.subjectNameEn} for Class: ${data.schoolClassName} (${groupDisplay})`;
                         unmapModal.show();
                     }
                 }

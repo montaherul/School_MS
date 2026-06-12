@@ -75,6 +75,32 @@ public class ReEvaluationRequestItemDto
     public DateTime CreatedAt { get; set; }
 }
 
+public class EntryStatusSummaryDto
+{
+    public int ExamId { get; set; }
+    public string ExamName { get; set; } = string.Empty;
+    public List<EntryStatusClassDto> Classes { get; set; } = new();
+}
+
+public class EntryStatusClassDto
+{
+    public int ClassId { get; set; }
+    public string ClassName { get; set; } = string.Empty;
+    public int StudentCount { get; set; }
+    public List<EntryStatusSubjectDto> Subjects { get; set; } = new();
+}
+
+public class EntryStatusSubjectDto
+{
+    public int SubjectId { get; set; }
+    public string SubjectName { get; set; } = string.Empty;
+    public int TotalStudents { get; set; }
+    public int EnteredCount { get; set; }
+    public int LockedCount { get; set; }
+    public bool IsLocked { get; set; }
+    public decimal EntryPercentage { get; set; }
+}
+
 public class AdminDashboardDto
 {
     public AcademicYear? ActiveYear { get; set; }

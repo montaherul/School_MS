@@ -689,7 +689,9 @@ namespace SchoolManagementSystem.Controllers.Attendance
                 if (schoolClass.IsGroupBased)
                 {
                     groups = await _uow.Repository<SchoolManagementSystem.Models.Entities.Academic.StudentGroup>().Query()
-                        .Where(g => g.IsActive && !g.IsDeleted)
+                        .Where(g => g.IsActive && !g.IsDeleted
+                            && g.MinClass <= schoolClass.SortOrder
+                            && g.MaxClass >= schoolClass.SortOrder)
                         .OrderBy(g => g.DisplayOrder)
                         .ToListAsync(ct);
                 }

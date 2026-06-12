@@ -320,24 +320,24 @@ public static class DbInitializer
         //    new Section { Id = 3, SchoolClassId = 2, Name = "A", CreatedAt = createdAt });
         modelBuilder.Entity<Subject>().HasData(
 
-            // Primary Subjects
-            new Subject { Id = 1, Code = "BAN", Name = "বাংলা", NameBn = "বাংলা", CreatedAt = createdAt },
-            new Subject { Id = 2, Code = "ENG", Name = "English", NameBn = "ইংরেজি", CreatedAt = createdAt },
-            new Subject { Id = 3, Code = "MAT", Name = "Mathematics", NameBn = "গণিত", CreatedAt = createdAt },
-            new Subject { Id = 4, Code = "GSCI", Name = "General Science", NameBn = "সাধারণ বিজ্ঞান", CreatedAt = createdAt },
-            new Subject { Id = 5, Code = "SOC", Name = "Bangladesh and Global Studies", NameBn = "বাংলাদেশ ও বিশ্ব পরিচয়", CreatedAt = createdAt },
-            new Subject { Id = 6, Code = "REL", Name = "Religion and Moral Education", NameBn = "ধর্ম ও নৈতিক শিক্ষা", CreatedAt = createdAt },
-            new Subject { Id = 7, Code = "ART", Name = "Arts and Crafts", NameBn = "চারুকলা", CreatedAt = createdAt },
-            new Subject { Id = 8, Code = "PE", Name = "Physical Education", NameBn = "শারীরিক শিক্ষা", CreatedAt = createdAt },
+            // Primary Subjects (General education for classes 1-5)
+            new Subject { Id = 1, Code = "BAN", Name = "বাংলা", NameBn = "বাংলা", CreatedAt = createdAt, SubjectGroup = "General" },
+            new Subject { Id = 2, Code = "ENG", Name = "English", NameBn = "ইংরেজি", CreatedAt = createdAt, SubjectGroup = "General" },
+            new Subject { Id = 3, Code = "MAT", Name = "Mathematics", NameBn = "গণিত", CreatedAt = createdAt, SubjectGroup = "General" },
+            new Subject { Id = 4, Code = "GSCI", Name = "General Science", NameBn = "সাধারণ বিজ্ঞান", CreatedAt = createdAt, SubjectGroup = "General" },
+            new Subject { Id = 5, Code = "SOC", Name = "Bangladesh and Global Studies", NameBn = "বাংলাদেশ ও বিশ্ব পরিচয়", CreatedAt = createdAt, SubjectGroup = "General" },
+            new Subject { Id = 6, Code = "REL", Name = "Religion and Moral Education", NameBn = "ধর্ম ও নৈতিক শিক্ষা", CreatedAt = createdAt, SubjectGroup = "General" },
+            new Subject { Id = 7, Code = "ART", Name = "Arts and Crafts", NameBn = "চারুকলা", CreatedAt = createdAt, SubjectGroup = "General" },
+            new Subject { Id = 8, Code = "PE", Name = "Physical Education", NameBn = "শারীরিক শিক্ষা", CreatedAt = createdAt, SubjectGroup = "General" },
 
-            // SSC Common Subjects
-            new Subject { Id = 9, Code = "BAN1", Name = "Bangla 1st Paper", NameBn = "বাংলা ১ম পত্র", CreatedAt = createdAt },
-            new Subject { Id = 10, Code = "BAN2", Name = "Bangla 2nd Paper", NameBn = "বাংলা ২য় পত্র", CreatedAt = createdAt },
-            new Subject { Id = 11, Code = "ENG1", Name = "English 1st Paper", NameBn = "ইংরেজি ১ম পত্র", CreatedAt = createdAt },
-            new Subject { Id = 12, Code = "ENG2", Name = "English 2nd Paper", NameBn = "ইংরেজি ২য় পত্র", CreatedAt = createdAt },
-            new Subject { Id = 13, Code = "SCI", Name = "Science", NameBn = "বিজ্ঞান", CreatedAt = createdAt },
-            new Subject { Id = 14, Code = "ICT", Name = "Information and Communication Technology", NameBn = "তথ্য ও যোগাযোগ প্রযুক্তি", CreatedAt = createdAt },
-            new Subject { Id = 15, Code = "AGR", Name = "Agriculture Studies", NameBn = "কৃষি শিক্ষা", CreatedAt = createdAt },
+            // SSC Common Subjects (General education for classes 6-10)
+            new Subject { Id = 9, Code = "BAN1", Name = "Bangla 1st Paper", NameBn = "বাংলা ১ম পত্র", CreatedAt = createdAt, SubjectGroup = "General" },
+            new Subject { Id = 10, Code = "BAN2", Name = "Bangla 2nd Paper", NameBn = "বাংলা ২য় পত্র", CreatedAt = createdAt, SubjectGroup = "General" },
+            new Subject { Id = 11, Code = "ENG1", Name = "English 1st Paper", NameBn = "ইংরেজি ১ম পত্র", CreatedAt = createdAt, SubjectGroup = "General" },
+            new Subject { Id = 12, Code = "ENG2", Name = "English 2nd Paper", NameBn = "ইংরেজি ২য় পত্র", CreatedAt = createdAt, SubjectGroup = "General" },
+            new Subject { Id = 13, Code = "SCI", Name = "Science", NameBn = "বিজ্ঞান", CreatedAt = createdAt, SubjectGroup = "General" },
+            new Subject { Id = 14, Code = "ICT", Name = "Information and Communication Technology", NameBn = "তথ্য ও যোগাযোগ প্রযুক্তি", CreatedAt = createdAt, SubjectGroup = "General" },
+            new Subject { Id = 15, Code = "AGR", Name = "Agriculture Studies", NameBn = "কৃষি শিক্ষা", CreatedAt = createdAt, SubjectGroup = "General" },
 
             // Science Group
             new Subject { Id = 16, Code = "PHY", Name = "Physics", NameBn = "পদার্থবিজ্ঞান", CreatedAt = createdAt, SubjectGroup = "Science" },
@@ -346,9 +346,9 @@ public static class DbInitializer
             new Subject { Id = 19, Code = "HMA", Name = "Higher Mathematics", NameBn = "উচ্চতর গণিত", CreatedAt = createdAt, SubjectGroup = "Science" },
 
             // Business Studies
-            new Subject { Id = 20, Code = "ACC", Name = "Accounting", NameBn = "হিসাববিজ্ঞান", CreatedAt = createdAt, SubjectGroup = "Business Studies" },
-            new Subject { Id = 21, Code = "FIN", Name = "Finance and Banking", NameBn = "ফাইন্যান্স", CreatedAt = createdAt, SubjectGroup = "Business Studies" },
-            new Subject { Id = 22, Code = "BUS", Name = "Business Entrepreneurship", NameBn = "ব্যবসায় উদ্যোগ", CreatedAt = createdAt, SubjectGroup = "Business Studies" },
+            new Subject { Id = 20, Code = "ACC", Name = "Accounting", NameBn = "হিসাববিজ্ঞান", CreatedAt = createdAt, SubjectGroup = "BusinessStudies" },
+            new Subject { Id = 21, Code = "FIN", Name = "Finance and Banking", NameBn = "ফাইন্যান্স", CreatedAt = createdAt, SubjectGroup = "BusinessStudies" },
+            new Subject { Id = 22, Code = "BUS", Name = "Business Entrepreneurship", NameBn = "ব্যবসায় উদ্যোগ", CreatedAt = createdAt, SubjectGroup = "BusinessStudies" },
 
             // Humanities
             new Subject { Id = 23, Code = "HIS", Name = "History", NameBn = "ইতিহাস", CreatedAt = createdAt, SubjectGroup = "Humanities" },
@@ -356,13 +356,13 @@ public static class DbInitializer
             new Subject { Id = 25, Code = "ECO", Name = "Economics", NameBn = "অর্থনীতি", CreatedAt = createdAt, SubjectGroup = "Humanities" },
             new Subject { Id = 26, Code = "CIV", Name = "Civics", NameBn = "নাগরিকতা", CreatedAt = createdAt, SubjectGroup = "Humanities" },
 
-            // Others
-            new Subject { Id = 27, Code = "CAREER", Name = "Career Education", NameBn = "ক্যারিয়ার শিক্ষা", CreatedAt = createdAt },
-            new Subject { Id = 28, Code = "HEALTH", Name = "Physical Education, Health and Sports", NameBn = "শারীরিক শিক্ষা, স্বাস্থ্য ও খেলাধুলা", CreatedAt = createdAt },
-            new Subject { Id = 29, Code = "HSC", Name = "Home Science", NameBn = "গার্হস্থ্য বিজ্ঞান", CreatedAt = createdAt },
+            // Others (General subjects)
+            new Subject { Id = 27, Code = "CAREER", Name = "Career Education", NameBn = "ক্যারিয়ার শিক্ষা", CreatedAt = createdAt, SubjectGroup = "General" },
+            new Subject { Id = 28, Code = "HEALTH", Name = "Physical Education, Health and Sports", NameBn = "শারীরিক শিক্ষা, স্বাস্থ্য ও খেলাধুলা", CreatedAt = createdAt, SubjectGroup = "General" },
+            new Subject { Id = 29, Code = "HSC", Name = "Home Science", NameBn = "গার্হস্থ্য বিজ্ঞান", CreatedAt = createdAt, SubjectGroup = "General" },
 
             // Music (NCTB compulsory for classes 1-8)
-            new Subject { Id = 34, Code = "MUS", Name = "Music", NameBn = "সঙ্গীত", SubjectGroup = "Common", IsMandatory = true, CreatedAt = createdAt },
+            new Subject { Id = 34, Code = "MUS", Name = "Music", NameBn = "সঙ্গীত", SubjectGroup = "General", IsMandatory = true, CreatedAt = createdAt },
 
             // Religion & Moral Education
             new Subject { Id = 30, Code = "IRE", Name = "Islam and Moral Education", NameBn = "ইসলাম ও নৈতিক শিক্ষা", SubjectGroup = "Religion", IsReligionSubject = true, ReligionType = "Islam", CreatedAt = createdAt },
@@ -430,7 +430,7 @@ public static class DbInitializer
 
         modelBuilder.Entity<StudentGroup>().HasData(
             new StudentGroup { Id = 1, Name = "Science", Code = "SCI", Description = "Science Group", MinClass = 9, MaxClass = 10, DisplayOrder = 1, IsActive = true, CreatedAt = createdAt },
-            new StudentGroup { Id = 2, Name = "Business Studies", Code = "BS", Description = "Business Studies Group", MinClass = 9, MaxClass = 10, DisplayOrder = 2, IsActive = true, CreatedAt = createdAt },
+            new StudentGroup { Id = 2, Name = "BusinessStudies", Code = "BS", Description = "Business Studies Group", MinClass = 9, MaxClass = 10, DisplayOrder = 2, IsActive = true, CreatedAt = createdAt },
             new StudentGroup { Id = 3, Name = "Humanities", Code = "HUM", Description = "Humanities Group", MinClass = 9, MaxClass = 10, DisplayOrder = 3, IsActive = true, CreatedAt = createdAt }
         );
 

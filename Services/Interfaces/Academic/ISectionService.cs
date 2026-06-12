@@ -12,8 +12,9 @@ public interface ISectionService
     Task DeleteAsync(int id, string updatedBy, CancellationToken cancellationToken = default);
     
     // New methods for Admission/Academic management
-    Task<IEnumerable<SectionOptionDto>> GetByClassIdAsync(int classId, CancellationToken ct = default);
+    Task<IEnumerable<SectionOptionDto>> GetByClassIdAsync(int classId, int? studentGroupId = null, CancellationToken ct = default);
     Task<IEnumerable<SectionListItemDto>> GetGroupsByClassIdAsync(int classId, CancellationToken ct = default);
+    Task<IEnumerable<SectionListItemDto>> GetStudentGroupsByClassIdAsync(int classId, CancellationToken ct = default);
     Task<int> CreateAjaxAsync(int classId, string name, int? parentId, string createdBy, CancellationToken ct = default);
     Task<IEnumerable<object>> GetAdmissionSectionsAsync(int classId, CancellationToken ct = default);
     Task<IEnumerable<dynamic>> GetAvailableClassesAsync(CancellationToken ct = default);

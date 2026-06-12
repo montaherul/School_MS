@@ -56,12 +56,14 @@
                         <div class="row g-3 mb-4">
                             <div class="col-md-6">
                                 <label asp-for="SubjectGroup" class="form-label fw-semibold text-muted">Academic Stream / Group</label>
-                                <select asp-for="SubjectGroup" class="form-select rounded-3 border-2">
-                                    <option value="">General (All Streams)</option>
+                                <select asp-for="SubjectGroup" class="form-select rounded-3 border-2" required>
+                                    <option value="">-- Select Subject Group --</option>
+                                    <option value="General">General (Common Education)</option>
                                     <option value="Science">Science Group</option>
-                                    <option value="Business Studies">Business Studies Group</option>
+                                    <option value="BusinessStudies">Business Studies Group</option>
                                     <option value="Humanities">Humanities Group</option>
                                     <option value="Religion">Religion Stream</option>
+                                    <option value="Optional">Optional / Fourth Subject</option>
                                 </select>
                                 <span asp-validation-for="SubjectGroup" class="text-danger small"></span>
                                 <div class="form-text small">Applies to Secondary level Class 9 & 10</div>

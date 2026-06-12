@@ -45,9 +45,16 @@ public class SectionController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetSectionsByClass(int classId, CancellationToken ct)
+    public async Task<IActionResult> GetStudentGroupsForClass(int classId, CancellationToken ct)
     {
-        var sections = await _service.GetByClassIdAsync(classId, ct);
+        var groups = await _service.GetStudentGroupsByClassIdAsync(classId, ct);
+        return Json(groups);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetSectionsByClass(int classId, int? studentGroupId = null, CancellationToken ct = default)
+    {
+        var sections = await _service.GetByClassIdAsync(classId, studentGroupId, ct);
         
         bool isStaff = User.IsInRole("Super Admin") || User.IsInRole("Admin") || User.IsInRole("Principal") || User.IsInRole("Assistant Head");
         if (!isStaff)

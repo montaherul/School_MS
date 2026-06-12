@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SchoolManagementSystem.Controllers.Common;
 using SchoolManagementSystem.Models.Entities.Auth;
@@ -6,6 +7,7 @@ using SchoolManagementSystem.Services.Interfaces.Base;
 
 namespace SchoolManagementSystem.Controllers.Admin;
 
+[Authorize(Roles = "Admin,Super Admin")]
 public class RoleController : GenericCrudController<Role>
 {
     private readonly IRoleService _roleService;
@@ -42,6 +44,7 @@ public class RoleController : GenericCrudController<Role>
     }
 
     [HttpPost("{id}/Permissions")]
+    [Authorize(Roles = "Admin,Super Admin")]
     public async Task<IActionResult> AssignPermissions(int id, [FromBody] List<int> permissionIds, CancellationToken ct)
     {
         var result = await _roleService.AssignPermissionsToRoleAsync(id, permissionIds, ct);

@@ -1,0 +1,138 @@
+@model SchoolManagementSystem.Models.DTOs.Result.EntryStatusSummaryDto
+@{
+    ViewData["Title"] = "Entry Status";
+    Layout = "_AdminLayout";
+}
+
+<div class="container-fluid py-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">@Html.ActionLink("Exams", "Index", "Exam")</li>
+            <li class="breadcrumb-item">@Html.ActionLink("Marks", "Index", "Marks")</li>
+            <li class="breadcrumb-item active">@Model.ExamName - Entry Status</li>
+        </ol>
+    </nav>
+
+    @foreach (var cls in Model.Classes)
+    {
+        <div class="card shadow mb-4">
+            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-people-fill"></i> @cls.ClassName</h5>
+                <span class="badge bg-light text-dark">@cls.StudentCount Students</span>
+            </div>
+            <div class="card-body p-0">
+                <table class="table table-bordered table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Subject</th>
+                            <th style="width:140px;">Total Students</th>
+                            <th style="width:140px;">Entered</th>
+                            <th style="width:140px;">Locked</th>
+                            <th style="width:180px;">Progress</th>
+                            <th style="width:200px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var sub in cls.Subjects)
+                        {
+                            var pct = sub.EntryPercentage;
+                            var barClass = pct >= 100 ? "bg-success" : pct >= 50 ? "bg-warning" : "bg-danger";
+                            <tr>
+                                <td>
+                                    <strong>@sub.SubjectName</strong>
+                                    @if (sub.IsLocked)
+                                    {
+                                        <span class="badge bg-dark ms-1">Locked</span>
+                                    }
+                                </td>
+                                <td>@sub.TotalStudents</td>
+                                <td>@sub.EnteredCount / @sub.TotalStudents</td>
+                                <td>@sub.LockedCount</td>
+                                <td>
+                                    <div class="progress" style="height:20px;">
+                                        <div class="progress-bar @barClass"
+                                             role="progressbar"
+                                             style="width:@(pct)%"
+                                             aria-valuenow="@pct" aria-valuemin="0" aria-valuemax="100">
+                                            @pct%
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="@Url.Action("Index", "Marks", new { examId = Model.ExamId, classId = cls.ClassId, subjectId = sub.SubjectId })"
+                                           class="btn btn-outline-primary">
+                                            <i class="bi bi-pencil-fill"></i> Entry
+                                        </a>
+                                        @if (!sub.IsLocked && sub.EnteredCount > 0)
+                                        {
+                                            <button type="button" class="btn btn-outline-dark"
+                                                    onclick="lockMarks(@Model.ExamId, @sub.SubjectId, @cls.ClassId)">
+                                                <i class="bi bi-lock-fill"></i> Lock
+                                            </button>
+                                        }
+                                        @if (sub.IsLocked)
+                                        {
+                                            <button type="button" class="btn btn-outline-warning"
+                                                    onclick="unlockMarks(@Model.ExamId, @sub.SubjectId, @cls.ClassId)">
+                                                <i class="bi bi-unlock-fill"></i> Unlock
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                        @if (cls.Subjects.Count == 0)
+                        {
+                            <tr><td colspan="6" class="text-center text-muted py-3">No subjects configured for this class.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+
+    @if (Model.Classes.Count == 0)
+    {
+        <div class="alert alert-info">No classes found for entry status. Ensure subjects are assigned to classes and exam subjects are configured.</div>
+    }
+</div>
+
+@section Scripts {
+    @Html.AntiForgeryToken()
+    <script>
+        function getAntiforgeryToken() {
+            return document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+        }
+
+        function lockMarks(examId, subjectId, classId) {
+            if (!confirm('Lock these marks? Entries cannot be modified after locking.')) return;
+            fetch('@Url.Action("Lock", "Marks")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'RequestVerificationToken': getAntiforgeryToken()
+                },
+                body: `examId=${examId}&subjectId=${subjectId}&classId=${classId}&sectionId=0`
+            })
+            .then(r => r.json())
+            .then(d => { if (d.success) location.reload(); else alert(d.message); })
+            .catch(() => alert('Network error.'));
+        }
+
+        function unlockMarks(examId, subjectId, classId) {
+            if (!confirm('Unlock these marks? Entries can be modified again.')) return;
+            fetch('@Url.Action("Unlock", "Marks")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'RequestVerificationToken': getAntiforgeryToken()
+                },
+                body: `examId=${examId}&subjectId=${subjectId}&classId=${classId}&sectionId=0`
+            })
+            .then(r => r.json())
+            .then(d => { if (d.success) location.reload(); else alert(d.message); })
+            .catch(() => alert('Network error.'));
+        }
+    </script>
+}

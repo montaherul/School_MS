@@ -1,0 +1,265 @@
+@model SchoolManagementSystem.Models.ViewModels.Exam.ExamSubjectSetupViewModel
+@{
+    ViewData["Title"] = "Setup Subjects";
+    Layout = "_AdminLayout";
+}
+
+<div class="container-fluid">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">@Html.ActionLink("Exams", "Index", "Exam")</li>
+            <li class="breadcrumb-item">@Html.ActionLink(Model.ExamName, "Details", "Exam", new { id = Model.ExamId })</li>
+            <li class="breadcrumb-item active">Setup Subjects</li>
+        </ol>
+    </nav>
+
+    <div class="card border-0 shadow-sm rounded-4">
+        <div class="card-header bg-transparent py-3">
+            <h4 class="fw-bold mb-0"><i class="bi bi-gear"></i> Configure Subjects — @Model.ExamName</h4>
+            <small class="text-muted">@Model.ExamType @(Model.GroupName != null ? " — " + Model.GroupName : "")</small>
+        </div>
+        <div class="card-body">
+            <form id="subjectSetupForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="examId" value="@Model.ExamId" />
+
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width: 40px;">Include</th>
+                                <th style="width: 180px;">Subject</th>
+                                <th>Written</th>
+                                <th>MCQ</th>
+                                <th>Practical</th>
+                                <th>Viva</th>
+                                <th>Assignment</th>
+                                <th style="width: 80px;">Total</th>
+                                <th style="width: 70px;">Pass Mark</th>
+                                <th style="width: 180px;">Teacher</th>
+                                <th style="width: 130px;">Exam Date</th>
+                                <th style="width: 100px;">Time</th>
+                                <th style="width: 80px;">Duration</th>
+                                <th style="width: 100px;">Room</th>
+                                <th style="width: 50px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (int i = 0; i < Model.Subjects.Count; i++)
+                            {
+                                var s = Model.Subjects[i];
+                                <tr class="subject-row" data-index="@i">
+                                    <td class="text-center">
+                                        <input type="checkbox" class="form-check-input include-subject"
+                                               name="Subjects[@i].IsActive" value="true" @(s.IsActive ? "checked" : "")
+                                               data-subject-id="@s.SubjectId" />
+                                        <input type="hidden" name="Subjects[@i].SubjectId" value="@s.SubjectId" />
+                                    </td>
+                                    <td>
+                                        @s.SubjectName
+                                        <input type="hidden" name="Subjects[@i].SubjectName" value="@s.SubjectName" />
+                                        <input type="hidden" name="Subjects[@i].IsOptional" value="@s.IsOptional.ToString().ToLower()" />
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control form-control-sm mark-input written"
+                                               name="Subjects[@i].TotalWrittenMarks" value="@s.TotalWrittenMarks" min="0" max="200"
+                                               @(s.IsActive ? "" : "disabled") />
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control form-control-sm mark-input mcq"
+                                               name="Subjects[@i].TotalMCQMarks" value="@s.TotalMCQMarks" min="0" max="200"
+                                               @(s.IsActive ? "" : "disabled") />
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control form-control-sm mark-input practical"
+                                               name="Subjects[@i].TotalPracticalMarks" value="@s.TotalPracticalMarks" min="0" max="200"
+                                               @(s.IsActive ? "" : "disabled") />
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control form-control-sm mark-input viva"
+                                               name="Subjects[@i].TotalVivaMarks" value="@s.TotalVivaMarks" min="0" max="200"
+                                               @(s.IsActive ? "" : "disabled") />
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control form-control-sm mark-input assignment"
+                                               name="Subjects[@i].TotalAssignmentMarks" value="@s.TotalAssignmentMarks" min="0" max="200"
+                                               @(s.IsActive ? "" : "disabled") />
+                                    </td>
+                                    <td>
+                                        <span class="total-mark fw-bold">@(s.TotalWrittenMarks + s.TotalMCQMarks + s.TotalPracticalMarks + s.TotalVivaMarks + s.TotalAssignmentMarks)</span>
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control form-control-sm pass-mark"
+                                               name="Subjects[@i].PassMark" value="@s.PassMark" min="0" max="100"
+                                               @(s.IsActive ? "" : "disabled") />
+                                    </td>
+                                    <td>
+                                        <select class="form-select form-select-sm teacher-select"
+                                                name="Subjects[@i].TeacherId" @(s.IsActive ? "" : "disabled")>
+                                            <option value="">-- Select --</option>
+                                            @foreach (var t in Model.Teachers)
+                                            {
+                                                <option value="@t.Id" selected="@(s.TeacherId == t.Id)">@t.Name</option>
+                                            }
+                                        </select>
+                                    </td>
+                                    <td>
+                                        <input type="date" class="form-control form-control-sm exam-date"
+                                               name="Subjects[@i].ExamDate" value="@(s.ExamDate?.ToString("yyyy-MM-dd") ?? "")"
+                                               @(s.IsActive ? "" : "disabled") />
+                                    </td>
+                                    <td>
+                                        <input type="time" class="form-control form-control-sm exam-time"
+                                               name="Subjects[@i].ExamStartTime" value="@(s.ExamStartTime?.ToString(@"hh\:mm") ?? "")"
+                                               @(s.IsActive ? "" : "disabled") />
+                                    </td>
+                                    <td>
+                                        <input type="number" class="form-control form-control-sm exam-duration"
+                                               name="Subjects[@i].ExamDuration" value="@(s.ExamDuration?.ToString() ?? "")" min="0" max="480"
+                                               @(s.IsActive ? "" : "disabled") />
+                                    </td>
+                                    <td>
+                                        <input type="text" class="form-control form-control-sm room-number"
+                                               name="Subjects[@i].RoomNumber" value="@(s.RoomNumber ?? "")"
+                                               @(s.IsActive ? "" : "disabled") />
+                                    </td>
+                                    <td class="text-center">
+                                        @if (s.Id.HasValue)
+                                        {
+                                            <a href="@Url.Action("Edit", "ExamSubject", new { id = s.Id.Value })" class="btn btn-sm btn-outline-primary" title="Edit Subject Configuration">
+                                                <i class="bi bi-pencil"></i>
+                                            </a>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="d-flex gap-2 mt-3">
+                    <button type="submit" class="btn btn-primary rounded-pill shadow-sm">
+                        <i class="bi bi-check-lg"></i> Save Configuration
+                    </button>
+                    <a href="@Url.Action("Details", "Exam", new { id = Model.ExamId })" class="btn btn-outline-secondary rounded-pill shadow-sm">
+                        <i class="bi bi-x-lg"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Toggle subject row enable/disable on checkbox
+        document.querySelectorAll('.include-subject').forEach(cb => {
+            cb.addEventListener('change', function() {
+                const row = this.closest('tr');
+                const inputs = row.querySelectorAll('input, select');
+                const isChecked = this.checked;
+                inputs.forEach(inp => {
+                    if (inp.type !== 'checkbox' && inp.type !== 'hidden') {
+                        inp.disabled = !isChecked;
+                    }
+                });
+                calculateRowTotal(row);
+            });
+        });
+
+        // Auto-calculate total on mark inputs
+        document.querySelectorAll('.mark-input').forEach(inp => {
+            inp.addEventListener('input', function() {
+                const row = this.closest('tr');
+                calculateRowTotal(row);
+                validateTotal(row);
+            });
+        });
+
+        function calculateRowTotal(row) {
+            let total = 0;
+            row.querySelectorAll('.mark-input').forEach(inp => {
+                total += parseInt(inp.value) || 0;
+            });
+            row.querySelector('.total-mark').textContent = total;
+        }
+
+        function validateTotal(row) {
+            const total = parseInt(row.querySelector('.total-mark').textContent) || 0;
+            const cell = row.querySelector('.total-mark');
+            if (total < 1 || total > 300) {
+                cell.style.color = '#dc3545';
+            } else {
+                cell.style.color = '#198754';
+            }
+        }
+
+        // Form submit
+        document.getElementById('subjectSetupForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Check each included subject has a teacher
+            let valid = true;
+            document.querySelectorAll('.include-subject:checked').forEach(cb => {
+                const row = cb.closest('tr');
+                const teacherSelect = row.querySelector('.teacher-select');
+                if (!teacherSelect.value) {
+                    valid = false;
+                    teacherSelect.classList.add('is-invalid');
+                } else {
+                    teacherSelect.classList.remove('is-invalid');
+                }
+
+                const total = parseInt(row.querySelector('.total-mark').textContent) || 0;
+                if (total < 1 || total > 300) {
+                    valid = false;
+                    alert('Total marks must be between 1 and 300 for each subject.');
+                }
+            });
+
+            if (!valid) return;
+
+            const formData = new FormData(this);
+            const subjects = [];
+            document.querySelectorAll('.subject-row').forEach(row => {
+                const index = row.dataset.index;
+                const isActive = row.querySelector('.include-subject').checked;
+                subjects.push({
+                    subjectId: parseInt(row.querySelector('input[name$=".SubjectId"]').value),
+                    subjectName: row.querySelector('input[name$=".SubjectName"]').value,
+                    isActive: isActive,
+                    isOptional: row.querySelector('input[name$=".IsOptional"]').value === 'true',
+                    totalWrittenMarks: isActive ? (parseInt(row.querySelector('.written').value) || 0) : 0,
+                    totalMCQMarks: isActive ? (parseInt(row.querySelector('.mcq').value) || 0) : 0,
+                    totalPracticalMarks: isActive ? (parseInt(row.querySelector('.practical').value) || 0) : 0,
+                    totalVivaMarks: isActive ? (parseInt(row.querySelector('.viva').value) || 0) : 0,
+                    totalAssignmentMarks: isActive ? (parseInt(row.querySelector('.assignment').value) || 0) : 0,
+                    passMark: isActive ? (parseFloat(row.querySelector('.pass-mark').value) || 33) : 33,
+                    teacherId: isActive ? (parseInt(row.querySelector('.teacher-select').value) || null) : null,
+                    examDate: isActive ? (row.querySelector('.exam-date').value || null) : null,
+                    examStartTime: isActive ? (row.querySelector('.exam-time').value || null) : null,
+                    examDuration: isActive ? (parseInt(row.querySelector('.exam-duration').value) || null) : null,
+                    roomNumber: isActive ? (row.querySelector('.room-number').value || null) : null
+                });
+            });
+
+            fetch('@Url.Action("SaveSetup", "ExamSubject")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify({ examId: @Model.ExamId, subjects: subjects })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = '@Url.Action("Details", "Exam", new { id = Model.ExamId })';
+                } else {
+                    alert(data.message || 'Save failed.');
+                }
+            })
+            .catch(() => alert('Network error.'));
+        });
+    </script>
+}

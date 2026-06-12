@@ -40,18 +40,22 @@ public static class FinanceRbacSeeder
     public static async Task SeedAsync(SchoolDbContext db, CancellationToken cancellationToken = default)
     {
         var now = DateTime.UtcNow;
-        await EnsureRoleAsync(db, "Admin", "Administrator", now, cancellationToken);
-        await EnsureRoleAsync(db, "Accountant", "Accounts and finance", now, cancellationToken);
+
+        var existingRoleNames = (await db.Roles.Select(r => r.Name).ToListAsync(cancellationToken)).ToHashSet();
+        if (!existingRoleNames.Contains("Admin"))
+            db.Roles.Add(new Role { Name = "Admin", Description = "Administrator", CreatedAt = now, CreatedBy = "finance-rbac-seeder" });
+        if (!existingRoleNames.Contains("Accountant"))
+            db.Roles.Add(new Role { Name = "Accountant", Description = "Accounts and finance", CreatedAt = now, CreatedBy = "finance-rbac-seeder" });
+
+        var existingCodes = (await db.Permissions.Select(p => p.Code).ToListAsync(cancellationToken)).ToHashSet();
 
         foreach (var module in FinanceModules)
         {
             foreach (var action in FinanceActions)
             {
                 var code = $"{module}.{action}";
-                if (await db.Permissions.AnyAsync(p => p.Code == code, cancellationToken))
-                {
+                if (existingCodes.Contains(code))
                     continue;
-                }
 
                 db.Permissions.Add(new Permission
                 {
@@ -71,70 +75,48 @@ public static class FinanceRbacSeeder
 
         await db.SaveChangesAsync(cancellationToken);
 
-        foreach (var roleName in FullFinanceRoles)
-        {
-            await GrantAsync(db, roleName, FinanceModules, FinanceActions, cancellationToken);
-        }
-
-        await GrantAsync(
-            db,
-            "Principal",
+        await GrantBatchAsync(db, FullFinanceRoles, FinanceModules, FinanceActions, cancellationToken);
+        await GrantBatchAsync(db, ["Principal"],
             ["FinanceDashboard", "FinanceReports", "Payments", "Invoices", "StudentDues", "Scholarships", "Waivers"],
-            ["View", "Read", "Approve", "Export", "Print"],
-            cancellationToken);
-
-        await GrantAsync(
-            db,
-            "Student",
+            ["View", "Read", "Approve", "Export", "Print"], cancellationToken);
+        await GrantBatchAsync(db, ["Student"],
             ["Invoices", "Payments", "StudentDues", "Receipts"],
-            ["View", "Read", "Print", "Export"],
-            cancellationToken);
+            ["View", "Read", "Print", "Export"], cancellationToken);
 
         await db.SaveChangesAsync(cancellationToken);
     }
 
-    private static async Task EnsureRoleAsync(SchoolDbContext db, string name, string description, DateTime now, CancellationToken cancellationToken)
+    private static async Task GrantBatchAsync(SchoolDbContext db, string[] roleNames, string[] modules, string[] actions, CancellationToken cancellationToken)
     {
-        if (await db.Roles.AnyAsync(r => r.Name == name, cancellationToken))
-        {
-            return;
-        }
+        var roles = await db.Roles.Where(r => roleNames.Contains(r.Name)).ToListAsync(cancellationToken);
+        if (roles.Count == 0) return;
 
-        db.Roles.Add(new Role
-        {
-            Name = name,
-            Description = description,
-            CreatedAt = now,
-            CreatedBy = "finance-rbac-seeder"
-        });
-    }
-
-    private static async Task GrantAsync(SchoolDbContext db, string roleName, IEnumerable<string> modules, IEnumerable<string> actions, CancellationToken cancellationToken)
-    {
-        var role = await db.Roles.FirstOrDefaultAsync(r => r.Name == roleName, cancellationToken);
-        if (role is null)
-        {
-            return;
-        }
-
-        var codes = modules.SelectMany(module => actions.Select(action => $"{module}.{action}")).ToArray();
-        var permissionIds = await db.Permissions
+        var codes = modules.SelectMany(m => actions.Select(a => $"{m}.{a}")).ToArray();
+        var allPermissionIds = await db.Permissions
             .Where(p => codes.Contains(p.Code))
             .Select(p => p.Id)
             .ToArrayAsync(cancellationToken);
 
-        var existingPermissionIds = await db.RolePermissions
-            .Where(rp => rp.RoleId == role.Id && permissionIds.Contains(rp.PermissionId))
-            .Select(rp => rp.PermissionId)
-            .ToArrayAsync(cancellationToken);
+        var roleIds = roles.Select(r => r.Id).ToArray();
+        var existingByRole = await db.RolePermissions
+            .Where(rp => roleIds.Contains(rp.RoleId) && allPermissionIds.Contains(rp.PermissionId))
+            .GroupBy(rp => rp.RoleId)
+            .ToDictionaryAsync(g => g.Key, g => g.Select(rp => rp.PermissionId).ToHashSet(), cancellationToken);
 
-        foreach (var permissionId in permissionIds.Except(existingPermissionIds))
+        foreach (var role in roles)
         {
-            db.RolePermissions.Add(new RolePermission
+            var existing = existingByRole.GetValueOrDefault(role.Id, []);
+            foreach (var permissionId in allPermissionIds)
             {
-                RoleId = role.Id,
-                PermissionId = permissionId
-            });
+                if (!existing.Contains(permissionId))
+                {
+                    db.RolePermissions.Add(new RolePermission
+                    {
+                        RoleId = role.Id,
+                        PermissionId = permissionId
+                    });
+                }
+            }
         }
     }
 }

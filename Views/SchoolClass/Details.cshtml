@@ -1,4 +1,121 @@
-@model SchoolManagementSystem.Models.DTOs.Academic.SchoolClassUpsertDto
-@{ ViewData["Title"] = "Class Details"; }
-<div class="page-title"><h1>Class Details</h1><a asp-action="Index" class="btn btn-outline-secondary">Back</a></div>
-<div class="panel"><partial name="_ObjectDetails" model="Model" /></div>
+@using SchoolManagementSystem.Models.DTOs.Academic
+@model SchoolClassUpsertDto
+@{
+    ViewData["Title"] = "Class Details";
+}
+
+<div class="page-title d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="mb-1"><i class="bi bi-building me-2"></i>@Model.Name</h1>
+        <p class="text-muted mb-0">Class details and overview</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="/SchoolClass/CreateEdit/@Model.Id" class="btn btn-primary"><i class="bi bi-pencil me-1"></i> Edit</a>
+        <a href="/SchoolClass/Index" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i> Back to List</a>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>General Information</h5>
+                <span class="badge @(Model.IsActive ? "bg-success" : "bg-secondary") rounded-pill px-3">@(Model.IsActive ? "Active" : "Inactive")</span>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless mb-0">
+                    <tbody>
+                        <tr>
+                            <td class="text-muted fw-semibold" style="width: 180px;">Class Name</td>
+                            <td class="fw-bold">@Model.Name</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted fw-semibold">Name (Bangla)</td>
+                            <td>@(string.IsNullOrEmpty(Model.NameBn) ? "<span class='text-muted fst-italic'>Not set</span>" : Model.NameBn)</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted fw-semibold">Code</td>
+                            <td>@(string.IsNullOrEmpty(Model.Code) ? "<span class='text-muted fst-italic'>Not set</span>" : Model.Code)</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted fw-semibold">Sort Order</td>
+                            <td>@Model.SortOrder</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted fw-semibold">Capacity</td>
+                            <td>@(Model.Capacity > 0 ? Model.Capacity + " students" : "<span class='text-muted fst-italic'>Unlimited</span>")</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted fw-semibold">Group Based</td>
+                            <td>
+                                @if (Model.IsGroupBased)
+                                {
+                                    <span class="badge bg-info rounded-pill px-3">Yes &mdash; Science / Business / Humanities</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-light text-dark rounded-pill px-3">No</span>
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted fw-semibold">Description</td>
+                            <td>@(string.IsNullOrEmpty(Model.Description) ? "<span class='text-muted fst-italic'>No description</span>" : Model.Description)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0"><i class="bi bi-layers me-2"></i>Related Data</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-3">
+                    <a href="/Section/Index?classId=@Model.Id" class="btn btn-outline-info text-start d-flex justify-content-between align-items-center p-3">
+                        <span><i class="bi bi-columns-gap me-2"></i>Sections</span>
+                        <span class="badge bg-info rounded-pill" id="sectionCount">...</span>
+                    </a>
+                    <a href="/ClassSubjectMapping?classId=@Model.Id" class="btn btn-outline-success text-start d-flex justify-content-between align-items-center p-3">
+                        <span><i class="bi bi-book me-2"></i>Subject Mappings</span>
+                        <span class="badge bg-success rounded-pill" id="subjectCount">...</span>
+                    </a>
+                    <a href="/Student/Index?classId=@Model.Id" class="btn btn-outline-primary text-start d-flex justify-content-between align-items-center p-3">
+                        <span><i class="bi bi-people me-2"></i>Students</span>
+                        <span class="badge bg-primary rounded-pill" id="studentCount">...</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-white py-3">
+                <h5 class="mb-0"><i class="bi bi-gear me-2"></i>Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="/SchoolClass/CreateEdit/@Model.Id" class="btn btn-primary"><i class="bi bi-pencil me-1"></i> Edit Class</a>
+                    <a href="/SchoolClass/Delete/@Model.Id" class="btn btn-outline-danger"><i class="bi bi-trash me-1"></i> Delete Class</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        fetch('/SchoolClass/GetList?page=1&size=1&search=')
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+                var item = (d.data || []).find(function(x) { return x.id === @Model.Id; });
+                if (item) {
+                    document.getElementById('sectionCount').textContent = item.sectionCount;
+                    document.getElementById('studentCount').textContent = item.studentCount;
+                    document.getElementById('subjectCount').textContent = item.subjectMappingCount;
+                }
+            });
+    </script>
+}

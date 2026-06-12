@@ -14,6 +14,7 @@ public class SchoolClassController : Controller
     private readonly ISchoolClassService _service;
     public SchoolClassController(ISchoolClassService service) { _service = service; }
 
+    [RequirePermission("Classes.View")]
     public IActionResult Index() { return View(); }
     public IActionResult Create() => RedirectToAction(nameof(CreateEdit));
     public IActionResult Edit(int id) => RedirectToAction(nameof(CreateEdit), new { id });
@@ -103,7 +104,7 @@ public class SchoolClassController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    [HttpPost, RequirePermission("Classes.Create")]
+    [HttpPost, RequirePermission("Classes.Edit")]
     public async Task<IActionResult> ToggleActive(int id, CancellationToken ct)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
@@ -111,7 +112,7 @@ public class SchoolClassController : Controller
         return Json(new { success = true });
     }
 
-    [HttpPost, RequirePermission("Classes.Create")]
+    [HttpPost, RequirePermission("Classes.Edit")]
     public async Task<IActionResult> Archive(int id, CancellationToken ct)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
@@ -120,7 +121,7 @@ public class SchoolClassController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    [HttpPost, RequirePermission("Classes.Create")]
+    [HttpPost, RequirePermission("Classes.Edit")]
     public async Task<IActionResult> Restore(int id, CancellationToken ct)
     {
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";

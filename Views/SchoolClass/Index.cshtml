@@ -69,21 +69,29 @@
                 { title: "Class Name", field: "name", widthGrow: 2, formatter: function(cell) {
                     return `<div class="fw-bold text-primary">${cell.getValue()}</div>`;
                 }},
-                { title: "Sections", field: "sectionCount", width: 120, hozAlign: "center", formatter: function(cell) {
-                    return `<span class="badge bg-info-soft text-info border border-info-subtle rounded-pill px-3">${cell.getValue()} Sections</span>`;
+                { title: "Code", field: "code", width: 100, hozAlign: "center" },
+                { title: "Sections", field: "sectionCount", width: 100, hozAlign: "center", formatter: function(cell) {
+                    var id = cell.getRow().getData().id;
+                    return `<a href="/Section/Index?classId=${id}" class="badge bg-info-soft text-info border border-info-subtle rounded-pill px-3 text-decoration-none">${cell.getValue()} Sections</a>`;
                 }},
-                { title: "Students", field: "studentCount", width: 120, hozAlign: "center", formatter: function(cell) {
+                { title: "Students", field: "studentCount", width: 100, hozAlign: "center", formatter: function(cell) {
                     return `<span class="badge bg-success-soft text-success border border-success-subtle rounded-pill px-3">${cell.getValue()} Students</span>`;
+                }},
+                { title: "Status", field: "isActive", width: 100, hozAlign: "center", formatter: function(cell) {
+                    return cell.getValue()
+                        ? `<span class="badge bg-success rounded-pill px-3">Active</span>`
+                        : `<span class="badge bg-secondary rounded-pill px-3">Inactive</span>`;
                 }},
                 {
                     title: "Actions",
                     field: "id",
                     hozAlign: "right",
                     headerSort: false,
-                    width: 140,
+                    width: 200,
                     formatter: function(cell) {
                         return `
                             <div class="btn-group btn-group-sm">
+                                <a href="/SchoolClass/Details/${cell.getValue()}" class="btn btn-outline-info" title="Details"><i class="bi bi-eye"></i></a>
                                 <a href="/SchoolClass/CreateEdit/${cell.getValue()}" class="btn btn-outline-primary" title="Edit"><i class="bi bi-pencil"></i></a>
                                 <button class="btn btn-outline-danger delete-btn" title="Delete"><i class="bi bi-trash"></i></button>
                             </div>

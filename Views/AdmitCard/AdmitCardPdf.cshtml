@@ -1,0 +1,142 @@
+@model SchoolManagementSystem.Models.ViewModels.Exam.AdmitCardViewModel
+@{ Layout = null; }
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Admit Card - @Model.StudentName</title>
+    <style>
+        @@page { size: A4; margin: 15mm; }
+        body { font-family: Arial, Helvetica, sans-serif; font-size: 12pt; color: #333; margin: 0; padding: 0; }
+        .header { text-align: center; margin-bottom: 20px; }
+        .header img { height: 60px; margin-bottom: 8px; }
+        .header h1 { font-size: 18pt; font-weight: bold; margin: 4px 0; color: #0d6efd; }
+        .header p { font-size: 10pt; color: #666; margin: 2px 0; }
+        .header hr { border: none; border-top: 2px solid #0d6efd; margin: 12px 0; }
+        .header h2 { font-size: 16pt; font-weight: bold; color: #0d6efd; margin: 8px 0; letter-spacing: 1px; }
+        .header h3 { font-size: 13pt; font-weight: bold; text-transform: uppercase; margin: 4px 0; }
+        .info-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+        .info-table td { padding: 4px 8px; font-size: 11pt; vertical-align: top; }
+        .info-table td.label { font-weight: bold; width: 160px; }
+        .photo-cell { text-align: center; vertical-align: top; }
+        .photo-cell img { width: 100px; height: 120px; object-fit: cover; border: 1px solid #ccc; }
+        .photo-placeholder { width: 100px; height: 120px; border: 1px dashed #ccc; display: inline-block; }
+        .section-title { font-size: 12pt; font-weight: bold; margin: 16px 0 8px; padding: 6px 10px; background-color: #0d6efd; color: #fff; }
+        .schedule-table { width: 100%; border-collapse: collapse; margin-bottom: 16px; }
+        .schedule-table th { background-color: #0d6efd; color: #fff; padding: 6px 8px; text-align: left; font-size: 10pt; }
+        .schedule-table td { padding: 5px 8px; border: 1px solid #dee2e6; font-size: 10pt; }
+        .schedule-table tr:nth-child(even) td { background-color: #f8f9fa; }
+        .instructions { background-color: #f8f9fa; padding: 12px; font-size: 9pt; margin-bottom: 20px; border: 1px solid #dee2e6; }
+        .instructions ul { margin: 6px 0 0; padding-left: 20px; }
+        .instructions li { margin-bottom: 3px; }
+        .signatures { width: 100%; margin-top: 30px; }
+        .signatures td { width: 50%; text-align: center; padding-top: 40px; font-size: 10pt; color: #666; }
+        .signatures td .line { border-top: 1px solid #333; display: inline-block; padding: 0 40px; }
+        .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 9pt; font-weight: bold; color: #fff; }
+        .badge-success { background-color: #198754; }
+        .badge-warning { background-color: #ffc107; color: #333; }
+        .text-muted { color: #6c757d; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        @if (!string.IsNullOrEmpty(Model.SchoolLogo))
+        {
+            <img src="@Model.SchoolLogo" alt="School Logo" />
+        }
+        <h1>@Model.SchoolName</h1>
+        <p>@Model.SchoolAddress</p>
+        <p>EIIN: @Model.EIIN</p>
+        <hr />
+        <h2>ADMIT CARD</h2>
+        <h3>@Model.ExamName</h3>
+        <p>
+            <span class="badge @(Model.IsIssued ? "badge-success" : "badge-warning")">
+                @(Model.IsIssued ? "Issued" : "Not Issued")
+            </span>
+        </p>
+    </div>
+
+    <table class="info-table">
+        <tr>
+            <td style="width: 65%; vertical-align: top;">
+                <table class="info-table">
+                    <tr><td class="label">Student Name:</td><td>@Model.StudentName</td></tr>
+                    <tr><td class="label">Admit Card No:</td><td>@Model.AdmitCardNumber</td></tr>
+                    <tr><td class="label">Roll Number:</td><td>@Model.RollNumber</td></tr>
+                    <tr><td class="label">Class:</td><td>@Model.ClassName</td></tr>
+                    <tr><td class="label">Section:</td><td>@Model.SectionName</td></tr>
+                    @if (!string.IsNullOrEmpty(Model.GroupName))
+                    {
+                        <tr><td class="label">Group:</td><td>@Model.GroupName</td></tr>
+                    }
+                    <tr><td class="label">Seat Number:</td><td>@(Model.SeatNumber ?? "N/A")</td></tr>
+                    <tr><td class="label">Academic Year:</td><td>@Model.AcademicYear</td></tr>
+                    <tr><td class="label">Exam Duration:</td><td>@Model.ExamStartDate.ToString("dd MMM yyyy") - @Model.ExamEndDate.ToString("dd MMM yyyy")</td></tr>
+                </table>
+            </td>
+            <td class="photo-cell" style="width: 35%;">
+                @if (!string.IsNullOrEmpty(Model.StudentPhotoPath))
+                {
+                    <img src="@Model.StudentPhotoPath" alt="Student Photo" />
+                }
+                else
+                {
+                    <div class="photo-placeholder"></div>
+                }
+            </td>
+        </tr>
+    </table>
+
+    <div class="section-title">EXAMINATION SCHEDULE</div>
+    <table class="schedule-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Subject</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Duration</th>
+                <th>Room</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.SubjectSchedules.Count == 0)
+            {
+                <tr>
+                    <td colspan="6" style="text-align: center; color: #999;">No schedule configured.</td>
+                </tr>
+            }
+            @for (int i = 0; i < Model.SubjectSchedules.Count; i++)
+            {
+                var s = Model.SubjectSchedules[i];
+                <tr>
+                    <td>@(i + 1)</td>
+                    <td>@s.SubjectName</td>
+                    <td>@(s.ExamDate == default ? "TBD" : s.ExamDate.ToString("dd MMM yyyy"))</td>
+                    <td>@(string.IsNullOrEmpty(s.StartTime) ? "TBD" : s.StartTime)</td>
+                    <td>@(string.IsNullOrEmpty(s.Duration) ? "—" : s.Duration + " min")</td>
+                    <td>@(string.IsNullOrEmpty(s.RoomNumber) ? "—" : s.RoomNumber)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="instructions">
+        <strong>Instructions:</strong>
+        <ul>
+            <li>Bring this admit card to the examination hall.</li>
+            <li>Report to your seat 15 minutes before the exam starts.</li>
+            <li>Mobile phones and electronic devices are strictly prohibited.</li>
+            <li>Write your roll number clearly on the answer script.</li>
+        </ul>
+    </div>
+
+    <table class="signatures">
+        <tr>
+            <td><div class="line">Principal's Signature</div></td>
+            <td><div class="line">Controller of Examinations</div></td>
+        </tr>
+    </table>
+</body>
+</html>

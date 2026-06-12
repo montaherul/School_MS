@@ -18,12 +18,14 @@ public class ExamService : IExamService
     private readonly IUnitOfWork _uow;
     private readonly IExamRepository _examRepository;
     private readonly IGradingRuleRepository _gradingRepository;
+    private readonly IExamValidationService _examValidation;
 
-    public ExamService(IUnitOfWork uow, IExamRepository examRepository, IGradingRuleRepository gradingRepository)
+    public ExamService(IUnitOfWork uow, IExamRepository examRepository, IGradingRuleRepository gradingRepository, IExamValidationService examValidation)
     {
         _uow = uow;
         _examRepository = examRepository;
         _gradingRepository = gradingRepository;
+        _examValidation = examValidation;
     }
 
     public async Task<IEnumerable<ExamListDto>> GetExamsAsync(int academicYearId, CancellationToken ct = default)
@@ -42,17 +44,32 @@ public class ExamService : IExamService
     {
         var exam = await _uow.Repository<ExamEntity>().GetByIdAsync(examId, ct);
         if (exam == null) return null;
+
+        var subjects = await _uow.Repository<ExamSubjectEntity>().Query()
+            .Where(es => es.ExamId == examId && !es.IsDeleted)
+            .Select(es => new SubjectMarkConfigDto
+            {
+                SubjectId = es.SubjectId,
+                FullMarks = es.FullMarks,
+                PassMarks = es.PassMarks,
+                IsOptional = es.IsOptional
+            })
+            .ToListAsync(ct);
+
         return new ExamUpsertDto
         {
             Id = exam.Id,
             Name = exam.Name,
             Term = exam.Term,
             AcademicYearId = exam.AcademicYearId,
+            ClassId = exam.ClassId,
+            SectionId = exam.SectionId,
             StudentGroupId = exam.StudentGroupId,
             StartsOn = exam.StartsOn,
             EndsOn = exam.EndsOn,
             Status = exam.Status,
-            IsLocked = exam.IsLocked
+            IsLocked = exam.IsLocked,
+            Subjects = subjects
         };
     }
 
@@ -61,11 +78,20 @@ public class ExamService : IExamService
     /// </summary>
     public async Task<object?> CreateExamAsync(ExamUpsertDto dto, CancellationToken ct = default)
     {
+        var repo = _uow.Repository<ExamEntity>();
+        if (await repo.AnyAsync(e => e.Name == dto.Name && e.AcademicYearId == dto.AcademicYearId, ct))
+            throw new InvalidOperationException($"An exam named '{dto.Name}' already exists for this academic year.");
+
+        // Validate Bangladesh Group Rules
+        await _examValidation.ValidateBangladeshGroupRulesAsync(dto.ClassId, dto.StudentGroupId, ct);
+
         var exam = new ExamEntity
         {
             Name = dto.Name,
             Term = dto.Term,
             AcademicYearId = dto.AcademicYearId,
+            ClassId = dto.ClassId,
+            SectionId = dto.SectionId,
             StartsOn = dto.StartsOn,
             EndsOn = dto.EndsOn,
             Status = ResultWorkflowStatus.Draft,
@@ -99,13 +125,22 @@ public class ExamService : IExamService
     /// </summary>
     public async Task<object?> UpdateExamAsync(int examId, ExamUpsertDto dto, CancellationToken ct = default)
     {
-        var exam = await _uow.Repository<ExamEntity>().GetByIdAsync(examId, ct);
+        var repo = _uow.Repository<ExamEntity>();
+        if (await repo.AnyAsync(e => e.Name == dto.Name && e.AcademicYearId == dto.AcademicYearId && e.Id != examId, ct))
+            throw new InvalidOperationException($"Another exam named '{dto.Name}' already exists for this academic year.");
+
+        // Validate Bangladesh Group Rules
+        await _examValidation.ValidateBangladeshGroupRulesAsync(dto.ClassId, dto.StudentGroupId, ct);
+
+        var exam = await repo.GetByIdAsync(examId, ct);
         if (exam == null)
             throw new KeyNotFoundException($"Exam with ID {examId} not found");
 
         exam.Name = dto.Name;
         exam.Term = dto.Term;
         exam.AcademicYearId = dto.AcademicYearId;
+        exam.ClassId = dto.ClassId;
+        exam.SectionId = dto.SectionId;
         exam.StartsOn = dto.StartsOn;
         exam.EndsOn = dto.EndsOn;
         exam.StudentGroupId = dto.StudentGroupId;
@@ -306,7 +341,9 @@ public class ExamService : IExamService
     }
 
     /// <summary>
-    /// Get subjects assigned to a class
+    /// Get subjects assigned to a class with Bangladesh group filtering:
+    /// Classes 1-8: show only General subjects (SubjectGroup = "" or "General")
+    /// Classes 9-10: show subjects matching the student's group (Science/BusinessStudies/Humanities)
     /// </summary>
     public async Task<IEnumerable<object>> GetSubjectsByClassIdAsync(int classId, int? groupId = null, int? sectionId = null, CancellationToken ct = default)
     {
@@ -319,6 +356,33 @@ public class ExamService : IExamService
         {
             query = query.Where(cs => cs.StudentGroupId == groupId.Value);
         }
+
+        // Filter by SubjectGroup based on Bangladesh curriculum rules
+        var schoolClass = await _uow.Repository<SchoolClass>().GetByIdAsync(classId, ct);
+        var classNumber = ExtractClassNumberFromName(schoolClass?.Name);
+        if (classNumber >= 1 && classNumber <= 8)
+        {
+            // Classes 1-8: General subjects only
+            query = query.Where(cs => cs.Subject != null && (
+                cs.Subject.SubjectGroup == "" ||
+                cs.Subject.SubjectGroup == "General" ||
+                cs.Subject.SubjectGroup == null));
+        }
+        else if (classNumber >= 9 && classNumber <= 10 && groupId.HasValue)
+        {
+            // Classes 9-10: subjects matching the selected group
+            var group = await _uow.Repository<StudentGroup>().GetByIdAsync(groupId.Value, ct);
+            if (group != null)
+            {
+                var groupName = group.Name;
+                query = query.Where(cs => cs.Subject != null && (
+                    cs.Subject.SubjectGroup == groupName ||
+                    cs.Subject.SubjectGroup == "" ||
+                    cs.Subject.SubjectGroup == "Common" ||
+                    cs.Subject.SubjectGroup == null));
+            }
+        }
+
         if (sectionId.HasValue)
         {
             query = query.Where(cs => cs.SectionId == sectionId.Value);
@@ -331,6 +395,15 @@ public class ExamService : IExamService
             })
             .Distinct()
             .ToListAsync(ct);
+    }
+
+    private static int ExtractClassNumberFromName(string? className)
+    {
+        if (string.IsNullOrEmpty(className)) return 0;
+        var digits = new string(className.Where(char.IsDigit).ToArray());
+        if (int.TryParse(digits, out var number) && number > 0 && number <= 12)
+            return number;
+        return 0;
     }
 
     /// <summary>
@@ -372,6 +445,28 @@ public class ExamService : IExamService
         {
             classSubjects = classSubjects.Where(cs =>
                 cs.StudentGroupId == null || cs.StudentGroupId == groupId.Value).ToList();
+        }
+
+        // Filter by SubjectGroup based on Bangladesh curriculum
+        var classNumber = ExtractClassNumberFromName(
+            _uow.Repository<SchoolClass>().Query().AsNoTracking()
+                .Where(c => c.Id == classId).Select(c => c.Name).FirstOrDefault());
+        if (classNumber >= 1 && classNumber <= 8)
+        {
+            classSubjects = classSubjects.Where(cs => cs.Subject == null ||
+                string.IsNullOrEmpty(cs.Subject.SubjectGroup) ||
+                cs.Subject.SubjectGroup == "General").ToList();
+        }
+        else if (classNumber >= 9 && classNumber <= 10 && groupId.HasValue)
+        {
+            var group = await _uow.Repository<StudentGroup>().GetByIdAsync(groupId.Value, ct);
+            if (group != null)
+            {
+                classSubjects = classSubjects.Where(cs => cs.Subject == null ||
+                    cs.Subject.SubjectGroup == group.Name ||
+                    cs.Subject.SubjectGroup == "Common" ||
+                    string.IsNullOrEmpty(cs.Subject.SubjectGroup)).ToList();
+            }
         }
 
         // Remove religion subjects (they're added per-student based on religion)

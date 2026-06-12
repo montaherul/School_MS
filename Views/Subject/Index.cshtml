@@ -45,11 +45,12 @@
                     <label class="form-label small fw-bold text-muted">Filter by Group</label>
                     <select id="group-filter" class="form-select bg-light border-0">
                         <option value="">-- All Groups --</option>
-                        <option value="General">General (General Education)</option>
+                        <option value="General">General (Common Education)</option>
                         <option value="Science">Science Group</option>
-                        <option value="Business Studies">Business Studies Group</option>
+                        <option value="BusinessStudies">Business Studies Group</option>
                         <option value="Humanities">Humanities Group</option>
                         <option value="Religion">Religion Group</option>
+                        <option value="Optional">Optional / Fourth Subject</option>
                     </select>
                 </div>
                 <div class="col-md-3">
@@ -128,7 +129,8 @@
                 minWidth: 150, 
                 formatter: function(cell) {
                     const val = cell.getValue();
-                    if (!val) return `<span class="badge bg-light text-muted border border-light-subtle rounded-pill">General</span>`;
+                    if (!val || val === 'General') return `<span class="badge bg-light text-muted border border-light-subtle rounded-pill">General (Common)</span>`;
+                    if (val === 'BusinessStudies') return `<span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill">Business Studies</span>`;
                     return `<span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill">${val}</span>`;
                 }
             },
