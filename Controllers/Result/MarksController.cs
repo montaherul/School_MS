@@ -158,7 +158,7 @@ public class MarksController : Controller
             var teacher = await _teacherService.GetByUserIdAsync(currentUserId, ct);
             
             dto.TeacherId = teacher?.Id ?? 1; // Default to admin teacher if system user
-            
+
             if (teacher != null && !User.IsInRole("Admin") && !User.IsInRole("Super Admin") && !User.IsInRole("Principal"))
             {
                 if (dto.Marks.Any())
@@ -178,7 +178,8 @@ public class MarksController : Controller
                     }
                 }
             }
-            
+
+            foreach (var m in dto.Marks) m.Status = ResultWorkflowStatus.Submitted;
             await _markEntryService.SubmitMarksBatchAsync(dto);
             return Json(new { success = true });
         }

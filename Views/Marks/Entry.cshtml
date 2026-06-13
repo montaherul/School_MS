@@ -116,7 +116,7 @@
         function recalcRow($row) {
             var total = 0;
             componentColumns.forEach(function(c) {
-                total += parseFloat($row.find('.cmp-' + c.field).val()) || 0;
+                total += parseFloat($row.find('.cmp-' + c.fieldName).val()) || 0;
             });
             $row.find('.c-total').text(total.toFixed(2));
 
@@ -141,11 +141,13 @@
                 if (studentId) {
                     var mark = { studentId: studentId, marksObtained: parseFloat($(this).find('.c-total').text()) || 0, componentValues: {} };
                     componentColumns.forEach(function(c) {
-                        var val = parseFloat($(this).find('.cmp-' + c.field).val()) || null;
-                        if (c.field.startsWith('cmp_')) {
+                        var rawVal = $(this).find('.cmp-' + c.fieldName).val();
+                        var val = rawVal !== '' && rawVal !== null ? parseFloat(rawVal) : null;
+                        if (val !== null && isNaN(val)) val = null;
+                        if (c.fieldName.startsWith('cmp_')) {
                             mark.componentValues[c.componentCode] = val;
                         } else {
-                            mark[c.field] = val;
+                            mark[c.fieldName] = val;
                         }
                     }.bind(this));
                     marks.push(mark);
@@ -161,8 +163,8 @@
                 var student = studentData[idx];
                 if (student) {
                     componentColumns.forEach(function(c) {
-                        var val = getStudentValue(student, c.field, c.componentCode);
-                        $row.find('.cmp-' + c.field).val(val);
+                        var val = getStudentValue(student, c.fieldName, c.componentCode);
+                        $row.find('.cmp-' + c.fieldName).val(val);
                     });
                 }
             });

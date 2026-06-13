@@ -381,6 +381,14 @@ public class WebsiteAdminController : Controller
         return Json(list);
     }
 
+    [HttpGet("Messages/Details/{id}")]
+    public async Task<IActionResult> MessageDetails(int id, CancellationToken ct)
+    {
+        var message = await _contactService.GetMessageByIdAsync(id, ct);
+        if (message == null) return NotFound();
+        return View(message);
+    }
+
     [HttpPost("Messages/MarkRead/{id}")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> MessageMarkRead(int id, CancellationToken ct)
@@ -515,6 +523,14 @@ public class WebsiteAdminController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AdmissionFeeCreateEdit(int? id, AdmissionFeeStructure model, CancellationToken ct)
     {
+        var existing = await _feeService.GetAllAsync(ct);
+        var duplicate = existing.FirstOrDefault(f => f.SchoolClassId == model.SchoolClassId && f.Id != (id ?? 0));
+        if (duplicate != null)
+        {
+            TempData["ErrorMessage"] = $"Fee structure for class '{duplicate.ClassName}' (ID: {model.SchoolClassId}) already exists.";
+            return RedirectToAction(nameof(Index));
+        }
+
         if (id.HasValue && id > 0)
         {
             model.Id = id.Value;

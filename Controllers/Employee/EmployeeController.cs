@@ -406,8 +406,14 @@ public class EmployeeController : Controller
             return View("BulkPrint", employees);
         }
 
-        await PopulateLookupListsAsync(ct);
-        return View("BulkPrintFilter");
+        var departments = await _departmentService.GetAllAsync(ct);
+        var designations = await _designationService.GetAllAsync(ct);
+        var model = new EmployeeIdCardBulkFilterViewModel
+        {
+            Departments = [.. departments],
+            Designations = [.. designations]
+        };
+        return View("BulkPrintFilter", model);
     }
 
     [HttpGet]

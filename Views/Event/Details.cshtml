@@ -44,7 +44,7 @@
                         {
                             <div class="bg-white p-4 rounded border mb-5 text-center shadow-sm">
                                 <h5 class="fw-bold mb-3 text-uppercase small text-muted"><i class="bi bi-hourglass-split me-2 text-warning"></i> Event Countdown</h5>
-                                <div class="d-flex justify-content-center gap-3 align-items-center">
+                                <div class="d-flex justify-content-center gap-3 align-items-center countdown-numbers">
                                     <div class="text-center">
                                         <h3 class="fw-bold mb-0 text-primary" id="days">00</h3>
                                         <span class="small text-muted">Days</span>
@@ -58,6 +58,11 @@
                                     <div class="text-center">
                                         <h3 class="fw-bold mb-0 text-primary" id="minutes">00</h3>
                                         <span class="small text-muted">Mins</span>
+                                    </div>
+                                    <h3 class="fw-bold text-muted mb-0">:</h3>
+                                    <div class="text-center">
+                                        <h3 class="fw-bold mb-0 text-primary" id="seconds">00</h3>
+                                        <span class="small text-muted">Secs</span>
                                     </div>
                                 </div>
                             </div>
@@ -90,16 +95,19 @@
                 
                 if (diff <= 0) {
                     clearInterval(interval);
+                    document.querySelector('.countdown-numbers').innerHTML = '<h4 class="fw-bold text-success mb-0"><i class="bi bi-check-circle me-2"></i>Event In Progress</h4>';
                     return;
                 }
                 
                 const days = Math.floor(diff / (1000 * 60 * 60 * 24));
                 const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const secs = Math.floor((diff % (1000 * 60)) / 1000);
                 
                 document.getElementById('days').innerText = String(days).padStart(2, '0');
                 document.getElementById('hours').innerText = String(hours).padStart(2, '0');
                 document.getElementById('minutes').innerText = String(mins).padStart(2, '0');
+                document.getElementById('seconds').innerText = String(secs).padStart(2, '0');
             }
             
             const interval = setInterval(updateCountdown, 1000);

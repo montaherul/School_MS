@@ -1,0 +1,70 @@
+@model SchoolManagementSystem.Models.Entities.Website.ContactMessage
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Contact Message Details";
+}
+
+<div class="container-fluid px-4 py-3">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="fw-bold mb-0"><i class="bi bi-chat-dots me-2"></i> Contact Message Details</h4>
+        <a href="/Admin/Website" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i> Back to Inbox</a>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-4">
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="fw-bold text-muted small text-uppercase">Name</label>
+                        <p class="fs-5 mb-0">@Model.Name</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="fw-bold text-muted small text-uppercase">Status</label>
+                        <p class="mb-0">
+                            @if (Model.Status == "Unread")
+                            {
+                                <span class="badge bg-danger fs-6">Unread</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-success fs-6">Read</span>
+                            }
+                        </p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="fw-bold text-muted small text-uppercase">Email</label>
+                        <p class="fs-5 mb-0">@Model.Email</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="fw-bold text-muted small text-uppercase">Phone</label>
+                        <p class="fs-5 mb-0">@(!string.IsNullOrEmpty(Model.Phone) ? Model.Phone : "—")</p>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="mb-3">
+                        <label class="fw-bold text-muted small text-uppercase">Subject</label>
+                        <p class="fs-5 mb-0">@Model.Subject</p>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <div class="mb-3">
+                        <label class="fw-bold text-muted small text-uppercase">Message</label>
+                        <div class="p-3 bg-light rounded border" style="white-space: pre-wrap; line-height: 1.7;">@Model.Message</div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="fw-bold text-muted small text-uppercase">Received On</label>
+                        <p class="mb-0">@Model.CreatedAt.ToString("dd MMMM yyyy, hh:mm tt")</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
