@@ -1,25 +1,278 @@
 ﻿@model ErrorViewModel
 @{
-    ViewData["Title"] = "Error";
+    Layout = null;
+
+    int statusCode = 0;
+    if (Context.Request.Query.ContainsKey("statusCode"))
+        int.TryParse(Context.Request.Query["statusCode"], out statusCode);
+    if (statusCode == 0)
+        statusCode = Context.Response.StatusCode;
+
+    string title, message, icon, color, colorBg;
+    switch (statusCode)
+    {
+        case 403:
+            title = "Access Denied";
+            message = "You do not have permission to access this page. Please contact your administrator if you believe this is a mistake.";
+            icon = "bi-shield-lock";
+            color = "#D97706";
+            colorBg = "rgba(217,119,6,0.1)";
+            break;
+        case 404:
+            title = "Page Not Found";
+            message = "The page you are looking for does not exist, has been moved, or is temporarily unavailable.";
+            icon = "bi-compass";
+            color = "#0F766E";
+            colorBg = "rgba(15,118,110,0.1)";
+            break;
+        case 500:
+            title = "Something Went Wrong";
+            message = "An unexpected error occurred while processing your request. Please try again later or contact support.";
+            icon = "bi-exclamation-triangle";
+            color = "#DC2626";
+            colorBg = "rgba(220,38,38,0.1)";
+            break;
+        default:
+            title = "Error";
+            message = "An unexpected error occurred. Please try again later.";
+            icon = "bi-exclamation-circle";
+            color = "#1e40af";
+            colorBg = "rgba(30,64,175,0.1)";
+            break;
+    }
 }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@title - SchoolMS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-<h1 class="text-danger">Error.</h1>
-<h2 class="text-danger">An error occurred while processing your request.</h2>
+        body {
+            font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 50%, #f1f5f9 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #0f172a;
+            -webkit-font-smoothing: antialiased;
+            padding: 20px;
+        }
 
-@if (Model.ShowRequestId)
-{
-    <p>
-        <strong>Request ID:</strong> <code>@Model.RequestId</code>
-    </p>
-}
+        .error-container {
+            width: 100%;
+            max-width: 480px;
+        }
 
-<h3>Development Mode</h3>
-<p>
-    Swapping to <strong>Development</strong> environment will display more detailed information about the error that occurred.
-</p>
-<p>
-    <strong>The Development environment shouldn't be enabled for deployed applications.</strong>
-    It can result in displaying sensitive information from exceptions to end users.
-    For local debugging, enable the <strong>Development</strong> environment by setting the <strong>ASPNETCORE_ENVIRONMENT</strong> environment variable to <strong>Development</strong>
-    and restarting the app.
-</p>
+        .error-brand {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .error-brand a {
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 24px;
+            font-weight: 800;
+            color: #1e40af;
+        }
+
+        .error-brand a i {
+            font-size: 28px;
+        }
+
+        .error-card {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+            padding: 48px 40px;
+            text-align: center;
+            border: 1px solid rgba(0,0,0,0.04);
+        }
+
+        .error-icon-wrap {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px auto;
+            font-size: 36px;
+        }
+
+        .error-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 12px;
+        }
+
+        .error-message {
+            font-size: 14px;
+            color: #64748b;
+            line-height: 1.7;
+            margin-bottom: 28px;
+        }
+
+        .error-code-badge {
+            display: inline-block;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 4px 14px;
+            border-radius: 20px;
+            margin-bottom: 24px;
+            letter-spacing: 0.03em;
+        }
+
+        .error-request-id {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-bottom: 28px;
+            word-break: break-all;
+        }
+
+        .error-request-id strong {
+            color: #64748b;
+            font-weight: 600;
+        }
+
+        .error-request-id code {
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            font-size: 11px;
+            background: #f1f5f9;
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: #475569;
+        }
+
+        .error-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .error-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            border: none;
+            font-family: inherit;
+        }
+
+        .error-btn--primary {
+            background: #1e40af;
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(30, 64, 175, 0.25);
+        }
+
+        .error-btn--primary:hover {
+            background: #1e3a8a;
+            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.35);
+            transform: translateY(-1px);
+        }
+
+        .error-btn--outline {
+            background: #fff;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+        }
+
+        .error-btn--outline:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+            color: #1e293b;
+        }
+
+        .error-footer {
+            text-align: center;
+            margin-top: 28px;
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        @@media (max-width: 480px) {
+            .error-card {
+                padding: 36px 24px;
+            }
+            .error-icon-wrap {
+                width: 64px;
+                height: 64px;
+                font-size: 28px;
+                border-radius: 16px;
+            }
+            .error-title {
+                font-size: 18px;
+            }
+            .error-actions {
+                flex-direction: column;
+            }
+            .error-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="error-container">
+        <div class="error-brand">
+            <a href="/">
+                <i class="bi bi-mortarboard-fill"></i>
+                <span>SchoolMS</span>
+            </a>
+        </div>
+
+        <div class="error-card">
+            <div class="error-icon-wrap" style="background: @colorBg; color: @color;">
+                <i class="bi @icon"></i>
+            </div>
+
+            <div class="error-code-badge" style="background: @colorBg; color: @color;">
+                Error @statusCode
+            </div>
+
+            <h1 class="error-title">@title</h1>
+            <p class="error-message">@message</p>
+
+            @if (Model.ShowRequestId)
+            {
+                <div class="error-request-id">
+                    <strong>Request ID:</strong> <code>@Model.RequestId</code>
+                </div>
+            }
+
+            <div class="error-actions">
+                <a href="/" class="error-btn error-btn--primary">
+                    <i class="bi bi-house-door"></i> Go Home
+                </a>
+                <a href="javascript:history.back()" class="error-btn error-btn--outline">
+                    <i class="bi bi-arrow-left"></i> Go Back
+                </a>
+            </div>
+        </div>
+
+        <div class="error-footer">
+            &copy; @DateTime.Today.Year School Management System
+        </div>
+    </div>
+
+</body>
+</html>
