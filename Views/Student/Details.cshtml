@@ -4,8 +4,6 @@
     bool isStudent = User.IsInRole("Student");
 }
 
-<link rel="stylesheet" href="~/css/idcard-print.css" asp-append-version="true" />
-
 <!-- ===== PROFILE HEADER ===== -->
 <div class="row g-4 mb-4 align-items-center">
     <div class="col-auto">
@@ -208,23 +206,6 @@
             </div>
         </div>
 
-        <!-- ID Card Actions -->
-        <div class="card border-0 shadow-sm rounded-4">
-            <div class="card-body p-4 text-center">
-                <div class="d-grid gap-2">
-                    <a href="@Url.Action("PrintIdCard", new { id = Model.StudentNo })"
-                       class="btn btn-primary rounded-pill fw-bold py-2" target="_blank">
-                        <i class="bi bi-printer-fill me-2"></i>Print ID Card
-                    </a>
-                    <a href="@Url.Action("DownloadIdCard", new { id = Model.StudentNo })"
-                       class="btn btn-danger rounded-pill fw-bold py-2" target="_blank">
-                        <i class="bi bi-file-earmark-pdf-fill me-2"></i>Download PDF
-                    </a>
-                </div>
-                <p class="text-muted small mt-3 mb-0">
-                    <i class="bi bi-info-circle"></i> Enterprise ID card with QR, photo &amp; guardian info
-                </p>
-            </div>
         </div>
     </div>
 </div>

@@ -1,6 +1,5 @@
-using System;
-using System.Collections.Generic;
 using SchoolManagementSystem.Models.DTOs.Attendance;
+using SchoolManagementSystem.Models.DTOs.Calendar;
 using SchoolManagementSystem.Models.DTOs.Guardian;
 using SchoolManagementSystem.Services.Interfaces.Guardian;
 
@@ -44,6 +43,10 @@ namespace SchoolManagementSystem.Models.ViewModels.Dashboard
         public bool SelectedChildLatestPassed { get; set; }
         public int SelectedChildLeaveCount { get; set; }
         public int SelectedChildPendingLeaveCount { get; set; }
+
+        // Calendar Widgets
+        public List<UpcomingHolidayDto> UpcomingHolidays { get; set; } = new();
+        public List<UpcomingExamDto> UpcomingExams { get; set; } = new();
     }
 
     public class GuardianChildSummaryViewModel

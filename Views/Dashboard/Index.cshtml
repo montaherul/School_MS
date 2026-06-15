@@ -25,7 +25,7 @@
     </div>
 
     <!-- ── Metric Cards ── -->
-    <div class="dash-stats" style="grid-template-columns: repeat(6,1fr);">
+    <div class="dash-stats" style="grid-template-columns: repeat(8,1fr);">
         <div class="dash-stat-card">
             <div class="dash-stat-card__icon dash-stat-card__icon--primary">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
@@ -78,6 +78,24 @@
             <div class="dash-stat-card__body">
                 <span class="dash-stat-card__label">Attendance</span>
                 <span class="dash-stat-card__value">@Model.AttendancePercentage<span class="dash-stat-card__unit">%</span></span>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon" style="background: rgba(124,58,237,.1); color: #7c3aed;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 10h10M7 14h6"/></svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Student ID Cards</span>
+                <span class="dash-stat-card__value">@Model.ActiveStudentsWithCards<span class="dash-stat-card__unit">/<span class="dash-stat-card__unit">@Model.TotalStudentsWithCards</span></span></span>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon" style="background: rgba(234,179,8,.1); color: #eab308;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 10h10M7 14h6"/></svg>
+            </div>
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Employee ID Cards</span>
+                <span class="dash-stat-card__value">@Model.ActiveEmployeesWithCards<span class="dash-stat-card__unit">/<span class="dash-stat-card__unit">@Model.TotalEmployeesWithCards</span></span></span>
             </div>
         </div>
     </div>
@@ -219,6 +237,43 @@
             </div>
         </div>
 
+        <!-- Calendar Widgets (AJAX loaded) -->
+        <div class="dash-panel">
+            <div class="dash-panel__header">
+                <h2 class="dash-panel__title">
+                    <i class="bi bi-calendar3 dash-icon-primary"></i>
+                    Academic Calendar
+                </h2>
+                <a href="/AcademicCalendar/Index" class="adm-btn adm-btn--sm">View Full Calendar</a>
+            </div>
+            <div class="row g-3" id="calendarWidgets">
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-danger text-white py-2"><i class="bi bi-sun me-1"></i> Upcoming Holidays</div>
+                        <div class="card-body p-2" id="widgetHolidays"><div class="text-center text-muted py-3"><div class="spinner-border spinner-border-sm"></div></div></div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-warning text-dark py-2"><i class="bi bi-pencil-square me-1"></i> Upcoming Exams</div>
+                        <div class="card-body p-2" id="widgetExams"><div class="text-center text-muted py-3"><div class="spinner-border spinner-border-sm"></div></div></div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header" style="background:#7c3aed;color:#fff;py-2"><i class="bi bi-star me-1"></i> Upcoming Events</div>
+                        <div class="card-body p-2" id="widgetEvents"><div class="text-center text-muted py-3"><div class="spinner-border spinner-border-sm"></div></div></div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-header bg-primary text-white py-2"><i class="bi bi-bar-chart me-1"></i> This Month</div>
+                        <div class="card-body p-2" id="widgetMonthSummary"><div class="text-center text-muted py-3"><div class="spinner-border spinner-border-sm"></div></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Operational Modules -->
         <div class="dash-panel">
             <div class="dash-panel__header">
@@ -240,6 +295,8 @@
                 <a class="dash-module-btn" href="/Subject/Index"><i class="bi bi-book"></i> Subjects</a>
                 <a class="dash-module-btn" href="/Teacher/Index"><i class="bi bi-person-badge"></i> Teachers</a>
                 <a class="dash-module-btn" href="/Employee"><i class="bi bi-person-workspace"></i> Employees</a>
+                <a class="dash-module-btn dash-module-btn--primary" href="/IdCard/Students"><i class="bi bi-person-vcard"></i> Student ID Cards</a>
+                <a class="dash-module-btn dash-module-btn--primary" href="/IdCard/Employees"><i class="bi bi-person-badge"></i> Employee ID Cards</a>
                 <a class="dash-module-btn" href="/ExamSchedule/Index"><i class="bi bi-calendar4-event"></i> Schedules</a>
                 <a class="dash-module-btn" href="/Marks/Index"><i class="bi bi-pen"></i> Marks Entry</a>
                 <a class="dash-module-btn" href="/ReportCard/Index"><i class="bi bi-file-earmark-pdf"></i> Report Cards</a>
@@ -272,6 +329,43 @@
 
 @section Scripts {
     <script>
+        // Calendar Widgets AJAX Loading
+        function loadCalendarWidgets() {
+            fetch('/AcademicCalendar/WidgetUpcomingHolidays?count=4')
+                .then(r => r.json())
+                .then(data => {
+                    const el = document.getElementById('widgetHolidays');
+                    if (!data.length) { el.innerHTML = '<div class="text-center text-muted py-2 small">No upcoming holidays</div>'; return; }
+                    el.innerHTML = '<ul class="list-unstyled mb-0 small">' + data.map(h => `<li class="py-1 border-bottom border-light"><span class="fw-semibold">${h.name}</span><br><span class="text-muted">${h.date} (${h.holidayType})</span></li>`).join('') + '</ul>';
+                });
+            fetch('/AcademicCalendar/WidgetUpcomingExams?count=4')
+                .then(r => r.json())
+                .then(data => {
+                    const el = document.getElementById('widgetExams');
+                    if (!data.length) { el.innerHTML = '<div class="text-center text-muted py-2 small">No upcoming exams</div>'; return; }
+                    el.innerHTML = '<ul class="list-unstyled mb-0 small">' + data.map(e => `<li class="py-1 border-bottom border-light"><span class="fw-semibold">${e.examName}</span><br><span class="text-muted">${e.date} (${e.dayOfWeek})</span></li>`).join('') + '</ul>';
+                });
+            fetch('/AcademicCalendar/WidgetUpcomingEvents?count=4')
+                .then(r => r.json())
+                .then(data => {
+                    const el = document.getElementById('widgetEvents');
+                    if (!data.length) { el.innerHTML = '<div class="text-center text-muted py-2 small">No upcoming events</div>'; return; }
+                    el.innerHTML = '<ul class="list-unstyled mb-0 small">' + data.map(e => `<li class="py-1 border-bottom border-light"><span class="fw-semibold">${e.title}</span><br><span class="text-muted">${e.date}</span></li>`).join('') + '</ul>';
+                });
+            fetch('/AcademicCalendar/WidgetMonthSummary')
+                .then(r => r.json())
+                .then(data => {
+                    const el = document.getElementById('widgetMonthSummary');
+                    el.innerHTML = `<div class="small">
+                        <div class="d-flex justify-content-between py-1"><span class="text-muted">Total Days</span><span class="fw-semibold">${data.totalDays}</span></div>
+                        <div class="d-flex justify-content-between py-1"><span class="text-success">Working Days</span><span class="fw-semibold text-success">${data.workingDays}</span></div>
+                        <div class="d-flex justify-content-between py-1"><span class="text-danger">Holidays</span><span class="fw-semibold text-danger">${data.holidayCount}</span></div>
+                        <div class="d-flex justify-content-between py-1"><span class="text-warning">Exam Days</span><span class="fw-semibold text-warning">${data.examDayCount}</span></div>
+                    </div>`;
+                });
+        }
+        document.addEventListener('DOMContentLoaded', loadCalendarWidgets);
+
         const studentsByClass = @Html.Raw(JsonSerializer.Serialize(Model.StudentsByClass));
         const monthlyCollections = @Html.Raw(JsonSerializer.Serialize(Model.MonthlyCollections));
         const recentActivities = @Html.Raw(JsonSerializer.Serialize(Model.RecentActivities)) || [];

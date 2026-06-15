@@ -81,6 +81,13 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
             return attendanceDateUtc >= cutoff;
         }
 
+        public async Task<bool> IsExamDayAsync(DateOnly date, CancellationToken ct = default)
+        {
+            var entry = await _calendarRepo.Query()
+                .FirstOrDefaultAsync(c => c.Date == date && c.IsExamDay && !c.IsDeleted, ct);
+            return entry != null;
+        }
+
         public async Task<string?> ValidateAttendanceDateAsync(DateOnly date, CancellationToken ct = default)
         {
             if (await IsHolidayAsync(date, ct))

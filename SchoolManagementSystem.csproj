@@ -42,6 +42,7 @@
 
   <Target Name="CopyWkHtmlToX" AfterTargets="Build">
     <Copy SourceFiles="$(MSBuildProjectDirectory)\wkhtmltox.dll" DestinationFolder="$(OutDir)" Condition="Exists('$(MSBuildProjectDirectory)\wkhtmltox.dll')" />
+    <Copy SourceFiles="$(MSBuildProjectDirectory)\wkhtmltox.dll" DestinationFiles="$(OutDir)\libwkhtmltox.dll" Condition="Exists('$(MSBuildProjectDirectory)\wkhtmltox.dll')" />
   </Target>
 
 </Project>

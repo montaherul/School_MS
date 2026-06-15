@@ -76,32 +76,10 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
                 MarksObtained = dto.MarksObtained,
                 Grade = dto.Grade,
                 IsLocked = dto.IsLocked,
-                WrittenMarks = dto.WrittenMarks,
-                MCQMarks = dto.MCQMarks,
-                CQMarks = dto.CQMarks,
-                PracticalMarks = dto.PracticalMarks,
-                VivaMarks = dto.VivaMarks,
-                LabMarks = dto.LabMarks,
-                OralMarks = dto.OralMarks,
-                AssignmentMarks = dto.AssignmentMarks,
-                ContinuousAssessmentMarks = dto.ContinuousAssessmentMarks,
-                CompetencyMarks = dto.CompetencyMarks,
-                BehaviourMarks = dto.BehaviourMarks,
-                ParticipationMarks = dto.ParticipationMarks,
+                ComponentMarks = dto.ComponentMarks,
                 EnteredByTeacherId = dto.EnteredByTeacherId,
                 EnteredByTeacherName = dto.EnteredByTeacherName
             };
-
-            if (!string.IsNullOrEmpty(dto.ComponentValues))
-            {
-                try
-                {
-                    var parsed = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, decimal?>>(dto.ComponentValues);
-                    if (parsed != null)
-                        d.ComponentValues = parsed;
-                }
-                catch { }
-            }
 
             return d;
         }).ToList();
@@ -392,17 +370,8 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
 
             foreach (var c in components)
             {
-                var val = ComponentFieldMapper.GetValue(
-                    new MarkEntry
-                    {
-                        WrittenMarks = s.WrittenMarks, MCQMarks = s.MCQMarks, CQMarks = s.CQMarks,
-                        PracticalMarks = s.PracticalMarks, VivaMarks = s.VivaMarks, LabMarks = s.LabMarks,
-                        OralMarks = s.OralMarks, AssignmentMarks = s.AssignmentMarks,
-                        ContinuousAssessmentMarks = s.ContinuousAssessmentMarks,
-                        CompetencyMarks = s.CompetencyMarks, BehaviourMarks = s.BehaviourMarks,
-                        ParticipationMarks = s.ParticipationMarks,
-                        ComponentValues = s.ComponentValues
-                    }, c.ComponentCode);
+                var val = s.ComponentMarks[c.ComponentCode]
+                    ?? GetSheetDynamicValue(s.ComponentValues, c.ComponentCode);
                 ws.Cell(row, col++).SetValue((double)(val ?? 0));
             }
 
@@ -437,17 +406,8 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
 
             foreach (var c in components)
             {
-                var val = ComponentFieldMapper.GetValue(
-                    new MarkEntry
-                    {
-                        WrittenMarks = s.WrittenMarks, MCQMarks = s.MCQMarks, CQMarks = s.CQMarks,
-                        PracticalMarks = s.PracticalMarks, VivaMarks = s.VivaMarks, LabMarks = s.LabMarks,
-                        OralMarks = s.OralMarks, AssignmentMarks = s.AssignmentMarks,
-                        ContinuousAssessmentMarks = s.ContinuousAssessmentMarks,
-                        CompetencyMarks = s.CompetencyMarks, BehaviourMarks = s.BehaviourMarks,
-                        ParticipationMarks = s.ParticipationMarks,
-                        ComponentValues = s.ComponentValues
-                    }, c.ComponentCode);
+                var val = s.ComponentMarks[c.ComponentCode]
+                    ?? GetSheetDynamicValue(s.ComponentValues, c.ComponentCode);
                 sb.Append($",{val ?? 0}");
             }
 
@@ -461,29 +421,25 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
         val.Contains(',') || val.Contains('"') || val.Contains('\n')
             ? $"\"{val.Replace("\"", "\"\"")}\"" : val;
 
-    private static void SetMarkEntryComponentValue(MarkEntryDto dto, string code, decimal val)
+    private static decimal? GetSheetDynamicValue(string? componentValuesJson, string componentCode)
     {
-        switch (code.ToUpperInvariant())
+        if (string.IsNullOrEmpty(componentValuesJson)) return null;
+        try
         {
-            case "WRITTEN": dto.WrittenMarks = val; break;
-            case "MCQ": dto.MCQMarks = val; break;
-            case "CQ": dto.CQMarks = val; break;
-            case "PRACTICAL": dto.PracticalMarks = val; break;
-            case "VIVA": dto.VivaMarks = val; break;
-            case "LAB": dto.LabMarks = val; break;
-            case "ORAL": dto.OralMarks = val; break;
-            case "ASSIGNMENT": dto.AssignmentMarks = val; break;
-            case "CONTINUOUS_ASSESSMENT": dto.ContinuousAssessmentMarks = val; break;
-            case "COMPETENCY": dto.CompetencyMarks = val; break;
-            case "BEHAVIOUR": dto.BehaviourMarks = val; break;
-            case "PARTICIPATION": dto.ParticipationMarks = val; break;
-            default: dto.ComponentValues[code] = val; break;
+            var parsed = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, decimal?>>(componentValuesJson);
+            return parsed?.GetValueOrDefault(componentCode);
         }
+        catch { return null; }
     }
+
+    private static void SetMarkEntryComponentValue(MarkEntryDto dto, string code, decimal val)
+        => dto.ComponentMarks[code] = val;
 
     private static void ApplyStandardFieldValues(MarkEntry entry, MarkEntryDto dto)
     {
-        ComponentFieldMapper.ApplyStandardFieldValues(entry, dto);
+        var dynamicJson = ComponentFieldMapper.ApplyToEntity(dto.ComponentMarks, entry);
+        if (!string.IsNullOrEmpty(dynamicJson))
+            entry.ComponentValues = dynamicJson;
     }
 
     private void ApplyComponentValues(
@@ -495,7 +451,6 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
     {
         decimal sum = 0;
         var any = false;
-        var dynamicValues = new Dictionary<string, decimal?>();
 
         foreach (var component in configuredComponents)
         {
@@ -504,18 +459,9 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
 
             any = true;
             sum += value.Value;
-
-            // Store in dynamic JSON for all non-mapped components
-            if (!ComponentFieldMapper.IsStandardField(component.ComponentCode))
-            {
-                dynamicValues[component.ComponentCode] = value;
-            }
         }
 
-        componentValuesJson = dynamicValues.Count > 0
-            ? System.Text.Json.JsonSerializer.Serialize(dynamicValues)
-            : null;
-
+        componentValuesJson = ComponentFieldMapper.SerializeDynamicComponents(markDto.ComponentMarks);
         totalMarks = any ? sum : null;
     }
 
@@ -586,19 +532,31 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
     public async Task<EntryStatusSummaryDto> GetEntryStatusAsync(int examId, int? classId = null)
     {
         var exam = await _examRepository.GetByIdAsync(examId);
-        var classSubjects = await _unitOfWork.Repository<ClassSubject>().Query()
+        var classSubjectsQuery = _unitOfWork.Repository<ClassSubject>().Query()
             .Include(cs => cs.Subject)
             .Include(cs => cs.SchoolClass)
-            .Where(cs => !cs.IsDeleted)
-            .ToListAsync();
+            .Where(cs => !cs.IsDeleted);
 
-        var markEntries = await _unitOfWork.Repository<MarkEntry>().Query()
-            .Where(m => m.ExamId == examId)
-            .ToListAsync();
+        if (classId.HasValue)
+            classSubjectsQuery = classSubjectsQuery.Where(cs => cs.SchoolClassId == classId.Value);
 
-        var students = await _unitOfWork.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query()
-            .Where(s => !s.IsDeleted)
-            .ToListAsync();
+        var classSubjects = await classSubjectsQuery.ToListAsync();
+
+        var markEntriesQuery = _unitOfWork.Repository<MarkEntry>().Query()
+            .Where(m => m.ExamId == examId);
+
+        if (classId.HasValue)
+            markEntriesQuery = markEntriesQuery.Where(m => m.ClassId == classId.Value);
+
+        var markEntries = await markEntriesQuery.ToListAsync();
+
+        var studentsQuery = _unitOfWork.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query()
+            .Where(s => !s.IsDeleted);
+
+        if (classId.HasValue)
+            studentsQuery = studentsQuery.Where(s => s.ClassId == classId.Value);
+
+        var students = await studentsQuery.ToListAsync();
 
         var classes = classSubjects
             .Select(cs => cs.SchoolClass)

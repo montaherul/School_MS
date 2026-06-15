@@ -1,3 +1,5 @@
+using SchoolManagementSystem.Models.DTOs.Calendar;
+
 namespace SchoolManagementSystem.Models.ViewModels.Dashboard;
 
 public class DashboardViewModel
@@ -45,6 +47,15 @@ public class DashboardViewModel
     public int TotalSubjects { get; set; }
     public int AssignedSubjects { get; set; }
     public int UnassignedSubjects => TotalSubjects - AssignedSubjects;
+
+    // ID Card Stats
+    public int TotalStudentsWithCards { get; set; }
+    public int ActiveStudentsWithCards { get; set; }
+    public int TotalEmployeesWithCards { get; set; }
+    public int ActiveEmployeesWithCards { get; set; }
+
+    // Calendar Widgets
+    public CalendarWidgetDto CalendarWidgets { get; set; } = new();
 }
 
 public record RecentActivityItem(string Module, string Title, DateTime At, string Summary = "");

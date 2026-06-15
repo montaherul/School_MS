@@ -1,9 +1,11 @@
 using System.Data;
 using System.Data.Common;
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Data;
 using SchoolManagementSystem.Models.DTOs.Result;
 using SchoolManagementSystem.Repositories.Interfaces.Result;
+using SchoolManagementSystem.Services.Implementations.Result;
 
 namespace SchoolManagementSystem.Repositories.Implementations.Result;
 
@@ -119,25 +121,18 @@ public class TeacherResultRepository : ITeacherResultRepository
         {
             while (await reader.ReadAsync(ct))
             {
+                var marks = new ComponentMarksDto();
+                var componentValuesJson = GetNullableString(reader, "ComponentValues");
+                BuildComponentMarksFromReader(reader, marks, componentValuesJson);
+
                 result.ExistingMarks.Add(new MarksEntryExistingDto
                 {
                     StudentId = GetInt32(reader, "StudentId"),
                     MarksObtained = GetDecimal(reader, "MarksObtained"),
                     Grade = GetNullableString(reader, "Grade"),
                     GradePoint = GetNullableDecimal(reader, "GradePoint"),
-                    WrittenMarks = GetNullableDecimal(reader, "WrittenMarks"),
-                    MCQMarks = GetNullableDecimal(reader, "MCQMarks"),
-                    CQMarks = GetNullableDecimal(reader, "CQMarks"),
-                    PracticalMarks = GetNullableDecimal(reader, "PracticalMarks"),
-                    VivaMarks = GetNullableDecimal(reader, "VivaMarks"),
-                    LabMarks = GetNullableDecimal(reader, "LabMarks"),
-                    OralMarks = GetNullableDecimal(reader, "OralMarks"),
-                    AssignmentMarks = GetNullableDecimal(reader, "AssignmentMarks"),
-                    ContinuousAssessmentMarks = GetNullableDecimal(reader, "ContinuousAssessmentMarks"),
-                    CompetencyMarks = GetNullableDecimal(reader, "CompetencyMarks"),
-                    BehaviourMarks = GetNullableDecimal(reader, "BehaviourMarks"),
-                    ParticipationMarks = GetNullableDecimal(reader, "ParticipationMarks"),
-                    ComponentValues = GetNullableString(reader, "ComponentValues"),
+                    ComponentMarks = marks,
+                    ComponentValues = componentValuesJson,
                     Status = GetInt32(reader, "Status"),
                     IsLocked = GetBoolean(reader, "IsLocked")
                 });
@@ -207,6 +202,9 @@ public class TeacherResultRepository : ITeacherResultRepository
         await using var reader = await command.ExecuteReaderAsync(ct);
         while (await reader.ReadAsync(ct))
         {
+            var marks = new ComponentMarksDto();
+            BuildComponentMarksFromReader(reader, marks, null);
+
             items.Add(new TeacherExportRowDto
             {
                 RollNumber = GetString(reader, "RollNumber"),
@@ -216,15 +214,7 @@ public class TeacherResultRepository : ITeacherResultRepository
                 SectionName = GetString(reader, "SectionName"),
                 GroupName = GetString(reader, "GroupName"),
                 MarksObtained = GetDecimal(reader, "MarksObtained"),
-                WrittenMarks = GetNullableDecimal(reader, "WrittenMarks"),
-                MCQMarks = GetNullableDecimal(reader, "MCQMarks"),
-                CQMarks = GetNullableDecimal(reader, "CQMarks"),
-                PracticalMarks = GetNullableDecimal(reader, "PracticalMarks"),
-                VivaMarks = GetNullableDecimal(reader, "VivaMarks"),
-                LabMarks = GetNullableDecimal(reader, "LabMarks"),
-                OralMarks = GetNullableDecimal(reader, "OralMarks"),
-                AssignmentMarks = GetNullableDecimal(reader, "AssignmentMarks"),
-                ContinuousAssessmentMarks = GetNullableDecimal(reader, "ContinuousAssessmentMarks"),
+                ComponentMarks = marks,
                 Grade = GetNullableString(reader, "Grade"),
                 GradePoint = GetNullableDecimal(reader, "GradePoint"),
                 PassStatus = GetString(reader, "PassStatus"),
@@ -275,4 +265,28 @@ public class TeacherResultRepository : ITeacherResultRepository
     private static decimal? GetNullableDecimal(DbDataReader reader, string name) => reader.IsDBNull(GetOrdinal(reader, name)) ? null : Convert.ToDecimal(reader[name]);
     private static bool GetBoolean(DbDataReader reader, string name) => !reader.IsDBNull(GetOrdinal(reader, name)) && Convert.ToBoolean(reader[name]);
     private static DateTime GetDateTime(DbDataReader reader, string name) => reader.IsDBNull(GetOrdinal(reader, name)) ? DateTime.MinValue : Convert.ToDateTime(reader[name]);
+
+    private static void BuildComponentMarksFromReader(DbDataReader reader, ComponentMarksDto marks, string? componentValuesJson)
+    {
+        var codeToColumn = ComponentFieldMapper.GetCodeToColumnMap();
+        foreach (var (code, columnName) in codeToColumn)
+        {
+            var val = GetNullableDecimal(reader, columnName);
+            if (val.HasValue)
+                marks[code] = val.Value;
+        }
+
+        if (!string.IsNullOrEmpty(componentValuesJson))
+        {
+            try
+            {
+                var parsed = JsonSerializer.Deserialize<Dictionary<string, decimal?>>(componentValuesJson);
+                if (parsed != null)
+                    foreach (var kvp in parsed)
+                        if (!marks.ContainsKey(kvp.Key))
+                            marks[kvp.Key] = kvp.Value;
+            }
+            catch { }
+        }
+    }
 }

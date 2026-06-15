@@ -1,0 +1,67 @@
+@model SchoolManagementSystem.Models.DTOs.Academic.AcademicCalendarEventDto
+@{
+    ViewData["Title"] = "Create Event";
+    var calendar = ViewBag.Calendar as SchoolManagementSystem.Models.Entities.Academic.AcademicCalendar;
+    var types = ViewBag.EventTypes as string[];
+}
+
+<div class="container-fluid py-3">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-calendar-plus me-2 text-primary"></i>Create Calendar Event</h5>
+                </div>
+                <div class="card-body">
+                    @if (calendar != null)
+                    {
+                        <div class="alert alert-info py-2 small">
+                            <strong>Calendar Day:</strong> @calendar.Date.ToString("dd MMM yyyy") — @calendar.Title
+                        </div>
+                    }
+                    <form asp-action="Create" method="post">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="calendarId" value="@calendar?.Id" />
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <label class="form-label fw-semibold">Title *</label>
+                                <input asp-for="Title" class="form-control" required />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label fw-semibold">Event Type *</label>
+                                <select asp-for="EventType" class="form-select" required>
+                                    <option value="">Select</option>
+                                    @if (types != null)
+                                    {
+                                        foreach (var t in types)
+                                        {
+                                            <option value="@t">@t</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Start *</label>
+                                <input asp-for="StartDate" type="datetime-local" class="form-control" required />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">End *</label>
+                                <input asp-for="EndDate" type="datetime-local" class="form-control" required />
+                            </div>
+                            <div class="col-12">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" asp-for="IsActive" checked />
+                                    <label class="form-check-label fw-semibold">Active</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
+                            <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i> Save</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

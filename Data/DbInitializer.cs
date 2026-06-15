@@ -142,6 +142,10 @@ public static class DbInitializer
                 CanCreate = false, CanRead = true, CanUpdate = false, CanDelete = false, CreatedAt = createdAt },
             new() { Id = 602, Module = "Laboratory", ModuleName = "Laboratory", Action = "Manage", Code = "Laboratory.Manage",
                 CanCreate = true, CanRead = true, CanUpdate = true, CanDelete = true, CreatedAt = createdAt },
+            new() { Id = 603, Module = "Calendar", ModuleName = "Calendar", Action = "Regenerate", Code = "Calendar.Regenerate",
+                CanCreate = true, CanRead = true, CanUpdate = true, CanDelete = false, CreatedAt = createdAt },
+            new() { Id = 604, Module = "Calendar", ModuleName = "Calendar", Action = "Repair", Code = "Calendar.Repair",
+                CanCreate = true, CanRead = true, CanUpdate = true, CanDelete = false, CreatedAt = createdAt },
         };
         var allPermissions = permissions.Concat(customPermissions).ToArray();
         modelBuilder.Entity<Permission>().HasData(allPermissions);
@@ -166,7 +170,7 @@ public static class DbInitializer
             .Select(p => new RolePermission { RoleId = 2, PermissionId = p.Id });
         var assistantHeadRolePermissions = allPermissions
             .Where(p =>
-                p.ModuleName is "Dashboard" or "Academic" or "Classes" or "Sections" or "Subjects" or "Admissions" or "Admission" or "Students" or "Student" or "Attendance" or "Exams" or "Exam" or "Marks" or "Result" or "Communication" or "Reports")
+                p.ModuleName is "Dashboard" or "Academic" or "Classes" or "Sections" or "Subjects" or "Admissions" or "Admission" or "Students" or "Student" or "Attendance" or "Exams" or "Exam" or "Marks" or "Result" or "Communication" or "Reports" or "Calendar")
             .Select(p => new RolePermission { RoleId = 3, PermissionId = p.Id });
         // Senior Lecturer: senior teaching role — full attendance/marks/results authority
         var seniorLecturerRolePermissions = allPermissions

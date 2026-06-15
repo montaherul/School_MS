@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Data;
@@ -7,6 +8,7 @@ using SchoolManagementSystem.Models.DTOs.Result;
 using SchoolManagementSystem.Models.DTOs.Exam;
 using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Repositories.Interfaces.Result;
+using SchoolManagementSystem.Services.Implementations.Result;
 using System.Data;
 using System.Data.Common;
 
@@ -359,6 +361,9 @@ public class StudentExamResultRepository : BaseRepository<StudentExamResult>, IS
         {
             while (await reader.ReadAsync(ct))
             {
+                var marks = new ComponentMarksDto();
+                BuildReportCardMarksFromReader(reader, marks, GetNullableString(reader, "ComponentValues"));
+
                 reportCard.Subjects.Add(new ReportCardSubjectDto
                 {
                     SubjectId = GetInt32(reader, "SubjectId"),
@@ -372,22 +377,7 @@ public class StudentExamResultRepository : BaseRepository<StudentExamResult>, IS
                     IsPassed = GetBoolean(reader, "IsPassed"),
                     IsOptionalSubject = GetBoolean(reader, "IsOptionalSubject"),
                     IsReligionSubject = GetBoolean(reader, "IsReligionSubject"),
-                    WrittenMarks = GetNullableDecimal(reader, "WrittenMarks"),
-                    MCQMarks = GetNullableDecimal(reader, "MCQMarks"),
-                    PracticalMarks = GetNullableDecimal(reader, "PracticalMarks"),
-                    VivaMarks = GetNullableDecimal(reader, "VivaMarks"),
-                    LabMarks = GetNullableDecimal(reader, "LabMarks"),
-                    OralMarks = GetNullableDecimal(reader, "OralMarks"),
-                    AssignmentMarks = GetNullableDecimal(reader, "AssignmentMarks"),
-                    ContinuousAssessmentMarks = GetNullableDecimal(reader, "ContinuousAssessmentMarks"),
-                    MarksWritten = GetNullableDecimal(reader, "MarksWritten"),
-                    MarksMCQ = GetNullableDecimal(reader, "MarksMCQ"),
-                    MarksPractical = GetNullableDecimal(reader, "MarksPractical"),
-                    MarksViva = GetNullableDecimal(reader, "MarksViva"),
-                    MarksLab = GetNullableDecimal(reader, "MarksLab"),
-                    MarksOral = GetNullableDecimal(reader, "MarksOral"),
-                    MarksAssignment = GetNullableDecimal(reader, "MarksAssignment"),
-                    MarksContinuousAssessment = GetNullableDecimal(reader, "MarksContinuousAssessment")
+                    ComponentMarks = marks
                 });
             }
         }
@@ -414,4 +404,41 @@ public class StudentExamResultRepository : BaseRepository<StudentExamResult>, IS
         return reportCard;
     }
 
+    private static void BuildReportCardMarksFromReader(DbDataReader reader, ComponentMarksDto marks, string? componentValuesJson)
+    {
+        var reportCardColumnMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["MarksWritten"] = "WRITTEN",
+            ["MarksMCQ"] = "MCQ",
+            ["MarksPractical"] = "PRACTICAL",
+            ["MarksViva"] = "VIVA",
+            ["MarksLab"] = "LAB",
+            ["MarksOral"] = "ORAL",
+            ["MarksAssignment"] = "ASSIGNMENT",
+            ["MarksContinuousAssessment"] = "CONTINUOUS_ASSESSMENT",
+            ["MarksCompetency"] = "COMPETENCY",
+            ["MarksBehaviour"] = "BEHAVIOUR",
+            ["MarksParticipation"] = "PARTICIPATION",
+        };
+
+        foreach (var (columnName, code) in reportCardColumnMap)
+        {
+            var val = GetNullableDecimal(reader, columnName);
+            if (val.HasValue)
+                marks[code] = val.Value;
+        }
+
+        if (!string.IsNullOrEmpty(componentValuesJson))
+        {
+            try
+            {
+                var parsed = JsonSerializer.Deserialize<Dictionary<string, decimal?>>(componentValuesJson);
+                if (parsed != null)
+                    foreach (var kvp in parsed)
+                        if (!marks.ContainsKey(kvp.Key))
+                            marks[kvp.Key] = kvp.Value;
+            }
+            catch { }
+        }
+    }
 }

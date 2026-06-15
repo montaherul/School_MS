@@ -70,29 +70,13 @@ public class MarkEntryDto
     public int StudentId { get; set; }
     public int SubjectId { get; set; }
 
-    // Component-wise marks for flexible evaluation
-    public decimal? WrittenMarks { get; set; }
-    public decimal? MCQMarks { get; set; }
-    public decimal? CQMarks { get; set; }
-    public decimal? PracticalMarks { get; set; }
-    public decimal? VivaMarks { get; set; }
-    public decimal? LabMarks { get; set; }
-    public decimal? OralMarks { get; set; }
-    public decimal? AssignmentMarks { get; set; }
-    public decimal? ContinuousAssessmentMarks { get; set; }
-
-    // Primary class competency marks
-    public decimal? CompetencyMarks { get; set; }
-    public decimal? BehaviourMarks { get; set; }
-    public decimal? ParticipationMarks { get; set; }
+    // Component-wise marks (dynamic dictionary replaces 12 individual properties)
+    public ComponentMarksDto ComponentMarks { get; set; } = new();
 
     // Calculated total
     public decimal MarksObtained { get; set; }
     public string? Grade { get; set; }
     public decimal? GradePoint { get; set; }
-
-    // Dynamic component values for components not mapped to standard fields
-    public Dictionary<string, decimal?> ComponentValues { get; set; } = new();
 
     public int TeacherId { get; set; }
     public ResultWorkflowStatus Status { get; set; } = ResultWorkflowStatus.Draft;

@@ -151,8 +151,9 @@ public class StudentUpsertDto
     [NotMapped]
     public IFormFile? ProfilePicture { get; set; }
     public int? UserId { get; set; }
-    //sectionname
     public string? SectionName { get; set; }
+    public string? ClassName { get; set; }
+    public string? GroupName { get; set; }
     public List<SelectListItem> Sections { get; set; } = new();
 
     public List<SelectListItem> OptionalSubjectList { get; set; } = new();

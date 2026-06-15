@@ -4,24 +4,49 @@ using iText.Kernel.Font;
 using iText.Kernel.Geom;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas;
+using iText.Kernel.Pdf.Canvas.Draw;
 using iText.Layout;
 using iText.Layout.Borders;
 using iText.Layout.Element;
 using iText.Layout.Properties;
-using iText.IO.Image;
 using SchoolManagementSystem.Helpers;
+using SchoolManagementSystem.Models.DTOs.Employee;
+using SchoolManagementSystem.Models.DTOs.Student;
 using SchoolManagementSystem.Models.Entities.Exam;
 using SchoolManagementSystem.Models.Entities.Result;
-using SchoolManagementSystem.Models.DTOs.Employee;
-using SchoolManagementSystem.Models.DTOs.Result;
 using SchoolManagementSystem.Models.Entities.Website;
-using Path = System.IO.Path;
+using SchoolManagementSystem.Models.ViewModels.Employee;
+using SchoolManagementSystem.Models.ViewModels.Student;
+using Microsoft.AspNetCore.Hosting;
+using iText.IO.Image;
 
 namespace SchoolManagementSystem.Helpers.Pdf;
 
 public class PlainPdfGenerator : IPdfGenerator
 {
-    private static readonly object _syncLock = new();
+    private readonly IWebHostEnvironment _env;
+    private readonly IViewRendererService _viewRenderer;
+
+    private const float MM = 2.83465f;
+    private const float CARD_W = 85.6f * MM;
+    private const float CARD_H = 53.98f * MM;
+
+    private static readonly Color Primary = new DeviceRgb(0x1B, 0x4D, 0x8C);
+    private static readonly Color Gold = new DeviceRgb(0xC5, 0xA5, 0x5A);
+    private static readonly Color DarkText = new DeviceRgb(0x1A, 0x1A, 0x2E);
+    private static readonly Color MutedText = new DeviceRgb(0x6B, 0x72, 0x80);
+    private static readonly Color GoldLight = new DeviceRgb(0xE8, 0xD5, 0xA3);
+    private static readonly Color BorderColor = new DeviceRgb(0xD1, 0xD5, 0xDB);
+    private static readonly Color White = DeviceRgb.WHITE;
+
+    private PdfFont _bold = null!;
+    private PdfFont _normal = null!;
+
+    public PlainPdfGenerator(IWebHostEnvironment env, IViewRendererService viewRenderer)
+    {
+        _env = env;
+        _viewRenderer = viewRenderer;
+    }
 
     // ─────────────────────────────────────────────────────────────
     //  REPORT CARD  (unchanged)
@@ -36,16 +61,15 @@ public class PlainPdfGenerator : IPdfGenerator
         var document = new Document(pdf, PageSize.A4);
         document.SetMargins(20, 20, 20, 20);
 
-        PdfFont bold = PdfFontFactory.CreateFont(iText.IO.Font.Constants.StandardFonts.HELVETICA_BOLD);
-        PdfFont normal = PdfFontFactory.CreateFont(iText.IO.Font.Constants.StandardFonts.HELVETICA);
+        EnsureFonts();
 
         document.Add(new Paragraph($"{school.SchoolName}")
-            .SetFont(bold).SetFontSize(22)
+            .SetFont(_bold).SetFontSize(22)
             .SetTextAlignment(TextAlignment.CENTER)
             .SetFontColor(ColorConstants.BLUE));
 
         document.Add(new Paragraph("Academic Report Card")
-            .SetFont(bold).SetFontSize(16)
+            .SetFont(_bold).SetFontSize(16)
             .SetTextAlignment(TextAlignment.CENTER));
 
         document.Add(new Paragraph("\n"));
@@ -61,18 +85,36 @@ public class PlainPdfGenerator : IPdfGenerator
 
         document.Add(new Paragraph("\n"));
 
-        var table = new Table(UnitValue.CreatePercentArray(new float[] { 4, 2, 2, 2, 2 })).UseAllAvailableWidth();
+        var allComponentCodes = marks
+            .SelectMany(m => SchoolManagementSystem.Services.Implementations.Result.ComponentFieldMapper.FromEntity(m).Keys)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(c => c)
+            .ToList();
+
+        var colWidths = new List<float> { 4 };
+        foreach (var _ in allComponentCodes) colWidths.Add(2);
+        colWidths.AddRange(new float[] { 2, 2, 2 });
+
+        var table = new Table(UnitValue.CreatePercentArray(colWidths.ToArray())).UseAllAvailableWidth();
         table.AddHeaderCell(GetHeaderCell("Subject"));
-        table.AddHeaderCell(GetHeaderCell("Marks"));
+        foreach (var code in allComponentCodes)
+            table.AddHeaderCell(GetHeaderCell(code));
+        table.AddHeaderCell(GetHeaderCell("Total"));
         table.AddHeaderCell(GetHeaderCell("Grade"));
-        table.AddHeaderCell(GetHeaderCell("Grade Point"));
+        table.AddHeaderCell(GetHeaderCell("GP"));
         table.AddHeaderCell(GetHeaderCell("Status"));
 
         foreach (var mark in marks)
         {
+            var componentMarks = SchoolManagementSystem.Services.Implementations.Result.ComponentFieldMapper.FromEntity(mark);
             var fullMarks = mark.Subject?.DefaultFullMarks ?? 100;
             var passMarks = mark.Subject?.DefaultPassMarks ?? 33;
-            table.AddCell(GetBodyCell(mark.Subject.Name));
+            table.AddCell(GetBodyCell(mark.Subject?.Name ?? ""));
+            foreach (var code in allComponentCodes)
+            {
+                var val = componentMarks[code];
+                table.AddCell(GetBodyCell(val.HasValue ? val.Value.ToString("F0") : "—"));
+            }
             table.AddCell(GetBodyCell($"{mark.MarksObtained} / {fullMarks}"));
             table.AddCell(GetBodyCell(mark.Grade ?? "N/A"));
             table.AddCell(GetBodyCell((mark.GradePoint ?? 0).ToString("F2")));
@@ -86,7 +128,7 @@ public class PlainPdfGenerator : IPdfGenerator
         string status = result.Gpa > 0 ? "PROMOTED" : "FAILED";
         finalBox.AddCell(new Cell()
             .Add(new Paragraph($"Final GPA: {result.Gpa:F2} | Status: {status}"))
-            .SetFont(bold).SetFontSize(14)
+            .SetFont(_bold).SetFontSize(14)
             .SetTextAlignment(TextAlignment.CENTER)
             .SetBackgroundColor(ColorConstants.LIGHT_GRAY)
             .SetPadding(10));
@@ -114,106 +156,66 @@ public class PlainPdfGenerator : IPdfGenerator
     }
 
     // ─────────────────────────────────────────────────────────────
-    //  STUDENT ID CARD  — HTML to PDF via DinkToPdf
+    //  STUDENT ID CARD — HTML + wkhtmltopdf
     // ─────────────────────────────────────────────────────────────
-    public byte[] GenerateStudentIdCardFromHtml(string html)
+    public byte[] GenerateStudentIdCardPdf(IdCardPrintViewModel model)
     {
-        return ConvertHtmlToPdf(html, singleCard: true);
-    }
+        var baseUrl = $"file:///{_env.WebRootPath.Replace('\\', '/').TrimEnd('/')}/";
+        model.BaseUrl = baseUrl;
 
-    public byte[] GenerateBulkStudentIdCardPdfFromHtml(string html)
-    {
-        return ConvertHtmlToPdf(html, singleCard: false);
-    }
+        var rawHtml = _viewRenderer.RenderToStringAsync("~/Views/Student/PrintIdCard.cshtml", model)
+            .GetAwaiter().GetResult();
 
-    private byte[] ConvertHtmlToPdf(string html, bool singleCard)
-    {
-        lock (_syncLock)
-        {
-            var converter = new SynchronizedConverter(new PdfTools());
-            var doc = new HtmlToPdfDocument
-            {
-                GlobalSettings =
-                {
-                    PaperSize = singleCard
-                        ? new PechkinPaperSize("85.6mm", "53.98mm")
-                        : new PechkinPaperSize("210mm", "297mm"),
-                    Orientation = DinkToPdf.Orientation.Landscape,
-                    Margins = new MarginSettings { Top = 0, Right = 0, Bottom = 0, Left = 0 },
-                },
-                Objects =
-                {
-                    new ObjectSettings
-                    {
-                        HtmlContent = html,
-                        PagesCount = true,
-                        WebSettings = new WebSettings
-                        {
-                            DefaultEncoding = "utf-8",
-                            LoadImages = true,
-                            EnableIntelligentShrinking = false,
-                            PrintMediaType = true,
-                        },
-                        FooterSettings = { HtmUrl = string.Empty, FontSize = 0 }
-                    }
-                }
-            };
-
-            return converter.Convert(doc);
-        }
+        var html = PrepareHtmlForPdf(rawHtml);
+        var debugDir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "IdCardDebug");
+        System.IO.Directory.CreateDirectory(debugDir);
+        System.IO.File.WriteAllText(System.IO.Path.Combine(debugDir, "student-card-debug.html"), html);
+        return GenerateFromHtml(html);
     }
 
     // ─────────────────────────────────────────────────────────────
-    //  EMPLOYEE ID CARD  — HTML to PDF via DinkToPdf
+    //  EMPLOYEE ID CARD — HTML + wkhtmltopdf
     // ─────────────────────────────────────────────────────────────
-    public byte[] GenerateEmployeeIdCardFromHtml(string html)
+    public byte[] GenerateEmployeeIdCardPdf(EmployeeIdCardPrintViewModel model)
     {
-        return ConvertHtmlToPdf(html, singleCard: true);
+        var baseUrl = $"file:///{_env.WebRootPath.Replace('\\', '/').TrimEnd('/')}/";
+        model.BaseUrl = baseUrl;
+
+        var rawHtml = _viewRenderer.RenderToStringAsync("~/Views/Employee/PrintIdCard.cshtml", model)
+            .GetAwaiter().GetResult();
+
+        var html = PrepareHtmlForPdf(rawHtml);
+        var debugDir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "IdCardDebug");
+        System.IO.Directory.CreateDirectory(debugDir);
+        System.IO.File.WriteAllText(System.IO.Path.Combine(debugDir, "employee-card-debug.html"), html);
+        return GenerateFromHtml(html);
     }
 
-    public byte[] GenerateBulkEmployeeIdCardPdfFromHtml(string html)
+    private string PrepareHtmlForPdf(string rawHtml)
     {
-        return ConvertHtmlToPdf(html, singleCard: false);
-    }
+        var cssPath = System.IO.Path.Combine(_env.WebRootPath, "css", "idcard-print.css");
+        var css = System.IO.File.ReadAllText(cssPath);
 
-    public byte[] GenerateFromHtml(string html)
-    {
-        return ConvertHtmlToPdf(html, singleCard: false);
-    }
+        // 1. Replace external CSS link with inline <style>
+        var linkPattern = "<link[^>]*href=\"/css/idcard-print\\.css\"[^>]*>";
+        var inlineStyle = $"<style>\n{css}\n</style>";
+        var html = System.Text.RegularExpressions.Regex.Replace(rawHtml, linkPattern, inlineStyle);
 
-    // ─────────────────────────────────────────────────────────────
-    //  EMPLOYEE ID CARD  (iText7 – legacy, kept for compatibility)
-    // ─────────────────────────────────────────────────────────────
-    public byte[] GenerateEmployeeIdCard(EmployeeDetailsDto employee, SchoolSetting schoolSetting)
-    {
-        using var stream = new MemoryStream();
-        using var writer = new PdfWriter(stream);
-        using var pdf = new PdfDocument(writer);
+        // 2. Replace relative src paths (starting with /) with absolute file:// paths
+        var wwwrootUrl = $"file:///{_env.WebRootPath.Replace('\\', '/').TrimEnd('/')}";
+        html = System.Text.RegularExpressions.Regex.Replace(
+            html,
+            "(src|href)=\"(/)",
+            $"$1=\"{wwwrootUrl}$2"
+        );
 
-        // Portrait CR80 card
-        float cardW = 153f, cardH = 243f;
-        var pageSize = new PageSize(cardW, cardH);
-
-        // Determine theme colour from designation
-        var themeColor = GetThemeColor(employee.Designation);
-
-        // ── FRONT ───────────────────────────────────────────────
-        // Must add the page first; GetFirstPage() fails on an empty document
-        pdf.AddNewPage(pageSize);
-        DrawEmployeeFront(pdf, pageSize, employee, schoolSetting, themeColor);
-
-        // ── BACK ────────────────────────────────────────────────
-        pdf.AddNewPage(pageSize);
-        DrawEmployeeBack(pdf, pageSize, employee, schoolSetting, themeColor);
-
-        pdf.Close();
-        return stream.ToArray();
+        return html;
     }
 
     // ─────────────────────────────────────────────────────────────
     //  TRANSCRIPT
     // ─────────────────────────────────────────────────────────────
-    public byte[] GenerateTranscript(StudentTranscriptDto transcript)
+    public byte[] GenerateTranscript(SchoolManagementSystem.Models.DTOs.Result.StudentTranscriptDto transcript)
     {
         using var stream = new MemoryStream();
         using var writer = new PdfWriter(stream);
@@ -221,20 +223,19 @@ public class PlainPdfGenerator : IPdfGenerator
         var document = new Document(pdf, PageSize.A4.Rotate());
         document.SetMargins(20, 20, 20, 20);
 
-        PdfFont bold = PdfFontFactory.CreateFont(iText.IO.Font.Constants.StandardFonts.HELVETICA_BOLD);
-        PdfFont normal = PdfFontFactory.CreateFont(iText.IO.Font.Constants.StandardFonts.HELVETICA);
+        EnsureFonts();
 
         document.Add(new Paragraph(transcript.SchoolName)
-            .SetFont(bold).SetFontSize(22)
+            .SetFont(_bold).SetFontSize(22)
             .SetTextAlignment(TextAlignment.CENTER)
             .SetFontColor(ColorConstants.BLUE));
 
         document.Add(new Paragraph("Academic Transcript")
-            .SetFont(bold).SetFontSize(16)
+            .SetFont(_bold).SetFontSize(16)
             .SetTextAlignment(TextAlignment.CENTER));
 
         document.Add(new Paragraph($"Academic Year: {transcript.AcademicYear}")
-            .SetFont(normal).SetFontSize(12)
+            .SetFont(_normal).SetFontSize(12)
             .SetTextAlignment(TextAlignment.CENTER));
 
         document.Add(new Paragraph("\n"));
@@ -253,7 +254,7 @@ public class PlainPdfGenerator : IPdfGenerator
         foreach (var exam in transcript.ExamResults)
         {
             document.Add(new Paragraph(exam.ExamName)
-                .SetFont(bold).SetFontSize(13)
+                .SetFont(_bold).SetFontSize(13)
                 .SetFontColor(ColorConstants.DARK_GRAY));
 
             var examTable = new Table(UnitValue.CreatePercentArray(new float[] { 4, 2, 2, 2, 2 })).UseAllAvailableWidth();
@@ -283,7 +284,7 @@ public class PlainPdfGenerator : IPdfGenerator
         }
 
         document.Add(new Paragraph("Subject-Wise Summary (All Terms)")
-            .SetFont(bold).SetFontSize(13)
+            .SetFont(_bold).SetFontSize(13)
             .SetFontColor(ColorConstants.DARK_GRAY));
 
         var summaryTable = new Table(UnitValue.CreatePercentArray(new float[] { 4, 2, 2, 2, 2 })).UseAllAvailableWidth();
@@ -309,7 +310,7 @@ public class PlainPdfGenerator : IPdfGenerator
         string status = transcript.FinalGPA > 0 ? "PROMOTED" : "FAILED";
         finalBox.AddCell(new Cell()
             .Add(new Paragraph($"Final GPA: {transcript.FinalGPA:F2} | Grade: {transcript.FinalGrade} | Position: {transcript.MeritPosition} | Status: {status}"))
-            .SetFont(bold).SetFontSize(14)
+            .SetFont(_bold).SetFontSize(14)
             .SetTextAlignment(TextAlignment.CENTER)
             .SetBackgroundColor(ColorConstants.LIGHT_GRAY)
             .SetPadding(10));
@@ -336,321 +337,886 @@ public class PlainPdfGenerator : IPdfGenerator
         return stream.ToArray();
     }
 
-    // ── Front drawing ──────────────────────────────────────────────
-    private void DrawEmployeeFront(
-        PdfDocument pdf, PageSize ps,
-        EmployeeDetailsDto employee, SchoolSetting schoolSetting,
-        DeviceRgb themeColor)
+    // ─────────────────────────────────────────────────────────────
+    //  STUDENT FRONT — modern enterprise design
+    // ─────────────────────────────────────────────────────────────
+    private void DrawStudentFront(PdfDocument pdf, PdfPage page, StudentUpsertDto student,
+        IdCardPrintViewModel model, string? photoPath, string? logoPath, string? signPath)
     {
-        // Card: w=153, h=243 (all Y = distance from BOTTOM)
-        // Dark wave zone: top of card → y≈107
-        //   "International" label  → y=227  (h-16)
-        //   School name            → y=202  (h-41, up to 2 lines, font 8)
-        //   Photo centre           → y=148, radius=30  (top=178, bottom=118 – inside dark zone)
-        //   Wave bottom            → y≈107
-        // Light zone: y=107 → 0
-        //   Name                   → y=88
-        //   Designation            → y=76
-        //   Address row            → y=58
-        //   Phone row              → y=44
-        //   Email row              → y=30
-        //   Bottom margin          → y=18
+        var canvas = new PdfCanvas(page);
+        var ps = page.GetPageSize();
+        float W = ps.GetWidth();
+        float H = ps.GetHeight();
 
-        var pc = new PdfCanvas(pdf.GetPage(1));
-        float w = ps.GetWidth(), h = ps.GetHeight();
+        float margin = 2f * MM;
+        float bodyW = W - 2f * margin;
 
-        var bgColor = new DeviceRgb(0xC5, 0xCC, 0xF5);
+        // ── Section heights ──
+        float headerH = 14f * MM;      // top
+        float footerH = 7f * MM;       // bottom
+        float bodyH = H - headerH - footerH;
 
-        // 1. Light background
-        pc.SetFillColor(bgColor).Rectangle(0, 0, w, h).Fill();
+        float headerBot = H - headerH; // bottom edge of header
 
-        // 2. Dark wavy top section
-        float waveL = 107f, waveR = 112f, waveCtrlY = 85f;
-        pc.SetFillColor(themeColor);
-        pc.MoveTo(0, h)
-          .LineTo(w, h)
-          .LineTo(w, waveR)
-          .CurveTo(w * 0.70f, waveCtrlY, w * 0.30f, waveCtrlY, 0, waveL)
-          .ClosePath()
-          .Fill();
+        // ══════════════════════════════════════════════
+        //  HEADER
+        // ══════════════════════════════════════════════
+        canvas.SetFillColor(Primary);
+        canvas.Rectangle(0, headerBot, W, headerH);
+        canvas.Fill();
 
-        // 3. Decorative dots inside dark zone (right side, y between 193 and 142)
-        var dotColor = Lighten(themeColor, 45);
-        pc.SetFillColor(dotColor);
-        (float dx, float dy)[] dots =
-        {
-            (w * 0.78f, h - 22f),
-            (w * 0.88f, h - 38f),
-            (w * 0.72f, h - 45f),
-            (w * 0.84f, h - 58f),
-            (w * 0.90f, h - 68f),
-        };
-        foreach (var (dx, dy) in dots)
-            pc.Circle(dx, dy, 3f).Fill();
+        // — Logo (clipped circle) —
+        float logoSize = 9f * MM;
+        float logoX = margin;
+        float logoY = headerBot + (headerH - logoSize) / 2f;
 
-        // 4. Tick/dash marks – bottom-left of dark zone (y 111–125)
-        pc.SetFillColor(dotColor);
-        float[] tickYs = { 125f, 118f, 111f };
-        foreach (var ty in tickYs)
-        {
-            pc.Rectangle(8f, ty, 10f, 2f).Fill();
-            pc.Rectangle(12f, ty - 4f, 7f, 2f).Fill();
-        }
+        canvas.SaveState();
+        canvas.Circle(logoX + logoSize / 2f, logoY + logoSize / 2f, logoSize / 2f);
+        canvas.Clip();
+        canvas.EndPath();
 
-        // 5. Circular photo (centre at 76.5, 148; radius 30)
-        float circR = 30f, circX = w / 2f, circY = 148f;
-        pc.SetFillColor(ColorConstants.WHITE).Circle(circX, circY, circR + 3.5f).Fill();
-
-        bool photoDrawn = false;
-        var relPath = employee.ProfilePicturePath;
-        var fullPath = string.IsNullOrEmpty(relPath)
-            ? ""
-            : Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", relPath.TrimStart('/'));
-
-        if (!string.IsNullOrEmpty(fullPath) && File.Exists(fullPath))
+        if (logoPath != null && File.Exists(logoPath))
         {
             try
             {
-                pc.SaveState();
-                double k = 0.5522847498, r = circR, cx = circX, cy = circY;
-                pc.MoveTo(cx + r, cy)
-                  .CurveTo(cx + r, cy + k * r, cx + k * r, cy + r, cx, cy + r)
-                  .CurveTo(cx - k * r, cy + r, cx - r, cy + k * r, cx - r, cy)
-                  .CurveTo(cx - r, cy - k * r, cx - k * r, cy - r, cx, cy - r)
-                  .CurveTo(cx + k * r, cy - r, cx + r, cy - k * r, cx + r, cy)
-                  .ClosePath().Clip().EndPath();
-                pc.AddImageFittedIntoRectangle(
-                    ImageDataFactory.Create(fullPath),
-                    new Rectangle(circX - circR, circY - circR, circR * 2, circR * 2), false);
-                pc.RestoreState();
-                photoDrawn = true;
+                var logoData = ImageDataFactory.Create(logoPath);
+                var logoImg = new Image(logoData);
+                logoImg.ScaleToFit(logoSize, logoSize);
+                logoImg.SetFixedPosition(logoX, logoY);
+                new Canvas(canvas, ps).Add(logoImg);
+            }
+            catch { DrawPlaceholderCircle(canvas, logoX, logoY, logoSize, White); }
+        }
+        else { DrawPlaceholderCircle(canvas, logoX, logoY, logoSize, White); }
+        canvas.RestoreState();
+
+        // — Academic year (top-right) —
+        {
+            float ayX = W - margin - 22f * MM;
+            var c = new Canvas(canvas, new Rectangle(ayX, headerBot + 1f * MM, 22f * MM, 3f * MM));
+            c.Add(new Paragraph(model.AcademicYear)
+                .SetFont(_bold).SetFontSize(5f).SetFontColor(Gold)
+                .SetTextAlignment(TextAlignment.RIGHT));
+            c.Close();
+        }
+
+        // — School name —
+        float tx = logoX + logoSize + 2f * MM;
+        float tw = W - tx - margin;
+
+        {
+            var c = new Canvas(canvas, new Rectangle(tx, headerBot + 5.5f * MM, tw - 24f * MM, 4.5f * MM));
+            c.Add(new Paragraph(model.SchoolNameEn)
+                .SetFont(_bold).SetFontSize(7.5f).SetFontColor(White));
+            c.Close();
+        }
+
+        // — EIIN & Website —
+        {
+            var c = new Canvas(canvas, new Rectangle(tx, headerBot + 2.8f * MM, tw, 3f * MM));
+            c.Add(new Paragraph($"EIIN: {model.SchoolEIIN}  |  {model.SchoolWebsite}")
+                .SetFont(_normal).SetFontSize(4.5f).SetFontColor(White).SetOpacity(0.85f));
+            c.Close();
+        }
+
+        // — Motto —
+        {
+            var c = new Canvas(canvas, new Rectangle(tx, headerBot + 0.3f * MM, tw, 3f * MM));
+            c.Add(new Paragraph(!string.IsNullOrEmpty(model.SchoolMotto) ? $"\"{model.SchoolMotto}\"" : "")
+                .SetFont(_normal).SetFontSize(4.5f).SetFontColor(GoldLight).SetItalic());
+            c.Close();
+        }
+
+        // ══════════════════════════════════════════════
+        //  BODY
+        // ══════════════════════════════════════════════
+        float bodyTop = headerBot;
+
+        // — Photo —
+        float photoW = 20f * MM;
+        float photoH = 25f * MM;
+        float photoX = margin;
+        float photoY = footerH + (bodyH - photoH) / 2f;
+
+        // Photo frame background
+        canvas.SetFillColor(new DeviceRgb(0xF3, 0xF4, 0xF6));
+        canvas.RoundRectangle(photoX, photoY, photoW, photoH, 1.5f * MM);
+        canvas.Fill();
+        canvas.SetStrokeColor(Primary);
+        canvas.SetLineWidth(0.6f);
+        canvas.RoundRectangle(photoX, photoY, photoW, photoH, 1.5f * MM);
+        canvas.Stroke();
+
+        if (photoPath != null && File.Exists(photoPath))
+        {
+            try
+            {
+                var photoData = ImageDataFactory.Create(photoPath);
+                var photoImg = new Image(photoData);
+                photoImg.ScaleToFit(photoW - 2f * MM, photoH - 2f * MM);
+                float imgX = photoX + (photoW - photoImg.GetImageScaledWidth()) / 2f;
+                float imgY = photoY + (photoH - photoImg.GetImageScaledHeight()) / 2f;
+                photoImg.SetFixedPosition(imgX, imgY);
+                new Canvas(canvas, ps).Add(photoImg);
             }
             catch { }
         }
-        if (!photoDrawn)
+
+        // — Info fields —
+        float infoX = photoX + photoW + 2.5f * MM;
+        float infoW = W - infoX - margin;
+        float labelW = 11f * MM;
+        float lineH = 3.2f * MM;
+
+        var infoLines = new (string Label, string Value)[]
         {
-            pc.SetFillColor(new DeviceRgb(0xBB, 0xBB, 0xBB)).Circle(circX, circY, circR).Fill();
+            ("Name", student.FullName),
+            ("ID No", student.StudentNo ?? "---"),
+            ("Roll", student.RollNumber.ToString("D3")),
+            ("Class", !string.IsNullOrEmpty(student.ClassName) ? student.ClassName : $"Class {student.ClassId}"),
+            ("Section", !string.IsNullOrEmpty(student.SectionName) ? student.SectionName : "---"),
+        };
+
+        // Add group only for class 9-10
+        if (student.ClassId >= 9 && !string.IsNullOrEmpty(student.GroupName))
+        {
+            infoLines = [.. infoLines, ("Group", student.GroupName)];
         }
 
-        // 6. Text layer
-        PdfFont bold = PdfFontFactory.CreateFont(iText.IO.Font.Constants.StandardFonts.HELVETICA_BOLD);
-        PdfFont normal = PdfFontFactory.CreateFont(iText.IO.Font.Constants.StandardFonts.HELVETICA);
-        var lay = new Canvas(pc, ps);
+        infoLines = [.. infoLines,
+            ("Blood", !string.IsNullOrEmpty(student.BloodGroup) ? student.BloodGroup : "N/A"),
+            ("Gender", student.Gender),
+        ];
 
-        // School name – constrained width so it wraps and stays above photo
-        var schoolName = schoolSetting?.SchoolName?.ToUpper() ?? "SCHOOL MS";
-        lay.Add(new Paragraph(schoolName)
-            .SetFont(bold).SetFontSize(8f).SetFontColor(ColorConstants.WHITE)
-            .SetTextAlignment(TextAlignment.CENTER)
-            .SetFixedPosition(6f, h - 42f, w - 12f).SetMargin(0));
+        float startY = bodyTop - 0.8f * MM;
 
-        // Photo placeholder text
-        if (!photoDrawn)
+        for (int i = 0; i < infoLines.Length; i++)
         {
-            lay.Add(new Paragraph("PHOTO")
-                .SetFont(normal).SetFontSize(7f).SetFontColor(ColorConstants.GRAY)
-                .SetTextAlignment(TextAlignment.CENTER)
-                .SetFixedPosition(circX - circR, circY - 4f, circR * 2).SetMargin(0));
+            float y = startY - i * lineH;
+            bool isName = i == 0;
+
+            {
+                var c = new Canvas(canvas, new Rectangle(infoX, y - lineH, labelW, lineH));
+                c.Add(new Paragraph(infoLines[i].Label)
+                    .SetFont(_bold).SetFontSize(5f).SetFontColor(MutedText));
+                c.Close();
+            }
+            {
+                var c = new Canvas(canvas, new Rectangle(infoX + labelW, y - lineH, infoW - labelW, lineH));
+                c.Add(new Paragraph(infoLines[i].Value)
+                    .SetFont(_bold).SetFontSize(6f)
+                    .SetFontColor(isName ? Primary : DarkText));
+                c.Close();
+            }
         }
 
-        // Name
-        lay.Add(new Paragraph(employee.FullName)
-            .SetFont(bold).SetFontSize(9f).SetFontColor(ColorConstants.WHITE)
-            .SetTextAlignment(TextAlignment.CENTER)
-            .SetFixedPosition(6f, 88f, w - 12f).SetMargin(0));
+        // — Divider line between body and footer —
+        canvas.SetStrokeColor(Gold);
+        canvas.SetLineWidth(0.5f);
+        canvas.MoveTo(margin, footerH + 0.5f * MM);
+        canvas.LineTo(W - margin, footerH + 0.5f * MM);
+        canvas.Stroke();
 
-        // Designation
-        lay.Add(new Paragraph(employee.Designation ?? "")
-            .SetFont(normal).SetFontSize(7.5f).SetFontColor(Lighten(themeColor, 35))
-            .SetTextAlignment(TextAlignment.CENTER)
-            .SetFixedPosition(6f, 76f, w - 12f).SetMargin(0));
+        // ══════════════════════════════════════════════
+        //  FOOTER
+        // ══════════════════════════════════════════════
+        canvas.SetFillColor(Primary);
+        canvas.Rectangle(0, 0, W, footerH);
+        canvas.Fill();
 
-        var rowColor = new DeviceRgb(0x22, 0x22, 0x44);
+        // — Issue / Expiry (left) —
+        {
+            float x = margin;
+            float y = 0.7f * MM;
+            var c = new Canvas(canvas, new Rectangle(x, y, 22f * MM, footerH - 1.4f * MM));
+            c.Add(new Paragraph($"Issued: {DateTime.Today:dd MMM yyyy}    Expires: {DateTime.Today.AddYears(1):dd MMM yyyy}")
+                .SetFont(_normal).SetFontSize(4.5f).SetFontColor(White).SetOpacity(0.9f));
+            c.Close();
+        }
 
-        lay.Add(new Paragraph($"Blood Group: {employee.BloodGroup ?? "N/A"}")
-            .SetFont(normal)
-            .SetFontSize(6f)
-            .SetFontColor(rowColor)
-            .SetFixedPosition(14f, 58f, w - 28f)
-            .SetMargin(0));
+        // — Principal signature (right) —
+        {
+            float sigX = W - margin - 26f * MM;
+            float sigY = 0.3f * MM;
+            var c = new Canvas(canvas, new Rectangle(sigX, sigY, 26f * MM, footerH - 0.6f * MM));
+            c.Add(new Paragraph(model.PrincipalName ?? "Principal")
+                .SetFont(_normal).SetFontSize(5f).SetFontColor(White)
+                .SetTextAlignment(TextAlignment.CENTER));
+            c.Close();
 
-        lay.Add(new Paragraph($" Phone: {employee.Phone ?? schoolSetting?.Phone ?? "+00 000 000 000"}")
-            .SetFont(normal)
-            .SetFontSize(6f)
-            .SetFontColor(rowColor)
-            .SetFixedPosition(14f, 44f, w - 28f)
-            .SetMargin(0));
+            canvas.SetStrokeColor(Gold);
+            canvas.SetLineWidth(0.4f);
+            float lineX1 = sigX + 2f * MM;
+            float lineX2 = sigX + 24f * MM;
+            float lineY = sigY + 4.5f * MM;
+            canvas.MoveTo(lineX1, lineY);
+            canvas.LineTo(lineX2, lineY);
+            canvas.Stroke();
+        }
 
-        lay.Add(new Paragraph($" Email: {employee.Email ?? "info@school.edu"}")
-            .SetFont(normal)
-            .SetFontSize(6f)
-            .SetFontColor(rowColor)
-            .SetFixedPosition(14f, 30f, w - 28f)
-            .SetMargin(0));
-        lay.Close();
+        // — School seal (far right) —
+        if (!string.IsNullOrEmpty(model.SchoolSealPath) && File.Exists(model.SchoolSealPath))
+        {
+            try
+            {
+                float sealSize = 5f * MM;
+                float sealX = W - margin - sealSize;
+                float sealY = (footerH - sealSize) / 2f;
+                var sealData = ImageDataFactory.Create(model.SchoolSealPath);
+                var sealImg = new Image(sealData);
+                sealImg.ScaleToFit(sealSize, sealSize);
+                sealImg.SetFixedPosition(sealX, sealY);
+                new Canvas(canvas, ps).Add(sealImg);
+            }
+            catch { }
+        }
     }
 
-    // ── Back drawing ───────────────────────────────────────────────
-    private void DrawEmployeeBack(
-        PdfDocument pdf, PageSize ps,
-        EmployeeDetailsDto employee, SchoolSetting schoolSetting,
-        DeviceRgb themeColor)
+    // ─────────────────────────────────────────────────────────────
+    //  STUDENT BACK — guardian, address, QR
+    // ─────────────────────────────────────────────────────────────
+    private void DrawStudentBack(PdfDocument pdf, PdfPage page, StudentUpsertDto student,
+        IdCardPrintViewModel model, byte[] qrBytes)
     {
-        // Back layout (Y from bottom, card h=243):
-        //  Top dark wave band     → y = 243 down to ~200
-        //    "International"      → y = 227
-        //    School name          → y = 202 (2 lines, font 8)
-        //  Light middle zone      → y = 200 down to ~43
-        //    JOIN                 → y = 178
-        //    EXPIRED              → y = 164
-        //    Terms text           → y = 145 (2 lines)
-        //    School address block → y = 118 (3 lines)
-        //    QR code              → y = 52, centred, size=60
-        //  Bottom dark wave band  → y = 43 down to 0
-        //    Cross decorations    → inside bottom band
+        var canvas = new PdfCanvas(page);
+        var ps = page.GetPageSize();
+        float W = ps.GetWidth();
+        float H = ps.GetHeight();
 
-        var pc = new PdfCanvas(pdf.GetPage(2));
-        float w = ps.GetWidth(), h = ps.GetHeight();
+        float margin = 2f * MM;
 
-        var bgColor = new DeviceRgb(0xC5, 0xCC, 0xF5);
-        pc.SetFillColor(bgColor).Rectangle(0, 0, w, h).Fill();
+        float headerH = 9f * MM;
+        float footerH = 6.5f * MM;
+        float bodyH = H - headerH - footerH;
+        float headerBot = H - headerH;
 
-        // Top wavy band (h → ~200)
-        pc.SetFillColor(themeColor);
-        pc.MoveTo(0, h).LineTo(w, h).LineTo(w, h - 40f)
-          .CurveTo(w * 0.65f, h - 20f, w * 0.35f, h - 55f, 0, h - 36f)
-          .ClosePath().Fill();
+        // ══════════════════════════════════════════════
+        //  HEADER
+        // ══════════════════════════════════════════════
+        canvas.SetFillColor(Primary);
+        canvas.Rectangle(0, headerBot, W, headerH);
+        canvas.Fill();
 
-        // Bottom wavy band (0 → ~43)
-        pc.SetFillColor(themeColor);
-        pc.MoveTo(0, 0).LineTo(w, 0).LineTo(w, 32f)
-          .CurveTo(w * 0.65f, 50f, w * 0.35f, 16f, 0, 36f)
-          .ClosePath().Fill();
+        {
+            var c = new Canvas(canvas, new Rectangle(0, headerBot, W, headerH));
+            c.Add(new Paragraph("IMPORTANT INFORMATION")
+                .SetFont(_bold).SetFontSize(7f).SetFontColor(White)
+                .SetTextAlignment(TextAlignment.CENTER));
+            c.Close();
+        }
 
-        // Cross decoration bottom-right (inside bottom band, y 15-50)
-        var crossColor = Lighten(themeColor, 55);
-        pc.SetStrokeColor(crossColor).SetLineWidth(1.5f);
-        pc.MoveTo(w - 20f, 14f).LineTo(w - 20f, 38f).Stroke();
-        pc.MoveTo(w - 32f, 26f).LineTo(w - 8f, 26f).Stroke();
-        pc.MoveTo(w - 12f, 8f).LineTo(w - 12f, 22f).Stroke();
+        // ══════════════════════════════════════════════
+        //  BODY — left: guardian & address, right: QR
+        // ══════════════════════════════════════════════
+        float qrSize = 13f * MM;
+        float qrX = W - margin - qrSize;
+        float qrY = headerBot - qrSize - 2f * MM;
 
-        PdfFont bold = PdfFontFactory.CreateFont(iText.IO.Font.Constants.StandardFonts.HELVETICA_BOLD);
-        PdfFont normal = PdfFontFactory.CreateFont(iText.IO.Font.Constants.StandardFonts.HELVETICA);
-        var lay = new Canvas(pc, ps);
+        float infoW = qrX - margin - 1.5f * MM;
+        float infoX = margin;
+        float lineH = 2.8f * MM;
+        float labelW = 10f * MM;
+        float bodyY = headerBot - 1.2f * MM;
 
-        // Top band text
-       
+        var guardianMobile = student.GuardianMobileNumber ?? student.FatherOrGuardianMobileNo;
+        var address = string.Join(", ",
+            new[] { student.PresentVillage, student.PresentPostOffice, student.PresentThana, student.PresentDistrict }
+                .Where(a => !string.IsNullOrEmpty(a)));
 
-        lay.Add(new Paragraph(schoolSetting?.SchoolName?.ToUpper() ?? "SCHOOL MS")
-            .SetFont(bold).SetFontSize(8f).SetFontColor(ColorConstants.WHITE)
-            .SetTextAlignment(TextAlignment.CENTER)
-            .SetFixedPosition(6f, h - 20f, w - 12f).SetMargin(0));
+        // — Section: GUARDIAN —
+        {
+            var c = new Canvas(canvas, new Rectangle(infoX, bodyY - lineH, infoW, lineH));
+            c.Add(new Paragraph("GUARDIAN INFORMATION")
+                .SetFont(_bold).SetFontSize(5.5f).SetFontColor(Primary).SetCharacterSpacing(0.5f));
+            c.Close();
+            canvas.SetStrokeColor(Gold);
+            canvas.SetLineWidth(0.3f);
+            canvas.MoveTo(infoX, bodyY - 0.8f * MM);
+            canvas.LineTo(infoX + infoW, bodyY - 0.8f * MM);
+            canvas.Stroke();
+        }
+        bodyY -= 2f * MM;
 
-        // JOIN / EXPIRED
-        lay.Add(new Paragraph("JOIN :  " +
-            (employee.CardIssueDate.HasValue
-             ? employee.CardIssueDate.Value.ToString("MM/dd/yy")
-                    : "MM/DD/YY"))
-            .SetFont(bold).SetFontSize(7.5f).SetFontColor(themeColor)
-            .SetFixedPosition(14f, 178f, w - 28f).SetMargin(0));
+        var backLines = new (string Label, string Value)[]
+        {
+            ("Father", student.FatherName),
+            ("Mother", student.MotherName),
+            ("Guardian", student.GuardianName ?? "---"),
+            ("Phone", !string.IsNullOrEmpty(guardianMobile) ? guardianMobile : "N/A"),
+        };
 
-        lay.Add(new Paragraph("EXPIRED :  " +
-                (employee.CardExpiryDate.HasValue
-                    ? employee.CardExpiryDate.Value.ToString("MM/dd/yy")
-                    : "MM/DD/YY"))
-            .SetFont(bold).SetFontSize(7.5f).SetFontColor(themeColor)
-            .SetFixedPosition(14f, 163f, w - 28f).SetMargin(0));
+        foreach (var (label, value) in backLines)
+        {
+            {
+                var c = new Canvas(canvas, new Rectangle(infoX, bodyY - lineH, labelW, lineH));
+                c.Add(new Paragraph(label).SetFont(_bold).SetFontSize(5f).SetFontColor(MutedText));
+                c.Close();
+            }
+            {
+                var c = new Canvas(canvas, new Rectangle(infoX + labelW, bodyY - lineH, infoW - labelW, lineH));
+                c.Add(new Paragraph(value).SetFont(_bold).SetFontSize(5.5f).SetFontColor(DarkText));
+                c.Close();
+            }
+            bodyY -= lineH;
+        }
 
-        // Terms
-        lay.Add(new Paragraph(
-                "This card is the property of the school. If found, " +
-                "please return to the address below.")
-            .SetFont(normal).SetFontSize(5.5f).SetFontColor(new DeviceRgb(0x33, 0x33, 0x44))
-            .SetFixedPosition(14f, 140f, w - 28f).SetMargin(0));
+        // — Section: ADDRESS —
+        bodyY -= 0.5f * MM;
+        {
+            var c = new Canvas(canvas, new Rectangle(infoX, bodyY - lineH, infoW, lineH));
+            c.Add(new Paragraph("ADDRESS")
+                .SetFont(_bold).SetFontSize(5.5f).SetFontColor(Primary).SetCharacterSpacing(0.5f));
+            c.Close();
+            canvas.SetStrokeColor(Gold);
+            canvas.SetLineWidth(0.3f);
+            canvas.MoveTo(infoX, bodyY - 0.8f * MM);
+            canvas.LineTo(infoX + infoW, bodyY - 0.8f * MM);
+            canvas.Stroke();
+        }
+        bodyY -= 2f * MM;
 
-        // Address block
-        lay.Add(new Paragraph(
-                $"{schoolSetting?.SchoolName ?? "School Name"}\n" +
-                $"Address: {schoolSetting?.Address ?? ""}\n" +
-                $"Phone: {schoolSetting?.Phone ?? ""}")
-            .SetFont(bold).SetFontSize(5.5f).SetFontColor(new DeviceRgb(0x22, 0x22, 0x44))
-            .SetFixedPosition(14f, 110f, w - 28f).SetMargin(0));
+        {
+            var c = new Canvas(canvas, new Rectangle(infoX, bodyY - 2f * lineH, infoW, 2f * lineH));
+            c.Add(new Paragraph(!string.IsNullOrEmpty(address) ? address : "N/A")
+                .SetFont(_normal).SetFontSize(5f).SetFontColor(DarkText));
+            c.Close();
+        }
 
-        // QR code – centred, y=52, size=60×60
-        var verificationUrl = $"{schoolSetting?.Website?.TrimEnd('/')}/Employee/Verify/{employee.Id}";
-        var qrData = $"ID:{employee.Id}|Code:{employee.EmployeeCode}|Name:{employee.FullName}" +
-                     $"|Designation:{employee.Designation}|Verify:{verificationUrl}";
-        var qrBytes = GetQrCodeBytes(qrData);
-        float qrSize = 60f;
-        float qrX = (w - qrSize) / 2f;
-        float qrY = 47f;
+        // — QR Code (right side) —
+        canvas.SetStrokeColor(Primary);
+        canvas.SetLineWidth(0.5f);
+        canvas.RoundRectangle(qrX, qrY, qrSize, qrSize, 1f * MM);
+        canvas.Stroke();
 
         if (qrBytes != null)
         {
             try
             {
-                lay.Add(new Image(ImageDataFactory.Create(qrBytes))
-                    .ScaleAbsolute(qrSize, qrSize)
-                    .SetFixedPosition(qrX, qrY));
+                var qrData = ImageDataFactory.Create(qrBytes);
+                var qrImg = new Image(qrData);
+                float qrPad = 1f * MM;
+                qrImg.ScaleToFit(qrSize - 2f * qrPad, qrSize - 2f * qrPad);
+                qrImg.SetFixedPosition(qrX + qrPad, qrY + qrPad);
+                new Canvas(canvas, ps).Add(qrImg);
             }
-            catch { DrawQrPlaceholder(pc, qrX, qrY, qrSize); }
+            catch { }
         }
-        else
+
         {
-            DrawQrPlaceholder(pc, qrX, qrY, qrSize);
+            var c = new Canvas(canvas, new Rectangle(qrX, qrY - 2.5f * MM, qrSize, 2.5f * MM));
+            c.Add(new Paragraph("Student ID").SetFont(_normal).SetFontSize(5f).SetFontColor(MutedText)
+                .SetTextAlignment(TextAlignment.CENTER));
+            c.Close();
         }
 
-        lay.Close();
-    }
+        // ══════════════════════════════════════════════
+        //  FOOTER
+        // ══════════════════════════════════════════════
+        canvas.SetFillColor(Primary);
+        canvas.Rectangle(0, 0, W, footerH);
+        canvas.Fill();
 
-    // ── Helpers ────────────────────────────────────────────────────
-
-    private static void DrawQrPlaceholder(PdfCanvas cv, float x, float y, float size)
-    {
-        cv.SetFillColor(ColorConstants.WHITE)
-          .Rectangle(x, y, size, size).Fill();
-        cv.SetFillColor(ColorConstants.LIGHT_GRAY)
-          .Rectangle(x + 4, y + 4, size - 8, size - 8).Fill();
-    }
-
-    private static DeviceRgb GetThemeColor(string? designation)
-    {
-        var des = (designation ?? "").ToLowerInvariant();
-        if (des.Contains("principal"))
         {
-            if (des.Contains("vice")) return new DeviceRgb(192, 192, 192);
-            return new DeviceRgb(218, 165, 32);
+            var footerParts = new[]
+            {
+                $"{model.SchoolNameEn}",
+                $"{model.SchoolPhone}  |  {model.SchoolEmail}",
+                model.SchoolAddress,
+                model.FooterText
+            };
+            var footerText = string.Join("\n", footerParts.Where(p => !string.IsNullOrEmpty(p)));
+
+            var c = new Canvas(canvas, new Rectangle(margin, 0.3f * MM, W - 2f * margin, footerH - 0.6f * MM));
+            c.Add(new Paragraph(footerText)
+                .SetFont(_normal).SetFontSize(4.5f).SetFontColor(White).SetOpacity(0.9f)
+                .SetTextAlignment(TextAlignment.CENTER));
+            c.Close();
         }
-        if (des.Contains("assistant head")) return new DeviceRgb(0, 0, 139);
-        if (des.Contains("senior teacher")) return new DeviceRgb(30, 144, 255);
-        if (des.Contains("teacher")) return new DeviceRgb(0x2B, 0x2F, 0x8F); // default indigo
-        if (des.Contains("accountant")) return new DeviceRgb(34, 139, 34);
-        if (des.Contains("librarian")) return new DeviceRgb(128, 0, 128);
-        if (des.Contains("lab assistant")) return new DeviceRgb(255, 140, 0);
-        if (des.Contains("driver")) return new DeviceRgb(139, 69, 19);
-        if (des.Contains("guard")) return new DeviceRgb(40, 40, 40);
-        if (des.Contains("staff")) return new DeviceRgb(128, 128, 128);
-        return new DeviceRgb(0x2B, 0x2F, 0x8F); // default
     }
 
-    /// <summary>Returns a lighter version of the color by adding an offset to each channel.</summary>
-    private static DeviceRgb Lighten(DeviceRgb color, int offset)
+    // ─────────────────────────────────────────────────────────────
+    //  EMPLOYEE FRONT — modern enterprise design
+    // ─────────────────────────────────────────────────────────────
+    private void DrawEmployeeFront(PdfDocument pdf, PdfPage page, EmployeeDetailsDto employee,
+        EmployeeIdCardPrintViewModel model, string? photoPath, string? logoPath, string? signPath)
     {
-        // DeviceRgb stores channels 0-1 as floats
-        float[] cv = color.GetColorValue();
-        float r = Math.Min(1f, cv[0] + offset / 255f);
-        float g = Math.Min(1f, cv[1] + offset / 255f);
-        float b = Math.Min(1f, cv[2] + offset / 255f);
-        return new DeviceRgb(r, g, b);
-    }
+        var themeColor = GetPdfThemeColor(employee.Designation);
+        var canvas = new PdfCanvas(page);
+        var ps = page.GetPageSize();
+        float W = ps.GetWidth();
+        float H = ps.GetHeight();
 
-    private static byte[]? GetQrCodeBytes(string data)
-    {
-        try
+        float margin = 2f * MM;
+        float bodyW = W - 2f * margin;
+
+        float headerH = 14f * MM;
+        float footerH = 7f * MM;
+        float bodyH = H - headerH - footerH;
+        float headerBot = H - headerH;
+
+        // ══════════════════════════════════════════════
+        //  HEADER
+        // ══════════════════════════════════════════════
+        canvas.SetFillColor(themeColor);
+        canvas.Rectangle(0, headerBot, W, headerH);
+        canvas.Fill();
+
+        // — Logo (clipped circle) —
+        float logoSize = 9f * MM;
+        float logoX = margin;
+        float logoY = headerBot + (headerH - logoSize) / 2f;
+
+        canvas.SaveState();
+        canvas.Circle(logoX + logoSize / 2f, logoY + logoSize / 2f, logoSize / 2f);
+        canvas.Clip();
+        canvas.EndPath();
+
+        if (logoPath != null && File.Exists(logoPath))
         {
-            return IdCardQRHelper.GenerateQrCodePng(data);
+            try
+            {
+                var logoData = ImageDataFactory.Create(logoPath);
+                var logoImg = new Image(logoData);
+                logoImg.ScaleToFit(logoSize, logoSize);
+                logoImg.SetFixedPosition(logoX, logoY);
+                new Canvas(canvas, ps).Add(logoImg);
+            }
+            catch { DrawPlaceholderCircle(canvas, logoX, logoY, logoSize, White); }
         }
-        catch { return null; }
+        else { DrawPlaceholderCircle(canvas, logoX, logoY, logoSize, White); }
+        canvas.RestoreState();
+
+        // — Academic year (top-right) —
+        {
+            float ayX = W - margin - 22f * MM;
+            var c = new Canvas(canvas, new Rectangle(ayX, headerBot + 1f * MM, 22f * MM, 3f * MM));
+            c.Add(new Paragraph(model.AcademicYear)
+                .SetFont(_bold).SetFontSize(5f).SetFontColor(Gold)
+                .SetTextAlignment(TextAlignment.RIGHT));
+            c.Close();
+        }
+
+        // — School name —
+        float tx = logoX + logoSize + 2f * MM;
+        float tw = W - tx - margin;
+
+        {
+            var c = new Canvas(canvas, new Rectangle(tx, headerBot + 5.5f * MM, tw - 24f * MM, 4.5f * MM));
+            c.Add(new Paragraph(model.SchoolNameEn)
+                .SetFont(_bold).SetFontSize(7.5f).SetFontColor(White));
+            c.Close();
+        }
+
+        // — EIIN & Website —
+        {
+            var c = new Canvas(canvas, new Rectangle(tx, headerBot + 2.8f * MM, tw, 3f * MM));
+            c.Add(new Paragraph($"EIIN: {model.SchoolEIIN}  |  {model.SchoolWebsite}")
+                .SetFont(_normal).SetFontSize(4.5f).SetFontColor(White).SetOpacity(0.85f));
+            c.Close();
+        }
+
+        // — Motto —
+        {
+            var c = new Canvas(canvas, new Rectangle(tx, headerBot + 0.3f * MM, tw, 3f * MM));
+            c.Add(new Paragraph(!string.IsNullOrEmpty(model.SchoolMotto) ? $"\"{model.SchoolMotto}\"" : "")
+                .SetFont(_normal).SetFontSize(4.5f).SetFontColor(GoldLight).SetItalic());
+            c.Close();
+        }
+
+        // ══════════════════════════════════════════════
+        //  BODY
+        // ══════════════════════════════════════════════
+        float bodyTop = headerBot;
+
+        // — Photo —
+        float photoW = 20f * MM;
+        float photoH = 25f * MM;
+        float photoX = margin;
+        float photoY = footerH + (bodyH - photoH) / 2f;
+
+        canvas.SetFillColor(new DeviceRgb(0xF3, 0xF4, 0xF6));
+        canvas.RoundRectangle(photoX, photoY, photoW, photoH, 1.5f * MM);
+        canvas.Fill();
+        canvas.SetStrokeColor(themeColor);
+        canvas.SetLineWidth(0.6f);
+        canvas.RoundRectangle(photoX, photoY, photoW, photoH, 1.5f * MM);
+        canvas.Stroke();
+
+        if (photoPath != null && File.Exists(photoPath))
+        {
+            try
+            {
+                var photoData = ImageDataFactory.Create(photoPath);
+                var photoImg = new Image(photoData);
+                photoImg.ScaleToFit(photoW - 2f * MM, photoH - 2f * MM);
+                float imgX = photoX + (photoW - photoImg.GetImageScaledWidth()) / 2f;
+                float imgY = photoY + (photoH - photoImg.GetImageScaledHeight()) / 2f;
+                photoImg.SetFixedPosition(imgX, imgY);
+                new Canvas(canvas, ps).Add(photoImg);
+            }
+            catch { }
+        }
+
+        // — Info fields —
+        float infoX = photoX + photoW + 2.5f * MM;
+        float infoW = W - infoX - margin;
+        float labelW = 11f * MM;
+        float lineH = 3.2f * MM;
+
+        var infoLines = new (string Label, string Value)[]
+        {
+            ("Name", employee.FullName),
+            ("Code", employee.EmployeeCode),
+            ("Designation", employee.Designation),
+            ("Department", employee.Department),
+            ("Joining", employee.JoiningDate.ToString("dd MMM yyyy")),
+            ("Blood", !string.IsNullOrEmpty(employee.BloodGroup) ? employee.BloodGroup : "N/A"),
+            ("Mobile", employee.Phone),
+            ("Card No", employee.EmployeeCardNumber ?? "---"),
+        };
+
+        float startY = bodyTop - 0.8f * MM;
+
+        for (int i = 0; i < infoLines.Length; i++)
+        {
+            float y = startY - i * lineH;
+            bool isName = i == 0;
+
+            {
+                var c = new Canvas(canvas, new Rectangle(infoX, y - lineH, labelW, lineH));
+                c.Add(new Paragraph(infoLines[i].Label)
+                    .SetFont(_bold).SetFontSize(5f).SetFontColor(MutedText));
+                c.Close();
+            }
+            {
+                var c = new Canvas(canvas, new Rectangle(infoX + labelW, y - lineH, infoW - labelW, lineH));
+                c.Add(new Paragraph(infoLines[i].Value)
+                    .SetFont(_bold).SetFontSize(6f)
+                    .SetFontColor(isName ? themeColor : DarkText));
+                c.Close();
+            }
+        }
+
+        // — Divider —
+        canvas.SetStrokeColor(Gold);
+        canvas.SetLineWidth(0.5f);
+        canvas.MoveTo(margin, footerH + 0.5f * MM);
+        canvas.LineTo(W - margin, footerH + 0.5f * MM);
+        canvas.Stroke();
+
+        // ══════════════════════════════════════════════
+        //  FOOTER
+        // ══════════════════════════════════════════════
+        canvas.SetFillColor(themeColor);
+        canvas.Rectangle(0, 0, W, footerH);
+        canvas.Fill();
+
+        // — Issue / Expiry —
+        {
+            float x = margin;
+            float y = 0.7f * MM;
+            var issueDate = employee.CardIssueDate ?? DateTime.Today;
+            var expiryDate = employee.CardExpiryDate ?? DateTime.Today.AddYears(2);
+            var c = new Canvas(canvas, new Rectangle(x, y, 22f * MM, footerH - 1.4f * MM));
+            c.Add(new Paragraph($"Issued: {issueDate:dd MMM yyyy}    Expires: {expiryDate:dd MMM yyyy}")
+                .SetFont(_normal).SetFontSize(4.5f).SetFontColor(White).SetOpacity(0.9f));
+            c.Close();
+        }
+
+        // — Principal signature —
+        {
+            float sigX = W - margin - 26f * MM;
+            float sigY = 0.3f * MM;
+            var c = new Canvas(canvas, new Rectangle(sigX, sigY, 26f * MM, footerH - 0.6f * MM));
+            c.Add(new Paragraph(model.PrincipalName ?? "Principal")
+                .SetFont(_normal).SetFontSize(5f).SetFontColor(White)
+                .SetTextAlignment(TextAlignment.CENTER));
+            c.Close();
+
+            canvas.SetStrokeColor(Gold);
+            canvas.SetLineWidth(0.4f);
+            float lineX1 = sigX + 2f * MM;
+            float lineX2 = sigX + 24f * MM;
+            float lineY = sigY + 4.5f * MM;
+            canvas.MoveTo(lineX1, lineY);
+            canvas.LineTo(lineX2, lineY);
+            canvas.Stroke();
+        }
+
+        // — School seal —
+        if (!string.IsNullOrEmpty(model.SchoolSealPath) && File.Exists(model.SchoolSealPath))
+        {
+            try
+            {
+                float sealSize = 5f * MM;
+                float sealX = W - margin - sealSize;
+                float sealY = (footerH - sealSize) / 2f;
+                var sealData = ImageDataFactory.Create(model.SchoolSealPath);
+                var sealImg = new Image(sealData);
+                sealImg.ScaleToFit(sealSize, sealSize);
+                sealImg.SetFixedPosition(sealX, sealY);
+                new Canvas(canvas, ps).Add(sealImg);
+            }
+            catch { }
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    //  EMPLOYEE BACK — emergency, NID, QR
+    // ─────────────────────────────────────────────────────────────
+    private void DrawEmployeeBack(PdfDocument pdf, PdfPage page, EmployeeDetailsDto employee,
+        EmployeeIdCardPrintViewModel model, byte[] qrBytes)
+    {
+        var themeColor = GetPdfThemeColor(employee.Designation);
+        var canvas = new PdfCanvas(page);
+        var ps = page.GetPageSize();
+        float W = ps.GetWidth();
+        float H = ps.GetHeight();
+
+        float margin = 2f * MM;
+
+        float headerH = 9f * MM;
+        float footerH = 6.5f * MM;
+        float bodyH = H - headerH - footerH;
+        float headerBot = H - headerH;
+
+        // ══════════════════════════════════════════════
+        //  HEADER
+        // ══════════════════════════════════════════════
+        canvas.SetFillColor(themeColor);
+        canvas.Rectangle(0, headerBot, W, headerH);
+        canvas.Fill();
+
+        {
+            var c = new Canvas(canvas, new Rectangle(0, headerBot, W, headerH));
+            c.Add(new Paragraph("EMPLOYEE INFORMATION")
+                .SetFont(_bold).SetFontSize(7f).SetFontColor(White)
+                .SetTextAlignment(TextAlignment.CENTER));
+            c.Close();
+        }
+
+        // ══════════════════════════════════════════════
+        //  BODY
+        // ══════════════════════════════════════════════
+        float qrSize = 13f * MM;
+        float qrX = W - margin - qrSize;
+        float qrY = headerBot - qrSize - 2f * MM;
+
+        float infoW = qrX - margin - 1.5f * MM;
+        float infoX = margin;
+        float lineH = 2.8f * MM;
+        float labelW = 10f * MM;
+        float bodyY = headerBot - 1.2f * MM;
+
+        // — Section: CONTACT & PERSONAL —
+        {
+            var c = new Canvas(canvas, new Rectangle(infoX, bodyY - lineH, infoW, lineH));
+            c.Add(new Paragraph("CONTACT & PERSONAL")
+                .SetFont(_bold).SetFontSize(5.5f).SetFontColor(themeColor).SetCharacterSpacing(0.5f));
+            c.Close();
+            canvas.SetStrokeColor(Gold);
+            canvas.SetLineWidth(0.3f);
+            canvas.MoveTo(infoX, bodyY - 0.8f * MM);
+            canvas.LineTo(infoX + infoW, bodyY - 0.8f * MM);
+            canvas.Stroke();
+        }
+        bodyY -= 2f * MM;
+
+        var backLines = new (string Label, string Value)[]
+        {
+            ("Emergency", !string.IsNullOrEmpty(employee.EmergencyContactPhone)
+                ? $"{employee.EmergencyContactName ?? ""} {employee.EmergencyContactPhone}".Trim() : "N/A"),
+            ("Address", !string.IsNullOrEmpty(employee.PresentAddress) ? employee.PresentAddress : "N/A"),
+            ("Email", employee.Email ?? "N/A"),
+            ("Department", employee.Department),
+        };
+
+        foreach (var (label, value) in backLines)
+        {
+            {
+                var c = new Canvas(canvas, new Rectangle(infoX, bodyY - lineH, labelW, lineH));
+                c.Add(new Paragraph(label).SetFont(_bold).SetFontSize(5f).SetFontColor(MutedText));
+                c.Close();
+            }
+            {
+                var c = new Canvas(canvas, new Rectangle(infoX + labelW, bodyY - lineH, infoW - labelW, lineH));
+                c.Add(new Paragraph(value).SetFont(_bold).SetFontSize(5.5f).SetFontColor(DarkText));
+                c.Close();
+            }
+            bodyY -= lineH;
+        }
+
+        // — Section: IDENTIFICATION —
+        bodyY -= 0.5f * MM;
+        {
+            var c = new Canvas(canvas, new Rectangle(infoX, bodyY - lineH, infoW, lineH));
+            c.Add(new Paragraph("IDENTIFICATION")
+                .SetFont(_bold).SetFontSize(5.5f).SetFontColor(themeColor).SetCharacterSpacing(0.5f));
+            c.Close();
+            canvas.SetStrokeColor(Gold);
+            canvas.SetLineWidth(0.3f);
+            canvas.MoveTo(infoX, bodyY - 0.8f * MM);
+            canvas.LineTo(infoX + infoW, bodyY - 0.8f * MM);
+            canvas.Stroke();
+        }
+        bodyY -= 2f * MM;
+
+        var idLines = new (string Label, string Value)[]
+        {
+            ("National ID", !string.IsNullOrEmpty(employee.NIDNumber) ? employee.NIDNumber : "N/A"),
+            ("Joining", employee.JoiningDate.ToString("dd MMM yyyy")),
+            ("Valid Until", employee.CardExpiryDate?.ToString("dd MMM yyyy") ?? "N/A"),
+        };
+
+        foreach (var (label, value) in idLines)
+        {
+            {
+                var c = new Canvas(canvas, new Rectangle(infoX, bodyY - lineH, labelW, lineH));
+                c.Add(new Paragraph(label).SetFont(_bold).SetFontSize(5f).SetFontColor(MutedText));
+                c.Close();
+            }
+            {
+                var c = new Canvas(canvas, new Rectangle(infoX + labelW, bodyY - lineH, infoW - labelW, lineH));
+                c.Add(new Paragraph(value).SetFont(_bold).SetFontSize(5.5f).SetFontColor(DarkText));
+                c.Close();
+            }
+            bodyY -= lineH;
+        }
+
+        // — QR Code —
+        canvas.SetStrokeColor(themeColor);
+        canvas.SetLineWidth(0.5f);
+        canvas.RoundRectangle(qrX, qrY, qrSize, qrSize, 1f * MM);
+        canvas.Stroke();
+
+        if (qrBytes != null)
+        {
+            try
+            {
+                var qrData = ImageDataFactory.Create(qrBytes);
+                var qrImg = new Image(qrData);
+                float qrPad = 1f * MM;
+                qrImg.ScaleToFit(qrSize - 2f * qrPad, qrSize - 2f * qrPad);
+                qrImg.SetFixedPosition(qrX + qrPad, qrY + qrPad);
+                new Canvas(canvas, ps).Add(qrImg);
+            }
+            catch { }
+        }
+
+        {
+            var c = new Canvas(canvas, new Rectangle(qrX, qrY - 2.5f * MM, qrSize, 2.5f * MM));
+            c.Add(new Paragraph("Employee ID").SetFont(_normal).SetFontSize(5f).SetFontColor(MutedText)
+                .SetTextAlignment(TextAlignment.CENTER));
+            c.Close();
+        }
+
+        // ══════════════════════════════════════════════
+        //  FOOTER
+        // ══════════════════════════════════════════════
+        canvas.SetFillColor(themeColor);
+        canvas.Rectangle(0, 0, W, footerH);
+        canvas.Fill();
+
+        {
+            var footerParts = new[]
+            {
+                $"{model.SchoolNameEn}",
+                $"{model.SchoolPhone}  |  {model.SchoolEmail}",
+                model.SchoolAddress,
+                model.FooterText
+            };
+            var footerText = string.Join("\n", footerParts.Where(p => !string.IsNullOrEmpty(p)));
+
+            var c = new Canvas(canvas, new Rectangle(margin, 0.3f * MM, W - 2f * margin, footerH - 0.6f * MM));
+            c.Add(new Paragraph(footerText)
+                .SetFont(_normal).SetFontSize(4.5f).SetFontColor(White).SetOpacity(0.9f)
+                .SetTextAlignment(TextAlignment.CENTER));
+            c.Close();
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    //  HTML → PDF via DinkToPdf (admit cards, etc.)
+    // ─────────────────────────────────────────────────────────────
+    public byte[] GenerateFromHtml(string html)
+    {
+        var converter = new SynchronizedConverter(new PdfTools());
+        var doc = new HtmlToPdfDocument
+        {
+            GlobalSettings =
+            {
+                PaperSize = new PechkinPaperSize("210mm", "297mm"),
+                Orientation = DinkToPdf.Orientation.Portrait,
+                Margins = new MarginSettings { Top = 0, Right = 0, Bottom = 0, Left = 0 },
+            },
+            Objects =
+            {
+                new ObjectSettings
+                {
+                    HtmlContent = html,
+                    PagesCount = true,
+                    WebSettings = new WebSettings
+                    {
+                        DefaultEncoding = "utf-8",
+                        LoadImages = true,
+                        EnableIntelligentShrinking = false,
+                        PrintMediaType = true,
+                    },
+                    LoadSettings = new LoadSettings
+                    {
+                        BlockLocalFileAccess = false,
+                    },
+                    FooterSettings = { HtmUrl = string.Empty, FontSize = 0 }
+                }
+            }
+        };
+
+        return converter.Convert(doc);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    //  HELPERS
+    // ─────────────────────────────────────────────────────────────
+    private void EnsureFonts()
+    {
+        _bold = PdfFontFactory.CreateFont(iText.IO.Font.Constants.StandardFonts.HELVETICA_BOLD);
+        _normal = PdfFontFactory.CreateFont(iText.IO.Font.Constants.StandardFonts.HELVETICA);
+    }
+
+    private string? ResolvePath(string? relativePath)
+    {
+        if (string.IsNullOrWhiteSpace(relativePath)) return null;
+        var path = relativePath.TrimStart('~', '/', '\\').Replace('/', System.IO.Path.DirectorySeparatorChar);
+        return System.IO.Path.Combine(_env.WebRootPath, path);
+    }
+
+    private static void DrawPlaceholderCircle(PdfCanvas canvas, float x, float y, float size, Color color)
+    {
+        canvas.SetFillColor(color);
+        canvas.Circle(x + size / 2f, y + size / 2f, size / 2f);
+        canvas.Fill();
+    }
+
+    private static Color GetPdfThemeColor(string? designation)
+    {
+        if (string.IsNullOrWhiteSpace(designation))
+            return Primary;
+        var des = designation.Trim().ToLowerInvariant();
+        return des switch
+        {
+            string d when d.Contains("principal") => new DeviceRgb(0xDA, 0xA5, 0x20),
+            string d when d.Contains("vice principal") => new DeviceRgb(0xC0, 0xC0, 0xC0),
+            string d when d.Contains("teacher") => Primary,
+            string d when d.Contains("accountant") => new DeviceRgb(0x2E, 0x8B, 0x57),
+            string d when d.Contains("librarian") => new DeviceRgb(0x80, 0x00, 0x80),
+            string d when d.Contains("staff") => new DeviceRgb(0x80, 0x80, 0x80),
+            string d when d.Contains("assistant head") => new DeviceRgb(0x00, 0x00, 0x8B),
+            string d when d.Contains("senior teacher") => new DeviceRgb(0x1E, 0x90, 0xFF),
+            string d when d.Contains("lab assistant") => new DeviceRgb(0xFF, 0x8C, 0x00),
+            string d when d.Contains("driver") => new DeviceRgb(0x8B, 0x45, 0x13),
+            string d when d.Contains("guard") => new DeviceRgb(0x28, 0x28, 0x28),
+            _ => Primary,
+        };
     }
 
     // ── Report-card helpers ────────────────────────────────────────

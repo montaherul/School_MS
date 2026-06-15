@@ -34,25 +34,7 @@ public class StudentMarkViewModel
     public decimal? MarksObtained { get; set; }
     public string? Grade { get; set; }
     public bool IsLocked { get; set; }
-    // Component-wise marks (optional)
-    public decimal? WrittenMarks { get; set; }
-    public decimal? MCQMarks { get; set; }
-    public decimal? CQMarks { get; set; }
-    public decimal? PracticalMarks { get; set; }
-    public decimal? VivaMarks { get; set; }
-    public decimal? LabMarks { get; set; }
-    public decimal? OralMarks { get; set; }
-    public decimal? AssignmentMarks { get; set; }
-    public decimal? ContinuousAssessmentMarks { get; set; }
-
-    public decimal? CompetencyMarks { get; set; }
-    public decimal? BehaviourMarks { get; set; }
-    public decimal? ParticipationMarks { get; set; }
-
-    // Dynamic component values for components not mapped to standard fields
-    public Dictionary<string, decimal?> ComponentValues { get; set; } = new();
-
-    // Teacher who entered the marks
+    public ComponentMarksDto ComponentMarks { get; set; } = new();
     public int? EnteredByTeacherId { get; set; }
     public string? EnteredByTeacherName { get; set; }
 }

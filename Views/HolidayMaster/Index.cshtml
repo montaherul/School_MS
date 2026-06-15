@@ -1,0 +1,183 @@
+@{
+    ViewData["Title"] = "Holiday Master";
+    bool canCreate = User.IsInRole("Super Admin") || User.IsInRole("Admin") || User.IsInRole("Principal") || User.IsInRole("Assistant Head");
+    bool canExport = canCreate;
+}
+
+<style>
+    .page-wrap { display: grid; gap: 20px; }
+    .page-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+    .page-title { margin: 0; font-size: 26px; font-weight: 800; color: #111827; }
+    .page-subtitle { margin: 4px 0 0; color: #64748b; font-size: 14px; }
+    .panel { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 4px 24px rgba(15,23,42,.06); padding: 20px; }
+    .badge-national { background: #dc2626; color: #fff; }
+    .badge-religious { background: #7c3aed; color: #fff; }
+    .badge-cultural { background: #d97706; color: #fff; }
+    .badge-government { background: #2563eb; color: #fff; }
+    .badge-weekly { background: #64748b; color: #fff; }
+</style>
+
+<div class="page-wrap">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title"><i class="bi bi-calendar-heart me-2 text-danger"></i>Holiday Master</h1>
+            <p class="page-subtitle">Manage all holidays. Sync to calendar.</p>
+        </div>
+        <div class="d-flex gap-2 flex-wrap">
+            @if (canCreate)
+            {
+                <a asp-action="Create" class="btn btn-primary"><i class="bi bi-plus-circle me-1"></i> Add Holiday</a>
+                <button type="button" class="btn btn-outline-danger" id="btnGenerateBD"><i class="bi bi-globe me-1"></i> Generate BD Holidays</button>
+            }
+            @if (canExport)
+            {
+                <a asp-action="Export" class="btn btn-outline-success"><i class="bi bi-download me-1"></i> Export CSV</a>
+            }
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show">@TempData["Success"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
+
+    <div class="panel">
+        <div class="row g-3 mb-3">
+            <div class="col-md-4">
+                <input type="text" id="filterSearch" class="form-control" placeholder="Search holidays..." />
+            </div>
+            <div class="col-md-3">
+                <select id="filterType" class="form-select">
+                    <option value="">All Types</option>
+                    <option value="National">National</option>
+                    <option value="Religious">Religious</option>
+                    <option value="Cultural">Cultural</option>
+                    <option value="Government">Government</option>
+                    <option value="Weekly Off">Weekly Off</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <select id="filterReligion" class="form-select">
+                    <option value="">All Religions</option>
+                    <option value="Islam">Islam</option>
+                    <option value="Hindu">Hindu</option>
+                    <option value="Buddhist">Buddhist</option>
+                    <option value="Christian">Christian</option>
+                </select>
+            </div>
+            <div class="col-md-1 d-grid">
+                <button class="btn btn-outline-primary" id="btnRefresh"><i class="bi bi-arrow-clockwise"></i></button>
+            </div>
+        </div>
+        <div id="holidayTable"></div>
+    </div>
+</div>
+
+@Html.AntiForgeryToken()
+
+@section Scripts {
+    <script>
+        let table;
+
+        function initTable() {
+            table = new Tabulator("#holidayTable", {
+                height: 500,
+                layout: "fitColumns",
+                ajaxURL: "/HolidayMaster/GetList",
+                ajaxParams: { page: 1, pageSize: 100 },
+                ajaxResponse: function(url, params, response) { return { data: response.data, last_page: Math.ceil(response.total / params.pageSize) }; },
+                columns: [
+                    { title: "Name", field: "name", minWidth: 180,
+                        formatter: function(c) {
+                            let html = `<div class="fw-bold">${c.getValue() || ''}</div>`;
+                            if (c.getRow().getData().nameBn) html += `<div class="small text-muted">${c.getRow().getData().nameBn}</div>`;
+                            return html;
+                        }
+                    },
+                    { title: "Type", field: "holidayType", width: 120, hozAlign: "center",
+                        formatter: function(c) {
+                            const t = c.getValue() || '';
+                            const cls = t === 'National' ? 'badge-national' : t === 'Religious' ? 'badge-religious' : t === 'Cultural' ? 'badge-cultural' : t === 'Government' ? 'badge-government' : 'badge-weekly';
+                            return `<span class="badge ${cls}">${t}</span>`;
+                        }
+                    },
+                    { title: "Date", field: "holidayDate", width: 130, hozAlign: "center",
+                        formatter: function(c) {
+                            const d = new Date(c.getValue());
+                            return d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' });
+                        }
+                    },
+                    { title: "Recurring", field: "isRecurring", width: 100, hozAlign: "center",
+                        formatter: function(c) { return c.getValue() ? '<span class="badge bg-success">Yes</span>' : '<span class="badge bg-secondary">No</span>'; }
+                    },
+                    { title: "Religion", field: "religion", width: 100, hozAlign: "center" },
+                    { title: "Active", field: "isActive", width: 80, hozAlign: "center",
+                        formatter: function(c) { return c.getValue() ? '<span class="text-success"><i class="bi bi-check-circle"></i></span>' : '<span class="text-danger"><i class="bi bi-x-circle"></i></span>'; }
+                    },
+                    { title: "Actions", width: 160, hozAlign: "center", headerSort: false,
+                        formatter: function(c) {
+                            const d = c.getRow().getData();
+                            let html = `<div class="btn-group btn-group-sm">`;
+                            html += `<a href="/HolidayMaster/Edit/${d.id}" class="btn btn-outline-primary" title="Edit"><i class="bi bi-pencil"></i></a>`;
+                            if (d.isActive) {
+                                html += `<button class="btn btn-outline-warning btn-deactivate" data-id="${d.id}" title="Deactivate"><i class="bi bi-pause-circle"></i></button>`;
+                            } else {
+                                html += `<button class="btn btn-outline-success btn-activate" data-id="${d.id}" title="Activate"><i class="bi bi-play-circle"></i></button>`;
+                            }
+                            html += `<button class="btn btn-outline-danger btn-delete" data-id="${d.id}" title="Delete"><i class="bi bi-trash"></i></button>`;
+                            html += `</div>`;
+                            return html;
+                        }
+                    }
+                ]
+            });
+        }
+
+        function refreshData() {
+            if (table) {
+                table.setData("/HolidayMaster/GetList", {
+                    page: 1,
+                    pageSize: 100,
+                    search: document.getElementById('filterSearch').value,
+                    type: document.getElementById('filterType').value,
+                    religion: document.getElementById('filterReligion').value
+                });
+            }
+        }
+
+        document.getElementById('btnRefresh').addEventListener('click', refreshData);
+        document.getElementById('filterSearch').addEventListener('keyup', refreshData);
+        document.getElementById('filterType').addEventListener('change', refreshData);
+        document.getElementById('filterReligion').addEventListener('change', refreshData);
+
+        document.addEventListener('click', function(e) {
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            const del = e.target.closest('.btn-delete');
+            if (del && confirm('Delete this holiday?')) {
+                fetch(`/HolidayMaster/Delete/${del.dataset.id}`, { method: 'POST', headers: { 'RequestVerificationToken': token } })
+                    .then(r => r.json()).then(r => { if (r.success) { toastr.success(r.message); refreshData(); } else toastr.error(r.message); });
+            }
+            const act = e.target.closest('.btn-activate');
+            if (act) {
+                fetch(`/HolidayMaster/Activate/${act.dataset.id}`, { method: 'POST', headers: { 'RequestVerificationToken': token } })
+                    .then(r => r.json()).then(r => { if (r.success) { toastr.success(r.message); refreshData(); } else toastr.error(r.message); });
+            }
+            const deact = e.target.closest('.btn-deactivate');
+            if (deact) {
+                fetch(`/HolidayMaster/Deactivate/${deact.dataset.id}`, { method: 'POST', headers: { 'RequestVerificationToken': token } })
+                    .then(r => r.json()).then(r => { if (r.success) { toastr.success(r.message); refreshData(); } else toastr.error(r.message); });
+            }
+        });
+
+        document.getElementById('btnGenerateBD').addEventListener('click', function() {
+            const year = prompt('Enter year to generate Bangladesh holidays:', new Date().getFullYear());
+            if (year && year >= 2000 && year <= 2100) {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                fetch(`/HolidayMaster/GenerateBangladeshHolidays?year=${year}`, { method: 'POST', headers: { 'RequestVerificationToken': token } })
+                    .then(r => { window.location.reload(); });
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', initTable);
+    </script>
+}

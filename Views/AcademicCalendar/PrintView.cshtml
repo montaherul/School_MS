@@ -1,0 +1,98 @@
+@model List<SchoolManagementSystem.Models.Entities.Academic.AcademicCalendar>
+@{
+    ViewData["Title"] = $"Academic Calendar {ViewBag.Year} - Print";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Academic Calendar @ViewBag.Year</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
+    <style>
+        body { font-family: Arial, sans-serif; font-size: 10pt; color: #333; padding: 20px; }
+        .school-header { text-align: center; margin-bottom: 20px; border-bottom: 2px solid #1B4D8C; padding-bottom: 12px; }
+        .school-header h1 { color: #1B4D8C; font-size: 18pt; margin: 0; }
+        .school-header p { color: #666; margin: 4px 0 0; font-size: 9pt; }
+        .legend { margin: 12px 0; padding: 8px 12px; background: #f8f9fa; border-radius: 6px; font-size: 9pt; }
+        .legend span { display: inline-block; margin-right: 20px; }
+        .table th { background: #1B4D8C; color: #fff; font-size: 9pt; padding: 6px 8px; }
+        .table td { padding: 4px 8px; font-size: 9pt; }
+        .badge-holiday { color: #b91c1c; font-weight: bold; }
+        .badge-exam { color: #d97706; font-weight: bold; }
+        .badge-event { color: #7c3aed; font-weight: bold; }
+        .summary-row { display: flex; gap: 20px; margin-bottom: 16px; }
+        .summary-box { flex: 1; text-align: center; padding: 10px; border-radius: 6px; background: #f8f9fa; }
+        .summary-box .num { font-size: 18pt; font-weight: 700; }
+        .page-break { page-break-before: always; }
+        .footer { text-align: center; margin-top: 20px; font-size: 8pt; color: #999; }
+        @@media print {
+            .no-print { display: none; }
+            body { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+    <div class="school-header">
+        <h1>Academic Calendar @ViewBag.Year</h1>
+        <p>School Management System — Generated on @DateTime.Today.ToString("dd MMM yyyy")</p>
+    </div>
+
+    <div class="summary-row">
+        <div class="summary-box"><div class="num text-success">@ViewBag.WorkingDays</div><div class="small">Working Days</div></div>
+        <div class="summary-box"><div class="num text-danger">@ViewBag.HolidayCount</div><div class="small">Holidays</div></div>
+        <div class="summary-box"><div class="num text-warning">@ViewBag.ExamDayCount</div><div class="small">Exam Days</div></div>
+        <div class="summary-box"><div class="num text-purple">@ViewBag.EventDayCount</div><div class="small">Events</div></div>
+        <div class="summary-box"><div class="num text-primary">@ViewBag.TotalDays</div><div class="small">Total Days</div></div>
+    </div>
+
+    <div class="legend">
+        <span style="color:#b91c1c;font-weight:bold">&#9632; Holiday</span>
+        <span style="color:#d97706;font-weight:bold">&#9632; Exam</span>
+        <span style="color:#7c3aed;font-weight:bold">&#9632; Event</span>
+        <span style="color:#047857;font-weight:bold">&#9632; Working Day</span>
+    </div>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Day</th>
+                <th>Title</th>
+                <th>Type</th>
+                <th>Remarks</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var d in Model)
+            {
+                var typeLabel = "";
+                if (d.IsHoliday) { typeLabel = "<span class='badge-holiday'>Holiday</span>"; }
+                else if (d.IsExamDay) { typeLabel = "<span class='badge-exam'>Exam</span>"; }
+                else if (d.IsEventDay) { typeLabel = "<span class='badge-event'>Event</span>"; }
+                else { typeLabel = "<span class='text-success'>Working</span>"; }
+
+                <tr>
+                    <td>@d.Date.ToString("yyyy-MM-dd")</td>
+                    <td>@d.Date.DayOfWeek</td>
+                    <td>@(d.Title ?? "")</td>
+                    <td>@Html.Raw(typeLabel)</td>
+                    <td>@(d.Remarks ?? "")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <p>Academic Calendar @ViewBag.Year — School Management System — Page 1 of 1</p>
+    </div>
+
+    <div class="no-print text-center mt-3">
+        <button class="btn btn-primary" onclick="window.print()"><i class="bi bi-printer me-1"></i> Print</button>
+        <button class="btn btn-outline-secondary" onclick="window.close()">Close</button>
+    </div>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</body>
+</html>

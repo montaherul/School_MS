@@ -7,12 +7,9 @@ using SchoolManagementSystem.Models.ViewModels.Employee;
 using SchoolManagementSystem.Services.Interfaces.Employee;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
-using SchoolManagementSystem.Models.Entities.Auth;
 using SchoolManagementSystem.Models.Entities.Website;
-using SchoolManagementSystem.Helpers.Pdf;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using EmpEntity = SchoolManagementSystem.Models.Entities.Employee.Employee;
-using SchoolManagementSystem.Helpers;
 
 namespace SchoolManagementSystem.Controllers.Employee;
 
@@ -23,23 +20,17 @@ public class EmployeeController : Controller
     private readonly IDepartmentService _departmentService;
     private readonly IDesignationService _designationService;
     private readonly IUnitOfWork _uow;
-    private readonly IPdfGenerator _pdfGenerator;
-    private readonly IViewRendererService _viewRenderer;
 
     public EmployeeController(
         IEmployeeService employeeService,
         IDepartmentService departmentService,
         IDesignationService designationService,
-        IUnitOfWork uow,
-        IPdfGenerator pdfGenerator,
-        IViewRendererService viewRenderer)
+        IUnitOfWork uow)
     {
         _employeeService = employeeService;
         _departmentService = departmentService;
         _designationService = designationService;
         _uow = uow;
-        _pdfGenerator = pdfGenerator;
-        _viewRenderer = viewRenderer;
     }
 
     [RequirePermission("Users.View")] // Fallback to Users permission or specialized if desired
@@ -226,112 +217,6 @@ public class EmployeeController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> DownloadIdCardPdf(int id, CancellationToken ct)
-    {
-        if (!await CanViewCardAsync(id, ct))
-        {
-            return Forbid();
-        }
-
-        var employee = await _employeeService.GetDetailsAsync(id, ct);
-        if (employee == null) return NotFound("Employee not found.");
-
-        await InitializeCardFieldsAsync(employee, id, ct);
-
-        var schoolSetting = await _uow.Repository<SchoolSetting>().Query().FirstOrDefaultAsync(ct) ?? new SchoolSetting { SchoolName = "School Management ERP" };
-
-        var viewModel = BuildEmployeeCardViewModel([employee], schoolSetting);
-        var html = await _viewRenderer.RenderToStringAsync("PrintIdCard", viewModel);
-        var pdfBytes = _pdfGenerator.GenerateEmployeeIdCardFromHtml(html);
-
-        // Update tracking
-        var currentEmpEntity = await _uow.Repository<EmpEntity>().GetByIdAsync(id, ct);
-        if (currentEmpEntity != null)
-        {
-            currentEmpEntity.CardPrintedAt = DateTime.UtcNow;
-            await _uow.SaveChangesAsync(ct);
-        }
-
-        // Log audit
-        var userName = User.Identity?.Name ?? "Unknown";
-        await LogAuditAsync("ID Card Downloaded", $"Employee ID Card downloaded for: {employee.FullName} (Code: {employee.EmployeeCode}) by {userName}", ct);
-
-        return File(pdfBytes, "application/pdf", $"ID_Card_{employee.EmployeeCode}.pdf");
-    }
-
-    [HttpGet]
-    public async Task<IActionResult> PreviewIdCard(int id, CancellationToken ct)
-    {
-        return await PrintIdCard(id, ct);
-    }
-
-    [HttpGet]
-    public IActionResult QrCode(int id)
-    {
-        var png = IdCardQRHelper.GenerateQrCodePng(id.ToString());
-        return File(png, "image/png");
-    }
-
-    [HttpGet]
-    public async Task<IActionResult> PrintIdCard(int id, CancellationToken ct)
-    {
-        if (!CanManageIdCards())
-        {
-            return Forbid();
-        }
-
-        var employee = await _employeeService.GetDetailsAsync(id, ct);
-        if (employee == null) return NotFound("Employee not found.");
-
-        await InitializeCardFieldsAsync(employee, id, ct);
-
-        var schoolSetting = await _uow.Repository<SchoolSetting>().Query().FirstOrDefaultAsync(ct) ?? new SchoolSetting { SchoolName = "School Management ERP" };
-        ViewBag.SchoolSetting = schoolSetting;
-
-        // Update printed tracking
-        var empToUpdate = await _uow.Repository<EmpEntity>().GetByIdAsync(id, ct);
-        if (empToUpdate != null)
-        {
-            empToUpdate.CardPrintedAt = DateTime.UtcNow;
-            await _uow.SaveChangesAsync(ct);
-        }
-
-        // Log audit
-        var userName = User.Identity?.Name ?? "Unknown";
-        await LogAuditAsync("ID Card Printed", $"Employee ID Card printed for: {employee.FullName} (Code: {employee.EmployeeCode}) by {userName}", ct);
-
-        var viewModel = BuildEmployeeCardViewModel([employee], schoolSetting);
-        return View("PrintIdCard", viewModel);
-    }
-
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> ReissueCard(int id, CancellationToken ct)
-    {
-        if (!CanManageIdCards())
-        {
-            return Forbid();
-        }
-
-        var employeeEntity = await _uow.Repository<EmpEntity>().GetByIdAsync(id, ct);
-        if (employeeEntity == null) return NotFound("Employee not found.");
-
-        employeeEntity.CardVersion += 1;
-        employeeEntity.CardIssueDate = DateTime.Today;
-        employeeEntity.CardExpiryDate = new DateTime(DateTime.Today.Year + 2, 12, 31);
-        employeeEntity.QRVerificationCode = Guid.NewGuid().ToString("N").Substring(0, 10).ToUpper();
-        
-        await _uow.SaveChangesAsync(ct);
-
-        // Log audit
-        var userName = User.Identity?.Name ?? "Unknown";
-        await LogAuditAsync("ID Card Reissued", $"Employee ID Card reissued for: {employeeEntity.FullName} (Code: {employeeEntity.EmployeeCode}). New Version: {employeeEntity.CardVersion} by {userName}", ct);
-
-        TempData["SuccessMessage"] = $"ID Card reissued successfully. Version is now {employeeEntity.CardVersion}.";
-        return RedirectToAction(nameof(Details), new { id });
-    }
-
-    [HttpGet]
     [AllowAnonymous]
     [Route("Employee/Verify/{id}")]
     public async Task<IActionResult> Verify(int id, CancellationToken ct)
@@ -368,199 +253,9 @@ public class EmployeeController : Controller
         return View("Verify", dto);
     }
 
-    [HttpGet]
-    public async Task<IActionResult> BulkPrintIdCards(int[]? ids, CancellationToken ct)
-    {
-        if (!CanManageIdCards())
-        {
-            return Forbid();
-        }
-
-        var schoolSetting = await _uow.Repository<SchoolSetting>().Query().FirstOrDefaultAsync(ct) ?? new SchoolSetting { SchoolName = "School Management ERP" };
-        ViewBag.SchoolSetting = schoolSetting;
-
-        if (ids != null && ids.Length > 0)
-        {
-            var employees = new List<EmployeeDetailsDto>();
-            foreach (var id in ids)
-            {
-                var emp = await _employeeService.GetDetailsAsync(id, ct);
-                if (emp != null)
-                {
-                    await InitializeCardFieldsAsync(emp, id, ct);
-
-                    var empToUpdate = await _uow.Repository<EmpEntity>().GetByIdAsync(id, ct);
-                    if (empToUpdate != null)
-                    {
-                        empToUpdate.CardPrintedAt = DateTime.UtcNow;
-                        await _uow.SaveChangesAsync(ct);
-                    }
-
-                    employees.Add(emp);
-                }
-            }
-
-            var userName = User.Identity?.Name ?? "Unknown";
-            await LogAuditAsync("Bulk ID Cards Printed", $"Bulk printed ID Cards for {employees.Count} employees by {userName}", ct);
-
-            return View("BulkPrint", employees);
-        }
-
-        var departments = await _departmentService.GetAllAsync(ct);
-        var designations = await _designationService.GetAllAsync(ct);
-        var model = new EmployeeIdCardBulkFilterViewModel
-        {
-            Departments = [.. departments],
-            Designations = [.. designations]
-        };
-        return View("BulkPrintFilter", model);
-    }
-
-    [HttpGet]
-    public async Task<IActionResult> DownloadBulkIdCardPdf(string ids, CancellationToken ct)
-    {
-        if (!CanManageIdCards())
-        {
-            return Forbid();
-        }
-
-        var idList = ids.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Select(int.Parse).ToArray();
-        var employees = new List<EmployeeDetailsDto>();
-
-        foreach (var id in idList)
-        {
-            var emp = await _employeeService.GetDetailsAsync(id, ct);
-            if (emp != null)
-            {
-                await InitializeCardFieldsAsync(emp, id, ct);
-                employees.Add(emp);
-            }
-        }
-
-        if (employees.Count == 0) return NotFound();
-
-        var schoolSetting = await _uow.Repository<SchoolSetting>().Query().FirstOrDefaultAsync(ct) ?? new SchoolSetting { SchoolName = "School Management ERP" };
-        var viewModel = BuildEmployeeCardViewModel(employees, schoolSetting);
-        var html = await _viewRenderer.RenderToStringAsync("PrintIdCard", viewModel);
-        var pdfBytes = _pdfGenerator.GenerateBulkEmployeeIdCardPdfFromHtml(html);
-
-        var userName = User.Identity?.Name ?? "Unknown";
-        await LogAuditAsync("Bulk ID Cards Downloaded", $"Bulk downloaded ID Cards for {employees.Count} employees by {userName}", ct);
-
-        return File(pdfBytes, "application/pdf", $"Bulk_Employee_ID_Cards_{DateTime.Today:yyyyMMdd}.pdf");
-    }
-
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public async Task<IActionResult> ProcessBulkPrint(int[] employeeIds, CancellationToken ct)
-    {
-        if (employeeIds == null || employeeIds.Length == 0)
-        {
-            TempData["ErrorMessage"] = "No employees selected for bulk printing.";
-            return RedirectToAction(nameof(BulkPrintIdCards));
-        }
-        return RedirectToAction(nameof(BulkPrintIdCards), new { ids = employeeIds });
-    }
-
-    private bool CanManageIdCards()
-    {
-        return User.IsInRole("Super Admin") || 
-               User.IsInRole("Admin") || 
-               User.IsInRole("HR") || 
-               User.IsInRole("Principal");
-    }
-
-    private async Task<bool> CanViewCardAsync(int employeeId, CancellationToken ct)
-    {
-        if (CanManageIdCards()) return true;
-
-        var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (int.TryParse(userIdStr, out var currentUserId))
-        {
-            var currentEmployee = await _employeeService.GetByUserIdAsync(currentUserId, ct);
-            if (currentEmployee != null && currentEmployee.Id == employeeId)
-            {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    private async Task LogAuditAsync(string action, string details, CancellationToken ct)
-    {
-        try
-        {
-            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            int? userId = null;
-            if (int.TryParse(userIdStr, out var parsedId))
-            {
-                userId = parsedId;
-            }
-
-            var ip = HttpContext.Connection.RemoteIpAddress?.ToString();
-
-            var log = new AuditLog
-            {
-                UserId = userId,
-                Module = "EmployeeIDCard",
-                Action = action,
-                IpAddress = ip,
-                Details = details,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            await _uow.Repository<AuditLog>().AddAsync(log, ct);
-            await _uow.SaveChangesAsync(ct);
-        }
-        catch
-        {
-            // Ignore audit log error
-        }
-    }
-
     private async Task PopulateLookupListsAsync(CancellationToken ct)
     {
         ViewBag.Departments = await _departmentService.GetAllAsync(ct);
         ViewBag.Designations = await _designationService.GetAllAsync(ct);
-    }
-
-    private async Task InitializeCardFieldsAsync(EmployeeDetailsDto employee, int id, CancellationToken ct)
-    {
-        if (!string.IsNullOrEmpty(employee.EmployeeCardNumber)) return;
-
-        var employeeEntity = await _uow.Repository<EmpEntity>().GetByIdAsync(id, ct);
-        if (employeeEntity == null) return;
-
-        employeeEntity.EmployeeCardNumber = $"CARD-{DateTime.Today.Year}-{id:D6}";
-        employeeEntity.CardIssueDate = DateTime.Today;
-        employeeEntity.CardExpiryDate = new DateTime(DateTime.Today.Year + 2, 12, 31);
-        employeeEntity.CardVersion = 1;
-        employeeEntity.QRVerificationCode = Guid.NewGuid().ToString("N").Substring(0, 10).ToUpper();
-        await _uow.SaveChangesAsync(ct);
-
-        employee.EmployeeCardNumber = employeeEntity.EmployeeCardNumber;
-        employee.CardIssueDate = employeeEntity.CardIssueDate;
-        employee.CardExpiryDate = employeeEntity.CardExpiryDate;
-        employee.CardVersion = employeeEntity.CardVersion;
-        employee.QRVerificationCode = employeeEntity.QRVerificationCode;
-    }
-
-    private static EmployeeIdCardPrintViewModel BuildEmployeeCardViewModel(List<EmployeeDetailsDto> employees, SchoolSetting school)
-    {
-        return new EmployeeIdCardPrintViewModel
-        {
-            Employees = employees,
-            SchoolLogoPath = school.LogoPath ?? "",
-            SchoolNameEn = school.SchoolName,
-            SchoolEIIN = school.EIIN,
-            SchoolWebsite = school.Website,
-            SchoolAddress = school.Address,
-            SchoolPhone = school.Phone,
-            SchoolEmail = school.Email,
-            PrincipalName = school.PrincipalName ?? "",
-            PrincipalSignaturePath = school.PrincipalSignaturePath ?? ""
-        };
     }
 }

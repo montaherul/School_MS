@@ -10,6 +10,7 @@ using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Repositories.Interfaces.Result;
 using System.Data;
 using System.Data.Common;
+using SchoolManagementSystem.Services.Implementations.Result;
 
 namespace SchoolManagementSystem.Repositories.Implementations.Result;
 
@@ -28,38 +29,28 @@ public class MarkEntryRepository : BaseRepository<MarkEntry>, IMarkEntryReposito
         if (isOptionalSubject)
             query = query.Where(s => s.OptionalSubjectId == subjectId);
 
-        return await query
+        var raw = await query
             .GroupJoin(
                 _db.Marks.Where(m => m.ExamId == examId && m.SubjectId == subjectId),
                 s => s.Id,
                 m => m.StudentId,
-                (s, marks) => new { Student = s, Marks = marks })
-            .Select(x => new MarkEntrySheetDto
-            {
-                StudentId = x.Student.Id,
-                StudentNo = x.Student.StudentNo,
-                StudentName = x.Student.FullName,
-                RollNumber = x.Student.RollNumber,
-                MarksObtained = x.Marks.Select(m => m.MarksObtained).FirstOrDefault(),
-                Grade = x.Marks.Select(m => m.Grade).FirstOrDefault(),
-                IsLocked = x.Marks.Select(m => m.IsLocked).FirstOrDefault(),
-                WrittenMarks = x.Marks.Select(m => m.WrittenMarks).FirstOrDefault(),
-                MCQMarks = x.Marks.Select(m => m.MCQMarks).FirstOrDefault(),
-                CQMarks = x.Marks.Select(m => m.CQMarks).FirstOrDefault(),
-                PracticalMarks = x.Marks.Select(m => m.PracticalMarks).FirstOrDefault(),
-                VivaMarks = x.Marks.Select(m => m.VivaMarks).FirstOrDefault(),
-                LabMarks = x.Marks.Select(m => m.LabMarks).FirstOrDefault(),
-                OralMarks = x.Marks.Select(m => m.OralMarks).FirstOrDefault(),
-                AssignmentMarks = x.Marks.Select(m => m.AssignmentMarks).FirstOrDefault(),
-                ContinuousAssessmentMarks = x.Marks.Select(m => m.ContinuousAssessmentMarks).FirstOrDefault(),
-                CompetencyMarks = x.Marks.Select(m => m.CompetencyMarks).FirstOrDefault(),
-                BehaviourMarks = x.Marks.Select(m => m.BehaviourMarks).FirstOrDefault(),
-                ParticipationMarks = x.Marks.Select(m => m.ParticipationMarks).FirstOrDefault(),
-                ComponentValues = x.Marks.Select(m => m.ComponentValues).FirstOrDefault(),
-                EnteredByTeacherId = x.Marks.Select(m => m.EnteredByTeacherId).FirstOrDefault()
-            })
-            .OrderBy(x => x.RollNumber)
+                (s, marks) => new { Student = s, Mark = marks.FirstOrDefault() })
+            .OrderBy(x => x.Student.RollNumber)
             .ToListAsync(ct);
+
+        return raw.Select(x => new MarkEntrySheetDto
+        {
+            StudentId = x.Student.Id,
+            StudentNo = x.Student.StudentNo,
+            StudentName = x.Student.FullName,
+            RollNumber = x.Student.RollNumber,
+            MarksObtained = x.Mark?.MarksObtained,
+            Grade = x.Mark?.Grade,
+            IsLocked = x.Mark?.IsLocked ?? false,
+            ComponentMarks = x.Mark != null ? ComponentFieldMapper.FromEntity(x.Mark) : new ComponentMarksDto(),
+            ComponentValues = x.Mark?.ComponentValues,
+            EnteredByTeacherId = x.Mark?.EnteredByTeacherId
+        }).ToList();
     }
 
     public async Task<List<MarksEntryStudentDto>> GetMarksEntryListAsync(int examId, int classId, int sectionId, int subjectId, CancellationToken ct, int? optionalSubjectId = null)
@@ -79,6 +70,10 @@ public class MarkEntryRepository : BaseRepository<MarkEntry>, IMarkEntryReposito
         await using var reader = await command.ExecuteReaderAsync(ct);
         while (await reader.ReadAsync(ct))
         {
+            var marks = new ComponentMarksDto();
+            var componentValuesJson = GetNullableString(reader, "ComponentValues");
+            BuildComponentMarksFromReader(reader, marks, componentValuesJson);
+
             result.Add(new MarksEntryStudentDto
             {
                 StudentId = GetInt32(reader, "StudentId"),
@@ -91,19 +86,8 @@ public class MarkEntryRepository : BaseRepository<MarkEntry>, IMarkEntryReposito
                 SectionName = GetString(reader, "SectionName"),
                 MarkId = GetNullableInt32(reader, "MarkId"),
                 MarksObtained = GetNullableDecimal(reader, "MarksObtained"),
-                WrittenMarks = GetNullableDecimal(reader, "WrittenMarks"),
-                MCQMarks = GetNullableDecimal(reader, "MCQMarks"),
-                CQMarks = GetNullableDecimal(reader, "CQMarks"),
-                PracticalMarks = GetNullableDecimal(reader, "PracticalMarks"),
-                AssignmentMarks = GetNullableDecimal(reader, "AssignmentMarks"),
-                VivaMarks = GetNullableDecimal(reader, "VivaMarks"),
-                LabMarks = GetNullableDecimal(reader, "LabMarks"),
-                ContinuousAssessmentMarks = GetNullableDecimal(reader, "ContinuousAssessmentMarks"),
-                OralMarks = GetNullableDecimal(reader, "OralMarks"),
-                CompetencyMarks = GetNullableDecimal(reader, "CompetencyMarks"),
-                BehaviourMarks = GetNullableDecimal(reader, "BehaviourMarks"),
-                ParticipationMarks = GetNullableDecimal(reader, "ParticipationMarks"),
-                ComponentValues = GetNullableString(reader, "ComponentValues"),
+                ComponentMarks = marks,
+                ComponentValues = componentValuesJson,
                 Grade = GetNullableString(reader, "Grade"),
                 GradePoint = GetNullableDecimal(reader, "GradePoint"),
                 IsLocked = GetNullableBoolean(reader, "IsLocked"),
@@ -113,4 +97,43 @@ public class MarkEntryRepository : BaseRepository<MarkEntry>, IMarkEntryReposito
         }
         return result;
     }
+
+    private static void BuildComponentMarksFromReader(DbDataReader reader, ComponentMarksDto marks, string? componentValuesJson)
+    {
+        var codeToColumn = ComponentFieldMapper.GetCodeToColumnMap();
+        foreach (var (code, columnName) in codeToColumn)
+        {
+            var val = GetNullableDecimal(reader, columnName);
+            if (val.HasValue)
+                marks[code] = val.Value;
+        }
+
+        if (!string.IsNullOrEmpty(componentValuesJson))
+        {
+            try
+            {
+                var parsed = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, decimal?>>(componentValuesJson);
+                if (parsed != null)
+                    foreach (var kvp in parsed)
+                        if (!marks.ContainsKey(kvp.Key))
+                            marks[kvp.Key] = kvp.Value;
+            }
+            catch { }
+        }
+    }
+
+    private static int GetOrdinal(DbDataReader reader, string name) => reader.GetOrdinal(name);
+    private static string GetString(DbDataReader reader, string name) => reader.IsDBNull(GetOrdinal(reader, name)) ? string.Empty : Convert.ToString(reader[name]) ?? string.Empty;
+    private static string? GetNullableString(DbDataReader reader, string name) => reader.IsDBNull(GetOrdinal(reader, name)) ? null : Convert.ToString(reader[name]);
+    private static int GetInt32(DbDataReader reader, string name) => reader.IsDBNull(GetOrdinal(reader, name)) ? 0 : Convert.ToInt32(reader[name]);
+    private static int? GetNullableInt32(DbDataReader reader, string name) => reader.IsDBNull(GetOrdinal(reader, name)) ? null : Convert.ToInt32(reader[name]);
+    private static decimal GetDecimal(DbDataReader reader, string name) => reader.IsDBNull(GetOrdinal(reader, name)) ? 0m : Convert.ToDecimal(reader[name]);
+    private static decimal? GetNullableDecimal(DbDataReader reader, string name) => reader.IsDBNull(GetOrdinal(reader, name)) ? null : Convert.ToDecimal(reader[name]);
+    private static bool GetBoolean(DbDataReader reader, string name) => !reader.IsDBNull(GetOrdinal(reader, name)) && Convert.ToBoolean(reader[name]);
+    private static bool? GetNullableBoolean(DbDataReader reader, string name)
+    {
+        if (reader.IsDBNull(GetOrdinal(reader, name))) return null;
+        return Convert.ToBoolean(reader[name]);
+    }
+    private static DateTime GetDateTime(DbDataReader reader, string name) => reader.IsDBNull(GetOrdinal(reader, name)) ? DateTime.MinValue : Convert.ToDateTime(reader[name]);
 }

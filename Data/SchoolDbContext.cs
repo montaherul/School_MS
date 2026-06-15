@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Models.DTOs.Admission;
+using SchoolManagementSystem.Models.DTOs.Identity;
 using SchoolManagementSystem.Models.DTOs.Student;
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Models.Entities.Admission;
@@ -51,6 +52,8 @@ public class SchoolDbContext : DbContext
     public DbSet<SchoolClass> Classes => Set<SchoolClass>();
     public DbSet<Section> Sections => Set<Section>();
     public DbSet<StudentListItemDto> StudentListItemResults => Set<StudentListItemDto>();
+    public DbSet<StudentIdCardListDto> StudentIdCardListResults => Set<StudentIdCardListDto>();
+    public DbSet<EmployeeIdCardListDto> EmployeeIdCardListResults => Set<EmployeeIdCardListDto>();
     public DbSet<Subject> Subjects => Set<Subject>();
     public DbSet<Teacher> Teachers => Set<Teacher>();
     public DbSet<TeacherAttendance> TeacherAttendances => Set<TeacherAttendance>();
@@ -158,6 +161,7 @@ public class SchoolDbContext : DbContext
     public DbSet<PromotionHistory> PromotionHistories => Set<PromotionHistory>();
     public DbSet<AcademicCalendar> AcademicCalendars { get; set; }
     public DbSet<AcademicCalendarEvent> AcademicCalendarEvents { get; set; }
+    public DbSet<HolidayMaster> HolidayMasters { get; set; }
 
     // Student Group DbSet
     public DbSet<StudentGroupAssignment> StudentGroupAssignments => Set<StudentGroupAssignment>();
@@ -170,6 +174,8 @@ public class SchoolDbContext : DbContext
         modelBuilder.Entity<RolePermission>().HasKey(x => new { x.RoleId, x.PermissionId });
         modelBuilder.Entity<AdmissionListResultDto>().HasNoKey();
         modelBuilder.Entity<StudentListItemDto>().HasNoKey();
+        modelBuilder.Entity<StudentIdCardListDto>().HasNoKey();
+        modelBuilder.Entity<EmployeeIdCardListDto>().HasNoKey();
 
         modelBuilder.Entity<ApplicationUser>().HasIndex(x => x.UserName).IsUnique();
         modelBuilder.Entity<ApplicationUser>().HasIndex(x => x.Email).IsUnique();
@@ -336,6 +342,23 @@ public class SchoolDbContext : DbContext
             .IsUnique()
             .HasFilter("[IsDeleted] = 0");
 
+        modelBuilder.Entity<AcademicCalendar>()
+            .HasIndex(x => new { x.AcademicYearId, x.Date })
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
+
+        modelBuilder.Entity<AcademicCalendar>()
+            .HasIndex(x => new { x.Date, x.IsHoliday })
+            .HasFilter("[IsDeleted] = 0");
+
+        modelBuilder.Entity<AcademicCalendar>()
+            .HasIndex(x => new { x.Date, x.IsExamDay })
+            .HasFilter("[IsDeleted] = 0");
+
+        modelBuilder.Entity<AcademicCalendar>()
+            .HasIndex(x => new { x.Date, x.IsEventDay })
+            .HasFilter("[IsDeleted] = 0");
+
         modelBuilder.Entity<AttendanceSetting>()
             .HasIndex(x => x.IsActive)
             .IsUnique()
@@ -346,6 +369,14 @@ public class SchoolDbContext : DbContext
                     .WithMany()
                     .HasForeignKey(x => x.AcademicCalendarId)
                     .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<HolidayMaster>()
+            .HasIndex(x => new { x.Name, x.HolidayDate })
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
+
+        modelBuilder.Entity<HolidayMaster>()
+            .HasIndex(x => x.HolidayDate);
 
         modelBuilder.Entity<StudentLeaveApplication>(entity =>
 {

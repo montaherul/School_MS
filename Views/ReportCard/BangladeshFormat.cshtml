@@ -688,15 +688,23 @@
         </div>
 
         @* ── Marks Table ── *@
+        @{
+            var subjects = Model.Subjects;
+            var allSubjectComponents = subjects != null
+                ? subjects.SelectMany(s => s.ComponentMarks.Keys).Distinct().ToList()
+                : new List<string>();
+            var componentCount = allSubjectComponents.Count;
+            var totalCols = 1 /* Subject */ + componentCount + 4 /* Total, Highest, GP, Grade, Status */;
+        }
         <div class="bd-table-wrap">
             <table class="bd-table">
                 <thead>
                     <tr>
                         <th style="min-width: 140px; text-align: left; padding-left: 10px;">Subject</th>
-                        <th style="min-width: 60px;">Theory<br/><span style="font-weight: 400; font-size: 10px;">(CQ)</span></th>
-                        <th style="min-width: 50px;">MCQ</th>
-                        <th style="min-width: 60px;">Practical</th>
-                        <th style="min-width: 65px;">Assignment</th>
+                        @foreach (var code in allSubjectComponents)
+                        {
+                            <th style="min-width: 55px;">@code</th>
+                        }
                         <th style="min-width: 65px;">Total</th>
                         <th style="min-width: 55px;">Highest</th>
                         <th style="min-width: 55px;">GP</th>
@@ -705,12 +713,13 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @if (Model.Subjects != null && Model.Subjects.Count > 0)
+                    @if (subjects != null && subjects.Count > 0)
                     {
                         var rowClass = "";
-                        var highestMarks = Model.Subjects.Max(s => s.MarksObtained);
+                        var highestMarks = subjects.Max(s => s.MarksObtained);
+                        var componentDisplayNames = ViewBag.ComponentDisplayNames as Dictionary<string, string> ?? new();
 
-                        foreach (var sub in Model.Subjects)
+                        foreach (var sub in subjects)
                         {
                             if (sub.IsOptionalSubject) { rowClass = "bd-table__optional"; }
                             else if (sub.IsReligionSubject) { rowClass = "bd-table__religion"; }
@@ -735,10 +744,11 @@
                                         <span class="bd-religion-tag">Religion</span>
                                     }
                                 </td>
-                                <td>@(sub.WrittenMarks?.ToString("F0") ?? sub.MarksWritten?.ToString("F0") ?? "—")</td>
-                                <td>@(sub.MCQMarks?.ToString("F0") ?? sub.MarksMCQ?.ToString("F0") ?? "—")</td>
-                                <td>@(sub.PracticalMarks?.ToString("F0") ?? sub.MarksPractical?.ToString("F0") ?? "—")</td>
-                                <td>@(sub.AssignmentMarks?.ToString("F0") ?? sub.MarksAssignment?.ToString("F0") ?? "—")</td>
+                                @foreach (var code in allSubjectComponents)
+                                {
+                                    var val = sub.ComponentMarks[code];
+                                    <td>@(val?.ToString("F0") ?? "—")</td>
+                                }
                                 <td style="font-weight: 700;">@sub.MarksObtained.ToString("F0")</td>
                                 <td class="highest-marks">
                                     @if (sub.MarksObtained == highestMarks && sub.MarksObtained > 0)
@@ -768,7 +778,7 @@
                     else
                     {
                         <tr>
-                            <td colspan="10" style="padding: 30px; text-align: center; color: var(--adm-text-3);">
+                            <td colspan="@totalCols" style="padding: 30px; text-align: center; color: var(--adm-text-3);">
                                 No subject records found.
                             </td>
                         </tr>

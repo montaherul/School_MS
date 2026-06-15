@@ -22,10 +22,6 @@
             <i class="bi bi-person-plus-fill"></i>
             <span>Add New Employee</span>
         </a>
-        <a asp-action="BulkPrintIdCards" class="adm-btn adm-btn--secondary ms-2">
-            <i class="bi bi-card-list"></i>
-            <span>Bulk ID Cards</span>
-        </a>
     </div>
 
     <!-- FILTERS -->
@@ -209,12 +205,7 @@
                                     <i class="bi bi-pencil"></i>
                                 </a>
 
-                                <a href="@Url.Action("DownloadIdCardPdf")/${data.id}" class="adm-action" title="Download PDF" target="_blank">
-                                    <i class="bi bi-download"></i>
-                                </a>
-                                <a href="@Url.Action("Details")/${data.id}#card-preview" class="adm-action" title="Card Preview" onclick="flipCard(); return false;">
-                                    <i class="bi bi-eye-fill"></i>
-                                </a>
+            
                             </div>
                         `;
                     }
@@ -244,16 +235,6 @@
             designationInput.addEventListener('change', reloadTable);
             staffTypeInput.addEventListener('change', reloadTable);
             statusInput.addEventListener('change', reloadTable);
-
-            // Card flip function for preview in Details page
-            function flipCard() {
-                const card = document.querySelector('.id-card-container');
-                if (!card) return;
-                card.classList.toggle('flipped');
-            }
-            // Add theme color helper to Details view via a small script injection
-            // This script expects a server-side helper GetThemeColor(designation) defined in the view.
-            // No further changes needed here.
 
             document.getElementById('btn-reset').addEventListener('click', function () {
                 searchInput.value = "";

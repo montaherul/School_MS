@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Models.Entities.Academic;
+using SchoolManagementSystem.Services.Interfaces.Academic;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using ExamEntity = SchoolManagementSystem.Models.Entities.Exam.Exam;
 using ExamScheduleEntity = SchoolManagementSystem.Models.Entities.Exam.ExamSchedule;
@@ -12,10 +13,12 @@ namespace SchoolManagementSystem.Controllers.Exam;
 public class ExamScheduleController : Controller
 {
     private readonly IUnitOfWork _uow;
+    private readonly ICalendarGenerationService _calendarGen;
 
-    public ExamScheduleController(IUnitOfWork uow)
+    public ExamScheduleController(IUnitOfWork uow, ICalendarGenerationService calendarGen)
     {
         _uow = uow;
+        _calendarGen = calendarGen;
     }
 
     [HttpGet]
@@ -140,7 +143,8 @@ public class ExamScheduleController : Controller
             model.CreatedAt = DateTime.UtcNow;
             await _uow.Repository<ExamScheduleEntity>().AddAsync(model, ct);
             await _uow.SaveChangesAsync(ct);
-            return RedirectToAction(nameof(Index));
+
+            await SyncCalendarForExamDate(model, ct);
         }
 
         await LoadFormViewBags(ct);
@@ -229,7 +233,8 @@ public class ExamScheduleController : Controller
 
             _uow.Repository<ExamScheduleEntity>().Update(existing);
             await _uow.SaveChangesAsync(ct);
-            return RedirectToAction(nameof(Index));
+
+            await SyncCalendarForExamDate(existing, ct);
         }
 
         await LoadFormViewBags(ct);
@@ -243,9 +248,14 @@ public class ExamScheduleController : Controller
         var schedule = await _uow.Repository<ExamScheduleEntity>().GetByIdAsync(id);
         if (schedule == null) return Json(new { success = false, message = "Schedule not found" });
 
+        var examDate = schedule.ExamDate;
+        var examId = schedule.ExamId;
+
         schedule.IsDeleted = true;
         _uow.Repository<ExamScheduleEntity>().Update(schedule);
         await _uow.SaveChangesAsync();
+
+        await SyncCalendarForExamDate(examDate, examId, CancellationToken.None);
 
         return Json(new { success = true });
     }
@@ -260,5 +270,68 @@ public class ExamScheduleController : Controller
             .Include(cs => cs.SchoolClass)
             .Where(cs => !cs.IsDeleted)
             .ToListAsync(ct);
+    }
+
+    private async Task SyncCalendarForExamDate(ExamScheduleEntity schedule, CancellationToken ct)
+    {
+        try
+        {
+            var academicYear = await _uow.Repository<AcademicYear>().Query()
+                .FirstOrDefaultAsync(y => y.IsActive && !y.IsDeleted, ct);
+
+            if (academicYear == null) return;
+
+            var entry = await _uow.Repository<AcademicCalendar>().Query()
+                .FirstOrDefaultAsync(x => x.AcademicYearId == academicYear.Id && x.Date == schedule.ExamDate && !x.IsDeleted, ct);
+
+            if (entry == null) return;
+
+            entry.IsExamDay = true;
+            entry.IsEventDay = false;
+            entry.Title = $"Exam: {schedule.Exam?.Name ?? "Exam"}";
+            entry.Description = $"Subject scheduled on {schedule.ExamDate:dd MMM yyyy}";
+            entry.UpdatedAt = DateTime.UtcNow;
+            entry.UpdatedBy = "system";
+        }
+        catch
+        {
+            // Best-effort sync
+        }
+
+        await _uow.SaveChangesAsync(ct);
+    }
+
+    private async Task SyncCalendarForExamDate(DateOnly examDate, int examId, CancellationToken ct)
+    {
+        try
+        {
+            var remaining = await _uow.Repository<ExamScheduleEntity>().Query()
+                .AnyAsync(x => x.ExamId == examId && x.ExamDate == examDate && !x.IsDeleted, ct);
+
+            if (remaining) return;
+
+            var academicYear = await _uow.Repository<AcademicYear>().Query()
+                .FirstOrDefaultAsync(y => y.IsActive && !y.IsDeleted, ct);
+
+            if (academicYear == null) return;
+
+            var entry = await _uow.Repository<AcademicCalendar>().Query()
+                .FirstOrDefaultAsync(x => x.AcademicYearId == academicYear.Id && x.Date == examDate && !x.IsDeleted, ct);
+
+            if (entry == null) return;
+
+            entry.IsExamDay = false;
+            entry.IsEventDay = false;
+            entry.Title = "Working Day";
+            entry.Description = "";
+            entry.UpdatedAt = DateTime.UtcNow;
+            entry.UpdatedBy = "system";
+
+            await _uow.SaveChangesAsync(ct);
+        }
+        catch
+        {
+            // Best-effort sync
+        }
     }
 }

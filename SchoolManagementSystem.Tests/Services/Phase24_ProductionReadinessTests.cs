@@ -246,19 +246,19 @@ public class Phase24_ProductionReadinessTests
         {
             StudentId = 1,
             Status = ResultWorkflowStatus.Submitted,
-            ComponentValues = new Dictionary<string, decimal?>()
+            ComponentMarks = new ComponentMarksDto()
         };
 
         // Simulate what happens during import for PROJECT component
         var code = "PROJECT";
         var val = 40m;
 
-        // The SetMarkEntryComponentValue method stores unknown codes in ComponentValues
-        markDto.ComponentValues[code] = val;
+        // The SetMarkEntryComponentValue method stores codes in ComponentMarks
+        markDto.ComponentMarks[code] = val;
 
         // --- Assert ---
-        Assert.True(markDto.ComponentValues.ContainsKey("PROJECT"));
-        Assert.Equal(40, markDto.ComponentValues["PROJECT"]);
+        Assert.True(markDto.ComponentMarks.ContainsKey("PROJECT"));
+        Assert.Equal(40, markDto.ComponentMarks["PROJECT"]);
 
         // PASS: PROJECT values imported from Excel
     }

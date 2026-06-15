@@ -39,12 +39,23 @@
             <h1 class="ac-title"><i class="bi bi-calendar3 me-2 text-primary"></i>Academic Calendar</h1>
             <p class="ac-subtitle">Manage daily academic events, exams, holidays, and working day overrides.</p>
         </div>
-        @if (canManage)
-        {
-            <a asp-action="Create" class="btn btn-primary">
-                <i class="bi bi-plus-circle me-1"></i> Add Entry
-            </a>
-        }
+        <div class="d-flex gap-2">
+            @if (canManage)
+            {
+                <a asp-action="Create" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-1"></i> Add Entry
+                </a>
+            }
+        </div>
+    </div>
+
+    <div class="ac-panel mb-3">
+        <ul class="nav nav-pills nav-fill">
+            <li class="nav-item"><a class="nav-link active" asp-action="Index"><i class="bi bi-calendar3 me-1"></i>Month</a></li>
+            <li class="nav-item"><a class="nav-link" asp-action="WeekView"><i class="bi bi-calendar-week me-1"></i>Week</a></li>
+            <li class="nav-item"><a class="nav-link" asp-action="Agenda"><i class="bi bi-list-task me-1"></i>Agenda</a></li>
+            <li class="nav-item"><a class="nav-link" asp-action="YearView"><i class="bi bi-calendar-range me-1"></i>Year</a></li>
+        </ul>
     </div>
 
     @if (TempData["Success"] != null)
@@ -84,7 +95,26 @@
 
     <!-- Grid Wrap -->
     <div class="ac-grid-wrap">
-        <div id="calendarTable"></div>
+        <div id="calendarTable" role="region" aria-label="Calendar entries table"></div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmLabel" aria-hidden="true">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title" id="deleteConfirmLabel">Confirm Delete</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-0">Are you sure you want to delete this calendar entry?</p>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" aria-label="Cancel">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -191,33 +221,41 @@
             }
         });
 
+        let deleteId = null;
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+
         document.addEventListener('click', function(e) {
             const deleteBtn = e.target.closest('.btn-delete');
             if (deleteBtn) {
-                const id = deleteBtn.getAttribute('data-id');
-                if (confirm('Are you sure you want to delete this calendar entry?')) {
-                    const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
-                    fetch(`/AcademicCalendar/Delete/${id}`, {
-                        method: 'POST',
-                        headers: {
-                            'RequestVerificationToken': token,
-                            'Content-Type': 'application/x-www-form-urlencoded'
-                        }
-                    })
-                    .then(res => res.json())
-                    .then(res => {
-                        if (res.success) {
-                            toastr.success(res.message);
-                            refreshData();
-                        } else {
-                            toastr.error(res.message || 'Error occurred');
-                        }
-                    })
-                    .catch(err => {
-                        toastr.error('Network error occurred.');
-                    });
-                }
+                deleteId = deleteBtn.getAttribute('data-id');
+                deleteModal.show();
             }
+        });
+
+        document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+            if (!deleteId) return;
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            fetch(`/AcademicCalendar/Delete/${deleteId}`, {
+                method: 'POST',
+                headers: {
+                    'RequestVerificationToken': token,
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                }
+            })
+            .then(res => res.json())
+            .then(res => {
+                deleteModal.hide();
+                if (res.success) {
+                    toastr.success(res.message);
+                    refreshData();
+                } else {
+                    toastr.error(res.message || 'Error occurred');
+                }
+            })
+            .catch(err => {
+                deleteModal.hide();
+                toastr.error('Network error occurred.');
+            });
         });
 
         document.addEventListener('DOMContentLoaded', initializeTable);

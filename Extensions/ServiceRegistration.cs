@@ -5,6 +5,8 @@ using SchoolManagementSystem.Helpers.Security;
 using SchoolManagementSystem.Repositories.Guardian;
 using SchoolManagementSystem.Repositories.Implementations;
 using SchoolManagementSystem.Repositories.Implementations.Academic;
+using SchoolManagementSystem.Repositories.Implementations.Identity;
+using SchoolManagementSystem.Repositories.Interfaces.Identity;
 using SchoolManagementSystem.Repositories.Implementations.Admission;
 using SchoolManagementSystem.Repositories.Implementations.Attendance;
 using SchoolManagementSystem.Repositories.Implementations.Auth;
@@ -34,6 +36,8 @@ using SchoolManagementSystem.Service.Implementations.Dashboard;
 using SchoolManagementSystem.Service.Interfaces.Dashboard;
 using SchoolManagementSystem.Services.Interfaces.Guardian;
 using SchoolManagementSystem.Services.Implementations.Academic;
+using SchoolManagementSystem.Services.Implementations.Identity;
+using SchoolManagementSystem.Services.Interfaces.Identity;
 using SchoolManagementSystem.Services.Implementations.Admin;
 using SchoolManagementSystem.Services.Implementations.Admissions;
 using SchoolManagementSystem.Services.Implementations.Email;
@@ -90,6 +94,7 @@ public static class ServiceRegistration
         services.AddScoped<IEmployeeDocumentRepository, EmployeeDocumentRepository>();
         services.AddScoped<IEmployeeExperienceRepository, EmployeeExperienceRepository>();
         services.AddScoped<IEmployeeInvitationRepository, EmployeeInvitationRepository>();
+        services.AddScoped<IIdCardRepository, IdCardRepository>();
 
         services.AddScoped<IAcademicYearRepository, AcademicYearRepository>();
         services.AddScoped<ISchoolClassRepository, SchoolClassRepository>();
@@ -134,12 +139,18 @@ public static class ServiceRegistration
         services.AddScoped<SchoolManagementSystem.Services.Interfaces.Attendance.IAttendanceAuthorizationService, SchoolManagementSystem.Services.Implementations.Attendance.AttendanceAuthorizationService>();
         services.AddScoped<SchoolManagementSystem.Services.Interfaces.Result.IResultAuthorizationService, SchoolManagementSystem.Services.Implementations.Result.ResultAuthorizationService>();
         services.AddScoped<IAcademicCalendarService,AcademicCalendarService>();
+        services.AddScoped<IAcademicCalendarEventService, AcademicCalendarEventService>();
+        services.AddScoped<IHolidayMasterService, HolidayMasterService>();
+        services.AddScoped<ICalendarGenerationService, CalendarGenerationService>();
+        services.AddScoped<ICalendarDashboardService, CalendarDashboardService>();
+        services.AddScoped<ICalendarAuditService, CalendarAuditService>();
         // Register Employee Services
         services.AddScoped<IEmployeeService, EmployeeService>();
         services.AddScoped<IEmployeeInvitationService, EmployeeInvitationService>();
         services.AddScoped<IDepartmentService, DepartmentService>();
         services.AddScoped<IDesignationService, DesignationService>();
         services.AddScoped<IUserProvisionService, UserProvisionService>();
+        services.AddScoped<IIdCardService, IdCardService>();
         services.AddScoped<EmployeeModuleSeeder>();
 
         services.AddScoped<IResultCalculationService, ResultCalculationService>();

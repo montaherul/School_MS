@@ -12,18 +12,7 @@ public class MarksEntryStudentDto
     public string SectionName { get; set; } = string.Empty;
     public int? MarkId { get; set; }
     public decimal? MarksObtained { get; set; }
-    public decimal? WrittenMarks { get; set; }
-    public decimal? MCQMarks { get; set; }
-    public decimal? CQMarks { get; set; }
-    public decimal? PracticalMarks { get; set; }
-    public decimal? AssignmentMarks { get; set; }
-    public decimal? VivaMarks { get; set; }
-    public decimal? LabMarks { get; set; }
-    public decimal? ContinuousAssessmentMarks { get; set; }
-    public decimal? OralMarks { get; set; }
-    public decimal? CompetencyMarks { get; set; }
-    public decimal? BehaviourMarks { get; set; }
-    public decimal? ParticipationMarks { get; set; }
+    public ComponentMarksDto ComponentMarks { get; set; } = new();
     public string? ComponentValues { get; set; }
     public string? Grade { get; set; }
     public decimal? GradePoint { get; set; }

@@ -1,0 +1,147 @@
+@{
+    ViewData["Title"] = "Year View - Academic Calendar";
+    var year = ViewBag.Year as int? ?? DateTime.Today.Year;
+}
+
+<div class="ac-page">
+    <div class="ac-header">
+        <div>
+            <h1 class="ac-title"><i class="bi bi-calendar-range me-2 text-primary"></i>Year View</h1>
+            <p class="ac-subtitle">12-month calendar with holiday density visualization</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-calendar3 me-1"></i>Month</a>
+            <a asp-action="WeekView" class="btn btn-outline-secondary"><i class="bi bi-calendar-week me-1"></i>Week</a>
+            <a asp-action="Agenda" class="btn btn-outline-secondary"><i class="bi bi-list-task me-1"></i>Agenda</a>
+        </div>
+    </div>
+
+    <div class="ac-panel">
+        <div class="row g-3 align-items-center mb-3">
+            <div class="col-auto">
+                <button class="btn btn-outline-primary" id="prevYear" aria-label="Previous year"><i class="bi bi-chevron-left"></i></button>
+            </div>
+            <div class="col">
+                <h4 class="text-center mb-0" id="yearLabel" aria-live="polite">@year</h4>
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-outline-primary" id="nextYear" aria-label="Next year"><i class="bi bi-chevron-right"></i></button>
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-outline-secondary" id="currentYearBtn" aria-label="Go to current year">Current Year</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="yearGrid" class="row g-3"></div>
+</div>
+
+@section Scripts {
+    <script>
+        let currentYear = @year;
+
+        function getHeatColor(ratio) {
+            if (ratio === 0) return '#f0fdf4';
+            if (ratio < 0.1) return '#dcfce7';
+            if (ratio < 0.2) return '#bbf7d0';
+            if (ratio < 0.3) return '#86efac';
+            if (ratio < 0.4) return '#4ade80';
+            return '#22c55e';
+        }
+
+        function loadYear() {
+            const yearLabel = document.getElementById('yearLabel');
+            if (yearLabel) yearLabel.textContent = currentYear;
+
+            const grid = document.getElementById('yearGrid');
+            grid.innerHTML = '<div class="col-12 text-center py-4"><div class="spinner-border spinner-border-sm me-2"></div>Loading...</div>';
+
+            fetch(`/AcademicCalendar/GetYearData?year=${currentYear}`)
+                .then(r => r.json())
+                .then(data => {
+                    grid.innerHTML = '';
+                    if (!data.months) return;
+
+                    data.months.forEach(m => {
+                        const ratio = m.totalDays > 0 ? m.holidays / m.totalDays : 0;
+                        const bgColor = getHeatColor(ratio);
+
+                        const col = document.createElement('div');
+                        col.className = 'col-md-4 col-lg-3';
+                        col.innerHTML = `
+                            <div class="card border-0 shadow-sm h-100">
+                                <div class="card-header text-center py-2 fw-semibold bg-light">${m.monthName}</div>
+                                <div class="card-body p-3">
+                                    <div class="mb-2" style="height:40px;border-radius:6px;background:${bgColor};display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#166534">
+                                        ${m.totalDays}
+                                    </div>
+                                    <div class="small">
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span class="text-muted">Working Days</span>
+                                            <span class="fw-semibold">${m.workingDays}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span class="text-danger">Holidays</span>
+                                            <span class="fw-semibold text-danger">${m.holidays}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-1">
+                                            <span class="text-warning">Exam Days</span>
+                                            <span class="fw-semibold text-warning">${m.examDays}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span class="text-purple">Events</span>
+                                            <span class="fw-semibold text-purple">${m.events}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        grid.appendChild(col);
+                    });
+
+                    // summary card
+                    const totalHolidays = data.months.reduce((s, m) => s + m.holidays, 0);
+                    const totalExams = data.months.reduce((s, m) => s + m.examDays, 0);
+                    const totalWorking = data.months.reduce((s, m) => s + m.workingDays, 0);
+                    const totalDays = data.months.reduce((s, m) => s + m.totalDays, 0);
+
+                    const summaryCol = document.createElement('div');
+                    summaryCol.className = 'col-12 mt-2';
+                    summaryCol.innerHTML = `
+                        <div class="card border-0 shadow-sm bg-light">
+                            <div class="card-body p-3">
+                                <div class="row text-center g-3">
+                                    <div class="col-3">
+                                        <div class="fw-bold fs-5 text-success">${totalWorking}</div>
+                                        <small class="text-muted">Total Working Days</small>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="fw-bold fs-5 text-danger">${totalHolidays}</div>
+                                        <small class="text-muted">Total Holidays</small>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="fw-bold fs-5 text-warning">${totalExams}</div>
+                                        <small class="text-muted">Total Exam Days</small>
+                                    </div>
+                                    <div class="col-3">
+                                        <div class="fw-bold fs-5 text-primary">${totalDays - totalWorking - totalHolidays}</div>
+                                        <small class="text-muted">Other Days</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    grid.appendChild(summaryCol);
+                });
+        }
+
+        document.getElementById('prevYear')?.addEventListener('click', function() { currentYear--; loadYear(); });
+        document.getElementById('nextYear')?.addEventListener('click', function() { currentYear++; loadYear(); });
+        document.getElementById('currentYearBtn')?.addEventListener('click', function() {
+            currentYear = new Date().getFullYear();
+            loadYear();
+        });
+
+        document.addEventListener('DOMContentLoaded', loadYear);
+    </script>
+}

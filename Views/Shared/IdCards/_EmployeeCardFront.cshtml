@@ -8,53 +8,67 @@
         ? Url.Content($"~/{Model.ProfilePicturePath.TrimStart('/')}")
         : null;
     var themeColor = GetThemeColor(Model.Designation);
-    var today = DateTime.Today.ToString("dd MMM yyyy");
+    var issueDate = (Model.CardIssueDate ?? DateTime.Today).ToString("dd MMM yyyy");
+    var expiryDate = (Model.CardExpiryDate ?? DateTime.Today.AddYears(2)).ToString("dd MMM yyyy");
+    var motto = ViewBag.SchoolMotto as string;
+    var academicYear = ViewBag.AcademicYear as string;
+    var sealPath = ViewBag.SchoolSealPath as string;
+    var sealUrl = !string.IsNullOrEmpty(sealPath)
+        ? Url.Content($"~/{sealPath.TrimStart('/')}")
+        : null;
 }
 <div class="id-card id-card-front">
-    <div class="card-header-band" style="background:linear-gradient(135deg, @themeColor 0%, @themeColor 100%)">
-        <div class="card-logo">
+    <div class="card-header" style="background:@themeColor">
+        <div class="card-header-logo">
             @if (schoolLogo != null)
             {
                 <img src="@schoolLogo" alt="Logo" />
             }
             else
             {
-                <i class="bi bi-mortarboard-fill card-logo-placeholder"></i>
+                <span class="logo-placeholder">&#x1F393;</span>
             }
         </div>
-        <div class="card-header-text">
-            <div class="card-school-name-en" style="font-size:3mm;">@ViewBag.SchoolNameEn</div>
+        <div class="card-header-body">
+            <div class="card-school-name">@ViewBag.SchoolNameEn</div>
             <div class="card-school-meta">
                 <span>EIIN: @ViewBag.SchoolEIIN</span>
                 <span class="sep">|</span>
                 <span>@ViewBag.SchoolWebsite</span>
             </div>
+            @if (!string.IsNullOrEmpty(motto))
+            {
+                <div class="card-school-motto">"@motto"</div>
+            }
         </div>
+        @if (!string.IsNullOrEmpty(academicYear))
+        {
+            <div class="card-academic-year">@academicYear</div>
+        }
     </div>
 
-    <div class="card-title-bar">
-        <span>Employee Identity Card</span>
+    <div class="card-title">
+        <span class="card-title-text">Employee Identity Card</span>
     </div>
 
     <div class="card-body">
-        <div class="card-photo-section">
-            <div class="card-photo">
+        <div class="card-photo-column">
+            <div class="card-photo-frame" style="border-color:@themeColor">
                 @if (photoUrl != null)
                 {
                     <img src="@photoUrl" alt="Photo" />
                 }
                 else
                 {
-                    <i class="bi bi-person-fill photo-placeholder"></i>
+                    <span class="photo-placeholder">&#x1F464;</span>
                 }
             </div>
-            <div class="card-photo-label">Passport Size</div>
         </div>
 
-        <div class="card-info-section">
+        <div class="card-info-column">
             <div class="card-info-row">
                 <span class="card-info-label">Name</span>
-                <span class="card-info-value name">@Model.FullName</span>
+                <span class="card-info-value name" style="color:@themeColor">@Model.FullName</span>
             </div>
             <div class="card-info-row">
                 <span class="card-info-label">Code</span>
@@ -62,37 +76,51 @@
             </div>
             <div class="card-info-row">
                 <span class="card-info-label">Designation</span>
-                <span class="card-info-value" style="font-size:2mm;">@Model.Designation</span>
+                <span class="card-info-value">@Model.Designation</span>
             </div>
             <div class="card-info-row">
                 <span class="card-info-label">Department</span>
-                <span class="card-info-value" style="font-size:2mm;">@Model.Department</span>
+                <span class="card-info-value">@Model.Department</span>
+            </div>
+            <div class="card-info-row">
+                <span class="card-info-label">Joining</span>
+                <span class="card-info-value">@Model.JoiningDate.ToString("dd MMM yyyy")</span>
             </div>
             <div class="card-info-row">
                 <span class="card-info-label">Blood</span>
-                <span class="card-info-value @(string.IsNullOrEmpty(Model.BloodGroup) ? "n-a" : "")">
+                <span class="card-info-value @(string.IsNullOrEmpty(Model.BloodGroup) ? "muted" : "")">
                     @(!string.IsNullOrEmpty(Model.BloodGroup) ? Model.BloodGroup : "N/A")
                 </span>
             </div>
             <div class="card-info-row">
                 <span class="card-info-label">Mobile</span>
-                <span class="card-info-value" style="font-size:1.8mm;">@Model.Phone</span>
-            </div>
-            <div class="card-info-row">
-                <span class="card-info-label">Card No</span>
-                <span class="card-info-value">@(Model.EmployeeCardNumber ?? "---")</span>
+                <span class="card-info-value">@Model.Phone</span>
             </div>
         </div>
     </div>
 
-    <div class="card-footer-band" style="background:linear-gradient(135deg, @themeColor 0%, @themeColor 100%)">
-        <div class="card-signature-area">
+    <div class="card-footer" style="background:@themeColor">
+        <div class="card-footer-left">
+            <div class="card-footer-label">Issued</div>
+            <div class="card-footer-value">@issueDate</div>
+        </div>
+        <div class="card-footer-center">
             <div class="card-signature-line"></div>
             <div class="card-signature-label">@(ViewBag.PrincipalName ?? "Principal")</div>
+            @if (!string.IsNullOrEmpty(Model.EmployeeCardNumber))
+            {
+                <div style="font-size:1mm;color:rgba(255,255,255,0.5);margin-top:0.1mm;">@Model.EmployeeCardNumber</div>
+            }
         </div>
-        <div class="card-issue-area">
-            <div class="card-issue-label">Issue Date</div>
-            <div class="card-issue-value">@today</div>
+        <div class="card-footer-right">
+            <div class="card-footer-label">Expires</div>
+            <div class="card-footer-value">@expiryDate</div>
+            @if (sealUrl != null)
+            {
+                <div class="card-seal">
+                    <img src="@sealUrl" alt="Seal" />
+                </div>
+            }
         </div>
     </div>
 </div>

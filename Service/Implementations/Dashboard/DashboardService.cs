@@ -7,6 +7,7 @@ using SchoolManagementSystem.UnitOfWork.Interfaces;
 using SchoolManagementSystem.Repositories.Interfaces.Dashboard;
 using SchoolManagementSystem.Models.DTOs.Attendance;
 using SchoolManagementSystem.Services.Interfaces.Guardian;
+using SchoolManagementSystem.Services.Interfaces.Academic;
 
 namespace SchoolManagementSystem.Service.Implementations.Dashboard;
 
@@ -16,17 +17,20 @@ public class DashboardService : IDashboardService
     private readonly IDashboardQueryRepository _dashboardQueryRepository;
     private readonly IUnitOfWork _uow;
     private readonly IGuardianService _guardianService;
+    private readonly ICalendarDashboardService _calendarDashboardService;
 
     public DashboardService(
         IDashboardRepository dashboardRepository,
         IDashboardQueryRepository dashboardQueryRepository,
         IUnitOfWork uow,
-        IGuardianService guardianService)
+        IGuardianService guardianService,
+        ICalendarDashboardService calendarDashboardService)
     {
         _dashboardRepository = dashboardRepository;
         _dashboardQueryRepository = dashboardQueryRepository;
         _uow = uow;
         _guardianService = guardianService;
+        _calendarDashboardService = calendarDashboardService;
     }
 
     public async Task<DashboardViewModel> GetDashboardAsync(CancellationToken cancellationToken = default)
@@ -38,6 +42,12 @@ public class DashboardService : IDashboardService
         var totalEmployees = await employeeRepo.CountAsync(e => !e.IsDeleted, cancellationToken);
         var teachingStaff = await employeeRepo.CountAsync(e => !e.IsDeleted && e.IsTeachingStaff, cancellationToken);
         var nonTeachingStaff = totalEmployees - teachingStaff;
+
+        var studentRepo = _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>();
+        var totalStudentsWithCards = await studentRepo.CountAsync(s => !s.IsDeleted, cancellationToken);
+        var activeStudentsWithCards = await studentRepo.CountAsync(s => !s.IsDeleted && s.Status == SchoolManagementSystem.Models.Enums.StudentStatus.Active, cancellationToken);
+        var totalEmployeesWithCards = totalEmployees;
+        var activeEmployeesWithCards = await employeeRepo.CountAsync(e => !e.IsDeleted && e.Status == "Active", cancellationToken);
 
         var employeesByDept = await employeeRepo.Query()
             .Where(e => !e.IsDeleted && e.Department != null)
@@ -61,6 +71,7 @@ public class DashboardService : IDashboardService
 
         var (dailyTrend, monthlyTrend) = await GetAttendanceAnalyticsAsync(cancellationToken);
         var classWisePoints = await GetClassAttendanceAnalyticsAsync(DateTime.Today, cancellationToken);
+        var calendarWidgets = await _calendarDashboardService.GetAllWidgetsAsync(cancellationToken);
 
         return new DashboardViewModel
         {
@@ -92,7 +103,12 @@ public class DashboardService : IDashboardService
             TeachersNotSubmittedToday = attendanceSummary.ClassesMissingAttendance,
             AttendanceDailyTrend = dailyTrend,
             AttendanceMonthlyTrend = monthlyTrend,
-            ClassWiseAttendance = classWisePoints
+            ClassWiseAttendance = classWisePoints,
+            TotalStudentsWithCards = totalStudentsWithCards,
+            ActiveStudentsWithCards = activeStudentsWithCards,
+            TotalEmployeesWithCards = totalEmployeesWithCards,
+            ActiveEmployeesWithCards = activeEmployeesWithCards,
+            CalendarWidgets = calendarWidgets
         };
     }
 
@@ -119,6 +135,9 @@ public class DashboardService : IDashboardService
         var data = await _dashboardRepository.GetStudentDashboardDataAsync(student.Id, student.ClassId, student.SectionId, cancellationToken);
         var calendar = await _dashboardRepository.GetStudentAttendanceCalendarAsync(student.Id, DateTime.Today.Year, DateTime.Today.Month, cancellationToken);
 
+        var studentHolidays = await _calendarDashboardService.GetUpcomingHolidaysAsync(5, cancellationToken);
+        var studentExams = await _calendarDashboardService.GetUpcomingExamsAsync(5, cancellationToken);
+
         return new StudentDashboardViewModel
         {
             Id = student.Id,
@@ -132,7 +151,9 @@ public class DashboardService : IDashboardService
             StudentStatus = student.Status.ToString(),
             RecentNotices = data.recentNotices.Select(MapActivity).ToList(),
             UpcomingAssignments = data.upcomingAssignments.Select(MapAssignment).ToList(),
-            AttendanceCalendar = calendar.Select(MapCalendar).ToList()
+            AttendanceCalendar = calendar.Select(MapCalendar).ToList(),
+            UpcomingHolidays = studentHolidays,
+            UpcomingExams = studentExams
         };
     }
 
@@ -210,6 +231,13 @@ public class DashboardService : IDashboardService
                 ExpensePercentage = 45.2m
             };
         }
+
+        var teacherHolidays = await _calendarDashboardService.GetUpcomingHolidaysAsync(5, cancellationToken);
+        var teacherExams = await _calendarDashboardService.GetUpcomingExamsAsync(5, cancellationToken);
+        var teacherEvents = await _calendarDashboardService.GetUpcomingEventsAsync(5, cancellationToken);
+        model.UpcomingHolidays = teacherHolidays;
+        model.UpcomingExams = teacherExams;
+        model.UpcomingEvents = teacherEvents;
 
         return model;
     }
@@ -331,6 +359,11 @@ public class DashboardService : IDashboardService
                     .CountAsync(l => l.StudentId == selectedStudent.Id && l.ApprovalStatus == SchoolManagementSystem.Models.Entities.Attendance.StudentLeaveApplication.ApprovalStatusEnum.Pending, cancellationToken);
             }
         }
+
+        var guardianHolidays = await _calendarDashboardService.GetUpcomingHolidaysAsync(5, cancellationToken);
+        var guardianExams = await _calendarDashboardService.GetUpcomingExamsAsync(5, cancellationToken);
+        model.UpcomingHolidays = guardianHolidays;
+        model.UpcomingExams = guardianExams;
 
         return model;
     }

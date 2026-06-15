@@ -168,6 +168,19 @@ public class ResultPublicationService : IResultPublicationService
         // Calculate Ranking / GPA / Position after subject results are created
         await _meritCalculationService.RecalculateMeritPositionsAsync(dto.ExamId);
 
+        // Update StudentExamResults with PublishedAt and Published status
+        var publishedAt = DateTime.UtcNow;
+        var studentExamResults = await _examResultRepository.Query()
+            .Where(r => r.ExamId == dto.ExamId && !r.IsDeleted)
+            .ToListAsync();
+
+        foreach (var ser in studentExamResults)
+        {
+            ser.PublishedAt = publishedAt;
+            ser.Status = ResultWorkflowStatus.Published;
+            _examResultRepository.Update(ser);
+        }
+
         // Update Exam Status
         exam.Status = ResultWorkflowStatus.Published;
         _examRepository.Update(exam);
@@ -321,20 +334,35 @@ public class ResultPublicationService : IResultPublicationService
             {
                 ExamId = r.ExamId,
                 ExamName = r.Exam?.Name ?? "Exam",
+                Term = r.Exam?.Term ?? ExamTerm.Other,
                 Gpa = r.Gpa,
+                Grade = r.Grade,
                 TotalMarks = r.TotalMarks,
+                TotalFullMarks = r.TotalFullMarks,
                 Position = r.Position,
+                ClassPosition = r.ClassPosition,
+                GroupPosition = r.GroupPosition,
+                IsPassed = r.IsPassed,
+                FailedSubjectCount = r.FailedSubjectCount,
+                PassedSubjectCount = r.PassedSubjectCount,
+                PublishedAt = r.PublishedAt,
                 Status = r.Status,
                 Subjects = subjectResults
                     .Where(s => s.ExamId == r.ExamId)
                     .Select(s => new StudentSubjectResultDto
                     {
-                        SubjectName = s.Subject.Name,
-                        ObtainedMarks = s.MarksObtained,
+                        SubjectId = s.SubjectId,
+                        SubjectName = s.Subject?.Name ?? "",
+                        SubjectNameBn = s.Subject?.NameBn ?? "",
+                        SubjectGroup = s.Subject?.SubjectGroup ?? "",
+                        MarksObtained = s.MarksObtained,
                         FullMarks = s.FullMarks,
+                        PassMarks = s.PassMarks,
                         Grade = s.Grade,
-                        GPA = s.GradePoint,
-                        IsPassed = s.IsPassed
+                        GradePoint = s.GradePoint,
+                        IsPassed = s.IsPassed,
+                        ObtainedMarks = s.MarksObtained,
+                        GPA = s.GradePoint
                     })
                     .ToList()
             }).ToList()
@@ -374,11 +402,19 @@ public class ResultPublicationService : IResultPublicationService
         return results.Select(r => new StudentExamResultDto
         {
             ExamId = r.ExamId,
+            ExamName = r.Exam?.Name ?? "",
             TotalMarks = r.TotalMarks,
+            TotalFullMarks = r.TotalFullMarks,
             Gpa = r.Gpa,
             Grade = r.Grade,
             Position = r.Position,
-            IsPassed = r.IsPassed
+            ClassPosition = r.ClassPosition,
+            GroupPosition = r.GroupPosition,
+            IsPassed = r.IsPassed,
+            FailedSubjectCount = r.FailedSubjectCount,
+            PassedSubjectCount = r.PassedSubjectCount,
+            PublishedAt = r.PublishedAt,
+            Status = r.Status
         });
     }
 }

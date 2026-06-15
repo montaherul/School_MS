@@ -43,8 +43,8 @@ public class SubjectMarkStructureSeeder
 
                     var components = new List<ExamComponent>
                     {
-                        new() { Name = "Written", Code = "WRITTEN", Description = "Written examination", DisplayOrder = 1, DefaultFullMarks = 70, DefaultPassMarks = 28, IsActive = true, CreatedAt = now, CreatedBy = "system" },
-                        new() { Name = "MCQ", Code = "MCQ", Description = "Multiple Choice Questions", DisplayOrder = 2, DefaultFullMarks = 30, DefaultPassMarks = 12, IsActive = true, CreatedAt = now, CreatedBy = "system" },
+                        new() { Name = "Written", Code = "WRITTEN", Description = "Written examination", DisplayOrder = 1, DefaultFullMarks = 100, DefaultPassMarks = 33, IsActive = true, CreatedAt = now, CreatedBy = "system" },
+                        new() { Name = "MCQ", Code = "MCQ", Description = "Multiple Choice Questions", DisplayOrder = 2, DefaultFullMarks = 100, DefaultPassMarks = 33, IsActive = true, CreatedAt = now, CreatedBy = "system" },
                         new() { Name = "Creative Question", Code = "CQ", Description = "Creative/analytical questions", DisplayOrder = 3, DefaultFullMarks = 50, DefaultPassMarks = 20, IsActive = true, CreatedAt = now, CreatedBy = "system" },
                         new() { Name = "Practical", Code = "PRACTICAL", Description = "Practical examination", DisplayOrder = 4, DefaultFullMarks = 50, DefaultPassMarks = 20, IsPractical = true, IsActive = true, CreatedAt = now, CreatedBy = "system" },
                         new() { Name = "Lab", Code = "LAB", Description = "Laboratory work", DisplayOrder = 5, DefaultFullMarks = 25, DefaultPassMarks = 10, IsPractical = true, IsActive = true, CreatedAt = now, CreatedBy = "system" },
@@ -53,6 +53,9 @@ public class SubjectMarkStructureSeeder
                         new() { Name = "Viva", Code = "VIVA", Description = "Oral viva examination", DisplayOrder = 8, DefaultFullMarks = 20, DefaultPassMarks = 8, IsActive = true, CreatedAt = now, CreatedBy = "system" },
                         new() { Name = "Oral", Code = "ORAL", Description = "Oral test", DisplayOrder = 9, DefaultFullMarks = 10, DefaultPassMarks = 4, IsActive = true, CreatedAt = now, CreatedBy = "system" },
                         new() { Name = "Continuous Assessment", Code = "CONTINUOUS_ASSESSMENT", Description = "Continuous assessment throughout the term", DisplayOrder = 10, DefaultFullMarks = 20, DefaultPassMarks = 8, IsActive = true, CreatedAt = now, CreatedBy = "system" },
+                        new() { Name = "Project", Code = "PROJECT", Description = "Project-based assessment", DisplayOrder = 11, DefaultFullMarks = 50, DefaultPassMarks = 20, IsActive = true, CreatedAt = now, CreatedBy = "system" },
+                        new() { Name = "Presentation", Code = "PRESENTATION", Description = "Oral presentation assessment", DisplayOrder = 12, DefaultFullMarks = 25, DefaultPassMarks = 10, IsActive = true, CreatedAt = now, CreatedBy = "system" },
+                        new() { Name = "Portfolio", Code = "PORTFOLIO", Description = "Portfolio-based assessment", DisplayOrder = 13, DefaultFullMarks = 50, DefaultPassMarks = 20, IsActive = true, CreatedAt = now, CreatedBy = "system" },
                     };
 
                     await _uow.Repository<ExamComponent>().AddRangeAsync(components, cancellationToken);
@@ -83,12 +86,22 @@ public class SubjectMarkStructureSeeder
                     .Select(s => (s.ComponentId, s.SubjectId, s.StudentGroupId))
                     .ToHashSet();
 
-                var scienceSubjectCodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-                    { "SCI", "PHY", "CHE", "BIO", "AGR" };
-                var practicalSubjectCodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-                    { "SCI", "PHY", "CHE", "BIO", "AGR", "ART", "PE", "HSC" };
-                var labSubjectCodes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-                    { "ICT" };
+                // Per-subject component assignments from Phase 31B requirement
+                // Key = Subject.Code (uppercase), Value = list of (ComponentCode, FullMarks, PassMarks)
+                var subjectComponentMap = new Dictionary<string, List<(string Code, decimal Full, decimal Pass)>>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["PHY"] = new() { ("WRITTEN", 50, 17), ("MCQ", 25, 8), ("PRACTICAL", 25, 8) },
+                    ["CHE"] = new() { ("WRITTEN", 60, 20), ("MCQ", 20, 7), ("LAB", 20, 7) },
+                    ["BAN"] = new() { ("WRITTEN", 70, 23), ("MCQ", 30, 10) },
+                    ["ICT"] = new() { ("MCQ", 25, 8), ("WRITTEN", 25, 8), ("PRACTICAL", 50, 17) },
+                };
+
+                // Fallback for subjects not in the explicit map
+                var fallbackComponents = new List<(string Code, decimal Full, decimal Pass)>
+                {
+                    ("WRITTEN", 70, 28), ("MCQ", 30, 12),
+                    ("CT", 10, 4), ("ASSIGNMENT", 20, 8)
+                };
 
                 var newStructures = new List<SubjectMarkStructure>();
                 var now2 = DateTime.UtcNow;
@@ -96,23 +109,11 @@ public class SubjectMarkStructureSeeder
 
                 foreach (var subject in subjects)
                 {
-                    var isPractical = practicalSubjectCodes.Contains(subject.Code);
-                    var isLab = labSubjectCodes.Contains(subject.Code);
-                    var isScience = scienceSubjectCodes.Contains(subject.Code);
+                    var components = subjectComponentMap.TryGetValue(subject.Code, out var explicitComponents)
+                        ? explicitComponents
+                        : fallbackComponents;
 
-                    var subjectComponents = new List<(string Code, decimal Full, decimal Pass)>();
-                    subjectComponents.Add(("WRITTEN", 70, 28));
-                    subjectComponents.Add(("MCQ", 30, 12));
-
-                    if (isScience || isPractical)
-                        subjectComponents.Add(("PRACTICAL", 50, 20));
-                    if (isLab)
-                        subjectComponents.Add(("LAB", 25, 10));
-
-                    subjectComponents.Add(("CT", 10, 4));
-                    subjectComponents.Add(("ASSIGNMENT", 20, 8));
-
-                    foreach (var (code, full, pass) in subjectComponents)
+                    foreach (var (code, full, pass) in components)
                     {
                         if (!componentMap.TryGetValue(code, out var comp)) continue;
                         var key = (comp.Id, (int?)subject.Id, (int?)null);

@@ -37,6 +37,8 @@ public class StudentRepository : BaseRepository<Student>, IStudentRepository
             .Include(s => s.StudentGuardians)
                 .ThenInclude(sg => sg.Guardian)
             .Include(s => s.Section)
+            .Include(s => s.Class)
+            .Include(s => s.StudentGroup)
             .FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted, ct);
 
         if (student == null) return null;
@@ -80,6 +82,8 @@ public class StudentRepository : BaseRepository<Student>, IStudentRepository
             RollNumber = student.RollNumber,
             OptionalSubjectId = student.OptionalSubjectId,
             SectionName = student.Section?.Name ?? "N/A",
+            ClassName = student.Class?.Name,
+            GroupName = student.StudentGroup?.Name,
             GuardianName = guardian?.FullName,
             GuardianOccupation = guardian?.Occupation,
             GuardianEmail = guardian?.Email,
@@ -101,6 +105,8 @@ public class StudentRepository : BaseRepository<Student>, IStudentRepository
             .Include(s => s.StudentGuardians)
                 .ThenInclude(sg => sg.Guardian)
             .Include(s => s.Section)
+            .Include(s => s.Class)
+            .Include(s => s.StudentGroup)
             .FirstOrDefaultAsync(s => s.StudentNo == studentNo && !s.IsDeleted, ct);
 
         if (student == null) return null;
@@ -144,6 +150,8 @@ public class StudentRepository : BaseRepository<Student>, IStudentRepository
             RollNumber = student.RollNumber,
             OptionalSubjectId = student.OptionalSubjectId,
             SectionName = student.Section?.Name ?? "N/A",
+            ClassName = student.Class?.Name,
+            GroupName = student.StudentGroup?.Name,
             GuardianName = guardian?.FullName,
             GuardianOccupation = guardian?.Occupation,
             GuardianEmail = guardian?.Email,

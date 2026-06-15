@@ -1,4 +1,4 @@
-using SchoolManagementSystem.Models.ViewModels.Dashboard;
+using SchoolManagementSystem.Models.DTOs.Calendar;
 
 namespace SchoolManagementSystem.Models.ViewModels.Dashboard;
 
@@ -27,6 +27,11 @@ public class TeacherDashboardViewModel
     
     // Principal/Admin Specific
     public PrincipalStats? PrincipalStats { get; set; }
+
+    // Calendar Widgets
+    public List<UpcomingHolidayDto> UpcomingHolidays { get; set; } = new();
+    public List<UpcomingExamDto> UpcomingExams { get; set; } = new();
+    public List<UpcomingEventDto> UpcomingEvents { get; set; } = new();
 }
 
 public class PrincipalStats

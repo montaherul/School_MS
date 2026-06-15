@@ -151,17 +151,14 @@ public class ExamSubject : BaseEntity
 {
     public int ExamId { get; set; }
     public int SubjectId { get; set; }
+    public int ClassId { get; set; }
+    public int? StudentGroupId { get; set; }
 
     public decimal FullMarks { get; set; } = 100;
     public decimal PassMarks { get; set; } = 33;
     public bool IsOptional { get; set; } = false;
 
     public int? TeacherId { get; set; }
-    public int TotalWrittenMarks { get; set; }
-    public int TotalMCQMarks { get; set; }
-    public int TotalPracticalMarks { get; set; }
-    public int TotalVivaMarks { get; set; }
-    public int TotalAssignmentMarks { get; set; }
     public DateOnly? ExamDate { get; set; }
     public TimeOnly? ExamStartTime { get; set; }
     public int? ExamDuration { get; set; }
@@ -173,6 +170,8 @@ public class ExamSubject : BaseEntity
     public virtual Exam Exam { get; set; } = null!;
     public virtual Subject Subject { get; set; } = null!;
     public virtual Teachers.Teacher? Teacher { get; set; }
+    public virtual Academic.SchoolClass Class { get; set; } = null!;
+    public virtual Academic.StudentGroup? StudentGroup { get; set; }
 }
 
 /// <summary>

@@ -180,6 +180,115 @@ namespace SchoolManagementSystem.Migrations
                     b.ToTable("AdmissionListResults");
                 });
 
+            modelBuilder.Entity("SchoolManagementSystem.Models.DTOs.Identity.EmployeeIdCardListDto", b =>
+                {
+                    b.Property<DateTime?>("CardExpiryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("CardIssueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("CardPrintedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CardVersion")
+                        .HasColumnType("int");
+
+                    b.Property<string>("DepartmentName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DesignationName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EmployeeCardNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EmployeeCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EmployeeName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EmploymentType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsTeachingStaff")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("JoiningDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Phone")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhotoPath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.ToTable("EmployeeIdCardListResults");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.DTOs.Identity.StudentIdCardListDto", b =>
+                {
+                    b.Property<DateTime?>("AdmissionDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ClassName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Gender")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("GroupName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("GuardianName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Id")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Phone")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhotoPath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("RollNumber")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SectionName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StudentCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StudentName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.ToTable("StudentIdCardListResults");
+                });
+
             modelBuilder.Entity("SchoolManagementSystem.Models.DTOs.Student.StudentListItemDto", b =>
                 {
                     b.Property<string>("BirthCertificateNo")
@@ -350,10 +459,21 @@ namespace SchoolManagementSystem.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AcademicYearId");
-
                     b.HasIndex("Date")
                         .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
+
+                    b.HasIndex("AcademicYearId", "Date")
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
+
+                    b.HasIndex("Date", "IsEventDay")
+                        .HasFilter("[IsDeleted] = 0");
+
+                    b.HasIndex("Date", "IsExamDay")
+                        .HasFilter("[IsDeleted] = 0");
+
+                    b.HasIndex("Date", "IsHoliday")
                         .HasFilter("[IsDeleted] = 0");
 
                     b.ToTable("AcademicCalendars");
@@ -607,6 +727,82 @@ namespace SchoolManagementSystem.Migrations
                     b.HasIndex("TeacherId");
 
                     b.ToTable("ClassSubjectTeachers");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Academic.HolidayMaster", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CountryCode")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
+
+                    b.Property<DateOnly>("HolidayDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("HolidayType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsRecurring")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("NameBn")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Religion")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HolidayDate");
+
+                    b.HasIndex("Name", "HolidayDate")
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
+
+                    b.ToTable("HolidayMasters");
                 });
 
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Academic.LessonPlan", b =>
@@ -12849,6 +13045,36 @@ namespace SchoolManagementSystem.Migrations
                             IsDeleted = false,
                             Module = "Laboratory",
                             ModuleName = "Laboratory"
+                        },
+                        new
+                        {
+                            Id = 603,
+                            Action = "Regenerate",
+                            CanCreate = true,
+                            CanDelete = false,
+                            CanRead = true,
+                            CanUpdate = true,
+                            Code = "Calendar.Regenerate",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
+                            IsDeleted = false,
+                            Module = "Calendar",
+                            ModuleName = "Calendar"
+                        },
+                        new
+                        {
+                            Id = 604,
+                            Action = "Repair",
+                            CanCreate = true,
+                            CanDelete = false,
+                            CanRead = true,
+                            CanUpdate = true,
+                            Code = "Calendar.Repair",
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
+                            IsDeleted = false,
+                            Module = "Calendar",
+                            ModuleName = "Calendar"
                         });
                 });
 
@@ -16047,6 +16273,16 @@ namespace SchoolManagementSystem.Migrations
                         },
                         new
                         {
+                            RoleId = 1,
+                            PermissionId = 603
+                        },
+                        new
+                        {
+                            RoleId = 1,
+                            PermissionId = 604
+                        },
+                        new
+                        {
                             RoleId = 2,
                             PermissionId = 1
                         },
@@ -18432,6 +18668,16 @@ namespace SchoolManagementSystem.Migrations
                         },
                         new
                         {
+                            RoleId = 2,
+                            PermissionId = 603
+                        },
+                        new
+                        {
+                            RoleId = 2,
+                            PermissionId = 604
+                        },
+                        new
+                        {
                             RoleId = 3,
                             PermissionId = 1
                         },
@@ -19469,6 +19715,81 @@ namespace SchoolManagementSystem.Migrations
                         {
                             RoleId = 3,
                             PermissionId = 364
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 560
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 561
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 562
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 563
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 564
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 565
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 566
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 567
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 568
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 569
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 570
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 571
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 572
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 603
+                        },
+                        new
+                        {
+                            RoleId = 3,
+                            PermissionId = 604
                         },
                         new
                         {
@@ -24019,6 +24340,16 @@ namespace SchoolManagementSystem.Migrations
                         {
                             RoleId = 26,
                             PermissionId = 602
+                        },
+                        new
+                        {
+                            RoleId = 26,
+                            PermissionId = 603
+                        },
+                        new
+                        {
+                            RoleId = 26,
+                            PermissionId = 604
                         });
                 });
 
@@ -25456,21 +25787,6 @@ namespace SchoolManagementSystem.Migrations
                         .HasColumnType("int");
 
                     b.Property<int?>("TeacherId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TotalAssignmentMarks")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TotalMCQMarks")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TotalPracticalMarks")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TotalVivaMarks")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TotalWrittenMarks")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("UpdatedAt")

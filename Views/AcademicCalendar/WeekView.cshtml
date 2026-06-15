@@ -1,0 +1,118 @@
+@{
+    ViewData["Title"] = "Week View - Academic Calendar";
+    var startDate = ViewBag.StartDate as DateTime? ?? DateTime.Today;
+}
+
+<div class="ac-page">
+    <div class="ac-header">
+        <div>
+            <h1 class="ac-title"><i class="bi bi-calendar-week me-2 text-primary"></i>Week View</h1>
+            <p class="ac-subtitle">7-day timeline overview</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-calendar3 me-1"></i>Month</a>
+            <a asp-action="Agenda" class="btn btn-outline-secondary"><i class="bi bi-list-task me-1"></i>Agenda</a>
+            <a asp-action="YearView" class="btn btn-outline-secondary"><i class="bi bi-calendar-range me-1"></i>Year</a>
+        </div>
+    </div>
+
+    <div class="ac-panel">
+        <div class="row g-3 align-items-center">
+            <div class="col-auto">
+                <button class="btn btn-outline-primary" id="prevWeek" aria-label="Previous week"><i class="bi bi-chevron-left"></i></button>
+            </div>
+            <div class="col">
+                <h5 class="text-center mb-0" id="weekLabel" aria-live="polite">Loading...</h5>
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-outline-primary" id="nextWeek" aria-label="Next week"><i class="bi bi-chevron-right"></i></button>
+            </div>
+            <div class="col-auto">
+                <button class="btn btn-outline-secondary" id="todayBtn" aria-label="Go to current week">Today</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="weekGrid" class="row g-3"></div>
+</div>
+
+@section Scripts {
+    <script>
+        let currentDate = new Date('@startDate.ToString("yyyy-MM-dd")');
+
+        function getWeekStart(d) {
+            const dt = new Date(d);
+            const day = dt.getDay();
+            dt.setDate(dt.getDate() - day);
+            return dt;
+        }
+
+        function formatDate(d) {
+            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        }
+
+        function loadWeek() {
+            const ws = getWeekStart(currentDate);
+            const we = new Date(ws);
+            we.setDate(we.getDate() + 6);
+
+            const options = { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' };
+            document.getElementById('weekLabel').textContent = ws.toLocaleDateString(undefined, options) + ' — ' + we.toLocaleDateString(undefined, options);
+
+            fetch(`/AcademicCalendar/GetWeekData?date=${formatDate(ws)}`)
+                .then(r => r.json())
+                .then(data => {
+                    const grid = document.getElementById('weekGrid');
+                    grid.innerHTML = '';
+                    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+                    const today = new Date();
+                    const todayStr = formatDate(today);
+
+                    data.days.forEach(day => {
+                        const isToday = day.date === todayStr;
+                        const card = document.createElement('div');
+                        card.className = 'col';
+
+                        let badge = '';
+                        if (day.isHoliday) badge = '<span class="ac-badge ac-badge-holiday">Holiday</span>';
+                        else if (day.isExamDay) badge = '<span class="ac-badge ac-badge-exam">Exam</span>';
+                        else if (day.isEventDay) badge = '<span class="ac-badge ac-badge-event">Event</span>';
+                        else badge = '<span class="ac-badge ac-badge-working">Working</span>';
+
+                        const dayNum = new Date(day.date).getDate();
+                        card.innerHTML = `
+                            <div class="card border-0 shadow-sm h-100 ${isToday ? 'border-primary border-2' : ''}" style="min-width:120px">
+                                <div class="card-header text-center py-2 ${isToday ? 'bg-primary text-white' : 'bg-light'}">
+                                    <small class="text-muted ${isToday ? 'text-white-50' : ''}">${dayNames[new Date(day.date).getDay()]}</small>
+                                    <div class="fw-bold fs-5">${dayNum}</div>
+                                </div>
+                                <div class="card-body p-2">
+                                    <div class="mb-2">${badge}</div>
+                                    <div class="fw-semibold small">${day.title || ''}</div>
+                                    <div class="small text-muted">${day.description || ''}</div>
+                                    ${day.holidayType ? `<div class="small text-muted mt-1"><span class="badge bg-secondary">${day.holidayType}</span></div>` : ''}
+                                </div>
+                            </div>
+                        `;
+                        grid.appendChild(card);
+                    });
+                });
+        }
+
+        document.getElementById('prevWeek').addEventListener('click', function() {
+            currentDate.setDate(currentDate.getDate() - 7);
+            loadWeek();
+        });
+        document.getElementById('nextWeek').addEventListener('click', function() {
+            currentDate.setDate(currentDate.getDate() + 7);
+            loadWeek();
+        });
+        document.getElementById('todayBtn').addEventListener('click', function() {
+            currentDate = new Date();
+            loadWeek();
+        });
+
+        document.addEventListener('DOMContentLoaded', loadWeek);
+    </script>
+}

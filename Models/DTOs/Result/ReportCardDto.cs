@@ -47,22 +47,7 @@ public class ReportCardSubjectDto
     public bool IsPassed { get; set; }
     public bool IsOptionalSubject { get; set; }
     public bool IsReligionSubject { get; set; }
-    public decimal? WrittenMarks { get; set; }
-    public decimal? MCQMarks { get; set; }
-    public decimal? PracticalMarks { get; set; }
-    public decimal? VivaMarks { get; set; }
-    public decimal? LabMarks { get; set; }
-    public decimal? OralMarks { get; set; }
-    public decimal? AssignmentMarks { get; set; }
-    public decimal? ContinuousAssessmentMarks { get; set; }
-    public decimal? MarksWritten { get; set; }
-    public decimal? MarksMCQ { get; set; }
-    public decimal? MarksPractical { get; set; }
-    public decimal? MarksViva { get; set; }
-    public decimal? MarksLab { get; set; }
-    public decimal? MarksOral { get; set; }
-    public decimal? MarksAssignment { get; set; }
-    public decimal? MarksContinuousAssessment { get; set; }
+    public ComponentMarksDto ComponentMarks { get; set; } = new();
 }
 
 public class ReportCardSummaryDto

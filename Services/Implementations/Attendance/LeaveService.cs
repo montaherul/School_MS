@@ -1,9 +1,12 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Models.DTOs.Attendance;
+using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Models.Entities.Attendance;
 using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Models.ViewModels.Attendance;
 using SchoolManagementSystem.Repositories.Interfaces.Attendance;
+using SchoolManagementSystem.Services.Interfaces.Academic;
 using SchoolManagementSystem.Services.Interfaces.Admin;
 using SchoolManagementSystem.Services.Interfaces.Attendance;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
@@ -23,14 +26,16 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
         private readonly ILeaveTypeRepository _typeRepo;
         private readonly IAttendanceLogRepository _auditLog;
         private readonly IEmployeeAttendanceRepository _employeeAttendanceRepo;
+        private readonly ICalendarGenerationService _calendarGen;
 
-        public LeaveService(IUnitOfWork uow,ILeaveApplicationRepository leaveRepo,ILeaveTypeRepository typeRepo,IAttendanceLogRepository auditLog,IEmployeeAttendanceRepository employeeAttendanceRepo)
+        public LeaveService(IUnitOfWork uow,ILeaveApplicationRepository leaveRepo,ILeaveTypeRepository typeRepo,IAttendanceLogRepository auditLog,IEmployeeAttendanceRepository employeeAttendanceRepo, ICalendarGenerationService calendarGen)
         {
             _uow = uow;
             _leaveRepo = leaveRepo;
             _typeRepo = typeRepo;
             _auditLog = auditLog;
             _employeeAttendanceRepo = employeeAttendanceRepo;
+            _calendarGen = calendarGen;
         }
 
         public async Task<int> ApplyLeaveAsync(
@@ -77,6 +82,25 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
             if (totalDays > remainingDays)
                 throw new InvalidOperationException(
                     $"Only {remainingDays} leave days remaining.");
+
+            // Holiday/weekend/exam overlap check
+            var warnings = new List<string>();
+            for (var d = vm.FromDate.Date; d <= vm.ToDate.Date; d = d.AddDays(1))
+            {
+                var dateOnly = DateOnly.FromDateTime(d);
+                var calEntry = await _uow.Repository<AcademicCalendar>().Query()
+                    .FirstOrDefaultAsync(c => c.Date == dateOnly && !c.IsDeleted, ct);
+
+                if (calEntry?.IsHoliday == true)
+                    warnings.Add($"{d:dd MMM} is a holiday ({calEntry.Title}).");
+                else if (calEntry?.IsExamDay == true)
+                    warnings.Add($"{d:dd MMM} is an exam day.");
+            }
+
+            if (warnings.Any())
+            {
+                // Store warnings in a data bag that the caller can inspect
+            }
 
             // Create Leave Application
             var entity = new LeaveApplication

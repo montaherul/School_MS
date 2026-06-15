@@ -2,6 +2,13 @@
 @{
     ViewData["Title"] = "Setup Subjects";
     Layout = "_AdminLayout";
+
+    var allComponentNames = Model.Subjects
+        .Where(s => s.ComponentPreview != null)
+        .SelectMany(s => s.ComponentPreview!)
+        .Select(c => c.Name)
+        .Distinct()
+        .ToList();
 }
 
 <div class="container-fluid">
@@ -24,16 +31,15 @@
                 <input type="hidden" name="examId" value="@Model.ExamId" />
 
                 <div class="table-responsive">
-                    <table class="table table-bordered">
+                    <table class="table table-bordered align-middle">
                         <thead class="table-light">
                             <tr>
                                 <th style="width: 40px;">Include</th>
                                 <th style="width: 180px;">Subject</th>
-                                <th>Written</th>
-                                <th>MCQ</th>
-                                <th>Practical</th>
-                                <th>Viva</th>
-                                <th>Assignment</th>
+                                @foreach (var compName in allComponentNames)
+                                {
+                                    <th style="width: 80px;">@compName</th>
+                                }
                                 <th style="width: 80px;">Total</th>
                                 <th style="width: 70px;">Pass Mark</th>
                                 <th style="width: 180px;">Teacher</th>
@@ -48,6 +54,8 @@
                             @for (int i = 0; i < Model.Subjects.Count; i++)
                             {
                                 var s = Model.Subjects[i];
+                                var componentLookup = s.ComponentPreview?.ToDictionary(c => c.Name, c => c.FullMarks) ?? [];
+                                var totalMarks = componentLookup.Values.Sum();
                                 <tr class="subject-row" data-index="@i">
                                     <td class="text-center">
                                         <input type="checkbox" class="form-check-input include-subject"
@@ -59,34 +67,17 @@
                                         @s.SubjectName
                                         <input type="hidden" name="Subjects[@i].SubjectName" value="@s.SubjectName" />
                                         <input type="hidden" name="Subjects[@i].IsOptional" value="@s.IsOptional.ToString().ToLower()" />
+                                        <input type="hidden" name="Subjects[@i].FullMarks" value="@totalMarks" />
                                     </td>
-                                    <td>
-                                        <input type="number" class="form-control form-control-sm mark-input written"
-                                               name="Subjects[@i].TotalWrittenMarks" value="@s.TotalWrittenMarks" min="0" max="200"
-                                               @(s.IsActive ? "" : "disabled") />
-                                    </td>
-                                    <td>
-                                        <input type="number" class="form-control form-control-sm mark-input mcq"
-                                               name="Subjects[@i].TotalMCQMarks" value="@s.TotalMCQMarks" min="0" max="200"
-                                               @(s.IsActive ? "" : "disabled") />
-                                    </td>
-                                    <td>
-                                        <input type="number" class="form-control form-control-sm mark-input practical"
-                                               name="Subjects[@i].TotalPracticalMarks" value="@s.TotalPracticalMarks" min="0" max="200"
-                                               @(s.IsActive ? "" : "disabled") />
-                                    </td>
-                                    <td>
-                                        <input type="number" class="form-control form-control-sm mark-input viva"
-                                               name="Subjects[@i].TotalVivaMarks" value="@s.TotalVivaMarks" min="0" max="200"
-                                               @(s.IsActive ? "" : "disabled") />
-                                    </td>
-                                    <td>
-                                        <input type="number" class="form-control form-control-sm mark-input assignment"
-                                               name="Subjects[@i].TotalAssignmentMarks" value="@s.TotalAssignmentMarks" min="0" max="200"
-                                               @(s.IsActive ? "" : "disabled") />
-                                    </td>
-                                    <td>
-                                        <span class="total-mark fw-bold">@(s.TotalWrittenMarks + s.TotalMCQMarks + s.TotalPracticalMarks + s.TotalVivaMarks + s.TotalAssignmentMarks)</span>
+                                    @foreach (var compName in allComponentNames)
+                                    {
+                                        var mark = componentLookup.GetValueOrDefault(compName, 0m);
+                                        <td class="text-center">
+                                            <span class="component-mark">@mark</span>
+                                        </td>
+                                    }
+                                    <td class="text-center">
+                                        <span class="total-mark fw-bold">@totalMarks</span>
                                     </td>
                                     <td>
                                         <input type="number" class="form-control form-control-sm pass-mark"
@@ -163,42 +154,13 @@
                         inp.disabled = !isChecked;
                     }
                 });
-                calculateRowTotal(row);
             });
         });
-
-        // Auto-calculate total on mark inputs
-        document.querySelectorAll('.mark-input').forEach(inp => {
-            inp.addEventListener('input', function() {
-                const row = this.closest('tr');
-                calculateRowTotal(row);
-                validateTotal(row);
-            });
-        });
-
-        function calculateRowTotal(row) {
-            let total = 0;
-            row.querySelectorAll('.mark-input').forEach(inp => {
-                total += parseInt(inp.value) || 0;
-            });
-            row.querySelector('.total-mark').textContent = total;
-        }
-
-        function validateTotal(row) {
-            const total = parseInt(row.querySelector('.total-mark').textContent) || 0;
-            const cell = row.querySelector('.total-mark');
-            if (total < 1 || total > 300) {
-                cell.style.color = '#dc3545';
-            } else {
-                cell.style.color = '#198754';
-            }
-        }
 
         // Form submit
         document.getElementById('subjectSetupForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
-            // Check each included subject has a teacher
             let valid = true;
             document.querySelectorAll('.include-subject:checked').forEach(cb => {
                 const row = cb.closest('tr');
@@ -209,17 +171,10 @@
                 } else {
                     teacherSelect.classList.remove('is-invalid');
                 }
-
-                const total = parseInt(row.querySelector('.total-mark').textContent) || 0;
-                if (total < 1 || total > 300) {
-                    valid = false;
-                    alert('Total marks must be between 1 and 300 for each subject.');
-                }
             });
 
             if (!valid) return;
 
-            const formData = new FormData(this);
             const subjects = [];
             document.querySelectorAll('.subject-row').forEach(row => {
                 const index = row.dataset.index;
@@ -229,11 +184,7 @@
                     subjectName: row.querySelector('input[name$=".SubjectName"]').value,
                     isActive: isActive,
                     isOptional: row.querySelector('input[name$=".IsOptional"]').value === 'true',
-                    totalWrittenMarks: isActive ? (parseInt(row.querySelector('.written').value) || 0) : 0,
-                    totalMCQMarks: isActive ? (parseInt(row.querySelector('.mcq').value) || 0) : 0,
-                    totalPracticalMarks: isActive ? (parseInt(row.querySelector('.practical').value) || 0) : 0,
-                    totalVivaMarks: isActive ? (parseInt(row.querySelector('.viva').value) || 0) : 0,
-                    totalAssignmentMarks: isActive ? (parseInt(row.querySelector('.assignment').value) || 0) : 0,
+                    fullMarks: parseInt(row.querySelector('input[name$=".FullMarks"]').value) || 0,
                     passMark: isActive ? (parseFloat(row.querySelector('.pass-mark').value) || 33) : 33,
                     teacherId: isActive ? (parseInt(row.querySelector('.teacher-select').value) || null) : null,
                     examDate: isActive ? (row.querySelector('.exam-date').value || null) : null,

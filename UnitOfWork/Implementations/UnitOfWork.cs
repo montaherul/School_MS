@@ -64,6 +64,7 @@ public class UnitOfWork : IUnitOfWork
             try
             {
                 await operation();
+                await CommitTransactionAsync(cancellationToken);
             }
             catch
             {

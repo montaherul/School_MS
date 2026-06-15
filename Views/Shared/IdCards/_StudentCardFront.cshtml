@@ -4,66 +4,74 @@
     var schoolLogo = !string.IsNullOrEmpty(ViewBag.SchoolLogoPath)
         ? Url.Content($"~/{ViewBag.SchoolLogoPath.TrimStart('/')}")
         : null;
-    var principalSign = !string.IsNullOrEmpty(ViewBag.PrincipalSignaturePath)
-        ? Url.Content($"~/{ViewBag.PrincipalSignaturePath.TrimStart('/')}")
-        : null;
     var photoUrl = !string.IsNullOrEmpty(Model.ProfilePicturePath)
         ? Url.Content($"~/{Model.ProfilePicturePath.TrimStart('/')}")
         : null;
     var today = DateTime.Today.ToString("dd MMM yyyy");
+    var expiry = DateTime.Today.AddYears(1).ToString("dd MMM yyyy");
+    var motto = ViewBag.SchoolMotto as string;
+    var academicYear = ViewBag.AcademicYear as string;
+    var sealPath = ViewBag.SchoolSealPath as string;
+    var sealUrl = !string.IsNullOrEmpty(sealPath)
+        ? Url.Content($"~/{sealPath.TrimStart('/')}")
+        : null;
+    var showGroup = Model.ClassId >= 9 && !string.IsNullOrEmpty(Model.GroupName);
 }
 <div class="id-card id-card-front">
-    <div class="card-header-band">
-        <div class="card-logo">
+    <div class="card-header" style="background:#1B4D8C">
+        <div class="card-header-logo">
             @if (schoolLogo != null)
             {
                 <img src="@schoolLogo" alt="Logo" />
             }
             else
             {
-                <i class="bi bi-mortarboard-fill card-logo-placeholder"></i>
+                <span class="logo-placeholder">&#x1F393;</span>
             }
         </div>
-        <div class="card-header-text">
-            @if (!string.IsNullOrEmpty(ViewBag.SchoolNameBn as string))
-            {
-                <div class="card-school-name-bn">@ViewBag.SchoolNameBn</div>
-            }
-            <div class="card-school-name-en">@ViewBag.SchoolNameEn</div>
+        <div class="card-header-body">
+            <div class="card-school-name">@ViewBag.SchoolNameEn</div>
             <div class="card-school-meta">
                 <span>EIIN: @ViewBag.SchoolEIIN</span>
                 <span class="sep">|</span>
                 <span>@ViewBag.SchoolWebsite</span>
             </div>
+            @if (!string.IsNullOrEmpty(motto))
+            {
+                <div class="card-school-motto">"@motto"</div>
+            }
         </div>
+        @if (!string.IsNullOrEmpty(academicYear))
+        {
+            <div class="card-academic-year">@academicYear</div>
+        }
     </div>
 
-    <div class="card-title-bar">
-        <span>Student Identity Card</span>
+    <div class="card-title">
+        <span class="card-title-text">Student Identity Card</span>
     </div>
 
     <div class="card-body">
-        <div class="card-photo-section">
-            <div class="card-photo">
+        <div class="card-photo-column">
+            <div class="card-photo-frame">
                 @if (photoUrl != null)
                 {
                     <img src="@photoUrl" alt="Photo" />
                 }
                 else
                 {
-                    <i class="bi bi-person-fill photo-placeholder"></i>
+                    <span class="photo-placeholder">&#x1F464;</span>
                 }
             </div>
-            <div class="card-photo-label">Passport Size</div>
         </div>
 
-        <div class="card-info-section">
+        <div class="card-info-column">
             <div class="card-info-row">
                 <span class="card-info-label">Name</span>
                 <span class="card-info-value name">@Model.FullName</span>
             </div>
             <div class="card-info-row">
-                <span class="card-info-label">ID</span>
+                <span class="card-info-label">ID No</span>
                 <span class="card-info-value">@Model.StudentNo</span>
             </div>
             <div class="card-info-row">
@@ -72,33 +80,49 @@
             </div>
             <div class="card-info-row">
                 <span class="card-info-label">Class</span>
-                <span class="card-info-value">@Model.ClassId</span>
+                <span class="card-info-value">@(!string.IsNullOrEmpty(Model.ClassName) ? Model.ClassName : $"Class {Model.ClassId}")</span>
             </div>
             <div class="card-info-row">
                 <span class="card-info-label">Section</span>
-                <span class="card-info-value">@(Model.SectionName ?? "---")</span>
+                <span class="card-info-value">@(!string.IsNullOrEmpty(Model.SectionName) ? Model.SectionName : "---")</span>
             </div>
-            <div class="card-info-row">
-                <span class="card-info-label">DOB</span>
-                <span class="card-info-value">@Model.DateOfBirth.ToString("dd MMM yyyy")</span>
-            </div>
+            @if (showGroup)
+            {
+                <div class="card-info-row">
+                    <span class="card-info-label">Group</span>
+                    <span class="card-info-value">@Model.GroupName</span>
+                </div>
+            }
             <div class="card-info-row">
                 <span class="card-info-label">Blood</span>
-                <span class="card-info-value @(string.IsNullOrEmpty(Model.BloodGroup) ? "n-a" : "")">
+                <span class="card-info-value @(string.IsNullOrEmpty(Model.BloodGroup) ? "muted" : "")">
                     @(!string.IsNullOrEmpty(Model.BloodGroup) ? Model.BloodGroup : "N/A")
                 </span>
+                <span style="flex:0 0 auto;margin:0 1mm;color:#D1D5DB;font-size:1.2mm;">|</span>
+                <span class="card-info-label" style="flex:0 0 auto;min-width:0;">Gender</span>
+                <span class="card-info-value">@Model.Gender</span>
             </div>
         </div>
     </div>
 
-    <div class="card-footer-band">
-        <div class="card-signature-area">
+    <div class="card-footer" style="background:#1B4D8C">
+        <div class="card-footer-left">
+            <div class="card-footer-label">Issued</div>
+            <div class="card-footer-value">@today</div>
+        </div>
+        <div class="card-footer-center">
             <div class="card-signature-line"></div>
             <div class="card-signature-label">@(ViewBag.PrincipalName ?? "Principal")</div>
         </div>
-        <div class="card-issue-area">
-            <div class="card-issue-label">Issue Date</div>
-            <div class="card-issue-value">@today</div>
+        <div class="card-footer-right">
+            <div class="card-footer-label">Expires</div>
+            <div class="card-footer-value">@expiry</div>
+            @if (sealUrl != null)
+            {
+                <div class="card-seal">
+                    <img src="@sealUrl" alt="Seal" />
+                </div>
+            }
         </div>
     </div>
 </div>

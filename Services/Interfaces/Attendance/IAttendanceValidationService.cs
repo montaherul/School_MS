@@ -16,6 +16,9 @@ namespace SchoolManagementSystem.Services.Interfaces.Attendance
         /// <summary>Returns true when the given date is a configured working day.</summary>
         Task<bool> IsWorkingDayAsync(DateOnly date, CancellationToken ct = default);
 
+        /// <summary>Returns true when the given date has an exam scheduled.</summary>
+        Task<bool> IsExamDayAsync(DateOnly date, CancellationToken ct = default);
+
         /// <summary>Returns true when attendance can still be edited (within the revision window).</summary>
         Task<bool> IsWithinRevisionWindowAsync(DateOnly attendanceDate, CancellationToken ct = default);
 

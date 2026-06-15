@@ -283,6 +283,19 @@
                             }
                         }
 
+                        @if (Can("StudentIdCard.View") || Can("EmployeeIdCard.View"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">ID Card Management</span></span>
+                            @if (Can("StudentIdCard.View"))
+                            {
+                                <a asp-controller="IdCard" asp-action="Students" data-title="Student ID Cards"><i class="bi bi-person-vcard"></i><span class="nav-text">Student ID Cards</span></a>
+                            }
+                            @if (Can("EmployeeIdCard.View"))
+                            {
+                                <a asp-controller="IdCard" asp-action="Employees" data-title="Employee ID Cards"><i class="bi bi-person-badge"></i><span class="nav-text">Employee ID Cards</span></a>
+                            }
+                        }
+
                         @if (Can("Communication.View") || Can("Reports.View") || IsAdmin())
                         {
                             <span class="nav-section-label"><span class="nav-text">Communicate</span></span>

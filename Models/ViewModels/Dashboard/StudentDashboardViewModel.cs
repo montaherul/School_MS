@@ -1,3 +1,4 @@
+using SchoolManagementSystem.Models.DTOs.Calendar;
 using SchoolManagementSystem.Models.Enums;
 
 namespace SchoolManagementSystem.Models.ViewModels.Dashboard;
@@ -18,6 +19,10 @@ public class StudentDashboardViewModel
     public List<AssignmentDashboardItem> Assignments { get; set; } = new();
     public List<StudentResultViewModel> Results { get; set; } = new();
     public List<AttendanceCalendarDto> AttendanceCalendar { get; set; } = new();
+
+    // Calendar Widgets
+    public List<UpcomingHolidayDto> UpcomingHolidays { get; set; } = new();
+    public List<UpcomingExamDto> UpcomingExams { get; set; } = new();
 }
 
 public class AttendanceCalendarDto

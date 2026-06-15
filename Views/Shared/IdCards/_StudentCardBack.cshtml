@@ -9,51 +9,51 @@
             Model.PresentThana,
             Model.PresentDistrict
         }.Where(a => !string.IsNullOrEmpty(a)));
+    var footerText = ViewBag.FooterText as string;
 }
 <div class="id-card id-card-back">
-    <div class="back-header">
-        <div class="back-header-title">Student Information</div>
+    <div class="back-header" style="background:#1B4D8C">
+        <div class="back-header-title">Important Information</div>
     </div>
 
     <div class="back-body">
         <div class="back-info-panel">
-            <div class="back-field-group">
-                <div class="back-field-group-title">Guardian</div>
-                <div class="back-row">
-                    <span class="back-label">Father</span>
-                    <span class="back-value">@Model.FatherName</span>
-                </div>
-                <div class="back-row">
-                    <span class="back-label">Mother</span>
-                    <span class="back-value">@Model.MotherName</span>
-                </div>
-                <div class="back-row">
-                    <span class="back-label">Mobile</span>
-                    <span class="back-value @(string.IsNullOrEmpty(guardianMobile) ? "n-a" : "")">
-                        @(!string.IsNullOrEmpty(guardianMobile) ? guardianMobile : "N/A")
-                    </span>
-                </div>
-                @if (!string.IsNullOrEmpty(address))
-                {
-                    <div class="back-row">
-                        <span class="back-label">Address</span>
-                        <span class="back-value" style="font-size:1.6mm;">@address</span>
-                    </div>
-                }
+            <div class="back-field-group-title">Guardian Information</div>
+            <div class="back-row">
+                <span class="back-label">Father</span>
+                <span class="back-value">@Model.FatherName</span>
             </div>
-
-            <div class="back-field-group" style="margin-top:1mm;">
-                <div class="back-field-group-title">Emergency Contact</div>
-                <div class="back-row">
-                    <span class="back-value" style="font-size:1.8mm;font-weight:600;">
-                        @(!string.IsNullOrEmpty(guardianMobile) ? guardianMobile : "N/A")
-                    </span>
-                </div>
+            <div class="back-row">
+                <span class="back-label">Mother</span>
+                <span class="back-value">@Model.MotherName</span>
+            </div>
+            <div class="back-row">
+                <span class="back-label">Guardian</span>
+                <span class="back-value">@(!string.IsNullOrEmpty(Model.GuardianName) ? Model.GuardianName : "---")</span>
+            </div>
+            <div class="back-row">
+                <span class="back-label">Phone</span>
+                <span class="back-value @(string.IsNullOrEmpty(guardianMobile) ? "muted" : "")">
+                    @(!string.IsNullOrEmpty(guardianMobile) ? guardianMobile : "N/A")
+                </span>
+            </div>
+            <div class="back-field-group-title" style="margin-top:0.5mm;">Address</div>
+            <div class="back-row">
+                <span class="back-label">Present</span>
+                <span class="back-value @(string.IsNullOrEmpty(address) ? "muted" : "")">
+                    @(!string.IsNullOrEmpty(address) ? address : "N/A")
+                </span>
+            </div>
+            <div class="back-field-group-title" style="margin-top:0.5mm;">Emergency</div>
+            <div class="back-row">
+                <span class="back-value" style="font-weight:700;">
+                    @(!string.IsNullOrEmpty(guardianMobile) ? guardianMobile : "N/A")
+                </span>
             </div>
         </div>
 
         <div class="back-qr-panel">
-            <div class="back-qr-image">
+            <div class="back-qr-frame">
                 @if (!string.IsNullOrEmpty(qrDataUri))
                 {
                     <img src="@qrDataUri" alt="QR" />
@@ -63,11 +63,15 @@
         </div>
     </div>
 
-    <div class="back-footer">
+    <div class="back-footer" style="background:#1B4D8C">
         <div class="back-footer-text">
             @ViewBag.SchoolNameEn &mdash;
-            <span class="phone-email">@ViewBag.SchoolPhone | @ViewBag.SchoolEmail</span>
+            <span class="highlight">@ViewBag.SchoolPhone | @ViewBag.SchoolEmail</span>
             <br />@ViewBag.SchoolAddress
+            @if (!string.IsNullOrEmpty(footerText))
+            {
+                <br /><span style="font-size:1.1mm;opacity:0.7;">@footerText</span>
+            }
         </div>
     </div>
 </div>

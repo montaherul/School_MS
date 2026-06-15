@@ -2,50 +2,16 @@
 @using SchoolManagementSystem.Helpers
 @{
     Layout = null;
-    var today = DateTime.Today.ToString("dd MMM yyyy");
 }
 <!DOCTYPE html>
 <html>
 <head>
     <title>Employee ID Card</title>
     <meta charset="utf-8" />
-    <link rel="stylesheet" href="~/css/idcard-print.css" asp-append-version="true" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <base href="@Model.BaseUrl" />
+    <link rel="stylesheet" href="/css/idcard-print.css" />
 </head>
 <body>
-
-    @* ─── Controls (Screen Only) ─── *@
-    <div class="card-controls no-print">
-        @if (Model.IsBulk)
-        {
-            <h3 style="color:var(--card-primary);font-weight:700;margin-bottom:8px;">
-                <i class="bi bi-card-list"></i> Bulk ID Cards (@Model.Employees.Count employees)
-            </h3>
-            <p style="color:var(--card-text-muted);margin-bottom:16px;">
-                <i class="bi bi-info-circle"></i> Preview all cards below. Print or download as PDF.
-            </p>
-        }
-        else
-        {
-            <h3 style="color:var(--card-primary);font-weight:700;margin-bottom:8px;">
-                <i class="bi bi-person-badge"></i> Employee Identity Card
-            </h3>
-            <p style="color:var(--card-text-muted);margin-bottom:16px;">
-                <i class="bi bi-info-circle"></i> @Model.Employees[0]?.FullName &mdash; @Model.Employees[0]?.EmployeeCode
-            </p>
-        }
-
-        <button type="button" class="btn btn-print" onclick="window.print()">
-            <i class="bi bi-printer-fill"></i> @(Model.IsBulk ? "Print All Cards" : "Print Card")
-        </button>
-        <a href="@Url.Action("DownloadIdCardPdf", new { id = Model.IsBulk ? 0 : Model.Employees[0]?.Id })"
-           class="btn btn-pdf" target="_blank">
-            <i class="bi bi-file-earmark-pdf-fill"></i> @(Model.IsBulk ? "Download All as PDF" : "Download PDF")
-        </a>
-        <a href="javascript:history.back()" class="btn btn-back">
-            <i class="bi bi-arrow-left"></i> Back
-        </a>
-    </div>
 
     @* ─── Card Container ─── *@
     <div class="id-card-container @(Model.IsBulk ? "bulk" : "")">
@@ -53,18 +19,22 @@
         @foreach (var employee in Model.Employees)
         {
             var themeColor = GetThemeColor(employee.Designation);
-            var qrDataUri = IdCardQRHelper.GenerateQrCodeBase64(employee.Id.ToString());
+            var qrDataUri = IdCardQRHelper.GenerateQrCodeBase64(employee.EmployeeCode ?? "N/A");
 
             @* Set ViewData for partials *@
             ViewBag.SchoolLogoPath = Model.SchoolLogoPath;
+            ViewBag.SchoolSealPath = Model.SchoolSealPath;
             ViewBag.SchoolNameEn = Model.SchoolNameEn;
             ViewBag.SchoolEIIN = Model.SchoolEIIN;
             ViewBag.SchoolWebsite = Model.SchoolWebsite;
+            ViewBag.SchoolMotto = Model.SchoolMotto;
+            ViewBag.AcademicYear = Model.AcademicYear;
             ViewBag.SchoolAddress = Model.SchoolAddress;
             ViewBag.SchoolPhone = Model.SchoolPhone;
             ViewBag.SchoolEmail = Model.SchoolEmail;
             ViewBag.PrincipalName = Model.PrincipalName;
             ViewBag.PrincipalSignaturePath = Model.PrincipalSignaturePath;
+            ViewBag.FooterText = Model.FooterText;
             ViewBag.QrCodeDataUri = qrDataUri;
             ViewBag.ThemeColor = themeColor;
 
@@ -76,20 +46,5 @@
         }
 
     </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            var pdfBtn = document.querySelector('.btn-pdf');
-            if (pdfBtn) {
-                pdfBtn.addEventListener('click', function (e) {
-                    if ('@Model.IsBulk' === 'True') {
-                        e.preventDefault();
-                        var ids = '@string.Join(",", Model.Employees.Select(e => e.Id))';
-                        window.open('@Url.Action("DownloadBulkIdCardPdf")?ids=' + encodeURIComponent(ids), '_blank');
-                    }
-                });
-            }
-        });
-    </script>
 </body>
 </html>

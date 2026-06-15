@@ -7,6 +7,7 @@ using SchoolManagementSystem.Models.Entities.Teachers;
 using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Models.ViewModels.Exam;
 using SchoolManagementSystem.Services.Interfaces.Exam;
+using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using ExamEntity = SchoolManagementSystem.Models.Entities.Exam.Exam;
 
@@ -15,10 +16,14 @@ namespace SchoolManagementSystem.Services.Implementations.Exam;
 public class ExamSubjectService : IExamSubjectService
 {
     private readonly IUnitOfWork _uow;
+    private readonly ISubjectMarkStructureService _markStructureService;
+    private readonly IExamValidationService _examValidation;
 
-    public ExamSubjectService(IUnitOfWork uow)
+    public ExamSubjectService(IUnitOfWork uow, ISubjectMarkStructureService markStructureService, IExamValidationService examValidation)
     {
         _uow = uow;
+        _markStructureService = markStructureService;
+        _examValidation = examValidation;
     }
 
     public async Task<ExamSubjectSetupViewModel> GetSubjectSetupAsync(int examId)
@@ -39,7 +44,6 @@ public class ExamSubjectService : IExamSubjectService
             classSubjects = classSubjects.Where(cs =>
                 cs.StudentGroupId == null || cs.StudentGroupId == exam.StudentGroupId.Value).ToList();
 
-        // Filter by SubjectGroup based on Bangladesh curriculum
         var classNumber = ExtractClassNumber(exam.ClassId);
         if (classNumber >= 1 && classNumber <= 8)
         {
@@ -80,28 +84,34 @@ public class ExamSubjectService : IExamSubjectService
             })
             .ToListAsync();
 
+        // Load component previews from SubjectMarkStructure for each subject
+        var subjectIds = classSubjects.Select(cs => cs.SubjectId).ToList();
+        var componentPreviews = await _markStructureService.GetComponentPreviewsAsync(subjectIds);
+
+        var previewLookup = componentPreviews.ToDictionary(p => p.SubjectId);
+
         var subjects = classSubjects
             .Select(cs =>
             {
                 existingSubjects.TryGetValue(cs.SubjectId, out var existing);
+                previewLookup.TryGetValue(cs.SubjectId, out var preview);
+                var totalFullMarks = preview?.Components?.Sum(c => c.FullMarks) ?? existing?.FullMarks ?? 100;
+                var passMarks = existing?.PassMarks ?? 33;
                 return new ExamSubjectConfigDto
                 {
                     Id = existing?.Id,
                     SubjectId = cs.SubjectId,
                     SubjectName = cs.Subject?.Name ?? "",
                     TeacherId = existing?.TeacherId,
-                    TotalWrittenMarks = existing?.TotalWrittenMarks ?? 0,
-                    TotalMCQMarks = existing?.TotalMCQMarks ?? 0,
-                    TotalPracticalMarks = existing?.TotalPracticalMarks ?? 0,
-                    TotalVivaMarks = existing?.TotalVivaMarks ?? 0,
-                    TotalAssignmentMarks = existing?.TotalAssignmentMarks ?? 0,
-                    PassMark = existing?.PassMarks ?? 33,
+                    PassMark = passMarks,
+                    FullMarks = totalFullMarks,
                     ExamDate = existing?.ExamDate,
                     ExamStartTime = existing?.ExamStartTime,
                     ExamDuration = existing?.ExamDuration,
                     RoomNumber = existing?.RoomNumber,
                     IsOptional = existing?.IsOptional ?? cs.IsOptional,
-                    IsActive = existing?.IsActive ?? true
+                    IsActive = existing?.IsActive ?? true,
+                    ComponentPreview = preview?.Components ?? []
                 };
             })
             .ToList();
@@ -122,6 +132,10 @@ public class ExamSubjectService : IExamSubjectService
         var exam = await _uow.Repository<ExamEntity>().GetByIdAsync(examId)
             ?? throw new KeyNotFoundException($"Exam with ID {examId} not found.");
 
+        // Validate that all active subjects have SubjectMarkStructure configured
+        var activeSubjectIds = subjects.Where(s => s.IsActive).Select(s => s.SubjectId).ToList();
+        await _examValidation.ThrowIfSubjectMarkStructureMissingAsync(activeSubjectIds);
+
         var existingSubjects = await _uow.Repository<ExamSubject>().Query()
             .Where(es => es.ExamId == examId)
             .ToListAsync();
@@ -132,35 +146,31 @@ public class ExamSubjectService : IExamSubjectService
         foreach (var item in toRemove)
             _uow.Repository<ExamSubject>().Remove(item);
 
+        // Load component previews for validation
+        var componentPreviews = await _markStructureService.GetComponentPreviewsAsync(incomingSubjectIds.ToList());
+        var previewLookup = componentPreviews.ToDictionary(p => p.SubjectId);
+
         foreach (var dto in subjects.Where(s => s.IsActive))
         {
-            if (dto.TotalWrittenMarks < 0 || dto.TotalMCQMarks < 0 || dto.TotalPracticalMarks < 0
-                || dto.TotalVivaMarks < 0 || dto.TotalAssignmentMarks < 0)
-                throw new InvalidOperationException($"Component marks for '{dto.SubjectName}' cannot be negative.");
-            var total = dto.TotalWrittenMarks + dto.TotalMCQMarks + dto.TotalPracticalMarks
-                        + dto.TotalVivaMarks + dto.TotalAssignmentMarks;
-            if (total < 1 || total > 300)
-                throw new InvalidOperationException($"Total marks for '{dto.SubjectName}' must be between 1 and 300.");
             if (!dto.TeacherId.HasValue)
                 throw new InvalidOperationException($"Please assign a teacher for '{dto.SubjectName}'.");
+
+            // FullMarks come from SubjectMarkStructure — never from manual entry
+            previewLookup.TryGetValue(dto.SubjectId, out var preview);
+            var fullMarks = preview?.Components?.Sum(c => c.FullMarks) ?? dto.FullMarks;
 
             var existing = existingSubjects.FirstOrDefault(es => es.SubjectId == dto.SubjectId);
             if (existing != null)
             {
                 existing.TeacherId = dto.TeacherId;
-                existing.TotalWrittenMarks = dto.TotalWrittenMarks;
-                existing.TotalMCQMarks = dto.TotalMCQMarks;
-                existing.TotalPracticalMarks = dto.TotalPracticalMarks;
-                existing.TotalVivaMarks = dto.TotalVivaMarks;
-                existing.TotalAssignmentMarks = dto.TotalAssignmentMarks;
                 existing.PassMarks = dto.PassMark;
+                existing.FullMarks = fullMarks;
                 existing.ExamDate = dto.ExamDate;
                 existing.ExamStartTime = dto.ExamStartTime;
                 existing.ExamDuration = dto.ExamDuration;
                 existing.RoomNumber = dto.RoomNumber;
                 existing.IsOptional = dto.IsOptional;
                 existing.IsActive = true;
-                existing.FullMarks = total;
                 _uow.Repository<ExamSubject>().Update(existing);
             }
             else
@@ -170,12 +180,7 @@ public class ExamSubjectService : IExamSubjectService
                     ExamId = examId,
                     SubjectId = dto.SubjectId,
                     TeacherId = dto.TeacherId,
-                    TotalWrittenMarks = dto.TotalWrittenMarks,
-                    TotalMCQMarks = dto.TotalMCQMarks,
-                    TotalPracticalMarks = dto.TotalPracticalMarks,
-                    TotalVivaMarks = dto.TotalVivaMarks,
-                    TotalAssignmentMarks = dto.TotalAssignmentMarks,
-                    FullMarks = total,
+                    FullMarks = fullMarks,
                     PassMarks = dto.PassMark,
                     ExamDate = dto.ExamDate,
                     ExamStartTime = dto.ExamStartTime,
@@ -209,16 +214,15 @@ public class ExamSubjectService : IExamSubjectService
             })
             .ToListAsync();
 
+        var previews = await _markStructureService.GetComponentPreviewsAsync([examSubject.SubjectId]);
+        var preview = previews.FirstOrDefault();
+
         return new ExamSubjectConfigDto
         {
             SubjectId = examSubject.SubjectId,
             SubjectName = examSubject.Subject?.Name ?? "",
             TeacherId = examSubject.TeacherId,
-            TotalWrittenMarks = examSubject.TotalWrittenMarks,
-            TotalMCQMarks = examSubject.TotalMCQMarks,
-            TotalPracticalMarks = examSubject.TotalPracticalMarks,
-            TotalVivaMarks = examSubject.TotalVivaMarks,
-            TotalAssignmentMarks = examSubject.TotalAssignmentMarks,
+            FullMarks = examSubject.FullMarks,
             PassMark = examSubject.PassMarks,
             ExamDate = examSubject.ExamDate,
             ExamStartTime = examSubject.ExamStartTime,
@@ -226,7 +230,8 @@ public class ExamSubjectService : IExamSubjectService
             RoomNumber = examSubject.RoomNumber,
             IsOptional = examSubject.IsOptional,
             IsActive = examSubject.IsActive,
-            Teachers = teachers
+            Teachers = teachers,
+            ComponentPreview = preview?.Components
         };
     }
 
@@ -235,26 +240,17 @@ public class ExamSubjectService : IExamSubjectService
         var examSubject = await _uow.Repository<ExamSubject>().GetByIdAsync(examSubjectId)
             ?? throw new KeyNotFoundException($"ExamSubject with ID {examSubjectId} not found.");
 
-        if (dto.TotalWrittenMarks < 0 || dto.TotalMCQMarks < 0 || dto.TotalPracticalMarks < 0
-            || dto.TotalVivaMarks < 0 || dto.TotalAssignmentMarks < 0)
-            throw new InvalidOperationException("Component marks cannot be negative.");
         if (!dto.TeacherId.HasValue)
             throw new InvalidOperationException("Teacher assignment is required.");
 
         examSubject.TeacherId = dto.TeacherId;
-        examSubject.TotalWrittenMarks = dto.TotalWrittenMarks;
-        examSubject.TotalMCQMarks = dto.TotalMCQMarks;
-        examSubject.TotalPracticalMarks = dto.TotalPracticalMarks;
-        examSubject.TotalVivaMarks = dto.TotalVivaMarks;
-        examSubject.TotalAssignmentMarks = dto.TotalAssignmentMarks;
         examSubject.PassMarks = dto.PassMark;
+        examSubject.FullMarks = dto.FullMarks;
         examSubject.ExamDate = dto.ExamDate;
         examSubject.ExamStartTime = dto.ExamStartTime;
         examSubject.ExamDuration = dto.ExamDuration;
         examSubject.RoomNumber = dto.RoomNumber;
         examSubject.IsOptional = dto.IsOptional;
-        examSubject.FullMarks = dto.TotalWrittenMarks + dto.TotalMCQMarks + dto.TotalPracticalMarks
-                                + dto.TotalVivaMarks + dto.TotalAssignmentMarks;
 
         _uow.Repository<ExamSubject>().Update(examSubject);
         await _uow.SaveChangesAsync();
@@ -310,10 +306,6 @@ public class ExamSubjectService : IExamSubjectService
 
         var examSubjectLookup = examSubjects.ToDictionary(es => es.SubjectId, es => es);
 
-        var allSchedules = await _uow.Repository<ExamSchedule>().Query()
-            .Where(s => s.ExamId != examId)
-            .ToListAsync();
-
         // Validate schedule subjects match exam's group (cross-group prevention)
         if (exam != null && exam.StudentGroupId.HasValue)
         {
@@ -332,7 +324,6 @@ public class ExamSubjectService : IExamSubjectService
                 var cs = classSubjects.FirstOrDefault(c => c.SubjectId == dto.SubjectId);
                 if (cs?.Subject != null && group != null)
                 {
-                    // If subject has a SubjectGroup, it must match the exam's group
                     var subjectGroup = cs.Subject.SubjectGroup ?? "";
                     if (!string.IsNullOrEmpty(subjectGroup) &&
                         subjectGroup != "Common" &&
@@ -358,7 +349,6 @@ public class ExamSubjectService : IExamSubjectService
                     && s.SubjectId != dto.SubjectId);
                 if (roomConflict)
                 {
-                    var subjectName = dto.SubjectName;
                     throw new InvalidOperationException(
                         $"Room '{dto.RoomNumber}' is already scheduled for another subject on {dto.ExamDate:dd MMM yyyy} during the same time slot.");
                 }

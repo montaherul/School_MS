@@ -10,8 +10,13 @@ namespace SchoolManagementSystem.Services.Implementations.Academic;
 public class AcademicYearService : IAcademicYearService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ICalendarGenerationService _calendarGen;
 
-    public AcademicYearService(IUnitOfWork unitOfWork) { _unitOfWork = unitOfWork; }
+    public AcademicYearService(IUnitOfWork unitOfWork, ICalendarGenerationService calendarGen)
+    {
+        _unitOfWork = unitOfWork;
+        _calendarGen = calendarGen;
+    }
 
     public async Task<PagedResult<AcademicYearListItemDto>> GetPagedAsync(int page, int pageSize, string? search, CancellationToken cancellationToken = default)
     {
@@ -45,6 +50,16 @@ public class AcademicYearService : IAcademicYearService
         var entity = new AcademicYear { Name = dto.Name.Trim(), StartsOn = dto.StartsOn, EndsOn = dto.EndsOn, IsActive = dto.IsActive, CreatedBy = createdBy };
         await _unitOfWork.Repository<AcademicYear>().AddAsync(entity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        try
+        {
+            await _calendarGen.GenerateYearAsync(entity.Id, entity.StartsOn.Year, cancellationToken);
+        }
+        catch
+        {
+            // Calendar generation is best-effort; don't block year creation
+        }
+
         return entity.Id;
     }
 

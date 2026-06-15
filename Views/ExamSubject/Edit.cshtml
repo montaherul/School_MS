@@ -1,6 +1,7 @@
 @model SchoolManagementSystem.Models.DTOs.Exam.ExamSubjectConfigDto
 @{
     ViewData["Title"] = "Edit Subject Configuration";
+    var totalMarks = Model.ComponentPreview?.Sum(c => c.FullMarks) ?? Model.FullMarks;
 }
 
 <div class="adm-page er-page er-page--slide">
@@ -43,26 +44,23 @@
                             }
                         </select>
                     </div>
+
+                    @if (Model.ComponentPreview != null && Model.ComponentPreview.Count > 0)
+                    {
+                        foreach (var comp in Model.ComponentPreview)
+                        {
+                            <div class="col-md-3">
+                                <label class="er-label">@comp.Name</label>
+                                <input class="er-input" type="number" value="@comp.FullMarks" readonly style="background:#f0f0f0;cursor:not-allowed;" />
+                            </div>
+                        }
+                    }
+
                     <div class="col-md-3">
-                        <label class="er-label">Written Marks</label>
-                        <input class="er-input" name="TotalWrittenMarks" type="number" value="@Model.TotalWrittenMarks" min="0" />
+                        <label class="er-label">Total Full Marks</label>
+                        <input class="er-input" type="number" value="@totalMarks" readonly style="background:#f0f0f0;cursor:not-allowed;" />
                     </div>
-                    <div class="col-md-3">
-                        <label class="er-label">MCQ Marks</label>
-                        <input class="er-input" name="TotalMCQMarks" type="number" value="@Model.TotalMCQMarks" min="0" />
-                    </div>
-                    <div class="col-md-3">
-                        <label class="er-label">Practical Marks</label>
-                        <input class="er-input" name="TotalPracticalMarks" type="number" value="@Model.TotalPracticalMarks" min="0" />
-                    </div>
-                    <div class="col-md-3">
-                        <label class="er-label">Viva Marks</label>
-                        <input class="er-input" name="TotalVivaMarks" type="number" value="@Model.TotalVivaMarks" min="0" />
-                    </div>
-                    <div class="col-md-3">
-                        <label class="er-label">Assignment Marks</label>
-                        <input class="er-input" name="TotalAssignmentMarks" type="number" value="@Model.TotalAssignmentMarks" min="0" />
-                    </div>
+
                     <div class="col-md-3">
                         <label class="er-label">Pass Mark</label>
                         <input class="er-input" name="PassMark" type="number" value="@Model.PassMark" min="0" step="0.5" />
@@ -111,11 +109,7 @@
                 subjectId: parseInt(form.querySelector('[name="SubjectId"]').value),
                 subjectName: form.querySelector('[name="SubjectName"]').value,
                 teacherId: parseInt(form.querySelector('[name="TeacherId"]').value) || null,
-                totalWrittenMarks: parseInt(form.querySelector('[name="TotalWrittenMarks"]').value) || 0,
-                totalMCQMarks: parseInt(form.querySelector('[name="TotalMCQMarks"]').value) || 0,
-                totalPracticalMarks: parseInt(form.querySelector('[name="TotalPracticalMarks"]').value) || 0,
-                totalVivaMarks: parseInt(form.querySelector('[name="TotalVivaMarks"]').value) || 0,
-                totalAssignmentMarks: parseInt(form.querySelector('[name="TotalAssignmentMarks"]').value) || 0,
+                fullMarks: @Json.Serialize(totalMarks),
                 passMark: parseFloat(form.querySelector('[name="PassMark"]').value) || 0,
                 examDate: form.querySelector('[name="ExamDate"]').value || null,
                 examStartTime: form.querySelector('[name="ExamStartTime"]').value || null,

@@ -113,19 +113,7 @@ public class MarksController : Controller
                 MarksObtained = s.MarksObtained,
                 Grade = s.Grade,
                 IsLocked = s.IsLocked,
-                WrittenMarks = s.WrittenMarks,
-                MCQMarks = s.MCQMarks,
-                CQMarks = s.CQMarks,
-                PracticalMarks = s.PracticalMarks,
-                VivaMarks = s.VivaMarks,
-                LabMarks = s.LabMarks,
-                OralMarks = s.OralMarks,
-                AssignmentMarks = s.AssignmentMarks,
-                ContinuousAssessmentMarks = s.ContinuousAssessmentMarks,
-                CompetencyMarks = s.CompetencyMarks,
-                BehaviourMarks = s.BehaviourMarks,
-                ParticipationMarks = s.ParticipationMarks,
-                ComponentValues = s.ComponentValues,
+                ComponentMarks = s.ComponentMarks,
                 EnteredByTeacherId = s.EnteredByTeacherId,
                 EnteredByTeacherName = s.EnteredByTeacherName
             }).ToList()
@@ -240,6 +228,27 @@ public class MarksController : Controller
             var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
             var teacher = await _teacherService.GetByUserIdAsync(currentUserId, ct);
             dto.TeacherId = teacher?.Id ?? 1;
+
+            if (teacher != null && !User.IsInRole("Admin") && !User.IsInRole("Super Admin") && !User.IsInRole("Principal"))
+            {
+                if (dto.Marks.Any())
+                {
+                    var studentIds = dto.Marks.Select(m => m.StudentId).Distinct().ToList();
+                    var classSections = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>()
+                        .Query()
+                        .Where(s => studentIds.Contains(s.Id))
+                        .Select(s => new { s.ClassId, s.SectionId })
+                        .Distinct()
+                        .ToListAsync(ct);
+
+                    foreach (var cs in classSections)
+                    {
+                        var isAuthorized = await _resultAuthService.IsAuthorizedToEnterMarksAsync(teacher.Id, dto.SubjectId, cs.ClassId, cs.SectionId, 0, null, ct);
+                        if (!isAuthorized) return Forbid();
+                    }
+                }
+            }
+
             foreach (var m in dto.Marks) m.Status = ResultWorkflowStatus.Draft;
             await _markEntryService.SubmitMarksBatchAsync(dto);
             return Json(new { success = true });
