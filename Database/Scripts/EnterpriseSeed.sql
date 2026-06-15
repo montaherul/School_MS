@@ -908,5 +908,61 @@ FROM (VALUES
 ) G(GuardianId, UserId, Email)
 WHERE Guardians.Id = G.GuardianId;
 
+-- ============================================================
+-- 30. STUDENT USER ACCOUNTS (for students 1-2, 4-12; ID 3 already has user)
+-- ============================================================
+PRINT 'Seeding student user accounts...';
+SET IDENTITY_INSERT Users ON;
+INSERT INTO Users (Id, UserName, Email, PhoneNumber, PasswordHash, Status, IsEmailConfirmed, LastLoginAt, FailedLoginAttempts, MustChangePassword, CreatedAt, CreatedBy, UpdatedAt, UpdatedBy, IsDeleted)
+SELECT Id, UserName, Email, PhoneNumber, PasswordHash, 1, 1, NULL, 0, 0, @Now, @SYSTEM, NULL, NULL, 0
+FROM (VALUES
+    (25, N'stu-STU20260001', N'student1@school.local',  N'01700000010', N'PBKDF2-SHA256:100000:7U7d3in6upclYrcegdMbeg==:OSGS7hCa80mCzsQDuB0A00RtOV+NZ82sPhuba3tlfxM='),
+    (26, N'stu-STU20260002', N'student2@school.local',  N'01700000020', N'PBKDF2-SHA256:100000:7U7d3in6upclYrcegdMbeg==:OSGS7hCa80mCzsQDuB0A00RtOV+NZ82sPhuba3tlfxM='),
+    (27, N'stu-STU20260004', N'student4@school.local',  N'01720000004', N'PBKDF2-SHA256:100000:7U7d3in6upclYrcegdMbeg==:OSGS7hCa80mCzsQDuB0A00RtOV+NZ82sPhuba3tlfxM='),
+    (28, N'stu-STU20260005', N'student5@school.local',  N'01720000005', N'PBKDF2-SHA256:100000:7U7d3in6upclYrcegdMbeg==:OSGS7hCa80mCzsQDuB0A00RtOV+NZ82sPhuba3tlfxM='),
+    (29, N'stu-STU20260006', N'student6@school.local',  N'01720000006', N'PBKDF2-SHA256:100000:7U7d3in6upclYrcegdMbeg==:OSGS7hCa80mCzsQDuB0A00RtOV+NZ82sPhuba3tlfxM='),
+    (30, N'stu-STU20260007', N'student7@school.local',  N'01720000007', N'PBKDF2-SHA256:100000:7U7d3in6upclYrcegdMbeg==:OSGS7hCa80mCzsQDuB0A00RtOV+NZ82sPhuba3tlfxM='),
+    (31, N'stu-STU20260008', N'student8@school.local',  N'01720000008', N'PBKDF2-SHA256:100000:7U7d3in6upclYrcegdMbeg==:OSGS7hCa80mCzsQDuB0A00RtOV+NZ82sPhuba3tlfxM='),
+    (32, N'stu-STU20260009', N'student9@school.local',  N'01720000009', N'PBKDF2-SHA256:100000:7U7d3in6upclYrcegdMbeg==:OSGS7hCa80mCzsQDuB0A00RtOV+NZ82sPhuba3tlfxM='),
+    (33, N'stu-STU20260010', N'student10@school.local', N'01720000010', N'PBKDF2-SHA256:100000:7U7d3in6upclYrcegdMbeg==:OSGS7hCa80mCzsQDuB0A00RtOV+NZ82sPhuba3tlfxM='),
+    (34, N'stu-STU20260011', N'student11@school.local', N'01720000011', N'PBKDF2-SHA256:100000:7U7d3in6upclYrcegdMbeg==:OSGS7hCa80mCzsQDuB0A00RtOV+NZ82sPhuba3tlfxM='),
+    (35, N'stu-STU20260012', N'student12@school.local', N'01720000012', N'PBKDF2-SHA256:100000:7U7d3in6upclYrcegdMbeg==:OSGS7hCa80mCzsQDuB0A00RtOV+NZ82sPhuba3tlfxM=')
+) U(Id, UserName, Email, PhoneNumber, PasswordHash)
+WHERE NOT EXISTS (SELECT 1 FROM Users WHERE Id = U.Id);
+SET IDENTITY_INSERT Users OFF;
+
+-- ============================================================
+-- 31. STUDENT USER-ROLE ASSIGNMENTS (Role ID 7 = Student)
+-- ============================================================
+PRINT 'Seeding student user-role assignments...';
+INSERT INTO UserRoles (UserId, RoleId)
+SELECT U.Id, 7
+FROM (VALUES (25),(26),(27),(28),(29),(30),(31),(32),(33),(34),(35)) U(Id)
+WHERE NOT EXISTS (SELECT 1 FROM UserRoles UR WHERE UR.UserId = U.Id AND UR.RoleId = 7);
+
+-- ============================================================
+-- 32. LINK STUDENT RECORDS TO USER ACCOUNTS
+-- ============================================================
+PRINT 'Linking students to user accounts...';
+UPDATE Students
+SET UserId = S.UserId,
+    EmailAddress = S.Email,
+    UpdatedAt = @Now,
+    UpdatedBy = @SYSTEM
+FROM (VALUES
+    (1, 25, N'student1@school.local'),
+    (2, 26, N'student2@school.local'),
+    (4, 27, N'student4@school.local'),
+    (5, 28, N'student5@school.local'),
+    (6, 29, N'student6@school.local'),
+    (7, 30, N'student7@school.local'),
+    (8, 31, N'student8@school.local'),
+    (9, 32, N'student9@school.local'),
+    (10,33, N'student10@school.local'),
+    (11,34, N'student11@school.local'),
+    (12,35, N'student12@school.local')
+) S(StudentId, UserId, Email)
+WHERE Students.Id = S.StudentId;
+
 PRINT 'Enterprise seed data insertion complete.';
 GO

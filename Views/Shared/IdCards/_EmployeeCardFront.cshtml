@@ -78,7 +78,9 @@
                         </tr>
                         <tr>
                             <td class="info-label">Designation</td>
-                            <td class="info-value">@(employee.Designation ?? "---")</td>
+                            <td class="info-value">
+                                <span class="designation-badge" style="background:@themeColor;color:#fff;padding:2px 10px;border-radius:12px;display:inline-block;font-size:12px;font-weight:600;white-space:nowrap;">@(employee.Designation ?? "---")</span>
+                            </td>
                         </tr>
                         <tr>
                             <td class="info-label">Department</td>
