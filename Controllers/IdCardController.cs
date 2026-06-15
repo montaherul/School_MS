@@ -106,7 +106,7 @@ public class IdCardController : Controller
 
         var data = items.Select(s => new
         {
-            s.Id,
+            id = s.Id,
             studentCode = s.StudentCode,
             studentName = s.StudentName,
             s.Gender,
@@ -234,7 +234,7 @@ public class IdCardController : Controller
 
         var data = items.Select(e => new
         {
-            e.Id,
+            id = e.Id,
             e.EmployeeCode,
             employeeName = e.EmployeeName,
             e.Phone,

@@ -223,6 +223,8 @@
                 downloadSelectedBtn.disabled = selected === 0;
             }
 
+            setInterval(updateBulkButtons, 300);
+
             function reloadTable() {
                 table.setData('@Url.Action("StudentsData", "IdCard")', getFilters());
             }
