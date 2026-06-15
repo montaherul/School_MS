@@ -80,29 +80,40 @@
                 <label class="form-label fw-semibold">Role</label>
 
                 <select id="roleFilter" class="form-select">
-
                     <option value="">All Roles</option>
-
-                    <option value="Assistant Head">Assistant Head</option>
-
-                    <option value="Lecturer">Lecturer</option>
-
-                    <option value="Office Staff">Office Staff</option>
-
-                    <option value="Principal">Principal</option>
-
-                    <option value="Senior Lecturer">Senior Lecturer</option>
-
-                    <option value="Student">Student</option>
-
                     <option value="Super Admin">Super Admin</option>
+                    <option value="Admin">Admin</option>
+                    <option value="Principal">Principal</option>
+                    <option value="Assistant Head">Assistant Head</option>
+                    <option value="Senior Lecturer">Senior Lecturer</option>
+                    <option value="Lecturer">Lecturer</option>
+                    <option value="Office Staff">Office Staff</option>
+                    <option value="Accountant">Accountant</option>
+                    <option value="Librarian">Librarian</option>
+                    <option value="LabAssistant">Lab Assistant</option>
+                    <option value="TransportStaff">Transport Staff</option>
+                    <option value="SupportStaff">Support Staff</option>
+                    <option value="Student">Student</option>
+                    <option value="Guardian">Guardian</option>
+                </select>
+            </div>
 
+            <!-- USER TYPE -->
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">Type</label>
+
+                <select id="userTypeFilter" class="form-select">
+                    <option value="">All Types</option>
+                    <option value="Employee">Employee</option>
+                    <option value="Guardian">Guardian</option>
+                    <option value="Student">Student</option>
+                    <option value="System">System</option>
                 </select>
             </div>
 
             <!-- PAGE SIZE -->
-            <div class="col-md-2">
-                <label class="form-label fw-semibold">Page Size</label>
+            <div class="col-md-1">
+                <label class="form-label fw-semibold">Size</label>
 
                 <select id="pageSizeFilter" class="form-select">
                     <option value="10">10</option>
@@ -113,12 +124,11 @@
             </div>
 
             <!-- REFRESH -->
-            <div class="col-md-2 d-flex align-items-end">
+            <div class="col-md-1 d-flex align-items-end">
                 <button class="btn btn-outline-secondary w-100"
                         id="refreshUsersBtn">
 
                     <i class="bi bi-arrow-clockwise me-1"></i>
-                    Refresh
                 </button>
             </div>
 
@@ -177,7 +187,9 @@
 
                     status: $("#statusFilter").val(),
 
-                    role: $("#roleFilter").val()
+                    role: $("#roleFilter").val(),
+
+                    userType: $("#userTypeFilter").val()
                 };
             },
 
@@ -249,6 +261,35 @@
 
                         return cell.getValue()
                             || '<span class="text-muted">N/A</span>';
+                    }
+                },
+
+                {
+                    title: "Type",
+                    field: "userType",
+                    width: 120,
+
+                    formatter: function (cell) {
+                        let type = cell.getValue();
+                        let badgeClass = "bg-secondary";
+
+                        if (type === "Employee") badgeClass = "bg-primary";
+                        else if (type === "Guardian") badgeClass = "bg-success";
+                        else if (type === "Student") badgeClass = "bg-warning text-dark";
+                        else if (type === "System") badgeClass = "bg-dark";
+
+                        return `<span class="badge ${badgeClass}">${type}</span>`;
+                    }
+                },
+
+                {
+                    title: "Linked Entity",
+                    field: "linkedEntityName",
+                    widthGrow: 1.5,
+
+                    formatter: function (cell) {
+                        let val = cell.getValue();
+                        return val || '<span class="text-muted">—</span>';
                     }
                 },
 
@@ -379,7 +420,7 @@
         });
 
         // FILTERS
-        $("#statusFilter, #roleFilter").change(function () {
+        $("#statusFilter, #roleFilter, #userTypeFilter").change(function () {
 
             table.setData();
         });
@@ -398,6 +439,8 @@
             $("#statusFilter").val('');
 
             $("#roleFilter").val('');
+
+            $("#userTypeFilter").val('');
 
             table.setData();
         });

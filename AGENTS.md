@@ -25,6 +25,10 @@ Complete Phase 32 (dynamic exam marking) — 336 tests, component refactoring, t
   - **Bug #3**: `GetAllResultsAsync` now maps all fields: `Grade`, `ClassPosition`, `GroupPosition`, `PublishedAt`, `FailedSubjectCount`, `PassedSubjectCount`, `TotalFullMarks`, `Status`.
   - **DB data fixed**: Existing 3 StudentExamResults updated with correct `PublishedAt` timestamp via SQL.
 - **336/336 tests passing, 0 build errors.**
+- **Enterprise Seed SQL script** (`Database/Scripts/EnterpriseSeed.sql`): 10 users, 10 employees, 10 teachers, 10 students, 10 guardians, 5 exams, marks, attendance, ID card data, class subjects, exam components, qualifications — all with PBKDF2 password hashing. Executed successfully against live DB.
+- **~700 lines dead iTextSharp code removed** from `PlainPdfGenerator.cs`: `DrawStudentFront/Back`, `DrawEmployeeFront/Back`, `ResolvePath`, `DrawPlaceholderCircle`, `GetPdfThemeColor` — build still 0 errors.
+- **Debug HTML writes gated**: Student/employee ID card debug files (`IdCardDebug/*.html`) now only written in Development env.
+- **No empty catch blocks remain** in `PlainPdfGenerator.cs`.
 
 ### In Progress
 - (none)
@@ -40,6 +44,9 @@ Complete Phase 32 (dynamic exam marking) — 336 tests, component refactoring, t
 - PublishedAt is set in `PublishResultsAsync` after merit calculation, not before.
 - StudentExamResult.Status stored as `ResultWorkflowStatus` enum (5=Published, 1=Draft).
 - `ExamTerm.HalfYearly = 2`, `ResultWorkflowStatus.Draft = 1`, `ResultWorkflowStatus.Published = 5`.
+- **Enterprise seed uses `IDENTITY_INSERT ON` + `WHERE NOT EXISTS` — idempotent on re-run.**
+- **Section IDs follow DbInitializer layout**: Classes 1-8: flat A/B (1-16); Class 9: groups 17-25; Class 10: groups 26-34.
+- **`_env.IsDevelopment()`** gates debug file writes instead of removing them entirely.
 
 ## Next Steps
 - (none)
@@ -65,3 +72,6 @@ Complete Phase 32 (dynamic exam marking) — 336 tests, component refactoring, t
 - `Repositories/Implementations/Result/MarkEntryRepository.cs`, `TeacherResultRepository.cs`, `StudentExamResultRepository.cs`: Build ComponentMarksDto from DB
 - `SchoolManagementSystem.Tests/Services/Phase32_*.cs`: 60 tests across 5 files
 - `SchoolManagementSystem.Tests/Services/Phase34B_StudentResultPortalTests.cs`: 25 tests
+- **`Database/Scripts/EnterpriseSeed.sql`**: Idempotent enterprise seed — 10 users, employees, teachers, students, guardians with PKI card data, exams, marks, attendance. **Now includes 10 EmployeeInvitations + 50 Admissions.**
+- **`Helpers/Pdf/PlainPdfGenerator.cs`**: Reduced from 1316→482 lines — dead iTextSharp code removed, debug gates added. HTML+wkhtmltopdf only for ID cards.
+- **`Helpers/Pdf/IPdfGenerator.cs`**: Interface unchanged — still supports both iTextSharp (report card/transcript) and DinkToPdf (ID cards/HTML).

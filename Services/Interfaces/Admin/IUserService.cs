@@ -11,6 +11,7 @@ public interface IUserService
       string? search,
       int? status = null,
       string? role = null,
+      string? userType = null,
       CancellationToken ct = default);
     Task<UserUpsertViewModel?> GetForEditAsync(int id, CancellationToken ct = default);
     Task<UserDetailsViewModel?> GetDetailsAsync(int id, CancellationToken ct = default);

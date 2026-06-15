@@ -1267,7 +1267,7 @@ public class Phase24_ProductionReadinessTests
     [Fact(DisplayName = "9f. Report Card QR code generation works")]
     public void ReportCard_QR_Code_Works()
     {
-        // QR code is generated in PlainPdfGenerator.DrawStudentBack
+        // QR code is generated in PlainPdfGenerator via HTML+wkhtmltopdf
         // using QRCodeHelper
         var qrData = "ID:S001|Name:Test Student|Class:9|Roll:1";
 

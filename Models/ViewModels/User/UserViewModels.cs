@@ -20,6 +20,15 @@ public class UserListItemVm
     public bool IsDeleted { get; set; }
     public string RolesText { get; set; } = string.Empty;
     public int TotalRecords { get; set; }
+
+    /// <summary>User type: Employee, Guardian, Student, or System.</summary>
+    public string UserType { get; set; } = "System";
+
+    /// <summary>Display name of the linked entity (employee name, guardian name, etc.).</summary>
+    public string LinkedEntityName { get; set; } = "—";
+    
+    /// <summary>Whether the linked employee is a teaching staff member.</summary>
+    public bool? IsTeachingStaff { get; set; }
 }
 
 public class UserIndexViewModel
@@ -71,11 +80,21 @@ public class UserDetailsViewModel
     public string Email { get; set; } = string.Empty;
     public string? PhoneNumber { get; set; }
     public AccountStatus Status { get; set; }
+    public string StatusText => Status switch
+    {
+        AccountStatus.Active => "Active",
+        AccountStatus.Inactive => "Inactive",
+        AccountStatus.Locked => "Locked",
+        AccountStatus.Pending => "Pending",
+        _ => "Unknown"
+    };
     public DateTime? LastLoginAt { get; set; }
     public DateTime CreatedAt { get; set; }
     public string? UpdatedBy { get; set; }
     public DateTime? UpdatedAt { get; set; }
     public IReadOnlyList<string> Roles { get; set; } = [];
+    public string UserType { get; set; } = "System";
+    public string LinkedEntityName { get; set; } = "—";
 }
 
 public class AssignRolesViewModel

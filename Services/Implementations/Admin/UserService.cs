@@ -2,6 +2,8 @@ using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Helpers.Security;
 using SchoolManagementSystem.Models.DTOs.Common;
 using SchoolManagementSystem.Models.Entities.Auth;
+using EmpEntity = SchoolManagementSystem.Models.Entities.Employee.Employee;
+using GdnEntity = SchoolManagementSystem.Models.Entities.Guardian.Guardian;
 using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Models.ViewModels.User;
 using SchoolManagementSystem.Services.Interfaces.Admin;
@@ -26,6 +28,7 @@ public class UserService : IUserService
        string? search,
        int? status = null,
        string? role = null,
+       string? userType = null,
        CancellationToken ct = default)
     {
         var query = _unitOfWork
@@ -37,15 +40,10 @@ public class UserService : IUserService
         if (!string.IsNullOrWhiteSpace(search))
         {
             var lower = search.ToLower();
-
             query = query.Where(u =>
-
                 u.UserName.ToLower().Contains(lower)
-
                 || u.Email.ToLower().Contains(lower)
-
-                || (u.PhoneNumber != null
-                    && u.PhoneNumber.ToLower().Contains(lower)));
+                || (u.PhoneNumber != null && u.PhoneNumber.ToLower().Contains(lower)));
         }
 
         // STATUS FILTER
@@ -58,49 +56,87 @@ public class UserService : IUserService
         if (!string.IsNullOrWhiteSpace(role))
         {
             query = query.Where(u =>
-                u.UserRoles.Any(ur =>
-                    ur.Role != null
-                    && ur.Role.Name == role));
+                u.UserRoles.Any(ur => ur.Role != null && ur.Role.Name == role));
+        }
+
+        // USER TYPE FILTER (pre-filter via role check for Student type)
+        if (!string.IsNullOrWhiteSpace(userType))
+        {
+            if (userType == "Student")
+            {
+                query = query.Where(u =>
+                    u.UserRoles.Any(ur => ur.Role != null && ur.Role.Name == "Student"));
+            }
         }
 
         var totalCount = await query.CountAsync(ct);
 
         var users = await query
-
-            .Include(u => u.UserRoles)
-            .ThenInclude(ur => ur.Role)
-
+            .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
             .OrderByDescending(u => u.Id)
-
             .Skip((page - 1) * pageSize)
-
             .Take(pageSize)
-
             .ToListAsync(ct);
 
-        var items = users.Select(u => new UserListItemVm
+        // Fetch linked entity data for Employee and Guardian lookups
+        var userIds = users.Select(u => u.Id).ToList();
+
+        var employeeMap = await _unitOfWork.Repository<EmpEntity>().Query()
+            .Where(e => e.UserId.HasValue && userIds.Contains(e.UserId.Value) && !e.IsDeleted)
+            .Select(e => new { e.UserId, e.FullName, e.IsTeachingStaff })
+            .ToDictionaryAsync(e => e.UserId!.Value, ct);
+
+        var guardianMap = await _unitOfWork.Repository<GdnEntity>().Query()
+            .Where(g => g.UserId.HasValue && userIds.Contains(g.UserId.Value) && !g.IsDeleted)
+            .Select(g => new { g.UserId, g.FullName })
+            .ToDictionaryAsync(g => g.UserId!.Value, ct);
+
+        var items = users.Select(u =>
         {
-            Id = u.Id,
+            string userType;
+            string linkedEntityName;
+            bool? isTeachingStaff = null;
 
-            UserName = u.UserName,
+            if (employeeMap.TryGetValue(u.Id, out var emp))
+            {
+                userType = "Employee";
+                linkedEntityName = emp.FullName;
+                isTeachingStaff = emp.IsTeachingStaff;
+            }
+            else if (guardianMap.TryGetValue(u.Id, out var gdn))
+            {
+                userType = "Guardian";
+                linkedEntityName = gdn.FullName;
+            }
+            else if (u.UserRoles.Any(ur => ur.Role != null && ur.Role.Name == "Student"))
+            {
+                userType = "Student";
+                linkedEntityName = "—";
+            }
+            else
+            {
+                userType = "System";
+                linkedEntityName = "—";
+            }
 
-            Email = u.Email,
-
-            PhoneNumber = u.PhoneNumber,
-
-            Status = u.Status,
-
-            IsDeleted = u.IsDeleted,
-
-            RolesText = string.Join(
-                ", ",
-                u.UserRoles
-                    .Where(ur => ur.Role != null)
-                    .Select(ur => ur.Role!.Name)
-                    .Distinct()
-                    .OrderBy(name => name)),
-
-            TotalRecords = totalCount
+            return new UserListItemVm
+            {
+                Id = u.Id,
+                UserName = u.UserName,
+                Email = u.Email,
+                PhoneNumber = u.PhoneNumber,
+                Status = u.Status,
+                IsDeleted = u.IsDeleted,
+                UserType = userType,
+                LinkedEntityName = linkedEntityName,
+                IsTeachingStaff = isTeachingStaff,
+                RolesText = string.Join(", ",
+                    u.UserRoles.Where(ur => ur.Role != null)
+                               .Select(ur => ur.Role!.Name)
+                               .Distinct()
+                               .OrderBy(name => name)),
+                TotalRecords = totalCount
+            };
         }).ToList();
 
         return new PagedResult<UserListItemVm>
@@ -141,6 +177,38 @@ public class UserService : IUserService
 
         if (user == null) return null;
 
+        // Resolve user type
+        string userType = "System";
+        string linkedEntityName = "—";
+
+        var emp = await _unitOfWork.Repository<EmpEntity>().Query()
+            .Where(e => e.UserId == id && !e.IsDeleted)
+            .Select(e => new { e.FullName })
+            .FirstOrDefaultAsync(ct);
+
+        if (emp != null)
+        {
+            userType = "Employee";
+            linkedEntityName = emp.FullName;
+        }
+        else
+        {
+            var gdn = await _unitOfWork.Repository<GdnEntity>().Query()
+                .Where(g => g.UserId == id && !g.IsDeleted)
+                .Select(g => new { g.FullName })
+                .FirstOrDefaultAsync(ct);
+
+            if (gdn != null)
+            {
+                userType = "Guardian";
+                linkedEntityName = gdn.FullName;
+            }
+            else if (user.UserRoles.Any(ur => ur.Role != null && ur.Role.Name == "Student"))
+            {
+                userType = "Student";
+            }
+        }
+
         return new UserDetailsViewModel
         {
             Id = user.Id,
@@ -152,7 +220,9 @@ public class UserService : IUserService
             CreatedAt = user.CreatedAt,
             UpdatedAt = user.UpdatedAt,
             UpdatedBy = user.UpdatedBy,
-            Roles = user.UserRoles.Where(ur => ur.Role != null).Select(ur => ur.Role!.Name).ToList()
+            Roles = user.UserRoles.Where(ur => ur.Role != null).Select(ur => ur.Role!.Name).ToList(),
+            UserType = userType,
+            LinkedEntityName = linkedEntityName
         };
     }
 

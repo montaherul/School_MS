@@ -24,9 +24,10 @@ public class UserController : Controller
      string? searchTerm = null,
      int? status = null,
      string? role = null,
+     string? userType = null,
      CancellationToken ct = default)
     {
-        var result = await _userService.GetPagedAsync( pageNumber, pageSize,searchTerm,status,role,ct);
+        var result = await _userService.GetPagedAsync(pageNumber, pageSize, searchTerm, status, role, userType, ct);
 
         // TABULATOR AJAX REQUEST
         if (Request.Headers["Accept"].ToString().Contains("application/json")
