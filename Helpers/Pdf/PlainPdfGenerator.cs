@@ -163,14 +163,14 @@ public class PlainPdfGenerator : IPdfGenerator
         var baseUrl = $"file:///{_env.WebRootPath.Replace('\\', '/').TrimEnd('/')}/";
         model.BaseUrl = baseUrl;
 
-        var rawHtml = _viewRenderer.RenderToStringAsync("~/Views/Student/PrintIdCard.cshtml", model)
+        var rawHtml = Task.Run(() => _viewRenderer.RenderToStringAsync("~/Views/Student/PrintIdCard.cshtml", model))
             .GetAwaiter().GetResult();
 
         var html = PrepareHtmlForPdf(rawHtml);
         var debugDir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "IdCardDebug");
         System.IO.Directory.CreateDirectory(debugDir);
         System.IO.File.WriteAllText(System.IO.Path.Combine(debugDir, "student-card-debug.html"), html);
-        return GenerateFromHtml(html);
+        return GenerateIdCardPdf(html, model.IsBulk);
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -181,14 +181,71 @@ public class PlainPdfGenerator : IPdfGenerator
         var baseUrl = $"file:///{_env.WebRootPath.Replace('\\', '/').TrimEnd('/')}/";
         model.BaseUrl = baseUrl;
 
-        var rawHtml = _viewRenderer.RenderToStringAsync("~/Views/Employee/PrintIdCard.cshtml", model)
+        var rawHtml = Task.Run(() => _viewRenderer.RenderToStringAsync("~/Views/Employee/PrintIdCard.cshtml", model))
             .GetAwaiter().GetResult();
 
         var html = PrepareHtmlForPdf(rawHtml);
         var debugDir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "IdCardDebug");
         System.IO.Directory.CreateDirectory(debugDir);
         System.IO.File.WriteAllText(System.IO.Path.Combine(debugDir, "employee-card-debug.html"), html);
-        return GenerateFromHtml(html);
+        return GenerateIdCardPdf(html, model.IsBulk);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    //  ID CARD PDF
+    //  Single:  180mm × 56mm (front+back side-by-side)
+    //  Bulk:    A4 Landscape (multiple cards per page)
+    // ─────────────────────────────────────────────────────────────
+    private static readonly SynchronizedConverter _converter = new(new PdfTools());
+
+    private byte[] GenerateIdCardPdf(string html, bool isBulk)
+    {
+        var globalSettings = new GlobalSettings
+        {
+            Margins = new MarginSettings { Top = 0, Right = 0, Bottom = 0, Left = 0 },
+            ColorMode = ColorMode.Color,
+            DPI = 300,
+        };
+
+        if (isBulk)
+        {
+            globalSettings.PaperSize = new PechkinPaperSize("297mm", "210mm");
+            globalSettings.Orientation = DinkToPdf.Orientation.Landscape;
+        }
+        else
+        {
+            globalSettings.PaperSize = new PechkinPaperSize("180mm", "56mm");
+            globalSettings.Orientation = DinkToPdf.Orientation.Portrait;
+        }
+
+        var doc = new HtmlToPdfDocument
+        {
+            GlobalSettings = globalSettings,
+            Objects =
+            {
+                new ObjectSettings
+                {
+                    HtmlContent = html,
+                    PagesCount = true,
+                    WebSettings = new WebSettings
+                    {
+                        DefaultEncoding = "utf-8",
+                        LoadImages = true,
+                        EnableIntelligentShrinking = false,
+                        PrintMediaType = false,
+                        MinimumFontSize = 1,
+                    },
+                    LoadSettings = new LoadSettings
+                    {
+                        BlockLocalFileAccess = false,
+                        JSDelay = 0,
+                    },
+                    FooterSettings = { HtmUrl = string.Empty, FontSize = 0 }
+                }
+            }
+        };
+
+        return _converter.Convert(doc);
     }
 
     private string PrepareHtmlForPdf(string rawHtml)
@@ -196,18 +253,30 @@ public class PlainPdfGenerator : IPdfGenerator
         var cssPath = System.IO.Path.Combine(_env.WebRootPath, "css", "idcard-print.css");
         var css = System.IO.File.ReadAllText(cssPath);
 
-        // 1. Replace external CSS link with inline <style>
-        var linkPattern = "<link[^>]*href=\"/css/idcard-print\\.css\"[^>]*>";
+        // 1. Inline the CSS
+        var linkPattern = @"<link[^>]*href=""[^""]*idcard-print\.css""[^>]*/?>"; 
         var inlineStyle = $"<style>\n{css}\n</style>";
         var html = System.Text.RegularExpressions.Regex.Replace(rawHtml, linkPattern, inlineStyle);
 
-        // 2. Replace relative src paths (starting with /) with absolute file:// paths
-        var wwwrootUrl = $"file:///{_env.WebRootPath.Replace('\\', '/').TrimEnd('/')}";
-        html = System.Text.RegularExpressions.Regex.Replace(
-            html,
-            "(src|href)=\"(/)",
-            $"$1=\"{wwwrootUrl}$2"
-        );
+        // 2. Convert ALL relative paths to absolute file:// paths
+        var wwwRoot = _env.WebRootPath.Replace('\\', '/').TrimEnd('/');
+        
+        // Fix src="/..." attributes
+        html = System.Text.RegularExpressions.Regex.Replace(html, @"src=""(/[^""]+)""", m =>
+        {
+            var path = m.Groups[1].Value;
+            return $"src=\"file:///{wwwRoot}{path}\"";
+        });
+        
+        // Fix href="/..." attributes (but not # or http links)
+        html = System.Text.RegularExpressions.Regex.Replace(html, @"href=""(/[^""#http][^""]*)""", m =>
+        {
+            var path = m.Groups[1].Value;
+            return $"href=\"file:///{wwwRoot}{path}\"";
+        });
+
+        // 3. Remove base tag (causes issues with wkhtmltopdf)
+        html = System.Text.RegularExpressions.Regex.Replace(html, @"<base[^>]*/?>", "");
 
         return html;
     }

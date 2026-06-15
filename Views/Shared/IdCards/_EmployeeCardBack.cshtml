@@ -1,78 +1,93 @@
-@model SchoolManagementSystem.Models.DTOs.Employee.EmployeeDetailsDto
+@model SchoolManagementSystem.Models.ViewModels.Employee.EmployeeCardModel
 @{
-    var qrDataUri = ViewBag.QrCodeDataUri as string;
-    var themeColor = ViewBag.ThemeColor as string ?? "#1B4D8C";
-    var emergencyContact = !string.IsNullOrEmpty(Model.EmergencyContactPhone)
-        ? $"{Model.EmergencyContactName ?? ""} {Model.EmergencyContactPhone}".Trim()
+    var employee = Model.Employee;
+    var themeColor = Model.ThemeColor;
+    var emergencyContact = !string.IsNullOrEmpty(employee.EmergencyContactPhone)
+        ? $"{employee.EmergencyContactName ?? ""} {employee.EmergencyContactPhone}".Trim()
         : "N/A";
-    var footerText = ViewBag.FooterText as string;
+    var validUntil = employee.CardExpiryDate?.ToString("dd-MMM-yyyy") ?? "N/A";
 }
 <div class="id-card id-card-back">
+
     <div class="back-header" style="background:@themeColor">
-        <div class="back-header-title">Employee Information</div>
+        <span class="back-header-title">Employee Information</span>
     </div>
 
-    <div class="back-body">
-        <div class="back-info-panel">
-            <div class="back-field-group-title" style="color:@themeColor">Contact &amp; Personal</div>
-            <div class="back-row">
-                <span class="back-label">Emergency</span>
-                <span class="back-value @(emergencyContact == "N/A" ? "muted" : "")">@emergencyContact</span>
-            </div>
-            <div class="back-row">
-                <span class="back-label">Address</span>
-                <span class="back-value @(string.IsNullOrEmpty(Model.PresentAddress) ? "muted" : "")">
-                    @(!string.IsNullOrEmpty(Model.PresentAddress) ? Model.PresentAddress : "N/A")
-                </span>
-            </div>
-            <div class="back-row">
-                <span class="back-label">Email</span>
-                <span class="back-value @(string.IsNullOrEmpty(Model.Email) ? "muted" : "")">
-                    @(!string.IsNullOrEmpty(Model.Email) ? Model.Email : "N/A")
-                </span>
-            </div>
-            <div class="back-row">
-                <span class="back-label">Dept</span>
-                <span class="back-value">@Model.Department</span>
-            </div>
+    <div class="back-body" style="height:38.48mm;">
+        <table class="back-body-tbl" cellpadding="0" cellspacing="0">
+            <tr>
+                <td class="back-info-cell">
 
-            <div class="back-field-group-title" style="margin-top:0.5mm;color:@themeColor;">Identification</div>
-            <div class="back-row">
-                <span class="back-label">NID</span>
-                <span class="back-value @(string.IsNullOrEmpty(Model.NIDNumber) ? "muted" : "")">
-                    @(!string.IsNullOrEmpty(Model.NIDNumber) ? Model.NIDNumber : "N/A")
-                </span>
-            </div>
-            <div class="back-row">
-                <span class="back-label">Joining</span>
-                <span class="back-value">@Model.JoiningDate.ToString("dd MMM yyyy")</span>
-            </div>
-            <div class="back-row">
-                <span class="back-label">Valid Until</span>
-                <span class="back-value">@(Model.CardExpiryDate?.ToString("dd MMM yyyy") ?? "N/A")</span>
-            </div>
-        </div>
+                    <div class="back-group-title" style="color:@themeColor">Emergency Contact</div>
+                    <table class="back-row-tbl" cellpadding="0" cellspacing="0">
+                        <tr>
+                            <td class="back-label">Contact</td>
+                            <td class="back-value @(emergencyContact == "N/A" ? "muted" : "")">@emergencyContact</td>
+                        </tr>
+                        <tr>
+                            <td class="back-label">Address</td>
+                            <td class="back-value @(string.IsNullOrEmpty(employee.PresentAddress) ? "muted" : "")">
+                                @(!string.IsNullOrEmpty(employee.PresentAddress) ? employee.PresentAddress : "N/A")
+                            </td>
+                        </tr>
+                    </table>
 
-        <div class="back-qr-panel">
-            <div class="back-qr-frame" style="border-color:@themeColor">
-                @if (!string.IsNullOrEmpty(qrDataUri))
-                {
-                    <img src="@qrDataUri" alt="QR" />
-                }
-            </div>
-            <div class="back-qr-label">Employee ID</div>
-        </div>
+                    <div class="back-group-title" style="margin-top:1.5mm;color:@themeColor;">Identification</div>
+                    <table class="back-row-tbl" cellpadding="0" cellspacing="0">
+                        <tr>
+                            <td class="back-label">NID</td>
+                            <td class="back-value @(string.IsNullOrEmpty(employee.NIDNumber) ? "muted" : "")">
+                                @(!string.IsNullOrEmpty(employee.NIDNumber) ? employee.NIDNumber : "N/A")
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="back-label">Joining</td>
+                            <td class="back-value">@employee.JoiningDate.ToString("dd-MMM-yyyy")</td>
+                        </tr>
+                        <tr>
+                            <td class="back-label">Valid Until</td>
+                            <td class="back-value">@validUntil</td>
+                        </tr>
+                    </table>
+
+                    <div class="back-group-title" style="margin-top:1.5mm;color:@themeColor;">School Contact</div>
+                    <table class="back-row-tbl" cellpadding="0" cellspacing="0">
+                        <tr>
+                            <td class="back-label">Phone</td>
+                            <td class="back-value">@(Model.SchoolPhone ?? "---")</td>
+                        </tr>
+                        <tr>
+                            <td class="back-label">Email</td>
+                            <td class="back-value">@(Model.SchoolEmail ?? "---")</td>
+                        </tr>
+                    </table>
+                </td>
+
+                <td class="back-qr-cell">
+                    <div class="qr-frame" style="border-color:@themeColor">
+                        @if (!string.IsNullOrEmpty(Model.QrCodeDataUri))
+                        {
+                            <img src="@Model.QrCodeDataUri" alt="QR" />
+                        }
+                    </div>
+                    <div class="qr-label">Employee ID</div>
+                </td>
+            </tr>
+        </table>
     </div>
 
     <div class="back-footer" style="background:@themeColor">
-        <div class="back-footer-text">
-            @ViewBag.SchoolNameEn &mdash;
-            <span class="highlight">@ViewBag.SchoolPhone | @ViewBag.SchoolEmail</span>
-            <br />@ViewBag.SchoolAddress
-            @if (!string.IsNullOrEmpty(footerText))
-            {
-                <br /><span style="font-size:1.1mm;opacity:0.7;">@footerText</span>
-            }
-        </div>
+        <table class="back-footer-tbl" cellpadding="0" cellspacing="0">
+            <tr>
+                <td class="back-ft-school">
+                    <div class="back-ft-name">@Model.SchoolNameEn</div>
+                    <div class="back-ft-address">@(Model.SchoolAddress ?? "")</div>
+                </td>
+                <td class="back-ft-validity">
+                    <div class="ft-sig-label" style="color:rgba(255,255,255,0.85);">@(Model.PrincipalName ?? "Principal")</div>
+                    <div class="ft-sig-line" style="width:15mm;margin:0.3mm auto 0 auto;"></div>
+                </td>
+            </tr>
+        </table>
     </div>
 </div>

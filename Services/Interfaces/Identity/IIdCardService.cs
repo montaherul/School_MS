@@ -17,4 +17,8 @@ public interface IIdCardService
         string? status, string? employmentType,
         DateTime? joiningFrom, DateTime? joiningTo,
         CancellationToken ct);
+
+    Task<List<StudentIdCardBulkDto>> GetStudentIdCardBulkDataAsync(string ids, CancellationToken ct);
+
+    Task<List<EmployeeIdCardBulkDto>> GetEmployeeIdCardBulkDataAsync(string ids, CancellationToken ct);
 }

@@ -1,5 +1,6 @@
 @model SchoolManagementSystem.Models.ViewModels.Student.IdCardPrintViewModel
 @using SchoolManagementSystem.Helpers
+@using SchoolManagementSystem.Models.ViewModels.Student
 @{
     Layout = null;
 }
@@ -13,37 +14,82 @@
 </head>
 <body>
 
-    @* ─── Card Container ─── *@
-    <div class="id-card-container @(Model.IsBulk ? "bulk" : "")">
+    @if (Model.IsBulk)
+    {
+        <div class="page-bulk">
+            @foreach (var student in Model.Students)
+            {
+                var cardModel = new StudentCardModel
+                {
+                    Student = student,
+                    QrCodeDataUri = IdCardQRHelper.GenerateQrCodeBase64(student.StudentNo ?? "N/A"),
+                    SchoolLogoPath = Model.SchoolLogoPath,
+                    SchoolSealPath = Model.SchoolSealPath,
+                    SchoolNameEn = Model.SchoolNameEn,
+                    SchoolNameBn = Model.SchoolNameBn,
+                    SchoolEIIN = Model.SchoolEIIN,
+                    SchoolWebsite = Model.SchoolWebsite,
+                    SchoolMotto = Model.SchoolMotto,
+                    AcademicYear = Model.AcademicYear,
+                    SchoolAddress = Model.SchoolAddress,
+                    SchoolPhone = Model.SchoolPhone,
+                    SchoolEmail = Model.SchoolEmail,
+                    PrincipalName = Model.PrincipalName,
+                    PrincipalSignaturePath = Model.PrincipalSignaturePath,
+                    FooterText = Model.FooterText
+                };
 
-        @foreach (var student in Model.Students)
+                <div class="card-page">
+                    <div class="card-pair">
+                        <div class="card-wrapper">
+                            <partial name="~/Views/Shared/IdCards/_StudentCardFront.cshtml" model="cardModel" />
+                        </div>
+                        <div class="card-spacer"></div>
+                        <div class="card-wrapper">
+                            <partial name="~/Views/Shared/IdCards/_StudentCardBack.cshtml" model="cardModel" />
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        foreach (var student in Model.Students)
         {
-            var qrDataUri = IdCardQRHelper.GenerateQrCodeBase64(student.StudentNo ?? "N/A");
+            var cardModel = new StudentCardModel
+            {
+                Student = student,
+                QrCodeDataUri = IdCardQRHelper.GenerateQrCodeBase64(student.StudentNo ?? "N/A"),
+                SchoolLogoPath = Model.SchoolLogoPath,
+                SchoolSealPath = Model.SchoolSealPath,
+                SchoolNameEn = Model.SchoolNameEn,
+                SchoolNameBn = Model.SchoolNameBn,
+                SchoolEIIN = Model.SchoolEIIN,
+                SchoolWebsite = Model.SchoolWebsite,
+                SchoolMotto = Model.SchoolMotto,
+                AcademicYear = Model.AcademicYear,
+                SchoolAddress = Model.SchoolAddress,
+                SchoolPhone = Model.SchoolPhone,
+                SchoolEmail = Model.SchoolEmail,
+                PrincipalName = Model.PrincipalName,
+                PrincipalSignaturePath = Model.PrincipalSignaturePath,
+                FooterText = Model.FooterText
+            };
 
-            @* Set ViewData for partials *@
-            ViewBag.SchoolLogoPath = Model.SchoolLogoPath;
-            ViewBag.SchoolSealPath = Model.SchoolSealPath;
-            ViewBag.SchoolNameEn = Model.SchoolNameEn;
-            ViewBag.SchoolNameBn = Model.SchoolNameBn;
-            ViewBag.SchoolEIIN = Model.SchoolEIIN;
-            ViewBag.SchoolWebsite = Model.SchoolWebsite;
-            ViewBag.SchoolMotto = Model.SchoolMotto;
-            ViewBag.AcademicYear = Model.AcademicYear;
-            ViewBag.SchoolAddress = Model.SchoolAddress;
-            ViewBag.SchoolPhone = Model.SchoolPhone;
-            ViewBag.SchoolEmail = Model.SchoolEmail;
-            ViewBag.PrincipalName = Model.PrincipalName;
-            ViewBag.PrincipalSignaturePath = Model.PrincipalSignaturePath;
-            ViewBag.FooterText = Model.FooterText;
-            ViewBag.QrCodeDataUri = qrDataUri;
-
-            @* ═══ FRONT SIDE ═══ *@
-            <partial name="~/Views/Shared/IdCards/_StudentCardFront.cshtml" model="student" />
-
-            @* ═══ BACK SIDE ═══ *@
-            <partial name="~/Views/Shared/IdCards/_StudentCardBack.cshtml" model="student" />
+            <div class="page-single">
+                <div class="card-pair">
+                    <div class="card-wrapper">
+                        <partial name="~/Views/Shared/IdCards/_StudentCardFront.cshtml" model="cardModel" />
+                    </div>
+                    <div class="card-spacer"></div>
+                    <div class="card-wrapper">
+                        <partial name="~/Views/Shared/IdCards/_StudentCardBack.cshtml" model="cardModel" />
+                    </div>
+                </div>
+            </div>
         }
+    }
 
-    </div>
 </body>
 </html>

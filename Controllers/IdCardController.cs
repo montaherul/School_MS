@@ -6,6 +6,9 @@ using System.Security.Claims;
 using SchoolManagementSystem.Helpers.Pdf;
 using SchoolManagementSystem.Models.DTOs.Academic;
 using SchoolManagementSystem.Models.DTOs.Employee;
+using SchoolManagementSystem.Models.DTOs.Identity;
+using SchoolManagementSystem.Models.DTOs.Student;
+using SchoolManagementSystem.Models.DTOs.Student;
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Models.Entities.Auth;
 using SchoolManagementSystem.Models.Entities.Website;
@@ -61,7 +64,7 @@ public class IdCardController : Controller
     //  STUDENT ID CARDS
     // ──────────────────────────────────────────────
 
-    [RequirePermission("StudentIdCard.View")]
+    [RequirePermission("IdCard.View")]
     public async Task<IActionResult> Students(CancellationToken ct)
     {
         var classes = (await _sectionService.GetAvailableClassesAsync(ct))
@@ -85,7 +88,7 @@ public class IdCardController : Controller
     }
 
     [HttpGet]
-    [RequirePermission("StudentIdCard.View")]
+    [RequirePermission("IdCard.View")]
     public async Task<IActionResult> StudentsData(
         int page = 1, int pageSize = 10,
         string? search = null,
@@ -129,45 +132,41 @@ public class IdCardController : Controller
     }
 
     [HttpGet]
-    [RequirePermission("StudentIdCard.View")]
+    [RequirePermission("IdCard.View")]
     public async Task<IActionResult> DownloadStudentCardPdf(int id, CancellationToken ct)
     {
-        var dto = await _studentService.GetForEditAsync(id, ct);
+        var bulkData = await _idCardService.GetStudentIdCardBulkDataAsync(id.ToString(), ct);
+        var dto = bulkData.FirstOrDefault();
         if (dto == null) return NotFound();
 
+        var student = MapToStudentUpsertDto(dto);
         var school = await _websiteService.GetSettingsAsync(ct);
         var academicYear = await GetActiveAcademicYearAsync(ct);
-        var viewModel = BuildStudentCardViewModel([dto], school, academicYear);
+        var viewModel = BuildStudentCardViewModel([student], school, academicYear);
         var pdfBytes = _pdfGenerator.GenerateStudentIdCardPdf(viewModel);
         return File(pdfBytes, "application/pdf", $"ID_Card_{dto.StudentNo}.pdf");
     }
 
     [HttpGet]
-    [RequirePermission("StudentIdCard.View")]
+    [RequirePermission("IdCard.View")]
     public async Task<IActionResult> DownloadBulkStudentCardPdf(string? ids, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(ids)) return NotFound();
-        var idList = ids.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Select(int.Parse).ToArray();
 
-        var students = new List<SchoolManagementSystem.Models.DTOs.Student.StudentUpsertDto>();
-        foreach (var id in idList)
-        {
-            var s = await _studentService.GetForEditAsync(id, ct);
-            if (s != null) students.Add(s);
-        }
+        var bulkData = await _idCardService.GetStudentIdCardBulkDataAsync(ids, ct);
+        if (bulkData.Count == 0) return NotFound();
 
-        if (students.Count == 0) return NotFound();
-
+        var students = bulkData.Select(MapToStudentUpsertDto).ToList();
         var school = await _websiteService.GetSettingsAsync(ct);
         var academicYear = await GetActiveAcademicYearAsync(ct);
         var viewModel = BuildStudentCardViewModel(students, school, academicYear);
+        viewModel.IsBulk = true;
         var pdfBytes = _pdfGenerator.GenerateStudentIdCardPdf(viewModel);
         return File(pdfBytes, "application/pdf", $"Bulk_ID_Cards_{DateTime.Today:yyyyMMdd}.pdf");
     }
 
     [HttpGet]
-    [RequirePermission("StudentIdCard.View")]
+    [RequirePermission("IdCard.View")]
     public async Task<IActionResult> DownloadAllFilteredStudentCardPdf(
         string? search = null,
         int? classId = null, int? sectionId = null, int? groupId = null,
@@ -185,14 +184,23 @@ public class IdCardController : Controller
         var ids = string.Join(",", items.Select(i => i.Id));
         if (string.IsNullOrEmpty(ids)) return NotFound();
 
-        return await DownloadBulkStudentCardPdf(ids, ct);
+        var bulkData = await _idCardService.GetStudentIdCardBulkDataAsync(ids, ct);
+        if (bulkData.Count == 0) return NotFound();
+
+        var students = bulkData.Select(MapToStudentUpsertDto).ToList();
+        var school = await _websiteService.GetSettingsAsync(ct);
+        var academicYear = await GetActiveAcademicYearAsync(ct);
+        var viewModel = BuildStudentCardViewModel(students, school, academicYear);
+        viewModel.IsBulk = true;
+        var pdfBytes = _pdfGenerator.GenerateStudentIdCardPdf(viewModel);
+        return File(pdfBytes, "application/pdf", $"Bulk_ID_Cards_{DateTime.Today:yyyyMMdd}.pdf");
     }
 
     // ──────────────────────────────────────────────
     //  EMPLOYEE ID CARDS
     // ──────────────────────────────────────────────
 
-    [RequirePermission("EmployeeIdCard.View")]
+    [RequirePermission("IdCard.View")]
     public async Task<IActionResult> Employees(CancellationToken ct)
     {
         var departments = await _departmentService.GetAllAsync(ct);
@@ -208,7 +216,7 @@ public class IdCardController : Controller
     }
 
     [HttpGet]
-    [RequirePermission("EmployeeIdCard.View")]
+    [RequirePermission("IdCard.View")]
     public async Task<IActionResult> EmployeesData(
         int page = 1, int pageSize = 10,
         string? search = null,
@@ -256,16 +264,18 @@ public class IdCardController : Controller
     }
 
     [HttpGet]
-    [RequirePermission("EmployeeIdCard.View")]
+    [RequirePermission("IdCard.View")]
     public async Task<IActionResult> DownloadEmployeeCardPdf(int id, CancellationToken ct)
     {
-        var employee = await _employeeService.GetDetailsAsync(id, ct);
-        if (employee == null) return NotFound();
+        var bulkData = await _idCardService.GetEmployeeIdCardBulkDataAsync(id.ToString(), ct);
+        var dto = bulkData.FirstOrDefault();
+        if (dto == null) return NotFound();
+
+        var employee = MapToEmployeeDetailsDto(dto);
+        await InitializeEmployeeCardFieldsAsync(employee, id, ct);
 
         var schoolSetting = await _uow.Repository<SchoolSetting>().Query().FirstOrDefaultAsync(ct)
             ?? new SchoolSetting { SchoolName = "School Management ERP" };
-
-        await InitializeEmployeeCardFieldsAsync(employee, id, ct);
 
         var academicYear = await GetActiveAcademicYearAsync(ct);
         var viewModel = BuildEmployeeCardViewModel([employee], schoolSetting, academicYear);
@@ -284,31 +294,28 @@ public class IdCardController : Controller
     }
 
     [HttpGet]
-    [RequirePermission("EmployeeIdCard.View")]
+    [RequirePermission("IdCard.View")]
     public async Task<IActionResult> DownloadBulkEmployeeCardPdf(string? ids, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(ids)) return NotFound();
-        var idList = ids.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Select(int.Parse).ToArray();
+
+        var bulkData = await _idCardService.GetEmployeeIdCardBulkDataAsync(ids, ct);
+        if (bulkData.Count == 0) return NotFound();
 
         var employees = new List<EmployeeDetailsDto>();
-        foreach (var id in idList)
+        foreach (var bulk in bulkData)
         {
-            var emp = await _employeeService.GetDetailsAsync(id, ct);
-            if (emp != null)
-            {
-                await InitializeEmployeeCardFieldsAsync(emp, id, ct);
-                employees.Add(emp);
-            }
+            var emp = MapToEmployeeDetailsDto(bulk);
+            await InitializeEmployeeCardFieldsAsync(emp, emp.Id, ct);
+            employees.Add(emp);
         }
-
-        if (employees.Count == 0) return NotFound();
 
         var schoolSetting = await _uow.Repository<SchoolSetting>().Query().FirstOrDefaultAsync(ct)
             ?? new SchoolSetting { SchoolName = "School Management ERP" };
 
         var academicYear = await GetActiveAcademicYearAsync(ct);
         var viewModel = BuildEmployeeCardViewModel(employees, schoolSetting, academicYear);
+        viewModel.IsBulk = true;
         var pdfBytes = _pdfGenerator.GenerateEmployeeIdCardPdf(viewModel);
 
         await LogAuditAsync("Bulk ID Cards Downloaded", $"Bulk downloaded ID Cards for {employees.Count} employees", ct);
@@ -317,7 +324,7 @@ public class IdCardController : Controller
     }
 
     [HttpGet]
-    [RequirePermission("EmployeeIdCard.View")]
+    [RequirePermission("IdCard.View")]
     public async Task<IActionResult> DownloadAllFilteredEmployeeCardPdf(
         string? search = null,
         int? departmentId = null, int? designationId = null,
@@ -335,51 +342,33 @@ public class IdCardController : Controller
         var ids = string.Join(",", items.Select(i => i.Id));
         if (string.IsNullOrEmpty(ids)) return NotFound();
 
-        return await DownloadBulkEmployeeCardPdf(ids, ct);
+        var bulkData = await _idCardService.GetEmployeeIdCardBulkDataAsync(ids, ct);
+        if (bulkData.Count == 0) return NotFound();
+
+        var employees = new List<EmployeeDetailsDto>();
+        foreach (var bulk in bulkData)
+        {
+            var emp = MapToEmployeeDetailsDto(bulk);
+            await InitializeEmployeeCardFieldsAsync(emp, emp.Id, ct);
+            employees.Add(emp);
+        }
+
+        var schoolSetting = await _uow.Repository<SchoolSetting>().Query().FirstOrDefaultAsync(ct)
+            ?? new SchoolSetting { SchoolName = "School Management ERP" };
+
+        var academicYear = await GetActiveAcademicYearAsync(ct);
+        var viewModel = BuildEmployeeCardViewModel(employees, schoolSetting, academicYear);
+        viewModel.IsBulk = true;
+        var pdfBytes = _pdfGenerator.GenerateEmployeeIdCardPdf(viewModel);
+
+        await LogAuditAsync("Bulk ID Cards Downloaded", $"Bulk downloaded ID Cards for {employees.Count} employees", ct);
+
+        return File(pdfBytes, "application/pdf", $"Bulk_Employee_ID_Cards_{DateTime.Today:yyyyMMdd}.pdf");
     }
 
     // ──────────────────────────────────────────────
     //  HELPERS
     // ──────────────────────────────────────────────
-
-    private static IdCardPrintViewModel BuildStudentCardViewModel(
-        List<SchoolManagementSystem.Models.DTOs.Student.StudentUpsertDto> students,
-        SchoolSetting school)
-    {
-        return new IdCardPrintViewModel
-        {
-            Students = students,
-            SchoolLogoPath = school.LogoPath ?? "",
-            SchoolNameEn = school.SchoolName,
-            SchoolNameBn = school.BanglaName ?? "",
-            SchoolEIIN = school.EIIN,
-            SchoolWebsite = school.Website,
-            SchoolAddress = school.Address,
-            SchoolPhone = school.Phone,
-            SchoolEmail = school.Email,
-            PrincipalName = school.PrincipalName ?? "",
-            PrincipalSignaturePath = school.PrincipalSignaturePath ?? ""
-        };
-    }
-
-    private static EmployeeIdCardPrintViewModel BuildEmployeeCardViewModel(
-        List<EmployeeDetailsDto> employees,
-        SchoolSetting school)
-    {
-        return new EmployeeIdCardPrintViewModel
-        {
-            Employees = employees,
-            SchoolLogoPath = school.LogoPath ?? "",
-            SchoolNameEn = school.SchoolName,
-            SchoolEIIN = school.EIIN,
-            SchoolWebsite = school.Website,
-            SchoolAddress = school.Address,
-            SchoolPhone = school.Phone,
-            SchoolEmail = school.Email,
-            PrincipalName = school.PrincipalName ?? "",
-            PrincipalSignaturePath = school.PrincipalSignaturePath ?? ""
-        };
-    }
 
     private async Task<string> GetActiveAcademicYearAsync(CancellationToken ct)
     {
@@ -484,5 +473,74 @@ public class IdCardController : Controller
         {
             // Ignore audit log errors
         }
+    }
+
+    private static SchoolManagementSystem.Models.DTOs.Student.StudentUpsertDto MapToStudentUpsertDto(
+        SchoolManagementSystem.Models.DTOs.Identity.StudentIdCardBulkDto dto)
+    {
+        return new SchoolManagementSystem.Models.DTOs.Student.StudentUpsertDto
+        {
+            Id = dto.Id,
+            StudentNo = dto.StudentNo,
+            FullName = dto.FullName,
+            FullNameBangla = dto.FullNameBangla,
+            DateOfBirth = dto.DateOfBirth,
+            Gender = dto.Gender,
+            FatherName = dto.FatherName,
+            FatherOccupation = dto.FatherOccupation,
+            MotherName = dto.MotherName,
+            MotherOccupation = dto.MotherOccupation,
+            GuardianName = dto.GuardianName,
+            FatherOrGuardianMobileNo = dto.GuardianMobileNumber ?? "",
+            MobileNumber = dto.MobileNumber,
+            EmailAddress = dto.EmailAddress,
+            BloodGroup = dto.BloodGroup,
+            Religion = dto.Religion,
+            ClassId = dto.ClassId,
+            SectionId = dto.SectionId,
+            StudentGroupId = dto.StudentGroupId,
+            RollNumber = dto.RollNumber,
+            PresentVillage = dto.PresentVillage,
+            PresentPostOffice = dto.PresentPostOffice,
+            PresentThana = dto.PresentThana,
+            PresentDistrict = dto.PresentDistrict,
+            ProfilePicturePath = dto.ProfilePicturePath,
+            ClassName = dto.ClassName,
+            SectionName = dto.SectionName,
+            GroupName = dto.GroupName
+        };
+    }
+
+    private static EmployeeDetailsDto MapToEmployeeDetailsDto(
+        SchoolManagementSystem.Models.DTOs.Identity.EmployeeIdCardBulkDto dto)
+    {
+        return new EmployeeDetailsDto
+        {
+            Id = dto.Id,
+            EmployeeCode = dto.EmployeeCode,
+            FullName = dto.FullName,
+            FatherName = dto.FatherName,
+            MotherName = dto.MotherName,
+            Gender = dto.Gender,
+            DateOfBirth = dto.DateOfBirth,
+            BloodGroup = dto.BloodGroup,
+            NIDNumber = dto.NIDNumber,
+            Phone = dto.Phone,
+            Email = dto.Email,
+            PresentAddress = dto.PresentAddress,
+            JoiningDate = dto.JoiningDate,
+            Department = dto.Department,
+            Designation = dto.Designation,
+            EmployeeType = dto.EmployeeType,
+            Status = dto.Status,
+            ProfilePicturePath = dto.ProfilePicturePath,
+            EmergencyContactName = dto.EmergencyContactName,
+            EmergencyContactPhone = dto.EmergencyContactPhone,
+            EmployeeCardNumber = dto.EmployeeCardNumber,
+            CardIssueDate = dto.CardIssueDate,
+            CardExpiryDate = dto.CardExpiryDate,
+            CardVersion = dto.CardVersion,
+            QRVerificationCode = dto.QRVerificationCode
+        };
     }
 }

@@ -1386,6 +1386,43 @@ body {
     .actions-cell .adm-action {
         flex-shrink: 0;
     }
+
+/* ── Row Selection Checkbox: center in header + body ── */
+.tabulator .tabulator-header .tabulator-col.formatter-rowSelection .tabulator-col-content {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+}
+
+.tabulator .tabulator-row .tabulator-cell.formatter-rowSelection .tabulator-cell-inner {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+}
+
+/* ── Header titles: prevent truncation + center all headers ── */
+.tabulator .tabulator-header .tabulator-col .tabulator-col-content .tabulator-col-title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    text-align: center;
+    width: 100%;
+}
+
+.tabulator .tabulator-header .tabulator-col .tabulator-col-content {
+    text-align: center;
+    justify-content: center;
+}
+
+/* ── Data cells: center text where appropriate ── */
+.tabulator .tabulator-row .tabulator-cell {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 /* Tabulator Pagination Footer */
 .tabulator .tabulator-footer {
     background: var(--adm-surface-2) !important;

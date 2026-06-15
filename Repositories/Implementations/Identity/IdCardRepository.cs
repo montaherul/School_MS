@@ -71,4 +71,20 @@ public class IdCardRepository : IIdCardRepository
         int totalRecords = items.FirstOrDefault()?.TotalRecords ?? 0;
         return (items, totalRecords);
     }
+
+    public async Task<List<StudentIdCardBulkDto>> GetStudentIdCardBulkDataAsync(string ids, CancellationToken ct)
+    {
+        var parameter = new SqlParameter("@Ids", ids);
+        return await _db.Set<StudentIdCardBulkDto>()
+            .FromSqlRaw("EXEC sp_GetStudentIdCardBulkData @Ids", parameter)
+            .ToListAsync(ct);
+    }
+
+    public async Task<List<EmployeeIdCardBulkDto>> GetEmployeeIdCardBulkDataAsync(string ids, CancellationToken ct)
+    {
+        var parameter = new SqlParameter("@Ids", ids);
+        return await _db.Set<EmployeeIdCardBulkDto>()
+            .FromSqlRaw("EXEC sp_GetEmployeeIdCardBulkData @Ids", parameter)
+            .ToListAsync(ct);
+    }
 }

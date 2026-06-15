@@ -1,5 +1,6 @@
 @model SchoolManagementSystem.Models.ViewModels.Employee.EmployeeIdCardPrintViewModel
 @using SchoolManagementSystem.Helpers
+@using SchoolManagementSystem.Models.ViewModels.Employee
 @{
     Layout = null;
 }
@@ -13,38 +14,82 @@
 </head>
 <body>
 
-    @* ─── Card Container ─── *@
-    <div class="id-card-container @(Model.IsBulk ? "bulk" : "")">
+    @if (Model.IsBulk)
+    {
+        <div class="page-bulk">
+            @foreach (var employee in Model.Employees)
+            {
+                var cardModel = new EmployeeCardModel
+                {
+                    Employee = employee,
+                    QrCodeDataUri = IdCardQRHelper.GenerateQrCodeBase64(employee.EmployeeCode ?? "N/A"),
+                    ThemeColor = ThemeHelper.GetThemeColor(employee.Designation),
+                    SchoolLogoPath = Model.SchoolLogoPath,
+                    SchoolSealPath = Model.SchoolSealPath,
+                    SchoolNameEn = Model.SchoolNameEn,
+                    SchoolEIIN = Model.SchoolEIIN,
+                    SchoolWebsite = Model.SchoolWebsite,
+                    SchoolMotto = Model.SchoolMotto,
+                    AcademicYear = Model.AcademicYear,
+                    SchoolAddress = Model.SchoolAddress,
+                    SchoolPhone = Model.SchoolPhone,
+                    SchoolEmail = Model.SchoolEmail,
+                    PrincipalName = Model.PrincipalName,
+                    PrincipalSignaturePath = Model.PrincipalSignaturePath,
+                    FooterText = Model.FooterText
+                };
 
-        @foreach (var employee in Model.Employees)
+                <div class="card-page">
+                    <div class="card-pair">
+                        <div class="card-wrapper">
+                            <partial name="~/Views/Shared/IdCards/_EmployeeCardFront.cshtml" model="cardModel" />
+                        </div>
+                        <div class="card-spacer"></div>
+                        <div class="card-wrapper">
+                            <partial name="~/Views/Shared/IdCards/_EmployeeCardBack.cshtml" model="cardModel" />
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        foreach (var employee in Model.Employees)
         {
-            var themeColor = GetThemeColor(employee.Designation);
-            var qrDataUri = IdCardQRHelper.GenerateQrCodeBase64(employee.EmployeeCode ?? "N/A");
+            var cardModel = new EmployeeCardModel
+            {
+                Employee = employee,
+                QrCodeDataUri = IdCardQRHelper.GenerateQrCodeBase64(employee.EmployeeCode ?? "N/A"),
+                ThemeColor = ThemeHelper.GetThemeColor(employee.Designation),
+                SchoolLogoPath = Model.SchoolLogoPath,
+                SchoolSealPath = Model.SchoolSealPath,
+                SchoolNameEn = Model.SchoolNameEn,
+                SchoolEIIN = Model.SchoolEIIN,
+                SchoolWebsite = Model.SchoolWebsite,
+                SchoolMotto = Model.SchoolMotto,
+                AcademicYear = Model.AcademicYear,
+                SchoolAddress = Model.SchoolAddress,
+                SchoolPhone = Model.SchoolPhone,
+                SchoolEmail = Model.SchoolEmail,
+                PrincipalName = Model.PrincipalName,
+                PrincipalSignaturePath = Model.PrincipalSignaturePath,
+                FooterText = Model.FooterText
+            };
 
-            @* Set ViewData for partials *@
-            ViewBag.SchoolLogoPath = Model.SchoolLogoPath;
-            ViewBag.SchoolSealPath = Model.SchoolSealPath;
-            ViewBag.SchoolNameEn = Model.SchoolNameEn;
-            ViewBag.SchoolEIIN = Model.SchoolEIIN;
-            ViewBag.SchoolWebsite = Model.SchoolWebsite;
-            ViewBag.SchoolMotto = Model.SchoolMotto;
-            ViewBag.AcademicYear = Model.AcademicYear;
-            ViewBag.SchoolAddress = Model.SchoolAddress;
-            ViewBag.SchoolPhone = Model.SchoolPhone;
-            ViewBag.SchoolEmail = Model.SchoolEmail;
-            ViewBag.PrincipalName = Model.PrincipalName;
-            ViewBag.PrincipalSignaturePath = Model.PrincipalSignaturePath;
-            ViewBag.FooterText = Model.FooterText;
-            ViewBag.QrCodeDataUri = qrDataUri;
-            ViewBag.ThemeColor = themeColor;
-
-            @* ═══ FRONT SIDE ═══ *@
-            <partial name="~/Views/Shared/IdCards/_EmployeeCardFront.cshtml" model="employee" />
-
-            @* ═══ BACK SIDE ═══ *@
-            <partial name="~/Views/Shared/IdCards/_EmployeeCardBack.cshtml" model="employee" />
+            <div class="page-single">
+                <div class="card-pair">
+                    <div class="card-wrapper">
+                        <partial name="~/Views/Shared/IdCards/_EmployeeCardFront.cshtml" model="cardModel" />
+                    </div>
+                    <div class="card-spacer"></div>
+                    <div class="card-wrapper">
+                        <partial name="~/Views/Shared/IdCards/_EmployeeCardBack.cshtml" model="cardModel" />
+                    </div>
+                </div>
+            </div>
         }
+    }
 
-    </div>
 </body>
 </html>

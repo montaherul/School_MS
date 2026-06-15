@@ -54,6 +54,8 @@ public class SchoolDbContext : DbContext
     public DbSet<StudentListItemDto> StudentListItemResults => Set<StudentListItemDto>();
     public DbSet<StudentIdCardListDto> StudentIdCardListResults => Set<StudentIdCardListDto>();
     public DbSet<EmployeeIdCardListDto> EmployeeIdCardListResults => Set<EmployeeIdCardListDto>();
+    public DbSet<StudentIdCardBulkDto> StudentIdCardBulkResults => Set<StudentIdCardBulkDto>();
+    public DbSet<EmployeeIdCardBulkDto> EmployeeIdCardBulkResults => Set<EmployeeIdCardBulkDto>();
     public DbSet<Subject> Subjects => Set<Subject>();
     public DbSet<Teacher> Teachers => Set<Teacher>();
     public DbSet<TeacherAttendance> TeacherAttendances => Set<TeacherAttendance>();

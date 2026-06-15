@@ -36,11 +36,13 @@ public class ViewRendererService : IViewRendererService
 
         if (!viewResult.Success)
         {
-            viewResult = _viewEngine.GetView("~/Views/Student/PrintIdCard.cshtml", viewName, false);
-            if (!viewResult.Success)
-            {
-                throw new InvalidOperationException($"View '{viewName}' not found. Searched locations: {string.Join(", ", viewResult.SearchedLocations)}");
-            }
+            viewResult = _viewEngine.GetView(viewName, viewName, false);
+        }
+
+        if (!viewResult.Success)
+        {
+            throw new InvalidOperationException(
+                $"View '{viewName}' not found. Searched locations: {string.Join(", ", viewResult.SearchedLocations)}");
         }
 
         using var sw = new StringWriter();

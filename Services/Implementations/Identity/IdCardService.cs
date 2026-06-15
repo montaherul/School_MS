@@ -36,4 +36,14 @@ public class IdCardService : IIdCardService
             page, pageSize, search, departmentId, designationId,
             status, employmentType, joiningFrom, joiningTo, ct);
     }
+
+    public async Task<List<StudentIdCardBulkDto>> GetStudentIdCardBulkDataAsync(string ids, CancellationToken ct)
+    {
+        return await _idCardRepository.GetStudentIdCardBulkDataAsync(ids, ct);
+    }
+
+    public async Task<List<EmployeeIdCardBulkDto>> GetEmployeeIdCardBulkDataAsync(string ids, CancellationToken ct)
+    {
+        return await _idCardRepository.GetEmployeeIdCardBulkDataAsync(ids, ct);
+    }
 }
