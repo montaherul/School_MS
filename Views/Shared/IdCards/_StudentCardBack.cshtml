@@ -7,11 +7,11 @@
         <div class="s-logo-box">
             @if (!string.IsNullOrEmpty(Model.SchoolLogoDataUri))
             {
-                <img src="@Model.SchoolLogoDataUri" width="20" height="20" />
+                <img src="@Model.SchoolLogoDataUri" alt="logo" />
             }
             else
             {
-                <svg width="16" height="16" viewBox="0 0 14 14" fill="none">
+                <svg viewBox="0 0 14 14" fill="none">
                     <path d="M7 1L13 4.5V9.5L7 13L1 9.5V4.5L7 1Z" fill="rgba(255,255,255,0.85)"/>
                     <path d="M7 4L10 5.8V8.8L7 10.5L4 8.8V5.8L7 4Z" fill="#1A2E5A"/>
                 </svg>
@@ -26,54 +26,58 @@
     <div class="body">
         <div class="rules">
             <div class="rules-title">Card Rules</div>
-            <div class="rule"><span class="r-dot">&#x2022;</span>Always carry this card within school premises.</div>
-            <div class="rule"><span class="r-dot">&#x2022;</span>Report immediately if lost or stolen to PRS office.</div>
-            <div class="rule"><span class="r-dot">&#x2022;</span>This card is strictly non-transferable.</div>
+            <div class="rule"><span class="r-dot">&bull;</span>Always carry this card within school premises.</div>
+            <div class="rule"><span class="r-dot">&bull;</span>Report immediately if lost or stolen to PRS office.</div>
+            <div class="rule"><span class="r-dot">&bull;</span>This card is strictly non-transferable.</div>
         </div>
 
         <div class="contact-block">
             <div class="c-title">If found, please return to:</div>
-
-            <div class="c-row">
-                <div class="c-icon" style="background:#EEF2F9">
-                    <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
-                        <circle cx="4" cy="3" r="2" fill="#1A2E5A"/>
-                        <path d="M1 7Q4 5 7 7" fill="#1A2E5A"/>
-                    </svg>
+            <div class="c-table">
+                <div class="c-row">
+                    <span class="c-icon-cell">
+                        <span class="c-icon" style="background:#EEF2F9">
+                            <svg viewBox="0 0 8 8" fill="none">
+                                <circle cx="4" cy="3" r="2" fill="#1A2E5A"/>
+                                <path d="M1 7Q4 5 7 7" fill="#1A2E5A"/>
+                            </svg>
+                        </span>
+                    </span>
+                    <span class="c-val-cell"><span class="c-val">@(!string.IsNullOrEmpty(Model.SchoolAddress) ? Model.SchoolAddress : "---")</span></span>
                 </div>
-                <div class="c-val">@(!string.IsNullOrEmpty(Model.SchoolAddress) ? Model.SchoolAddress : "---")</div>
-            </div>
-
-            <div class="c-row">
-                <div class="c-icon" style="background:#E8F4F0">
-                    <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
-                        <rect x="1" y="2" width="6" height="4.5" rx="1" stroke="#1B7F79" stroke-width=".9"/>
-                        <path d="M1 3L4 5.2L7 3" stroke="#1B7F79" stroke-width=".9"/>
-                    </svg>
+                <div class="c-row">
+                    <span class="c-icon-cell">
+                        <span class="c-icon" style="background:#E8F4F0">
+                            <svg viewBox="0 0 8 8" fill="none">
+                                <rect x="1" y="2" width="6" height="4.5" rx="1" stroke="#1B7F79" stroke-width=".9"/>
+                                <path d="M1 3L4 5.2L7 3" stroke="#1B7F79" stroke-width=".9"/>
+                            </svg>
+                        </span>
+                    </span>
+                    <span class="c-val-cell"><span class="c-val">@(!string.IsNullOrEmpty(Model.SchoolPhone) ? Model.SchoolPhone : "---")</span></span>
                 </div>
-                <div class="c-val">@(!string.IsNullOrEmpty(Model.SchoolPhone) ? Model.SchoolPhone : "---")</div>
-            </div>
-
-            <div class="c-row">
-                <div class="c-icon" style="background:#FFF5E5">
-                    <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
-                        <path d="M4 1.5L7 3.2V6.8H1V3.2L4 1.5Z" stroke="#D4860B" stroke-width=".85"/>
-                        <line x1="4" y1="4.5" x2="4" y2="6.8" stroke="#D4860B" stroke-width=".85"/>
-                    </svg>
+                <div class="c-row">
+                    <span class="c-icon-cell">
+                        <span class="c-icon" style="background:#FFF5E5">
+                            <svg viewBox="0 0 8 8" fill="none">
+                                <path d="M4 1.5L7 3.2V6.8H1V3.2L4 1.5Z" stroke="#D4860B" stroke-width=".85"/>
+                                <line x1="4" y1="4.5" x2="4" y2="6.8" stroke="#D4860B" stroke-width=".85"/>
+                            </svg>
+                        </span>
+                    </span>
+                    <span class="c-val-cell"><span class="c-val">@(!string.IsNullOrEmpty(Model.SchoolEmail) ? Model.SchoolEmail : "---")</span></span>
                 </div>
-                <div class="c-val">@(!string.IsNullOrEmpty(Model.SchoolEmail) ? Model.SchoolEmail : "---")</div>
             </div>
         </div>
     </div>
 
     <div class="ftr"></div>
-    <div class="ftr-stripe"></div>
 
     <div class="qr-area">
         <div class="qr-box">
             @if (!string.IsNullOrEmpty(Model.QrCodeDataUri))
             {
-                <img src="@Model.QrCodeDataUri" width="30" height="30" />
+                <img src="@Model.QrCodeDataUri" alt="qr" />
             }
         </div>
     </div>
