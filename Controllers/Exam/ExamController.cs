@@ -47,13 +47,59 @@ public class ExamController : GenericCrudController<ExamEntity>
             ? (await _examService.GetExamsAsync(yearId, cancellationToken)).ToList()
             : (await _examService.GetExamsAsync(0, cancellationToken)).ToList();
 
+        var groups = exams
+            .GroupBy(e => e.ExamGroupKey)
+            .Select(g => new ExamGroupViewModel
+            {
+                GroupKey = g.Key,
+                GroupName = g.First().Name,
+                TotalExams = g.Count(),
+                Exams = g.OrderBy(e => e.Status).ThenBy(e => e.StartsOn).ToList()
+            })
+            .OrderByDescending(g => g.TotalExams)
+            .ToList();
+
         var model = new ExamListViewModel
         {
             Exams = exams,
+            ExamGroups = groups,
             SelectedAcademicYearId = yearId,
             SelectedAcademicYearName = academicYears.FirstOrDefault(y => y.Id == yearId)?.Name
                 ?? activeYear?.Name ?? string.Empty,
             AcademicYears = academicYears.Select(ExamViewModelMapper.ToOption).ToList()
+        };
+
+        return View(model);
+    }
+
+    /// <summary>
+    /// Group Report — class-by-class drill-down for a logical exam group
+    /// </summary>
+    [HttpGet]
+    public async Task<IActionResult> GroupReport(string groupKey, int academicYearId = 0, CancellationToken ct = default)
+    {
+        if (string.IsNullOrEmpty(groupKey))
+            return RedirectToAction("Index");
+
+        var academicYears = await _uow.Repository<AcademicYear>().ListAsync(x => !x.IsDeleted, ct);
+        var activeYear = academicYears.FirstOrDefault(ay => ay.IsActive);
+        var yearId = academicYearId > 0 ? academicYearId : activeYear?.Id ?? 0;
+
+        var exams = yearId > 0
+            ? (await _examService.GetExamsAsync(yearId, ct)).ToList()
+            : (await _examService.GetExamsAsync(0, ct)).ToList();
+        var groupExams = exams.Where(e => e.ExamGroupKey == groupKey).ToList();
+
+        if (groupExams.Count == 0)
+            return RedirectToAction("Index");
+
+        var model = new ExamGroupReportViewModel
+        {
+            GroupKey = groupKey,
+            GroupName = groupExams.First().Name,
+            SelectedAcademicYearId = yearId,
+            AcademicYears = academicYears.Select(ExamViewModelMapper.ToOption).ToList(),
+            Exams = groupExams
         };
 
         return View(model);
@@ -93,6 +139,20 @@ public class ExamController : GenericCrudController<ExamEntity>
             .Take(10)
             .ToList();
 
+        var examGroups = yearExams
+            .GroupBy(e => e.ExamGroupKey)
+            .Select(g => new ExamGroupDashboardViewModel
+            {
+                GroupKey = g.Key,
+                GroupName = g.First().Name,
+                TotalExams = g.Count(),
+                PublishedCount = g.Count(e => e.Status == ResultWorkflowStatus.Published),
+                TotalSubjects = g.Sum(e => e.SubjectCount),
+                Exams = g.OrderBy(e => e.StartsOn).ToList()
+            })
+            .OrderByDescending(g => g.TotalExams)
+            .ToList();
+
         var groups = await _uow.Repository<StudentGroup>().ListAsync(g => !g.IsDeleted, ct);
         var classes = await _uow.Repository<SchoolClass>().ListAsync(c => !c.IsDeleted, ct);
         var sections = await _uow.Repository<Section>().ListAsync(s => !s.IsDeleted, ct);
@@ -126,6 +186,7 @@ public class ExamController : GenericCrudController<ExamEntity>
             AcademicYears = academicYears.Select(ExamViewModelMapper.ToOption).ToList(),
             YearExams = yearExams,
             RecentExams = recentExams,
+            ExamGroups = examGroups,
             SelectedExamId = examId,
             SelectedClassId = classId,
             SelectedSectionId = sectionId,

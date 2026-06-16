@@ -38,7 +38,7 @@ public class CommunicationController : GenericCrudController<Notice>
             page = Math.Max(page, 1);
             pageSize = Math.Clamp(pageSize, 6, 50);
 
-            var query = _service.Query();
+            var query = _service.Query().AsNoTracking();
             query = ApplySecurityFilters(query);
 
             if (!string.IsNullOrWhiteSpace(search))
@@ -74,7 +74,7 @@ public class CommunicationController : GenericCrudController<Notice>
     {
         if (User.IsInRole("Student"))
         {
-            var query = _service.Query().Where(n => n.Id == id);
+            var query = _service.Query().AsNoTracking().Where(n => n.Id == id);
             query = ApplySecurityFilters(query);
             var notice = await query.FirstOrDefaultAsync(cancellationToken);
             if (notice == null)

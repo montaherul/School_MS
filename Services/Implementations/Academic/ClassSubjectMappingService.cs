@@ -24,7 +24,7 @@ public class ClassSubjectMappingService : IClassSubjectMappingService
         string? search,
         CancellationToken ct = default)
     {
-        var query = _unitOfWork.Repository<ClassSubject>().Query()
+        var query = _unitOfWork.Repository<ClassSubject>().Query().AsNoTracking()
             .Include(x => x.SchoolClass)
             .Include(x => x.Subject)
             .Include(x => x.StudentGroup)
@@ -95,7 +95,7 @@ public class ClassSubjectMappingService : IClassSubjectMappingService
 
     public async Task<ClassSubjectUpsertDto?> GetForEditAsync(int id, CancellationToken ct = default)
     {
-        var entity = await _unitOfWork.Repository<ClassSubject>().Query()
+        var entity = await _unitOfWork.Repository<ClassSubject>().Query().AsNoTracking()
             .Include(x => x.SchoolClass)
             .Include(x => x.Subject)
             .FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted, ct);
@@ -283,12 +283,12 @@ public class ClassSubjectMappingService : IClassSubjectMappingService
 
     public async Task<IEnumerable<SubjectListItemDto>> GetUnmappedSubjectsAsync(int classId, string? groupName, CancellationToken ct = default)
     {
-        var mappedIds = await _unitOfWork.Repository<ClassSubject>().Query()
+        var mappedIds = await _unitOfWork.Repository<ClassSubject>().Query().AsNoTracking()
             .Where(x => x.SchoolClassId == classId && x.GroupName == groupName && !x.IsDeleted)
             .Select(x => x.SubjectId)
             .ToListAsync(ct);
 
-        return await _unitOfWork.Repository<Subject>().Query()
+        return await _unitOfWork.Repository<Subject>().Query().AsNoTracking()
             .Where(s => !s.IsDeleted && !mappedIds.Contains(s.Id) && s.IsActive)
             .OrderBy(s => s.Code)
             .Select(s => new SubjectListItemDto

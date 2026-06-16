@@ -71,7 +71,7 @@ public class ReportCardController : Controller
 
         if (examId.HasValue && classId.HasValue)
         {
-            var query = _uow.Repository<StudentExamResult>().Query()
+            var query = _uow.Repository<StudentExamResult>().Query().AsNoTracking()
                 .Include(r => r.Student)
                 .Include(r => r.Exam)
                 .Where(r => r.ExamId == examId.Value && r.Student.ClassId == classId.Value && !r.IsDeleted);
@@ -184,5 +184,37 @@ public class ReportCardController : Controller
             return NotFound("Report card could not be generated.");
 
         return View(dto);
+    }
+
+    [AllowAnonymous]
+    [HttpGet("/verify/report-card/{id:int}")]
+    public async Task<IActionResult> VerifyReportCard(int id, CancellationToken ct)
+    {
+        var result = await _uow.Repository<StudentExamResult>().FirstOrDefaultAsync(r => r.Id == id && !r.IsDeleted, ct);
+        if (result == null)
+            return NotFound("Report card not found.");
+
+        var hash = GenerateReportCardHash(result.ExamId, result.StudentId, result.TotalMarks, result.Grade ?? "", result.Gpa);
+        
+        return Json(new
+        {
+            Verified = true,
+            ExamId = result.ExamId,
+            StudentId = result.StudentId,
+            TotalMarks = result.TotalMarks,
+            Grade = result.Grade,
+            Gpa = result.Gpa,
+            PublishedAt = result.PublishedAt,
+            VerificationHash = hash,
+            VerificationUrl = $"{Request.Scheme}://{Request.Host}/verify/report-card/{id}"
+        });
+    }
+
+    private string GenerateReportCardHash(int examId, int studentId, decimal totalMarks, string grade, decimal gpa)
+    {
+        var raw = $"{examId}|{studentId}|{totalMarks}|{grade}|{gpa}|SchoolManagementSystem-Secret-2026";
+        using var sha = System.Security.Cryptography.SHA256.Create();
+        var bytes = sha.ComputeHash(System.Text.Encoding.UTF8.GetBytes(raw));
+        return Convert.ToHexString(bytes).ToLowerInvariant()[..16];
     }
 }

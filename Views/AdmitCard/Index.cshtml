@@ -1,0 +1,298 @@
+@* Expected data shape (dynamic):
+   Properties accessed:
+     .Exams         — List<{ Id, Name }> for filter dropdown
+     .Classes       — List<{ Id, Name }> for filter dropdown
+     .SelectedExamId   — int?
+     .SelectedClassId  — int?
+     .ExamName      — string
+     .ClassName     — string
+     .AdmitCards    — List<{
+         StudentId, StudentName, RollNumber, CardNumber,
+         IsIssued (bool), IsGenerated (bool)
+       }>
+     .TotalCards, .IssuedCount, .GeneratedCount — int (stats)
+*@
+@model dynamic
+@{
+    ViewData["Title"] = "Admit Card Management";
+}
+
+<div class="adm-page er-page er-page--slide">
+    <div class="er-page-header">
+        <div class="er-page-header__left">
+            <div class="er-page-header__icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                    <line x1="3" y1="9" x2="21" y2="9" />
+                    <line x1="9" y1="21" x2="9" y2="9" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="er-page-header__title">Admit Card Management</h1>
+                <p class="er-page-header__sub">Generate, issue, and print admit cards for examinations</p>
+            </div>
+        </div>
+        <div class="er-page-header__right">
+            <button class="er-btn er-btn--primary" onclick="bulkGenerate()" id="bulkGenerateBtn">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" /></svg>
+                Bulk Generate
+            </button>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] is string msg)
+    {
+        <div class="alert alert-success alert-dismissible fade show">@msg<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
+    @if (TempData["ErrorMessage"] is string errMsg)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">@errMsg<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
+
+    <div class="er-filters">
+        <div class="er-filters__row">
+            <div class="er-filters__group">
+                <label class="er-filters__label">Exam</label>
+                <select class="er-filters__select" id="filterExam" onchange="applyFilters()">
+                    <option value="">All Exams</option>
+                    @if (Model.Exams != null)
+                    {
+                        foreach (var exam in Model.Exams)
+                        {
+                            <!option value="@exam.Id" selected="@(exam.Id == Model.SelectedExamId)">@exam.Name</!option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="er-filters__group">
+                <label class="er-filters__label">Class</label>
+                <select class="er-filters__select" id="filterClass" onchange="applyFilters()">
+                    <option value="">All Classes</option>
+                    @if (Model.Classes != null)
+                    {
+                        foreach (var cls in Model.Classes)
+                        {
+                            <!option value="@cls.Id" selected="@(cls.Id == Model.SelectedClassId)">@cls.Name</!option>
+                        }
+                    }
+                </select>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.AdmitCards != null && Model.AdmitCards.Count > 0)
+    {
+        var total = Model.TotalCards ?? Model.AdmitCards.Count;
+        var issued = Model.IssuedCount ?? 0;
+        var generated = Model.GeneratedCount ?? 0;
+
+        <div class="er-stats">
+            <div class="er-stat">
+                <span class="er-stat__value">@total</span>
+                <span class="er-stat__label">Total Cards</span>
+            </div>
+            <div class="er-stat">
+                <span class="er-stat__value er-stat__value--success">@issued</span>
+                <span class="er-stat__label">Issued</span>
+            </div>
+            <div class="er-stat">
+                <span class="er-stat__value er-stat__value--warning">@generated</span>
+                <span class="er-stat__label">Generated</span>
+            </div>
+        </div>
+    }
+
+    @Html.AntiForgeryToken()
+
+    <div class="er-card" style="border-radius: var(--adm-radius-lg); position:relative;">
+        <div class="loading-overlay" id="loadingOverlay" style="display:none; position:absolute; inset:0; background:rgba(255,255,255,0.7); z-index:999; display:none; align-items:center; justify-content:center; border-radius:var(--adm-radius-lg);">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+        <div class="er-card__body">
+            @if (Model.AdmitCards != null && Model.AdmitCards.Count > 0)
+            {
+                <div class="table-responsive">
+                    <table class="er-table" id="admitCardTable">
+                        <thead>
+                            <tr>
+                                <th>Student Name</th>
+                                <th>Roll</th>
+                                <th>Card No</th>
+                                <th>Issued</th>
+                                <th>Generated</th>
+                                <th style="width:200px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var card in Model.AdmitCards)
+                            {
+                                <tr>
+                                    <td><span class="er-cell-name">@card.StudentName</span></td>
+                                    <td>@card.RollNumber</td>
+                                    <td>@(card.CardNumber ?? "—")</td>
+                                    <td>
+                                        @if (card.IsIssued)
+                                        {
+                                            <span class="er-badge er-badge--success">Issued</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="er-badge er-badge--neutral">Not Issued</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (card.IsGenerated)
+                                        {
+                                            <span class="er-badge er-badge--success">Generated</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="er-badge er-badge--warning">Pending</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="d-flex gap-1">
+                                            <button class="er-btn er-btn--primary adm-btn--sm" onclick="generateCard(@card.StudentId)" title="Generate">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" /></svg>
+                                                Generate
+                                            </button>
+                                            <button class="er-btn er-btn--secondary adm-btn--sm" onclick="printCard(@card.StudentId)" title="Print">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 6 2 18 2 18 9" /><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect x="6" y="14" width="12" height="8" /></svg>
+                                                Print
+                                            </button>
+                                            <a href="@Url.Action("DownloadPdf", new { examId = Model.SelectedExamId, studentId = card.StudentId })"
+                                               class="er-btn er-btn--secondary adm-btn--sm" target="_blank" title="Download PDF">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>
+                                                PDF
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="er-empty">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                        <line x1="3" y1="9" x2="21" y2="9" />
+                        <line x1="9" y1="21" x2="9" y2="9" />
+                    </svg>
+                    <h3 class="er-empty__title">No Admit Cards</h3>
+                    <p class="er-empty__desc">Select an exam and class, then generate admit cards for students.</p>
+                    <div class="er-empty__action">
+                        <button class="er-btn er-btn--primary" onclick="bulkGenerate()">Generate Admit Cards</button>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
+
+@section Scripts {
+    <script>
+        function showToast(message, type) {
+            const bg = type === 'success' ? 'bg-success' : 'bg-danger';
+            const c = document.getElementById('toastContainer');
+            const t = document.createElement('div');
+            t.className = 'toast align-items-center text-white border-0 ' + bg;
+            t.innerHTML = '<div class="d-flex"><div class="toast-body">' + message + '</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>';
+            c.appendChild(t);
+            const bs = new bootstrap.Toast(t, { delay: 4000 });
+            bs.show();
+            t.addEventListener('hidden.bs.toast', () => t.remove());
+        }
+
+        function setLoading(show) {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                overlay.style.display = show ? 'flex' : 'none';
+            }
+        }
+
+        function applyFilters() {
+            const examId = document.getElementById('filterExam').value;
+            const classId = document.getElementById('filterClass').value;
+            const params = new URLSearchParams();
+            if (examId) params.set('examId', examId);
+            if (classId) params.set('classId', classId);
+            window.location.search = params.toString();
+        }
+
+        function bulkGenerate() {
+            const examId = document.getElementById('filterExam').value;
+            if (!examId) {
+                showToast('Please select an exam first.', 'error');
+                return;
+            }
+            const btn = document.getElementById('bulkGenerateBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Generating...';
+            setLoading(true);
+
+            fetch('@Url.Action("Generate", "AdmitCard")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify({ examId: parseInt(examId) })
+            })
+            .then(r => r.json())
+            .then(r => {
+                if (r.success) {
+                    showToast('Admit cards generated successfully!', 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showToast(r.message || 'Generation failed', 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = 'Bulk Generate';
+                    setLoading(false);
+                }
+            })
+            .catch(() => {
+                showToast('Network error', 'error');
+                btn.disabled = false;
+                btn.innerHTML = 'Bulk Generate';
+                setLoading(false);
+            });
+        }
+
+        function generateCard(studentId) {
+            const examId = document.getElementById('filterExam').value;
+            if (!examId) { showToast('Please select an exam.', 'error'); return; }
+
+            fetch('@Url.Action("Generate", "AdmitCard")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify({ examId: parseInt(examId) })
+            })
+            .then(r => r.json())
+            .then(r => {
+                if (r.success) {
+                    showToast('Admit card generated.', 'success');
+                    setTimeout(() => location.reload(), 800);
+                } else {
+                    showToast(r.message || 'Failed', 'error');
+                }
+            })
+            .catch(() => showToast('Network error', 'error'));
+        }
+
+        function printCard(studentId) {
+            const examId = document.getElementById('filterExam').value;
+            if (!examId) { showToast('Please select an exam.', 'error'); return; }
+            window.open('@Url.Action("View", "AdmitCard")?examId=' + examId + '&studentId=' + studentId, '_blank');
+        }
+    </script>
+}

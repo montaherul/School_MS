@@ -27,19 +27,19 @@ public class BaseRepository<T> : IBaseRepository<T> where T : class
         Expression<Func<T, bool>>? predicate = null,
         CancellationToken cancellationToken = default)
     {
-        var query = _set.AsQueryable();
+        var query = _set.AsNoTracking().AsQueryable();
         if (predicate != null) query = query.Where(predicate);
         return await query.ToListAsync(cancellationToken);
     }
 
     public async Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)
-        => await _set.FirstOrDefaultAsync(predicate, cancellationToken);
+        => await _set.AsNoTracking().FirstOrDefaultAsync(predicate, cancellationToken);
 
     public async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default)
-        => await _set.AnyAsync(predicate, cancellationToken);
+        => await _set.AsNoTracking().AnyAsync(predicate, cancellationToken);
 
     public async Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null, CancellationToken cancellationToken = default)
-        => predicate != null ? await _set.CountAsync(predicate, cancellationToken) : await _set.CountAsync(cancellationToken);
+        => predicate != null ? await _set.AsNoTracking().CountAsync(predicate, cancellationToken) : await _set.AsNoTracking().CountAsync(cancellationToken);
 
     public async Task AddAsync(T entity, CancellationToken cancellationToken = default)
         => await _set.AddAsync(entity, cancellationToken);

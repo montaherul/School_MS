@@ -1,179 +1,198 @@
 @model IEnumerable<SchoolManagementSystem.Models.Entities.Exam.ExamSchedule>
 @{
     ViewData["Title"] = "Exam Schedules";
-    var exams = ViewBag.Exams as IEnumerable<SchoolManagementSystem.Models.Entities.Exam.Exam>;
-    var classes = ViewBag.Classes as IEnumerable<SchoolManagementSystem.Models.Entities.Academic.SchoolClass>;
-    var groups = ViewBag.Groups as IEnumerable<SchoolManagementSystem.Models.Entities.Academic.StudentGroup>;
+    var examList = ViewBag.Exams as IEnumerable<SchoolManagementSystem.Models.Entities.Exam.Exam>;
+    var classList = ViewBag.Classes as IEnumerable<SchoolManagementSystem.Models.Entities.Academic.SchoolClass>;
+    var groupList = ViewBag.Groups as IEnumerable<SchoolManagementSystem.Models.Entities.Academic.StudentGroup>;
 }
 
-<div class="adm-page">
-    <!-- ── Page Header ── -->
-    <div class="adm-header">
-        <div class="adm-header__left">
-            <div class="adm-header__icon-wrap">
-                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                    <line x1="16" y1="2" x2="16" y2="6" />
-                    <line x1="8" y1="2" x2="8" y2="6" />
-                    <line x1="3" y1="10" x2="21" y2="10" />
+<div class="adm-page er-page">
+    <div class="er-page-header">
+        <div class="er-page-header__left">
+            <div class="er-page-header__icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
                 </svg>
             </div>
             <div>
-                <h1 class="adm-header__title">Exam Schedules</h1>
-                <p class="adm-header__sub">Configure, review, and print exam routines for classes.</p>
+                <h1 class="er-page-header__title">Exam Schedules</h1>
+                <p class="er-page-header__sub">Configure, review, and print exam routines for classes.</p>
             </div>
         </div>
-        <div class="adm-btn-group">
-            <a href="@Url.Action("Create")" class="adm-btn adm-btn--primary">
+        <div class="er-page-header__right">
+            <a href="/Admin/ExamRoutine" class="er-btn er-btn--secondary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                Routine View
+            </a>
+            <a href="@Url.Action("Create")" class="er-btn er-btn--primary">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
                 New Schedule
             </a>
         </div>
     </div>
 
-    <!-- ── Filters Panel ── -->
-    <div class="adm-table-card" style="margin-bottom: 24px; padding: 20px; border-radius: var(--adm-radius-lg);">
-        <form method="get" action="@Url.Action("Index")" class="row g-3">
-            <div class="col-md-4">
-                <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Select Exam</label>
-                <select name="examId" class="form-select adm-select">
-                    <option value="">-- All Exams --</option>
-                    @if (exams != null)
-                    {
-                        foreach (var e in exams)
+    <div class="er-card mb-4">
+        <div class="er-card__body">
+            <form method="get" action="@Url.Action("Index")" class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label fw-500">Exam</label>
+                    <select name="examId" class="form-select adm-select">
+                        <option value="">All Exams</option>
+                        @if (examList != null)
                         {
-                            <!option value="@e.Id" @(ViewBag.SelectedExamId == e.Id ? "selected" : "")>@e.Name</!option>
+                            foreach (var e in examList)
+                            {
+                                <!option value="@e.Id" @(ViewBag.SelectedExamId == e.Id ? "selected" : "")>@e.Name</!option>
+                            }
                         }
-                    }
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Select Class</label>
-                <select name="classId" class="form-select adm-select">
-                    <option value="">-- All Classes --</option>
-                    @if (classes != null)
-                    {
-                        foreach (var c in classes)
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-500">Class</label>
+                    <select name="classId" class="form-select adm-select">
+                        <option value="">All Classes</option>
+                        @if (classList != null)
                         {
-                            <!option value="@c.Id" @(ViewBag.SelectedClassId == c.Id ? "selected" : "")>@c.Name</!option>
+                            foreach (var c in classList)
+                            {
+                                <!option value="@c.Id" @(ViewBag.SelectedClassId == c.Id ? "selected" : "")>@c.Name</!option>
+                            }
                         }
-                    }
-                </select>
-            </div>
-            <div class="col-md-3">
-                <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Select Group</label>
-                <select name="groupId" class="form-select adm-select">
-                    <option value="">-- All Groups --</option>
-                    @if (groups != null)
-                    {
-                        foreach (var g in groups)
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-500">Group</label>
+                    <select name="groupId" class="form-select adm-select">
+                        <option value="">All Groups</option>
+                        @if (groupList != null)
                         {
-                            <!option value="@g.Id" @(ViewBag.SelectedGroupId == g.Id ? "selected" : "")>@g.Name</!option>
+                            foreach (var g in groupList)
+                            {
+                                <!option value="@g.Id" @(ViewBag.SelectedGroupId == g.Id ? "selected" : "")>@g.Name</!option>
+                            }
                         }
-                    }
-                </select>
-            </div>
-            <div class="col-md-2 d-flex align-items-end">
-                <button type="submit" class="adm-btn adm-btn--primary w-100" style="height: 38px;">
-                    Filter
-                </button>
-            </div>
-        </form>
+                    </select>
+                </div>
+                <div class="col-md-3 d-flex gap-2">
+                    <button type="submit" class="er-btn er-btn--primary">Filter</button>
+                    <a href="@Url.Action("Index")" class="er-btn er-btn--ghost">Reset</a>
+                </div>
+            </form>
+        </div>
     </div>
 
-    <!-- ── Schedules Table ── -->
-    <div class="adm-table-card" style="border-radius: var(--adm-radius-lg); border-top: 1px solid var(--adm-border);">
-        <div class="adm-table-card__body">
+    <div class="er-card">
+        <div class="er-card__header">
+            <h3 class="er-card__title">Schedule List</h3>
             @if (Model != null && Model.Any())
             {
-                <div class="table-responsive" style="border-radius: var(--adm-radius-lg);">
-                    <table class="dash-table">
-                        <thead>
-                            <tr>
-                                <th>Exam</th>
-                                <th>Class</th>
-                                <th>Group</th>
-                                <th>Subject</th>
-                                <th>Exam Date</th>
-                                <th>Time Slot</th>
-                                <th>Room No</th>
-                                <th style="text-align:right;">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var s in Model)
-                            {
-                                <tr id="row-@s.Id">
-                                    <td><span class="adm-cell-name">@s.Exam.Name</span></td>
-                                    <td><span class="adm-cell-name">@(s.Class?.Name ?? "N/A")</span></td>
-                                    <td><span class="adm-cell-name">@(s.StudentGroup?.Name ?? "—")</span></td>
-                                    <td><span class="adm-cell-name">@s.Subject.Name</span></td>
-                                    <td>
-                                        <span class="adm-cell-dob">@s.ExamDate.ToString("dd MMM yyyy")</span>
-                                    </td>
-                                    <td>
-                                        <span class="adm-status adm-status--neutral">
-                                            @s.StartsAt.ToString("hh:mm tt") – @s.EndsAt.ToString("hh:mm tt")
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="adm-cell-name">Room @s.RoomNo</span>
-                                    </td>
-                                    <td>
-                                        <div class="actions-cell">
-                                            <a href="@Url.Action("Routine", "ExamSchedule", new { examId = s.ExamId, classId = s.ClassId, groupId = s.StudentGroupId })"
-                                               class="adm-action adm-action--edit" title="View Routine" style="color: var(--adm-primary);">
-                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
-                                            </a>
-                                            <a href="@Url.Action("Details", new { id = s.Id })" class="adm-action adm-action--view" title="View Details">
-                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3" /><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14" /></svg>
-                                            </a>
-                                            <a href="@Url.Action("Edit", new { id = s.Id })" class="adm-action adm-action--edit" title="Edit Schedule">
-                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></svg>
-                                            </a>
-                                            <button type="button" onclick="deleteSchedule(@s.Id)" class="adm-action adm-action--delete" title="Delete Schedule">
-                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
+                <span class="er-badge er-badge--info">@Model.Count() schedules</span>
             }
-            else
-            {
-                <div class="dash-empty">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /></svg>
-                    <h3 class="dash-empty__title">No Schedules Configured</h3>
-                    <p class="dash-empty__sub">Choose filters or create a new exam schedule to display data.</p>
-                </div>
-            }
+        </div>
+        <div class="er-card__body er-card__body--flush">
+            <div id="scheduleGrid"></div>
         </div>
     </div>
 </div>
 
+@Html.AntiForgeryToken()
+
 @section Scripts {
     <script>
-        function deleteSchedule(id) {
-            if (confirm('Are you sure you want to delete this exam schedule?')) {
-                $.ajax({
-                    url: '@Url.Action("Delete")',
-                    type: 'POST',
-                    data: {
-                        id: id,
-                        __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+        const scheduleData = @Html.Raw(Json.Serialize(Model != null ? Model.Select(s => new {
+            id = s.Id,
+            examName = s.Exam?.Name ?? "N/A",
+            className = s.Class?.Name ?? "N/A",
+            groupName = s.StudentGroup?.Name,
+            subjectName = s.Subject?.Name ?? "N/A",
+            subjectCode = s.Subject?.Code ?? "",
+            examDate = s.ExamDate.ToString("yyyy-MM-dd"),
+            startsAt = s.StartsAt.ToString("HH:mm"),
+            endsAt = s.EndsAt.ToString("HH:mm"),
+            roomNo = s.RoomNo,
+            examId = s.ExamId,
+            classId = s.ClassId,
+            studentGroupId = s.StudentGroupId
+        }).ToList() : new List<object>()));
+
+        new Tabulator("#scheduleGrid", {
+            data: scheduleData,
+            layout: "fitColumns",
+            responsiveLayout: "collapse",
+            height: "auto",
+            placeholder: "<div class='er-empty'><div class='er-empty__icon'><svg width='48' height='48' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='1.5'><rect x='3' y='4' width='18' height='18' rx='2' ry='2' /><line x1='16' y1='2' x2='16' y2='6' /><line x1='8' y1='2' x2='8' y2='6' /></svg></div><h3 class='er-empty__title'>No Schedules Configured</h3><p class='er-empty__desc'>Choose filters or create a new exam schedule to display data.</p></div>",
+            pagination: true,
+            paginationSize: 10,
+            paginationSizeSelector: [10, 20, 50, 100],
+            columns: [
+                { title: "Exam", field: "examName", formatter: function(c) { return '<span class="adm-cell-name">' + c.getValue() + '</span>'; } },
+                { title: "Class", field: "className", width: 100 },
+                { title: "Group", field: "groupName", width: 100, formatter: function(c) { return c.getValue() || '<span class="text-muted">—</span>'; } },
+                { title: "Subject", field: "subjectName", formatter: function(c) { return '<span class="adm-cell-name">' + c.getValue() + '</span>'; } },
+                {
+                    title: "Date", field: "examDate", width: 120,
+                    formatter: function(c) {
+                        var d = c.getValue();
+                        if (!d) return '—';
+                        var dt = new Date(d + 'T00:00:00');
+                        return '<span class="fw-600">' + dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) + '</span>';
                     },
-                    success: function (res) {
-                        if (res.success) {
-                            $('#row-' + id).fadeOut(300, function() { $(this).remove(); });
-                        } else {
-                            alert(res.message || 'Error occurred while deleting.');
-                        }
+                    sorter: function(a,b) { return new Date(a) - new Date(b); }
+                },
+                {
+                    title: "Time", field: "startsAt", width: 120,
+                    formatter: function(c) {
+                        var row = c.getRow().getData();
+                        return '<span class="adm-status adm-status--neutral">' + formatTime(c.getValue()) + ' – ' + formatTime(row.endsAt) + '</span>';
                     }
-                });
-            }
+                },
+                { title: "Room", field: "roomNo", width: 100 },
+                {
+                    title: "Actions", width: 120, hozAlign: "center", headerSort: false,
+                    formatter: function(c) {
+                        var d = c.getRow().getData();
+                        return '<div class="actions-cell">' +
+                            '<a href="/Admin/ExamRoutine?examId=' + d.examId + '&classId=' + d.classId + (d.studentGroupId ? '&groupId=' + d.studentGroupId : '') + '" class="adm-action adm-action--edit" title="View Routine"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg></a>' +
+                            '<a href="/ExamSchedule/Edit/' + d.id + '" class="adm-action adm-action--edit" title="Edit"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></svg></a>' +
+                            '<button type="button" onclick="deleteSchedule(' + d.id + ')" class="adm-action adm-action--delete" title="Delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg></button>' +
+                            '</div>';
+                    }
+                }
+            ]
+        });
+
+        function formatTime(t) {
+            if (!t) return '';
+            var p = t.split(':');
+            if (p.length < 2) return t;
+            var h = parseInt(p[0]), m = p[1];
+            var ampm = h >= 12 ? 'PM' : 'AM';
+            h = h % 12 || 12;
+            return h + ':' + m + ' ' + ampm;
+        }
+
+        function deleteSchedule(id) {
+            if (!confirm('Are you sure you want to delete this exam schedule?')) return;
+            $.ajax({
+                url: '@Url.Action("Delete")',
+                type: 'POST',
+                data: {
+                    id: id,
+                    __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                },
+                success: function(res) {
+                    if (res.success) {
+                        if (typeof scheduleTable !== 'undefined') {
+                            scheduleTable.deleteRow(id);
+                        } else {
+                            location.reload();
+                        }
+                    } else {
+                        alert(res.message || 'Error occurred while deleting.');
+                    }
+                },
+                error: function() { alert('Error occurred while deleting.'); }
+            });
         }
     </script>
 }

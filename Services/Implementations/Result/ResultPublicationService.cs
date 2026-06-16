@@ -376,6 +376,10 @@ public class ResultPublicationService : IResultPublicationService
         var query = _examResultRepository.Query()
             .Include(r => r.Student)
             .ThenInclude(s => s.Class)
+            .Include(r => r.Student)
+            .ThenInclude(s => s.Section)
+            .Include(r => r.Student)
+            .ThenInclude(s => s.StudentGroup)
             .Where(r => !r.IsDeleted);
 
         if (examId.HasValue) query = query.Where(r => r.ExamId == examId.Value);
@@ -398,23 +402,30 @@ public class ResultPublicationService : IResultPublicationService
         }
 
         var results = await query.OrderByDescending(r => r.CreatedAt).Take(1000).ToListAsync();
-        
+
         return results.Select(r => new StudentExamResultDto
         {
             ExamId = r.ExamId,
             ExamName = r.Exam?.Name ?? "",
+            Term = r.Exam != null ? r.Exam.Term : default,
+            Status = r.Status,
+            StudentId = r.StudentId,
+            StudentName = r.Student?.FullName ?? "",
+            RollNumber = r.Student?.RollNumber ?? 0,
+            ClassName = r.Student?.Class?.Name ?? "",
+            SectionName = r.Student?.Section?.Name ?? "",
+            GroupName = r.Student?.StudentGroup?.Name ?? "",
             TotalMarks = r.TotalMarks,
             TotalFullMarks = r.TotalFullMarks,
             Gpa = r.Gpa,
-            Grade = r.Grade,
+            Grade = r.Grade ?? "",
             Position = r.Position,
             ClassPosition = r.ClassPosition,
             GroupPosition = r.GroupPosition,
             IsPassed = r.IsPassed,
             FailedSubjectCount = r.FailedSubjectCount,
             PassedSubjectCount = r.PassedSubjectCount,
-            PublishedAt = r.PublishedAt,
-            Status = r.Status
+            PublishedAt = r.PublishedAt
         });
     }
 }

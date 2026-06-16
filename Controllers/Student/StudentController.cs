@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SchoolManagementSystem.Filters;
+using SchoolManagementSystem.Helpers.Files;
 using SchoolManagementSystem.Models.DTOs.Academic;
 using SchoolManagementSystem.Models.DTOs.Student;
 using SchoolManagementSystem.Models.ViewModels.Student;
@@ -18,16 +19,19 @@ public class StudentController : Controller
     private readonly ITeacherService _teacherService;
     private readonly ISectionService _sectionService;
     private readonly ISchoolClassService _classService;
+    private readonly IFileStorageService _fileStorage;
     public StudentController(
         IStudentService studentService,
         ITeacherService teacherService,
         ISectionService sectionService,
-        ISchoolClassService classService)
+        ISchoolClassService classService,
+        IFileStorageService fileStorage)
     {
         _studentService = studentService;
         _teacherService = teacherService;
         _sectionService = sectionService;
         _classService = classService;
+        _fileStorage = fileStorage;
     }
 
     [RequirePermission("Student.View")]
@@ -170,6 +174,11 @@ public class StudentController : Controller
         if (User.IsInRole("Student")) return Forbid();
         if (!ModelState.IsValid) return View(model);
 
+        if (model.ProfilePicture != null && model.ProfilePicture.Length > 0)
+        {
+            model.ProfilePicturePath = await _fileStorage.SaveAsync(model.ProfilePicture, "students/photos", ct);
+        }
+
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
         if (model.Id == 0)
         {
@@ -207,13 +216,11 @@ public class StudentController : Controller
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
             await _studentService.DeleteAsync(id, userId, ct);
-            TempData["SuccessMessage"] = "Student deleted successfully.";
-            return RedirectToAction(nameof(Index));
+            return Json(new { success = true, message = "Student deleted successfully." });
         }
         catch (Exception ex)
         {
-            TempData["ErrorMessage"] = ex.Message;
-            return RedirectToAction(nameof(Index));
+            return Json(new { success = false, message = ex.Message });
         }
     }
 }

@@ -4,38 +4,41 @@
     var exam = Model.Exam;
 }
 
-<div class="container-fluid py-4 er-page">
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card shadow-sm border-0 bg-gradient-info text-white overflow-hidden">
-                <div class="card-body p-4 position-relative">
-                    <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
-                        <div>
-                            <div class="text-uppercase small opacity-75 mb-2">Subject Analysis</div>
-                            <h2 class="mb-2">@exam?.Name</h2>
-                            <p class="mb-0 opacity-75">Performance overview by subject for the selected exam.</p>
-                        </div>
-                        <div class="text-end">
-                            <div class="small opacity-75">Total Subjects</div>
-                            <div class="display-6 fw-bold">@Model.Subjects.Count()</div>
-                        </div>
-                    </div>
-                </div>
+<div class="adm-page er-page">
+
+    <div class="er-page-header">
+        <div class="er-page-header__left">
+            <div class="er-page-header__icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="20" x2="18" y2="10" />
+                    <line x1="12" y1="20" x2="12" y2="4" />
+                    <line x1="6" y1="20" x2="6" y2="14" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="er-page-header__title">Subject Analysis</h1>
+                <p class="er-page-header__sub">@exam?.Name — Performance overview by subject</p>
+            </div>
+        </div>
+        <div class="er-page-header__right">
+            <div class="text-end">
+                <div class="er-page-header__sub">Total Subjects</div>
+                <div style="font-size:24px;font-weight:700;color:var(--adm-text);">@Model.Subjects.Count()</div>
             </div>
         </div>
     </div>
 
-    <div class="card shadow-sm border-0 mb-4">
-        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-            <h5 class="mb-0 text-primary fw-bold">Subject Performance Breakdown</h5>
-            <span class="badge bg-light text-dark border">Average, pass rate, high/low scores</span>
+    <div class="er-card" style="border-radius: var(--adm-radius-lg); border-top: 1px solid var(--adm-border);">
+        <div class="er-card__header">
+            <h3 class="er-card__title">Subject Performance Breakdown</h3>
+            <span class="er-badge er-badge--neutral">Average, pass rate, high/low scores</span>
         </div>
-        <div class="card-body p-0">
+        <div class="er-card__body--flush">
             @if (Model.Subjects != null && Model.Subjects.Any())
             {
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light text-uppercase small text-muted">
+                    <table class="er-table">
+                        <thead>
                             <tr>
                                 <th class="ps-4">Subject</th>
                                 <th class="text-end">Avg Marks</th>
@@ -53,12 +56,12 @@
                                     <td class="ps-4 fw-semibold">@subject.SubjectName</td>
                                     <td class="text-end">@subject.AverageMarks.ToString("F2")</td>
                                     <td class="text-end">
-                                        <span class="badge bg-primary">@subject.PassPercentage.ToString("F1")%</span>
+                                        <span class="er-badge er-badge--primary">@subject.PassPercentage.ToString("F1")%</span>
                                     </td>
                                     <td class="text-end">@subject.HighestMarks.ToString("F2")</td>
                                     <td class="text-end">@subject.LowestMarks.ToString("F2")</td>
-                                    <td class="text-end text-success fw-semibold">@subject.PassedCount</td>
-                                    <td class="text-end pe-4 text-danger fw-semibold">@subject.FailedCount</td>
+                                    <td class="text-end" style="color:var(--adm-success);font-weight:600;">@subject.PassedCount</td>
+                                    <td class="text-end pe-4" style="color:var(--adm-rejected);font-weight:600;">@subject.FailedCount</td>
                                 </tr>
                             }
                         </tbody>
@@ -68,47 +71,46 @@
             else
             {
                 <div class="p-4">
-                    <div class="alert alert-warning mb-0">No subject analysis data is available for this exam.</div>
+                    <div style="padding:16px;color:var(--adm-text-3);font-size:13px;">No subject analysis data is available for this exam.</div>
                 </div>
             }
         </div>
     </div>
 
-    <div class="row g-4">
-        @if (Model.Subjects != null && Model.Subjects.Any())
-        {
-            var topSubject = Model.Subjects.OrderByDescending(x => x.PassPercentage).First();
-            var hardestSubject = Model.Subjects.OrderBy(x => x.PassPercentage).First();
+    @if (Model.Subjects != null && Model.Subjects.Any())
+    {
+        var topSubject = Model.Subjects.OrderByDescending(x => x.PassPercentage).First();
+        var hardestSubject = Model.Subjects.OrderBy(x => x.PassPercentage).First();
 
+        <div class="row g-4 mt-2">
             <div class="col-md-6">
-                <div class="card shadow-sm border-0 h-100">
-                    <div class="card-body p-4">
-                        <div class="small text-muted text-uppercase mb-2">Best Performing Subject</div>
-                        <h4 class="fw-bold mb-2">@topSubject.SubjectName</h4>
-                        <p class="mb-0 text-muted">Highest pass rate at @topSubject.PassPercentage.ToString("F1")% with average marks of @topSubject.AverageMarks.ToString("F2").</p>
+                <div class="er-card" style="border-radius: var(--adm-radius-lg);">
+                    <div class="er-card__body">
+                        <div style="font-size:11px;font-weight:600;color:var(--adm-text-3);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px;">Best Performing Subject</div>
+                        <h4 style="font-size:18px;font-weight:700;color:var(--adm-text);margin-bottom:4px;">@topSubject.SubjectName</h4>
+                        <p style="font-size:13px;color:var(--adm-text-2);margin:0;">Highest pass rate at <strong>@topSubject.PassPercentage.ToString("F1")%</strong> with average marks of @topSubject.AverageMarks.ToString("F2").</p>
                     </div>
                 </div>
             </div>
             <div class="col-md-6">
-                <div class="card shadow-sm border-0 h-100">
-                    <div class="card-body p-4">
-                        <div class="small text-muted text-uppercase mb-2">Most Challenging Subject</div>
-                        <h4 class="fw-bold mb-2">@hardestSubject.SubjectName</h4>
-                        <p class="mb-0 text-muted">Lowest pass rate at @hardestSubject.PassPercentage.ToString("F1")% with @hardestSubject.FailedCount failed students.</p>
+                <div class="er-card" style="border-radius: var(--adm-radius-lg);">
+                    <div class="er-card__body">
+                        <div style="font-size:11px;font-weight:600;color:var(--adm-text-3);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:6px;">Most Challenging Subject</div>
+                        <h4 style="font-size:18px;font-weight:700;color:var(--adm-text);margin-bottom:4px;">@hardestSubject.SubjectName</h4>
+                        <p style="font-size:13px;color:var(--adm-text-2);margin:0;">Lowest pass rate at <strong>@hardestSubject.PassPercentage.ToString("F1")%</strong> with @hardestSubject.FailedCount failed students.</p>
                     </div>
                 </div>
             </div>
-        }
-    </div>
+        </div>
+    }
 
     <div class="d-flex gap-2 flex-wrap mt-4">
-        <a asp-action="Dashboard" class="btn btn-outline-secondary">Back to Dashboard</a>
-        <a asp-action="AllResults" asp-route-examId="@(exam?.Id ?? 0)" class="btn btn-outline-primary">View All Results</a>
+        <a asp-action="Dashboard" class="er-btn er-btn--secondary">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></svg>
+            Back to Dashboard
+        </a>
+        <a asp-action="AllResults" asp-route-examId="@(exam?.Id ?? 0)" class="er-btn er-btn--primary">
+            View All Results
+        </a>
     </div>
 </div>
-
-<style>
-    .bg-gradient-info {
-        background: linear-gradient(45deg, #36b9cc 0%, #1a8a99 100%);
-    }
-</style>

@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using SchoolManagementSystem.Data;
 using SchoolManagementSystem.Models.DTOs.Result;
 using SchoolManagementSystem.Models.ViewModels.Result;
 using SchoolManagementSystem.Models.Entities.Academic;
@@ -12,6 +14,7 @@ using SchoolManagementSystem.Repositories.Interfaces.Result;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.Services.Interfaces.Academic;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
+using System.Data;
 using System.Security.Claims;
 using System.Text.Json;
 using ExamEntity = SchoolManagementSystem.Models.Entities.Exam.Exam;
@@ -80,11 +83,40 @@ public class AdminResultController : Controller
             }
         }
 
+        // Use repository (which calls sp_GetResultSummary) for server-side aggregations
+        List<dynamic> classPerf = new();
+        List<dynamic> sectionPerf = new();
+        List<dynamic> gradeDist = new();
+        List<dynamic> passTrend = new();
+        List<dynamic> topStudents = new();
+        int passCount = 0, failCount = 0;
+
+        if (examId.HasValue)
+        {
+            var classWise = await _studentExamResultRepository.GetClassWiseResultsAsync(examId.Value, ct);
+            classPerf = classWise.Select(c => (dynamic)new { Label = c.ClassName, PassRate = c.TotalStudents > 0 ? Math.Round(100m * c.PassedCount / c.TotalStudents, 1) : 0m }).ToList();
+
+            var gradeDistData = await _studentExamResultRepository.GetGradeDistributionAsync(examId.Value, ct);
+            gradeDist = gradeDistData.Select(g => (dynamic)new { Grade = g.Grade, Count = g.Count }).ToList();
+
+            var top = await _studentExamResultRepository.GetTopStudentsAsync(examId.Value, ct);
+            topStudents = top.Select(t => (dynamic)new { Name = t.StudentName, Gpa = t.Gpa }).ToList();
+
+            var summary = await _studentExamResultRepository.GetResultSummaryStatsAsync(examId.Value, ct);
+            if (summary != null)
+            {
+                passCount = summary.PassedCount;
+                failCount = summary.FailedCount;
+            }
+        }
+
+        // Section + group level aggregations via EF (SP has group data but section-level is per-exam/filter)
         var resultsQuery = _uow.Repository<StudentExamResult>().Query()
             .Include(r => r.Student).ThenInclude(s => s.Class)
             .Include(r => r.Student).ThenInclude(s => s.Section)
             .Include(r => r.Student).ThenInclude(s => s.StudentGroup)
             .Include(r => r.Exam)
+            .AsNoTracking()
             .Where(r => !r.IsDeleted && r.Exam.AcademicYearId == yearId);
 
         if (examId.HasValue) resultsQuery = resultsQuery.Where(r => r.ExamId == examId.Value);
@@ -94,40 +126,46 @@ public class AdminResultController : Controller
 
         var results = await resultsQuery.ToListAsync(ct);
 
-        var classPerf = results.GroupBy(r => r.Student.Class?.Name ?? "Unknown")
-            .Select(g => new { Label = g.Key, PassRate = g.Any() ? Math.Round(100m * g.Count(x => x.IsPassed) / g.Count(), 1) : 0m })
+        if (!classPerf.Any())
+        {
+            classPerf = results.GroupBy(r => r.Student.Class?.Name ?? "Unknown")
+                .Select(g => (dynamic)new { Label = g.Key, PassRate = g.Any() ? Math.Round(100m * g.Count(x => x.IsPassed) / g.Count(), 1) : 0m })
+                .OrderBy(x => x.Label).ToList();
+        }
+
+        sectionPerf = results.GroupBy(r => r.Student.Section?.Name ?? "Unknown")
+            .Select(g => (dynamic)new { Label = g.Key, PassRate = g.Any() ? Math.Round(100m * g.Count(x => x.IsPassed) / g.Count(), 1) : 0m })
             .OrderBy(x => x.Label).ToList();
 
-        var sectionPerf = results.GroupBy(r => r.Student.Section?.Name ?? "Unknown")
-            .Select(g => new { Label = g.Key, PassRate = g.Any() ? Math.Round(100m * g.Count(x => x.IsPassed) / g.Count(), 1) : 0m })
+        if (!gradeDist.Any())
+        {
+            gradeDist = results.GroupBy(r => string.IsNullOrEmpty(r.Grade) ? "N/A" : r.Grade)
+                .Select(g => (dynamic)new { Grade = g.Key, Count = g.Count() })
+                .OrderBy(x => x.Grade).ToList();
+        }
+
+        passTrend = results.GroupBy(r => r.Exam?.Name ?? "Exam")
+            .Select(g => (dynamic)new { Label = g.Key, PassRate = g.Any() ? Math.Round(100m * g.Count(x => x.IsPassed) / g.Count(), 1) : 0m })
             .OrderBy(x => x.Label).ToList();
+
+        if (!topStudents.Any())
+        {
+            topStudents = results.OrderByDescending(r => r.Gpa).Take(10)
+                .Select(r => (dynamic)new { Name = r.Student.FullName, Gpa = r.Gpa }).ToList();
+        }
+
+        if (!examId.HasValue || passCount == 0 && failCount == 0)
+        {
+            passCount = results.Count(r => r.IsPassed);
+            failCount = results.Count(r => !r.IsPassed);
+        }
 
         var groupPerf = results.Where(r => r.Student.StudentGroup != null)
             .GroupBy(r => r.Student.StudentGroup!.Name)
-            .Select(g => new { Label = g.Key, PassRate = g.Any() ? Math.Round(100m * g.Count(x => x.IsPassed) / g.Count(), 1) : 0m })
+            .Select(g => (dynamic)new { Label = g.Key, PassRate = g.Any() ? Math.Round(100m * g.Count(x => x.IsPassed) / g.Count(), 1) : 0m })
             .OrderBy(x => x.Label).ToList();
 
-        var subjectResults = await _uow.Repository<StudentSubjectResult>().Query()
-            .Include(s => s.Subject)
-            .Include(s => s.Exam)
-            .Where(s => !s.IsDeleted && s.Exam.AcademicYearId == yearId)
-            .Where(s => !examId.HasValue || s.ExamId == examId.Value)
-            .ToListAsync(ct);
-
-        var subjectPerf = subjectResults.GroupBy(s => s.Subject?.Name ?? "Unknown")
-            .Select(g => new { Label = g.Key, PassRate = g.Any() ? Math.Round(100m * g.Count(x => x.IsPassed) / g.Count(), 1) : 0m })
-            .OrderByDescending(x => x.PassRate).Take(12).ToList();
-
-        var gradeDist = results.GroupBy(r => string.IsNullOrEmpty(r.Grade) ? "N/A" : r.Grade)
-            .Select(g => new { Grade = g.Key, Count = g.Count() })
-            .OrderBy(x => x.Grade).ToList();
-
-        var passTrend = results.GroupBy(r => r.Exam?.Name ?? "Exam")
-            .Select(g => new { Label = g.Key, PassRate = g.Any() ? Math.Round(100m * g.Count(x => x.IsPassed) / g.Count(), 1) : 0m })
-            .OrderBy(x => x.Label).ToList();
-
-        var topStudents = results.OrderByDescending(r => r.Gpa).Take(10)
-            .Select(r => new { Name = r.Student.FullName, Gpa = r.Gpa }).ToList();
+        var subjectPerf = new List<dynamic>();
 
         var groups = await _uow.Repository<StudentGroup>().ListAsync(g => !g.IsDeleted, ct);
         var chartDataJson = JsonSerializer.Serialize(new
@@ -139,8 +177,8 @@ public class AdminResultController : Controller
             gradeDist,
             passTrend,
             topStudents,
-            passCount = results.Count(r => r.IsPassed),
-            failCount = results.Count(r => !r.IsPassed)
+            passCount,
+            failCount
         });
 
         var vm = new ResultDashboardViewModel
@@ -321,13 +359,17 @@ public class AdminResultController : Controller
         try
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
-            var dto = new ResultPublishDto
-            {
-                ExamId = request.ExamId,
-                LockResults = request.LockResults,
-                ApprovedByUserId = userId
-            };
-            await _publicationService.PublishResultsAsync(dto);
+
+            // Use stored procedure for publish operation
+            var db = GetDbContext();
+            var rows = await db.Database.ExecuteSqlRawAsync(
+                "EXEC sp_PublishResults @ExamId, @AcademicYearId, @PublishedByUserId, @LockResults, @Remarks",
+                new SqlParameter("@ExamId", request.ExamId),
+                new SqlParameter("@AcademicYearId", await GetAcademicYearIdForExam(request.ExamId)),
+                new SqlParameter("@PublishedByUserId", userId),
+                new SqlParameter("@LockResults", request.LockResults ? 1 : 0),
+                new SqlParameter("@Remarks", (object?)request.Remarks ?? DBNull.Value));
+
             return Json(new { success = true });
         }
         catch (Exception ex)
@@ -342,13 +384,28 @@ public class AdminResultController : Controller
     {
         try
         {
-            await _publicationService.UnpublishResultsAsync(request.ExamId);
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+
+            // Use stored procedure for unpublish
+            var db = GetDbContext();
+            var rows = await db.Database.ExecuteSqlRawAsync(
+                "EXEC sp_UnpublishResults @ExamId, @UnpublishedByUserId, @Reason",
+                new SqlParameter("@ExamId", request.ExamId),
+                new SqlParameter("@UnpublishedByUserId", userId),
+                new SqlParameter("@Reason", (object?)request.Remarks ?? "Unpublish requested"));
+
             return Json(new { success = true });
         }
         catch (Exception ex)
         {
             return Json(new { success = false, message = ex.Message });
         }
+    }
+
+    private async Task<int> GetAcademicYearIdForExam(int examId)
+    {
+        var exam = await _uow.Repository<ExamEntity>().GetByIdAsync(examId);
+        return exam?.AcademicYearId ?? 0;
     }
 
     [HttpPost]
@@ -388,27 +445,23 @@ public class AdminResultController : Controller
     {
         try
         {
-            var query = _uow.Repository<StudentExamResult>().Query()
-                .Where(r => r.ExamId == request.ExamId && !r.IsDeleted);
-
-            if (request.StudentIds?.Any() == true)
-                query = query.Where(r => request.StudentIds.Contains(r.StudentId));
-
-            var results = await query.ToListAsync();
-            foreach (var r in results)
-            {
-                r.Status = ResultWorkflowStatus.Draft;
-                r.UpdatedAt = DateTime.UtcNow;
-                r.UpdatedBy = User.Identity?.Name ?? "admin";
-                _uow.Repository<StudentExamResult>().Update(r);
-            }
-            await _uow.SaveChangesAsync();
-            return Json(new { success = true });
+            var db = GetDbContext();
+            var rows = await db.Database.ExecuteSqlRawAsync(
+                "UPDATE StudentExamResults SET Status = @Status, UpdatedAt = GETUTCDATE(), UpdatedBy = @UpdatedBy WHERE ExamId = @ExamId AND IsDeleted = 0",
+                new SqlParameter("@Status", (int)ResultWorkflowStatus.Draft),
+                new SqlParameter("@UpdatedBy", User.Identity?.Name ?? "admin"),
+                new SqlParameter("@ExamId", request.ExamId));
+            return Json(new { success = true, affected = rows });
         }
         catch (Exception ex)
         {
             return Json(new { success = false, message = ex.Message });
         }
+    }
+
+    private SchoolDbContext GetDbContext()
+    {
+        return HttpContext.RequestServices.GetRequiredService<SchoolDbContext>();
     }
 
     public class PublishRequest
@@ -431,14 +484,21 @@ public class AdminResultController : Controller
     {
         try
         {
-            await _resultCalculationService.CalculateExamResultsAsync(examId);
-            TempData["Success"] = "Results recalculated successfully.";
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+            var db = GetDbContext();
+            var academicYearId = await GetAcademicYearIdForExam(examId);
+            await db.Database.ExecuteSqlRawAsync(
+                "EXEC sp_RecalculateResults @ExamId, @AcademicYearId, @RecalculatedByUserId, @Reason",
+                new SqlParameter("@ExamId", examId),
+                new SqlParameter("@AcademicYearId", academicYearId),
+                new SqlParameter("@RecalculatedByUserId", userId),
+                new SqlParameter("@Reason", "Recalculation triggered from admin dashboard"));
+            return Json(new { success = true, message = "Results recalculated successfully." });
         }
         catch (Exception ex)
         {
-            TempData["Error"] = $"Error recalculating results: {ex.Message}";
+            return Json(new { success = false, message = $"Error: {ex.Message}" });
         }
-        return RedirectToAction("Dashboard");
     }
 
     [HttpPost]
@@ -447,7 +507,10 @@ public class AdminResultController : Controller
     {
         try
         {
-            await _meritCalculationService.RecalculateMeritPositionsAsync(examId);
+            var db = GetDbContext();
+            await db.Database.ExecuteSqlRawAsync(
+                "EXEC sp_CalculateMerit @ExamGroupKey",
+                new SqlParameter("@ExamGroupKey", await GetExamName(examId)));
             TempData["Success"] = "Merit positions recalculated successfully.";
         }
         catch (Exception ex)
@@ -455,5 +518,11 @@ public class AdminResultController : Controller
             TempData["Error"] = $"Error recalculating merit positions: {ex.Message}";
         }
         return RedirectToAction("Dashboard");
+    }
+
+    private async Task<string> GetExamName(int examId)
+    {
+        var exam = await _uow.Repository<ExamEntity>().GetByIdAsync(examId);
+        return exam?.Name ?? "";
     }
 }

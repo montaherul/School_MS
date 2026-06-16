@@ -17,7 +17,7 @@ public class AuditLogService : IAuditLogService
 
     public async Task<PagedResult<AuditLogListItemViewModel>> GetPagedAsync(int page, int pageSize, string? search, CancellationToken ct = default)
     {
-        var query = _unitOfWork.Repository<SchoolManagementSystem.Models.Entities.Auth.AuditLog>().Query()
+        var query = _unitOfWork.Repository<SchoolManagementSystem.Models.Entities.Auth.AuditLog>().Query().AsNoTracking()
             .Include(a => a.User)
             .Where(a => !a.IsDeleted);
 

@@ -16,6 +16,7 @@ public interface IExamService
 
     // Exam write operations (upsert DTO only)
     Task<object?> CreateExamAsync(ExamUpsertDto dto, CancellationToken ct = default);
+    Task<List<object?>> CreateExamsBulkAsync(ExamUpsertDto dto, CancellationToken ct = default);
     Task<object?> UpdateExamAsync(int examId, ExamUpsertDto dto, CancellationToken ct = default);
     Task DeleteExamAsync(int examId, CancellationToken ct = default);
     Task<object?> GetExamByIdAsync(int examId, CancellationToken ct = default);

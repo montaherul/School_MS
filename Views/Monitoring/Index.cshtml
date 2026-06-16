@@ -1,0 +1,79 @@
+@model SchoolManagementSystem.Controllers.Admin.MonitoringController.MonitoringViewModel
+@{
+    ViewData["Title"] = "Live Monitoring";
+}
+
+<div class="adm-page er-page">
+    <div class="er-page-header">
+        <div class="er-page-header__left">
+            <div class="er-page-header__icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="er-page-header__title">Live Monitoring</h1>
+                <p class="er-page-header__sub">Real-time system performance and activity</p>
+            </div>
+        </div>
+        <div class="er-page-header__right">
+            <button onclick="location.reload()" class="er-btn er-btn--primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10" /><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" /></svg>
+                Refresh
+            </button>
+        </div>
+    </div>
+
+    @* ── KPI Cards ── *@
+    @if (Model.Metrics != null)
+    {
+        var colorGreen = "color:#16a34a";
+        var colorAmber = "color:#d97706";
+        var colorRed = "color:#dc2626";
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:1.5rem">
+            <div class="er-stat-card">
+                <div class="er-stat-card__value" style="@(Model.Metrics.AvgQueryTimeMs > 2000 ? colorRed : Model.Metrics.AvgQueryTimeMs > 1000 ? colorAmber : colorGreen)">
+                    @Model.Metrics.AvgQueryTimeMs.ToString("F2") ms
+                </div>
+                <div class="er-stat-card__label">Avg Query Time</div>
+            </div>
+            <div class="er-stat-card">
+                <div class="er-stat-card__value" style="@(Model.Metrics.SlowQueries > 10 ? colorRed : Model.Metrics.SlowQueries > 3 ? colorAmber : colorGreen)">
+                    @Model.Metrics.SlowQueries
+                </div>
+                <div class="er-stat-card__label">Slow Queries (>2s)</div>
+            </div>
+            <div class="er-stat-card">
+                <div class="er-stat-card__value">@Model.Metrics.PublishedResults</div>
+                <div class="er-stat-card__label">Published Results</div>
+            </div>
+            <div class="er-stat-card">
+                <div class="er-stat-card__value" style="@(Model.Metrics.PendingResults > 1000 ? colorAmber : colorGreen)">
+                    @Model.Metrics.PendingResults
+                </div>
+                <div class="er-stat-card__label">Pending Results</div>
+            </div>
+            <div class="er-stat-card">
+                <div class="er-stat-card__value">@Model.Metrics.TotalUsersOnline</div>
+                <div class="er-stat-card__label">Users Online</div>
+            </div>
+        </div>
+
+        <div class="er-card">
+            <div class="er-card__header">
+                <h2 class="er-card__title">System Snapshot</h2>
+            </div>
+            <div style="padding:1rem;color:var(--adm-text-2);font-size:0.9rem">
+                Sampled at: <strong>@Model.Metrics.SampledAt.ToString("yyyy-MM-dd HH:mm:ss")</strong><br>
+                Failed Requests: <strong>@Model.Metrics.FailedRequests</strong>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="er-empty">
+            <p>Unable to retrieve monitoring data. Ensure the SP_System_DashboardMetrics stored procedure is deployed.</p>
+        </div>
+    }
+</div>

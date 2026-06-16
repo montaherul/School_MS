@@ -130,20 +130,20 @@ public class StudentUpsertDto
     public int RollNumber { get; set; }
     // Present
     public string? PresentVillage { get; set; }
-    [Required, MaxLength(150)]
+    [MaxLength(150)]
     public string? PresentPostOffice { get; set; }
-    [Required, MaxLength(150)]
+    [MaxLength(150)]
     public string? PresentThana { get; set; }
-    [Required, MaxLength(150)]
+    [MaxLength(150)]
     public string? PresentDistrict { get; set; }
 
     // Permanent
     public string? PermanentVillage { get; set; }
-    [Required, MaxLength(150)]
+    [MaxLength(150)]
     public string? PermanentPostOffice { get; set; }
-    [Required, MaxLength(150)]
+    [MaxLength(150)]
     public string? PermanentThana { get; set; }
-    [Required, MaxLength(150)]
+    [MaxLength(150)]
     public string? PermanentDistrict { get; set; }
     // Navigation props mapped
     public string? ProfilePicturePath { get; set; }

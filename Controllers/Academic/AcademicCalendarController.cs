@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SchoolManagementSystem.Models.Entities.Academic;
+using SchoolManagementSystem.Models.Entities.Website;
+using SchoolManagementSystem.Models.Entities.Exam;
 using SchoolManagementSystem.Services.Interfaces.Academic;
 using Microsoft.AspNetCore.Authorization;
 using SchoolManagementSystem.Filters;
@@ -7,6 +9,7 @@ using SchoolManagementSystem.UnitOfWork.Interfaces;
 using SchoolManagementSystem.Helpers.Reports;
 using SchoolManagementSystem.Helpers.Pdf;
 using Microsoft.EntityFrameworkCore;
+using SchoolManagementSystem.Data;
 
 namespace SchoolManagementSystem.Controllers.Academic;
 
@@ -17,17 +20,20 @@ public class AcademicCalendarController : Controller
     private readonly IUnitOfWork _uow;
     private readonly ICalendarDashboardService _dashboardService;
     private readonly IPdfGenerator _pdfGenerator;
+    private readonly SchoolDbContext _db;
 
     public AcademicCalendarController(
         IAcademicCalendarService service,
         IUnitOfWork uow,
         ICalendarDashboardService dashboardService,
-        IPdfGenerator pdfGenerator)
+        IPdfGenerator pdfGenerator,
+        SchoolDbContext db)
     {
         _service = service;
         _uow = uow;
         _dashboardService = dashboardService;
         _pdfGenerator = pdfGenerator;
+        _db = db;
     }
 
     [RequirePermission("Calendar.View")]
@@ -63,23 +69,97 @@ public class AcademicCalendarController : Controller
         if (start == default) start = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
         if (end == default) end = start.AddMonths(1).AddDays(-1);
 
-        var days = await _service.GetCalendarDaysAsync(start, end, ct);
+        var endDateOnly = DateOnly.FromDateTime(end);
+        var startDateOnly = DateOnly.FromDateTime(start);
 
-        var events = days.Select(day => new
+        // 1. Academic Calendar entries
+        var academicDays = await _service.GetCalendarDaysAsync(start, end, ct);
+
+        // 2. Website Events (published, within range)
+        var webEvents = await _db.Events
+            .Where(e => e.IsPublished && e.EventDate >= start && e.EventDate <= end)
+            .ToListAsync(ct);
+
+        // 3. Exam Schedules (within range)
+        var examSchedules = await _db.ExamSchedules
+            .Include(es => es.Exam)
+            .Include(es => es.Subject)
+            .Where(es => es.ExamDate >= startDateOnly && es.ExamDate <= endDateOnly)
+            .ToListAsync(ct);
+
+        // Merge all sources
+        var results = new List<object>();
+
+        foreach (var day in academicDays)
         {
-            id = day.Id,
-            title = day.Title,
-            description = day.Description,
-            date = day.Date.ToString("yyyy-MM-dd"),
-            isHoliday = day.IsHoliday,
-            isWorkingDay = day.IsWorkingDay,
-            isExamDay = day.IsExamDay,
-            isEventDay = day.IsEventDay,
-            remarks = day.Remarks,
-            holidayType = day.HolidayType
-        }).ToList();
+            results.Add(new
+            {
+                id = $"ac-{day.Id}",
+                title = day.Title ?? "",
+                description = day.Description ?? "",
+                date = day.Date.ToString("yyyy-MM-dd"),
+                dayName = day.Date.DayOfWeek.ToString(),
+                isHoliday = day.IsHoliday,
+                isWorkingDay = day.IsWorkingDay,
+                isExamDay = day.IsExamDay,
+                isEventDay = day.IsEventDay,
+                isWebsiteEvent = false,
+                remarks = day.Remarks ?? "",
+                holidayType = day.HolidayType,
+                venue = (string?)null,
+                source = "academic",
+                sourceId = day.Id
+            });
+        }
 
-        return Json(events);
+        foreach (var ev in webEvents)
+        {
+            results.Add(new
+            {
+                id = $"web-{ev.Id}",
+                title = ev.Title ?? "",
+                description = ev.Description ?? "",
+                date = ev.EventDate.ToString("yyyy-MM-dd"),
+                dayName = ev.EventDate.DayOfWeek.ToString(),
+                isHoliday = false,
+                isWorkingDay = false,
+                isExamDay = false,
+                isEventDay = true,
+                isWebsiteEvent = true,
+                remarks = "",
+                holidayType = (string?)null,
+                venue = ev.EventLocation,
+                source = "website_event",
+                sourceId = ev.Id
+            });
+        }
+
+        foreach (var es in examSchedules)
+        {
+            var examName = es.Exam?.Name ?? "Exam";
+            var subName = es.Subject?.Name ?? "Subject";
+            var timeStr = $"{es.StartsAt:hh\\:mm}–{es.EndsAt:hh\\:mm}";
+            results.Add(new
+            {
+                id = $"exam-{es.Id}",
+                title = $"{subName} - {examName}",
+                description = es.Instructions ?? "",
+                date = es.ExamDate.ToString("yyyy-MM-dd"),
+                dayName = es.ExamDate.DayOfWeek.ToString(),
+                isHoliday = false,
+                isWorkingDay = false,
+                isExamDay = true,
+                isEventDay = false,
+                isWebsiteEvent = false,
+                remarks = timeStr,
+                holidayType = (string?)null,
+                venue = string.IsNullOrEmpty(es.RoomNo) ? null : $"Room: {es.RoomNo}",
+                source = "exam_schedule",
+                sourceId = es.Id
+            });
+        }
+
+        return Json(results.OrderBy(r => ((dynamic)r).date).ToList());
     }
 
     [HttpGet]
@@ -90,20 +170,121 @@ public class AcademicCalendarController : Controller
         var weekEnd = weekStart.AddDays(6);
         var start = new DateTime(weekStart.Year, weekStart.Month, weekStart.Day);
         var end = new DateTime(weekEnd.Year, weekEnd.Month, weekEnd.Day);
-        var days = await _service.GetCalendarDaysAsync(start, end, ct);
+        var startDateOnly = DateOnly.FromDateTime(start);
+        var endDateOnly = DateOnly.FromDateTime(end);
 
-        var weekDays = days.Select(d => new
+        // 1. Academic Calendar entries
+        var academicDays = await _service.GetCalendarDaysAsync(start, end, ct);
+
+        // 2. Website Events
+        var webEvents = await _db.Events
+            .Where(e => e.IsPublished && e.EventDate >= start && e.EventDate <= end)
+            .ToListAsync(ct);
+
+        // 3. Exam Schedules
+        var examSchedules = await _db.ExamSchedules
+            .Include(es => es.Exam)
+            .Include(es => es.Subject)
+            .Where(es => es.ExamDate >= startDateOnly && es.ExamDate <= endDateOnly)
+            .ToListAsync(ct);
+
+        // Build a per-date lookup
+        var dayMap = new Dictionary<string, List<object>>();
+        for (var d = weekStart; d <= weekEnd; d = d.AddDays(1))
         {
-            date = d.Date.ToString("yyyy-MM-dd"),
-            dayName = d.Date.DayOfWeek.ToString(),
-            dayNumber = d.Date.Day,
-            title = d.Title,
-            description = d.Description,
-            isHoliday = d.IsHoliday,
-            isWorkingDay = d.IsWorkingDay,
-            isExamDay = d.IsExamDay,
-            isEventDay = d.IsEventDay,
-            holidayType = d.HolidayType
+            dayMap[d.ToString("yyyy-MM-dd")] = new List<object>();
+        }
+
+        foreach (var day in academicDays)
+        {
+            var key = day.Date.ToString("yyyy-MM-dd");
+            if (dayMap.ContainsKey(key))
+            {
+                dayMap[key].Add(new
+                {
+                    title = day.Title ?? "",
+                    description = day.Description ?? "",
+                    isHoliday = day.IsHoliday,
+                    isWorkingDay = day.IsWorkingDay,
+                    isExamDay = day.IsExamDay,
+                    isEventDay = day.IsEventDay,
+                    isWebsiteEvent = false,
+                    holidayType = day.HolidayType,
+                    venue = (string?)null,
+                    source = "academic"
+                });
+            }
+        }
+
+        foreach (var ev in webEvents)
+        {
+            var key = ev.EventDate.ToString("yyyy-MM-dd");
+            if (dayMap.ContainsKey(key))
+            {
+                dayMap[key].Add(new
+                {
+                    title = ev.Title ?? "",
+                    description = ev.Description ?? "",
+                    isHoliday = false,
+                    isWorkingDay = false,
+                    isExamDay = false,
+                    isEventDay = true,
+                    isWebsiteEvent = true,
+                    holidayType = (string?)null,
+                    venue = ev.EventLocation,
+                    source = "website_event"
+                });
+            }
+        }
+
+        foreach (var es in examSchedules)
+        {
+            var key = es.ExamDate.ToString("yyyy-MM-dd");
+            if (dayMap.ContainsKey(key))
+            {
+                var examName = es.Exam?.Name ?? "Exam";
+                var subName = es.Subject?.Name ?? "Subject";
+                dayMap[key].Add(new
+                {
+                    title = $"{subName} - {examName}",
+                    description = es.Instructions ?? "",
+                    isHoliday = false,
+                    isWorkingDay = false,
+                    isExamDay = true,
+                    isEventDay = false,
+                    isWebsiteEvent = false,
+                    holidayType = (string?)null,
+                    venue = string.IsNullOrEmpty(es.RoomNo) ? null : $"Room: {es.RoomNo}",
+                    source = "exam_schedule"
+                });
+            }
+        }
+
+        var weekDays = dayMap.Select(kvp =>
+        {
+            var dt = DateTime.Parse(kvp.Key);
+            var items = kvp.Value;
+            // Determine aggregate flags for the day
+            var hasHoliday = items.Any(i => (bool)((dynamic)i).isHoliday);
+            var hasExam = items.Any(i => (bool)((dynamic)i).isExamDay);
+            var hasEvent = items.Any(i => (bool)((dynamic)i).isEventDay || (bool)((dynamic)i).isWebsiteEvent);
+            var isWorking = !hasHoliday && items.All(i => (bool)((dynamic)i).isWorkingDay || !(bool)((dynamic)i).isHoliday);
+
+            var primaryItem = items.FirstOrDefault();
+            return new
+            {
+                date = kvp.Key,
+                dayName = dt.DayOfWeek.ToString(),
+                dayNumber = dt.Day,
+                title = primaryItem != null ? ((dynamic)primaryItem).title : (string?)null,
+                description = primaryItem != null ? ((dynamic)primaryItem).description : (string?)null,
+                isHoliday = hasHoliday,
+                isWorkingDay = isWorking && !hasHoliday,
+                isExamDay = hasExam,
+                isEventDay = hasEvent,
+                holidayType = (string?)null,
+                items = items
+            };
         }).ToList();
 
         return Json(new { weekStart = weekStart.ToString("yyyy-MM-dd"), weekEnd = weekEnd.ToString("yyyy-MM-dd"), days = weekDays });
@@ -116,22 +297,85 @@ public class AcademicCalendarController : Controller
         var fromDate = start ?? DateTime.Today;
         var from = new DateTime(fromDate.Year, fromDate.Month, fromDate.Day);
         var end = from.AddDays(90);
-        var days = await _service.GetCalendarDaysAsync(from, end, ct);
+        var fromDateOnly = DateOnly.FromDateTime(from);
+        var endDateOnly = DateOnly.FromDateTime(end);
 
-        var items = days
-            .OrderBy(d => d.Date)
-            .Take(count)
-            .Select(d => new
+        // 1. Academic Calendar entries
+        var academicDays = await _service.GetCalendarDaysAsync(from, end, ct);
+
+        // 2. Website Events
+        var webEvents = await _db.Events
+            .Where(e => e.IsPublished && e.EventDate >= from && e.EventDate <= end)
+            .ToListAsync(ct);
+
+        // 3. Exam Schedules
+        var examSchedules = await _db.ExamSchedules
+            .Include(es => es.Exam)
+            .Include(es => es.Subject)
+            .Where(es => es.ExamDate >= fromDateOnly && es.ExamDate <= endDateOnly)
+            .ToListAsync(ct);
+
+        var items = new List<object>();
+
+        foreach (var d in academicDays)
+        {
+            // FIX 2: Skip working days in agenda event lists
+            var isWorking = !d.IsHoliday && !d.IsExamDay && !d.IsEventDay;
+            if (isWorking) continue;
+
+            items.Add(new
             {
                 date = d.Date.ToString("yyyy-MM-dd"),
                 dayName = d.Date.DayOfWeek.ToString(),
-                title = d.Title,
-                description = d.Description,
-                type = d.IsHoliday ? "holiday" : d.IsExamDay ? "exam" : d.IsEventDay ? "event" : "working",
-                holidayType = d.HolidayType
-            }).ToList();
+                title = d.Title ?? "",
+                description = d.Description ?? "",
+                type = d.IsHoliday ? "holiday" : d.IsExamDay ? "exam" : "event",
+                holidayType = d.HolidayType,
+                venue = (string?)null,
+                source = "academic"
+            });
+        }
 
-        return Json(items);
+        foreach (var ev in webEvents)
+        {
+            items.Add(new
+            {
+                date = ev.EventDate.ToString("yyyy-MM-dd"),
+                dayName = ev.EventDate.DayOfWeek.ToString(),
+                title = ev.Title ?? "",
+                description = ev.Description ?? "",
+                type = "event",
+                holidayType = (string?)null,
+                venue = ev.EventLocation,
+                source = "website_event"
+            });
+        }
+
+        foreach (var es in examSchedules)
+        {
+            var examName = es.Exam?.Name ?? "Exam";
+            var subName = es.Subject?.Name ?? "Subject";
+            var timeStr = $"{es.StartsAt:hh\\:mm}–{es.EndsAt:hh\\:mm}";
+            items.Add(new
+            {
+                date = es.ExamDate.ToString("yyyy-MM-dd"),
+                dayName = es.ExamDate.DayOfWeek.ToString(),
+                title = $"{subName} - {examName} ({timeStr})",
+                description = es.Instructions ?? "",
+                type = "exam",
+                holidayType = (string?)null,
+                venue = string.IsNullOrEmpty(es.RoomNo) ? null : $"Room: {es.RoomNo}",
+                source = "exam_schedule"
+            });
+        }
+
+        var ordered = items
+            .OrderBy(i => ((dynamic)i).date)
+            .ThenBy(i => ((dynamic)i).title)
+            .Take(count)
+            .ToList();
+
+        return Json(ordered);
     }
 
     [HttpGet]
@@ -140,17 +384,38 @@ public class AcademicCalendarController : Controller
     {
         var start = new DateTime(year, 1, 1);
         var end = new DateTime(year, 12, 31);
+        var startDateOnly = DateOnly.FromDateTime(start);
+        var endDateOnly = DateOnly.FromDateTime(end);
+
+        // 1. Academic Calendar entries
         var days = await _service.GetCalendarDaysAsync(start, end, ct);
 
-        var monthly = Enumerable.Range(1, 12).Select(m => new
+        // 2. Website Events in this year
+        var webEvents = await _db.Events
+            .Where(e => e.IsPublished && e.EventDate >= start && e.EventDate <= end)
+            .ToListAsync(ct);
+
+        // 3. Exam Schedules in this year
+        var examSchedules = await _db.ExamSchedules
+            .Where(es => es.ExamDate >= startDateOnly && es.ExamDate <= endDateOnly)
+            .ToListAsync(ct);
+
+        // FIX 1: Mutually exclusive counts from academic calendar only.
+        // Exam schedules are already reflected in IsExamDay via SyncExamDaysAsync.
+        // Priority: Holiday > Exam > Event > Working
+        var monthly = Enumerable.Range(1, 12).Select(m =>
         {
-            month = m,
-            monthName = new DateTime(year, m, 1).ToString("MMMM"),
-            totalDays = DateTime.DaysInMonth(year, m),
-            holidays = days.Count(d => d.Date.Month == m && d.IsHoliday),
-            examDays = days.Count(d => d.Date.Month == m && d.IsExamDay),
-            events = days.Count(d => d.Date.Month == m && d.IsEventDay),
-            workingDays = days.Count(d => d.Date.Month == m && d.IsWorkingDay)
+            return new
+            {
+                month = m,
+                monthName = new DateTime(year, m, 1).ToString("MMMM"),
+                totalDays = DateTime.DaysInMonth(year, m),
+                holidays = days.Count(d => d.Date.Month == m && d.IsHoliday),
+                examDays = days.Count(d => d.Date.Month == m && d.IsExamDay && !d.IsHoliday),
+                events = days.Count(d => d.Date.Month == m && d.IsEventDay && !d.IsHoliday && !d.IsExamDay),
+                websiteEvents = webEvents.Count(ev => ev.EventDate.Month == m),
+                workingDays = days.Count(d => d.Date.Month == m && d.IsWorkingDay && !d.IsHoliday && !d.IsExamDay && !d.IsEventDay)
+            };
         }).ToList();
 
         return Json(new { year, months = monthly });

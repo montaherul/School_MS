@@ -1,0 +1,206 @@
+@* Expected model shape (dynamic):
+    Model = {
+        Exams: List<SelectListItem>,
+        Classes: List<SelectListItem>,
+        SelectedExamId: int?,
+        SelectedClassId: int?,
+        Stats: {
+            TotalClasses: int,
+            TotalStudents: int,
+            TotalPassed: int,
+            TotalFailed: int,
+            OverallPassPercentage: decimal
+        },
+        ClassResults: List<{
+            ClassId: int,
+            ClassName: string,
+            TotalStudents: int,
+            Passed: int,
+            Failed: int,
+            PassPercentage: decimal,
+            AvgGPA: decimal,
+            HighestGPA: decimal,
+            LowestGPA: decimal
+        }>
+    }
+*@
+@model dynamic
+@{
+    ViewData["Title"] = "Class Results";
+}
+
+<div class="adm-page er-page">
+    <div class="er-page-header">
+        <div class="er-page-header__left">
+            <div class="er-page-header__icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="er-page-header__title">Class Results</h1>
+                <p class="er-page-header__sub">Performance summary grouped by class</p>
+            </div>
+        </div>
+        <div class="er-page-header__right">
+            <button class="er-btn er-btn--secondary" onclick="exportToExcel()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                Export Excel
+            </button>
+        </div>
+    </div>
+
+    <div class="er-filters mb-4">
+        <form method="get" action="@Url.Action("ClassResults")" class="er-filters__row">
+            <div class="er-filters__group">
+                <label class="er-filters__label">Exam</label>
+                <select name="examId" class="er-filters__select">
+                    <option value="">All Exams</option>
+                    @if (Model.Exams != null)
+                    {
+                        foreach (var exam in Model.Exams)
+                        {
+                            <option value="@exam.Id" selected="@(Model.SelectedExamId == exam.Id)">@exam.Name</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="er-filters__group--actions">
+                <button type="submit" class="er-btn er-btn--primary adm-btn--sm">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+                    Filter
+                </button>
+                <a href="@Url.Action("ClassResults", "AdminResult")" class="er-btn er-btn--secondary adm-btn--sm">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                    Clear
+                </a>
+            </div>
+        </form>
+    </div>
+
+    @if (Model.Stats != null)
+    {
+        <div class="er-stats mb-4">
+            <div class="er-stat">
+                <div class="er-stat__icon er-stat__icon--primary">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /></svg>
+                </div>
+                <div class="er-stat__body">
+                    <span class="er-stat__label">Total Classes</span>
+                    <span class="er-stat__value">@Model.Stats.TotalClasses</span>
+                </div>
+            </div>
+            <div class="er-stat">
+                <div class="er-stat__icon er-stat__icon--info">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /></svg>
+                </div>
+                <div class="er-stat__body">
+                    <span class="er-stat__label">Total Students</span>
+                    <span class="er-stat__value">@Model.Stats.TotalStudents</span>
+                </div>
+            </div>
+            <div class="er-stat">
+                <div class="er-stat__icon er-stat__icon--success">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12" /></svg>
+                </div>
+                <div class="er-stat__body">
+                    <span class="er-stat__label">Total Passed</span>
+                    <span class="er-stat__value" style="color:var(--adm-success);">@Model.Stats.TotalPassed</span>
+                </div>
+            </div>
+            <div class="er-stat">
+                <div class="er-stat__icon" style="background:#fde8e8;color:#dc2626;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                </div>
+                <div class="er-stat__body">
+                    <span class="er-stat__label">Pass Rate</span>
+                    <span class="er-stat__value">@Model.Stats.OverallPassPercentage.ToString("F1")<span class="er-stat__unit">%</span></span>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="er-card" style="border-radius: var(--adm-radius-lg); border-top: 1px solid var(--adm-border);">
+        <div class="er-card__header">
+            <h3 class="er-card__title">Class Performance Summary</h3>
+            @if (Model.ClassResults != null)
+            {
+                <span class="er-badge er-badge--neutral">@Model.ClassResults.Count class(es)</span>
+            }
+        </div>
+        <div class="er-card__body--flush">
+            @if (Model.ClassResults != null && Model.ClassResults.Count > 0)
+            {
+                <div class="table-responsive">
+                    <table class="er-table">
+                        <thead>
+                            <tr>
+                                <th class="ps-4">Class</th>
+                                <th class="text-end">Total Students</th>
+                                <th class="text-end" style="color:var(--adm-success);">Passed</th>
+                                <th class="text-end" style="color:var(--adm-rejected);">Failed</th>
+                                <th class="text-end">Pass %</th>
+                                <th class="text-end">Avg GPA</th>
+                                <th class="text-end">Highest GPA</th>
+                                <th class="text-end pe-4">Lowest GPA</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var cls in Model.ClassResults)
+                            {
+                                <tr>
+                                    <td class="ps-4 fw-semibold">@cls.ClassName</td>
+                                    <td class="text-end">@cls.TotalStudents</td>
+                                    <td class="text-end" style="color:var(--adm-success);font-weight:600;">@cls.Passed</td>
+                                    <td class="text-end" style="color:var(--adm-rejected);font-weight:600;">@cls.Failed</td>
+                                    <td class="text-end">
+                                        <span class="er-badge @(cls.PassPercentage >= 80m ? "er-badge--success" : cls.PassPercentage >= 50m ? "er-badge--warning" : "er-badge--danger")">
+                                            @cls.PassPercentage.ToString("F1")%
+                                        </span>
+                                    </td>
+                                    <td class="text-end fw-semibold">@cls.AvgGPA.ToString("F2")</td>
+                                    <td class="text-end" style="color:var(--adm-converted);font-weight:600;">@cls.HighestGPA.ToString("F2")</td>
+                                    <td class="text-end pe-4" style="color:var(--adm-text-3);">@cls.LowestGPA.ToString("F2")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="er-empty">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+                    <h3 class="er-empty__title">No Class Results</h3>
+                    <p class="er-empty__desc">No class-level result summaries are available for the selected filters.</p>
+                    <a href="@Url.Action("Dashboard", "AdminResult")" class="er-btn er-btn--secondary">Back to Dashboard</a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
+
+@section Scripts {
+    <script>
+        function showToast(message, type) {
+            var bg = type === 'success' ? 'bg-success' : 'bg-danger';
+            var container = document.getElementById('toastContainer');
+            var toast = document.createElement('div');
+            toast.className = 'toast align-items-center text-white border-0 ' + bg;
+            toast.innerHTML = '<div class="d-flex"><div class="toast-body">' + message + '</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>';
+            container.appendChild(toast);
+            var bs = new bootstrap.Toast(toast, { delay: 4000 });
+            bs.show();
+            toast.addEventListener('hidden.bs.toast', function () { toast.remove(); });
+        }
+
+        function exportToExcel() {
+            showToast('Excel export feature coming soon!', 'info');
+        }
+    </script>
+}

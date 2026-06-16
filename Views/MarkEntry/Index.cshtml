@@ -1,0 +1,150 @@
+@model List<dynamic>
+@{
+    ViewData["Title"] = "Mark Entry Sessions";
+}
+
+<div class="adm-page er-page">
+    <div class="er-page-header">
+        <div class="er-page-header__left">
+            <div class="er-page-header__icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                    <polyline points="10 9 9 9 8 9" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="er-page-header__title">Mark Entry Sessions</h1>
+                <p class="er-page-header__sub">Manage and enter marks for all exam sessions across classes and subjects.</p>
+            </div>
+        </div>
+        <div class="er-page-header__right">
+            <a href="@Url.Action("BulkImport")" class="er-btn er-btn--secondary">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+                Bulk Import
+            </a>
+        </div>
+    </div>
+
+    <div class="er-filters">
+        <div class="er-filters__row">
+            <div class="er-filters__group">
+                <label class="er-filters__label">Exam</label>
+                <select id="filterExam" class="er-filters__select">
+                    <option value="">All Exams</option>
+                </select>
+            </div>
+            <div class="er-filters__group">
+                <label class="er-filters__label">Class</label>
+                <select id="filterClass" class="er-filters__select">
+                    <option value="">All Classes</option>
+                </select>
+            </div>
+            <div class="er-filters__group">
+                <label class="er-filters__label">Status</label>
+                <select id="filterStatus" class="er-filters__select">
+                    <option value="">All Statuses</option>
+                    <option value="draft">Draft</option>
+                    <option value="submitted">Submitted</option>
+                    <option value="locked">Locked</option>
+                    <option value="approved">Approved</option>
+                </select>
+            </div>
+            <div class="er-filters__group">
+                <button class="er-btn er-btn--primary" onclick="applyFilters()">Apply</button>
+                <button class="er-btn er-btn--secondary" onclick="clearFilters()">Clear</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="er-table-wrap">
+        <table class="er-table" id="sessionsTable">
+            <thead>
+                <tr>
+                    <th>Exam</th>
+                    <th>Class</th>
+                    <th>Section</th>
+                    <th>Subject</th>
+                    <th>Total Students</th>
+                    <th>Entered</th>
+                    <th>Status</th>
+                    <th style="width:200px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var s in Model)
+                    {
+                        var status = (string)(s.Status ?? "Draft");
+                        var badgeClass = status.ToLower() == "draft" ? "er-badge--neutral"
+                            : status.ToLower() == "submitted" ? "er-badge--pending"
+                            : status.ToLower() == "locked" ? "er-badge--info"
+                            : status.ToLower() == "approved" ? "er-badge--approved"
+                            : "er-badge--neutral";
+                        <tr data-exam="@s.ExamName" data-class="@s.ClassName" data-status="@status.ToLower()">
+                            <td><strong>@s.ExamName</strong></td>
+                            <td>@s.ClassName</td>
+                            <td>@s.SectionName</td>
+                            <td>@s.SubjectName</td>
+                            <td>@s.TotalStudents</td>
+                            <td>@s.EnteredCount</td>
+                            <td><span class="er-badge @badgeClass">@status</span></td>
+                            <td>
+                                <div class="d-flex gap-1">
+                                    <a href="@Url.Action("Grid", new { examId = s.ExamId, classId = s.ClassId, sectionId = s.SectionId, subjectId = s.SubjectId })" class="er-btn er-btn--primary adm-btn--sm">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
+                                        Enter Marks
+                                    </a>
+                                    <a href="@Url.Action("ComponentMarks", new { examId = s.ExamId, classId = s.ClassId, sectionId = s.SectionId, subjectId = s.SubjectId })" class="er-btn er-btn--secondary adm-btn--sm" title="Component-wise Entry">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></svg>
+                                        Components
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="8">
+                            <div class="er-empty">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg>
+                                <h3 class="er-empty__title">No Mark Entry Sessions</h3>
+                                <p class="er-empty__desc">There are no active exam sessions for mark entry. Please ensure exams and class-subject assignments exist.</p>
+                                <a href="@Url.Action("Index", "Exam")" class="er-btn er-btn--secondary">Manage Exams</a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function applyFilters() {
+            var exam = document.getElementById('filterExam').value.toLowerCase();
+            var cls = document.getElementById('filterClass').value.toLowerCase();
+            var status = document.getElementById('filterStatus').value.toLowerCase();
+            var rows = document.querySelectorAll('#sessionsTable tbody tr');
+            rows.forEach(function(row) {
+                var matchExam = !exam || (row.getAttribute('data-exam') || '').toLowerCase().includes(exam);
+                var matchClass = !cls || (row.getAttribute('data-class') || '').toLowerCase().includes(cls);
+                var matchStatus = !status || (row.getAttribute('data-status') || '').toLowerCase() === status;
+                row.style.display = matchExam && matchClass && matchStatus ? '' : 'none';
+            });
+        }
+
+        function clearFilters() {
+            document.getElementById('filterExam').value = '';
+            document.getElementById('filterClass').value = '';
+            document.getElementById('filterStatus').value = '';
+            document.querySelectorAll('#sessionsTable tbody tr').forEach(function(r) { r.style.display = ''; });
+        }
+    </script>
+}

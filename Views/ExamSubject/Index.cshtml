@@ -1,0 +1,260 @@
+@* Expected data shape (dynamic):
+   Properties accessed:
+     .Exams            — List<{ Id, Name }> for filter dropdown
+     .SelectedExamId   — int?
+     .ExamName         — string
+     .Subjects         — List<{
+         Id (int?),
+         SubjectId, SubjectName, SubjectCode,
+         FullMarks (decimal), PassMark (decimal),
+         TeacherName (string),
+         IsActive (bool), IsOptional (bool)
+       }>
+     .TotalSubjects, .ActiveCount, .InactiveCount — int (stats)
+*@
+@model dynamic
+@{
+    ViewData["Title"] = "Exam Subjects";
+}
+
+<div class="adm-page er-page er-page--slide">
+    <div class="er-page-header">
+        <div class="er-page-header__left">
+            <div class="er-page-header__icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="er-page-header__title">Exam Subjects</h1>
+                <p class="er-page-header__sub">Configure subjects, marks, and teachers for each exam</p>
+            </div>
+        </div>
+        <div class="er-page-header__right">
+            <a href="@Url.Action("Setup", "ExamSubject", new { examId = Model.SelectedExamId })" class="er-btn er-btn--primary">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                Add Subject
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] is string msg)
+    {
+        <div class="alert alert-success alert-dismissible fade show">@msg<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
+    @if (TempData["ErrorMessage"] is string errMsg)
+    {
+        <div class="alert alert-danger alert-dismissible fade show">@errMsg<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+    }
+
+    <div class="er-filters">
+        <div class="er-filters__row">
+            <div class="er-filters__group">
+                <label class="er-filters__label">Exam</label>
+                <select class="er-filters__select" id="filterExam" onchange="applyFilters()">
+                    <option value="">All Exams</option>
+                    @if (Model.Exams != null)
+                    {
+                        foreach (var exam in Model.Exams)
+                        {
+                            <!option value="@exam.Id" selected="@(exam.Id == Model.SelectedExamId)">@exam.Name</!option>
+                        }
+                    }
+                </select>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.Subjects != null && Model.Subjects.Count > 0)
+    {
+        var total = Model.TotalSubjects ?? Model.Subjects.Count;
+        var active = Model.ActiveCount ?? 0;
+        var inactive = Model.InactiveCount ?? 0;
+
+        <div class="er-stats">
+            <div class="er-stat">
+                <span class="er-stat__value">@total</span>
+                <span class="er-stat__label">Total Subjects</span>
+            </div>
+            <div class="er-stat">
+                <span class="er-stat__value er-stat__value--success">@active</span>
+                <span class="er-stat__label">Active</span>
+            </div>
+            <div class="er-stat">
+                <span class="er-stat__value er-stat__value--danger">@inactive</span>
+                <span class="er-stat__label">Inactive</span>
+            </div>
+        </div>
+    }
+
+    @Html.AntiForgeryToken()
+
+    <div class="er-card" style="border-radius: var(--adm-radius-lg);">
+        <div class="er-card__body">
+            @if (Model.Subjects != null && Model.Subjects.Count > 0)
+            {
+                <div class="table-responsive">
+                    <table class="er-table" id="subjectTable">
+                        <thead>
+                            <tr>
+                                <th>Subject Name</th>
+                                <th>Code</th>
+                                <th>Full Marks</th>
+                                <th>Pass Marks</th>
+                                <th>Teacher</th>
+                                <th>Status</th>
+                                <th style="width:140px;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var s in Model.Subjects)
+                            {
+                                <tr>
+                                    <td><span class="er-cell-name">@s.SubjectName</span></td>
+                                    <td>@(s.SubjectCode ?? "—")</td>
+                                    <td class="fw-bold">@s.FullMarks.ToString("F1")</td>
+                                    <td>@s.PassMark.ToString("F1")</td>
+                                    <td>@(s.TeacherName ?? "—")</td>
+                                    <td>
+                                        @if (s.IsActive)
+                                        {
+                                            <span class="er-badge er-badge--success">Active</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="er-badge er-badge--neutral">Inactive</span>
+                                        }
+                                        @if (s.IsOptional)
+                                        {
+                                            <span class="er-badge er-badge--info">Optional</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="d-flex gap-1">
+                                            @if (s.Id.HasValue)
+                                            {
+                                                <a href="@Url.Action("Edit", "ExamSubject", new { id = s.Id.Value })" class="er-btn er-btn--primary adm-btn--sm" title="Edit">
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
+                                                    Edit
+                                                </a>
+                                                <button class="er-btn er-btn--danger adm-btn--sm" onclick="removeSubject(@s.Id.Value)" title="Remove">
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+                                                    Remove
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted" style="font-size:12px;">Not saved</span>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="er-empty">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                        <path d="M12 20h9" />
+                        <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                    </svg>
+                    <h3 class="er-empty__title">No Subjects Configured</h3>
+                    <p class="er-empty__desc">Select an exam and add subjects to configure marks, teachers, and schedule.</p>
+                    <div class="er-empty__action">
+                        <a href="@Url.Action("Setup", "ExamSubject", new { examId = Model.SelectedExamId })" class="er-btn er-btn--primary">Add Subject</a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
+
+<!-- Confirm Remove Modal -->
+<div class="modal fade" id="removeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Remove Subject</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to remove this subject from the exam?</p>
+                <input type="hidden" id="removeSubjectId" value="" />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="er-btn er-btn--secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="er-btn er-btn--danger" id="confirmRemoveBtn" onclick="confirmRemove()">Remove</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function showToast(message, type) {
+            const bg = type === 'success' ? 'bg-success' : 'bg-danger';
+            const c = document.getElementById('toastContainer');
+            const t = document.createElement('div');
+            t.className = 'toast align-items-center text-white border-0 ' + bg;
+            t.innerHTML = '<div class="d-flex"><div class="toast-body">' + message + '</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>';
+            c.appendChild(t);
+            const bs = new bootstrap.Toast(t, { delay: 4000 });
+            bs.show();
+            t.addEventListener('hidden.bs.toast', () => t.remove());
+        }
+
+        function applyFilters() {
+            const examId = document.getElementById('filterExam').value;
+            const params = new URLSearchParams();
+            if (examId) params.set('examId', examId);
+            window.location.search = params.toString();
+        }
+
+        function removeSubject(id) {
+            document.getElementById('removeSubjectId').value = id;
+            const modal = new bootstrap.Modal(document.getElementById('removeModal'));
+            modal.show();
+        }
+
+        function confirmRemove() {
+            const id = document.getElementById('removeSubjectId').value;
+            if (!id) return;
+
+            const btn = document.getElementById('confirmRemoveBtn');
+            btn.disabled = true;
+            btn.textContent = 'Removing...';
+
+            fetch('@Url.Action("Delete", "ExamSubject")/' + id, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                }
+            })
+            .then(r => r.json())
+            .then(r => {
+                bootstrap.Modal.getInstance(document.getElementById('removeModal')).hide();
+                if (r.success) {
+                    showToast('Subject removed successfully.', 'success');
+                    setTimeout(() => location.reload(), 800);
+                } else {
+                    showToast(r.message || 'Remove failed', 'error');
+                    btn.disabled = false;
+                    btn.textContent = 'Remove';
+                }
+            })
+            .catch(() => {
+                bootstrap.Modal.getInstance(document.getElementById('removeModal')).hide();
+                showToast('Network error', 'error');
+                btn.disabled = false;
+                btn.textContent = 'Remove';
+            });
+        }
+    </script>
+}

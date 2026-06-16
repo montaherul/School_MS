@@ -32,7 +32,7 @@ public class CalendarExportTests
             .ReturnsAsync(data);
         _pdfMock.Setup(x => x.GenerateFromHtml(It.IsAny<string>())).Returns(Encoding.UTF8.GetBytes("PDF"));
 
-        var controller = new AcademicCalendarController(_serviceMock.Object, _uowMock.Object, _dashboardMock.Object, _pdfMock.Object);
+        var controller = new AcademicCalendarController(_serviceMock.Object, _uowMock.Object, _dashboardMock.Object, _pdfMock.Object, null!);
         var result = await controller.ExportPdf(2026);
 
         var fileResult = Assert.IsType<FileContentResult>(result);
@@ -47,7 +47,7 @@ public class CalendarExportTests
         _serviceMock.Setup(x => x.GetCalendarDaysAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(data);
 
-        var controller = new AcademicCalendarController(_serviceMock.Object, _uowMock.Object, _dashboardMock.Object, _pdfMock.Object);
+        var controller = new AcademicCalendarController(_serviceMock.Object, _uowMock.Object, _dashboardMock.Object, _pdfMock.Object, null!);
         var result = await controller.ExportExcel(2026);
 
         var fileResult = Assert.IsType<FileContentResult>(result);
@@ -62,7 +62,7 @@ public class CalendarExportTests
         _serviceMock.Setup(x => x.GetCalendarDaysAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(data);
 
-        var controller = new AcademicCalendarController(_serviceMock.Object, _uowMock.Object, _dashboardMock.Object, _pdfMock.Object);
+        var controller = new AcademicCalendarController(_serviceMock.Object, _uowMock.Object, _dashboardMock.Object, _pdfMock.Object, null!);
         var result = await controller.ExportExcel(2026);
 
         var fileResult = Assert.IsType<FileContentResult>(result);
@@ -80,7 +80,7 @@ public class CalendarExportTests
         _serviceMock.Setup(x => x.GetCalendarDaysAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(data);
 
-        var controller = new AcademicCalendarController(_serviceMock.Object, _uowMock.Object, _dashboardMock.Object, _pdfMock.Object);
+        var controller = new AcademicCalendarController(_serviceMock.Object, _uowMock.Object, _dashboardMock.Object, _pdfMock.Object, null!);
         var result = await controller.ExportExcel(2026);
 
         var fileResult = Assert.IsType<FileContentResult>(result);
@@ -95,7 +95,7 @@ public class CalendarExportTests
             .ReturnsAsync(data);
         _pdfMock.Setup(x => x.GenerateFromHtml(It.IsAny<string>())).Returns(Encoding.UTF8.GetBytes("PDF"));
 
-        var controller = new AcademicCalendarController(_serviceMock.Object, _uowMock.Object, _dashboardMock.Object, _pdfMock.Object);
+        var controller = new AcademicCalendarController(_serviceMock.Object, _uowMock.Object, _dashboardMock.Object, _pdfMock.Object, null!);
         var result = await controller.ExportPdf(null);
 
         var fileResult = Assert.IsType<FileContentResult>(result);
@@ -109,7 +109,7 @@ public class CalendarExportTests
         _serviceMock.Setup(x => x.GetCalendarDaysAsync(It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(data);
 
-        var controller = new AcademicCalendarController(_serviceMock.Object, _uowMock.Object, _dashboardMock.Object, _pdfMock.Object);
+        var controller = new AcademicCalendarController(_serviceMock.Object, _uowMock.Object, _dashboardMock.Object, _pdfMock.Object, null!);
         var result = await controller.ExportExcel(null);
 
         var fileResult = Assert.IsType<FileContentResult>(result);
@@ -128,7 +128,7 @@ public class CalendarExportTests
             .ReturnsAsync(data);
 
         var httpContext = new DefaultHttpContext();
-        var controller = new AcademicCalendarController(_serviceMock.Object, _uowMock.Object, _dashboardMock.Object, _pdfMock.Object)
+        var controller = new AcademicCalendarController(_serviceMock.Object, _uowMock.Object, _dashboardMock.Object, _pdfMock.Object, null!)
         {
             ControllerContext = new ControllerContext { HttpContext = httpContext }
         };

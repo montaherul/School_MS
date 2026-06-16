@@ -163,12 +163,7 @@ public class PlainPdfGenerator : IPdfGenerator
             .GetAwaiter().GetResult();
 
         var html = PrepareHtmlForPdf(rawHtml);
-        if (_env.IsDevelopment())
-        {
-            var debugDir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "IdCardDebug");
-            System.IO.Directory.CreateDirectory(debugDir);
-            System.IO.File.WriteAllText(System.IO.Path.Combine(debugDir, "student-card-debug.html"), html);
-        }
+        SaveDebugHtml(html, "student-card-debug.html");
         return GenerateIdCardPdf(html, model.IsBulk);
     }
 
@@ -184,18 +179,13 @@ public class PlainPdfGenerator : IPdfGenerator
             .GetAwaiter().GetResult();
 
         var html = PrepareHtmlForPdf(rawHtml);
-        if (_env.IsDevelopment())
-        {
-            var debugDir = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "IdCardDebug");
-            System.IO.Directory.CreateDirectory(debugDir);
-            System.IO.File.WriteAllText(System.IO.Path.Combine(debugDir, "employee-card-debug.html"), html);
-        }
+        SaveDebugHtml(html, "employee-card-debug.html");
         return GenerateIdCardPdf(html, model.IsBulk);
     }
 
     // ─────────────────────────────────────────────────────────────
     //  ID CARD PDF
-    //  Single:  180mm × 56mm (front+back side-by-side)
+    //  Single:  116mm × 92mm (CR80 vertical 54×86mm front+back side-by-side)
     //  Bulk:    A4 Landscape (multiple cards per page)
     // ─────────────────────────────────────────────────────────────
     private static readonly SynchronizedConverter _converter = new(new PdfTools());
@@ -216,7 +206,7 @@ public class PlainPdfGenerator : IPdfGenerator
         }
         else
         {
-            globalSettings.PaperSize = new PechkinPaperSize("180mm", "56mm");
+            globalSettings.PaperSize = new PechkinPaperSize("116mm", "92mm");
             globalSettings.Orientation = DinkToPdf.Orientation.Portrait;
         }
 
@@ -481,4 +471,12 @@ public class PlainPdfGenerator : IPdfGenerator
         new Cell()
             .Add(new Paragraph(text))
             .SetPadding(5);
+
+    private void SaveDebugHtml(string html, string fileName)
+    {
+        var debugDir = System.IO.Path.Combine(_env.WebRootPath, "debug");
+        System.IO.Directory.CreateDirectory(debugDir);
+        var debugPath = System.IO.Path.Combine(debugDir, fileName);
+        System.IO.File.WriteAllText(debugPath, html);
+    }
 }

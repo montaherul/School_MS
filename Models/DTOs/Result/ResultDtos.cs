@@ -44,8 +44,11 @@ public class ExamUpsertDto
     public ResultWorkflowStatus Status { get; set; }
     public bool IsLocked { get; set; } = false;
 
+    public string? ExamGroupKey { get; set; }
+
     public List<int>? SelectedClassIds { get; set; }
     public List<int>? SelectedSectionIds { get; set; }
+    public List<int>? SelectedGroupIds { get; set; }
     public List<SubjectMarkConfigDto>? Subjects { get; set; }
 }
 
@@ -140,6 +143,14 @@ public class StudentExamResultDto
     public string ExamName { get; set; } = string.Empty;
     public ExamTerm Term { get; set; }
     public ResultWorkflowStatus Status { get; set; }
+
+    // Student info
+    public int StudentId { get; set; }
+    public string StudentName { get; set; } = string.Empty;
+    public int RollNumber { get; set; }
+    public string ClassName { get; set; } = string.Empty;
+    public string SectionName { get; set; } = string.Empty;
+    public string GroupName { get; set; } = string.Empty;
 
     public decimal TotalMarks { get; set; }
     public decimal TotalFullMarks { get; set; }

@@ -20,5 +20,6 @@ public interface IAdmissionService
     Task<SchoolManagementSystem.Models.Entities.Admission.AdmissionApplication?> GetByIdAsync(int id, CancellationToken ct = default);
     Task DeleteAsync(int id, string updatedBy, CancellationToken ct = default);
     Task<IEnumerable<dynamic>> GetAvailableClassesAsync(CancellationToken ct = default);
+    Task<IEnumerable<dynamic>> GetActiveStudentGroupsAsync(CancellationToken ct = default);
 }
 

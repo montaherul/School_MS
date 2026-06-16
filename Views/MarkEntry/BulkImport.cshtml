@@ -1,0 +1,301 @@
+@model dynamic
+@{
+    ViewData["Title"] = "Bulk Import Marks";
+}
+
+<div class="adm-page er-page">
+    <div class="er-page-header">
+        <div class="er-page-header__left">
+            <div class="er-page-header__icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="er-page-header__title">Bulk Import Marks</h1>
+                <p class="er-page-header__sub">Upload a CSV or Excel file to import marks in bulk. Download the template to ensure correct formatting.</p>
+            </div>
+        </div>
+        <div class="er-page-header__right">
+            <a href="@Url.Action("Index")" class="er-btn er-btn--secondary">Back to Sessions</a>
+        </div>
+    </div>
+
+    <div class="er-card" style="border-radius:var(--adm-radius-lg);">
+        <div class="er-card__body">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="er-filters__group">
+                        <label class="er-filters__label">Exam</label>
+                        <select id="importExam" class="er-filters__select" required>
+                            <option value="">-- Select Exam --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="er-filters__group">
+                        <label class="er-filters__label">Class</label>
+                        <select id="importClass" class="er-filters__select" required>
+                            <option value="">-- Select Class --</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="er-filters__group">
+                        <label class="er-filters__label">Subject</label>
+                        <select id="importSubject" class="er-filters__select" required>
+                            <option value="">-- Select Subject --</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="er-card mt-4" style="border-radius:var(--adm-radius-lg);">
+        <div class="er-card__body">
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+                <a href="@Url.Action("DownloadTemplate")" class="er-btn er-btn--secondary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" class="me-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+                    Download Template
+                </a>
+                <div class="d-flex align-items-center gap-2 flex-grow-1">
+                    <label class="er-filters__label mb-0 text-nowrap">Upload File:</label>
+                    <input type="file" id="fileUpload" class="form-control form-control-sm" accept=".csv,.xls,.xlsx" style="max-width:350px;" />
+                    <button id="btnPreview" class="er-btn er-btn--primary" disabled>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" class="me-2"><polyline points="1 12 5 8 1 12" /><polyline points="23 12 19 8 23 12" /><line x1="12" y1="2" x2="12" y2="22" /><path d="M4.93 4.93a10 10 0 0 1 14.14 0" /><path d="M4.93 19.07a10 10 0 0 1 14.14 0" /></svg>
+                        Preview
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="previewSection" class="er-card mt-4" style="border-radius:var(--adm-radius-lg);display:none;">
+        <div class="er-card__body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0" style="color:var(--adm-text-1);">Preview <span id="previewRowCount" class="badge bg-secondary ms-2"></span></h5>
+                <div class="d-flex gap-2">
+                    <button id="btnValidate" class="er-btn er-btn--primary">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" class="me-2"><polyline points="20 6 9 17 4 12" /></svg>
+                        Validate
+                    </button>
+                    <button id="btnImport" class="er-btn er-btn--success" disabled>
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" class="me-2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+                        Import
+                    </button>
+                </div>
+            </div>
+            <div class="er-table-wrap" style="max-height:400px;overflow:auto;border:1px solid var(--adm-border);border-radius:var(--adm-radius-lg);">
+                <table class="er-table" id="previewTable">
+                    <thead style="position:sticky;top:0;z-index:10;">
+                        <tr>
+                            <th style="width:60px;">Roll</th>
+                            <th style="min-width:180px;">Student Name</th>
+                            <th style="width:100px;">Written</th>
+                            <th style="width:100px;">MCQ</th>
+                            <th style="width:100px;">Practical</th>
+                            <th style="width:100px;">Total</th>
+                            <th style="width:90px;">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="previewBody">
+                    </tbody>
+                </table>
+            </div>
+            <div id="validationSummary" class="mt-3" style="display:none;">
+                <div class="d-flex align-items-center gap-3 p-3" style="border-radius:var(--adm-radius);border:1px solid var(--adm-border);background:var(--adm-bg-2);">
+                    <span id="validCount" class="er-badge er-badge--converted">0 Valid</span>
+                    <span id="errorCount" class="er-badge er-badge--rejected">0 Errors</span>
+                </div>
+                <div id="errorList" class="mt-2" style="max-height:200px;overflow:auto;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
+
+@section Scripts {
+    @Html.AntiForgeryToken()
+    <script>
+        var importData = [];
+
+        document.getElementById('fileUpload').addEventListener('change', function() {
+            document.getElementById('btnPreview').disabled = !this.files.length;
+        });
+
+        function showToast(message, type) {
+            var bg = type === 'success' ? 'bg-success' : 'bg-danger';
+            var c = document.getElementById('toastContainer');
+            var t = document.createElement('div');
+            t.className = 'toast align-items-center text-white border-0 ' + bg;
+            t.innerHTML = '<div class="d-flex"><div class="toast-body">' + message + '</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>';
+            c.appendChild(t);
+            var bs = new bootstrap.Toast(t, { delay: 4000 });
+            bs.show();
+            t.addEventListener('hidden.bs.toast', function() { t.remove(); });
+        }
+
+        function readFile(file) {
+            return new Promise(function(resolve, reject) {
+                var reader = new FileReader();
+                reader.onload = function(e) { resolve(e.target.result); };
+                reader.onerror = function() { reject(new Error('Failed to read file')); };
+                if (file.name.endsWith('.csv')) reader.readAsText(file);
+                else reader.readAsBinaryString(file);
+            });
+        }
+
+        function parseCSV(text) {
+            var lines = text.split(/\r?\n/).filter(function(l) { return l.trim(); });
+            if (lines.length < 2) return [];
+            var headers = lines[0].split(',').map(function(h) { return h.trim().toLowerCase(); });
+            var data = [];
+            for (var i = 1; i < lines.length; i++) {
+                var vals = lines[i].split(',').map(function(v) { return v.trim(); });
+                if (vals.length < 3) continue;
+                var row = {};
+                headers.forEach(function(h, idx) { row[h] = vals[idx] || ''; });
+                data.push(row);
+            }
+            return data;
+        }
+
+        function renderPreview(data) {
+            var tbody = document.getElementById('previewBody');
+            tbody.innerHTML = '';
+            data.forEach(function(row, idx) {
+                var tr = document.createElement('tr');
+                tr.setAttribute('data-index', idx);
+                var roll = row['roll'] || row['roll number'] || row['roll_no'] || '';
+                var name = row['name'] || row['student name'] || row['student_name'] || '';
+                var written = row['written'] || '0';
+                var mcq = row['mcq'] || '0';
+                var practical = row['practical'] || '0';
+                var total = (parseFloat(written) || 0) + (parseFloat(mcq) || 0) + (parseFloat(practical) || 0);
+                var status = 'Pending';
+                tr.innerHTML = '<td>' + roll + '</td><td><span class="adm-cell-name">' + name + '</span></td><td>' + written + '</td><td>' + mcq + '</td><td>' + practical + '</td><td class="fw-bold" style="color:var(--adm-primary);">' + total.toFixed(2) + '</td><td><span class="er-badge er-badge--neutral">' + status + '</span></td>';
+                tbody.appendChild(tr);
+            });
+            document.getElementById('previewRowCount').textContent = data.length + ' rows';
+        }
+
+        document.getElementById('btnPreview').addEventListener('click', function() {
+            var file = document.getElementById('fileUpload').files[0];
+            if (!file) return;
+            var btn = this;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Reading...';
+
+            readFile(file).then(function(content) {
+                importData = parseCSV(content);
+                renderPreview(importData);
+                document.getElementById('previewSection').style.display = '';
+                document.getElementById('validationSummary').style.display = 'none';
+                document.getElementById('btnImport').disabled = true;
+                btn.disabled = false;
+                btn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" class="me-2"><polyline points="1 12 5 8 1 12" /><polyline points="23 12 19 8 23 12" /><line x1="12" y1="2" x2="12" y2="22" /><path d="M4.93 4.93a10 10 0 0 1 14.14 0" /><path d="M4.93 19.07a10 10 0 0 1 14.14 0" /></svg> Preview';
+            }).catch(function(err) {
+                showToast(err.message, 'error');
+                btn.disabled = false;
+                btn.innerHTML = 'Preview';
+            });
+        });
+
+        document.getElementById('btnValidate').addEventListener('click', function() {
+            if (!importData.length) return;
+            var valid = 0, errors = [];
+            importData.forEach(function(row, idx) {
+                var roll = row['roll'] || row['roll number'] || row['roll_no'] || '';
+                var name = row['name'] || row['student name'] || row['student_name'] || '';
+                var written = parseFloat(row['written']) || 0;
+                var mcq = parseFloat(row['mcq']) || 0;
+                var practical = parseFloat(row['practical']) || 0;
+                var rowErrors = [];
+                if (!roll) rowErrors.push('Missing roll number');
+                if (!name) rowErrors.push('Missing student name');
+                if (written < 0 || written > 100) rowErrors.push('Written marks out of range (0-100)');
+                if (mcq < 0 || mcq > 50) rowErrors.push('MCQ marks out of range (0-50)');
+                if (practical < 0 || practical > 50) rowErrors.push('Practical marks out of range (0-50)');
+                if (rowErrors.length) {
+                    errors.push({ row: idx + 2, roll: roll, name: name, messages: rowErrors });
+                } else {
+                    valid++;
+                }
+            });
+
+            document.getElementById('validCount').textContent = valid + ' Valid';
+            document.getElementById('errorCount').textContent = errors.length + ' Errors';
+
+            var errorList = document.getElementById('errorList');
+            errorList.innerHTML = '';
+            if (errors.length) {
+                var ul = document.createElement('ul');
+                ul.style.cssText = 'list-style:none;padding:0;margin:0;';
+                errors.forEach(function(e) {
+                    var li = document.createElement('li');
+                    li.style.cssText = 'padding:4px 8px;color:var(--adm-text-2);border-bottom:1px solid var(--adm-border);font-size:13px;';
+                    li.innerHTML = '<span class="er-badge er-badge--rejected" style="font-size:10px;margin-right:6px;">Row ' + e.row + '</span> <strong>' + (e.roll || e.name || '?') + '</strong>: ' + e.messages.join('; ');
+                    ul.appendChild(li);
+                });
+                errorList.appendChild(ul);
+            } else {
+                errorList.innerHTML = '<p style="color:var(--adm-success);padding:8px 0;">All rows are valid.</p>';
+            }
+            document.getElementById('validationSummary').style.display = '';
+            document.getElementById('btnImport').disabled = errors.length > 0;
+        });
+
+        document.getElementById('btnImport').addEventListener('click', function() {
+            if (!importData.length) return;
+            var btn = this;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Importing...';
+
+            var payload = {
+                examId: parseInt(document.getElementById('importExam').value) || 0,
+                classId: parseInt(document.getElementById('importClass').value) || 0,
+                subjectId: parseInt(document.getElementById('importSubject').value) || 0,
+                marks: importData.map(function(row) {
+                    var roll = row['roll'] || row['roll number'] || row['roll_no'] || '';
+                    var name = row['name'] || row['student name'] || row['student_name'] || '';
+                    return {
+                        rollNumber: roll,
+                        studentName: name,
+                        written: parseFloat(row['written']) || 0,
+                        mcq: parseFloat(row['mcq']) || 0,
+                        practical: parseFloat(row['practical']) || 0
+                    };
+                })
+            };
+
+            fetch('@Url.Action("BulkImportSubmit", "MarkEntry")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(res) {
+                if (res.success) {
+                    showToast(res.message || 'Import completed successfully!', 'success');
+                    setTimeout(function() { window.location.href = '@Url.Action("Index")'; }, 1500);
+                } else {
+                    showToast(res.message || 'Import failed', 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = 'Import';
+                }
+            })
+            .catch(function() {
+                showToast('Network error', 'error');
+                btn.disabled = false;
+                btn.innerHTML = 'Import';
+            });
+        });
+    </script>
+}

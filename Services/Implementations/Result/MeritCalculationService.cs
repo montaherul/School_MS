@@ -113,16 +113,20 @@ public class MeritCalculationService : IMeritCalculationService
 
         if (exam == null) return;
 
-        var classId = await _examResultRepository.Query()
+        var classIds = await _examResultRepository.Query()
             .Include(r => r.Student)
             .Where(r => r.ExamId == examId)
             .Select(r => r.Student.ClassId)
-            .FirstOrDefaultAsync();
+            .Distinct()
+            .ToListAsync();
 
-        if (classId == 0) return;
+        foreach (var classId in classIds)
+        {
+            if (classId == 0) continue;
+            await CalculateClassMeritPositionsAsync(examId, classId);
+            await CalculateSectionMeritPositionsAsync(examId, classId);
+        }
 
-        await CalculateClassMeritPositionsAsync(examId, classId);
-        await CalculateSectionMeritPositionsAsync(examId, classId);
         await CalculateGroupMeritPositionsAsync(examId);
     }
 

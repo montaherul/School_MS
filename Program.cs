@@ -170,14 +170,23 @@ else
     app.UseHsts();
 }
 
+app.UseGlobalExceptionMiddleware();
+
 app.UseStaticFiles();
+
+app.UseSecurityHeaders();
+
 app.UseRouting();
 
-app.UseCookiePolicy();
+app.UseCookiePolicy(new CookiePolicyOptions
+{
+    MinimumSameSitePolicy = SameSiteMode.Strict,
+    Secure = CookieSecurePolicy.Always
+});
 
 app.UseSession();
 app.UseAuthentication();
-app.UseAuthorization(); 
+app.UseAuthorization();
 
 
 app.UseMiddleware<AuditLoggingMiddleware>();

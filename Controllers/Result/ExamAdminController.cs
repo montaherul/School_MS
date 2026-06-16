@@ -4,6 +4,7 @@ using SchoolManagementSystem.Models.DTOs.Result;
 using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.Services.Interfaces.Academic;
+using SchoolManagementSystem.Services.Interfaces.Exam;
 using System.Security.Claims;
 
 namespace SchoolManagementSystem.Controllers.Result;
@@ -24,6 +25,7 @@ public class ExamAdminController : ControllerBase
     private readonly IExamValidationService _examValidationService;
     private readonly ISubjectMarkStructureService _markStructureService;
     private readonly IResultCalculationService _resultCalculationService;
+    private readonly IExamSubjectService _examSubjectService;
     private readonly ILogger<ExamAdminController> _logger;
 
     public ExamAdminController(
@@ -34,6 +36,7 @@ public class ExamAdminController : ControllerBase
         IExamValidationService examValidationService,
         ISubjectMarkStructureService markStructureService,
         IResultCalculationService resultCalculationService,
+        IExamSubjectService examSubjectService,
         ILogger<ExamAdminController> logger)
     {
         _examService = examService;
@@ -43,6 +46,7 @@ public class ExamAdminController : ControllerBase
         _examValidationService = examValidationService;
         _markStructureService = markStructureService;
         _resultCalculationService = resultCalculationService;
+        _examSubjectService = examSubjectService;
         _logger = logger;
     }
 
@@ -83,6 +87,15 @@ public class ExamAdminController : ControllerBase
 
             if (dto.Subjects != null && dto.Subjects.Count > 0)
                 await _examValidationService.ThrowIfSubjectMarkStructureMissingAsync(dto.Subjects.Select(s => s.SubjectId).ToList(), ct);
+
+            var hasMultipleClasses = dto.SelectedClassIds != null && dto.SelectedClassIds.Count > 1;
+
+            if (hasMultipleClasses)
+            {
+                var results = await _examService.CreateExamsBulkAsync(dto, ct);
+                _logger.LogInformation("Bulk exam creation completed: {Count} exams", results.Count);
+                return Ok(new { success = true, message = $"{results.Count} exams created successfully", data = results });
+            }
 
             var exam = await _examService.CreateExamAsync(dto, ct);
             _logger.LogInformation("Exam created successfully");
@@ -205,6 +218,25 @@ public class ExamAdminController : ControllerBase
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error deleting grading rule");
+            return BadRequest(new { success = false, message = ex.Message });
+        }
+    }
+
+    /// <summary>
+    /// Copy subject structure from one exam to sibling exams
+    /// </summary>
+    [HttpPost("copy-subjects/{sourceExamId}")]
+    public async Task<IActionResult> CopySubjects(int sourceExamId, [FromBody] List<int> targetExamIds, CancellationToken ct = default)
+    {
+        try
+        {
+            var copied = await _examSubjectService.CopySubjectStructureAsync(sourceExamId, targetExamIds);
+            _logger.LogInformation("Subject structure copied: {Count} subjects from exam {SourceId}", copied, sourceExamId);
+            return Ok(new { success = true, message = $"{copied} subjects copied successfully", data = new { copied } });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error copying subject structure");
             return BadRequest(new { success = false, message = ex.Message });
         }
     }

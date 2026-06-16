@@ -21,11 +21,11 @@ public class DashboardRepository : IDashboardRepository
     public async Task<(int totalAttendance, int presentAttendance, decimal feesCollected, decimal feesTotal, List<DashboardChartDto> studentsByClass, List<DashboardChartDto> monthlyCollections, List<DashboardActivityDto> recentActivities, int totalStudents, int pendingAdmissions)> GetAdminDashboardDataAsync(CancellationToken ct)
     {
         var totalStudents = await _db.Students.Where(s => !s.IsDeleted).CountAsync(ct);
-        var pendingAdmissions = await _db.Admissions.Where(a => a.Status == AdmissionStatus.Pending).CountAsync(ct);
+        var pendingAdmissions = await _db.Admissions.Where(a => a.Status == AdmissionStatus.Pending && !a.IsDeleted).CountAsync(ct);
         var totalAttendance = await _db.Attendance.Where(a => !a.IsDeleted).CountAsync(ct);
         var presentAttendance = await _db.Attendance.Where(a => (a.Status == AttendanceStatus.Present || a.Status == AttendanceStatus.Late) && !a.IsDeleted).CountAsync(ct);
-        var feesCollected = await _db.FeeInvoices.Where(f => (int)f.Status == 1).SumAsync(f => f.PaidAmount, ct);
-        var feesTotal = await _db.FeeInvoices.SumAsync(f => f.TotalAmount, ct);
+        var feesCollected = await _db.FeeInvoices.Where(f => !f.IsDeleted && (int)f.Status == 1).SumAsync(f => f.PaidAmount, ct);
+        var feesTotal = await _db.FeeInvoices.Where(f => !f.IsDeleted).SumAsync(f => f.TotalAmount, ct);
 
         var studentsByClass = await _db.Students
             .Where(s => !s.IsDeleted)
@@ -34,12 +34,23 @@ public class DashboardRepository : IDashboardRepository
             .ToListAsync(ct);
 
         var monthlyCollections = await _db.FeeInvoices
-            .Where(f => (int)f.Status == 1 && f.UpdatedAt.HasValue)
+            .Where(f => !f.IsDeleted && (int)f.Status == 1 && f.UpdatedAt.HasValue)
             .GroupBy(f => f.UpdatedAt.Value.Month)
             .Select(g => new DashboardChartDto { Label = g.Key.ToString(), Value = (int)g.Sum(f => f.PaidAmount) })
             .ToListAsync(ct);
 
-        var recentActivities = new List<DashboardActivityDto>();
+        var recentActivities = await _db.ActivityLogs
+            .Where(l => !l.IsDeleted)
+            .OrderByDescending(l => l.CreatedAt)
+            .Take(10)
+            .Select(l => new DashboardActivityDto
+            {
+                Title = l.Action ?? "",
+                Module = l.Module ?? "",
+                Summary = l.OldValues ?? "",
+                At = l.CreatedAt
+            })
+            .ToListAsync(ct);
 
         return (totalAttendance, presentAttendance, feesCollected, feesTotal, studentsByClass, monthlyCollections, recentActivities, totalStudents, pendingAdmissions);
     }
@@ -48,11 +59,33 @@ public class DashboardRepository : IDashboardRepository
     {
         var totalAttendance = await _db.Attendance.Where(a => a.StudentId == studentId && !a.IsDeleted).CountAsync(ct);
         var presentAttendance = await _db.Attendance.Where(a => a.StudentId == studentId && (a.Status == AttendanceStatus.Present || a.Status == AttendanceStatus.Late) && !a.IsDeleted).CountAsync(ct);
-        var totalInvoiced = await _db.FeeInvoices.Where(f => f.StudentId == studentId).SumAsync(f => f.TotalAmount, ct);
-        var totalPaid = await _db.FeeInvoices.Where(f => f.StudentId == studentId && (int)f.Status == 1).SumAsync(f => f.PaidAmount, ct);
+        var totalInvoiced = await _db.FeeInvoices.Where(f => !f.IsDeleted && f.StudentId == studentId).SumAsync(f => f.TotalAmount, ct);
+        var totalPaid = await _db.FeeInvoices.Where(f => !f.IsDeleted && f.StudentId == studentId && (int)f.Status == 1).SumAsync(f => f.PaidAmount, ct);
 
-        var recentNotices = new List<DashboardActivityDto>();
-        var upcomingAssignments = new List<DashboardAssignmentDto>();
+        var recentNotices = await _db.Notices
+            .Where(n => !n.IsDeleted && n.IsPublished)
+            .OrderByDescending(n => n.CreatedAt)
+            .Take(5)
+            .Select(n => new DashboardActivityDto
+            {
+                Title = n.Title ?? "",
+                Module = "Notice",
+                Summary = n.Body ?? "",
+                At = n.CreatedAt
+            })
+            .ToListAsync(ct);
+
+        var upcomingAssignments = await _db.Assignments
+            .Where(a => !a.IsDeleted && a.Deadline > DateTime.UtcNow)
+            .OrderBy(a => a.Deadline)
+            .Take(5)
+            .Select(a => new DashboardAssignmentDto
+            {
+                Title = a.Title ?? "",
+                Subject = "",
+                Deadline = a.Deadline
+            })
+            .ToListAsync(ct);
 
         return (totalAttendance, presentAttendance, totalInvoiced, totalPaid, recentNotices, upcomingAssignments);
     }

@@ -3,145 +3,222 @@
     var year = ViewBag.Year as int? ?? DateTime.Today.Year;
 }
 
+<link rel="stylesheet" href="~/css/academic-calendar.css" asp-append-version="true" />
+
 <div class="ac-page">
-    <div class="ac-header">
-        <div>
-            <h1 class="ac-title"><i class="bi bi-calendar-range me-2 text-primary"></i>Year View</h1>
-            <p class="ac-subtitle">12-month calendar with holiday density visualization</p>
+
+    <!-- ═══ PAGE HEADER ═══ -->
+    <div class="er-page-header">
+        <div class="er-page-header__left">
+            <div class="er-page-header__icon">
+                <i class="bi bi-calendar-range"></i>
+            </div>
+            <div>
+                <h1 class="er-page-header__title">Year View</h1>
+                <p class="er-page-header__sub">12-month academic year planner with monthly statistics</p>
+            </div>
         </div>
-        <div class="d-flex gap-2">
-            <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-calendar3 me-1"></i>Month</a>
-            <a asp-action="WeekView" class="btn btn-outline-secondary"><i class="bi bi-calendar-week me-1"></i>Week</a>
-            <a asp-action="Agenda" class="btn btn-outline-secondary"><i class="bi bi-list-task me-1"></i>Agenda</a>
+        <div class="er-page-header__right">
+            <button class="er-btn er-btn--ghost" id="currentYearBtn">
+                <i class="bi bi-dot"></i> Current Year
+            </button>
         </div>
     </div>
 
-    <div class="ac-panel">
-        <div class="row g-3 align-items-center mb-3">
-            <div class="col-auto">
-                <button class="btn btn-outline-primary" id="prevYear" aria-label="Previous year"><i class="bi bi-chevron-left"></i></button>
-            </div>
-            <div class="col">
-                <h4 class="text-center mb-0" id="yearLabel" aria-live="polite">@year</h4>
-            </div>
-            <div class="col-auto">
-                <button class="btn btn-outline-primary" id="nextYear" aria-label="Next year"><i class="bi bi-chevron-right"></i></button>
-            </div>
-            <div class="col-auto">
-                <button class="btn btn-outline-secondary" id="currentYearBtn" aria-label="Go to current year">Current Year</button>
+    <!-- ═══ SEGMENTED VIEW NAV ═══ -->
+    <nav class="ac-nav" aria-label="Calendar view navigation">
+        <a class="ac-nav__item" asp-action="Index">
+            <i class="bi bi-calendar3"></i> <span class="d-none d-sm-inline">Month</span>
+        </a>
+        <a class="ac-nav__item" asp-action="WeekView">
+            <i class="bi bi-calendar-week"></i> <span class="d-none d-sm-inline">Week</span>
+        </a>
+        <a class="ac-nav__item" asp-action="Agenda">
+            <i class="bi bi-list-task"></i> <span class="d-none d-sm-inline">Agenda</span>
+        </a>
+        <a class="ac-nav__item ac-nav__item--active" asp-action="YearView">
+            <i class="bi bi-calendar-range"></i> <span class="d-none d-sm-inline">Year</span>
+        </a>
+    </nav>
+
+    <!-- ═══ YEAR NAVIGATION ═══ -->
+    <div class="er-card">
+        <div class="er-card__body">
+            <div class="ac-year-nav">
+                <button class="ac-year-nav__btn" id="prevYear" title="Previous year"><i class="bi bi-chevron-left"></i></button>
+                <h3 class="ac-year-nav__title" id="yearLabel">@year</h3>
+                <button class="ac-year-nav__btn" id="nextYear" title="Next year"><i class="bi bi-chevron-right"></i></button>
             </div>
         </div>
     </div>
 
-    <div id="yearGrid" class="row g-3"></div>
+    <!-- ═══ LEGEND ═══ -->
+    <div class="ac-legend" style="margin-bottom:16px;border-top:none;padding-top:0">
+        <div class="ac-legend__item"><span class="ac-legend__dot ac-legend__dot--working"></span> Working Day</div>
+        <div class="ac-legend__item"><span class="ac-legend__dot ac-legend__dot--holiday"></span> Holiday</div>
+        <div class="ac-legend__item"><span class="ac-legend__dot ac-legend__dot--exam"></span> Exam</div>
+        <div class="ac-legend__item"><span class="ac-legend__dot ac-legend__dot--event"></span> Event</div>
+        <div class="ac-legend__item"><span class="ac-legend__dot ac-legend__dot--meeting"></span> Meeting</div>
+    </div>
+
+    <!-- ═══ YEAR GRID ═══ -->
+    <div id="yearGridContainer">
+        <div class="text-center py-5"><div class="spinner-border spinner-border-sm me-2" role="status"></div>Loading year data...</div>
+    </div>
+
+    <!-- ═══ YEAR SUMMARY ═══ -->
+    <div id="yearSummaryContainer"></div>
+
+    <!-- ═══ YEAR CHART ═══ -->
+    <div class="er-card er-card-animate" style="margin-top:20px">
+        <div class="er-card__header">
+            <h6 class="er-card__title"><i class="bi bi-bar-chart-line" style="color:var(--adm-primary)"></i> Monthly Distribution</h6>
+        </div>
+        <div class="er-card__body">
+            <canvas id="yearChartMonthly" height="220"></canvas>
+        </div>
+    </div>
+
 </div>
 
 @section Scripts {
+    <script src="~/js/academic-calendar.js" asp-append-version="true"></script>
     <script>
-        let currentYear = @year;
+        (function () {
+            'use strict';
 
-        function getHeatColor(ratio) {
-            if (ratio === 0) return '#f0fdf4';
-            if (ratio < 0.1) return '#dcfce7';
-            if (ratio < 0.2) return '#bbf7d0';
-            if (ratio < 0.3) return '#86efac';
-            if (ratio < 0.4) return '#4ade80';
-            return '#22c55e';
-        }
+            var currentYear = @year;
+            var yearChart = null;
 
-        function loadYear() {
-            const yearLabel = document.getElementById('yearLabel');
-            if (yearLabel) yearLabel.textContent = currentYear;
+            function loadYear() {
+                var label = document.getElementById('yearLabel');
+                if (label) label.textContent = currentYear;
 
-            const grid = document.getElementById('yearGrid');
-            grid.innerHTML = '<div class="col-12 text-center py-4"><div class="spinner-border spinner-border-sm me-2"></div>Loading...</div>';
+                var grid = document.getElementById('yearGridContainer');
+                var summaryContainer = document.getElementById('yearSummaryContainer');
+                grid.innerHTML = '<div class="text-center py-5"><div class="spinner-border spinner-border-sm me-2" role="status"></div>Loading...</div>';
+                if (summaryContainer) summaryContainer.innerHTML = '';
 
-            fetch(`/AcademicCalendar/GetYearData?year=${currentYear}`)
-                .then(r => r.json())
-                .then(data => {
-                    grid.innerHTML = '';
-                    if (!data.months) return;
+                fetch('/AcademicCalendar/GetYearData?year=' + currentYear)
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        if (!data || !data.months) {
+                            grid.innerHTML = '<div class="er-alert er-alert--danger">No data available for this year.</div>';
+                            return;
+                        }
 
-                    data.months.forEach(m => {
-                        const ratio = m.totalDays > 0 ? m.holidays / m.totalDays : 0;
-                        const bgColor = getHeatColor(ratio);
+                        var months = data.months;
 
-                        const col = document.createElement('div');
-                        col.className = 'col-md-4 col-lg-3';
-                        col.innerHTML = `
-                            <div class="card border-0 shadow-sm h-100">
-                                <div class="card-header text-center py-2 fw-semibold bg-light">${m.monthName}</div>
-                                <div class="card-body p-3">
-                                    <div class="mb-2" style="height:40px;border-radius:6px;background:${bgColor};display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:700;color:#166534">
-                                        ${m.totalDays}
-                                    </div>
-                                    <div class="small">
-                                        <div class="d-flex justify-content-between mb-1">
-                                            <span class="text-muted">Working Days</span>
-                                            <span class="fw-semibold">${m.workingDays}</span>
-                                        </div>
-                                        <div class="d-flex justify-content-between mb-1">
-                                            <span class="text-danger">Holidays</span>
-                                            <span class="fw-semibold text-danger">${m.holidays}</span>
-                                        </div>
-                                        <div class="d-flex justify-content-between mb-1">
-                                            <span class="text-warning">Exam Days</span>
-                                            <span class="fw-semibold text-warning">${m.examDays}</span>
-                                        </div>
-                                        <div class="d-flex justify-content-between">
-                                            <span class="text-purple">Events</span>
-                                            <span class="fw-semibold text-purple">${m.events}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        `;
-                        grid.appendChild(col);
+                        // ── Month Cards ──
+                        var html = '<div class="ac-year-grid">';
+                        months.forEach(function (m) {
+                            var ratio = m.totalDays > 0 ? m.holidays / m.totalDays : 0;
+                            var visBg = '#f0fdf4';
+                            var visColor = '#166534';
+                            if (ratio > 0.3) { visBg = '#fef2f2'; visColor = '#991b1b'; }
+                            else if (ratio > 0.15) { visBg = '#fffbeb'; visColor = '#92400e'; }
+                            var totalAcEvents = (m.events || 0) + (m.websiteEvents || 0);
+
+                            html += '<div class="ac-year-card">';
+                            html += '<div class="ac-year-card__header">' + m.monthName + ' ' + currentYear + '</div>';
+                            html += '<div class="ac-year-card__body">';
+                            html += '<div class="ac-year-card__vis" style="background:' + visBg + ';color:' + visColor + '">' + m.totalDays + '</div>';
+                            html += '<div class="ac-year-card__stat">';
+                            html += '<span class="ac-year-card__stat-label"><span class="ac-year-card__stat-dot ac-year-card__stat-dot--working"></span> Working Days</span>';
+                            html += '<span class="ac-year-card__stat-value">' + m.workingDays + '</span>';
+                            html += '</div>';
+                            html += '<div class="ac-year-card__stat">';
+                            html += '<span class="ac-year-card__stat-label"><span class="ac-year-card__stat-dot ac-year-card__stat-dot--holiday"></span> Holidays</span>';
+                            html += '<span class="ac-year-card__stat-value" style="color:var(--ac-holiday)">' + m.holidays + '</span>';
+                            html += '</div>';
+                            html += '<div class="ac-year-card__stat">';
+                            html += '<span class="ac-year-card__stat-label"><span class="ac-year-card__stat-dot ac-year-card__stat-dot--exam"></span> Exam Days</span>';
+                            html += '<span class="ac-year-card__stat-value" style="color:var(--ac-exam)">' + m.examDays + '</span>';
+                            html += '</div>';
+                            html += '<div class="ac-year-card__stat">';
+                            html += '<span class="ac-year-card__stat-label"><span class="ac-year-card__stat-dot ac-year-card__stat-dot--event"></span> Events</span>';
+                            html += '<span class="ac-year-card__stat-value" style="color:var(--ac-event)">' + totalAcEvents + '</span>';
+                            html += '</div>';
+                            if (m.websiteEvents > 0) {
+                                html += '<div class="ac-year-card__stat">';
+                                html += '<span class="ac-year-card__stat-label"><i class="bi bi-globe" style="font-size:10px;color:var(--ac-event)"></i> Website Events</span>';
+                                html += '<span class="ac-year-card__stat-value" style="color:var(--ac-event)">' + m.websiteEvents + '</span>';
+                                html += '</div>';
+                            }
+                            html += '</div></div>';
+                        });
+                        html += '</div>';
+                        grid.innerHTML = html;
+
+                        // ── Summary Totals ──
+                        var totalHolidays = months.reduce(function (s, m) { return s + m.holidays; }, 0);
+                        var totalExams = months.reduce(function (s, m) { return s + m.examDays; }, 0);
+                        var totalWorking = months.reduce(function (s, m) { return s + m.workingDays; }, 0);
+                        var totalEvents = months.reduce(function (s, m) { return s + (m.events || 0) + (m.websiteEvents || 0); }, 0);
+                        var totalWebsiteEvents = months.reduce(function (s, m) { return s + (m.websiteEvents || 0); }, 0);
+                        var totalDays = months.reduce(function (s, m) { return s + m.totalDays; }, 0);
+
+                        if (summaryContainer) {
+                            summaryContainer.innerHTML = '<div class="ac-year-summary">' +
+                                '<div class="ac-year-summary__card" style="border-left:4px solid var(--ac-working)">' +
+                                '<div class="ac-year-summary__value" style="color:var(--ac-working)">' + totalWorking + '</div>' +
+                                '<div class="ac-year-summary__label">Working Days</div></div>' +
+                                '<div class="ac-year-summary__card" style="border-left:4px solid var(--ac-holiday)">' +
+                                '<div class="ac-year-summary__value" style="color:var(--ac-holiday)">' + totalHolidays + '</div>' +
+                                '<div class="ac-year-summary__label">Holidays</div></div>' +
+                                '<div class="ac-year-summary__card" style="border-left:4px solid var(--ac-exam)">' +
+                                '<div class="ac-year-summary__value" style="color:var(--ac-exam)">' + totalExams + '</div>' +
+                                '<div class="ac-year-summary__label">Exam Days</div></div>' +
+                                '<div class="ac-year-summary__card" style="border-left:4px solid var(--ac-event)">' +
+                                '<div class="ac-year-summary__value" style="color:var(--ac-event)">' + totalEvents + '</div>' +
+                                '<div class="ac-year-summary__label">Events</div></div>' +
+                                '</div>';
+                        }
+
+                        // ── Chart ──
+                        var ctx = document.getElementById('yearChartMonthly');
+                        if (ctx) {
+                            if (yearChart) yearChart.destroy();
+                            var labels = months.map(function (m) { return m.monthName.substring(0, 3); });
+                            yearChart = new Chart(ctx, {
+                                type: 'bar',
+                                data: {
+                                    labels: labels,
+                                    datasets: [
+                                        { label: 'Working', data: months.map(function (m) { return m.workingDays; }), backgroundColor: '#059669', borderRadius: 3 },
+                                        { label: 'Holidays', data: months.map(function (m) { return m.holidays; }), backgroundColor: '#dc2626', borderRadius: 3 },
+                                        { label: 'Exams', data: months.map(function (m) { return m.examDays; }), backgroundColor: '#d97706', borderRadius: 3 },
+                                        { label: 'Academic Events', data: months.map(function (m) { return m.events || 0; }), backgroundColor: '#0284c7', borderRadius: 3 },
+                                        { label: 'Website Events', data: months.map(function (m) { return m.websiteEvents || 0; }), backgroundColor: '#38bdf8', borderRadius: 3 }
+                                    ]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: { position: 'bottom', labels: { boxWidth: 12, padding: 12, font: { size: 11 } } }
+                                    },
+                                    scales: {
+                                        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+                                        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: { size: 10 }, stepSize: 1 } }
+                                    }
+                                }
+                            });
+                        }
+                    })
+                    .catch(function () {
+                        grid.innerHTML = '<div class="er-alert er-alert--danger">Failed to load year data.</div>';
                     });
+            }
 
-                    // summary card
-                    const totalHolidays = data.months.reduce((s, m) => s + m.holidays, 0);
-                    const totalExams = data.months.reduce((s, m) => s + m.examDays, 0);
-                    const totalWorking = data.months.reduce((s, m) => s + m.workingDays, 0);
-                    const totalDays = data.months.reduce((s, m) => s + m.totalDays, 0);
+            document.getElementById('prevYear').addEventListener('click', function () { currentYear--; loadYear(); });
+            document.getElementById('nextYear').addEventListener('click', function () { currentYear++; loadYear(); });
+            document.getElementById('currentYearBtn').addEventListener('click', function () {
+                currentYear = new Date().getFullYear();
+                loadYear();
+            });
 
-                    const summaryCol = document.createElement('div');
-                    summaryCol.className = 'col-12 mt-2';
-                    summaryCol.innerHTML = `
-                        <div class="card border-0 shadow-sm bg-light">
-                            <div class="card-body p-3">
-                                <div class="row text-center g-3">
-                                    <div class="col-3">
-                                        <div class="fw-bold fs-5 text-success">${totalWorking}</div>
-                                        <small class="text-muted">Total Working Days</small>
-                                    </div>
-                                    <div class="col-3">
-                                        <div class="fw-bold fs-5 text-danger">${totalHolidays}</div>
-                                        <small class="text-muted">Total Holidays</small>
-                                    </div>
-                                    <div class="col-3">
-                                        <div class="fw-bold fs-5 text-warning">${totalExams}</div>
-                                        <small class="text-muted">Total Exam Days</small>
-                                    </div>
-                                    <div class="col-3">
-                                        <div class="fw-bold fs-5 text-primary">${totalDays - totalWorking - totalHolidays}</div>
-                                        <small class="text-muted">Other Days</small>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    grid.appendChild(summaryCol);
-                });
-        }
-
-        document.getElementById('prevYear')?.addEventListener('click', function() { currentYear--; loadYear(); });
-        document.getElementById('nextYear')?.addEventListener('click', function() { currentYear++; loadYear(); });
-        document.getElementById('currentYearBtn')?.addEventListener('click', function() {
-            currentYear = new Date().getFullYear();
-            loadYear();
-        });
-
-        document.addEventListener('DOMContentLoaded', loadYear);
+            document.addEventListener('DOMContentLoaded', loadYear);
+        })();
     </script>
 }

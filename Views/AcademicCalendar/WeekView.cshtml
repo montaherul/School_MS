@@ -3,116 +3,191 @@
     var startDate = ViewBag.StartDate as DateTime? ?? DateTime.Today;
 }
 
+<link rel="stylesheet" href="~/css/academic-calendar.css" asp-append-version="true" />
+
 <div class="ac-page">
-    <div class="ac-header">
-        <div>
-            <h1 class="ac-title"><i class="bi bi-calendar-week me-2 text-primary"></i>Week View</h1>
-            <p class="ac-subtitle">7-day timeline overview</p>
+
+    <!-- ═══ PAGE HEADER ═══ -->
+    <div class="er-page-header">
+        <div class="er-page-header__left">
+            <div class="er-page-header__icon">
+                <i class="bi bi-calendar-week"></i>
+            </div>
+            <div>
+                <h1 class="er-page-header__title">Week View</h1>
+                <p class="er-page-header__sub">7-day planner overview</p>
+            </div>
         </div>
-        <div class="d-flex gap-2">
-            <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-calendar3 me-1"></i>Month</a>
-            <a asp-action="Agenda" class="btn btn-outline-secondary"><i class="bi bi-list-task me-1"></i>Agenda</a>
-            <a asp-action="YearView" class="btn btn-outline-secondary"><i class="bi bi-calendar-range me-1"></i>Year</a>
+        <div class="er-page-header__right">
+            <button class="er-btn er-btn--ghost" id="todayWeekBtn">
+                <i class="bi bi-dot"></i> Today
+            </button>
         </div>
     </div>
 
-    <div class="ac-panel">
-        <div class="row g-3 align-items-center">
-            <div class="col-auto">
-                <button class="btn btn-outline-primary" id="prevWeek" aria-label="Previous week"><i class="bi bi-chevron-left"></i></button>
-            </div>
-            <div class="col">
-                <h5 class="text-center mb-0" id="weekLabel" aria-live="polite">Loading...</h5>
-            </div>
-            <div class="col-auto">
-                <button class="btn btn-outline-primary" id="nextWeek" aria-label="Next week"><i class="bi bi-chevron-right"></i></button>
-            </div>
-            <div class="col-auto">
-                <button class="btn btn-outline-secondary" id="todayBtn" aria-label="Go to current week">Today</button>
+    <!-- ═══ SEGMENTED VIEW NAV ═══ -->
+    <nav class="ac-nav" aria-label="Calendar view navigation">
+        <a class="ac-nav__item" asp-action="Index">
+            <i class="bi bi-calendar3"></i> <span class="d-none d-sm-inline">Month</span>
+        </a>
+        <a class="ac-nav__item ac-nav__item--active" asp-action="WeekView">
+            <i class="bi bi-calendar-week"></i> <span class="d-none d-sm-inline">Week</span>
+        </a>
+        <a class="ac-nav__item" asp-action="Agenda">
+            <i class="bi bi-list-task"></i> <span class="d-none d-sm-inline">Agenda</span>
+        </a>
+        <a class="ac-nav__item" asp-action="YearView">
+            <i class="bi bi-calendar-range"></i> <span class="d-none d-sm-inline">Year</span>
+        </a>
+    </nav>
+
+    <!-- ═══ WEEK NAVIGATION ═══ -->
+    <div class="er-card">
+        <div class="er-card__body">
+            <div class="ac-week-nav">
+                <button class="ac-week-nav__btn" id="prevWeek" title="Previous week"><i class="bi bi-chevron-left"></i></button>
+                <h4 class="ac-week-nav__title" id="weekLabel">Loading...</h4>
+                <button class="ac-week-nav__btn" id="nextWeek" title="Next week"><i class="bi bi-chevron-right"></i></button>
             </div>
         </div>
     </div>
 
-    <div id="weekGrid" class="row g-3"></div>
+    <!-- ═══ LEGEND ═══ -->
+    <div class="ac-legend" style="margin-bottom:16px;border-top:none;padding-top:0">
+        <div class="ac-legend__item"><span class="ac-legend__dot ac-legend__dot--working"></span> Working Day</div>
+        <div class="ac-legend__item"><span class="ac-legend__dot ac-legend__dot--holiday"></span> Holiday</div>
+        <div class="ac-legend__item"><span class="ac-legend__dot ac-legend__dot--exam"></span> Exam</div>
+        <div class="ac-legend__item"><span class="ac-legend__dot ac-legend__dot--event"></span> Event</div>
+        <div class="ac-legend__item"><span class="ac-legend__dot ac-legend__dot--meeting"></span> Meeting</div>
+    </div>
+
+    <!-- ═══ 7-COLUMN PLANNER ═══ -->
+    <div id="weekGridContainer">
+        <div class="text-center py-5"><div class="spinner-border spinner-border-sm me-2" role="status"></div>Loading week...</div>
+    </div>
+
 </div>
 
 @section Scripts {
+    <script src="~/js/academic-calendar.js" asp-append-version="true"></script>
     <script>
-        let currentDate = new Date('@startDate.ToString("yyyy-MM-dd")');
+        (function () {
+            'use strict';
 
-        function getWeekStart(d) {
-            const dt = new Date(d);
-            const day = dt.getDay();
-            dt.setDate(dt.getDate() - day);
-            return dt;
-        }
+            var currentDate = new Date('@startDate.ToString("yyyy-MM-dd")');
+            var dayNamesShort = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            var dayNamesFull = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 
-        function formatDate(d) {
-            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
-        }
+            function getWeekStart(d) {
+                var dt = new Date(d);
+                dt.setDate(dt.getDate() - dt.getDay());
+                return dt;
+            }
 
-        function loadWeek() {
-            const ws = getWeekStart(currentDate);
-            const we = new Date(ws);
-            we.setDate(we.getDate() + 6);
+            function pad(n) { return n < 10 ? '0' + n : n; }
 
-            const options = { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' };
-            document.getElementById('weekLabel').textContent = ws.toLocaleDateString(undefined, options) + ' — ' + we.toLocaleDateString(undefined, options);
+            function formatDate(d) {
+                return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+            }
 
-            fetch(`/AcademicCalendar/GetWeekData?date=${formatDate(ws)}`)
-                .then(r => r.json())
-                .then(data => {
-                    const grid = document.getElementById('weekGrid');
-                    grid.innerHTML = '';
-                    const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            function loadWeek() {
+                var ws = getWeekStart(currentDate);
+                var we = new Date(ws);
+                we.setDate(we.getDate() + 6);
 
-                    const today = new Date();
-                    const todayStr = formatDate(today);
+                var options = { weekday: 'long', month: 'short', day: 'numeric', year: 'numeric' };
+                document.getElementById('weekLabel').textContent =
+                    ws.toLocaleDateString(undefined, options) + ' — ' + we.toLocaleDateString(undefined, options);
 
-                    data.days.forEach(day => {
-                        const isToday = day.date === todayStr;
-                        const card = document.createElement('div');
-                        card.className = 'col';
+                var container = document.getElementById('weekGridContainer');
+                container.innerHTML = '<div class="text-center py-5"><div class="spinner-border spinner-border-sm me-2" role="status"></div>Loading week...</div>';
 
-                        let badge = '';
-                        if (day.isHoliday) badge = '<span class="ac-badge ac-badge-holiday">Holiday</span>';
-                        else if (day.isExamDay) badge = '<span class="ac-badge ac-badge-exam">Exam</span>';
-                        else if (day.isEventDay) badge = '<span class="ac-badge ac-badge-event">Event</span>';
-                        else badge = '<span class="ac-badge ac-badge-working">Working</span>';
+                fetch('/AcademicCalendar/GetWeekData?date=' + formatDate(ws))
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        var today = new Date();
+                        var todayStr = formatDate(today);
 
-                        const dayNum = new Date(day.date).getDate();
-                        card.innerHTML = `
-                            <div class="card border-0 shadow-sm h-100 ${isToday ? 'border-primary border-2' : ''}" style="min-width:120px">
-                                <div class="card-header text-center py-2 ${isToday ? 'bg-primary text-white' : 'bg-light'}">
-                                    <small class="text-muted ${isToday ? 'text-white-50' : ''}">${dayNames[new Date(day.date).getDay()]}</small>
-                                    <div class="fw-bold fs-5">${dayNum}</div>
-                                </div>
-                                <div class="card-body p-2">
-                                    <div class="mb-2">${badge}</div>
-                                    <div class="fw-semibold small">${day.title || ''}</div>
-                                    <div class="small text-muted">${day.description || ''}</div>
-                                    ${day.holidayType ? `<div class="small text-muted mt-1"><span class="badge bg-secondary">${day.holidayType}</span></div>` : ''}
-                                </div>
-                            </div>
-                        `;
-                        grid.appendChild(card);
+                        var dayData = {};
+                        if (data && data.days) {
+                            data.days.forEach(function (d) {
+                                dayData[d.date] = d;
+                            });
+                        }
+
+                        var html = '<div class="ac-week-grid">';
+
+                        for (var i = 0; i < 7; i++) {
+                            var d = new Date(ws);
+                            d.setDate(d.getDate() + i);
+                            var dateStr = formatDate(d);
+                            var isToday = dateStr === todayStr;
+                            var dayInfo = dayData[dateStr];
+
+                            var dayNum = d.getDate();
+                            var dayName = dayNamesShort[d.getDay()];
+
+                            var headerCls = 'ac-week-col__header';
+                            if (isToday) headerCls += ' ac-week-col__header--today';
+
+                            html += '<div class="ac-week-col">';
+                            html += '<div class="' + headerCls + '">';
+                            html += '<div class="ac-week-col__day">' + dayName + '</div>';
+                            html += '<div class="ac-week-col__date">' + dayNum + '</div>';
+                            html += '</div>';
+
+                            if (dayInfo) {
+                                var typeClass = 'working';
+                                var badgeClass = 'working';
+                                var badgeLabel = 'Working';
+
+                                if (dayInfo.isHoliday) { typeClass = 'holiday'; badgeClass = 'holiday'; badgeLabel = 'Holiday'; }
+                                else if (dayInfo.isExamDay) { typeClass = 'exam'; badgeClass = 'exam'; badgeLabel = 'Exam'; }
+                                else if (dayInfo.isEventDay) { typeClass = 'event'; badgeClass = 'event'; badgeLabel = 'Event'; }
+
+                                html += '<div class="ac-week-card ac-week-card--' + typeClass + '">';
+                                html += '<span class="ac-week-card__badge ac-week-card__badge--' + badgeClass + '">' + badgeLabel + '</span>';
+                                if (dayInfo.title) {
+                                    html += '<div class="ac-week-card__title">' + dayInfo.title + '</div>';
+                                }
+                                if (dayInfo.description) {
+                                    html += '<div class="ac-week-card__desc">' + dayInfo.description + '</div>';
+                                }
+                                if (dayInfo.holidayType) {
+                                    html += '<div class="ac-week-card__type"><i class="bi bi-tag"></i> ' + dayInfo.holidayType + '</div>';
+                                }
+                                html += '</div>';
+                            } else {
+                                html += '<div class="ac-week-card ac-week-card--working">';
+                                html += '<span class="ac-week-card__badge ac-week-card__badge--working">Regular</span>';
+                                html += '</div>';
+                            }
+
+                            html += '</div>';
+                        }
+
+                        html += '</div>';
+                        container.innerHTML = html;
+                    })
+                    .catch(function () {
+                        container.innerHTML = '<div class="er-alert er-alert--danger">Failed to load week data.</div>';
                     });
-                });
-        }
+            }
 
-        document.getElementById('prevWeek').addEventListener('click', function() {
-            currentDate.setDate(currentDate.getDate() - 7);
-            loadWeek();
-        });
-        document.getElementById('nextWeek').addEventListener('click', function() {
-            currentDate.setDate(currentDate.getDate() + 7);
-            loadWeek();
-        });
-        document.getElementById('todayBtn').addEventListener('click', function() {
-            currentDate = new Date();
-            loadWeek();
-        });
+            document.getElementById('prevWeek').addEventListener('click', function () {
+                currentDate.setDate(currentDate.getDate() - 7);
+                loadWeek();
+            });
+            document.getElementById('nextWeek').addEventListener('click', function () {
+                currentDate.setDate(currentDate.getDate() + 7);
+                loadWeek();
+            });
+            document.getElementById('todayWeekBtn').addEventListener('click', function () {
+                currentDate = new Date();
+                loadWeek();
+            });
 
-        document.addEventListener('DOMContentLoaded', loadWeek);
+            document.addEventListener('DOMContentLoaded', loadWeek);
+        })();
     </script>
 }

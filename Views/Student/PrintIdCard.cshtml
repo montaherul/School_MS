@@ -1,14 +1,22 @@
 @model SchoolManagementSystem.Models.ViewModels.Student.IdCardPrintViewModel
 @using SchoolManagementSystem.Helpers
-@using SchoolManagementSystem.Models.ViewModels.Student
+@using SchoolManagementSystem.Models.ViewModels.IdCard
 @{
     Layout = null;
+    var baseFileUrl = !string.IsNullOrEmpty(Model.BaseUrl) && Model.BaseUrl.StartsWith("file:///")
+        ? Model.BaseUrl
+        : string.Empty;
+    Func<string?, string> imgToDataUri = (path) => IdCardImageHelper.FileToDataUri(path, baseFileUrl);
+    var schoolLogoUri = imgToDataUri(Model.SchoolLogoPath);
+    var shortName = !string.IsNullOrEmpty(Model.SchoolNameEn) && Model.SchoolNameEn.Length >= 3
+        ? Model.SchoolNameEn[..Math.Min(3, Model.SchoolNameEn.IndexOf(' ') > 0 ? Model.SchoolNameEn.IndexOf(' ') : 3)].ToUpperInvariant()
+        : "SCA";
 }
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Student ID Card</title>
     <meta charset="utf-8" />
+    <title>Student ID Card</title>
     <base href="@Model.BaseUrl" />
     <link rel="stylesheet" href="/css/idcard-print.css" />
 </head>
@@ -19,36 +27,32 @@
         <div class="page-bulk">
             @foreach (var student in Model.Students)
             {
-                var cardModel = new StudentCardModel
+                var dob = student.DateOfBirth.ToString("dd MMM yyyy");
+                var validUntil = DateTime.Today.AddYears(1).ToString("dd MMM yyyy");
+                var vm = new StudentIdCardViewModel
                 {
-                    Student = student,
-                    QrCodeDataUri = IdCardQRHelper.GenerateQrCodeBase64(student.StudentNo ?? "N/A"),
-                    SchoolLogoPath = Model.SchoolLogoPath,
-                    SchoolSealPath = Model.SchoolSealPath,
-                    SchoolNameEn = Model.SchoolNameEn,
-                    SchoolNameBn = Model.SchoolNameBn,
-                    SchoolEIIN = Model.SchoolEIIN,
-                    SchoolWebsite = Model.SchoolWebsite,
-                    SchoolMotto = Model.SchoolMotto,
+                    StudentFullName = student.FullName ?? "---",
+                    StudentIdNo = student.StudentNo ?? "---",
+                    ClassName = student.ClassName ?? $"Class {student.ClassId}",
+                    SectionName = student.SectionName ?? "---",
+                    RollNumber = student.RollNumber.ToString(),
+                    BloodGroup = IdCardImageHelper.GetBloodWithColor(student.BloodGroup),
+                    DateOfBirth = dob,
                     AcademicYear = Model.AcademicYear,
+                    StudentPhotoDataUri = imgToDataUri(student.ProfilePicturePath),
+                    SchoolName = Model.SchoolNameEn,
+                    SchoolShortName = shortName,
+                    SchoolLogoDataUri = schoolLogoUri,
                     SchoolAddress = Model.SchoolAddress,
                     SchoolPhone = Model.SchoolPhone,
                     SchoolEmail = Model.SchoolEmail,
-                    PrincipalName = Model.PrincipalName,
-                    PrincipalSignaturePath = Model.PrincipalSignaturePath,
-                    FooterText = Model.FooterText
+                    QrCodeDataUri = IdCardQRHelper.GenerateQrCodeBase64(student.StudentNo ?? "N/A"),
+                    ValidUntil = validUntil
                 };
 
-                <div class="card-page">
-                    <div class="card-pair">
-                        <div class="card-wrapper">
-                            <partial name="~/Views/Shared/IdCards/_StudentCardFront.cshtml" model="cardModel" />
-                        </div>
-                        <div class="card-spacer"></div>
-                        <div class="card-wrapper">
-                            <partial name="~/Views/Shared/IdCards/_StudentCardBack.cshtml" model="cardModel" />
-                        </div>
-                    </div>
+                <div class="card-group">
+                    <partial name="~/Views/Shared/IdCards/_StudentCardFront.cshtml" model="vm" />
+                    <partial name="~/Views/Shared/IdCards/_StudentCardBack.cshtml" model="vm" />
                 </div>
             }
         </div>
@@ -57,36 +61,35 @@
     {
         foreach (var student in Model.Students)
         {
-            var cardModel = new StudentCardModel
+            var dob = student.DateOfBirth.ToString("dd MMM yyyy");
+            var validUntil = DateTime.Today.AddYears(1).ToString("dd MMM yyyy");
+            var vm = new StudentIdCardViewModel
             {
-                Student = student,
-                QrCodeDataUri = IdCardQRHelper.GenerateQrCodeBase64(student.StudentNo ?? "N/A"),
-                SchoolLogoPath = Model.SchoolLogoPath,
-                SchoolSealPath = Model.SchoolSealPath,
-                SchoolNameEn = Model.SchoolNameEn,
-                SchoolNameBn = Model.SchoolNameBn,
-                SchoolEIIN = Model.SchoolEIIN,
-                SchoolWebsite = Model.SchoolWebsite,
-                SchoolMotto = Model.SchoolMotto,
+                StudentFullName = student.FullName ?? "---",
+                StudentIdNo = student.StudentNo ?? "---",
+                ClassName = student.ClassName ?? $"Class {student.ClassId}",
+                SectionName = student.SectionName ?? "---",
+                RollNumber = student.RollNumber.ToString(),
+                BloodGroup = IdCardImageHelper.GetBloodWithColor(student.BloodGroup),
+                DateOfBirth = dob,
                 AcademicYear = Model.AcademicYear,
+                StudentPhotoDataUri = imgToDataUri(student.ProfilePicturePath),
+                SchoolName = Model.SchoolNameEn,
+                SchoolShortName = shortName,
+                SchoolLogoDataUri = schoolLogoUri,
                 SchoolAddress = Model.SchoolAddress,
                 SchoolPhone = Model.SchoolPhone,
                 SchoolEmail = Model.SchoolEmail,
-                PrincipalName = Model.PrincipalName,
-                PrincipalSignaturePath = Model.PrincipalSignaturePath,
-                FooterText = Model.FooterText
+                QrCodeDataUri = IdCardQRHelper.GenerateQrCodeBase64(student.StudentNo ?? "N/A"),
+                ValidUntil = validUntil
             };
 
-            <div class="page-single">
-                <div class="card-pair">
-                    <div class="card-wrapper">
-                        <partial name="~/Views/Shared/IdCards/_StudentCardFront.cshtml" model="cardModel" />
-                    </div>
-                    <div class="card-spacer"></div>
-                    <div class="card-wrapper">
-                        <partial name="~/Views/Shared/IdCards/_StudentCardBack.cshtml" model="cardModel" />
-                    </div>
-                </div>
+            <div class="page-single f">
+                <partial name="~/Views/Shared/IdCards/_StudentCardFront.cshtml" model="vm" />
+            </div>
+            <div class="page-break"></div>
+            <div class="page-single b">
+                <partial name="~/Views/Shared/IdCards/_StudentCardBack.cshtml" model="vm" />
             </div>
         }
     }

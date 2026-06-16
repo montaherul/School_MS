@@ -276,12 +276,19 @@ public static class DbInitializer
         // Groups: Science, Business Studies, Humanities
         // Each group gets sub-sections: "{Group} A", "{Group} B"
         // Admin can auto-add "{Group} C" once group reaches 100+ students
+        var groupNameToId = new Dictionary<string, int>
+        {
+            ["Science"] = 1,
+            ["Business Studies"] = 2,
+            ["Humanities"] = 3
+        };
         foreach (var cls in new[] { 9, 10 })
         {
             var groups = new[] { "Science", "Business Studies", "Humanities" };
             foreach (var groupName in groups)
             {
                 int groupId = id++;
+                int studentGroupId = groupNameToId[groupName];
                 // Parent group section (ParentSectionId = null = it IS the group)
                 sections.Add(new Section
                 {
@@ -289,6 +296,7 @@ public static class DbInitializer
                     SchoolClassId = cls,
                     Name = groupName,
                     ParentSectionId = null,
+                    StudentGroupId = studentGroupId,
                     CreatedAt = createdAt
                 });
                 // Leaf sub-sections A and B
@@ -298,6 +306,7 @@ public static class DbInitializer
                     SchoolClassId = cls,
                     Name = $"{groupName} A",
                     ParentSectionId = groupId,
+                    StudentGroupId = studentGroupId,
                     CreatedAt = createdAt
                 });
                 sections.Add(new Section
@@ -306,6 +315,7 @@ public static class DbInitializer
                     SchoolClassId = cls,
                     Name = $"{groupName} B",
                     ParentSectionId = groupId,
+                    StudentGroupId = studentGroupId,
                     CreatedAt = createdAt
                 });
             }

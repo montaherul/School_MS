@@ -25,9 +25,21 @@ public class ExamGroupPerformanceViewModel
 public class ExamListViewModel
 {
     public IReadOnlyList<ExamListDto> Exams { get; set; } = [];
+    public IReadOnlyList<ExamGroupViewModel> ExamGroups { get; set; } = [];
     public int SelectedAcademicYearId { get; set; }
     public string SelectedAcademicYearName { get; set; } = string.Empty;
     public IReadOnlyList<AcademicYearOptionViewModel> AcademicYears { get; set; } = [];
+}
+
+public class ExamGroupViewModel
+{
+    public string GroupKey { get; set; } = string.Empty;
+    public string GroupName { get; set; } = string.Empty;
+    public int TotalExams { get; set; }
+    public int TotalStudents { get; set; }
+    public int TotalScheduled { get; set; }
+    public int PublishedCount { get; set; }
+    public IReadOnlyList<ExamListDto> Exams { get; set; } = [];
 }
 
 public class ExamDashboardViewModel
@@ -38,6 +50,7 @@ public class ExamDashboardViewModel
     public IReadOnlyList<AcademicYearOptionViewModel> AcademicYears { get; set; } = [];
     public IReadOnlyList<ExamListDto> YearExams { get; set; } = [];
     public IReadOnlyList<ExamListDto> RecentExams { get; set; } = [];
+    public IReadOnlyList<ExamGroupDashboardViewModel> ExamGroups { get; set; } = [];
     public int? SelectedExamId { get; set; }
     public int? SelectedClassId { get; set; }
     public int? SelectedSectionId { get; set; }
@@ -53,6 +66,26 @@ public class ExamDashboardViewModel
     public string PassRateDataJson { get; set; } = "[]";
     public string GroupPerformanceLabelsJson { get; set; } = "[]";
     public string GroupPerformanceDataJson { get; set; } = "[]";
+}
+
+public class ExamGroupReportViewModel
+{
+    public string GroupKey { get; set; } = string.Empty;
+    public string GroupName { get; set; } = string.Empty;
+    public int SelectedAcademicYearId { get; set; }
+    public IReadOnlyList<AcademicYearOptionViewModel> AcademicYears { get; set; } = [];
+    public IReadOnlyList<ExamListDto> Exams { get; set; } = [];
+}
+
+public class ExamGroupDashboardViewModel
+{
+    public string GroupKey { get; set; } = string.Empty;
+    public string GroupName { get; set; } = string.Empty;
+    public int TotalExams { get; set; }
+    public int PublishedCount { get; set; }
+    public int TotalSubjects { get; set; }
+    public int TotalStudents { get; set; }
+    public IReadOnlyList<ExamListDto> Exams { get; set; } = [];
 }
 
 public class ExamCreateEditViewModel

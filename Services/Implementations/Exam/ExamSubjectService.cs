@@ -28,7 +28,7 @@ public class ExamSubjectService : IExamSubjectService
 
     public async Task<ExamSubjectSetupViewModel> GetSubjectSetupAsync(int examId)
     {
-        var exam = await _uow.Repository<ExamEntity>().Query()
+        var exam = await _uow.Repository<ExamEntity>().Query().AsNoTracking()
             .Include(e => e.ExamSubjects)
                 .ThenInclude(es => es.Subject)
             .FirstOrDefaultAsync(e => e.Id == examId)
@@ -132,6 +132,9 @@ public class ExamSubjectService : IExamSubjectService
         var exam = await _uow.Repository<ExamEntity>().GetByIdAsync(examId)
             ?? throw new KeyNotFoundException($"Exam with ID {examId} not found.");
 
+        var classId = exam.ClassId;
+        var studentGroupId = exam.StudentGroupId;
+
         // Validate that all active subjects have SubjectMarkStructure configured
         var activeSubjectIds = subjects.Where(s => s.IsActive).Select(s => s.SubjectId).ToList();
         await _examValidation.ThrowIfSubjectMarkStructureMissingAsync(activeSubjectIds);
@@ -179,6 +182,8 @@ public class ExamSubjectService : IExamSubjectService
                 {
                     ExamId = examId,
                     SubjectId = dto.SubjectId,
+                    ClassId = classId,
+                    StudentGroupId = studentGroupId,
                     TeacherId = dto.TeacherId,
                     FullMarks = fullMarks,
                     PassMarks = dto.PassMark,
@@ -407,6 +412,121 @@ public class ExamSubjectService : IExamSubjectService
         }
 
         await _uow.SaveChangesAsync();
+    }
+
+    /// <summary>
+    /// Get sibling exams (same group key) for the same academic year
+    /// </summary>
+    public async Task<List<ExamListDto>> GetSiblingExamsAsync(int examId)
+    {
+        var exam = await _uow.Repository<ExamEntity>().GetByIdAsync(examId)
+            ?? throw new KeyNotFoundException($"Exam with ID {examId} not found.");
+
+        var allExams = await _uow.Repository<ExamEntity>().Query()
+            .AsNoTracking()
+            .Where(e => e.AcademicYearId == exam.AcademicYearId
+                && e.Name == exam.Name && e.Id != examId && !e.IsDeleted)
+            .Select(e => new ExamListDto
+            {
+                Id = e.Id,
+                Name = e.Name,
+                Term = e.Term,
+                AcademicYearId = e.AcademicYearId,
+                ClassId = e.ClassId,
+                SubjectCount = e.ExamSubjects.Count(es => !es.IsDeleted),
+                Status = e.Status,
+                CreatedAt = e.CreatedAt
+            })
+            .ToListAsync();
+
+        return allExams;
+    }
+
+    /// <summary>
+    /// Copy subject structure (ExamSubject configs) from source exam to one or more target exams.
+    /// Skips subjects that already exist in the target.
+    /// Returns number of subjects copied.
+    /// </summary>
+    public async Task<int> CopySubjectStructureAsync(int sourceExamId, List<int> targetExamIds)
+    {
+        var sourceSubjects = await _uow.Repository<ExamSubject>().Query()
+            .Where(es => es.ExamId == sourceExamId && !es.IsDeleted)
+            .ToListAsync();
+
+        if (sourceSubjects.Count == 0)
+            throw new InvalidOperationException("Source exam has no subjects configured.");
+
+        var copied = 0;
+
+        foreach (var targetExamId in targetExamIds)
+        {
+            var targetExam = await _uow.Repository<ExamEntity>().GetByIdAsync(targetExamId)
+                ?? throw new KeyNotFoundException($"Target exam with ID {targetExamId} not found.");
+
+            var existingSubjectIds = await _uow.Repository<ExamSubject>().Query()
+                .Where(es => es.ExamId == targetExamId && !es.IsDeleted)
+                .Select(es => es.SubjectId)
+                .ToListAsync();
+
+            var toAdd = sourceSubjects
+                .Where(ss => !existingSubjectIds.Contains(ss.SubjectId))
+                .ToList();
+
+            foreach (var source in toAdd)
+            {
+                await _uow.Repository<ExamSubject>().AddAsync(new ExamSubject
+                {
+                    ExamId = targetExamId,
+                    SubjectId = source.SubjectId,
+                    ClassId = targetExam.ClassId,
+                    StudentGroupId = targetExam.StudentGroupId,
+                    TeacherId = source.TeacherId,
+                    FullMarks = source.FullMarks,
+                    PassMarks = source.PassMarks,
+                    ExamDate = source.ExamDate,
+                    ExamStartTime = source.ExamStartTime,
+                    ExamDuration = source.ExamDuration,
+                    RoomNumber = source.RoomNumber,
+                    IsOptional = source.IsOptional,
+                    IsActive = source.IsActive
+                });
+                copied++;
+            }
+
+            // Copy schedules for newly added subjects
+            var sourceSchedule = await _uow.Repository<ExamSchedule>().Query()
+                .Where(s => s.ExamId == sourceExamId)
+                .ToListAsync();
+
+            var existingScheduleSubjectIds = await _uow.Repository<ExamSchedule>().Query()
+                .Where(s => s.ExamId == targetExamId)
+                .Select(s => s.SubjectId)
+                .ToListAsync();
+
+            var scheduleToAdd = sourceSchedule
+                .Where(ss => toAdd.Any(a => a.SubjectId == ss.SubjectId)
+                    && !existingScheduleSubjectIds.Contains(ss.SubjectId))
+                .ToList();
+
+            foreach (var sched in scheduleToAdd)
+            {
+                await _uow.Repository<ExamSchedule>().AddAsync(new ExamSchedule
+                {
+                    ExamId = targetExamId,
+                    SubjectId = sched.SubjectId,
+                    ClassId = targetExam.ClassId,
+                    StudentGroupId = targetExam.StudentGroupId,
+                    SectionId = sched.SectionId,
+                    ExamDate = sched.ExamDate,
+                    StartsAt = sched.StartsAt,
+                    EndsAt = sched.EndsAt,
+                    RoomNo = sched.RoomNo
+                });
+            }
+        }
+
+        await _uow.SaveChangesAsync();
+        return copied;
     }
 
     private int ExtractClassNumber(int classId)

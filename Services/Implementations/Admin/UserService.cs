@@ -34,6 +34,7 @@ public class UserService : IUserService
         var query = _unitOfWork
             .Repository<ApplicationUser>()
             .Query()
+            .AsNoTracking()
             .Where(u => !u.IsDeleted);
 
         // SEARCH
@@ -81,12 +82,12 @@ public class UserService : IUserService
         // Fetch linked entity data for Employee and Guardian lookups
         var userIds = users.Select(u => u.Id).ToList();
 
-        var employeeMap = await _unitOfWork.Repository<EmpEntity>().Query()
+        var employeeMap = await _unitOfWork.Repository<EmpEntity>().Query().AsNoTracking()
             .Where(e => e.UserId.HasValue && userIds.Contains(e.UserId.Value) && !e.IsDeleted)
             .Select(e => new { e.UserId, e.FullName, e.IsTeachingStaff })
             .ToDictionaryAsync(e => e.UserId!.Value, ct);
 
-        var guardianMap = await _unitOfWork.Repository<GdnEntity>().Query()
+        var guardianMap = await _unitOfWork.Repository<GdnEntity>().Query().AsNoTracking()
             .Where(g => g.UserId.HasValue && userIds.Contains(g.UserId.Value) && !g.IsDeleted)
             .Select(g => new { g.UserId, g.FullName })
             .ToDictionaryAsync(g => g.UserId!.Value, ct);
@@ -153,7 +154,7 @@ public class UserService : IUserService
         var user = await _unitOfWork.Repository<ApplicationUser>().FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted, ct);
         if (user == null) return null;
 
-        var selectedRoleIds = await _unitOfWork.Repository<UserRole>().Query()
+        var selectedRoleIds = await _unitOfWork.Repository<UserRole>().Query().AsNoTracking()
             .Where(ur => ur.UserId == id)
             .Select(ur => ur.RoleId)
             .ToListAsync(ct);
@@ -171,7 +172,7 @@ public class UserService : IUserService
 
     public async Task<UserDetailsViewModel?> GetDetailsAsync(int id, CancellationToken ct = default)
     {
-        var user = await _unitOfWork.Repository<ApplicationUser>().Query()
+        var user = await _unitOfWork.Repository<ApplicationUser>().Query().AsNoTracking()
             .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
             .FirstOrDefaultAsync(u => u.Id == id && !u.IsDeleted, ct);
 
@@ -181,7 +182,7 @@ public class UserService : IUserService
         string userType = "System";
         string linkedEntityName = "—";
 
-        var emp = await _unitOfWork.Repository<EmpEntity>().Query()
+        var emp = await _unitOfWork.Repository<EmpEntity>().Query().AsNoTracking()
             .Where(e => e.UserId == id && !e.IsDeleted)
             .Select(e => new { e.FullName })
             .FirstOrDefaultAsync(ct);
@@ -193,7 +194,7 @@ public class UserService : IUserService
         }
         else
         {
-            var gdn = await _unitOfWork.Repository<GdnEntity>().Query()
+            var gdn = await _unitOfWork.Repository<GdnEntity>().Query().AsNoTracking()
                 .Where(g => g.UserId == id && !g.IsDeleted)
                 .Select(g => new { g.FullName })
                 .FirstOrDefaultAsync(ct);

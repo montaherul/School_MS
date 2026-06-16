@@ -179,7 +179,13 @@ public class SectionService : ISectionService
 
     public async Task<int> CreateAjaxAsync(int classId, string name, int? parentId, string createdBy, CancellationToken ct = default)
     {
-        var section = new Section { SchoolClassId = classId, Name = name, ParentSectionId = parentId, CreatedBy = createdBy, CreatedAt = DateTime.UtcNow, Capacity = 50 };
+        int? studentGroupId = null;
+        if (parentId.HasValue)
+        {
+            var parent = await _unitOfWork.Repository<Section>().GetByIdAsync(parentId.Value);
+            studentGroupId = parent?.StudentGroupId;
+        }
+        var section = new Section { SchoolClassId = classId, Name = name, ParentSectionId = parentId, StudentGroupId = studentGroupId, CreatedBy = createdBy, CreatedAt = DateTime.UtcNow, Capacity = 50 };
         await _unitOfWork.Repository<Section>().AddAsync(section, ct);
         await _unitOfWork.SaveChangesAsync(ct);
 
@@ -218,6 +224,7 @@ public class SectionService : ISectionService
                 Capacity = section.Capacity,
                 ParentSectionId = section.ParentSectionId,
                 ParentName = section.ParentSection != null ? section.ParentSection.Name : null,
+                StudentGroupId = section.StudentGroupId,
                 StudentCount = studentCount
             });
         }
@@ -228,13 +235,15 @@ public class SectionService : ISectionService
             return allSections.Where(s => s.ParentSectionId != null).Select(s => new
             {
                 id = s.Id, name = s.Name, displayName = $"{s.Name} ({s.StudentCount}/{s.Capacity}){(s.StudentCount >= s.Capacity ? " - FULL" : "")}",
-                groupName = s.ParentName ?? "", parentSectionId = s.ParentSectionId, studentCount = s.StudentCount, capacity = s.Capacity, isFull = s.StudentCount >= s.Capacity
+                groupName = s.ParentName ?? "", parentSectionId = s.ParentSectionId, studentGroupId = s.StudentGroupId,
+                studentCount = s.StudentCount, capacity = s.Capacity, isFull = s.StudentCount >= s.Capacity
             }).ToList();
         }
         return allSections.Select(s => new
         {
             id = s.Id, name = s.Name, displayName = $"{s.Name} ({s.StudentCount}/{s.Capacity}){(s.StudentCount >= s.Capacity ? " - FULL" : "")}",
-            groupName = "", studentCount = s.StudentCount, capacity = s.Capacity, isFull = s.StudentCount >= s.Capacity
+            groupName = "", studentGroupId = (int?)null,
+            studentCount = s.StudentCount, capacity = s.Capacity, isFull = s.StudentCount >= s.Capacity
         }).ToList();
     }
 
@@ -245,6 +254,7 @@ public class SectionService : ISectionService
         public int Capacity { get; set; }
         public int? ParentSectionId { get; set; }
         public string? ParentName { get; set; }
+        public int? StudentGroupId { get; set; }
         public int StudentCount { get; set; }
     }
 

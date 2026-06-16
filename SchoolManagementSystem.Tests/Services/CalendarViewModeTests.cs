@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.EntityFrameworkCore;
 using Moq;
 using SchoolManagementSystem.Controllers.Academic;
+using SchoolManagementSystem.Data;
 using SchoolManagementSystem.Helpers.Pdf;
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Services.Interfaces.Academic;
@@ -21,7 +23,11 @@ public class CalendarViewModeTests
     private AcademicCalendarController CreateController()
     {
         var httpContext = new DefaultHttpContext();
-        var controller = new AcademicCalendarController(_serviceMock.Object, _uowMock.Object, _dashboardMock.Object, _pdfMock.Object)
+        var options = new DbContextOptionsBuilder<SchoolDbContext>()
+            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+            .Options;
+        var db = new SchoolDbContext(options);
+        var controller = new AcademicCalendarController(_serviceMock.Object, _uowMock.Object, _dashboardMock.Object, _pdfMock.Object, db)
         {
             ControllerContext = new ControllerContext { HttpContext = httpContext }
         };

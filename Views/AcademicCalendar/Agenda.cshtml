@@ -2,77 +2,194 @@
     ViewData["Title"] = "Agenda View - Academic Calendar";
 }
 
+<link rel="stylesheet" href="~/css/academic-calendar.css" asp-append-version="true" />
+
 <div class="ac-page">
-    <div class="ac-header">
-        <div>
-            <h1 class="ac-title"><i class="bi bi-list-task me-2 text-primary"></i>Agenda View</h1>
-            <p class="ac-subtitle">Upcoming items sorted by date</p>
+
+    <!-- ═══ PAGE HEADER ═══ -->
+    <div class="er-page-header">
+        <div class="er-page-header__left">
+            <div class="er-page-header__icon">
+                <i class="bi bi-list-task"></i>
+            </div>
+            <div>
+                <h1 class="er-page-header__title">Agenda View</h1>
+                <p class="er-page-header__sub">Upcoming items sorted by date in timeline layout</p>
+            </div>
         </div>
-        <div class="d-flex gap-2">
-            <a asp-action="Index" class="btn btn-outline-secondary"><i class="bi bi-calendar3 me-1"></i>Month</a>
-            <a asp-action="WeekView" class="btn btn-outline-secondary"><i class="bi bi-calendar-week me-1"></i>Week</a>
-            <a asp-action="YearView" class="btn btn-outline-secondary"><i class="bi bi-calendar-range me-1"></i>Year</a>
+        <div class="er-page-header__right">
+            <button class="er-btn er-btn--ghost" id="refreshAgendaBtn">
+                <i class="bi bi-arrow-clockwise"></i> Refresh
+            </button>
         </div>
     </div>
 
-    <div class="ac-panel">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="mb-0">Upcoming 30 Days</h5>
-            <button class="btn btn-outline-secondary" id="refreshAgenda" aria-label="Refresh agenda data"><i class="bi bi-arrow-clockwise me-1"></i>Refresh</button>
-        </div>
-        <div id="agendaList" aria-live="polite" role="region" aria-label="Agenda items list">
-            <div class="text-center text-muted py-4" role="status"><div class="spinner-border spinner-border-sm me-2" aria-hidden="true"></div>Loading...</div>
+    <!-- ═══ SEGMENTED VIEW NAV ═══ -->
+    <nav class="ac-nav" aria-label="Calendar view navigation">
+        <a class="ac-nav__item" asp-action="Index">
+            <i class="bi bi-calendar3"></i> <span class="d-none d-sm-inline">Month</span>
+        </a>
+        <a class="ac-nav__item" asp-action="WeekView">
+            <i class="bi bi-calendar-week"></i> <span class="d-none d-sm-inline">Week</span>
+        </a>
+        <a class="ac-nav__item ac-nav__item--active" asp-action="Agenda">
+            <i class="bi bi-list-task"></i> <span class="d-none d-sm-inline">Agenda</span>
+        </a>
+        <a class="ac-nav__item" asp-action="YearView">
+            <i class="bi bi-calendar-range"></i> <span class="d-none d-sm-inline">Year</span>
+        </a>
+    </nav>
+
+    <!-- ═══ FILTERS ═══ -->
+    <div class="ac-filters">
+        <div class="ac-filters__row">
+            <div class="ac-filters__group">
+                <label class="ac-filters__label">Start Date</label>
+                <input type="date" id="agendaStart" class="ac-filters__input" />
+            </div>
+            <div class="ac-filters__group">
+                <label class="ac-filters__label">Days Ahead</label>
+                <select id="agendaCount" class="ac-filters__select">
+                    <option value="10">10 Days</option>
+                    <option value="30" selected>30 Days</option>
+                    <option value="60">60 Days</option>
+                    <option value="90">90 Days</option>
+                    <option value="180">180 Days</option>
+                </select>
+            </div>
+            <div class="ac-filters__group">
+                <label class="ac-filters__label">Category</label>
+                <select id="agendaCategory" class="ac-filters__select">
+                    <option value="">All</option>
+                    <option value="holiday">Holiday</option>
+                    <option value="exam">Exam</option>
+                    <option value="website_event">Website Event</option>
+                    <option value="event">Academic Event</option>
+                </select>
+            </div>
+            <div class="ac-filters__group ac-filters__group--search">
+                <label class="ac-filters__label">Search</label>
+                <input type="text" id="agendaSearch" class="ac-filters__input" placeholder="Search agenda items..." />
+            </div>
+            <div class="ac-filters__group ac-filters__group--actions">
+                <label class="ac-filters__label">&nbsp;</label>
+                <button class="er-btn er-btn--primary" id="applyAgendaFilters" style="width:100%">
+                    <i class="bi bi-funnel"></i> Apply
+                </button>
+            </div>
         </div>
     </div>
+
+    <!-- ═══ LEGEND ═══ -->
+    <div class="ac-legend" style="margin-bottom:16px;border-top:none;padding-top:0">
+        <div class="ac-legend__item"><span class="ac-legend__dot ac-legend__dot--working"></span> Working Day</div>
+        <div class="ac-legend__item"><span class="ac-legend__dot ac-legend__dot--holiday"></span> Holiday</div>
+        <div class="ac-legend__item"><span class="ac-legend__dot ac-legend__dot--exam"></span> Exam</div>
+        <div class="ac-legend__item"><span class="ac-legend__dot ac-legend__dot--event"></span> Event</div>
+        <div class="ac-legend__item"><span class="ac-legend__dot ac-legend__dot--meeting"></span> Meeting</div>
+    </div>
+
+    <!-- ═══ AGENDA CONTENT ═══ -->
+    <div class="er-card">
+        <div class="er-card__header">
+            <h5 class="er-card__title"><i class="bi bi-list-task" style="color:var(--adm-primary)"></i> Timeline</h5>
+            <span class="er-stat__value" id="agendaCountLabel" style="font-size:16px">0 items</span>
+        </div>
+        <div class="er-card__body">
+            <div id="agendaList" aria-live="polite" role="region" aria-label="Agenda items list">
+                <div class="text-center py-5"><div class="spinner-border spinner-border-sm me-2" role="status"></div>Loading agenda...</div>
+            </div>
+        </div>
+    </div>
+
 </div>
 
 @section Scripts {
+    <script src="~/js/academic-calendar.js" asp-append-version="true"></script>
     <script>
-        function loadAgenda() {
-            const list = document.getElementById('agendaList');
-            list.innerHTML = '<div class="text-center text-muted py-4"><div class="spinner-border spinner-border-sm me-2"></div>Loading...</div>';
+        (function () {
+            'use strict';
 
-            fetch('/AcademicCalendar/GetAgendaData?count=30')
-                .then(r => r.json())
-                .then(items => {
-                    if (!items.length) {
-                        list.innerHTML = '<div class="text-center text-muted py-4"><i class="bi bi-calendar-x fs-2 d-block mb-2"></i>No upcoming items found.</div>';
-                        return;
-                    }
+            var allItems = [];
+            var today = new Date();
+            today.setHours(0, 0, 0, 0);
 
-                    let html = '<div class="list-group list-group-flush">';
-                    items.forEach(item => {
-                        let badgeClass = 'ac-badge-working';
-                        let label = 'Working Day';
-                        if (item.type === 'holiday') { badgeClass = 'ac-badge-holiday'; label = 'Holiday'; }
-                        else if (item.type === 'exam') { badgeClass = 'ac-badge-exam'; label = 'Exam'; }
-                        else if (item.type === 'event') { badgeClass = 'ac-badge-event'; label = 'Event'; }
+            // Set default start date
+            document.getElementById('agendaStart').value = AcademicCalendar.formatDate(today);
 
-                        html += `
-                            <div class="list-group-item px-3 py-3 border-start border-3 ${item.type === 'holiday' ? 'border-danger' : item.type === 'exam' ? 'border-warning' : item.type === 'event' ? 'border-purple' : 'border-success'}">
-                                <div class="d-flex w-100 justify-content-between align-items-start">
-                                    <div>
-                                        <div class="fw-semibold">${item.title || 'Untitled'}</div>
-                                        <small class="text-muted">${item.description || ''}</small>
-                                    </div>
-                                    <div class="text-end">
-                                        <span class="ac-badge ${badgeClass}">${label}</span>
-                                        <div class="small text-muted mt-1">${item.date} <span class="text-muted">(${item.dayName})</span></div>
-                                    </div>
-                                </div>
-                                ${item.holidayType ? `<div class="mt-1"><span class="badge bg-secondary">${item.holidayType}</span></div>` : ''}
-                            </div>
-                        `;
+            function pad(n) { return n < 10 ? '0' + n : n; }
+
+            function loadAgenda() {
+                var list = document.getElementById('agendaList');
+                list.innerHTML = '<div class="text-center py-5"><div class="spinner-border spinner-border-sm me-2" role="status"></div>Loading agenda...</div>';
+
+                var startVal = document.getElementById('agendaStart').value;
+                var count = document.getElementById('agendaCount').value;
+
+                var url = '/AcademicCalendar/GetAgendaData?count=' + count;
+                if (startVal) {
+                    url += '&start=' + startVal;
+                }
+
+                fetch(url)
+                    .then(function (r) { return r.json(); })
+                    .then(function (items) {
+                        allItems = items;
+                        applyFilters();
+                    })
+                    .catch(function () {
+                        list.innerHTML = '<div class="er-alert er-alert--danger">Failed to load agenda data.</div>';
                     });
-                    html += '</div>';
-                    list.innerHTML = html;
-                })
-                .catch(() => {
-                    list.innerHTML = '<div class="alert alert-danger mb-0">Failed to load agenda data.</div>';
-                });
-        }
+            }
 
-        document.getElementById('refreshAgenda').addEventListener('click', loadAgenda);
-        document.addEventListener('DOMContentLoaded', loadAgenda);
+            function applyFilters() {
+                var categoryFilter = document.getElementById('agendaCategory').value;
+                var searchQuery = document.getElementById('agendaSearch').value.toLowerCase().trim();
+
+                AcademicCalendar.activeFilter = categoryFilter || 'all';
+
+                var filtered = allItems.filter(function (item) {
+                    // Category filter (shared)
+                    if (!AcademicCalendar.matchesFilter(item)) return false;
+                    // Search filter
+                    if (searchQuery) {
+                        var match = (item.title && item.title.toLowerCase().includes(searchQuery)) ||
+                                    (item.description && item.description.toLowerCase().includes(searchQuery)) ||
+                                    (item.holidayType && item.holidayType.toLowerCase().includes(searchQuery));
+                        if (!match) return false;
+                    }
+                    return true;
+                });
+
+                document.getElementById('agendaCountLabel').textContent = filtered.length + ' item' + (filtered.length !== 1 ? 's' : '');
+
+                // Add dayName to items for the renderer
+                filtered.forEach(function (item) {
+                    if (!item.dayName) {
+                        var d = new Date(item.date + 'T00:00:00');
+                        item.dayName = d.toLocaleDateString(undefined, { weekday: 'long' });
+                    }
+                });
+
+                AcademicCalendar.renderAgendaSections(filtered, 'agendaList');
+            }
+
+            document.getElementById('applyAgendaFilters').addEventListener('click', function () {
+                loadAgenda();
+            });
+            document.getElementById('refreshAgendaBtn').addEventListener('click', function () {
+                loadAgenda();
+            });
+
+            // Real-time search with debounce
+            var searchTimer;
+            document.getElementById('agendaSearch').addEventListener('keyup', function () {
+                clearTimeout(searchTimer);
+                searchTimer = setTimeout(applyFilters, 300);
+            });
+            document.getElementById('agendaCategory').addEventListener('change', applyFilters);
+
+            document.addEventListener('DOMContentLoaded', loadAgenda);
+        })();
     </script>
 }

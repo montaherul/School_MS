@@ -74,7 +74,7 @@ public class AdmissionService : IAdmissionService
     {
         var (items, totalCount) = await _admissionRepository.GetListByStoredProcedureAsync(pageNumber, pageSize, searchTerm, classId, status, cancellationToken);
 
-        var query = _admissionRepository.Query()
+        var query = _admissionRepository.Query().AsNoTracking()
             .Where(a => !a.IsDeleted)
             .Where(a => classId == 0 || a.AppliedClassId == classId)
             .Where(a => string.IsNullOrEmpty(searchTerm) ||
@@ -444,9 +444,17 @@ public class AdmissionService : IAdmissionService
 
     public async Task<IEnumerable<dynamic>> GetAvailableClassesAsync(CancellationToken ct = default)
     {
-        return await _classRepository.Query()
-            .Where(c => c.Name != "Class Ten" && !c.IsDeleted)
-            .Select(c => new { c.Id, c.Name, c.IsGroupBased })
+        return await _classRepository.Query().AsNoTracking()
+            .Where(c => !c.IsDeleted)
+            .Select(c => new { c.Id, c.Name, c.IsGroupBased, c.SortOrder })
+            .ToListAsync(ct);
+    }
+
+    public async Task<IEnumerable<dynamic>> GetActiveStudentGroupsAsync(CancellationToken ct = default)
+    {
+        return await _unitOfWork.Repository<StudentGroup>().Query().AsNoTracking()
+            .Where(g => g.IsActive && !g.IsDeleted)
+            .Select(g => new { g.Id, g.Name, g.MinClass, g.MaxClass })
             .ToListAsync(ct);
     }
 
@@ -470,7 +478,7 @@ public class AdmissionService : IAdmissionService
 
     private async Task<int> NextRollAsync(int classId, int sectionId, CancellationToken cancellationToken)
     {
-        var maxRoll = await _studentRepository.Query()
+        var maxRoll = await _studentRepository.Query().AsNoTracking()
             .Where(x => !x.IsDeleted && x.ClassId == classId && x.SectionId == sectionId)
             .Select(x => (int?)x.RollNumber)
             .MaxAsync(cancellationToken);

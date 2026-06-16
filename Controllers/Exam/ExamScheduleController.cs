@@ -55,35 +55,6 @@ public class ExamScheduleController : Controller
     }
 
     [HttpGet]
-    public async Task<IActionResult> Routine(int examId, int classId, int? groupId, CancellationToken ct)
-    {
-        var exam = await _uow.Repository<ExamEntity>().GetByIdAsync(examId, ct);
-        var schoolClass = await _uow.Repository<SchoolClass>().GetByIdAsync(classId, ct);
-
-        if (exam == null || schoolClass == null)
-            return NotFound("Exam or Class not found.");
-
-        var query = _uow.Repository<ExamScheduleEntity>().Query()
-            .Include(s => s.Subject)
-            .Include(s => s.StudentGroup)
-            .Include(s => s.Section)
-            .Where(s => s.ExamId == examId && s.ClassId == classId && !s.IsDeleted);
-
-        if (groupId.HasValue && groupId > 0)
-            query = query.Where(s => s.StudentGroupId == groupId.Value);
-
-        var schedules = await query
-            .OrderBy(s => s.ExamDate).ThenBy(s => s.StartsAt)
-            .ToListAsync(ct);
-
-        ViewBag.Exam = exam;
-        ViewBag.Class = schoolClass;
-        ViewBag.SelectedGroupId = groupId;
-
-        return View(schedules);
-    }
-
-    [HttpGet]
     public async Task<IActionResult> Create(CancellationToken ct)
     {
         var exams = await _uow.Repository<ExamEntity>().ListAsync(x => !x.IsDeleted, ct);
@@ -149,22 +120,6 @@ public class ExamScheduleController : Controller
 
         await LoadFormViewBags(ct);
         return View(model);
-    }
-
-    [HttpGet]
-    public async Task<IActionResult> Details(int id, CancellationToken ct)
-    {
-        var schedule = await _uow.Repository<ExamScheduleEntity>().Query()
-            .Include(s => s.Exam)
-            .Include(s => s.Subject)
-            .Include(s => s.Class)
-            .Include(s => s.StudentGroup)
-            .Include(s => s.Section)
-            .FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted, ct);
-
-        if (schedule == null) return NotFound();
-
-        return View(schedule);
     }
 
     [HttpGet]

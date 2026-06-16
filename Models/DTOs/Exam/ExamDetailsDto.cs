@@ -28,4 +28,7 @@ public class ExamDetailsDto
     public int StudentResultCount { get; set; }
     public DateTime CreatedAt { get; set; }
     public string? CreatedBy { get; set; }
+
+    /// <summary>Group key for UI grouping of same-named exams across classes.</summary>
+    public string ExamGroupKey => SchoolManagementSystem.Models.Entities.Exam.Exam.GenerateGroupKey(AcademicYearId, Name);
 }

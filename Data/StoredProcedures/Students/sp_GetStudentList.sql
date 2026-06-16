@@ -48,8 +48,11 @@ BEGIN
             END AS [Status],
             s.FatherName,
             s.FatherOccupation,
-            s.MobileNumber AS FatherOrGuardianMobileNo,
-
+            (SELECT TOP 1 g.MobileNumber 
+             FROM StudentGuardians sg 
+             INNER JOIN Guardians g ON sg.GuardianId = g.Id 
+             WHERE sg.StudentId = s.Id AND sg.IsPrimaryGuardian = 1
+            ) AS FatherOrGuardianMobileNo,
             s.MotherName,
             s.MotherOccupation,
             s.Religion,

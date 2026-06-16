@@ -1,92 +1,86 @@
-@model SchoolManagementSystem.Models.ViewModels.Student.StudentCardModel
-@{
-    var student = Model.Student;
-    var guardianMobile = student.GuardianMobileNumber ?? student.FatherOrGuardianMobileNo;
-    var emergencyPhone = !string.IsNullOrEmpty(guardianMobile) ? guardianMobile : "N/A";
-    var issuedDate = DateTime.Today.ToString("dd-MMM-yyyy");
-    var validUntil = DateTime.Today.AddYears(1).ToString("dd-MMM-yyyy");
-}
-<div class="id-card id-card-back">
+@model SchoolManagementSystem.Models.ViewModels.IdCard.StudentIdCardViewModel
+<div class="pvc bk">
+    <div class="hdr-stripe"></div>
+    <div class="hdr"></div>
 
-    <div class="back-header">
-        <span class="back-header-title">Important Information</span>
+    <div class="school-hdr">
+        <div class="s-logo-box">
+            @if (!string.IsNullOrEmpty(Model.SchoolLogoDataUri))
+            {
+                <img src="@Model.SchoolLogoDataUri" width="20" height="20" />
+            }
+            else
+            {
+                <svg width="16" height="16" viewBox="0 0 14 14" fill="none">
+                    <path d="M7 1L13 4.5V9.5L7 13L1 9.5V4.5L7 1Z" fill="rgba(255,255,255,0.85)"/>
+                    <path d="M7 4L10 5.8V8.8L7 10.5L4 8.8V5.8L7 4Z" fill="#1A2E5A"/>
+                </svg>
+            }
+        </div>
+        <div class="s-txt">
+            <div class="s-name">@Model.SchoolName</div>
+            <div class="s-addr">@Model.SchoolAddress</div>
+        </div>
     </div>
 
-    <div class="back-body" style="height:38.48mm;">
-        <table class="back-body-tbl" cellpadding="0" cellspacing="0">
-            <tr>
-                <td class="back-info-cell">
+    <div class="body">
+        <div class="rules">
+            <div class="rules-title">Card Rules</div>
+            <div class="rule"><span class="r-dot">&#x2022;</span>Always carry this card within school premises.</div>
+            <div class="rule"><span class="r-dot">&#x2022;</span>Report immediately if lost or stolen to PRS office.</div>
+            <div class="rule"><span class="r-dot">&#x2022;</span>This card is strictly non-transferable.</div>
+        </div>
 
-                    <div class="back-group-title">Guardian Information</div>
-                    <table class="back-row-tbl" cellpadding="0" cellspacing="0">
-                        <tr>
-                            <td class="back-label">Father</td>
-                            <td class="back-value">@(student.FatherName ?? "---")</td>
-                        </tr>
-                        <tr>
-                            <td class="back-label">Mother</td>
-                            <td class="back-value">@(student.MotherName ?? "---")</td>
-                        </tr>
-                        <tr>
-                            <td class="back-label">Phone</td>
-                            <td class="back-value @(string.IsNullOrEmpty(guardianMobile) ? "muted" : "")">@emergencyPhone</td>
-                        </tr>
-                        <tr>
-                            <td class="back-label">Emergency</td>
-                            <td class="back-value @(string.IsNullOrEmpty(guardianMobile) ? "muted" : "")">@emergencyPhone</td>
-                        </tr>
-                    </table>
+        <div class="contact-block">
+            <div class="c-title">If found, please return to:</div>
 
-                    <div class="back-group-title" style="margin-top:1.5mm;">School Contact</div>
-                    <table class="back-row-tbl" cellpadding="0" cellspacing="0">
-                        <tr>
-                            <td class="back-label">Phone</td>
-                            <td class="back-value">@(Model.SchoolPhone ?? "---")</td>
-                        </tr>
-                        <tr>
-                            <td class="back-label">Email</td>
-                            <td class="back-value">@(Model.SchoolEmail ?? "---")</td>
-                        </tr>
-                        <tr>
-                            <td class="back-label">Web</td>
-                            <td class="back-value">@(Model.SchoolWebsite ?? "---")</td>
-                        </tr>
-                    </table>
-                </td>
+            <div class="c-row">
+                <div class="c-icon" style="background:#EEF2F9">
+                    <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+                        <circle cx="4" cy="3" r="2" fill="#1A2E5A"/>
+                        <path d="M1 7Q4 5 7 7" fill="#1A2E5A"/>
+                    </svg>
+                </div>
+                <div class="c-val">@(!string.IsNullOrEmpty(Model.SchoolAddress) ? Model.SchoolAddress : "---")</div>
+            </div>
 
-                <td class="back-qr-cell">
-                    <div class="qr-frame">
-                        @if (!string.IsNullOrEmpty(Model.QrCodeDataUri))
-                        {
-                            <img src="@Model.QrCodeDataUri" alt="QR" />
-                        }
-                    </div>
-                    <div class="qr-label">Student ID</div>
-                </td>
-            </tr>
-        </table>
+            <div class="c-row">
+                <div class="c-icon" style="background:#E8F4F0">
+                    <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+                        <rect x="1" y="2" width="6" height="4.5" rx="1" stroke="#1B7F79" stroke-width=".9"/>
+                        <path d="M1 3L4 5.2L7 3" stroke="#1B7F79" stroke-width=".9"/>
+                    </svg>
+                </div>
+                <div class="c-val">@(!string.IsNullOrEmpty(Model.SchoolPhone) ? Model.SchoolPhone : "---")</div>
+            </div>
+
+            <div class="c-row">
+                <div class="c-icon" style="background:#FFF5E5">
+                    <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+                        <path d="M4 1.5L7 3.2V6.8H1V3.2L4 1.5Z" stroke="#D4860B" stroke-width=".85"/>
+                        <line x1="4" y1="4.5" x2="4" y2="6.8" stroke="#D4860B" stroke-width=".85"/>
+                    </svg>
+                </div>
+                <div class="c-val">@(!string.IsNullOrEmpty(Model.SchoolEmail) ? Model.SchoolEmail : "---")</div>
+            </div>
+        </div>
     </div>
 
-    <div class="back-footer">
-        <table class="back-footer-tbl" cellpadding="0" cellspacing="0">
-            <tr>
-                <td class="back-ft-school">
-                    <div class="back-ft-name">@Model.SchoolNameEn</div>
-                    <div class="back-ft-contact">
-                        <span class="hl">@(Model.SchoolPhone ?? "")</span>
-                        @if (!string.IsNullOrEmpty(Model.SchoolPhone) && !string.IsNullOrEmpty(Model.SchoolEmail))
-                        {
-                            <span> | </span>
-                        }
-                        <span class="hl">@(Model.SchoolEmail ?? "")</span>
-                    </div>
-                    <div class="back-ft-address">@(Model.SchoolAddress ?? "")</div>
-                </td>
-                <td class="back-ft-validity">
-                    <div class="back-ft-valid-label">Valid Until</div>
-                    <div class="back-ft-valid-value">@validUntil</div>
-                </td>
-            </tr>
-        </table>
+    <div class="ftr"></div>
+    <div class="ftr-stripe"></div>
+
+    <div class="qr-area">
+        <div class="qr-box">
+            @if (!string.IsNullOrEmpty(Model.QrCodeDataUri))
+            {
+                <img src="@Model.QrCodeDataUri" width="30" height="30" />
+            }
+        </div>
+    </div>
+
+    <div class="valid-area">
+        <div class="valid-lbl">Valid Until</div>
+        <div class="valid-val">@(!string.IsNullOrEmpty(Model.ValidUntil) ? Model.ValidUntil : "N/A")</div>
+        <div class="id-mini">@Model.StudentIdNo</div>
     </div>
 </div>

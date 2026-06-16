@@ -1,0 +1,453 @@
+@* Expected model shape (dynamic):
+    Model = {
+        Exams: List<SelectListItem>,
+        Classes: List<SelectListItem>,
+        SelectedExamId: int?,
+        SelectedClassId: int?,
+        KPIs: {
+            TotalStudents: int,
+            TotalPassed: int,
+            TotalFailed: int,
+            PassPercentage: decimal,
+            AverageGPA: decimal,
+            HighestGPA: decimal,
+            LowestGPA: decimal,
+            TotalSubjects: int
+        },
+        GradeDistribution: List<{ Grade: string, Count: int }>,
+        ClassPerformance: List<{ ClassName: string, TotalStudents: int, Passed: int, Failed: int, PassPercentage: decimal, AvgGPA: decimal }>,
+        TopStudents: List<{ StudentName: string, RollNumber: int, GPA: decimal, Grade: string, ClassName: string }>,
+        BottomStudents: List<{ StudentName: string, RollNumber: int, GPA: decimal, Grade: string, ClassName: string }>
+    }
+*@
+@model dynamic
+@{
+    ViewData["Title"] = "Result Analytics";
+}
+
+<div class="adm-page er-page">
+    <div class="er-page-header">
+        <div class="er-page-header__left">
+            <div class="er-page-header__icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="20" x2="18" y2="10" />
+                    <line x1="12" y1="20" x2="12" y2="4" />
+                    <line x1="6" y1="20" x2="6" y2="14" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="er-page-header__title">Result Analytics</h1>
+                <p class="er-page-header__sub">In-depth performance analysis and insights</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="er-filters mb-4">
+        <form method="get" action="@Url.Action("ResultAnalytics")" class="er-filters__row">
+            <div class="er-filters__group">
+                <label class="er-filters__label">Exam</label>
+                <select name="examId" class="er-filters__select">
+                    <option value="">All Exams</option>
+                    @if (Model.Exams != null)
+                    {
+                        foreach (var exam in Model.Exams)
+                        {
+                            <option value="@exam.Id" selected="@(Model.SelectedExamId == exam.Id)">@exam.Name</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="er-filters__group">
+                <label class="er-filters__label">Class</label>
+                <select name="classId" class="er-filters__select">
+                    <option value="">All Classes</option>
+                    @if (Model.Classes != null)
+                    {
+                        foreach (var cls in Model.Classes)
+                        {
+                            <option value="@cls.Id" selected="@(Model.SelectedClassId == cls.Id)">@cls.Name</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="er-filters__group--actions">
+                <button type="submit" class="er-btn er-btn--primary adm-btn--sm">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+                    Apply
+                </button>
+                <a href="@Url.Action("ResultAnalytics", "AdminResult")" class="er-btn er-btn--secondary adm-btn--sm">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                    Reset
+                </a>
+            </div>
+        </form>
+    </div>
+
+    @if (Model.KPIs != null)
+    {
+        <div class="er-stats mb-4">
+            <div class="er-stat">
+                <div class="er-stat__icon er-stat__icon--primary">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /></svg>
+                </div>
+                <div class="er-stat__body">
+                    <span class="er-stat__label">Total Students</span>
+                    <span class="er-stat__value">@Model.KPIs.TotalStudents</span>
+                </div>
+            </div>
+            <div class="er-stat">
+                <div class="er-stat__icon er-stat__icon--success">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12" /></svg>
+                </div>
+                <div class="er-stat__body">
+                    <span class="er-stat__label">Passed</span>
+                    <span class="er-stat__value" style="color:var(--adm-success);">@Model.KPIs.TotalPassed</span>
+                </div>
+            </div>
+            <div class="er-stat">
+                <div class="er-stat__icon" style="background:#fde8e8;color:#dc2626;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                </div>
+                <div class="er-stat__body">
+                    <span class="er-stat__label">Failed</span>
+                    <span class="er-stat__value" style="color:var(--adm-rejected);">@Model.KPIs.TotalFailed</span>
+                </div>
+            </div>
+            <div class="er-stat">
+                <div class="er-stat__icon er-stat__icon--warning">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23" /><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" /></svg>
+                </div>
+                <div class="er-stat__body">
+                    <span class="er-stat__label">Pass Rate</span>
+                    <span class="er-stat__value">@Model.KPIs.PassPercentage.ToString("F1")<span class="er-stat__unit">%</span></span>
+                </div>
+            </div>
+            <div class="er-stat">
+                <div class="er-stat__icon er-stat__icon--info">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4" /><path d="M6 20v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2" /></svg>
+                </div>
+                <div class="er-stat__body">
+                    <span class="er-stat__label">Avg GPA</span>
+                    <span class="er-stat__value">@Model.KPIs.AverageGPA.ToString("F2")</span>
+                </div>
+            </div>
+            <div class="er-stat">
+                <div class="er-stat__icon" style="background:#e3f2fd;color:#1565c0;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /></svg>
+                </div>
+                <div class="er-stat__body">
+                    <span class="er-stat__label">Subjects</span>
+                    <span class="er-stat__value">@Model.KPIs.TotalSubjects</span>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="er-card" style="border-radius: var(--adm-radius-lg);">
+                <div class="er-card__header">
+                    <h3 class="er-card__title">Grade Distribution</h3>
+                    <span class="er-badge er-badge--neutral">Bar chart placeholder</span>
+                </div>
+                <div class="er-card__body">
+                    @if (Model.GradeDistribution != null && Model.GradeDistribution.Count > 0)
+                    {
+                        <div style="display:flex;flex-direction:column;gap:10px;">
+                            @{
+                                var maxCount = 0;
+                                foreach (var g in Model.GradeDistribution) { var c = (int)g.Count; if (c > maxCount) maxCount = c; }
+                            }
+                            @foreach (var g in Model.GradeDistribution)
+                            {
+                                var pct = maxCount > 0 ? ((int)g.Count * 100m / maxCount) : 0m;
+                                <div>
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="fw-semibold" style="font-size:13px;">@g.Grade</span>
+                                        <span style="font-size:13px;color:var(--adm-text-3);">@g.Count student(s)</span>
+                                    </div>
+                                    <div style="height:10px;background:var(--adm-surface-2);border-radius:99px;overflow:hidden;">
+                                        <div style="height:100%;width:@pct.ToString("F0")%;border-radius:99px;
+                                            background: @(g.Grade == "A+" || g.Grade == "A" ? "var(--adm-success)" :
+                                                         g.Grade == "A-" || g.Grade == "B+" ? "var(--adm-converted)" :
+                                                         g.Grade == "B" || g.Grade == "B-" || g.Grade == "C+" ? "var(--adm-pending)" :
+                                                         g.Grade == "C" ? "#F59E0B" : "var(--adm-rejected)");">
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        <div style="margin-top:16px;padding:12px;background:var(--adm-surface-2);border-radius:var(--adm-radius-sm);text-align:center;">
+                            <canvas id="gradeDistChart" height="200" style="max-width:100%;"></canvas>
+                        </div>
+                    }
+                    else
+                    {
+                        <div style="padding:24px;text-align:center;color:var(--adm-text-3);font-size:13px;">No grade distribution data available.</div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="er-card" style="border-radius: var(--adm-radius-lg);">
+                <div class="er-card__header">
+                    <h3 class="er-card__title">Highest vs Lowest GPA</h3>
+                    <span class="er-badge er-badge--neutral">Range indicator</span>
+                </div>
+                <div class="er-card__body">
+                    @if (Model.KPIs != null)
+                    {
+                        <div class="d-flex justify-content-around align-items-center" style="padding:16px 0;">
+                            <div style="text-align:center;">
+                                <div style="font-size:11px;color:var(--adm-text-3);text-transform:uppercase;letter-spacing:0.04em;">Highest</div>
+                                <div style="font-size:28px;font-weight:700;color:var(--adm-success);">@Model.KPIs.HighestGPA.ToString("F2")</div>
+                            </div>
+                            <div style="width:60px;height:60px;border-radius:50%;background:var(--adm-surface-2);display:flex;align-items:center;justify-content:center;">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19" /><polyline points="19 12 12 19 5 12" /></svg>
+                            </div>
+                            <div style="text-align:center;">
+                                <div style="font-size:11px;color:var(--adm-text-3);text-transform:uppercase;letter-spacing:0.04em;">Lowest</div>
+                                <div style="font-size:28px;font-weight:700;color:var(--adm-rejected);">@Model.KPIs.LowestGPA.ToString("F2")</div>
+                            </div>
+                        </div>
+                        <div style="height:8px;background:var(--adm-surface-2);border-radius:99px;position:relative;">
+                            <div style="position:absolute;left:0;right:0;top:0;bottom:0;display:flex;align-items:center;justify-content:space-between;padding:0 4px;">
+                                <div style="width:12px;height:12px;border-radius:50%;background:var(--adm-success);"></div>
+                                <div style="width:12px;height:12px;border-radius:50%;background:var(--adm-rejected);"></div>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div style="padding:24px;text-align:center;color:var(--adm-text-3);font-size:13px;">No data available.</div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="er-card" style="border-radius: var(--adm-radius-lg); border-top: 1px solid var(--adm-border);">
+                <div class="er-card__header">
+                    <h3 class="er-card__title">Top Performing Students</h3>
+                    <span class="er-badge er-badge--success">Highest GPA</span>
+                </div>
+                <div class="er-card__body--flush">
+                    @if (Model.TopStudents != null && Model.TopStudents.Count > 0)
+                    {
+                        <div class="table-responsive">
+                            <table class="er-table">
+                                <thead>
+                                    <tr>
+                                        <th class="ps-4">#</th>
+                                        <th>Student</th>
+                                        <th>Roll</th>
+                                        <th>Class</th>
+                                        <th class="text-end">GPA</th>
+                                        <th class="text-end pe-4">Grade</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        var topIdx = 1;
+                                    }
+                                    @foreach (var s in Model.TopStudents)
+                                    {
+                                        <tr>
+                                            <td class="ps-4 fw-bold" style="color:var(--adm-pending);">@topIdx</td>
+                                            <td><span class="adm-cell-name">@s.StudentName</span></td>
+                                            <td>@s.RollNumber</td>
+                                            <td>@s.ClassName</td>
+                                            <td class="text-end fw-semibold" style="color:var(--adm-success);">@s.GPA.ToString("F2")</td>
+                                            <td class="text-end pe-4"><span class="er-badge er-badge--primary">@s.Grade</span></td>
+                                        </tr>
+                                        topIdx++;
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div style="padding:24px;text-align:center;color:var(--adm-text-3);font-size:13px;">No data available.</div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="er-card" style="border-radius: var(--adm-radius-lg); border-top: 1px solid var(--adm-border);">
+                <div class="er-card__header">
+                    <h3 class="er-card__title">Bottom Performing Students</h3>
+                    <span class="er-badge er-badge--danger">Needs improvement</span>
+                </div>
+                <div class="er-card__body--flush">
+                    @if (Model.BottomStudents != null && Model.BottomStudents.Count > 0)
+                    {
+                        <div class="table-responsive">
+                            <table class="er-table">
+                                <thead>
+                                    <tr>
+                                        <th class="ps-4">#</th>
+                                        <th>Student</th>
+                                        <th>Roll</th>
+                                        <th>Class</th>
+                                        <th class="text-end">GPA</th>
+                                        <th class="text-end pe-4">Grade</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        var bottomIdx = 1;
+                                    }
+                                    @foreach (var s in Model.BottomStudents)
+                                    {
+                                        <tr>
+                                            <td class="ps-4 fw-bold" style="color:var(--adm-text-3);">@bottomIdx</td>
+                                            <td><span class="adm-cell-name">@s.StudentName</span></td>
+                                            <td>@s.RollNumber</td>
+                                            <td>@s.ClassName</td>
+                                            <td class="text-end fw-semibold" style="color:var(--adm-rejected);">@s.GPA.ToString("F2")</td>
+                                            <td class="text-end pe-4"><span class="er-badge er-badge--danger">@s.Grade</span></td>
+                                        </tr>
+                                        bottomIdx++;
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div style="padding:24px;text-align:center;color:var(--adm-text-3);font-size:13px;">No data available.</div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="er-card" style="border-radius: var(--adm-radius-lg); border-top: 1px solid var(--adm-border);">
+        <div class="er-card__header">
+            <h3 class="er-card__title">Class Performance Comparison</h3>
+            <span class="er-badge er-badge--neutral">Pass rate & GPA by class</span>
+        </div>
+        <div class="er-card__body--flush">
+            @if (Model.ClassPerformance != null && Model.ClassPerformance.Count > 0)
+            {
+                <div class="table-responsive">
+                    <table class="er-table">
+                        <thead>
+                            <tr>
+                                <th class="ps-4">Class</th>
+                                <th class="text-end">Students</th>
+                                <th class="text-end">Passed</th>
+                                <th class="text-end">Failed</th>
+                                <th class="text-end">Pass %</th>
+                                <th class="text-end pe-4">Avg GPA</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var c in Model.ClassPerformance)
+                            {
+                                <tr>
+                                    <td class="ps-4 fw-semibold">@c.ClassName</td>
+                                    <td class="text-end">@c.TotalStudents</td>
+                                    <td class="text-end" style="color:var(--adm-success);font-weight:600;">@c.Passed</td>
+                                    <td class="text-end" style="color:var(--adm-rejected);font-weight:600;">@c.Failed</td>
+                                    <td class="text-end">
+                                        <span class="er-badge @(c.PassPercentage >= 80m ? "er-badge--success" : c.PassPercentage >= 50m ? "er-badge--warning" : "er-badge--danger")">
+                                            @c.PassPercentage.ToString("F1")%
+                                        </span>
+                                    </td>
+                                    <td class="text-end pe-4 fw-semibold">@c.AvgGPA.ToString("F2")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="er-empty">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></svg>
+                    <h3 class="er-empty__title">No Analytics Data</h3>
+                    <p class="er-empty__desc">No analytics data is available for the selected filters.</p>
+                    <a href="@Url.Action("Dashboard", "AdminResult")" class="er-btn er-btn--secondary">Back to Dashboard</a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
+
+@section Scripts {
+    <script>
+        function showToast(message, type) {
+            var bg = type === 'success' ? 'bg-success' : 'bg-danger';
+            var container = document.getElementById('toastContainer');
+            var toast = document.createElement('div');
+            toast.className = 'toast align-items-center text-white border-0 ' + bg;
+            toast.innerHTML = '<div class="d-flex"><div class="toast-body">' + message + '</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>';
+            container.appendChild(toast);
+            var bs = new bootstrap.Toast(toast, { delay: 4000 });
+            bs.show();
+            toast.addEventListener('hidden.bs.toast', function () { toast.remove(); });
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            var canvas = document.getElementById('gradeDistChart');
+            if (canvas && typeof Chart !== 'undefined') {
+                @{
+                    var gradeLabelList = "[]";
+                    var gradeCountList = "[]";
+                    if (Model.GradeDistribution != null && Model.GradeDistribution.Count > 0)
+                    {
+                        var labels = new List<string>();
+                        var counts = new List<int>();
+                        foreach (var g in Model.GradeDistribution)
+                        {
+                            labels.Add((string)g.Grade);
+                            counts.Add((int)g.Count);
+                        }
+                        gradeLabelList = System.Text.Json.JsonSerializer.Serialize(labels);
+                        gradeCountList = System.Text.Json.JsonSerializer.Serialize(counts);
+                    }
+                }
+                var gradeLabels = @Html.Raw(gradeLabelList);
+                var gradeCounts = @Html.Raw(gradeCountList);
+
+                if (gradeLabels.length > 0) {
+                    new Chart(canvas, {
+                        type: 'bar',
+                        data: {
+                            labels: gradeLabels,
+                            datasets: [{
+                                label: 'Students',
+                                data: gradeCounts,
+                                backgroundColor: ['#059669', '#14B8A6', '#0F766E', '#0284C7', '#D97706', '#7C3AED', '#DC2626'],
+                                borderRadius: 6,
+                                borderSkipped: false
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: { display: false }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: { stepSize: 1 }
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+        });
+    </script>
+}

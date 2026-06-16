@@ -1,0 +1,218 @@
+@* Expected model shape (dynamic):
+    Model = {
+        ExamId: int,
+        ExamName: string,
+        Merits: List<MeritPositionDto> or List<MeritListItem>,
+        Exams: List<SelectListItem>,
+        Classes: List<SelectListItem>,
+        Groups: List<SelectListItem>,
+        SelectedExamId: int?,
+        SelectedClassId: int?,
+        SelectedGroupId: int?
+    }
+    MeritListItem/MeritPositionDto: { StudentId, StudentName, RollNumber, GPA, TotalMarks, Grade, Position, Section (SectionName), StudentGroup (GroupName) }
+*@
+@model dynamic
+@{
+    ViewData["Title"] = "Merit List";
+}
+
+<div class="adm-page er-page">
+    <div class="er-page-header">
+        <div class="er-page-header__left">
+            <div class="er-page-header__icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="er-page-header__title">Merit List</h1>
+                <p class="er-page-header__sub">Student ranking by performance</p>
+            </div>
+        </div>
+        <div class="er-page-header__right">
+            <button class="er-btn er-btn--secondary" onclick="exportToExcel()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                Export Excel
+            </button>
+            <button class="er-btn er-btn--primary" onclick="exportToPDF()">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                Export PDF
+            </button>
+        </div>
+    </div>
+
+    <div class="er-filters mb-4">
+        <form method="get" action="@Url.Action("MeritList")" class="er-filters__row">
+            <div class="er-filters__group">
+                <label class="er-filters__label">Exam</label>
+                <select name="examId" class="er-filters__select">
+                    <option value="">All Exams</option>
+                    @if (Model.Exams != null)
+                    {
+                        foreach (var exam in Model.Exams)
+                        {
+                            <option value="@exam.Id" selected="@(Model.SelectedExamId == exam.Id)">@exam.Name</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="er-filters__group">
+                <label class="er-filters__label">Class</label>
+                <select name="classId" class="er-filters__select">
+                    <option value="">All Classes</option>
+                    @if (Model.Classes != null)
+                    {
+                        foreach (var cls in Model.Classes)
+                        {
+                            <option value="@cls.Id" selected="@(Model.SelectedClassId == cls.Id)">@cls.Name</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="er-filters__group">
+                <label class="er-filters__label">Group</label>
+                <select name="groupId" class="er-filters__select">
+                    <option value="">All Groups</option>
+                    @if (Model.Groups != null)
+                    {
+                        foreach (var g in Model.Groups)
+                        {
+                            <option value="@g.Id" selected="@(Model.SelectedGroupId == g.Id)">@g.Name</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="er-filters__group--actions">
+                <button type="submit" class="er-btn er-btn--primary adm-btn--sm">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+                    Filter
+                </button>
+                <a href="@Url.Action("MeritList", "AdminResult")" class="er-btn er-btn--secondary adm-btn--sm">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                    Clear
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <div class="er-card" style="border-radius: var(--adm-radius-lg); border-top: 1px solid var(--adm-border);">
+        <div class="er-card__header">
+            <h3 class="er-card__title">Merit Ranking</h3>
+            @if (Model.Merits != null)
+            {
+                <span class="er-badge er-badge--neutral">@Model.Merits.Count student(s)</span>
+            }
+        </div>
+        <div class="er-card__body--flush">
+            @if (Model.Merits != null && Model.Merits.Count > 0)
+            {
+                <div class="table-responsive">
+                    <table class="er-table">
+                        <thead>
+                            <tr>
+                                <th class="ps-4" style="width:70px;">Position</th>
+                                <th>Student</th>
+                                <th>Roll</th>
+                                <th>Section</th>
+                                <th>Group</th>
+                                <th class="text-end">GPA</th>
+                                <th class="text-end">Total Marks</th>
+                                <th class="text-center">Grade</th>
+                                <th class="text-end pe-4">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                var merits = ((IEnumerable<dynamic>)Model.Merits).ToList();
+                                var topGpa = merits.Any() ? merits.Max(m => (decimal)m.GPA) : 0m;
+                            }
+                            @foreach (var m in merits)
+                            {
+                                var isTopPerformer = (decimal)m.GPA >= topGpa;
+                                <tr style="@(isTopPerformer ? "background:var(--adm-converted-bg);" : "")">
+                                    <td class="ps-4">
+                                        <span class="fw-bold" style="font-size:15px;color:var(--adm-text);">
+                                            @if (m.Position <= 3)
+                                            {
+                                                <span style="color:var(--adm-pending);">#@m.Position</span>
+                                            }
+                                            else
+                                            {
+                                                <span>#@m.Position</span>
+                                            }
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="adm-cell-name">@m.StudentName</span>
+                                        @if (isTopPerformer)
+                                        {
+                                            <span class="er-badge er-badge--success" style="font-size:10px;margin-left:6px;padding:1px 8px;">Top</span>
+                                        }
+                                    </td>
+                                    <td class="fw-bold">@m.RollNumber</td>
+                                    <td>@m.SectionName</td>
+                                    <td>@(string.IsNullOrEmpty(m.GroupName) ? "-" : m.GroupName)</td>
+                                    <td class="text-end">
+                                        <span class="er-badge @(m.GPA >= 3.5m ? "er-badge--success" : m.GPA >= 2.0m ? "er-badge--warning" : "er-badge--danger")">
+                                            @m.GPA.ToString("F2")
+                                        </span>
+                                    </td>
+                                    <td class="text-end fw-semibold">@m.TotalMarks.ToString("F2")</td>
+                                    <td class="text-center">
+                                        <span class="er-badge er-badge--primary">@m.Grade</span>
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        @if (m.IsPassed)
+                                        {
+                                            <span class="er-badge er-badge--success">Pass</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="er-badge er-badge--danger">Fail</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="er-empty">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
+                    <h3 class="er-empty__title">No Merit Data</h3>
+                    <p class="er-empty__desc">No merit rankings available for the selected filters.</p>
+                    <a href="@Url.Action("Dashboard", "AdminResult")" class="er-btn er-btn--secondary">Back to Dashboard</a>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
+
+@section Scripts {
+    <script>
+        function showToast(message, type) {
+            var bg = type === 'success' ? 'bg-success' : 'bg-danger';
+            var container = document.getElementById('toastContainer');
+            var toast = document.createElement('div');
+            toast.className = 'toast align-items-center text-white border-0 ' + bg;
+            toast.innerHTML = '<div class="d-flex"><div class="toast-body">' + message + '</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>';
+            container.appendChild(toast);
+            var bs = new bootstrap.Toast(toast, { delay: 4000 });
+            bs.show();
+            toast.addEventListener('hidden.bs.toast', function () { toast.remove(); });
+        }
+
+        function exportToExcel() {
+            showToast('Excel export feature coming soon!', 'info');
+        }
+
+        function exportToPDF() {
+            showToast('PDF export feature coming soon!', 'info');
+        }
+    </script>
+}

@@ -1,0 +1,393 @@
+@model dynamic
+@{
+    ViewData["Title"] = "Mark Entry Verification";
+}
+
+<div class="adm-page er-page">
+    <div class="er-page-header">
+        <div class="er-page-header__left">
+            <div class="er-page-header__icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 11l3 3L22 4" />
+                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="er-page-header__title">Verification & Approval</h1>
+                <p class="er-page-header__sub">Review, approve, or reject mark entry submissions across sessions.</p>
+            </div>
+        </div>
+        <div class="er-page-header__right">
+            <a href="@Url.Action("Index")" class="er-btn er-btn--secondary">Back</a>
+        </div>
+    </div>
+
+    <div class="er-stats">
+        <div class="er-stat">
+            <div class="er-stat__icon er-stat__icon--info">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="9" y1="21" x2="9" y2="9" /></svg>
+            </div>
+            <div class="er-stat__body">
+                <span class="er-stat__value" id="statTotal">0</span>
+                <span class="er-stat__label">Total Sessions</span>
+            </div>
+        </div>
+        <div class="er-stat">
+            <div class="er-stat__icon er-stat__icon--pending">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+            </div>
+            <div class="er-stat__body">
+                <span class="er-stat__value" id="statPending">0</span>
+                <span class="er-stat__label">Pending</span>
+            </div>
+        </div>
+        <div class="er-stat">
+            <div class="er-stat__icon er-stat__icon--success">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12" /></svg>
+            </div>
+            <div class="er-stat__body">
+                <span class="er-stat__value" id="statApproved">0</span>
+                <span class="er-stat__label">Approved</span>
+            </div>
+        </div>
+        <div class="er-stat">
+            <div class="er-stat__icon er-stat__icon--danger">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+            </div>
+            <div class="er-stat__body">
+                <span class="er-stat__value" id="statRejected">0</span>
+                <span class="er-stat__label">Rejected</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="er-filters">
+        <div class="er-filters__row">
+            <div class="er-filters__group">
+                <label class="er-filters__label">Exam</label>
+                <select id="filterExam" class="er-filters__select">
+                    <option value="">All Exams</option>
+                </select>
+            </div>
+            <div class="er-filters__group">
+                <label class="er-filters__label">Status</label>
+                <select id="filterStatus" class="er-filters__select">
+                    <option value="">All</option>
+                    <option value="submitted">Submitted</option>
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                    <option value="locked">Locked</option>
+                </select>
+            </div>
+            <div class="er-filters__group">
+                <button class="er-btn er-btn--primary" onclick="applyFilters()">Apply</button>
+                <button class="er-btn er-btn--secondary" onclick="clearFilters()">Clear</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2 mb-3 flex-wrap" id="bulkActions">
+        <button id="btnApproveSelected" class="er-btn er-btn--primary" disabled>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" class="me-2"><polyline points="20 6 9 17 4 12" /></svg>
+            Approve Selected
+        </button>
+        <button id="btnRejectSelected" class="er-btn er-btn--danger" disabled>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" class="me-2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+            Reject Selected
+        </button>
+        <button id="btnLockSelected" class="er-btn er-btn--secondary" disabled>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" class="me-2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+            Lock Selected
+        </button>
+    </div>
+
+    <div class="er-table-wrap">
+        <table class="er-table" id="verificationTable">
+            <thead>
+                <tr>
+                    <th style="width:40px;">
+                        <input type="checkbox" id="selectAll" onchange="toggleAll(this)" class="form-check-input">
+                    </th>
+                    <th>Exam</th>
+                    <th>Class</th>
+                    <th>Section</th>
+                    <th>Subject</th>
+                    <th>Teacher</th>
+                    <th>Total Students</th>
+                    <th>Entered</th>
+                    <th>Status</th>
+                    <th style="width:140px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    var sessions = ViewBag.Sessions as IEnumerable<dynamic> ?? new List<dynamic>();
+                }
+                @if (sessions.Any())
+                {
+                    foreach (var s in sessions)
+                    {
+                        var status = (string)(s.Status ?? "Pending");
+                        var badgeClass = status.ToLower() == "submitted" ? "er-badge--pending"
+                            : status.ToLower() == "pending" ? "er-badge--neutral"
+                            : status.ToLower() == "approved" ? "er-badge--approved"
+                            : status.ToLower() == "rejected" ? "er-badge--rejected"
+                            : status.ToLower() == "locked" ? "er-badge--info"
+                            : "er-badge--neutral";
+                        <tr data-id="@s.Id" data-exam="@s.ExamName" data-status="@status.ToLower()">
+                            <td><input type="checkbox" class="form-check-input row-check" value="@s.Id"></td>
+                            <td><strong>@s.ExamName</strong></td>
+                            <td>@s.ClassName</td>
+                            <td>@s.SectionName</td>
+                            <td>@s.SubjectName</td>
+                            <td>@s.TeacherName</td>
+                            <td>@s.TotalStudents</td>
+                            <td>@s.EnteredCount</td>
+                            <td><span class="er-badge @badgeClass">@status</span></td>
+                            <td>
+                                <div class="d-flex gap-1">
+                                    <a href="@Url.Action("Grid", new { examId = s.ExamId, classId = s.ClassId, sectionId = s.SectionId, subjectId = s.SubjectId })" class="er-btn er-btn--primary adm-btn--sm">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
+                                        View
+                                    </a>
+                                    <button class="adm-btn adm-btn--sm er-btn--primary" onclick="approveSession(@s.Id)" title="Approve">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12" /></svg>
+                                    </button>
+                                    <button class="adm-btn adm-btn--sm adm-btn--outline-danger" onclick="rejectSession(@s.Id)" title="Reject">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="10">
+                            <div class="er-empty">
+                                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg>
+                                <h3 class="er-empty__title">No Sessions for Verification</h3>
+                                <p class="er-empty__desc">All mark entry sessions have been verified or no submissions exist yet.</p>
+                                <a href="@Url.Action("Index")" class="er-btn er-btn--secondary">Back to Sessions</a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
+
+<!-- Rejection Notes Modal -->
+<div class="modal fade" id="rejectionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Rejection Notes</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="rejectSessionIds" value="" />
+                <div class="mb-3">
+                    <label for="rejectNotes" class="form-label">Reason for Rejection</label>
+                    <textarea class="form-control" id="rejectNotes" rows="4" placeholder="Enter the reason for rejection..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="er-btn er-btn--secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="adm-btn adm-btn--outline-danger" id="confirmRejectBtn" onclick="confirmReject()">Confirm Reject</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @Html.AntiForgeryToken()
+    <script>
+        function toggleAll(source) {
+            document.querySelectorAll('.row-check').forEach(function(c) { c.checked = source.checked; });
+            updateBulkActions();
+        }
+
+        function updateBulkActions() {
+            var checked = document.querySelectorAll('.row-check:checked').length;
+            document.getElementById('btnApproveSelected').disabled = checked === 0;
+            document.getElementById('btnRejectSelected').disabled = checked === 0;
+            document.getElementById('btnLockSelected').disabled = checked === 0;
+        }
+
+        document.querySelectorAll('.row-check').forEach(function(cb) {
+            cb.addEventListener('change', updateBulkActions);
+        });
+
+        function getSelectedIds() {
+            var ids = [];
+            document.querySelectorAll('.row-check:checked').forEach(function(cb) {
+                ids.push(parseInt(cb.value));
+            });
+            return ids;
+        }
+
+        function showToast(message, type) {
+            var bg = type === 'success' ? 'bg-success' : 'bg-danger';
+            var c = document.getElementById('toastContainer');
+            var t = document.createElement('div');
+            t.className = 'toast align-items-center text-white border-0 ' + bg;
+            t.innerHTML = '<div class="d-flex"><div class="toast-body">' + message + '</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>';
+            c.appendChild(t);
+            var bs = new bootstrap.Toast(t, { delay: 4000 });
+            bs.show();
+            t.addEventListener('hidden.bs.toast', function() { t.remove(); });
+        }
+
+        function updateStats() {
+            var rows = document.querySelectorAll('#verificationTable tbody tr[data-id]');
+            var total = rows.length;
+            var pending = 0, approved = 0, rejected = 0;
+            rows.forEach(function(row) {
+                var status = row.getAttribute('data-status');
+                if (status === 'submitted' || status === 'pending') pending++;
+                else if (status === 'approved') approved++;
+                else if (status === 'rejected') rejected++;
+            });
+            document.getElementById('statTotal').textContent = total;
+            document.getElementById('statPending').textContent = pending;
+            document.getElementById('statApproved').textContent = approved;
+            document.getElementById('statRejected').textContent = rejected;
+        }
+
+        function bulkAction(action) {
+            var ids = getSelectedIds();
+            if (!ids.length) return;
+            if (action === 'reject') {
+                document.getElementById('rejectSessionIds').value = ids.join(',');
+                var modal = new bootstrap.Modal(document.getElementById('rejectionModal'));
+                modal.show();
+                return;
+            }
+            var btn = action === 'approve' ? document.getElementById('btnApproveSelected') : document.getElementById('btnLockSelected');
+            var origText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Processing...';
+
+            var url = action === 'approve' ? '@Url.Action("ApproveSessions", "MarkEntry")' : '@Url.Action("LockSessions", "MarkEntry")';
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify({ sessionIds: ids })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(res) {
+                if (res.success) {
+                    showToast('Selected sessions ' + action + 'd successfully!', 'success');
+                    setTimeout(function() { location.reload(); }, 1000);
+                } else {
+                    showToast(res.message || 'Operation failed', 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = origText;
+                }
+            })
+            .catch(function() {
+                showToast('Network error', 'error');
+                btn.disabled = false;
+                btn.innerHTML = origText;
+            });
+        }
+
+        function confirmReject() {
+            var ids = document.getElementById('rejectSessionIds').value;
+            if (!ids) return;
+            var notes = document.getElementById('rejectNotes').value;
+            var btn = document.getElementById('confirmRejectBtn');
+            var origText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Processing...';
+
+            fetch('@Url.Action("RejectSessions", "MarkEntry")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify({ sessionIds: ids.split(',').map(Number), notes: notes })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(res) {
+                var modalEl = document.getElementById('rejectionModal');
+                var modal = bootstrap.Modal.getInstance(modalEl);
+                if (modal) modal.hide();
+                if (res.success) {
+                    showToast('Selected sessions rejected successfully!', 'success');
+                    setTimeout(function() { location.reload(); }, 1000);
+                } else {
+                    showToast(res.message || 'Rejection failed', 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = origText;
+                }
+            })
+            .catch(function() {
+                showToast('Network error', 'error');
+                btn.disabled = false;
+                btn.innerHTML = origText;
+            });
+        }
+
+        function approveSession(id) {
+            if (!confirm('Approve this session?')) return;
+            fetch('@Url.Action("ApproveSessions", "MarkEntry")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify({ sessionIds: [id] })
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(res) {
+                if (res.success) { showToast('Session approved!', 'success'); setTimeout(function() { location.reload(); }, 1000); }
+                else { showToast(res.message || 'Approval failed', 'error'); }
+            })
+            .catch(function() { showToast('Network error', 'error'); });
+        }
+
+        function rejectSession(id) {
+            document.getElementById('rejectSessionIds').value = id;
+            var modal = new bootstrap.Modal(document.getElementById('rejectionModal'));
+            modal.show();
+        }
+
+        function applyFilters() {
+            var exam = document.getElementById('filterExam').value.toLowerCase();
+            var status = document.getElementById('filterStatus').value.toLowerCase();
+            var rows = document.querySelectorAll('#verificationTable tbody tr[data-id]');
+            rows.forEach(function(row) {
+                var matchExam = !exam || (row.getAttribute('data-exam') || '').toLowerCase().includes(exam);
+                var matchStatus = !status || (row.getAttribute('data-status') || '').toLowerCase() === status;
+                row.style.display = matchExam && matchStatus ? '' : 'none';
+            });
+            updateStats();
+        }
+
+        function clearFilters() {
+            document.getElementById('filterExam').value = '';
+            document.getElementById('filterStatus').value = '';
+            document.querySelectorAll('#verificationTable tbody tr[data-id]').forEach(function(r) { r.style.display = ''; });
+            updateStats();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStats();
+            document.getElementById('btnApproveSelected').addEventListener('click', function() { bulkAction('approve'); });
+            document.getElementById('btnRejectSelected').addEventListener('click', function() { bulkAction('reject'); });
+            document.getElementById('btnLockSelected').addEventListener('click', function() { bulkAction('lock'); });
+        });
+    </script>
+}

@@ -122,7 +122,7 @@ public abstract class GenericCrudController<TEntity> : Controller where TEntity 
 
     public virtual async Task<IActionResult> Details(int id, CancellationToken cancellationToken = default)
     {
-        var query = _service.Query().Where(x => x.Id == id);
+        var query = _service.Query().AsNoTracking().Where(x => x.Id == id);
         query = ApplySecurityFilters(query);
         var entity = await query.FirstOrDefaultAsync(cancellationToken);
         return entity is null ? NotFound() : View(ToDetails(entity));

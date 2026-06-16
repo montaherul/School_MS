@@ -1,129 +1,91 @@
-@model SchoolManagementSystem.Models.ViewModels.Student.StudentCardModel
-@{
-    var student = Model.Student;
-    var schoolLogo = !string.IsNullOrEmpty(Model.SchoolLogoPath)
-        ? Url.Content($"~/{Model.SchoolLogoPath.TrimStart('/')}")
-        : null;
-    var photoUrl = !string.IsNullOrEmpty(student.ProfilePicturePath)
-        ? Url.Content($"~/{student.ProfilePicturePath.TrimStart('/')}")
-        : null;
-    var today = DateTime.Today.ToString("dd-MMM-yyyy");
-    var showGroup = student.ClassId >= 9 && !string.IsNullOrEmpty(student.GroupName);
-    var dob = student.DateOfBirth.ToString("dd-MMM-yyyy");
-}
-<div class="id-card id-card-front">
+@model SchoolManagementSystem.Models.ViewModels.IdCard.StudentIdCardViewModel
+<div class="pvc sf">
+    <div class="hdr-stripe"></div>
+    <div class="hdr"></div>
 
-    <div class="card-header">
-        <table class="card-header-tbl" cellpadding="0" cellspacing="0">
-            <tr>
-                <td class="hdr-logo-cell">
-                    <div class="hdr-logo">
-                        @if (schoolLogo != null)
-                        {
-                            <img src="@schoolLogo" alt="Logo" />
-                        }
-                        else
-                        {
-                            <span class="hdr-logo-placeholder">&#x1F393;</span>
-                        }
-                    </div>
-                </td>
-                <td class="hdr-info-cell">
-                    <div class="hdr-school-name">@Model.SchoolNameEn</div>
-                    <div class="hdr-school-meta">
-                        <span>EIIN: @Model.SchoolEIIN</span>
-                        <span class="sep">|</span>
-                        <span>@Model.SchoolWebsite</span>
-                    </div>
-                    @if (!string.IsNullOrEmpty(Model.SchoolMotto))
-                    {
-                        <div class="hdr-motto">"@Model.SchoolMotto"</div>
-                    }
-                </td>
-            </tr>
-        </table>
-        @if (!string.IsNullOrEmpty(Model.AcademicYear))
-        {
-            <div class="hdr-year">@Model.AcademicYear</div>
-        }
+    <div class="logo-area">
+        <div class="logo-box">
+            @if (!string.IsNullOrEmpty(Model.SchoolLogoDataUri))
+            {
+                <img src="@Model.SchoolLogoDataUri" width="20" height="20" />
+            }
+            else
+            {
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                    <path d="M7 1L13 4.5V9.5L7 13L1 9.5V4.5L7 1Z" fill="rgba(255,255,255,0.85)"/>
+                    <path d="M7 4L10 5.8V8.8L7 10.5L4 8.8V5.8L7 4Z" fill="#1A2E5A"/>
+                </svg>
+            }
+        </div>
+        <div class="logo-txt">
+            <strong>@(!string.IsNullOrEmpty(Model.SchoolShortName) ? Model.SchoolShortName : "SCA")</strong>
+            <span class="school-name">@Model.SchoolName</span>
+        </div>
     </div>
 
-    <div class="card-title">
-        <span class="card-title-text">Student ID Card</span>
+    <div class="badge">Student</div>
+
+    <div class="photo-wrap">
+        <div class="photo-inner">
+            @if (!string.IsNullOrEmpty(Model.StudentPhotoDataUri))
+            {
+                <img src="@Model.StudentPhotoDataUri" width="62" height="62" />
+            }
+            else
+            {
+                <svg width="36" height="42" viewBox="0 0 36 42">
+                    <ellipse cx="18" cy="12.5" rx="9.5" ry="10.5" fill="#7FA8CE"/>
+                    <ellipse cx="18" cy="40" rx="17" ry="12.5" fill="#7FA8CE"/>
+                </svg>
+            }
+        </div>
     </div>
 
-    <div class="card-body">
-        <table class="card-body-tbl" cellpadding="0" cellspacing="0">
-            <tr>
-                <td class="body-photo-cell">
-                    <div class="photo-frame">
-                        @if (photoUrl != null)
-                        {
-                            <img src="@photoUrl" alt="Photo" />
-                        }
-                        else
-                        {
-                            <span class="photo-placeholder">&#x1F464;</span>
-                        }
-                    </div>
-                </td>
-                <td class="body-info-cell">
-                    <table class="info-tbl" cellpadding="0" cellspacing="0">
-                        <tr>
-                            <td class="info-label">Student ID</td>
-                            <td class="info-value">@(student.StudentNo ?? "---")</td>
-                        </tr>
-                        <tr>
-                            <td class="info-label">Name</td>
-                            <td class="info-value name">@student.FullName</td>
-                        </tr>
-                        <tr>
-                            <td class="info-label">Class</td>
-                            <td class="info-value">@(!string.IsNullOrEmpty(student.ClassName) ? student.ClassName : $"Class {student.ClassId}")</td>
-                        </tr>
-                        <tr>
-                            <td class="info-label">Section</td>
-                            <td class="info-value">@(!string.IsNullOrEmpty(student.SectionName) ? student.SectionName : "---")</td>
-                        </tr>
-                        @if (showGroup)
-                        {
-                            <tr>
-                                <td class="info-label">Group</td>
-                                <td class="info-value">@student.GroupName</td>
-                            </tr>
-                        }
-                        <tr>
-                            <td class="info-label">Roll</td>
-                            <td class="info-value">@student.RollNumber.ToString("D3")</td>
-                        </tr>
-                        <tr>
-                            <td class="info-label">Blood</td>
-                            <td class="info-value @(string.IsNullOrEmpty(student.BloodGroup) ? "muted" : "")">
-                                @(!string.IsNullOrEmpty(student.BloodGroup) ? student.BloodGroup : "N/A")
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="info-label">DOB</td>
-                            <td class="info-value">@dob</td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
-        </table>
+    <div class="body">
+        <div class="school-tag">@Model.SchoolName</div>
+        <div class="name">@Model.StudentFullName</div>
+        <div class="sub-role">Student · @Model.ClassName — @Model.SectionName</div>
+
+        <div class="sep">
+            <div class="sep-line"></div>
+            <div class="sep-dot"></div>
+            <div class="sep-line"></div>
+        </div>
+
+        <div class="fields">
+            <div class="row">
+                <span class="lbl">ID No</span>
+                <span class="col">:</span>
+                <span class="val">@Model.StudentIdNo</span>
+            </div>
+            <div class="row">
+                <span class="lbl">Roll</span>
+                <span class="col">:</span>
+                <span class="val">@Model.RollNumber</span>
+            </div>
+            <div class="row">
+                <span class="lbl">Blood</span>
+                <span class="col">:</span>
+                <span class="val blood">@(!string.IsNullOrEmpty(Model.BloodGroup) ? Model.BloodGroup : "N/A")</span>
+            </div>
+            <div class="row">
+                <span class="lbl">DOB</span>
+                <span class="col">:</span>
+                <span class="val">@Model.DateOfBirth</span>
+            </div>
+            <div class="row">
+                <span class="lbl">Session</span>
+                <span class="col">:</span>
+                <span class="val">@Model.AcademicYear</span>
+            </div>
+        </div>
     </div>
 
-    <div class="card-footer">
-        <table class="card-footer-tbl" cellpadding="0" cellspacing="0">
-            <tr>
-                <td class="ft-left">
-                    <div class="ft-sig-line"></div>
-                    <div class="ft-sig-label">@(Model.PrincipalName ?? "Principal")</div>
-                </td>
-                <td class="ft-right">
-                    <div class="ft-label">Issued:</div>
-                    <div class="ft-value">@today</div>
-                </td>
-            </tr>
-        </table>
+    <div class="ftr"></div>
+    <div class="ftr-stripe"></div>
+
+    <div class="sig">
+        <div class="sig-line"></div>
+        <div class="sig-lbl">Principal</div>
     </div>
 </div>

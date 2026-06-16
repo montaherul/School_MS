@@ -1,0 +1,166 @@
+@model SchoolManagementSystem.Controllers.Admin.SystemHealthController.SystemHealthViewModel
+@{
+    ViewData["Title"] = "System Health Dashboard";
+}
+
+<div class="adm-page er-page">
+    <div class="er-page-header">
+        <div class="er-page-header__left">
+            <div class="er-page-header__icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="er-page-header__title">System Health Dashboard</h1>
+                <p class="er-page-header__sub">Database health, performance metrics, and system overview</p>
+            </div>
+        </div>
+        <div class="er-page-header__right">
+            <button onclick="location.reload()" class="er-btn er-btn--primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10" /><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" /></svg>
+                Refresh
+            </button>
+        </div>
+    </div>
+
+    @* ── KPI Cards ── *@
+    @if (Model.DashboardMetrics != null)
+    {
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;margin-bottom:1.5rem">
+            <div class="er-stat-card">
+                <div class="er-stat-card__value">@Model.DashboardMetrics.PublishedResults</div>
+                <div class="er-stat-card__label">Published Results</div>
+            </div>
+            <div class="er-stat-card">
+                <div class="er-stat-card__value">@Model.DashboardMetrics.PendingResults</div>
+                <div class="er-stat-card__label">Pending Results</div>
+            </div>
+            <div class="er-stat-card">
+                <div class="er-stat-card__value">@Model.DashboardMetrics.AvgQueryTimeMs.ToString("F2") ms</div>
+                <div class="er-stat-card__label">Avg Query Time</div>
+            </div>
+            <div class="er-stat-card">
+                <div class="er-stat-card__value">@Model.DashboardMetrics.SlowQueries</div>
+                <div class="er-stat-card__label">Slow Queries (>2s)</div>
+            </div>
+            <div class="er-stat-card">
+                <div class="er-stat-card__value">@Model.DashboardMetrics.TotalUsersOnline</div>
+                <div class="er-stat-card__label">Users Online (15 min)</div>
+            </div>
+        </div>
+    }
+
+    @* ── Database Size ── *@
+    @if (Model.DatabaseHealth.Any())
+    {
+        var dbInfo = Model.DatabaseHealth.FirstOrDefault();
+        <div class="er-card" style="margin-bottom:1.5rem">
+            <div class="er-card__header">
+                <h2 class="er-card__title">Database Health</h2>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;padding:1rem">
+                <div>
+                    <div style="font-size:1.75rem;font-weight:700;color:var(--adm-primary)">@dbInfo?.SizeMB MB</div>
+                    <div style="font-size:0.85rem;color:var(--adm-text-2)">Total Database Size</div>
+                </div>
+                <div>
+                    <div style="font-size:1.75rem;font-weight:700;color:var(--adm-primary)">@dbInfo?.DataSizeMB MB</div>
+                    <div style="font-size:0.85rem;color:var(--adm-text-2)">Data Size</div>
+                </div>
+                <div>
+                    <div style="font-size:1.75rem;font-weight:700;color:var(--adm-primary)">@dbInfo?.LogSizeMB MB</div>
+                    <div style="font-size:0.85rem;color:var(--adm-text-2)">Log Size</div>
+                </div>
+                <div>
+                    <div style="font-size:1.75rem;font-weight:700;color:var(--adm-primary)">@dbInfo?.TotalProcedures</div>
+                    <div style="font-size:0.85rem;color:var(--adm-text-2)">Stored Procedures</div>
+                </div>
+            </div>
+        </div>
+
+        @* ── Entity Counts ── *@
+        <div class="er-card" style="margin-bottom:1.5rem">
+            <div class="er-card__header">
+                <h2 class="er-card__title">Entity Counts</h2>
+            </div>
+            <div class="er-table-wrap">
+                <table class="er-table">
+                    <thead>
+                        <tr>
+                            <th>Entity</th>
+                            <th>Count</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.DatabaseHealth.Where(h => h.TotalCount > 0 || h.EntityType != ""))
+                        {
+                            <tr>
+                                <td>@item.EntityType</td>
+                                <td><strong>@item.TotalCount.ToString("N0")</strong></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        @* ── Timestamps ── *@
+        <div class="er-card" style="margin-bottom:1.5rem">
+            <div class="er-card__header">
+                <h2 class="er-card__title">Activity Timeline</h2>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem;padding:1rem">
+                <div>
+                    <div style="font-size:0.9rem;font-weight:600">Last Backup</div>
+                    <div style="color:var(--adm-text-2)">@(dbInfo?.LastBackup?.ToString("yyyy-MM-dd HH:mm") ?? "N/A")</div>
+                </div>
+                <div>
+                    <div style="font-size:0.9rem;font-weight:600">Last Restore</div>
+                    <div style="color:var(--adm-text-2)">@(dbInfo?.LastRestore?.ToString("yyyy-MM-dd HH:mm") ?? "N/A")</div>
+                </div>
+                <div>
+                    <div style="font-size:0.9rem;font-weight:600">Last Result Publish</div>
+                    <div style="color:var(--adm-text-2)">@(dbInfo?.LastResultPublish?.ToString("yyyy-MM-dd HH:mm") ?? "N/A")</div>
+                </div>
+                <div>
+                    <div style="font-size:0.9rem;font-weight:600">Report Generated</div>
+                    <div style="color:var(--adm-text-2)">@(dbInfo?.ReportGeneratedAt.ToString("yyyy-MM-dd HH:mm:ss") ?? "")</div>
+                </div>
+            </div>
+        </div>
+    }
+
+    @* ── Exam Breakdown ── *@
+    @if (Model.ExamBreakdown.Any())
+    {
+        <div class="er-card">
+            <div class="er-card__header">
+                <h2 class="er-card__title">Exam Breakdown</h2>
+            </div>
+            <div class="er-table-wrap">
+                <table class="er-table">
+                    <thead>
+                        <tr>
+                            <th>Exam</th>
+                            <th>Total Students</th>
+                            <th>Published</th>
+                            <th>Avg GPA</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var exam in Model.ExamBreakdown)
+                        {
+                            <tr>
+                                <td>@exam.ExamName</td>
+                                <td>@exam.TotalStudents</td>
+                                <td>@exam.PublishedStudents</td>
+                                <td>@exam.AvgGPA.ToString("F2")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>

@@ -3,103 +3,177 @@
     bool canManage = User.IsInRole("Super Admin") || User.IsInRole("Admin") || User.IsInRole("Principal") || User.IsInRole("Assistant Head");
 }
 
-<style>
-    .ac-page { display: grid; gap: 20px; }
-    .ac-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
-    .ac-title { margin: 0; font-size: 26px; font-weight: 800; color: #111827; }
-    .ac-subtitle { margin: 4px 0 0; color: #64748b; font-size: 14px; }
-    .ac-panel, .ac-grid-wrap {
-        background: #fff;
-        border: 1px solid #e5e7eb;
-        border-radius: 12px;
-        box-shadow: 0 4px 24px rgba(15,23,42,.06);
-    }
-    .ac-panel { padding: 20px; }
-    .ac-badge {
-        display: inline-flex; align-items: center; justify-content: center;
-        border-radius: 999px; padding: 4px 10px; font-size: 11px; font-weight: 800;
-        text-transform: uppercase; border: 1px solid transparent;
-    }
-    .ac-badge-holiday { color: #b91c1c; background: #fee2e2; border-color: #fecaca; }
-    .ac-badge-working { color: #047857; background: #d1fae5; border-color: #a7f3d0; }
-    .ac-badge-exam    { color: #d97706; background: #fef3c7; border-color: #fde68a; }
-    .ac-badge-event   { color: #7c3aed; background: #f3e8ff; border-color: #e9d5ff; }
-    .ac-badge-generic { color: #64748b; background: #f1f5f9; border-color: #e2e8f0; }
-    .ac-toolbar {
-        display: flex; justify-content: space-between; align-items: center;
-        gap: 12px; flex-wrap: wrap; padding: 16px 20px;
-        border-bottom: 1px solid #f1f5f9;
-        background: rgba(255,255,255,.96);
-    }
-</style>
+<link rel="stylesheet" href="~/css/academic-calendar.css" asp-append-version="true" />
 
 <div class="ac-page">
-    <div class="ac-header">
-        <div>
-            <h1 class="ac-title"><i class="bi bi-calendar3 me-2 text-primary"></i>Academic Calendar</h1>
-            <p class="ac-subtitle">Manage daily academic events, exams, holidays, and working day overrides.</p>
+
+    <!-- ═══ PAGE HEADER ═══ -->
+    <div class="er-page-header">
+        <div class="er-page-header__left">
+            <div class="er-page-header__icon">
+                <i class="bi bi-calendar3"></i>
+            </div>
+            <div>
+                <h1 class="er-page-header__title">Academic Calendar</h1>
+                <p class="er-page-header__sub">Manage academic schedules, exams, holidays and events</p>
+            </div>
         </div>
-        <div class="d-flex gap-2">
+        <div class="er-page-header__right">
+            <button class="er-btn er-btn--ghost" onclick="window.location.href='/AcademicCalendar/PrintView'">
+                <i class="bi bi-printer"></i> <span class="d-none d-sm-inline">Print</span>
+            </button>
+            <button class="er-btn er-btn--ghost" onclick="AcademicCalendar.refreshAll()">
+                <i class="bi bi-arrow-clockwise"></i> <span class="d-none d-sm-inline">Refresh</span>
+            </button>
             @if (canManage)
             {
-                <a asp-action="Create" class="btn btn-primary">
-                    <i class="bi bi-plus-circle me-1"></i> Add Entry
+                <a asp-action="Create" class="er-btn er-btn--primary">
+                    <i class="bi bi-plus-circle"></i> Add Entry
                 </a>
             }
         </div>
     </div>
 
-    <div class="ac-panel mb-3">
-        <ul class="nav nav-pills nav-fill">
-            <li class="nav-item"><a class="nav-link active" asp-action="Index"><i class="bi bi-calendar3 me-1"></i>Month</a></li>
-            <li class="nav-item"><a class="nav-link" asp-action="WeekView"><i class="bi bi-calendar-week me-1"></i>Week</a></li>
-            <li class="nav-item"><a class="nav-link" asp-action="Agenda"><i class="bi bi-list-task me-1"></i>Agenda</a></li>
-            <li class="nav-item"><a class="nav-link" asp-action="YearView"><i class="bi bi-calendar-range me-1"></i>Year</a></li>
-        </ul>
-    </div>
+    <!-- ═══ KPI STATS ═══ -->
+    <div class="ac-stats" id="acKpiCards"></div>
 
+    <!-- ═══ SUCCESS ALERT ═══ -->
     @if (TempData["Success"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm" role="alert">
-            <i class="bi bi-check-circle-fill me-2"></i>
-            @TempData["Success"]
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        <div class="er-alert er-alert--success mb-3">
+            <i class="bi bi-check-circle-fill"></i> @TempData["Success"]
         </div>
     }
 
-    <!-- Filters Panel -->
-    <div class="ac-panel">
-        <div class="row g-3">
-            <div class="col-md-3">
-                <label class="form-label fw-semibold">Start Date</label>
-                <input type="date" id="filterStart" class="form-control" value="@DateTime.Today.AddDays(-30).ToString("yyyy-MM-dd")" />
+    <!-- ═══ SEGMENTED VIEW NAV ═══ -->
+    <nav class="ac-nav" aria-label="Calendar view navigation">
+        <a class="ac-nav__item ac-nav__item--active" asp-action="Index">
+            <i class="bi bi-calendar3"></i> <span class="d-none d-sm-inline">Month</span>
+        </a>
+        <a class="ac-nav__item" asp-action="WeekView">
+            <i class="bi bi-calendar-week"></i> <span class="d-none d-sm-inline">Week</span>
+        </a>
+        <a class="ac-nav__item" asp-action="Agenda">
+            <i class="bi bi-list-task"></i> <span class="d-none d-sm-inline">Agenda</span>
+        </a>
+        <a class="ac-nav__item" asp-action="YearView">
+            <i class="bi bi-calendar-range"></i> <span class="d-none d-sm-inline">Year</span>
+        </a>
+    </nav>
+
+    <!-- ═══ FILTERS ═══ -->
+    <div class="ac-filters">
+        <div class="ac-filters__row">
+            <div class="ac-filters__group">
+                <label class="ac-filters__label">Start Date</label>
+                <input type="date" id="filterStart" class="ac-filters__input" />
             </div>
-            <div class="col-md-3">
-                <label class="form-label fw-semibold">End Date</label>
-                <input type="date" id="filterEnd" class="form-control" value="@DateTime.Today.AddDays(90).ToString("yyyy-MM-dd")" />
+            <div class="ac-filters__group">
+                <label class="ac-filters__label">End Date</label>
+                <input type="date" id="filterEnd" class="ac-filters__input" />
             </div>
-            <div class="col-md-4">
-                <label class="form-label fw-semibold">Search</label>
-                <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-search"></i></span>
-                    <input type="text" id="filterSearch" class="form-control" placeholder="Search calendar entries..." />
+            <div class="ac-filters__group">
+                <label class="ac-filters__label">Event Type</label>
+                <select id="filterCategory" class="ac-filters__select">
+                    <option value="">All</option>
+                    <option value="academic">Academic</option>
+                    <option value="exam">Exam</option>
+                    <option value="holiday">Holiday</option>
+                    <option value="website_event">Website Event</option>
+                    <option value="exam_schedule">Exam Schedule</option>
+                    <option value="meeting">Meeting</option>
+                </select>
+            </div>
+            <div class="ac-filters__group ac-filters__group--search">
+                <label class="ac-filters__label">Search</label>
+                <input type="text" id="filterSearch" class="ac-filters__input" placeholder="Search entries..." />
+            </div>
+            <div class="ac-filters__group ac-filters__group--actions">
+                <label class="ac-filters__label">&nbsp;</label>
+                <button class="er-btn er-btn--primary" id="btnRefresh" style="width:100%">
+                    <i class="bi bi-arrow-clockwise"></i> Search
+                </button>
+            </div>
+        </div>
+        <div class="ac-filters__quick">
+            <button type="button" class="ac-filters__quick-btn" data-range="today">Today</button>
+            <button type="button" class="ac-filters__quick-btn" data-range="week">This Week</button>
+            <button type="button" class="ac-filters__quick-btn ac-filters__quick-btn--active" data-range="month">This Month</button>
+            <button type="button" class="ac-filters__quick-btn" data-range="year">This Year</button>
+            <button type="button" class="ac-filters__quick-btn" data-range="reset">Reset</button>
+        </div>
+        <div class="ac-filters__quick" style="margin-top:8px">
+            <button type="button" class="ac-filters__quick-btn ac-filters__quick-btn--active" data-cat="all">All</button>
+            <button type="button" class="ac-filters__quick-btn" data-cat="exam">Exams</button>
+            <button type="button" class="ac-filters__quick-btn" data-cat="holiday">Holidays</button>
+            <button type="button" class="ac-filters__quick-btn" data-cat="website_event">Website Events</button>
+            <button type="button" class="ac-filters__quick-btn" data-cat="academic">Academic Events</button>
+        </div>
+    </div>
+
+    <!-- ═══ MONTH VIEW ═══ -->
+    <div class="er-card">
+        <div class="er-card__header">
+            <div class="ac-month-nav">
+                <button class="ac-month-nav__btn" id="prevMonth" title="Previous month"><i class="bi bi-chevron-left"></i></button>
+                <h3 class="ac-month-nav__title" id="monthLabel">Loading...</h3>
+                <button class="ac-month-nav__btn" id="nextMonth" title="Next month"><i class="bi bi-chevron-right"></i></button>
+                <button class="ac-month-nav__today" id="todayMonthBtn"><i class="bi bi-dot"></i> Today</button>
+            </div>
+        </div>
+        <div class="er-card__body">
+            <div class="ac-calendar-wrapper">
+                <div id="monthGridContainer">
+                    <div class="text-center py-5"><div class="spinner-border spinner-border-sm me-2" role="status"></div>Loading calendar...</div>
                 </div>
             </div>
-            <div class="col-md-2 d-grid align-self-end">
-                <button type="button" class="btn btn-outline-primary" id="btnRefresh">
-                    <i class="bi bi-arrow-clockwise me-1"></i> RefreshData
-                </button>
+        </div>
+
+        <!-- ═══ LEGEND ═══ -->
+        <div class="er-card__body" style="padding-top:0">
+            <div class="ac-legend">
+                <div class="ac-legend__item"><span class="ac-legend__dot ac-legend__dot--working"></span> Working Day</div>
+                <div class="ac-legend__item"><span class="ac-legend__dot ac-legend__dot--holiday"></span> Holiday</div>
+                <div class="ac-legend__item"><span class="ac-legend__dot ac-legend__dot--exam"></span> Exam</div>
+                <div class="ac-legend__item"><span class="ac-legend__dot ac-legend__dot--event"></span> Academic Event</div>
+                <div class="ac-legend__item"><span class="ac-legend__dot ac-legend__dot--webevent"></span> Website Event</div>
             </div>
         </div>
     </div>
 
-    <!-- Grid Wrap -->
-    <div class="ac-grid-wrap">
-        <div id="calendarTable" role="region" aria-label="Calendar entries table"></div>
+    <!-- ═══ EVENT LIST (Tabulator) ═══ -->
+    <div class="er-card er-card-animate" style="margin-top:20px">
+        <div class="er-card__header">
+            <h5 class="er-card__title"><i class="bi bi-list-ul" style="color:var(--adm-primary)"></i> Event Details</h5>
+            <span class="er-badge er-badge--neutral" id="eventCount">0 entries</span>
+        </div>
+        <div class="er-card__body er-card__body--flush">
+            <div id="calendarTable" role="region" aria-label="Calendar entries table"></div>
+        </div>
+    </div>
+
+    <!-- ═══ CHARTS ═══ -->
+    <div class="er-dash-grid" style="margin-top:20px">
+        <div class="er-card er-card-animate">
+            <div class="er-card__header">
+                <h6 class="er-card__title"><i class="bi bi-bar-chart-line" style="color:var(--adm-primary)"></i> Monthly Distribution</h6>
+            </div>
+            <div class="er-card__body">
+                <canvas id="acChartMonthly" height="200"></canvas>
+            </div>
+        </div>
+        <div class="er-card er-card-animate">
+            <div class="er-card__header">
+                <h6 class="er-card__title"><i class="bi bi-pie-chart" style="color:var(--adm-primary)"></i> Year Overview</h6>
+            </div>
+            <div class="er-card__body">
+                <canvas id="acChartPie" height="200"></canvas>
+            </div>
+        </div>
     </div>
 </div>
 
-<!-- Delete Confirmation Modal -->
+<!-- ═══ DELETE MODAL ═══ -->
 <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmLabel" aria-hidden="true">
     <div class="modal-dialog modal-sm modal-dialog-centered">
         <div class="modal-content">
@@ -111,8 +185,8 @@
                 <p class="mb-0">Are you sure you want to delete this calendar entry?</p>
             </div>
             <div class="modal-footer border-0 pt-0">
-                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" aria-label="Cancel">Cancel</button>
-                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+                <button type="button" class="er-btn er-btn--ghost" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="er-btn er-btn--danger" id="confirmDeleteBtn">Delete</button>
             </div>
         </div>
     </div>
@@ -121,143 +195,380 @@
 @Html.AntiForgeryToken()
 
 @section Scripts {
+    <script src="~/js/academic-calendar.js" asp-append-version="true"></script>
     <script>
-        let tabulatorTable = null;
+        (function () {
+            'use strict';
 
-        function initializeTable() {
-            tabulatorTable = new Tabulator("#calendarTable", {
-                height: 550,
-                layout: "fitColumns",
-                placeholder: "<div class='py-4 text-center text-muted'><i class='bi bi-calendar-x fs-2 d-block mb-2'></i>No entries found in this date range.</div>",
-                columns: [
-                    { title: "Date", field: "date", width: 130, sorter: "string", hozAlign: "center",
-                      formatter: function(cell) {
-                          const val = cell.getValue();
-                          if (!val) return "";
-                          const parts = val.split('-');
-                          const d = new Date(parts[0], parts[1] - 1, parts[2]);
-                          return `<span class="fw-semibold">${d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}</span>`;
-                      }
-                    },
-                    { title: "Title", field: "title", minWidth: 200, formatter: function(cell) {
-                        return `<div class="fw-bold text-dark">${cell.getValue() || ""}</div><div class="small text-muted">${cell.getRow().getData().description || ""}</div>`;
-                    }},
-                    { title: "Day Type", field: "isHoliday", minWidth: 150, hozAlign: "center",
-                      formatter: function(cell) {
-                          const data = cell.getRow().getData();
-                          let badges = "";
-                          if (data.isHoliday) {
-                              badges += `<span class="ac-badge ac-badge-holiday me-1">Holiday</span>`;
-                          } else if (data.isWorkingDay) {
-                              badges += `<span class="ac-badge ac-badge-working me-1">Working</span>`;
-                          } else {
-                              badges += `<span class="ac-badge ac-badge-generic me-1">Off Day</span>`;
-                          }
-                          if (data.isExamDay) badges += `<span class="ac-badge ac-badge-exam me-1">Exam</span>`;
-                          if (data.isEventDay) badges += `<span class="ac-badge ac-badge-event me-1">Event</span>`;
-                          return badges;
-                      }
-                    },
-                    { title: "Holiday Type", field: "holidayType", width: 140, hozAlign: "center",
-                      formatter: function(cell) {
-                          return cell.getValue() ? `<span class="badge bg-secondary">${cell.getValue()}</span>` : "";
-                      }
-                    },
-                    { title: "Remarks", field: "remarks", minWidth: 150 },
-                    @if (canManage)
-                    {
-                        <text>
-                        { title: "Actions", width: 140, hozAlign: "center", headerSort: false,
+            // ── Vars ──
+            var currentDate = new Date();
+            var tabulatorTable = null;
+            var chartMonthly = null;
+            var chartPie = null;
+            var allEvents = [];
+
+            var today = new Date();
+            var filterStart = document.getElementById('filterStart');
+            var filterEnd = document.getElementById('filterEnd');
+
+            // Set initial date range
+            var monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+            var monthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+            filterStart.value = AcademicCalendar.formatDate(monthStart);
+            filterEnd.value = AcademicCalendar.formatDate(monthEnd);
+
+            // ── KPI Cards ──
+            AcademicCalendar.loadKpiCards('acKpiCards');
+
+            // ── Month Nav ──
+            function updateMonthLabel() {
+                document.getElementById('monthLabel').textContent =
+                    AcademicCalendar.monthNames[currentDate.getMonth()] + ' ' + currentDate.getFullYear();
+            }
+
+            function loadMonthView() {
+                updateMonthLabel();
+                var year = currentDate.getFullYear();
+                var month = currentDate.getMonth();
+                var start = new Date(year, month, 1);
+                var end = new Date(year, month + 1, 0);
+
+                fetch('/AcademicCalendar/GetEvents?start=' + AcademicCalendar.formatDate(start) + '&end=' + AcademicCalendar.formatDate(end))
+                    .then(function (r) { return r.json(); })
+                    .then(function (events) {
+                        allEvents = events;
+                        AcademicCalendar.renderMonthGrid(year, month, events, 'monthGridContainer');
+                    });
+            }
+
+            document.getElementById('prevMonth').addEventListener('click', function () {
+                currentDate.setMonth(currentDate.getMonth() - 1);
+                loadMonthView();
+            });
+            document.getElementById('nextMonth').addEventListener('click', function () {
+                currentDate.setMonth(currentDate.getMonth() + 1);
+                loadMonthView();
+            });
+            document.getElementById('todayMonthBtn').addEventListener('click', function () {
+                currentDate = new Date();
+                loadMonthView();
+            });
+
+            // ── Tabulator ──
+            function initTable() {
+                var canManage = @Json.Serialize(canManage);
+
+                tabulatorTable = new Tabulator("#calendarTable", {
+                    height: 420,
+                    layout: "fitColumns",
+                    placeholder: "<div class='er-empty'><div class='er-empty__icon'><i class='bi bi-calendar-x fs-2'></i></div><div class='er-empty__title'>No entries found</div><div class='er-empty__desc'>Try adjusting your date range or filters.</div></div>",
+                    columns: [
+                        { title: "Date", field: "date", width: 120, sorter: "string", hozAlign: "center",
                           formatter: function(cell) {
-                              const id = cell.getRow().getData().id;
-                              return `
-                                  <div class="btn-group">
-                                      <a href="/AcademicCalendar/Edit/${id}" class="btn btn-sm btn-outline-primary" title="Edit">
-                                          <i class="bi bi-pencil"></i>
-                                      </a>
-                                      <button type="button" class="btn btn-sm btn-outline-danger btn-delete" data-id="${id}" title="Delete">
-                                          <i class="bi bi-trash"></i>
-                                      </button>
-                                  </div>
-                              `;
+                              var val = cell.getValue();
+                              if (!val) return "";
+                              var parts = val.split('-');
+                              var d = new Date(parts[0], parts[1] - 1, parts[2]);
+                              return '<span class="fw-semibold">' + d.toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' }) + '</span>';
                           }
+                        },
+                        { title: "Title", field: "title", minWidth: 180,
+                          formatter: function(cell) {
+                              return '<div class="fw-semibold" style="color:var(--adm-text)">' + (cell.getValue() || '') + '</div>' +
+                                     '<div class="small" style="color:var(--adm-text-3)">' + (cell.getRow().getData().description || '') + '</div>';
+                          }
+                        },
+                        { title: "Type", field: "source", minWidth: 130, hozAlign: "center",
+                          formatter: function(cell) {
+                              var data = cell.getRow().getData();
+                              var info = AcademicCalendar.getTypeInfo(data);
+                              var cssMap = { working: 'success', holiday: 'danger', exam: 'warning', event: 'info', webevent: 'primary', meeting: 'primary' };
+                              var badgeCss = cssMap[info.css] || 'neutral';
+                              var label = info.shortLabel || info.label;
+                              return '<span class="er-badge er-badge--' + badgeCss + '">' + label + '</span>';
+                          }
+                        },
+                        { title: "Day", field: "dayName", width: 110, hozAlign: "center",
+                          formatter: function(cell) {
+                              var val = cell.getRow().getData().date;
+                              if (!val) return "";
+                              var d = new Date(val.split('-')[0], val.split('-')[1] - 1, val.split('-')[2]);
+                              return '<span class="small" style="color:var(--adm-text-2)">' + d.toLocaleDateString(undefined, { weekday: 'long' }) + '</span>';
+                          }
+                        },
+                        { title: "Venue", field: "venue", width: 140, hozAlign: "center",
+                          formatter: function(cell) {
+                              return cell.getValue() ? '<span class="small" style="color:var(--adm-text-2)"><i class="bi bi-geo-alt"></i> ' + cell.getValue() + '</span>' : '';
+                          }
+                        },
+                        { title: "Remarks", field: "remarks", minWidth: 120 },
+                        @if (canManage)
+                        {
+                            <text>
+                            { title: "Actions", width: 110, hozAlign: "center", headerSort: false,
+                              formatter: function(cell) {
+                                  var data = cell.getRow().getData();
+                                  var source = data.source;
+                                  if (source === 'website_event') {
+                                      return '<div class="er-actions">' +
+                                          '<a href="/Admin/Website/Events/CreateEdit/' + data.sourceId + '" class="er-action er-action--edit" title="Edit Event"><i class="bi bi-pencil"></i></a>' +
+                                          '<a href="/Event/Details/' + data.sourceId + '" class="er-action er-action--view" title="View Event"><i class="bi bi-eye"></i></a>' +
+                                          '</div>';
+                                  }
+                                  if (source === 'exam_schedule') {
+                                      return '<div class="er-actions">' +
+                                          '<a href="/Exam/ExamSchedule/Edit/' + data.sourceId + '" class="er-action er-action--edit" title="Edit Schedule"><i class="bi bi-pencil"></i></a>' +
+                                          '</div>';
+                                  }
+                                  var id = data.sourceId || data.id;
+                                  return '<div class="er-actions">' +
+                                      '<a href="/AcademicCalendar/Edit/' + id + '" class="er-action er-action--edit" title="Edit"><i class="bi bi-pencil"></i></a>' +
+                                      '<button type="button" class="er-action er-action--delete btn-delete" data-id="' + id + '" title="Delete"><i class="bi bi-trash"></i></button>' +
+                                      '</div>';
+                              }
+                            }
+                            </text>
                         }
-                        </text>
+                    ],
+                    ajaxURL: "/AcademicCalendar/GetEvents",
+                    ajaxParams: {
+                        start: filterStart.value,
+                        end: filterEnd.value
+                    },
+                    ajaxResponse: function(url, params, response) {
+                        document.getElementById('eventCount').textContent = response.length + ' entr' + (response.length === 1 ? 'y' : 'ies');
+                        return response;
                     }
-                ],
-                ajaxURL: "/AcademicCalendar/GetEvents",
-                ajaxParams: {
-                    start: document.getElementById('filterStart').value,
-                    end: document.getElementById('filterEnd').value
-                },
-                ajaxResponse: function(url, params, response) {
-                    return response;
-                }
-            });
-        }
-
-        function refreshData() {
-            if (tabulatorTable) {
-                tabulatorTable.setData("/AcademicCalendar/GetEvents", {
-                    start: document.getElementById('filterStart').value,
-                    end: document.getElementById('filterEnd').value
                 });
             }
-        }
 
-        document.getElementById('btnRefresh').addEventListener('click', refreshData);
-        document.getElementById('filterStart').addEventListener('change', refreshData);
-        document.getElementById('filterEnd').addEventListener('change', refreshData);
-
-        document.getElementById('filterSearch').addEventListener('keyup', function() {
-            const query = this.value.toLowerCase();
-            if (tabulatorTable) {
-                tabulatorTable.setFilter(function(data) {
-                    return (data.title && data.title.toLowerCase().includes(query)) ||
-                           (data.description && data.description.toLowerCase().includes(query)) ||
-                           (data.remarks && data.remarks.toLowerCase().includes(query)) ||
-                           (data.holidayType && data.holidayType.toLowerCase().includes(query));
-                });
-            }
-        });
-
-        let deleteId = null;
-        const deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
-
-        document.addEventListener('click', function(e) {
-            const deleteBtn = e.target.closest('.btn-delete');
-            if (deleteBtn) {
-                deleteId = deleteBtn.getAttribute('data-id');
-                deleteModal.show();
-            }
-        });
-
-        document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
-            if (!deleteId) return;
-            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
-            fetch(`/AcademicCalendar/Delete/${deleteId}`, {
-                method: 'POST',
-                headers: {
-                    'RequestVerificationToken': token,
-                    'Content-Type': 'application/x-www-form-urlencoded'
+            // ── Refresh table ──
+            function refreshData() {
+                if (tabulatorTable) {
+                    tabulatorTable.setData("/AcademicCalendar/GetEvents", {
+                        start: filterStart.value,
+                        end: filterEnd.value
+                    });
                 }
-            })
-            .then(res => res.json())
-            .then(res => {
-                deleteModal.hide();
-                if (res.success) {
-                    toastr.success(res.message);
-                    refreshData();
-                } else {
-                    toastr.error(res.message || 'Error occurred');
+            }
+
+            document.getElementById('btnRefresh').addEventListener('click', refreshData);
+            filterStart.addEventListener('change', refreshData);
+            filterEnd.addEventListener('change', refreshData);
+
+            document.getElementById('filterSearch').addEventListener('keyup', function () {
+                var query = this.value.toLowerCase();
+                if (tabulatorTable) {
+                    tabulatorTable.setFilter(function (data) {
+                        return (data.title && data.title.toLowerCase().includes(query)) ||
+                               (data.description && data.description.toLowerCase().includes(query)) ||
+                               (data.remarks && data.remarks.toLowerCase().includes(query)) ||
+                               (data.holidayType && data.holidayType.toLowerCase().includes(query));
+                    });
                 }
-            })
-            .catch(err => {
-                deleteModal.hide();
-                toastr.error('Network error occurred.');
             });
-        });
 
-        document.addEventListener('DOMContentLoaded', initializeTable);
+            document.getElementById('filterCategory').addEventListener('change', function () {
+                var cat = this.value;
+                if (tabulatorTable) {
+                    if (!cat) { tabulatorTable.clearFilter(); return; }
+                    tabulatorTable.setFilter(function (data) {
+                        switch (cat) {
+                            case 'academic': return data.source === 'academic';
+                            case 'holiday': return data.isHoliday;
+                            case 'exam': return data.source === 'exam_schedule' || data.isExamDay;
+                            case 'website_event': return data.source === 'website_event';
+                            case 'exam_schedule': return data.source === 'exam_schedule';
+                            case 'meeting': return data.isMeetingDay;
+                            default: return true;
+                        }
+                    });
+                }
+            });
+
+            // ── Quick range buttons ──
+            document.querySelectorAll('.ac-filters__quick-btn').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    document.querySelectorAll('.ac-filters__quick-btn').forEach(function (b) { b.classList.remove('ac-filters__quick-btn--active'); });
+                    this.classList.add('ac-filters__quick-btn--active');
+
+                    var range = this.getAttribute('data-range');
+                    var now = new Date();
+                    var s, e;
+                    switch (range) {
+                        case 'today':
+                            s = now; e = now;
+                            break;
+                        case 'week':
+                            s = new Date(now); s.setDate(s.getDate() - s.getDay());
+                            e = new Date(s); e.setDate(e.getDate() + 6);
+                            break;
+                        case 'month':
+                            s = new Date(now.getFullYear(), now.getMonth(), 1);
+                            e = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+                            break;
+                        case 'year':
+                            s = new Date(now.getFullYear(), 0, 1);
+                            e = new Date(now.getFullYear(), 11, 31);
+                            break;
+                        case 'reset':
+                            s = new Date(now.getFullYear(), now.getMonth(), 1);
+                            e = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+                            break;
+                    }
+                    if (s && e) {
+                        filterStart.value = AcademicCalendar.formatDate(s);
+                        filterEnd.value = AcademicCalendar.formatDate(e);
+                        refreshData();
+                    }
+                });
+            });
+
+            // ── Category filter buttons (affects month grid + Tabulator) ──
+            document.querySelectorAll('[data-cat]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    document.querySelectorAll('[data-cat]').forEach(function (b) { b.classList.remove('ac-filters__quick-btn--active'); });
+                    this.classList.add('ac-filters__quick-btn--active');
+                    var cat = this.getAttribute('data-cat');
+                    AcademicCalendar.activeFilter = cat;
+                    // Re-render month grid with current events
+                    AcademicCalendar.renderMonthGrid(currentDate.getFullYear(), currentDate.getMonth(), allEvents, 'monthGridContainer');
+                    // Sync Tabulator category filter
+                    var catSelect = document.getElementById('filterCategory');
+                    if (catSelect) {
+                        var map = { all: '', exam: 'exam', holiday: 'holiday', website_event: 'website_event', academic: 'academic' };
+                        catSelect.value = map[cat] || '';
+                        catSelect.dispatchEvent(new Event('change'));
+                    }
+                });
+            });
+
+            // ── Charts ──
+            function loadCharts() {
+                var year = new Date().getFullYear();
+                fetch('/AcademicCalendar/GetYearData?year=' + year)
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        if (!data || !data.months) return;
+
+                        var labels = data.months.map(function (m) { return m.monthName.substring(0, 3); });
+                        var working = data.months.map(function (m) { return m.workingDays; });
+                        var holidays = data.months.map(function (m) { return m.holidays; });
+                        var exams = data.months.map(function (m) { return m.examDays; });
+                        var events = data.months.map(function (m) { return m.events; });
+
+                        // Monthly bar chart
+                        var ctx1 = document.getElementById('acChartMonthly');
+                        if (ctx1) {
+                            if (chartMonthly) chartMonthly.destroy();
+                            chartMonthly = new Chart(ctx1, {
+                                type: 'bar',
+                                data: {
+                                    labels: labels,
+                                    datasets: [
+                                        { label: 'Working', data: working, backgroundColor: '#059669', borderRadius: 3 },
+                                        { label: 'Holidays', data: holidays, backgroundColor: '#dc2626', borderRadius: 3 },
+                                        { label: 'Exams', data: exams, backgroundColor: '#d97706', borderRadius: 3 },
+                                        { label: 'Events', data: events, backgroundColor: '#0284c7', borderRadius: 3 }
+                                    ]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 12, font: { size: 11 } } } },
+                                    scales: {
+                                        x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+                                        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { font: { size: 10 }, stepSize: 1 } }
+                                    }
+                                }
+                            });
+                        }
+
+                        // Pie chart
+                        var ctx2 = document.getElementById('acChartPie');
+                        if (ctx2) {
+                            var totalW = working.reduce(function (a, b) { return a + b; }, 0);
+                            var totalH = holidays.reduce(function (a, b) { return a + b; }, 0);
+                            var totalE = exams.reduce(function (a, b) { return a + b; }, 0);
+                            var totalEv = events.reduce(function (a, b) { return a + b; }, 0);
+
+                            if (chartPie) chartPie.destroy();
+                            chartPie = new Chart(ctx2, {
+                                type: 'doughnut',
+                                data: {
+                                    labels: ['Working Days', 'Holidays', 'Exams', 'Events'],
+                                    datasets: [{
+                                        data: [totalW, totalH, totalE, totalEv],
+                                        backgroundColor: ['#059669', '#dc2626', '#d97706', '#0284c7'],
+                                        borderWidth: 0
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: { position: 'bottom', labels: { boxWidth: 12, padding: 12, font: { size: 11 } } }
+                                    },
+                                    cutout: '65%'
+                                }
+                            });
+                        }
+                    });
+            }
+
+            // ── Delete handler ──
+            var deleteId = null;
+            var deleteModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+
+            document.addEventListener('click', function (e) {
+                var deleteBtn = e.target.closest('.btn-delete');
+                if (deleteBtn) {
+                    deleteId = deleteBtn.getAttribute('data-id');
+                    deleteModal.show();
+                }
+            });
+
+            document.getElementById('confirmDeleteBtn').addEventListener('click', function () {
+                if (!deleteId) return;
+                var token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                fetch('/AcademicCalendar/Delete/' + deleteId, {
+                    method: 'POST',
+                    headers: {
+                        'RequestVerificationToken': token,
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    }
+                })
+                .then(function (res) { return res.json(); })
+                .then(function (res) {
+                    deleteModal.hide();
+                    if (res.success) {
+                        toastr.success(res.message);
+                        refreshData();
+                        loadMonthView();
+                        AcademicCalendar.loadKpiCards('acKpiCards');
+                        loadCharts();
+                    } else {
+                        toastr.error(res.message || 'Error occurred');
+                    }
+                })
+                .catch(function () {
+                    deleteModal.hide();
+                    toastr.error('Network error occurred.');
+                });
+            });
+
+            AcademicCalendar.refreshAll = function () {
+                refreshData();
+                loadMonthView();
+                AcademicCalendar.loadKpiCards('acKpiCards');
+                loadCharts();
+            };
+
+            // ── Init ──
+            loadMonthView();
+            initTable();
+            loadCharts();
+
+        })();
     </script>
 }

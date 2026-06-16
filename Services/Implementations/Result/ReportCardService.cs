@@ -71,5 +71,13 @@ public class ReportCardService : IReportCardService
  
         return _pdfGenerator.GenerateSchoolReportCard(result, marks, school);
     }
+
+    private string GenerateReportCardHash(int examId, int studentId, decimal totalMarks, string grade, decimal gpa)
+    {
+        var raw = $"{examId}|{studentId}|{totalMarks}|{grade}|{gpa}|SchoolManagementSystem-Secret-2026";
+        using var sha = System.Security.Cryptography.SHA256.Create();
+        var bytes = sha.ComputeHash(System.Text.Encoding.UTF8.GetBytes(raw));
+        return Convert.ToHexString(bytes).ToLowerInvariant()[..16];
+    }
 }
 

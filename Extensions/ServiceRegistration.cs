@@ -170,6 +170,7 @@ public static class ServiceRegistration
         services.AddScoped<IExamValidationService, ExamValidationService>();
         services.AddScoped<IAdmitCardService, AdmitCardService>();
         services.AddScoped<IExamSubjectService, ExamSubjectService>();
+        services.AddScoped<IExamRoutineService, ExamRoutineService>();
         services.AddScoped<IStudentSubjectFilterService, StudentSubjectFilterService>();
         services.AddScoped<ITranscriptService, TranscriptService>();
 

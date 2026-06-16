@@ -66,7 +66,7 @@ public class BaseService<TEntity> : IBaseService<TEntity> where TEntity : BaseEn
 
     public virtual async Task<PagedResult<TEntity>> GetPagedAsync(int page, int pageSize, string? search = null, System.Security.Claims.ClaimsPrincipal? user = null, CancellationToken ct = default)
     {
-        var query = _unitOfWork.Repository<TEntity>().Query().Where(x => !x.IsDeleted);
+        var query = _unitOfWork.Repository<TEntity>().Query().AsNoTracking().Where(x => !x.IsDeleted);
 
         if (user != null)
         {
@@ -81,8 +81,6 @@ public class BaseService<TEntity> : IBaseService<TEntity> where TEntity : BaseEn
 
             if (searchableProperties.Count > 0)
             {
-                // This is a bit inefficient because we're fetching then filtering in memory
-                // or we have to build an expression tree. For simplicity and to keep the logic similar to the original:
                 var items = await query.ToListAsync(ct);
                 items = items.Where(x => searchableProperties.Any(p => 
                     (p.GetValue(x) as string)?.Contains(search, StringComparison.OrdinalIgnoreCase) == true)).ToList();

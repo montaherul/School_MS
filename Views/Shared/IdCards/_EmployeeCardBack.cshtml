@@ -1,93 +1,86 @@
-@model SchoolManagementSystem.Models.ViewModels.Employee.EmployeeCardModel
-@{
-    var employee = Model.Employee;
-    var themeColor = Model.ThemeColor;
-    var emergencyContact = !string.IsNullOrEmpty(employee.EmergencyContactPhone)
-        ? $"{employee.EmergencyContactName ?? ""} {employee.EmergencyContactPhone}".Trim()
-        : "N/A";
-    var validUntil = employee.CardExpiryDate?.ToString("dd-MMM-yyyy") ?? "N/A";
-}
-<div class="id-card id-card-back">
+@model SchoolManagementSystem.Models.ViewModels.IdCard.EmployeeIdCardViewModel
+<div class="pvc bk">
+    <div class="hdr-stripe"></div>
+    <div class="hdr"></div>
 
-    <div class="back-header" style="background:@themeColor">
-        <span class="back-header-title">Employee Information</span>
+    <div class="school-hdr">
+        <div class="s-logo-box">
+            @if (!string.IsNullOrEmpty(Model.SchoolLogoDataUri))
+            {
+                <img src="@Model.SchoolLogoDataUri" width="20" height="20" />
+            }
+            else
+            {
+                <svg width="16" height="16" viewBox="0 0 14 14" fill="none">
+                    <path d="M7 1L13 4.5V9.5L7 13L1 9.5V4.5L7 1Z" fill="rgba(255,255,255,0.85)"/>
+                    <path d="M7 4L10 5.8V8.8L7 10.5L4 8.8V5.8L7 4Z" fill="#1A2E5A"/>
+                </svg>
+            }
+        </div>
+        <div class="s-txt">
+            <div class="s-name">@Model.SchoolName</div>
+            <div class="s-addr">@Model.SchoolAddress</div>
+        </div>
     </div>
 
-    <div class="back-body" style="height:38.48mm;">
-        <table class="back-body-tbl" cellpadding="0" cellspacing="0">
-            <tr>
-                <td class="back-info-cell">
+    <div class="body">
+        <div class="rules">
+            <div class="rules-title">Card Rules</div>
+            <div class="rule"><span class="r-dot">&#x2022;</span>Always carry this card within school premises.</div>
+            <div class="rule"><span class="r-dot">&#x2022;</span>Report immediately if lost or stolen to PRS office.</div>
+            <div class="rule"><span class="r-dot">&#x2022;</span>This card is strictly non-transferable.</div>
+        </div>
 
-                    <div class="back-group-title" style="color:@themeColor">Emergency Contact</div>
-                    <table class="back-row-tbl" cellpadding="0" cellspacing="0">
-                        <tr>
-                            <td class="back-label">Contact</td>
-                            <td class="back-value @(emergencyContact == "N/A" ? "muted" : "")">@emergencyContact</td>
-                        </tr>
-                        <tr>
-                            <td class="back-label">Address</td>
-                            <td class="back-value @(string.IsNullOrEmpty(employee.PresentAddress) ? "muted" : "")">
-                                @(!string.IsNullOrEmpty(employee.PresentAddress) ? employee.PresentAddress : "N/A")
-                            </td>
-                        </tr>
-                    </table>
+        <div class="contact-block">
+            <div class="c-title">If found, please return to:</div>
 
-                    <div class="back-group-title" style="margin-top:1.5mm;color:@themeColor;">Identification</div>
-                    <table class="back-row-tbl" cellpadding="0" cellspacing="0">
-                        <tr>
-                            <td class="back-label">NID</td>
-                            <td class="back-value @(string.IsNullOrEmpty(employee.NIDNumber) ? "muted" : "")">
-                                @(!string.IsNullOrEmpty(employee.NIDNumber) ? employee.NIDNumber : "N/A")
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="back-label">Joining</td>
-                            <td class="back-value">@employee.JoiningDate.ToString("dd-MMM-yyyy")</td>
-                        </tr>
-                        <tr>
-                            <td class="back-label">Valid Until</td>
-                            <td class="back-value">@validUntil</td>
-                        </tr>
-                    </table>
+            <div class="c-row">
+                <div class="c-icon" style="background:#EEF2F9">
+                    <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+                        <circle cx="4" cy="3" r="2" fill="#1A2E5A"/>
+                        <path d="M1 7Q4 5 7 7" fill="#1A2E5A"/>
+                    </svg>
+                </div>
+                <div class="c-val">@(!string.IsNullOrEmpty(Model.SchoolAddress) ? Model.SchoolAddress : "---")</div>
+            </div>
 
-                    <div class="back-group-title" style="margin-top:1.5mm;color:@themeColor;">School Contact</div>
-                    <table class="back-row-tbl" cellpadding="0" cellspacing="0">
-                        <tr>
-                            <td class="back-label">Phone</td>
-                            <td class="back-value">@(Model.SchoolPhone ?? "---")</td>
-                        </tr>
-                        <tr>
-                            <td class="back-label">Email</td>
-                            <td class="back-value">@(Model.SchoolEmail ?? "---")</td>
-                        </tr>
-                    </table>
-                </td>
+            <div class="c-row">
+                <div class="c-icon" style="background:#E8F4F0">
+                    <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+                        <rect x="1" y="2" width="6" height="4.5" rx="1" stroke="#1B7F79" stroke-width=".9"/>
+                        <path d="M1 3L4 5.2L7 3" stroke="#1B7F79" stroke-width=".9"/>
+                    </svg>
+                </div>
+                <div class="c-val">@(!string.IsNullOrEmpty(Model.SchoolPhone) ? Model.SchoolPhone : "---")</div>
+            </div>
 
-                <td class="back-qr-cell">
-                    <div class="qr-frame" style="border-color:@themeColor">
-                        @if (!string.IsNullOrEmpty(Model.QrCodeDataUri))
-                        {
-                            <img src="@Model.QrCodeDataUri" alt="QR" />
-                        }
-                    </div>
-                    <div class="qr-label">Employee ID</div>
-                </td>
-            </tr>
-        </table>
+            <div class="c-row">
+                <div class="c-icon" style="background:#FFF5E5">
+                    <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
+                        <path d="M4 1.5L7 3.2V6.8H1V3.2L4 1.5Z" stroke="#D4860B" stroke-width=".85"/>
+                        <line x1="4" y1="4.5" x2="4" y2="6.8" stroke="#D4860B" stroke-width=".85"/>
+                    </svg>
+                </div>
+                <div class="c-val">@(!string.IsNullOrEmpty(Model.SchoolEmail) ? Model.SchoolEmail : "---")</div>
+            </div>
+        </div>
     </div>
 
-    <div class="back-footer" style="background:@themeColor">
-        <table class="back-footer-tbl" cellpadding="0" cellspacing="0">
-            <tr>
-                <td class="back-ft-school">
-                    <div class="back-ft-name">@Model.SchoolNameEn</div>
-                    <div class="back-ft-address">@(Model.SchoolAddress ?? "")</div>
-                </td>
-                <td class="back-ft-validity">
-                    <div class="ft-sig-label" style="color:rgba(255,255,255,0.85);">@(Model.PrincipalName ?? "Principal")</div>
-                    <div class="ft-sig-line" style="width:15mm;margin:0.3mm auto 0 auto;"></div>
-                </td>
-            </tr>
-        </table>
+    <div class="ftr"></div>
+    <div class="ftr-stripe"></div>
+
+    <div class="qr-area">
+        <div class="qr-box">
+            @if (!string.IsNullOrEmpty(Model.QrCodeDataUri))
+            {
+                <img src="@Model.QrCodeDataUri" width="30" height="30" />
+            }
+        </div>
+    </div>
+
+    <div class="valid-area">
+        <div class="valid-lbl">Valid Until</div>
+        <div class="valid-val">@(!string.IsNullOrEmpty(Model.ValidUntil) ? Model.ValidUntil : "N/A")</div>
+        <div class="id-mini">@Model.EmployeeIdNo</div>
     </div>
 </div>

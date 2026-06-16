@@ -5,174 +5,173 @@
     var allSubjects = Model.Subjects;
 }
 
-<div class="container-fluid py-4 er-page">
-    <!-- Header -->
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card shadow-sm border-0 bg-gradient-info text-white">
-                <div class="card-body p-4">
-                    <h2 class="mb-1">
-                        <i class="fas fa-book me-2"></i>All Subjects Overview
-                    </h2>
-                    <p class="mb-0">Comprehensive view of all subjects with their configurations and mappings</p>
-                </div>
+<div class="adm-page er-page">
+
+    <div class="er-page-header">
+        <div class="er-page-header__left">
+            <div class="er-page-header__icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="er-page-header__title">All Subjects Overview</h1>
+                <p class="er-page-header__sub">Comprehensive view of all subjects with their configurations and mappings</p>
             </div>
         </div>
     </div>
 
-    <!-- Subject Groups Tabs -->
+    <div class="er-stats mb-4">
+        <div class="er-stat">
+            <div class="er-stat__icon er-stat__icon--primary">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>
+            </div>
+            <div class="er-stat__body">
+                <span class="er-stat__label">Total Subjects</span>
+                <span class="er-stat__value">@(allSubjects?.Count() ?? 0)</span>
+            </div>
+        </div>
+        <div class="er-stat">
+            <div class="er-stat__icon er-stat__icon--success">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12" /></svg>
+            </div>
+            <div class="er-stat__body">
+                <span class="er-stat__label">Mandatory</span>
+                <span class="er-stat__value">@(allSubjects?.Count(s => !s.IsOptional) ?? 0)</span>
+            </div>
+        </div>
+        <div class="er-stat">
+            <div class="er-stat__icon" style="background:#fff3e0;color:#e65100;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3" /></svg>
+            </div>
+            <div class="er-stat__body">
+                <span class="er-stat__label">Optional</span>
+                <span class="er-stat__value">@(allSubjects?.Count(s => s.IsOptional) ?? 0)</span>
+            </div>
+        </div>
+        <div class="er-stat">
+            <div class="er-stat__icon" style="background:#e3f2fd;color:#1565c0;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" /></svg>
+            </div>
+            <div class="er-stat__body">
+                <span class="er-stat__label">Religion Subjects</span>
+                <span class="er-stat__value">@(allSubjects?.Count(s => s.IsReligionSubject) ?? 0)</span>
+            </div>
+        </div>
+    </div>
+
     @if (groupedSubjects != null && groupedSubjects.Any())
     {
-        <div class="row">
-            <div class="col-12">
-                <div class="card shadow-sm border-0">
-                    <div class="card-header bg-white">
-                        <ul class="nav nav-tabs card-header-tabs" id="subjectTabs" role="tablist">
-                            @foreach (var group in groupedSubjects.Keys.OrderBy(k => k))
-                            {
-                                var tabId = $"tab-{group.Replace(" ", "").Replace("-", "")}";
-                                var isActive = group == groupedSubjects.Keys.First();
-                                <li class="nav-item" role="presentation">
-                                    <button class="nav-link @(isActive ? "active" : "")"
-                                            id="@tabId-tab"
-                                            data-bs-toggle="tab"
-                                            data-bs-target="#@tabId"
-                                            type="button"
-                                            role="tab">
-                                        @group
-                                        <span class="badge bg-secondary ms-2">@groupedSubjects[group].Count</span>
-                                    </button>
-                                </li>
-                            }
-                        </ul>
-                    </div>
+        <div class="er-card" style="border-radius: var(--adm-radius-lg); border-top: 1px solid var(--adm-border);">
+            <div class="er-card__header" style="padding-bottom:0;">
+                <ul class="nav nav-tabs card-header-tabs" id="subjectTabs" role="tablist" style="border-bottom:none;gap:4px;">
+                    @foreach (var group in groupedSubjects.Keys.OrderBy(k => k))
+                    {
+                        var tabId = $"tab-{group.Replace(" ", "").Replace("-", "")}";
+                        var isActive = group == groupedSubjects.Keys.First();
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link @(isActive ? "active" : "")"
+                                    id="@tabId-tab"
+                                    data-bs-toggle="tab"
+                                    data-bs-target="#@tabId"
+                                    type="button"
+                                    role="tab"
+                                    style="font-size:13px;padding:8px 16px;">
+                                @group
+                                <span class="er-badge er-badge--neutral ms-1" style="font-size:10px;">@groupedSubjects[group].Count</span>
+                            </button>
+                        </li>
+                    }
+                </ul>
+            </div>
+            <div class="er-card__body">
+                <div class="tab-content" id="subjectTabsContent">
+                    @foreach (var group in groupedSubjects.Keys.OrderBy(k => k))
+                    {
+                        var tabId = $"tab-{group.Replace(" ", "").Replace("-", "")}";
+                        var isActive = group == groupedSubjects.Keys.First();
+                        var subjects = groupedSubjects[group];
 
-                    <div class="card-body">
-                        <div class="tab-content" id="subjectTabsContent">
-                            @foreach (var group in groupedSubjects.Keys.OrderBy(k => k))
-                            {
-                                var tabId = $"tab-{group.Replace(" ", "").Replace("-", "")}";
-                                var isActive = group == groupedSubjects.Keys.First();
-                                var subjects = groupedSubjects[group];
-
-                                <div class="tab-pane fade @(isActive ? "show active" : "")"
-                                     id="@tabId"
-                                     role="tabpanel">
-                                    <div class="table-responsive">
-                                        <table class="table table-hover">
-                                            <thead class="bg-light">
-                                                <tr>
-                                                    <th>Code</th>
-                                                    <th>Subject Name</th>
-                                                    <th>Bangla Name</th>
-                                                    <th>Type</th>
-                                                    <th>Religion</th>
-                                                    <th>Status</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @foreach (var subject in subjects.OrderBy(s => s.Name))
-                                                {
-                                                    <tr>
-                                                        <td>
-                                                            <span class="badge bg-primary">@subject.Code</span>
-                                                        </td>
-                                                        <td class="fw-bold">@subject.Name</td>
-                                                        <td>@subject.NameBn</td>
-                                                        <td>
-                                                            @if (subject.IsOptional)
-                                                            {
-                                                                <span class="badge bg-warning">Optional</span>
-                                                            }
-                                                            else
-                                                            {
-                                                                <span class="badge bg-success">Mandatory</span>
-                                                            }
-                                                        </td>
-                                                        <td>
-                                                            @if (subject.IsReligionSubject)
-                                                            {
-                                                                <span class="badge bg-primary">@subject.ReligionType</span>
-                                                            }
-                                                            else
-                                                            {
-                                                                <span class="text-muted">-</span>
-                                                            }
-                                                        </td>
-                                                        <td>
-                                                            @if (subject.IsActive)
-                                                            {
-                                                                <span class="badge bg-success">Active</span>
-                                                            }
-                                                            else
-                                                            {
-                                                                <span class="badge bg-secondary">Inactive</span>
-                                                            }
-                                                        </td>
-                                                    </tr>
-                                                }
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            }
+                        <div class="tab-pane fade @(isActive ? "show active" : "")"
+                             id="@tabId"
+                             role="tabpanel">
+                            <div class="table-responsive">
+                                <table class="er-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="ps-4">Code</th>
+                                            <th>Subject Name</th>
+                                            <th>Type</th>
+                                            <th>Category</th>
+                                            <th class="pe-4">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var subject in subjects.OrderBy(s => s.Name))
+                                        {
+                                            <tr>
+                                                <td class="ps-4">
+                                                    <span class="er-badge er-badge--primary">@subject.Code</span>
+                                                </td>
+                                                <td><span class="adm-cell-name">@subject.Name</span></td>
+                                                <td>
+                                                    @if (subject.IsOptional)
+                                                    {
+                                                        <span class="er-badge er-badge--warning">Optional</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="er-badge er-badge--success">Mandatory</span>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    @if (subject.IsReligionSubject)
+                                                    {
+                                                        <span class="er-badge er-badge--info">@subject.ReligionType</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span style="color:var(--adm-text-3);font-size:13px;">General</span>
+                                                    }
+                                                </td>
+                                                <td class="pe-4">
+                                                    @if (subject.IsActive)
+                                                    {
+                                                        <span class="er-badge er-badge--success">Active</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="er-badge er-badge--neutral">Inactive</span>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
-                    </div>
+                    }
                 </div>
             </div>
         </div>
     }
     else
     {
-        <div class="row">
-            <div class="col-12">
-                <div class="card shadow-sm border-0">
-                    <div class="card-body text-center py-5">
-                        <i class="fas fa-book fa-4x text-muted mb-3"></i>
-                        <h5 class="text-muted">No Subjects Found</h5>
-                        <p class="text-muted mb-4">No subjects have been configured in the system.</p>
-                        <a href="@Url.Action("CreateEdit", "Subject")" class="btn btn-primary">
-                            <i class="fas fa-plus me-2"></i>Add First Subject
+        <div class="er-card" style="border-radius: var(--adm-radius-lg);">
+            <div class="er-card__body">
+                <div class="er-empty">
+                    <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                    </svg>
+                    <h3 class="er-empty__title">No Subjects Found</h3>
+                    <p class="er-empty__desc">No subjects have been configured in the system.</p>
+                    <div class="er-empty__action">
+                        <a href="@Url.Action("CreateEdit", "Subject")" class="er-btn er-btn--primary">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                            Add First Subject
                         </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    }
-
-    <!-- Summary Cards -->
-    @if (allSubjects != null && allSubjects.Any())
-    {
-        <div class="row mt-4">
-            <div class="col-md-3 mb-3">
-                <div class="card shadow-sm border-0 h-100">
-                    <div class="card-body text-center">
-                        <div class="display-4 text-primary mb-2">@allSubjects.Count()</div>
-                        <h6 class="text-muted">Total Subjects</h6>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 mb-3">
-                <div class="card shadow-sm border-0 h-100">
-                    <div class="card-body text-center">
-                            <div class="display-4 text-success mb-2">@allSubjects.Count(s => !s.IsOptional)</div>
-                        <h6 class="text-muted">Mandatory Subjects</h6>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 mb-3">
-                <div class="card shadow-sm border-0 h-100">
-                    <div class="card-body text-center">
-                        <div class="display-4 text-warning mb-2">@allSubjects.Count(s => s.IsOptional)</div>
-                        <h6 class="text-muted">Optional Subjects</h6>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3 mb-3">
-                <div class="card shadow-sm border-0 h-100">
-                    <div class="card-body text-center">
-                        <div class="display-4 text-info mb-2">@allSubjects.Count(s => s.IsReligionSubject)</div>
-                        <h6 class="text-muted">Religion Subjects</h6>
                     </div>
                 </div>
             </div>

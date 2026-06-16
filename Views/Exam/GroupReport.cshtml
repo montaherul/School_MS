@@ -1,0 +1,160 @@
+@model SchoolManagementSystem.Models.ViewModels.Exam.ExamGroupReportViewModel
+@using SchoolManagementSystem.Models.Enums
+@{
+    ViewData["Title"] = "Group Report — " + Model.GroupName;
+    var termLabels = new Dictionary<ExamTerm, string> { {ExamTerm.HalfYearly,"Half Yearly"},{ExamTerm.Annual,"Annual"},{ExamTerm.Final,"Final"},{ExamTerm.PreTest,"Pre-Test"},{ExamTerm.Test,"Test"},{ExamTerm.FirstTerminal,"First Terminal"},{ExamTerm.SecondTerminal,"Second Terminal"},{ExamTerm.Other,"Other"} };
+    Func<ExamTerm, string> termName = t => termLabels.ContainsKey(t) ? termLabels[t] : t.ToString();
+    Func<ResultWorkflowStatus, string> badgeClass = s => s switch
+    {
+        ResultWorkflowStatus.Draft => "neutral",
+        ResultWorkflowStatus.Submitted => "warning",
+        ResultWorkflowStatus.Reviewed => "primary",
+        ResultWorkflowStatus.Approved => "success",
+        ResultWorkflowStatus.Published => "success",
+        ResultWorkflowStatus.Locked => "neutral",
+        ResultWorkflowStatus.Unpublished => "danger",
+        _ => "neutral"
+    };
+    Func<ResultWorkflowStatus, string> statusLabel = s => s switch
+    {
+        ResultWorkflowStatus.Draft => "Draft",
+        ResultWorkflowStatus.Submitted => "Submitted",
+        ResultWorkflowStatus.Reviewed => "Reviewed",
+        ResultWorkflowStatus.Approved => "Approved",
+        ResultWorkflowStatus.Published => "Published",
+        ResultWorkflowStatus.Locked => "Locked",
+        ResultWorkflowStatus.Unpublished => "Unpublished",
+        _ => "Draft"
+    };
+    var orderedExams = Model.Exams.OrderBy(e => e.ClassId).ToList();
+    var uniqueName = orderedExams.FirstOrDefault()?.Name ?? Model.GroupName;
+}
+
+<div class="adm-page er-page er-page--slide">
+    <div class="er-page-header">
+        <div class="er-page-header__left">
+            <div class="er-page-header__icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="er-page-header__title">@Model.GroupName</h1>
+                <p class="er-page-header__sub">
+                    @Model.Exams.Count class@(Model.Exams.Count != 1 ? "es" : "")
+                    &middot; @uniqueName
+                </p>
+            </div>
+        </div>
+        <div class="er-page-header__right">
+            <form method="get" action="@Url.Action("GroupReport")" class="er-filters__row" style="flex-wrap:nowrap;">
+                <input type="hidden" name="groupKey" value="@Model.GroupKey" />
+                <div class="er-filters__group" style="margin-bottom:0;">
+                    <label class="er-filters__label">Year</label>
+                    <select name="academicYearId" class="er-filters__select" onchange="this.form.submit()">
+                        @foreach (var year in Model.AcademicYears)
+                        {
+                            <!option value="@year.Id" selected="@(year.Id == Model.SelectedAcademicYearId)">@year.Name</!option>
+                        }
+                    </select>
+                </div>
+            </form>
+            <a href="@Url.Action("Index", "Exam")" class="er-btn er-btn--secondary">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6" /></svg>
+                All Exams
+            </a>
+        </div>
+    </div>
+
+    <div class="er-card" style="border-radius:var(--adm-radius-lg);">
+        <div class="er-card__header">
+            <h5 class="er-card__title">Class-by-Class Breakdown</h5>
+            <span class="er-badge er-badge--neutral">@Model.Exams.Count class@(Model.Exams.Count != 1 ? "es" : "")</span>
+        </div>
+        <div class="er-card__body--flush">
+            <div class="er-table-wrap">
+                <table class="er-table" id="groupReportTable">
+                    <thead>
+                        <tr>
+                            <th style="width:36px;"></th>
+                            <th>Class</th>
+                            <th>Students</th>
+                            <th>Subjects</th>
+                            <th>Term</th>
+                            <th>Duration</th>
+                            <th>Status</th>
+                            <th style="text-align:end;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr id="masterToggle" style="cursor:pointer;background:var(--er-primary-bg, #f0fdfa);">
+                            <td style="text-align:center;">
+                                <span class="master-toggle">▼</span>
+                            </td>
+                            <td colspan="7">
+                                <strong style="font-size:15px;">@uniqueName</strong>
+                                <span style="font-size:12px;color:var(--er-text-3);margin-left:12px;">
+                                    @Model.Exams.Count class@(Model.Exams.Count != 1 ? "es" : "")
+                                </span>
+                                <span style="font-size:12px;color:var(--er-text-3);margin-left:12px;">
+                                    Total Students: @Model.Exams.Sum(e => e.StudentResultCount)
+                                </span>
+                            </td>
+                        </tr>
+                        @foreach (var exam in orderedExams)
+                        {
+                            <tr class="detail-row">
+                                <td></td>
+                                <td>
+                                    <span class="er-badge er-badge--info" style="font-size:12px;">Class @exam.ClassId</span>
+                                </td>
+                                <td>
+                                    <span style="font-weight:600;">@exam.StudentResultCount</span>
+                                </td>
+                                <td>
+                                    <span>@exam.SubjectCount</span>
+                                </td>
+                                <td><span class="er-badge er-badge--neutral">@termName(exam.Term)</span></td>
+                                <td><span class="adm-cell-dob">@exam.StartsOn.ToString("MMM dd") – @exam.EndsOn.ToString("MMM dd")</span></td>
+                                <td>
+                                    <span class="er-badge er-badge--@badgeClass(exam.Status)">@statusLabel(exam.Status)</span>
+                                </td>
+                                <td style="text-align:end;">
+                                    <div class="er-actions" style="justify-content:flex-end;">
+                                        <a href="@Url.Action("Edit", "Exam", new { id = exam.Id })" class="er-action er-action--edit" title="Edit">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
+                                        </a>
+                                        <a href="@Url.Action("Dashboard", "Exam", new { examId = exam.Id, academicYearId = Model.SelectedAcademicYearId })" class="er-action er-action--view" title="Dashboard">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></svg>
+                                        </a>
+                                        <a href="@Url.Action("Delete", "Exam", new { id = exam.Id })" class="er-action er-action--delete" title="Delete">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var toggle = document.getElementById('masterToggle');
+            if (!toggle) return;
+            var icon = toggle.querySelector('.master-toggle');
+            if (!icon) return;
+            var details = document.querySelectorAll('.detail-row');
+            toggle.addEventListener('click', function () {
+                var visible = details.length > 0 && details[0].style.display !== 'none';
+                details.forEach(function (r) { r.style.display = visible ? 'none' : ''; });
+                icon.textContent = visible ? '▶' : '▼';
+            });
+        })();
+    </script>
+}

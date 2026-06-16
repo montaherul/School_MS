@@ -1,0 +1,62 @@
+@model ExamRoutineViewModel
+
+<div class="er-card">
+    <div class="er-card__header">
+        <h3 class="er-card__title">@Model.ExamName</h3>
+        <div class="d-flex gap-2">
+            <a href="@Url.Action("BulkPdf", "ExamRoutine", new { examId = ViewBag.SelectedExamId, classId = ViewBag.SelectedClassId, groupId = ViewBag.SelectedGroupId })" class="er-btn er-btn--sm er-btn--primary">PDF</a>
+            <button type="button" class="er-btn er-btn--sm er-btn--success" onclick="publishRoutine(@ViewBag.SelectedExamId)">Publish</button>
+            <button type="button" class="er-btn er-btn--sm er-btn--danger" onclick="unpublishRoutine(@ViewBag.SelectedExamId)">Unpublish</button>
+        </div>
+    </div>
+    <div class="er-card__body er-card__body--flush">
+        <div id="examRoutineGrid"></div>
+    </div>
+</div>
+
+<script>
+    (function() {
+        var data = @Html.Raw(Json.Serialize(Model.Schedules));
+        new Tabulator("#examRoutineGrid", {
+            data: data,
+            layout: "fitColumns",
+            responsiveLayout: "collapse",
+            height: "auto",
+            placeholder: "<div class='er-empty'><div class='er-empty__title'>No schedules found</div></div>",
+            pagination: true,
+            paginationSize: 10,
+            paginationSizeSelector: [10, 20, 50],
+            columns: [
+                {
+                    title: "Date", field: "examDate", width: 130,
+                    formatter: function(cell) {
+                        var d = cell.getValue();
+                        if (!d) return '—';
+                        var dt = new Date(d);
+                        var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+                        return '<span class="fw-600">' + dt.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) + '</span><br><small class="text-muted">' + days[dt.getDay()] + '</small>';
+                    },
+                    sorter: function(a,b) { return new Date(a) - new Date(b); }
+                },
+                { title: "Subject", field: "subjectName", formatter: function(c) { return '<span class="adm-cell-name">' + c.getValue() + '</span>'; } },
+                { title: "Code", field: "subjectCode", width: 100, formatter: function(c) { return '<span class="er-badge er-badge--neutral">' + (c.getValue() || '—') + '</span>'; } },
+                { title: "Class", field: "className", width: 100 },
+                { title: "Group", field: "groupName", width: 100, formatter: function(c) { return c.getValue() || '—'; } },
+                { title: "Start", field: "startsAt", width: 100, formatter: function(c) { return '<span class="adm-status adm-status--approved">' + formatTime(c.getValue()) + '</span>'; } },
+                { title: "End", field: "endsAt", width: 100, formatter: function(c) { return '<span class="adm-status adm-status--pending">' + formatTime(c.getValue()) + '</span>'; } },
+                { title: "Room", field: "roomNo", width: 120 },
+                { title: "Instructions", field: "instructions", minWidth: 180, formatter: function(c) { return '<small class="text-muted">' + (c.getValue() || 'Standard Rules Apply') + '</small>'; } }
+            ]
+        });
+
+        function formatTime(t) {
+            if (!t) return '';
+            var p = t.split(':');
+            if (p.length < 2) return t;
+            var h = parseInt(p[0]), m = p[1];
+            var ampm = h >= 12 ? 'PM' : 'AM';
+            h = h % 12 || 12;
+            return h + ':' + m + ' ' + ampm;
+        }
+    })();
+</script>

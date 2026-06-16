@@ -13,6 +13,7 @@
 
     <!-- Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 
     <!-- Bootstrap -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
@@ -124,6 +125,7 @@
                         <a href="/Guardian/Portal/Dashboard" data-title="Dashboard"><i class="bi bi-grid-1x2"></i><span class="nav-text">My Dashboard</span></a>
                         <a href="/Guardian/Portal/Attendance" data-title="Attendance"><i class="bi bi-calendar-check"></i><span class="nav-text">Attendance</span></a>
                         <a href="/Guardian/Portal/Results" data-title="Results"><i class="bi bi-bar-chart-line"></i><span class="nav-text">Results</span></a>
+                        <a href="/Guardian/ExamRoutine" data-title="Exam Routine"><i class="bi bi-calendar-event"></i><span class="nav-text">Exam Routine</span></a>
                         <a href="/Guardian/Portal/Fees" data-title="Fees"><i class="bi bi-cash-coin"></i><span class="nav-text">Fees</span></a>
                         <a href="/Guardian/Portal/Leaves" data-title="Leave"><i class="bi bi-file-earmark-medical"></i><span class="nav-text">Leave</span></a>
                         <a href="/Guardian/Portal/Notices" data-title="Notices"><i class="bi bi-megaphone"></i><span class="nav-text">Notices</span></a>
@@ -139,6 +141,7 @@
 
                         <span class="nav-section-label"><span class="nav-text">Academics</span></span>
                         <a href="/ResultManagement/StudentDashboard" data-title="Results"><i class="bi bi-bar-chart-line"></i><span class="nav-text">My Results</span></a>
+                        <a href="/Student/ExamRoutine" data-title="Exam Routine"><i class="bi bi-calendar-event"></i><span class="nav-text">Exam Routine</span></a>
                         <a href="/AttendanceRecord" data-title="Attendance"><i class="bi bi-calendar-check"></i><span class="nav-text">Attendance</span></a>
                         <a asp-controller="StudentClassAssignment" asp-action="Index" data-title="Assignments"><i class="bi bi-journal-text"></i><span class="nav-text">Assignments</span></a>
 
@@ -222,6 +225,8 @@
                             {
                                 <a asp-controller="Exam" asp-action="Index" data-title="Exams"><i class="bi bi-pencil-square"></i><span class="nav-text">Exams</span></a>
                                 <a asp-controller="ExamComponents" asp-action="Index" data-title="Exam Components"><i class="bi bi-layers"></i><span class="nav-text">Exam Components</span></a>
+                                <a asp-controller="ExamSchedule" asp-action="Index" data-title="Schedule"><i class="bi bi-calendar4-event"></i><span class="nav-text">Schedule</span></a>
+                                <a href="/Teacher/ExamRoutine" data-title="Exam Routine"><i class="bi bi-calendar-event"></i><span class="nav-text">Exam Routine</span></a>
                             }
                             @if (IsAdmin())
                             {
@@ -230,6 +235,7 @@
                                 <a asp-controller="AdminResult" asp-action="AllResults" data-title="All Results"><i class="bi bi-list-check"></i><span class="nav-text">All Results</span></a>
                                 <a asp-controller="AdminResult" asp-action="AllSubjects" data-title="All Subjects"><i class="bi bi-book"></i><span class="nav-text">All Subjects</span></a>
                                 <a href="/ResultManagement/ReEvaluationDashboard" data-title="Re-evaluations"><i class="bi bi-search"></i><span class="nav-text">Re-evaluations</span></a>
+                                <a href="/Admin/ExamRoutine" data-title="Exam Routine"><i class="bi bi-calendar-event"></i><span class="nav-text">Exam Routine</span></a>
                             }
                             else if (isTeacherLike)
                             {

@@ -20,7 +20,7 @@ public class AcademicYearService : IAcademicYearService
 
     public async Task<PagedResult<AcademicYearListItemDto>> GetPagedAsync(int page, int pageSize, string? search, CancellationToken cancellationToken = default)
     {
-        var query = _unitOfWork.Repository<AcademicYear>().Query().Where(x => !x.IsDeleted);
+        var query = _unitOfWork.Repository<AcademicYear>().Query().AsNoTracking().Where(x => !x.IsDeleted);
         if (!string.IsNullOrEmpty(search)) query = query.Where(x => x.Name.Contains(search));
 
         var totalCount = await query.CountAsync(cancellationToken);

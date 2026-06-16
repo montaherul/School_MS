@@ -1085,15 +1085,20 @@
                     status: state.exam.id ? state.exam.status : 'Draft',
                     selectedClassIds: state.selectedClasses,
                     selectedSectionIds: state.selectedSections,
+                    selectedGroupIds: state.selectedGroups,
                     subjects: subjects
                 };
 
                 var url = state.exam.id ? '/api/ExamAdmin/update-exam/' + state.exam.id : '/api/ExamAdmin/create-exam';
                 var method = state.exam.id ? 'PUT' : 'POST';
 
+                var csrfToken = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
                 fetch(url, {
                     method: method,
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': csrfToken
+                    },
                     body: JSON.stringify(payload)
                 })
                 .then(function (r) {

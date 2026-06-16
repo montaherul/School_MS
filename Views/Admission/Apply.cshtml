@@ -308,7 +308,6 @@
                         </div>
                         <div class="card-body p-4">
                             <div class="row g-3">
-                                <div class="row g-3">
 
                                     <!-- Class -->
                                     <div class="col-md-4">
@@ -321,7 +320,7 @@
                                             {
                                                 foreach (var c in ViewBag.Classes)
                                                 {
-                                                    <option value="@c.Id" data-is-group-based="@(c.IsGroupBased.ToString().ToLower())">@c.Name</option>
+                                                    <option value="@c.Id" data-is-group-based="@(c.IsGroupBased.ToString().ToLower())" data-sort-order="@c.SortOrder">@c.Name</option>
                                                 }
                                             }
                                         </select>
@@ -331,15 +330,19 @@
                                     <!-- Section / Group -->
                                     <div class="col-md-4" id="sectionContainer" style="display:none;">
                                         <label class="form-label fw-bold">Select Section / Group</label>
-                                        <select name="SectionId" class="form-select form-select-lg">
+                                        <select asp-for="AppliedStudentGroupId" class="form-select form-select-lg" id="AppliedStudentGroupId">
                                             <option value="">Select Group</option>
-                                            <option value="1">Science</option>
-                                            <option value="2">Commerce</option>
-                                            <option value="3">Arts</option>
+                                            @if (ViewBag.StudentGroups != null)
+                                            {
+                                                foreach (var g in ViewBag.StudentGroups)
+                                                {
+                                                    <option value="@g.Id" data-min-class="@g.MinClass" data-max-class="@g.MaxClass">@g.Name</option>
+                                                }
+                                            }
                                         </select>
+                                        <span asp-validation-for="AppliedStudentGroupId" class="text-danger small"></span>
                                     </div>
 
-                                </div>
                                 <div class="col-md-4">
                                     <label asp-for="PaymentMethod" class="form-label fw-bold">Payment Method</label>
                                     <select asp-for="PaymentMethod" class="form-select form-select-lg">
@@ -398,11 +401,25 @@
 
         const classDropdown = document.getElementById("AppliedClassId");
         const sectionContainer = document.getElementById("sectionContainer");
+        const groupSelect = document.getElementById("AppliedStudentGroupId");
 
         classDropdown.addEventListener("change", function () {
             var selectedOption = this.options[this.selectedIndex];
             var isGroupBased = selectedOption && selectedOption.dataset.isGroupBased === 'true';
             sectionContainer.style.display = isGroupBased ? "block" : "none";
+
+            if (isGroupBased && groupSelect) {
+                var sortOrder = parseInt(selectedOption.dataset.sortOrder) || 0;
+                Array.from(groupSelect.options).forEach(function(opt) {
+                    if (opt.value === "") return;
+                    var minClass = parseInt(opt.dataset.minClass) || 0;
+                    var maxClass = parseInt(opt.dataset.maxClass) || 0;
+                    opt.style.display = (sortOrder >= minClass && sortOrder <= maxClass) ? "" : "none";
+                });
+                if (groupSelect.selectedOptions.length > 0 && groupSelect.selectedOptions[0].style.display === "none") {
+                    groupSelect.value = "";
+                }
+            }
         });
 
     });

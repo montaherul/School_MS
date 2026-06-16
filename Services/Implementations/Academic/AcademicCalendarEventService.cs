@@ -28,7 +28,7 @@ public class AcademicCalendarEventService : IAcademicCalendarEventService
 
     public async Task<List<AcademicCalendarEventDto>> GetEventsByCalendarAsync(int calendarId, CancellationToken ct = default)
     {
-        return await _uow.Repository<AcademicCalendarEvent>().Query()
+        return await _uow.Repository<AcademicCalendarEvent>().Query().AsNoTracking()
             .Where(x => x.AcademicCalendarId == calendarId && !x.IsDeleted)
             .OrderBy(x => x.StartDate)
             .Select(x => MapToDto(x))

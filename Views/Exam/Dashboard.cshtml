@@ -25,43 +25,63 @@
             </div>
         </div>
         <div class="er-page-header__right">
-            <form method="get" action="@Url.Action("Dashboard")" class="d-flex flex-wrap gap-2 align-items-center er-filters" id="examDashFilters">
-                <select name="academicYearId" class="form-select er-filters__select" onchange="this.form.submit()">
-                    @foreach (var y in Model.AcademicYears)
-                    {
-                        <!option value="@y.Id" selected="@(y.Id == Model.SelectedAcademicYearId)">@y.Name</!option>
-                    }
-                </select>
-                <select name="examId" class="form-select er-filters__select">
-                    <option value="">All Exams</option>
-                    @foreach (var ex in Model.YearExams)
-                    {
-                        <!option value="@ex.Id" selected="@(ex.Id == Model.SelectedExamId)">@ex.Name</!option>
-                    }
-                </select>
-                <select name="classId" class="form-select er-filters__select">
-                    <option value="">All Classes</option>
-                    @foreach (var c in Model.Classes)
-                    {
-                        <!option value="@c.Id" selected="@(c.Id == Model.SelectedClassId)">@c.Name</!option>
-                    }
-                </select>
-                <select name="sectionId" class="form-select er-filters__select">
-                    <option value="">All Sections</option>
-                    @foreach (var s in Model.Sections)
-                    {
-                        <!option value="@s.Id" selected="@(s.Id == Model.SelectedSectionId)">@s.Name</!option>
-                    }
-                </select>
-                <select name="groupId" class="form-select er-filters__select">
-                    <option value="">All Groups</option>
-                    @foreach (var g in Model.Groups)
-                    {
-                        <!option value="@g.Id" selected="@(g.Id == Model.SelectedGroupId)">@g.Name</!option>
-                    }
-                </select>
-                <button type="submit" class="er-btn er-btn--secondary er-btn--sm">Apply</button>
-            </form>
+            <div class="er-filters__row" style="flex-wrap:nowrap;">
+                <form method="get" action="@Url.Action("Dashboard")" id="examDashFilters" style="display:contents;">
+                    <div class="er-filters__group" style="margin-bottom:0;">
+                        <label class="er-filters__label">Year</label>
+                        <select name="academicYearId" class="er-filters__select" onchange="this.form.submit()">
+                            @foreach (var y in Model.AcademicYears)
+                            {
+                                <!option value="@y.Id" selected="@(y.Id == Model.SelectedAcademicYearId)">@y.Name</!option>
+                            }
+                        </select>
+                    </div>
+                    <div class="er-filters__group" style="margin-bottom:0;">
+                        <label class="er-filters__label">Exam</label>
+                        <select name="examId" class="er-filters__select">
+                            <option value="">All</option>
+                            @foreach (var ex in Model.YearExams)
+                            {
+                                <!option value="@ex.Id" selected="@(ex.Id == Model.SelectedExamId)">@ex.Name</!option>
+                            }
+                        </select>
+                    </div>
+                    <div class="er-filters__group" style="margin-bottom:0;">
+                        <label class="er-filters__label">Class</label>
+                        <select name="classId" class="er-filters__select">
+                            <option value="">All</option>
+                            @foreach (var c in Model.Classes)
+                            {
+                                <!option value="@c.Id" selected="@(c.Id == Model.SelectedClassId)">@c.Name</!option>
+                            }
+                        </select>
+                    </div>
+                    <div class="er-filters__group" style="margin-bottom:0;">
+                        <label class="er-filters__label">Section</label>
+                        <select name="sectionId" class="er-filters__select">
+                            <option value="">All</option>
+                            @foreach (var s in Model.Sections)
+                            {
+                                <!option value="@s.Id" selected="@(s.Id == Model.SelectedSectionId)">@s.Name</!option>
+                            }
+                        </select>
+                    </div>
+                    <div class="er-filters__group" style="margin-bottom:0;">
+                        <label class="er-filters__label">Group</label>
+                        <select name="groupId" class="er-filters__select">
+                            <option value="">All</option>
+                            @foreach (var g in Model.Groups)
+                            {
+                                <!option value="@g.Id" selected="@(g.Id == Model.SelectedGroupId)">@g.Name</!option>
+                            }
+                        </select>
+                    </div>
+                    <div class="er-filters__group--actions" style="margin-bottom:0;">
+                        <label class="er-filters__label">&nbsp;</label>
+                        <button type="submit" class="er-btn er-btn--secondary er-btn--sm">Apply</button>
+                    </div>
+                </form>
+            </div>
             <a href="@Url.Action("Create", "Exam")" class="er-btn er-btn--primary">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
                 New Exam
@@ -173,25 +193,103 @@
             </div>
         </div>
 
-        <div class="row g-4 mb-4">
-            <div class="col-md-6">
-                <div class="er-card">
-                    <div class="er-card__header">
-                        <h5 class="er-card__title">Exam Status Distribution</h5>
+        @if (Model.ExamGroups.Any())
+        {
+            <div class="dash-section">
+                <div class="dash-section__header">
+                    <h3 class="dash-section__title">Exam Groups</h3>
+                </div>
+                <div class="er-stats" style="margin-bottom:20px;">
+                    <div class="er-stat">
+                        <div class="er-stat__icon er-stat__icon--primary">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                        </div>
+                        <div class="er-stat__body">
+                            <span class="er-stat__label">Logical Groups</span>
+                            <span class="er-stat__value">@Model.ExamGroups.Count</span>
+                        </div>
                     </div>
-                    <div class="er-card__body">
-                        <canvas id="statusChart" height="250"></canvas>
+                    <div class="er-stat">
+                        <div class="er-stat__icon er-stat__icon--info">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2L2 7l10 5 10-5-10-5z" /><path d="M2 17l10 5 10-5" /><path d="M2 12l10 5 10-5" /></svg>
+                        </div>
+                        <div class="er-stat__body">
+                            <span class="er-stat__label">Class Exams</span>
+                            <span class="er-stat__value">@Model.ExamGroups.Sum(g => g.TotalExams)</span>
+                        </div>
+                    </div>
+                    <div class="er-stat">
+                        <div class="er-stat__icon er-stat__icon--success">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" /><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3" /></svg>
+                        </div>
+                        <div class="er-stat__body">
+                            <span class="er-stat__label">Published Groups</span>
+                            <span class="er-stat__value">@Model.ExamGroups.Count(g => g.PublishedCount == g.TotalExams)</span>
+                        </div>
                     </div>
                 </div>
+                @foreach (var grp in Model.ExamGroups.Take(5))
+                {
+                    <div class="er-card" style="margin-bottom:12px;">
+                        <div class="er-card__body" style="padding:14px 18px;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;">
+                                <div>
+                                    <strong style="font-size:15px;">@grp.GroupName</strong>
+                                    <span style="font-size:12px;color:var(--er-text-3);margin-left:8px;">@grp.TotalExams class@(grp.TotalExams != 1 ? "es" : "")</span>
+                                </div>
+                                <div style="display:flex;gap:16px;align-items:center;">
+                                    <span style="font-size:12px;color:var(--er-text-3);">Published: @grp.PublishedCount / @grp.TotalExams</span>
+                                    <div style="width:100px;height:6px;background:var(--er-border);border-radius:3px;overflow:hidden;">
+                                        <div style="width:@(grp.TotalExams > 0 ? (grp.PublishedCount * 100 / grp.TotalExams) : 0)%;height:100%;background:var(--er-success);border-radius:3px;"></div>
+                                    </div>
+                                    <a href="@Url.Action("Index", "Exam")?academicYearId=@Model.SelectedAcademicYearId" class="er-btn er-btn--secondary er-btn--sm">View All</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
             </div>
-            <div class="col-md-6">
-                <div class="er-card">
-                    <div class="er-card__header">
-                        <h5 class="er-card__title">Pass Rate by Exam</h5>
-                    </div>
-                    <div class="er-card__body">
-                        <canvas id="passRateChart" height="250"></canvas>
-                    </div>
+        }
+
+        <div class="dash-section">
+            <div class="dash-section__header">
+                <h3 class="dash-section__title">Quick Actions</h3>
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:12px;">
+                <a href="@Url.Action("Create", "Exam")" class="er-btn er-btn--primary">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                    Create New Exam
+                </a>
+                <a href="@Url.Action("Index", "Exam")" class="er-btn er-btn--secondary">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                    All Exams
+                </a>
+                <a href="@Url.Action("Index", "ExamSubject")" class="er-btn er-btn--secondary">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>
+                    Manage Subjects
+                </a>
+                <a href="@Url.Action("Index", "ExamSchedule")" class="er-btn er-btn--secondary">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" /></svg>
+                    Schedules
+                </a>
+            </div>
+        </div>
+
+        <div class="er-dash-grid" style="margin-bottom:24px;">
+            <div class="er-card">
+                <div class="er-card__header">
+                    <h5 class="er-card__title">Exam Status Distribution</h5>
+                </div>
+                <div class="er-card__body">
+                    <canvas id="statusChart" height="250"></canvas>
+                </div>
+            </div>
+            <div class="er-card">
+                <div class="er-card__header">
+                    <h5 class="er-card__title">Pass Rate by Exam</h5>
+                </div>
+                <div class="er-card__body">
+                    <canvas id="passRateChart" height="250"></canvas>
                 </div>
             </div>
         </div>
@@ -213,7 +311,7 @@
                                         <th>Term</th>
                                         <th>Duration</th>
                                         <th>Status</th>
-                                        <th class="text-end">Action</th>
+                                        <th style="text-align:end;">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -233,7 +331,7 @@
                                                     switch (st)
                                                     {
                                                         case 2: badgeClass = "warning"; label = "Submitted"; break;
-                                                        case 3: badgeClass = "success"; label = "Reviewed"; break;
+                                                        case 3: badgeClass = "primary"; label = "Reviewed"; break;
                                                         case 4: badgeClass = "success"; label = "Approved"; break;
                                                         case 5: badgeClass = "success"; label = "Published"; break;
                                                         case 6: badgeClass = "neutral"; label = "Locked"; break;
@@ -242,7 +340,7 @@
                                                 }
                                                 <span class="er-badge er-badge--@badgeClass">@label</span>
                                             </td>
-                                            <td class="text-end">
+                                            <td style="text-align:end;">
                                                 <a href="@Url.Action("Details", "Exam", new { id = exam.Id })" class="er-btn er-btn--secondary er-btn--sm">Details</a>
                                             </td>
                                         </tr>
@@ -286,12 +384,12 @@
                         </div>
                     }
                 </div>
+            </div>
         </div>
-    </div>
-}
+    }
 
-    <div id="loadingOverlay" class="er-skeleton er-skeleton--card" style="display:none;">
-        <div class="er-skeleton__spinner" style="display:flex;align-items:center;justify-content:center;height:100%;gap:12px;">
+    <div id="loadingOverlay" class="er-skeleton--card" style="display:none;">
+        <div style="display:flex;align-items:center;justify-content:center;height:100%;gap:12px;">
             <div style="width:24px;height:24px;border:3px solid var(--er-border);border-top-color:var(--er-primary);border-radius:50%;animation:er-spin 0.8s linear infinite;"></div>
             <span style="color:var(--er-text-3);font-size:13px;">Loading dashboard…</span>
         </div>

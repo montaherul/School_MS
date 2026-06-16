@@ -79,8 +79,8 @@ public class ExamService : IExamService
     public async Task<object?> CreateExamAsync(ExamUpsertDto dto, CancellationToken ct = default)
     {
         var repo = _uow.Repository<ExamEntity>();
-        if (await repo.AnyAsync(e => e.Name == dto.Name && e.AcademicYearId == dto.AcademicYearId, ct))
-            throw new InvalidOperationException($"An exam named '{dto.Name}' already exists for this academic year.");
+        if (await repo.AnyAsync(e => e.Name == dto.Name && e.AcademicYearId == dto.AcademicYearId && e.ClassId == dto.ClassId && e.StudentGroupId == dto.StudentGroupId, ct))
+            throw new InvalidOperationException($"An exam named '{dto.Name}' already exists for this class and academic year.");
 
         // Validate Bangladesh Group Rules
         await _examValidation.ValidateBangladeshGroupRulesAsync(dto.ClassId, dto.StudentGroupId, ct);
@@ -108,6 +108,8 @@ public class ExamService : IExamService
                 {
                     ExamId = exam.Id,
                     SubjectId = s.SubjectId,
+                    ClassId = dto.ClassId,
+                    StudentGroupId = dto.StudentGroupId,
                     FullMarks = s.FullMarks,
                     PassMarks = s.PassMarks,
                     IsOptional = s.IsOptional
@@ -121,13 +123,64 @@ public class ExamService : IExamService
     }
 
     /// <summary>
+    /// Create exams for multiple classes/groups in bulk.
+    /// </summary>
+    public async Task<List<object?>> CreateExamsBulkAsync(ExamUpsertDto dto, CancellationToken ct = default)
+    {
+        var results = new List<object?>();
+        var classIds = dto.SelectedClassIds ?? [];
+        var groupIds = dto.SelectedGroupIds ?? [];
+        var sectionIds = dto.SelectedSectionIds ?? [];
+
+        foreach (var classId in classIds)
+        {
+            var batchGroupIds = groupIds.Count == classIds.Count
+                ? new List<int?> { groupIds[classIds.IndexOf(classId)] }
+                : new List<int?> { dto.StudentGroupId };
+
+            if (batchGroupIds.Count == 1 && batchGroupIds[0] == null)
+                batchGroupIds.Clear();
+
+            foreach (var groupId in batchGroupIds)
+            {
+                var clone = new ExamUpsertDto
+                {
+                    Name = dto.Name,
+                    Term = dto.Term,
+                    AcademicYearId = dto.AcademicYearId,
+                    ClassId = classId,
+                    SectionId = sectionIds.Count == classIds.Count
+                        ? sectionIds[classIds.IndexOf(classId)]
+                        : dto.SectionId,
+                    StudentGroupId = groupId,
+                    StartsOn = dto.StartsOn,
+                    EndsOn = dto.EndsOn,
+                    Status = dto.Status,
+                    Subjects = dto.Subjects?.Select(s => new SubjectMarkConfigDto
+                    {
+                        SubjectId = s.SubjectId,
+                        FullMarks = s.FullMarks,
+                        PassMarks = s.PassMarks,
+                        IsOptional = s.IsOptional
+                    }).ToList()
+                };
+
+                var result = await CreateExamAsync(clone, ct);
+                results.Add(result);
+            }
+        }
+
+        return results;
+    }
+
+    /// <summary>
     /// Update existing exam details and subjects
     /// </summary>
     public async Task<object?> UpdateExamAsync(int examId, ExamUpsertDto dto, CancellationToken ct = default)
     {
         var repo = _uow.Repository<ExamEntity>();
-        if (await repo.AnyAsync(e => e.Name == dto.Name && e.AcademicYearId == dto.AcademicYearId && e.Id != examId, ct))
-            throw new InvalidOperationException($"Another exam named '{dto.Name}' already exists for this academic year.");
+        if (await repo.AnyAsync(e => e.Name == dto.Name && e.AcademicYearId == dto.AcademicYearId && e.ClassId == dto.ClassId && e.StudentGroupId == dto.StudentGroupId && e.Id != examId, ct))
+            throw new InvalidOperationException($"Another exam named '{dto.Name}' already exists for this class and academic year.");
 
         // Validate Bangladesh Group Rules
         await _examValidation.ValidateBangladeshGroupRulesAsync(dto.ClassId, dto.StudentGroupId, ct);
@@ -160,6 +213,8 @@ public class ExamService : IExamService
                 {
                     ExamId = exam.Id,
                     SubjectId = s.SubjectId,
+                    ClassId = exam.ClassId,
+                    StudentGroupId = exam.StudentGroupId,
                     FullMarks = s.FullMarks,
                     PassMarks = s.PassMarks,
                     IsOptional = s.IsOptional
@@ -472,7 +527,7 @@ public class ExamService : IExamService
         // Remove religion subjects (they're added per-student based on religion)
         var nonReligionSubjects = classSubjects.Where(cs => !cs.IsReligionSubject).ToList();
 
-        // Generate ExamSubject records
+        // Generate ExamSubject records scoped to this class/group
         var examSubjects = new List<ExamSubjectEntity>();
         foreach (var cs in nonReligionSubjects)
         {
@@ -480,14 +535,17 @@ public class ExamService : IExamService
             {
                 ExamId = examId,
                 SubjectId = cs.SubjectId,
+                ClassId = classId,
+                StudentGroupId = groupId,
                 FullMarks = cs.FullMarks,
                 PassMarks = cs.PassMarks,
                 IsOptional = cs.IsOptional
             });
         }
 
+        // Remove only subjects for THIS class/group, not other classes' subjects
         var existingSubjects = await _uow.Repository<ExamSubjectEntity>().Query()
-            .Where(es => es.ExamId == examId).ToListAsync(ct);
+            .Where(es => es.ExamId == examId && es.ClassId == classId && es.StudentGroupId == groupId).ToListAsync(ct);
 
         foreach (var old in existingSubjects)
             _uow.Repository<ExamSubjectEntity>().Remove(old);

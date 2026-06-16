@@ -203,7 +203,7 @@
 
     function publishResult(examId) {
         showConfirm('Are you sure you want to publish results for this exam? This will lock current marks and notify students.', function () {
-            fetch('/ResultManagement/PublishResults', {
+            fetch('/AdminResult/PublishResults', {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
@@ -229,15 +229,13 @@
 
     function recalculateRanking(examId) {
         showConfirm('Recalculate merit positions and ranks?', function () {
-            const formData = new FormData();
-            formData.append('examId', examId);
-            
-            fetch('/AdminResult/RecalculateResults', {
+            fetch('/AdminResult/RecalculateResults?examId=' + examId, {
                 method: 'POST',
-                body: formData,
                 headers: {
+                    'Content-Type': 'application/json',
                     'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
-                }
+                },
+                body: '{}'
             }).then(r => {
                 if(r.ok) {
                     if (typeof showExamToast === 'function') showExamToast('Ranking updated!', 'success');

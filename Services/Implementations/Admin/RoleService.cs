@@ -14,7 +14,7 @@ public class RoleService : IRoleService
 
     public async Task<PagedResult<dynamic>> GetPagedAsync(int page, int pageSize, string? search, CancellationToken ct = default)
     {
-        var query = _unitOfWork.Repository<Role>().Query().Where(r => !r.IsDeleted);
+        var query = _unitOfWork.Repository<Role>().Query().AsNoTracking().Where(r => !r.IsDeleted);
 
         if (!string.IsNullOrEmpty(search))
         {

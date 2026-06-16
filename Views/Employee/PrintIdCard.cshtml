@@ -1,14 +1,22 @@
 @model SchoolManagementSystem.Models.ViewModels.Employee.EmployeeIdCardPrintViewModel
 @using SchoolManagementSystem.Helpers
-@using SchoolManagementSystem.Models.ViewModels.Employee
+@using SchoolManagementSystem.Models.ViewModels.IdCard
 @{
     Layout = null;
+    var baseFileUrl = !string.IsNullOrEmpty(Model.BaseUrl) && Model.BaseUrl.StartsWith("file:///")
+        ? Model.BaseUrl
+        : string.Empty;
+    Func<string?, string> imgToDataUri = (path) => IdCardImageHelper.FileToDataUri(path, baseFileUrl);
+    var schoolLogoUri = imgToDataUri(Model.SchoolLogoPath);
+    var shortName = !string.IsNullOrEmpty(Model.SchoolNameEn) && Model.SchoolNameEn.Length >= 3
+        ? Model.SchoolNameEn[..Math.Min(3, Model.SchoolNameEn.IndexOf(' ') > 0 ? Model.SchoolNameEn.IndexOf(' ') : 3)].ToUpperInvariant()
+        : "SCA";
 }
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Employee ID Card</title>
     <meta charset="utf-8" />
+    <title>Employee ID Card</title>
     <base href="@Model.BaseUrl" />
     <link rel="stylesheet" href="/css/idcard-print.css" />
 </head>
@@ -19,36 +27,33 @@
         <div class="page-bulk">
             @foreach (var employee in Model.Employees)
             {
-                var cardModel = new EmployeeCardModel
+                var dob = employee.DateOfBirth.ToString("dd MMM yyyy");
+                var validUntil = (employee.CardExpiryDate ?? DateTime.Today.AddYears(2)).ToString("dd MMM yyyy");
+                var vm = new EmployeeIdCardViewModel
                 {
-                    Employee = employee,
-                    QrCodeDataUri = IdCardQRHelper.GenerateQrCodeBase64(employee.EmployeeCode ?? "N/A"),
-                    ThemeColor = ThemeHelper.GetThemeColor(employee.Designation),
-                    SchoolLogoPath = Model.SchoolLogoPath,
-                    SchoolSealPath = Model.SchoolSealPath,
-                    SchoolNameEn = Model.SchoolNameEn,
-                    SchoolEIIN = Model.SchoolEIIN,
-                    SchoolWebsite = Model.SchoolWebsite,
-                    SchoolMotto = Model.SchoolMotto,
-                    AcademicYear = Model.AcademicYear,
+                    EmployeeFullName = employee.FullName ?? "---",
+                    EmployeeIdNo = employee.EmployeeCode ?? "---",
+                    Designation = employee.Designation ?? "---",
+                    Department = employee.Department ?? "---",
+                    MobileNumber = employee.Phone ?? "---",
+                    BloodGroup = IdCardImageHelper.GetBloodWithColor(employee.BloodGroup),
+                    DateOfBirth = dob,
+                    BadgeLabel = employee.IsTeachingStaff ? "Teacher" : "Staff",
+                    SignatureLabel = "Chairman",
+                    EmployeePhotoDataUri = imgToDataUri(employee.ProfilePicturePath),
+                    SchoolName = Model.SchoolNameEn,
+                    SchoolShortName = shortName,
+                    SchoolLogoDataUri = schoolLogoUri,
                     SchoolAddress = Model.SchoolAddress,
                     SchoolPhone = Model.SchoolPhone,
                     SchoolEmail = Model.SchoolEmail,
-                    PrincipalName = Model.PrincipalName,
-                    PrincipalSignaturePath = Model.PrincipalSignaturePath,
-                    FooterText = Model.FooterText
+                    QrCodeDataUri = IdCardQRHelper.GenerateQrCodeBase64(employee.EmployeeCode ?? "N/A"),
+                    ValidUntil = validUntil
                 };
 
-                <div class="card-page">
-                    <div class="card-pair">
-                        <div class="card-wrapper">
-                            <partial name="~/Views/Shared/IdCards/_EmployeeCardFront.cshtml" model="cardModel" />
-                        </div>
-                        <div class="card-spacer"></div>
-                        <div class="card-wrapper">
-                            <partial name="~/Views/Shared/IdCards/_EmployeeCardBack.cshtml" model="cardModel" />
-                        </div>
-                    </div>
+                <div class="card-group">
+                    <partial name="~/Views/Shared/IdCards/_EmployeeCardFront.cshtml" model="vm" />
+                    <partial name="~/Views/Shared/IdCards/_EmployeeCardBack.cshtml" model="vm" />
                 </div>
             }
         </div>
@@ -57,36 +62,36 @@
     {
         foreach (var employee in Model.Employees)
         {
-            var cardModel = new EmployeeCardModel
+            var dob = employee.DateOfBirth.ToString("dd MMM yyyy");
+            var validUntil = (employee.CardExpiryDate ?? DateTime.Today.AddYears(2)).ToString("dd MMM yyyy");
+            var vm = new EmployeeIdCardViewModel
             {
-                Employee = employee,
-                QrCodeDataUri = IdCardQRHelper.GenerateQrCodeBase64(employee.EmployeeCode ?? "N/A"),
-                ThemeColor = ThemeHelper.GetThemeColor(employee.Designation),
-                SchoolLogoPath = Model.SchoolLogoPath,
-                SchoolSealPath = Model.SchoolSealPath,
-                SchoolNameEn = Model.SchoolNameEn,
-                SchoolEIIN = Model.SchoolEIIN,
-                SchoolWebsite = Model.SchoolWebsite,
-                SchoolMotto = Model.SchoolMotto,
-                AcademicYear = Model.AcademicYear,
+                EmployeeFullName = employee.FullName ?? "---",
+                EmployeeIdNo = employee.EmployeeCode ?? "---",
+                Designation = employee.Designation ?? "---",
+                Department = employee.Department ?? "---",
+                MobileNumber = employee.Phone ?? "---",
+                BloodGroup = IdCardImageHelper.GetBloodWithColor(employee.BloodGroup),
+                DateOfBirth = dob,
+                BadgeLabel = employee.IsTeachingStaff ? "Teacher" : "Staff",
+                SignatureLabel = "Chairman",
+                EmployeePhotoDataUri = imgToDataUri(employee.ProfilePicturePath),
+                SchoolName = Model.SchoolNameEn,
+                SchoolShortName = shortName,
+                SchoolLogoDataUri = schoolLogoUri,
                 SchoolAddress = Model.SchoolAddress,
                 SchoolPhone = Model.SchoolPhone,
                 SchoolEmail = Model.SchoolEmail,
-                PrincipalName = Model.PrincipalName,
-                PrincipalSignaturePath = Model.PrincipalSignaturePath,
-                FooterText = Model.FooterText
+                QrCodeDataUri = IdCardQRHelper.GenerateQrCodeBase64(employee.EmployeeCode ?? "N/A"),
+                ValidUntil = validUntil
             };
 
-            <div class="page-single">
-                <div class="card-pair">
-                    <div class="card-wrapper">
-                        <partial name="~/Views/Shared/IdCards/_EmployeeCardFront.cshtml" model="cardModel" />
-                    </div>
-                    <div class="card-spacer"></div>
-                    <div class="card-wrapper">
-                        <partial name="~/Views/Shared/IdCards/_EmployeeCardBack.cshtml" model="cardModel" />
-                    </div>
-                </div>
+            <div class="page-single f">
+                <partial name="~/Views/Shared/IdCards/_EmployeeCardFront.cshtml" model="vm" />
+            </div>
+            <div class="page-break"></div>
+            <div class="page-single b">
+                <partial name="~/Views/Shared/IdCards/_EmployeeCardBack.cshtml" model="vm" />
             </div>
         }
     }

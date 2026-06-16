@@ -12,4 +12,6 @@ public interface IExamSubjectService
     Task RemoveSubjectAsync(int examSubjectId);
     Task<List<ExamScheduleDto>> GetScheduleAsync(int examId);
     Task SaveScheduleAsync(int examId, List<ExamScheduleDto> schedules);
+    Task<int> CopySubjectStructureAsync(int sourceExamId, List<int> targetExamIds);
+    Task<List<ExamListDto>> GetSiblingExamsAsync(int examId);
 }

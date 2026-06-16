@@ -136,6 +136,21 @@ public class Exam : BaseEntity
     public DateTime? LockedAt { get; set; }
     public int? LockedByUserId { get; set; }
 
+    /// <summary>
+    /// Computed group key for UI grouping of same-named exams across classes.
+    /// Format: "{AcademicYearId}_{NormalizedName}"
+    /// Not stored in DB — computed at runtime.
+    /// </summary>
+    [NotMapped]
+    public string ExamGroupKey => GenerateGroupKey(AcademicYearId, Name);
+
+    public static string GenerateGroupKey(int academicYearId, string examName)
+    {
+        var normalized = (examName ?? "").Trim().ToUpperInvariant();
+        var clean = global::System.Text.RegularExpressions.Regex.Replace(normalized, @"[\s\-]+", "_");
+        return $"{academicYearId}_{clean}";
+    }
+
     // Navigation
     public virtual ICollection<ExamSubject> ExamSubjects { get; set; } = [];
     public virtual ICollection<ExamSchedule> ExamSchedules { get; set; } = [];

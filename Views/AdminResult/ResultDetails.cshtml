@@ -1,0 +1,234 @@
+@model SchoolManagementSystem.Models.DTOs.Result.StudentExamResultDto
+@{
+    ViewData["Title"] = "Result Details";
+}
+
+<div class="adm-page er-page">
+    <div class="er-page-header">
+        <div class="er-page-header__left">
+            <div class="er-page-header__icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                    <polyline points="10 9 9 9 8 9" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="er-page-header__title">Result Details</h1>
+                <p class="er-page-header__sub">@Model.ExamName &middot; @Model.ClassName — @Model.SectionName</p>
+            </div>
+        </div>
+        <div class="er-page-header__right">
+            <button class="er-btn er-btn--primary" onclick="printResult(@Model.StudentId)">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 6 2 18 2 18 9" /><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect x="6" y="14" width="12" height="8" /></svg>
+                Print
+            </button>
+            <a href="@Url.Action("ReviewResults", "AdminResult", new { examId = Model.ExamId })" class="er-btn er-btn--secondary">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></svg>
+                Back
+            </a>
+        </div>
+    </div>
+
+    @if (Model != null)
+    {
+        <div class="row g-4 mb-4">
+            <div class="col-lg-4">
+                <div class="er-card" style="border-radius: var(--adm-radius-lg);">
+                    <div class="er-card__body">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div style="width:56px;height:56px;border-radius:50%;background:var(--adm-primary-bg);display:flex;align-items:center;justify-content:center;color:var(--adm-primary);flex-shrink:0;">
+                                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+                            </div>
+                            <div>
+                                <h4 style="font-size:16px;font-weight:700;color:var(--adm-text);margin:0;">@Model.StudentName</h4>
+                                <p style="font-size:13px;color:var(--adm-text-3);margin:2px 0 0;">Roll: @Model.RollNumber</p>
+                            </div>
+                        </div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+                            <div>
+                                <div style="font-size:11px;color:var(--adm-text-3);text-transform:uppercase;letter-spacing:0.04em;">Class</div>
+                                <div style="font-size:14px;font-weight:600;color:var(--adm-text);">@Model.ClassName</div>
+                            </div>
+                            <div>
+                                <div style="font-size:11px;color:var(--adm-text-3);text-transform:uppercase;letter-spacing:0.04em;">Section</div>
+                                <div style="font-size:14px;font-weight:600;color:var(--adm-text);">@Model.SectionName</div>
+                            </div>
+                            <div>
+                                <div style="font-size:11px;color:var(--adm-text-3);text-transform:uppercase;letter-spacing:0.04em;">Group</div>
+                                <div style="font-size:14px;font-weight:600;color:var(--adm-text);">@(string.IsNullOrEmpty(Model.GroupName) ? "N/A" : Model.GroupName)</div>
+                            </div>
+                            <div>
+                                <div style="font-size:11px;color:var(--adm-text-3);text-transform:uppercase;letter-spacing:0.04em;">Exam</div>
+                                <div style="font-size:14px;font-weight:600;color:var(--adm-text);">@Model.ExamName</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-8">
+                <div class="er-card" style="border-radius: var(--adm-radius-lg);">
+                    <div class="er-card__body">
+                        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;">
+                            <div style="text-align:center;padding:12px;background:var(--adm-surface-2);border-radius:var(--adm-radius-sm);">
+                                <div style="font-size:22px;font-weight:700;color:var(--adm-text);">@Model.TotalMarks.ToString("F2")</div>
+                                <div style="font-size:11px;color:var(--adm-text-3);margin-top:2px;">Total Marks</div>
+                            </div>
+                            <div style="text-align:center;padding:12px;background:var(--adm-surface-2);border-radius:var(--adm-radius-sm);">
+                                <div style="font-size:22px;font-weight:700;color:var(--adm-primary);">@Model.Gpa.ToString("F2")</div>
+                                <div style="font-size:11px;color:var(--adm-text-3);margin-top:2px;">GPA</div>
+                            </div>
+                            <div style="text-align:center;padding:12px;background:var(--adm-surface-2);border-radius:var(--adm-radius-sm);">
+                                <div style="font-size:22px;font-weight:700;color:var(--adm-converted);">@Model.Grade</div>
+                                <div style="font-size:11px;color:var(--adm-text-3);margin-top:2px;">Grade</div>
+                            </div>
+                            <div style="text-align:center;padding:12px;background:var(--adm-surface-2);border-radius:var(--adm-radius-sm);">
+                                <div style="font-size:22px;font-weight:700;color:var(--adm-success);">#@Model.ClassPosition</div>
+                                <div style="font-size:11px;color:var(--adm-text-3);margin-top:2px;">Class Rank</div>
+                            </div>
+                        </div>
+                        <div class="d-flex gap-3 mt-3 flex-wrap justify-content-center">
+                            <span class="er-badge @(Model.IsPassed ? "er-badge--success" : "er-badge--danger")" style="font-size:13px;padding:6px 18px;">
+                                @(Model.IsPassed ? "Passed" : "Failed")
+                            </span>
+                            @if (Model.GroupPosition.HasValue)
+                            {
+                                <span class="er-badge er-badge--info" style="font-size:13px;padding:6px 18px;">Group Rank: #@Model.GroupPosition</span>
+                            }
+                            <span class="er-badge er-badge--neutral" style="font-size:13px;padding:6px 18px;">
+                                @Model.PassedSubjectCount Passed / @Model.FailedSubjectCount Failed
+                            </span>
+                            @if (Model.PublishedAt.HasValue)
+                            {
+                                <span class="er-badge er-badge--primary" style="font-size:13px;padding:6px 18px;">
+                                    Published: @Model.PublishedAt.Value.ToString("dd MMM yyyy")
+                                </span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="er-card" style="border-radius: var(--adm-radius-lg); border-top: 1px solid var(--adm-border);">
+            <div class="er-card__header">
+                <h3 class="er-card__title">Subject-Wise Breakdown</h3>
+                <span class="er-badge er-badge--neutral">@Model.Subjects.Count subject(s)</span>
+            </div>
+            <div class="er-card__body--flush">
+                @if (Model.Subjects.Any())
+                {
+                    <div class="table-responsive">
+                        <table class="er-table">
+                            <thead>
+                                <tr>
+                                    <th class="ps-4">Subject</th>
+                                    <th class="text-end">Marks Obtained</th>
+                                    <th class="text-end">Full Marks</th>
+                                    <th class="text-end">Grade Point</th>
+                                    <th class="text-center">Grade</th>
+                                    <th class="text-end pe-4">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var sub in Model.Subjects)
+                                {
+                                    <tr>
+                                        <td class="ps-4 fw-semibold">@sub.SubjectName</td>
+                                        <td class="text-end">@sub.MarksObtained.ToString("F2")</td>
+                                        <td class="text-end" style="color:var(--adm-text-3);">@sub.FullMarks.ToString("F0")</td>
+                                        <td class="text-end">@sub.GradePoint.ToString("F2")</td>
+                                        <td class="text-center">
+                                            <span class="er-badge er-badge--primary">@sub.Grade</span>
+                                        </td>
+                                        <td class="text-end pe-4">
+                                            @if (sub.IsPassed)
+                                            {
+                                                <span class="er-badge er-badge--success">Pass</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="er-badge er-badge--danger">Fail</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr style="font-weight:700;background:var(--adm-surface-2);">
+                                    <td class="ps-4">Total</td>
+                                    <td class="text-end">@Model.TotalMarks.ToString("F2")</td>
+                                    <td class="text-end" style="color:var(--adm-text-3);">@Model.TotalFullMarks.ToString("F0")</td>
+                                    <td class="text-end">@Model.Gpa.ToString("F2")</td>
+                                    <td class="text-center">
+                                        <span class="er-badge er-badge--primary">@Model.Grade</span>
+                                    </td>
+                                    <td class="text-end pe-4">
+                                        <span class="er-badge @(Model.IsPassed ? "er-badge--success" : "er-badge--danger")">
+                                            @(Model.IsPassed ? "Passed" : "Failed")
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="p-4">
+                        <div style="padding:16px;color:var(--adm-text-3);font-size:13px;">No subject details available.</div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="d-flex gap-2 flex-wrap mt-4">
+            <button class="er-btn er-btn--primary" onclick="printResult(@Model.StudentId)">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 6 2 18 2 18 9" /><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect x="6" y="14" width="12" height="8" /></svg>
+                Print Result
+            </button>
+            <a href="@Url.Action("ReviewResults", "AdminResult", new { examId = Model.ExamId })" class="er-btn er-btn--secondary">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></svg>
+                Back to Review
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="er-card" style="border-radius: var(--adm-radius-lg);">
+            <div class="er-card__body">
+                <div class="er-empty">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                    <h3 class="er-empty__title">Result Not Found</h3>
+                    <p class="er-empty__desc">The requested student result could not be found.</p>
+                    <a href="@Url.Action("Dashboard", "AdminResult")" class="er-btn er-btn--primary">Back to Dashboard</a>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
+
+@section Scripts {
+    <script>
+        function showToast(message, type) {
+            var bg = type === 'success' ? 'bg-success' : 'bg-danger';
+            var container = document.getElementById('toastContainer');
+            var toast = document.createElement('div');
+            toast.className = 'toast align-items-center text-white border-0 ' + bg;
+            toast.innerHTML = '<div class="d-flex"><div class="toast-body">' + message + '</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>';
+            container.appendChild(toast);
+            var bs = new bootstrap.Toast(toast, { delay: 4000 });
+            bs.show();
+            toast.addEventListener('hidden.bs.toast', function () { toast.remove(); });
+        }
+
+        function printResult(studentId) {
+            showToast('Print functionality coming soon — Student #' + studentId, 'info');
+        }
+    </script>
+}

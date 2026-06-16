@@ -31,6 +31,7 @@ public class AdmissionController : Controller
     public async Task<IActionResult> Apply(CancellationToken ct)
     {
         ViewBag.Classes = await _admissionService.GetAvailableClassesAsync(ct);
+        ViewBag.StudentGroups = await _admissionService.GetActiveStudentGroupsAsync(ct);
         return View(new AdmissionCreateDto { DateOfBirth = DateTime.Today.AddYears(-6) });
     }
 
@@ -42,6 +43,7 @@ public class AdmissionController : Controller
         if (!ModelState.IsValid)
         {
             ViewBag.Classes = await _admissionService.GetAvailableClassesAsync(ct);
+            ViewBag.StudentGroups = await _admissionService.GetActiveStudentGroupsAsync(ct);
             return View(model);
         }
 
@@ -57,6 +59,7 @@ public class AdmissionController : Controller
         {
             ModelState.AddModelError(string.Empty, ex.Message);
             ViewBag.Classes = await _admissionService.GetAvailableClassesAsync(ct);
+            ViewBag.StudentGroups = await _admissionService.GetActiveStudentGroupsAsync(ct);
             return View(model);
         }
     }
@@ -283,7 +286,8 @@ public class AdmissionController : Controller
         PermanentThana = a.PermanentThana,
         PermanentDistrict = a.PermanentDistrict,
         AppliedClassId = a.AppliedClassId,
-        ProfilePicturePath = a.ProfilePicturePath
+        ProfilePicturePath = a.ProfilePicturePath,
+        GuardianPhotoPath = a.GuardianPhoto
     };
 }
 
