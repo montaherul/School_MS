@@ -2,35 +2,42 @@
 @{
     var bg = Model.BloodGroup ?? "N/A";
     var isRealBlood = !string.IsNullOrEmpty(bg) && bg != "N/A" && bg != "Unknown";
+    var cls = !string.IsNullOrEmpty(Model.ClassName) ? Model.ClassName : "---";
+    var sec = !string.IsNullOrEmpty(Model.SectionName) ? Model.SectionName : "---";
 }
 <div class="pvc sf">
-    <div class="hdr-stripe"></div>
-    <div class="hdr"></div>
+    <div class="stripe"></div>
 
-    <div class="logo-area">
-        <div class="logo-box">
-            @if (!string.IsNullOrEmpty(Model.SchoolLogoDataUri))
-            {
-                <img src="@Model.SchoolLogoDataUri" alt="logo" />
-            }
-            else
-            {
-                <svg viewBox="0 0 14 14" fill="none">
-                    <path d="M7 1L13 4.5V9.5L7 13L1 9.5V4.5L7 1Z" fill="rgba(255,255,255,0.85)"/>
-                    <path d="M7 4L10 5.8V8.8L7 10.5L4 8.8V5.8L7 4Z" fill="#1A2E5A"/>
-                </svg>
-            }
+    <!-- HEADER -->
+    <div class="hdr">
+        <div class="logo-area">
+            <div class="logo-box">
+                @if (!string.IsNullOrEmpty(Model.SchoolLogoDataUri))
+                {
+                    <img src="@Model.SchoolLogoDataUri" alt="logo" />
+                }
+                else
+                {
+                    <svg viewBox="0 0 14 14" fill="none">
+                        <path d="M7 1L13 4.5V9.5L7 13L1 9.5V4.5L7 1Z" fill="rgba(255,255,255,0.85)"/>
+                        <path d="M7 4L10 5.8V8.8L7 10.5L4 8.8V5.8L7 4Z" fill="#1A2E5A"/>
+                    </svg>
+                }
+            </div>
         </div>
-        <div class="logo-txt">
-            <strong>@(!string.IsNullOrEmpty(Model.SchoolShortName) ? Model.SchoolShortName : "SCA")</strong>
-            <span class="school-name">@Model.SchoolName</span>
+
+        <div class="school-info">
+            <div class="school-name-line">@Model.SchoolName</div>
+            <div class="school-eiin">EIIN: @Model.SchoolShortName</div>
+            <div class="school-session">Session: @Model.AcademicYear</div>
         </div>
+
+        <div class="badge">Student</div>
     </div>
 
-    <div class="badge">Student</div>
-
+    <!-- PHOTO -->
     <div class="photo-wrap">
-        <div class="photo-inner">
+        <div class="photo-ring">
             @if (!string.IsNullOrEmpty(Model.StudentPhotoDataUri))
             {
                 <img src="@Model.StudentPhotoDataUri" alt="photo" />
@@ -45,49 +52,40 @@
         </div>
     </div>
 
-    <div class="body">
-        <div class="name">@Model.StudentFullName</div>
-        <div class="sub-role">Student &middot; @Model.ClassName &mdash; @Model.SectionName</div>
+    <!-- NAME -->
+    <div class="name-section">
+        <div class="student-name">@Model.StudentFullName</div>
+        <div class="student-class">@cls &mdash; @sec</div>
+        <div class="student-roll">Roll: @Model.RollNumber</div>
+    </div>
 
-        <div class="sep">
-            <span class="sep-line"></span>
-            <span class="sep-dot"></span>
-            <span class="sep-line"></span>
+    <!-- INFO -->
+    <div class="info">
+        <div class="info-row">
+            <span class="info-lbl">Student ID</span>
+            <span class="info-val">@Model.StudentIdNo</span>
         </div>
-
-        <div class="fields">
-            <div class="row">
-                <span class="lbl">ID No</span>
-                <span class="col">:</span>
-                <span class="val">@Model.StudentIdNo</span>
-            </div>
-            <div class="row">
-                <span class="lbl">Roll</span>
-                <span class="col">:</span>
-                <span class="val">@Model.RollNumber</span>
-            </div>
-            <div class="row">
-                <span class="lbl">Blood</span>
-                <span class="col">:</span>
-                <span class="val@(isRealBlood ? " blood-red" : " blood-gray")">@bg</span>
-            </div>
-            <div class="row">
-                <span class="lbl">DOB</span>
-                <span class="col">:</span>
-                <span class="val">@Model.DateOfBirth</span>
-            </div>
-            <div class="row">
-                <span class="lbl">Session</span>
-                <span class="col">:</span>
-                <span class="val">@Model.AcademicYear</span>
-            </div>
+        <div class="info-row">
+            <span class="info-lbl">Blood Group</span>
+            <span class="info-val @(isRealBlood ? "blood-red" : "blood-gray")">@bg</span>
+        </div>
+        <div class="info-row">
+            <span class="info-lbl">Date of Birth</span>
+            <span class="info-val">@Model.DateOfBirth</span>
+        </div>
+        <div class="info-row">
+            <span class="info-lbl">Session</span>
+            <span class="info-val">@Model.AcademicYear</span>
         </div>
     </div>
 
-    <div class="ftr"></div>
-
-    <div class="sig">
-        <div class="sig-line"></div>
-        <div class="sig-lbl">Principal</div>
+    <!-- FOOTER -->
+    <div class="ftr">
+        <div class="ftr-accent"></div>
+        <div class="sig">
+            <div class="sig-line"></div>
+            <div class="sig-lbl">Principal</div>
+        </div>
+        <div class="card-meta">Issue: @DateTime.Now.ToString("dd MMM yyyy") &nbsp;&bull;&nbsp; Card No: @Model.StudentIdNo</div>
     </div>
 </div>

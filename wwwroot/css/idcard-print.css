@@ -1,3 +1,9 @@
+/* ═══════════════════════════════════════════════════════════════
+   MODERN PVC ID CARD — Enterprise Grade
+   CR80 Portrait: 54mm × 86mm
+   wkhtmltopdf compatible (no flex/grid/var)
+   ═══════════════════════════════════════════════════════════════ */
+
 * {
   margin: 0;
   padding: 0;
@@ -18,13 +24,12 @@ html, body {
 }
 
 @media print {
-  html, body {
-    margin: 0;
-    padding: 0;
-  }
+  html, body { margin: 0; padding: 0; }
 }
 
-/* ─── PAGE LAYOUT ─── */
+/* ──────────────────────────────────────
+   PAGE LAYOUT
+   ────────────────────────────────────── */
 .page-single {
   width: 116mm;
   height: 92mm;
@@ -35,7 +40,6 @@ html, body {
 
 .page-single.f { page-break-after: always; }
 .page-single.b { page-break-after: always; }
-
 .page-break { page-break-before: always; }
 
 .page-bulk {
@@ -55,13 +59,13 @@ html, body {
   vertical-align: top;
 }
 
-.card-group .pvc + .pvc {
-  margin-left: 4mm;
-}
+.card-group .pvc + .pvc { margin-left: 4mm; }
 
-/* ─── CARD BASE ─── */
+/* ──────────────────────────────────────
+   CARD BASE
+   ────────────────────────────────────── */
 .pvc {
-  font-family: 'Inter', Arial, Helvetica, sans-serif;
+  font-family: 'Inter', 'Segoe UI', Arial, Helvetica, sans-serif;
   width: 54mm;
   height: 86mm;
   position: relative;
@@ -71,719 +75,708 @@ html, body {
   vertical-align: middle;
 }
 
-/* ─── ACCENT STRIPE ─── */
-.pvc .hdr-stripe {
+/* ─── ACCENT STRIPE (left edge) ─── */
+.pvc .stripe {
   position: absolute;
-  top: 0; left: 0;
-  width: 4px;
+  top: 0;
+  left: 0;
+  width: 3px;
   height: 100%;
-  z-index: 10;
+  z-index: 12;
 }
 
-/* ─── STUDENT FRONT ─── */
-.pvc.sf { background: #F7F9FC; }
-.pvc.sf .hdr-stripe { background: #E8A020; }
 
-.pvc.sf .hdr {
-  position: absolute; top: 0; left: 0;
-  width: 100%; height: 80px;
-  background: #1A2E5A; z-index: 1;
-}
+/* ══════════════════════════════════════
+   FRONT CARD — SHARED STRUCTURE
+   ══════════════════════════════════════ */
 
-.pvc.sf .logo-area {
+/* ── HEADER (full-width curved) ── */
+.pvc .hdr {
   position: absolute;
-  top: 10px; left: 14px;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 70px;
+  z-index: 2;
+  border-radius: 0 0 10px 10px;
+}
+
+.pvc .logo-area {
+  position: absolute;
+  top: 10px;
+  left: 12px;
   z-index: 6;
 }
 
-.pvc.sf .logo-box {
-  width: 40px; height: 40px;
-  background: rgba(255,255,255,0.12);
-  border-radius: 4px;
+.pvc .logo-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
   text-align: center;
-  line-height: 40px;
+  line-height: 48px;
   font-size: 0;
+  overflow: hidden;
 }
 
-.pvc.sf .logo-box img,
-.pvc.sf .logo-box svg {
-  width: 36px; height: 36px;
+.pvc .logo-box img,
+.pvc .logo-box svg {
+  width: 44px;
+  height: 44px;
   vertical-align: middle;
 }
 
-.pvc.sf .logo-txt {
+.pvc .school-info {
   position: absolute;
-  left: 52px; top: 8px;
-  white-space: nowrap;
+  top: 8px;
+  left: 68px;
+  right: 70px;
+  text-align: center;
+  z-index: 6;
 }
 
-.pvc.sf .logo-txt strong {
-  font-family: 'Barlow Condensed', Arial Narrow, Arial, sans-serif;
+.pvc .school-name-line {
+  font-family: 'Barlow Condensed', 'Arial Narrow', Arial, sans-serif;
   font-size: 12px;
   font-weight: 800;
   text-transform: uppercase;
-  color: #E8A020;
-  display: block;
-  line-height: 1.1;
-}
-
-.pvc.sf .logo-txt .school-name {
-  font-size: 8px;
-  color: rgba(255,255,255,0.8);
-  display: block;
-  line-height: 1.2;
-  max-width: 100px;
+  line-height: 14px;
+  max-height: 28px;
   overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.pvc.sf .badge {
+.pvc .school-eiin {
+  font-size: 7px;
+  line-height: 1.2;
+  margin-top: 1px;
+  letter-spacing: 0.3px;
+}
+
+.pvc .school-session {
+  font-size: 6.5px;
+  line-height: 1.2;
+  margin-top: 1px;
+}
+
+.pvc .badge {
   position: absolute;
-  top: 12px; right: 14px;
+  top: 14px;
+  right: 10px;
   z-index: 6;
-  background: #E8A020; color: #ffffff;
-  font-size: 10px; font-weight: 700;
+  font-size: 8px;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  padding: 4px 12px;
-  border-radius: 20px;
+  padding: 3px 8px;
+  border-radius: 3px;
 }
 
-/* ─── PHOTO ─── */
-.pvc.sf .photo-wrap {
+/* ── PHOTO ── */
+.pvc .photo-wrap {
   position: absolute;
   top: 100px;
   left: 50%;
   transform: translateX(-50%);
-  width: 70px; height: 70px;
+  width: 84px;
+  height: 84px;
   z-index: 7;
-  background: #ffffff;
-  padding: 2.5px;
   border-radius: 50%;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.2);
+  padding: 4px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.18);
 }
 
-.pvc.sf .photo-inner {
-  width: 65px; height: 65px;
+.pvc .photo-ring {
+  width: 76px;
+  height: 76px;
   border-radius: 50%;
   overflow: hidden;
-  border: 2.5px solid #E8A020;
-  background: #EEF2F9;
+  border: 3px solid transparent;
   text-align: center;
-  line-height: 65px;
+  line-height: 70px;
   font-size: 0;
 }
 
-.pvc.sf .photo-inner img { width: 65px; height: 65px; }
+.pvc .photo-ring img {
+  width: 70px;
+  height: 70px;
+  vertical-align: top;
+}
 
-.pvc.sf .photo-inner svg {
-  width: 40px; height: 40px;
+.pvc .photo-ring svg {
+  width: 38px;
+  height: 38px;
   vertical-align: middle;
 }
 
-/* ─── BODY ─── */
-.pvc.sf .body {
+/* ── NAME SECTION ── */
+.pvc .name-section {
   position: absolute;
-  top: 185px;
-  left: 10px;
-  right: 10px;
-  bottom: 45px;
+  top: 192px;
+  left: 8px;
+  right: 8px;
+  text-align: center;
   z-index: 4;
   overflow: hidden;
-  text-align: center;
 }
 
-.pvc.sf .name {
-  font-family: 'Barlow Condensed', Arial Narrow, Arial, sans-serif;
-  font-size: 20px;
+.pvc .student-name {
+  font-family: 'Barlow Condensed', 'Arial Narrow', Arial, sans-serif;
+  font-size: 17px;
   font-weight: 800;
   text-transform: uppercase;
-  color: #1A2E5A;
-  text-align: center;
-  line-height: 1.15;
+  line-height: 19px;
   margin-bottom: 2px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.pvc.sf .sub-role {
-  font-size: 11px;
-  color: #8A96AE;
-  font-weight: 600;
-  text-align: center;
-  margin-bottom: 4px;
-}
-
-.pvc.sf .sep {
-  text-align: center;
-  margin-bottom: 4px;
-  font-size: 0;
-}
-
-.pvc.sf .sep-line {
-  display: inline-block;
-  width: 30px;
-  height: 1px;
-  background: #DEE2E8;
-  vertical-align: middle;
-}
-
-.pvc.sf .sep-dot {
-  display: inline-block;
-  width: 4px; height: 4px;
-  border-radius: 50%;
-  background: #E8A020;
-  margin: 0 4px;
-  vertical-align: middle;
-}
-
-/* ─── FIELDS (TABLE LAYOUT) ─── */
-.pvc.sf .fields {
-  display: table;
-  width: 100%;
-  padding: 0;
-  margin: 0 auto;
-}
-
-.pvc.sf .row {
-  display: table-row;
-}
-
-.pvc.sf .lbl {
-  display: table-cell;
-  width: 32px;
+.pvc .student-class {
   font-size: 9px;
-  color: #8A96AE;
-  font-weight: 700;
-  text-transform: uppercase;
-  vertical-align: middle;
-  padding: 2px 0;
-  border-bottom: 1px solid #EEF2F9;
-  text-align: left;
-}
-
-.pvc.sf .col {
-  display: table-cell;
-  width: 8px;
-  font-size: 9px;
-  color: #8A96AE;
-  vertical-align: middle;
-  text-align: center;
-  padding: 2px 0;
-  border-bottom: 1px solid #EEF2F9;
-}
-
-.pvc.sf .val {
-  display: table-cell;
-  font-size: 10px;
-  font-weight: 600;
-  color: #1A2E5A;
-  vertical-align: middle;
-  padding: 2px 0;
-  border-bottom: 1px solid #EEF2F9;
-  text-align: left;
-  overflow: hidden;
-  white-space: nowrap;
-}
-
-.pvc.sf .row:last-child .lbl,
-.pvc.sf .row:last-child .col,
-.pvc.sf .row:last-child .val {
-  border-bottom: none;
-}
-
-.pvc.sf .val.blood-red { color: #DC2626; font-weight: 700; }
-.pvc.sf .val.blood-gray { color: #8A96AE; font-weight: 500; }
-
-/* ─── FOOTER ─── */
-.pvc.sf .ftr {
-  position: absolute;
-  bottom: 0; left: 0;
-  width: 100%; height: 40px;
-  background: #1A2E5A;
-  z-index: 1;
-}
-
-.pvc.sf .sig {
-  position: absolute;
-  bottom: 10px;
-  left: 0;
-  width: 100%;
-  z-index: 6;
-  text-align: center;
-}
-
-.pvc.sf .sig-line {
-  width: 50px;
-  height: 1px;
-  background: rgba(255,255,255,0.5);
-  margin: 0 auto 3px auto;
-}
-
-.pvc.sf .sig-lbl {
-  font-size: 9px;
-  color: rgba(255,255,255,0.7);
-  text-align: center;
-  text-transform: uppercase;
-}
-
-/* ─── STUDENT BACK ─── */
-.pvc.bk { background: #F7F9FC; }
-.pvc.bk .hdr-stripe { background: #E8A020; }
-
-.pvc.bk .hdr {
-  position: absolute; top: 0; left: 0;
-  width: 100%; height: 55px;
-  background: #1A2E5A; z-index: 1;
-}
-
-.pvc.bk .school-hdr {
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 55px;
-  z-index: 6;
-  text-align: center;
-  padding-top: 8px;
-}
-
-.pvc.bk .s-logo-box {
-  display: block;
-  width: 28px; height: 28px;
-  margin: 0 auto 3px auto;
-  background: rgba(255,255,255,0.12);
-  border-radius: 4px;
-  text-align: center;
-  line-height: 28px;
-  font-size: 0;
-}
-
-.pvc.bk .s-logo-box img,
-.pvc.bk .s-logo-box svg {
-  width: 24px; height: 24px;
-  vertical-align: middle;
-}
-
-.pvc.bk .s-txt { text-align: center; }
-
-.pvc.bk .s-name {
-  font-family: 'Barlow Condensed', Arial Narrow, Arial, sans-serif;
-  font-size: 10px;
-  font-weight: 800;
-  color: #ffffff;
-  text-transform: uppercase;
-  line-height: 1.15;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 180px;
-  margin: 0 auto;
-}
-
-.pvc.bk .s-addr {
-  font-size: 7px;
-  color: rgba(255,255,255,0.75);
+  font-weight: 500;
   line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 180px;
-  margin: 0 auto;
+  margin-bottom: 1px;
 }
 
-.pvc.bk .body {
+.pvc .student-roll {
+  font-size: 8px;
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+/* ── INFO ROWS (label-left, value-right) ── */
+.pvc .info {
   position: absolute;
-  top: 60px;
-  left: 10px;
-  right: 10px;
-  bottom: 48px;
+  top: 240px;
+  left: 12px;
+  right: 12px;
   z-index: 4;
   overflow: hidden;
 }
 
-/* ─── RULES ─── */
-.pvc.bk .rules {
+.pvc .info-row {
+  display: table;
+  width: 100%;
+  padding: 2px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
+}
+
+.pvc .info-row:last-child {
+  border-bottom: none;
+}
+
+.pvc .info-lbl {
+  display: table-cell;
+  width: 38%;
+  font-size: 7px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  vertical-align: middle;
+  text-align: left;
+}
+
+.pvc .info-val {
+  display: table-cell;
+  font-size: 9.5px;
+  font-weight: 600;
+  vertical-align: middle;
+  text-align: right;
+}
+
+.pvc .info-val.blood-red { color: #DC2626; font-weight: 700; }
+.pvc .info-val.blood-gray { color: #9CA3AF; font-weight: 500; }
+
+/* ── FRONT FOOTER ── */
+.pvc .ftr {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 38px;
+  z-index: 2;
+  border-radius: 8px 8px 0 0;
+}
+
+.pvc .ftr-accent {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  z-index: 6;
+}
+
+.pvc .sig {
+  position: absolute;
+  top: 5px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  z-index: 6;
+}
+
+.pvc .sig-line {
+  width: 55px;
+  height: 1px;
+  margin: 0 auto 2px auto;
+}
+
+.pvc .sig-lbl {
+  font-size: 7.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.pvc .card-meta {
+  position: absolute;
+  bottom: 3px;
+  left: 10px;
+  right: 10px;
+  text-align: center;
+  font-size: 5.5px;
+  letter-spacing: 0.2px;
+  z-index: 6;
+}
+
+
+/* ══════════════════════════════════════
+   STUDENT FRONT
+   ══════════════════════════════════════ */
+.pvc.sf {
+  background: #F8FAFC;
+}
+
+.pvc.sf .stripe { background: #D4A017; }
+
+/* Header */
+.pvc.sf .hdr {
+  background: linear-gradient(135deg, #1A2E5A 0%, #243B6E 100%);
+}
+
+.pvc.sf .logo-box {
+  background: rgba(255,255,255,0.1);
+}
+
+.pvc.sf .school-name-line { color: #E8A020; }
+.pvc.sf .school-eiin { color: rgba(255,255,255,0.7); }
+.pvc.sf .school-session { color: rgba(255,255,255,0.5); }
+
+.pvc.sf .badge {
+  background: #E8A020;
+  color: #ffffff;
+}
+
+/* Photo */
+.pvc.sf .photo-wrap {
   background: #ffffff;
-  border-left: 3px solid #1A2E5A;
-  border-radius: 0 4px 4px 0;
-  padding: 6px 8px;
-  margin-bottom: 6px;
-  max-height: 70px;
+}
+
+.pvc.sf .photo-ring {
+  border-color: #E8A020;
+  background: #EEF2F9;
+}
+
+/* Name */
+.pvc.sf .student-name { color: #1A2E5A; }
+.pvc.sf .student-class { color: #6B7280; }
+.pvc.sf .student-roll { color: #9CA3AF; }
+
+/* Info */
+.pvc.sf .info-lbl { color: #9CA3AF; }
+.pvc.sf .info-val { color: #1E3A5F; }
+
+/* Footer */
+.pvc.sf .ftr { background: #1A2E5A; }
+.pvc.sf .ftr-accent { background: #E8A020; }
+.pvc.sf .sig-line { background: rgba(255,255,255,0.3); }
+.pvc.sf .sig-lbl { color: rgba(255,255,255,0.6); }
+.pvc.sf .card-meta { color: rgba(255,255,255,0.35); }
+
+
+/* ══════════════════════════════════════
+   EMPLOYEE FRONT
+   ══════════════════════════════════════ */
+.pvc.ef {
+  background: #F5F7FA;
+}
+
+.pvc.ef .stripe { background: #0D9488; }
+
+/* Header */
+.pvc.ef .hdr {
+  background: linear-gradient(135deg, #1F2937 0%, #374151 100%);
+}
+
+.pvc.ef .logo-box {
+  background: rgba(255,255,255,0.1);
+}
+
+.pvc.ef .school-name-line { color: #5EEAD4; }
+.pvc.ef .school-eiin { color: rgba(255,255,255,0.7); }
+.pvc.ef .school-session { color: rgba(255,255,255,0.5); }
+
+.pvc.ef .badge {
+  background: #0D9488;
+  color: #ffffff;
+}
+
+/* Photo */
+.pvc.ef .photo-wrap {
+  background: #ffffff;
+}
+
+.pvc.ef .photo-ring {
+  border-color: #0D9488;
+  background: #EEF2F9;
+}
+
+/* Name */
+.pvc.ef .student-name { color: #1F2937; }
+.pvc.ef .student-class { color: #6B7280; }
+.pvc.ef .student-roll { color: #9CA3AF; }
+
+/* Info */
+.pvc.ef .info-lbl { color: #9CA3AF; }
+.pvc.ef .info-val { color: #1F2937; }
+
+/* Footer */
+.pvc.ef .ftr { background: #1F2937; }
+.pvc.ef .ftr-accent { background: #0D9488; }
+.pvc.ef .sig-line { background: rgba(255,255,255,0.3); }
+.pvc.ef .sig-lbl { color: rgba(255,255,255,0.6); }
+.pvc.ef .card-meta { color: rgba(255,255,255,0.35); }
+
+
+/* ══════════════════════════════════════
+   BACK CARD — SHARED STRUCTURE
+   ══════════════════════════════════════ */
+
+/* ── BACK HEADER ── */
+.pvc .bk-hdr {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 54px;
+  z-index: 2;
+  border-radius: 0 0 8px 8px;
+  text-align: center;
+  padding-top: 5px;
+}
+
+.pvc .bk-logo {
+  display: block;
+  width: 28px;
+  height: 28px;
+  margin: 0 auto 2px auto;
+  border-radius: 4px;
+  text-align: center;
+  line-height: 28px;
+  font-size: 0;
   overflow: hidden;
 }
 
-.pvc.bk .rules-title {
-  font-family: 'Barlow Condensed', Arial Narrow, Arial, sans-serif;
-  font-size: 9px;
-  font-weight: 800;
-  color: #1A2E5A;
-  text-transform: uppercase;
-  margin-bottom: 3px;
+.pvc .bk-logo img,
+.pvc .bk-logo svg {
+  width: 24px;
+  height: 24px;
+  vertical-align: middle;
 }
 
-.pvc.bk .rule {
+.pvc .bk-school {
+  font-family: 'Barlow Condensed', 'Arial Narrow', Arial, sans-serif;
+  font-size: 9.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  line-height: 1.15;
+  max-width: 180px;
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+.pvc .bk-addr {
+  font-size: 6.5px;
+  line-height: 1.2;
+  max-width: 180px;
+  margin: 0 auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── BACK BODY ── */
+.pvc .bk-body {
+  position: absolute;
+  top: 58px;
+  left: 10px;
+  right: 10px;
+  bottom: 74px;
+  z-index: 4;
+  overflow: hidden;
+}
+
+/* ── RULES PANEL ── */
+.pvc .rules-panel {
+  background: #ffffff;
+  border: 1px solid #E5E7EB;
+  border-radius: 6px;
+  padding: 6px 8px;
+  margin-bottom: 5px;
+  max-height: 74px;
+  overflow: hidden;
+}
+
+.pvc .rules-title {
+  font-family: 'Barlow Condensed', 'Arial Narrow', Arial, sans-serif;
   font-size: 8px;
-  color: #4A5568;
+  font-weight: 800;
+  text-transform: uppercase;
+  margin-bottom: 3px;
+  letter-spacing: 0.3px;
+}
+
+.pvc .rule-item {
+  font-size: 7px;
   line-height: 1.3;
-  padding: 1px 0;
+  padding: 1.5px 0;
   font-weight: 500;
 }
 
-.pvc.bk .r-dot {
-  color: #E8A020;
+.pvc .rule-dot {
   font-weight: 700;
-  margin-right: 4px;
+  margin-right: 3px;
 }
 
-/* ─── CONTACT ─── */
-.pvc.bk .contact-block {
-  margin-top: 4px;
+/* ── CONTACT SECTION ── */
+.pvc .contact-sec {
+  margin-top: 3px;
 }
 
-.pvc.bk .c-title {
-  font-family: 'Barlow Condensed', Arial Narrow, Arial, sans-serif;
-  font-size: 9px;
+.pvc .contact-title {
+  font-family: 'Barlow Condensed', 'Arial Narrow', Arial, sans-serif;
+  font-size: 8px;
   font-weight: 800;
-  color: #1A2E5A;
   text-transform: uppercase;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
+  letter-spacing: 0.3px;
 }
 
-.pvc.bk .c-table {
+.pvc .ctable {
   display: table;
   width: 100%;
 }
 
-.pvc.bk .c-row {
+.pvc .crow {
   display: table-row;
 }
 
-.pvc.bk .c-icon-cell {
+.pvc .cicon-cell {
   display: table-cell;
   width: 20px;
   vertical-align: middle;
   padding-bottom: 3px;
 }
 
-.pvc.bk .c-icon {
-  width: 16px; height: 16px;
+.pvc .cicon {
+  width: 18px;
+  height: 18px;
   border-radius: 50%;
   text-align: center;
-  line-height: 16px;
+  line-height: 18px;
   font-size: 0;
 }
 
-.pvc.bk .c-icon svg {
-  width: 10px; height: 10px;
+.pvc .cicon svg {
+  width: 10px;
+  height: 10px;
   vertical-align: middle;
 }
 
-.pvc.bk .c-val-cell {
+.pvc .cval-cell {
   display: table-cell;
   vertical-align: middle;
   padding-bottom: 3px;
 }
 
-.pvc.bk .c-val {
-  font-size: 8px;
-  color: #4A5568;
+.pvc .cval {
+  font-size: 7.5px;
   font-weight: 500;
   word-wrap: break-word;
   overflow-wrap: break-word;
 }
 
-/* ─── BACK FOOTER ─── */
-.pvc.bk .ftr {
+/* ── BACK FOOTER ── */
+.pvc .bk-ftr {
   position: absolute;
-  bottom: 0; left: 0;
-  width: 100%; height: 44px;
-  background: #1A2E5A;
-  z-index: 1;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 72px;
+  z-index: 2;
+  border-radius: 8px 8px 0 0;
 }
 
-.pvc.bk .qr-area {
+.pvc .bk-ftr-accent {
   position: absolute;
-  bottom: 3px; right: 8px;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
   z-index: 6;
 }
 
-.pvc.bk .qr-box {
-  width: 38px; height: 38px;
-  background: #ffffff;
-  border-radius: 4px;
-  padding: 2px;
+.pvc .qr-area {
+  position: absolute;
+  bottom: 6px;
+  right: 10px;
+  z-index: 6;
+}
+
+.pvc .qr-box {
+  width: 58px;
+  height: 58px;
+  border-radius: 5px;
+  padding: 3px;
   display: inline-block;
 }
 
-.pvc.bk .qr-box img { width: 34px; height: 34px; }
+.pvc .qr-box img {
+  width: 52px;
+  height: 52px;
+}
 
-.pvc.bk .valid-area {
+.pvc .valid-area {
   position: absolute;
-  bottom: 6px; left: 10px;
+  bottom: 8px;
+  left: 12px;
   z-index: 6;
   text-align: left;
 }
 
-.pvc.bk .valid-lbl {
-  font-size: 7px;
-  color: rgba(255,255,255,0.6);
+.pvc .valid-lbl {
+  font-size: 6.5px;
   text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
-.pvc.bk .valid-val {
-  font-family: 'Barlow Condensed', Arial Narrow, Arial, sans-serif;
+.pvc .valid-val {
+  font-family: 'Barlow Condensed', 'Arial Narrow', Arial, sans-serif;
   font-size: 10px;
   font-weight: 800;
-  color: #E8A020;
   line-height: 1.15;
 }
 
-.pvc.bk .id-mini {
-  font-size: 7px;
-  color: rgba(255,255,255,0.5);
+.pvc .id-mini {
+  font-size: 6.5px;
   margin-top: 1px;
 }
 
-/* ─── EMPLOYEE FRONT ─── */
-.pvc.ef { background: #F5F7F5; }
-.pvc.ef .hdr-stripe { background: #1B7F79; }
-
-.pvc.ef .hdr {
-  position: absolute; top: 0; left: 0;
-  width: 100%; height: 80px;
-  background: #212D3E; z-index: 1;
-}
-
-.pvc.ef .logo-area {
+/* ── SIGNATURE (back footer) ── */
+.pvc .bk-sig {
   position: absolute;
-  top: 10px; left: 14px;
+  bottom: 8px;
+  left: 12px;
   z-index: 6;
 }
 
-.pvc.ef .logo-box {
-  width: 40px; height: 40px;
-  background: rgba(255,255,255,0.12);
-  border-radius: 4px;
-  text-align: center;
-  line-height: 40px;
-  font-size: 0;
-}
-
-.pvc.ef .logo-box img,
-.pvc.ef .logo-box svg {
-  width: 36px; height: 36px;
-  vertical-align: middle;
-}
-
-.pvc.ef .logo-txt {
-  position: absolute;
-  left: 52px; top: 8px;
-  white-space: nowrap;
-}
-
-.pvc.ef .logo-txt strong {
-  font-family: 'Barlow Condensed', Arial Narrow, Arial, sans-serif;
-  font-size: 12px;
-  font-weight: 800;
-  text-transform: uppercase;
-  color: #D4860B;
-  display: block;
-  line-height: 1.1;
-}
-
-.pvc.ef .logo-txt .school-name {
-  font-size: 8px;
-  color: rgba(255,255,255,0.8);
-  display: block;
-  line-height: 1.2;
-  max-width: 100px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.pvc.ef .badge {
-  position: absolute;
-  top: 12px; right: 14px;
-  z-index: 6;
-  background: #1B7F79; color: #ffffff;
-  font-size: 10px; font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding: 4px 12px;
-  border-radius: 20px;
-}
-
-.pvc.ef .photo-wrap {
-  position: absolute;
-  top: 100px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 70px; height: 70px;
-  z-index: 7;
-  background: #ffffff;
-  padding: 2.5px;
-  border-radius: 50%;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.2);
-}
-
-.pvc.ef .photo-inner {
-  width: 65px; height: 65px;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 2.5px solid #1B7F79;
-  background: #EEF2F9;
-  text-align: center;
-  line-height: 65px;
-  font-size: 0;
-}
-
-.pvc.ef .photo-inner img { width: 65px; height: 65px; }
-
-.pvc.ef .photo-inner svg {
-  width: 40px; height: 40px;
-  vertical-align: middle;
-}
-
-.pvc.ef .body {
-  position: absolute;
-  top: 185px;
-  left: 10px;
-  right: 10px;
-  bottom: 45px;
-  z-index: 4;
-  overflow: hidden;
-  text-align: center;
-}
-
-.pvc.ef .name {
-  font-family: 'Barlow Condensed', Arial Narrow, Arial, sans-serif;
-  font-size: 20px;
-  font-weight: 800;
-  text-transform: uppercase;
-  color: #212D3E;
-  text-align: center;
-  line-height: 1.15;
-  margin-bottom: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.pvc.ef .sub-role {
-  font-size: 11px;
-  color: #8A96AE;
-  font-weight: 600;
-  text-align: center;
-  margin-bottom: 4px;
-}
-
-.pvc.ef .sep {
-  text-align: center;
-  margin-bottom: 4px;
-  font-size: 0;
-}
-
-.pvc.ef .sep-line {
-  display: inline-block;
-  width: 30px;
+.pvc .bk-sig-line {
+  width: 45px;
   height: 1px;
-  background: #DEE2E8;
-  vertical-align: middle;
+  margin-bottom: 1px;
 }
 
-.pvc.ef .sep-dot {
-  display: inline-block;
-  width: 4px; height: 4px;
-  border-radius: 50%;
-  background: #1B7F79;
-  margin: 0 4px;
-  vertical-align: middle;
-}
-
-.pvc.ef .fields {
-  display: table;
-  width: 100%;
-  padding: 0;
-  margin: 0 auto;
-}
-
-.pvc.ef .row {
-  display: table-row;
-}
-
-.pvc.ef .lbl {
-  display: table-cell;
-  width: 32px;
-  font-size: 9px;
-  color: #8A96AE;
-  font-weight: 700;
+.pvc .bk-sig-lbl {
+  font-size: 7px;
   text-transform: uppercase;
-  vertical-align: middle;
-  padding: 2px 0;
-  border-bottom: 1px solid #EEF2F9;
-  text-align: left;
-}
-
-.pvc.ef .col {
-  display: table-cell;
-  width: 8px;
-  font-size: 9px;
-  color: #8A96AE;
-  vertical-align: middle;
-  text-align: center;
-  padding: 2px 0;
-  border-bottom: 1px solid #EEF2F9;
-}
-
-.pvc.ef .val {
-  display: table-cell;
-  font-size: 10px;
+  letter-spacing: 0.3px;
   font-weight: 600;
-  color: #212D3E;
-  vertical-align: middle;
-  padding: 2px 0;
-  border-bottom: 1px solid #EEF2F9;
-  text-align: left;
-  overflow: hidden;
-  white-space: nowrap;
 }
 
-.pvc.ef .row:last-child .lbl,
-.pvc.ef .row:last-child .col,
-.pvc.ef .row:last-child .val {
-  border-bottom: none;
+
+/* ══════════════════════════════════════
+   STUDENT BACK
+   ══════════════════════════════════════ */
+.pvc.bk {
+  background: #F8FAFC;
 }
 
-.pvc.ef .val.blood-red { color: #DC2626; font-weight: 700; }
-.pvc.ef .val.blood-gray { color: #8A96AE; font-weight: 500; }
+.pvc.bk .stripe { background: #D4A017; }
 
-.pvc.ef .ftr {
-  position: absolute;
-  bottom: 0; left: 0;
-  width: 100%; height: 40px;
-  background: #212D3E;
-  z-index: 1;
+/* Header */
+.pvc.bk .bk-hdr {
+  background: linear-gradient(135deg, #1A2E5A 0%, #243B6E 100%);
 }
 
-.pvc.ef .sig {
-  position: absolute;
-  bottom: 10px;
-  left: 0;
-  width: 100%;
-  z-index: 6;
-  text-align: center;
+.pvc.bk .bk-logo {
+  background: rgba(255,255,255,0.1);
 }
 
-.pvc.ef .sig-line {
-  width: 50px;
-  height: 1px;
-  background: rgba(255,255,255,0.5);
-  margin: 0 auto 3px auto;
+.pvc.bk .bk-school { color: #E8A020; }
+.pvc.bk .bk-addr { color: rgba(255,255,255,0.65); }
+
+/* Rules */
+.pvc.bk .rules-panel {
+  border-left: 3px solid #1A2E5A;
 }
 
-.pvc.ef .sig-lbl {
-  font-size: 9px;
-  color: rgba(255,255,255,0.7);
-  text-align: center;
-  text-transform: uppercase;
+.pvc.bk .rules-title { color: #1A2E5A; }
+.pvc.bk .rule-item { color: #4B5563; }
+.pvc.bk .rule-dot { color: #E8A020; }
+
+/* Contact */
+.pvc.bk .contact-title { color: #1A2E5A; }
+.pvc.bk .cval { color: #4B5563; }
+
+/* Footer */
+.pvc.bk .bk-ftr { background: #1A2E5A; }
+.pvc.bk .bk-ftr-accent { background: #E8A020; }
+.pvc.bk .qr-box { background: #ffffff; }
+.pvc.bk .valid-lbl { color: rgba(255,255,255,0.5); }
+.pvc.bk .valid-val { color: #E8A020; }
+.pvc.bk .id-mini { color: rgba(255,255,255,0.35); }
+
+
+/* ══════════════════════════════════════
+   EMPLOYEE BACK
+   ══════════════════════════════════════ */
+.pvc.ebk {
+  background: #F5F7FA;
 }
+
+.pvc.ebk .stripe { background: #0D9488; }
+
+/* Header */
+.pvc.ebk .bk-hdr {
+  background: linear-gradient(135deg, #1F2937 0%, #374151 100%);
+}
+
+.pvc.ebk .bk-logo {
+  background: rgba(255,255,255,0.1);
+}
+
+.pvc.ebk .bk-school { color: #5EEAD4; }
+.pvc.ebk .bk-addr { color: rgba(255,255,255,0.65); }
+
+/* Rules */
+.pvc.ebk .rules-panel {
+  border-left: 3px solid #0D9488;
+}
+
+.pvc.ebk .rules-title { color: #1F2937; }
+.pvc.ebk .rule-item { color: #4B5563; }
+.pvc.ebk .rule-dot { color: #0D9488; }
+
+/* Contact */
+.pvc.ebk .contact-title { color: #1F2937; }
+.pvc.ebk .cval { color: #4B5563; }
+
+/* Footer */
+.pvc.ebk .bk-ftr { background: #1F2937; }
+.pvc.ebk .bk-ftr-accent { background: #0D9488; }
+.pvc.ebk .qr-box { background: #ffffff; }
+.pvc.ebk .valid-lbl { color: rgba(255,255,255,0.5); }
+.pvc.ebk .valid-val { color: #5EEAD4; }
+.pvc.ebk .id-mini { color: rgba(255,255,255,0.35); }
+.pvc.ebk .bk-sig-line { background: rgba(255,255,255,0.3); }
+.pvc.ebk .bk-sig-lbl { color: rgba(255,255,255,0.55); }
