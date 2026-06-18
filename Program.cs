@@ -85,6 +85,10 @@ builder.Services.AddControllersWithViews(options =>
 {
     options.JsonSerializerOptions.Converters.Add(new DateOnlyConverter());
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+})
+.AddRazorOptions(options =>
+{
+    options.ViewLocationExpanders.Add(new SchoolManagementSystem.Extensions.FeeViewLocationExpander());
 });
 builder.Services.AddDataProtection()
     .PersistKeysToFileSystem(new DirectoryInfo(dataProtectionKeysPath));

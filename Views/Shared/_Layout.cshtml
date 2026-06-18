@@ -280,24 +280,68 @@
                             }
                         }
 
-                        @if (CanAny("FeeStructures.Read", "Payments.Read", "Invoices.Read", "StudentDues.Read", "Scholarships.Read", "Waivers.Read", "FinancialTransactions.Read", "FinanceReports.Read", "FinanceConfiguration.Read", "FinanceDashboard.Read"))
+                        @if (CanAny("FeeCategories.Read","FeeStructures.Read","StudentFeeAssignments.Read","FeeInvoices.Read","FeeInvoiceItems.Read","FeePayments.Read","FeeDiscounts.Read","FeeWaivers.Read","FeeRefunds.Read","FeeLedger.Read","FeeCollectionSummaries.Read","LateFeeRules.Read","FineRules.Read","FeeDashboard.Read","Payments.Read","FinanceReports.Read"))
                         {
                             <span class="nav-section-label"><span class="nav-text">Finance</span></span>
-                            @if (Can("FinanceDashboard.Read"))
+                            @if (Can("FeeDashboard.Read"))
                             {
-                                <a asp-controller="Dashboard" asp-action="Index" data-title="Finance Analytics"><i class="bi bi-graph-up-arrow"></i><span class="nav-text">Finance Analytics</span></a>
+                                <a asp-controller="FeeDashboard" asp-action="Index" data-title="Fee Dashboard"><i class="bi bi-graph-up-arrow"></i><span class="nav-text">Fee Dashboard</span></a>
+                            }
+                            @if (Can("FeeCategories.Read"))
+                            {
+                                <a asp-controller="FeeCategory" asp-action="Index" data-title="Fee Categories"><i class="bi bi-tags"></i><span class="nav-text">Fee Categories</span></a>
                             }
                             @if (Can("FeeStructures.Read"))
                             {
                                 <a asp-controller="FeeStructure" asp-action="Index" data-title="Fee Structures"><i class="bi bi-cash-coin"></i><span class="nav-text">Fee Structures</span></a>
                             }
-                            @if (Can("Payments.Read"))
+                            @if (Can("StudentFeeAssignments.Read"))
                             {
-                                <a asp-controller="Payment" asp-action="Index" data-title="Payments"><i class="bi bi-credit-card"></i><span class="nav-text">Payments</span></a>
+                                <a asp-controller="StudentFeeAssignment" asp-action="Index" data-title="Student Fee Assignments"><i class="bi bi-person-plus"></i><span class="nav-text">Student Fees</span></a>
+                            }
+                            @if (Can("FeeInvoices.Read"))
+                            {
+                                <a asp-controller="FeeInvoice" asp-action="Index" data-title="Fee Invoices"><i class="bi bi-file-text"></i><span class="nav-text">Invoices</span></a>
+                            }
+                            @if (Can("FeeInvoiceItems.Read"))
+                            {
+                                <a asp-controller="FeeInvoiceItem" asp-action="Index" data-title="Invoice Items"><i class="bi bi-list-check"></i><span class="nav-text">Invoice Items</span></a>
+                            }
+                            @if (Can("FeePayments.Read"))
+                            {
+                                <a asp-controller="FeePayment" asp-action="Index" data-title="Payments"><i class="bi bi-credit-card"></i><span class="nav-text">Payments</span></a>
+                            }
+                            @if (Can("FeeDiscounts.Read"))
+                            {
+                                <a asp-controller="FeeDiscount" asp-action="Index" data-title="Discounts"><i class="bi bi-percent"></i><span class="nav-text">Discounts</span></a>
+                            }
+                            @if (Can("FeeWaivers.Read"))
+                            {
+                                <a asp-controller="FeeWaiver" asp-action="Index" data-title="Waivers"><i class="bi bi-gift"></i><span class="nav-text">Waivers</span></a>
+                            }
+                            @if (Can("FeeRefunds.Read"))
+                            {
+                                <a asp-controller="FeeRefund" asp-action="Index" data-title="Refunds"><i class="bi bi-arrow-return-left"></i><span class="nav-text">Refunds</span></a>
+                            }
+                            @if (Can("FeeLedger.Read"))
+                            {
+                                <a asp-controller="FeeLedger" asp-action="Index" data-title="Fee Ledger"><i class="bi bi-journal"></i><span class="nav-text">Ledger</span></a>
+                            }
+                            @if (Can("FeeCollectionSummaries.Read"))
+                            {
+                                <a asp-controller="FeeCollectionSummary" asp-action="Index" data-title="Collection Summary"><i class="bi bi-calendar-check"></i><span class="nav-text">Collections</span></a>
+                            }
+                            @if (Can("LateFeeRules.Read"))
+                            {
+                                <a asp-controller="LateFeeRule" asp-action="Index" data-title="Late Fee Rules"><i class="bi bi-clock-history"></i><span class="nav-text">Late Fee Rules</span></a>
+                            }
+                            @if (Can("FineRules.Read"))
+                            {
+                                <a asp-controller="FineRule" asp-action="Index" data-title="Fine Rules"><i class="bi bi-exclamation-triangle"></i><span class="nav-text">Fine Rules</span></a>
                             }
                             @if (Can("FinanceReports.Read"))
                             {
-                                <a asp-controller="Report" asp-action="Index" data-title="Finance Reports"><i class="bi bi-file-earmark-spreadsheet"></i><span class="nav-text">Finance Reports</span></a>
+                                <a asp-controller="FeeReport" asp-action="Index" data-title="Finance Reports"><i class="bi bi-file-earmark-spreadsheet"></i><span class="nav-text">Finance Reports</span></a>
                             }
                         }
 

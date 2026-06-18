@@ -54,6 +54,12 @@ public class DashboardController : Controller
             return View("ExamControllerIndex", examControllerData);
         }
 
+        if (User.IsInRole("Accountant"))
+        {
+            var accountantData = await _service.GetAccountantDashboardAsync();
+            return View("AccountantIndex", accountantData);
+        }
+
         var data = await _service.GetDashboardAsync();
         return View(data);
     }

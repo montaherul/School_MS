@@ -33,7 +33,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <link rel="stylesheet" href="/css/idcard-print.css" />
 </head>
-<body>
+<body class="@(Model.IsBulk ? "idcard-bulk" : "idcard-single")">
 
     @if (Model.IsBulk)
     {
@@ -67,7 +67,7 @@
                     JoiningDate = joiningDate,
                     EmploymentStatus = employee.Status ?? employee.EmployeeType ?? "Active",
                     CardNumber = employee.EmployeeCardNumber ?? employee.EmployeeCode ?? "---",
-                    ThemeAccent = GetThemeAccent(employee.Designation),
+                    ThemeAccent = GetThemeAccent(employee.Designation ?? ""),
                     EmployeePhotoDataUri = imgToDataUri(employee.ProfilePicturePath),
                     SchoolName = Model.SchoolNameEn,
                     SchoolShortName = shortName,
@@ -76,9 +76,11 @@
                     SchoolPhone = Model.SchoolPhone,
                     SchoolEmail = Model.SchoolEmail,
                     SchoolMotto = Model.SchoolMotto,
+                    SchoolEIIN = Model.SchoolEIIN,
                     Website = Model.SchoolWebsite,
                     EmergencyContact = emergencyContact,
                     SchoolSealDataUri = schoolSealUri,
+                    PresentAddress = employee.PresentAddress ?? "",
                     QrCodeDataUri = IdCardQRHelper.GenerateQrCodeBase64(employee.EmployeeCode ?? "N/A"),
                     ValidUntil = validUntil
                 };
@@ -121,7 +123,7 @@
                 JoiningDate = joiningDate,
                 EmploymentStatus = employee.Status ?? employee.EmployeeType ?? "Active",
                 CardNumber = employee.EmployeeCardNumber ?? employee.EmployeeCode ?? "---",
-                ThemeAccent = GetThemeAccent(employee.Designation),
+                ThemeAccent = GetThemeAccent(employee.Designation ?? ""),
                 EmployeePhotoDataUri = imgToDataUri(employee.ProfilePicturePath),
                 SchoolName = Model.SchoolNameEn,
                 SchoolShortName = shortName,
@@ -130,18 +132,19 @@
                 SchoolPhone = Model.SchoolPhone,
                 SchoolEmail = Model.SchoolEmail,
                 SchoolMotto = Model.SchoolMotto,
+                SchoolEIIN = Model.SchoolEIIN,
                 Website = Model.SchoolWebsite,
                 EmergencyContact = emergencyContact,
                 SchoolSealDataUri = schoolSealUri,
+                PresentAddress = employee.PresentAddress ?? "",
                 QrCodeDataUri = IdCardQRHelper.GenerateQrCodeBase64(employee.EmployeeCode ?? "N/A"),
                 ValidUntil = validUntil
             };
 
-            <div class="page-single f">
+            <div class="page-single">
                 <partial name="~/Views/Shared/IdCards/_EmployeeCardFront.cshtml" model="vm" />
             </div>
-            <div class="page-break"></div>
-            <div class="page-single b">
+            <div class="page-single">
                 <partial name="~/Views/Shared/IdCards/_EmployeeCardBack.cshtml" model="vm" />
             </div>
         }

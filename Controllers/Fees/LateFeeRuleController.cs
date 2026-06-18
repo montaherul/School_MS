@@ -1,0 +1,121 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using SchoolManagementSystem.Filters;
+using SchoolManagementSystem.Models.DTOs.Fees;
+using SchoolManagementSystem.Models.ViewModels.Fees;
+using SchoolManagementSystem.Services.Interfaces.Fees;
+using System.Security.Claims;
+
+namespace SchoolManagementSystem.Controllers.Fees;
+
+[Authorize]
+public class LateFeeRuleController : Controller
+{
+    private readonly ILateFeeRuleService _service;
+    private readonly IFeeSecurityService _security;
+    public LateFeeRuleController(ILateFeeRuleService service, IFeeSecurityService security) { _service = service; _security = security; }
+
+    [RequirePermission("LateFeeRules.Read")]
+    public IActionResult Index() { return View(); }
+
+    [HttpGet]
+    [RequirePermission("LateFeeRules.Create")]
+    public IActionResult Create() => RedirectToAction(nameof(CreateEdit));
+
+    [HttpGet]
+    [RequirePermission("LateFeeRules.Update")]
+    public IActionResult Edit(int id) => RedirectToAction(nameof(CreateEdit), new { id });
+
+    [HttpGet]
+    [RequirePermission("LateFeeRules.Read")]
+    public async Task<IActionResult> GetList(int page = 1, int size = 10, string? search = null)
+    {
+        var result = await _service.GetPagedAsync(page, size, search);
+        return Json(new { data = result.Items, last_page = Math.Ceiling((double)result.TotalItems / result.PageSize) });
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> CreateEdit(int? id)
+    {
+        if (!_security.Can(User, id.HasValue && id > 0 ? "LateFeeRules.Update" : "LateFeeRules.Create"))
+            return Forbid();
+        if (id.HasValue && id > 0)
+        {
+            var dto = await _service.GetForEditAsync(id.Value);
+            if (dto == null) return NotFound();
+            return View(new LateFeeRuleViewModel { Id = dto.Id, Name = dto.Name, GraceDays = dto.GraceDays, FeeType = dto.FeeType, FeeValue = dto.FeeValue, MaxFee = dto.MaxFee, SchoolClassId = dto.SchoolClassId, FeeCategoryId = dto.FeeCategoryId, IsActive = dto.IsActive });
+        }
+        return View(new LateFeeRuleViewModel());
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateEdit(LateFeeRuleViewModel vm)
+    {
+        if (!_security.Can(User, vm.IsEditMode ? "LateFeeRules.Update" : "LateFeeRules.Create"))
+            return Forbid();
+        if (!ModelState.IsValid) return View(vm);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
+        if (vm.IsEditMode) { await _service.UpdateAsync(vm, userId); TempData["SuccessMessage"] = "Rule updated."; }
+        else { await _service.CreateAsync(vm, userId); TempData["SuccessMessage"] = "Rule created."; }
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public Task<IActionResult> Save(LateFeeRuleViewModel vm) => CreateEdit(vm);
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [RequirePermission("LateFeeRules.Update")]
+    public async Task<IActionResult> ApplyLateFees()
+    {
+        var invoiceService = HttpContext.RequestServices.GetRequiredService<IFeeInvoiceService>();
+        var result = await invoiceService.ApplyLateFeesAsync();
+        TempData["SuccessMessage"] = $"Late fees applied: {result.InvoicesProcessed} invoice(s) processed, total ৳{result.TotalLateFeeApplied:N2}.";
+        if (result.Errors.Count > 0)
+            TempData["ErrorMessage"] = string.Join(" | ", result.Errors);
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet]
+    [RequirePermission("LateFeeRules.Read")]
+    public async Task<IActionResult> Details(int id)
+    {
+        var dto = await _service.GetForEditAsync(id);
+        if (dto == null) return NotFound();
+        return View(new LateFeeRuleViewModel { Id = dto.Id, Name = dto.Name, GraceDays = dto.GraceDays, FeeType = dto.FeeType, FeeValue = dto.FeeValue, MaxFee = dto.MaxFee, SchoolClassId = dto.SchoolClassId, FeeCategoryId = dto.FeeCategoryId, IsActive = dto.IsActive });
+    }
+
+    [HttpGet]
+    [RequirePermission("LateFeeRules.Delete")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var dto = await _service.GetForEditAsync(id);
+        if (dto == null) return NotFound();
+        return View(new LateFeeRuleViewModel { Id = dto.Id, Name = dto.Name, GraceDays = dto.GraceDays, FeeType = dto.FeeType, FeeValue = dto.FeeValue, MaxFee = dto.MaxFee, SchoolClassId = dto.SchoolClassId, FeeCategoryId = dto.FeeCategoryId, IsActive = dto.IsActive });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [RequirePermission("LateFeeRules.Delete")]
+    public async Task<IActionResult> DeleteConfirmed(int id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
+        await _service.DeleteAsync(id, userId);
+        TempData["SuccessMessage"] = "Rule deleted.";
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [RequirePermission("LateFeeRules.Delete")]
+    public async Task<IActionResult> Restore(int id)
+    {
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
+        await _service.RestoreAsync(id, userId);
+        TempData["SuccessMessage"] = "Late fee rule restored successfully.";
+        return RedirectToAction(nameof(Index));
+    }
+
+}

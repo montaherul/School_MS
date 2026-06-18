@@ -1,3 +1,4 @@
+using SchoolManagementSystem.Models.DTOs.Fees;
 using SchoolManagementSystem.Models.ViewModels.Dashboard;
 
 namespace SchoolManagementSystem.Service.Interfaces.Dashboard;
@@ -9,4 +10,5 @@ public interface IDashboardService
     Task<TeacherDashboardViewModel> GetTeacherDashboardAsync(int userId, CancellationToken cancellationToken = default);
     Task<GuardianDashboardViewModel> GetGuardianDashboardAsync(int userId, CancellationToken cancellationToken = default);
     Task<ExamControllerDashboardViewModel> GetExamControllerDashboardAsync(CancellationToken cancellationToken = default);
+    Task<FeeDashboardDto?> GetAccountantDashboardAsync(int? academicYearId = null, CancellationToken cancellationToken = default);
 }

@@ -1,0 +1,52 @@
+@model SchoolManagementSystem.Models.DTOs.Fees.FeeReceiptDto
+@{
+    ViewData["Title"] = "Payment Receipt";
+}
+<div class="container py-4">
+    <div class="text-center mb-4">
+        <h2 class="fw-bold">@Model.SchoolName</h2>
+        <p class="text-muted mb-1">@Model.SchoolAddress</p>
+        <p class="text-muted">Phone: @Model.SchoolPhone | Email: @Model.SchoolEmail</p>
+        <hr />
+        <h3 class="text-primary">PAYMENT RECEIPT</h3>
+    </div>
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <table class="table table-borderless">
+                        <tr><td class="fw-semibold" style="width:140px">Receipt No</td><td>@Model.ReceiptNo</td></tr>
+                        <tr><td class="fw-semibold">Invoice No</td><td>@Model.InvoiceNo</td></tr>
+                        <tr><td class="fw-semibold">Student</td><td>@Model.StudentName (ID: @Model.StudentIdNo)</td></tr>
+                        <tr><td class="fw-semibold">Payment Date</td><td>@Model.PaidAt.ToString("dd-MMM-yyyy HH:mm")</td></tr>
+                        <tr><td class="fw-semibold">Method</td><td>@Model.PaymentMethod</td></tr>
+                        <tr><td class="fw-semibold">Reference</td><td>@Model.ReferenceNo</td></tr>
+                    </table>
+                    <table class="table table-bordered mt-3">
+                        <thead class="table-light">
+                            <tr><th>Description</th><th class="text-end">Amount</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Fee Amount</td><td class="text-end">@Model.Amount.ToString("N2")</td></tr>
+                            <tr><td>Late Fee</td><td class="text-end">@Model.LateFee.ToString("N2")</td></tr>
+                            <tr><td>Discount</td><td class="text-end">(@Model.DiscountAmount.ToString("N2"))</td></tr>
+                            <tr class="fw-bold"><td>Net Amount Paid</td><td class="text-end">@Model.NetAmount.ToString("N2")</td></tr>
+                        </tbody>
+                    </table>
+                    <div class="text-center mt-3">
+                        <p class="text-muted small">Verification Code: <span class="fw-bold font-monospace">@Model.QrVerificationCode</span></p>
+                        <p class="text-muted small">This is a computer-generated receipt.</p>
+                    </div>
+                    <div class="d-flex gap-2 justify-content-center mt-4">
+                        <a href="/FeePayment/DownloadReceipt/@Context.Request.RouteValues["id"]" class="btn btn-primary">
+                            Download PDF
+                        </a>
+                        <button onclick="window.print()" class="btn btn-outline-secondary">
+                            Print
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

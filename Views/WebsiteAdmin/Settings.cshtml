@@ -382,6 +382,22 @@
                     </div>
                 </div>
 
+                <!-- Result Access Control -->
+                <div class="row g-4 mt-2">
+                    <div class="col-12">
+                        <h6 class="fw-bold mb-3 border-bottom pb-2 text-dark"><i class="bi bi-shield-exclamation me-1 text-primary"></i> Result Access Control</h6>
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" name="AllowResultWithDue" value="true" @(Model.AllowResultWithDue ? "checked" : "") id="chkAllowResultWithDue"/>
+                                    <input type="hidden" name="AllowResultWithDue" value="false"/>
+                                    <label class="form-check-label fw-bold" for="chkAllowResultWithDue">Allow Result Access With Due</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Admission Information Settings -->
                 <div class="row g-4 mt-2">
                     <div class="col-12">

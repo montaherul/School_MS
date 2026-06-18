@@ -3,6 +3,8 @@ using SchoolManagementSystem.Data;
 using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Models.DTOs.Dashboard;
 using SchoolManagementSystem.Models.DTOs.Attendance;
+using SchoolManagementSystem.Models.ViewModels.Dashboard;
+using SchoolManagementSystem.Models.Entities.Result;
 using SchoolManagementSystem.Repositories.Interfaces.Dashboard;
 using System.Data;
 using Microsoft.Data.SqlClient;
@@ -18,29 +20,64 @@ public class DashboardRepository : IDashboardRepository
         _db = db;
     }
 
-    public async Task<(int totalAttendance, int presentAttendance, decimal feesCollected, decimal feesTotal, List<DashboardChartDto> studentsByClass, List<DashboardChartDto> monthlyCollections, List<DashboardActivityDto> recentActivities, int totalStudents, int pendingAdmissions)> GetAdminDashboardDataAsync(CancellationToken ct)
+    public async Task<(int totalAttendance, int presentAttendance, decimal feesCollected, decimal feesTotal, List<DashboardChartDto> studentsByClass, List<DashboardChartDto> monthlyCollections, List<DashboardActivityDto> recentActivities, int totalStudents, int pendingAdmissions)> GetAdminDashboardDataAsync(CancellationToken ct, int? academicYearId = null)
     {
-        var totalStudents = await _db.Students.Where(s => !s.IsDeleted).CountAsync(ct);
-        var pendingAdmissions = await _db.Admissions.Where(a => a.Status == AdmissionStatus.Pending && !a.IsDeleted).CountAsync(ct);
-        var totalAttendance = await _db.Attendance.Where(a => !a.IsDeleted).CountAsync(ct);
-        var presentAttendance = await _db.Attendance.Where(a => (a.Status == AttendanceStatus.Present || a.Status == AttendanceStatus.Late) && !a.IsDeleted).CountAsync(ct);
-        var feesCollected = await _db.FeeInvoices.Where(f => !f.IsDeleted && (int)f.Status == 1).SumAsync(f => f.PaidAmount, ct);
-        var feesTotal = await _db.FeeInvoices.Where(f => !f.IsDeleted).SumAsync(f => f.TotalAmount, ct);
+        DateTime? yearStart = null;
+        DateTime? yearEnd = null;
 
-        var studentsByClass = await _db.Students
-            .Where(s => !s.IsDeleted)
+        if (academicYearId.HasValue)
+        {
+            var year = await _db.AcademicYears
+                .Where(y => y.Id == academicYearId.Value && !y.IsDeleted)
+                .Select(y => new { y.StartsOn, y.EndsOn })
+                .FirstOrDefaultAsync(ct);
+            if (year != null)
+            {
+                yearStart = year.StartsOn;
+                yearEnd = year.EndsOn;
+            }
+        }
+
+        var studentQuery = _db.Students.Where(s => !s.IsDeleted);
+        var totalStudents = await studentQuery.CountAsync(ct);
+
+        var admissionQuery = _db.Admissions.Where(a => a.Status == AdmissionStatus.Pending && !a.IsDeleted);
+        if (yearStart.HasValue && yearEnd.HasValue)
+            admissionQuery = admissionQuery.Where(a => a.CreatedAt >= yearStart.Value && a.CreatedAt <= yearEnd.Value);
+        var pendingAdmissions = await admissionQuery.CountAsync(ct);
+
+        var attendanceQuery = _db.Attendance.Where(a => !a.IsDeleted);
+        if (yearStart.HasValue && yearEnd.HasValue)
+            attendanceQuery = attendanceQuery.Where(a => a.CreatedAt >= yearStart.Value && a.CreatedAt <= yearEnd.Value);
+        var totalAttendance = await attendanceQuery.CountAsync(ct);
+        var presentAttendance = await attendanceQuery.Where(a => a.Status == AttendanceStatus.Present || a.Status == AttendanceStatus.Late).CountAsync(ct);
+
+        var feeQuery = _db.FeeInvoices.Where(f => !f.IsDeleted);
+        if (academicYearId.HasValue)
+            feeQuery = feeQuery.Where(f => f.AcademicYearId == academicYearId.Value);
+        var feesCollected = await feeQuery.Where(f => f.Status == PaymentStatus.Paid).SumAsync(f => f.PaidAmount, ct);
+        var feesTotal = await feeQuery.SumAsync(f => f.TotalAmount, ct);
+
+        var studentsByClassQuery = _db.Students.Where(s => !s.IsDeleted);
+        if (yearStart.HasValue && yearEnd.HasValue)
+            studentsByClassQuery = studentsByClassQuery.Where(s => s.CreatedAt >= yearStart.Value && s.CreatedAt <= yearEnd.Value);
+        var studentsByClass = await studentsByClassQuery
             .GroupBy(s => s.ClassId)
             .Select(g => new DashboardChartDto { Label = g.Key.ToString(), Value = g.Count() })
             .ToListAsync(ct);
 
-        var monthlyCollections = await _db.FeeInvoices
-            .Where(f => !f.IsDeleted && (int)f.Status == 1 && f.UpdatedAt.HasValue)
+        var monthlyFeeQuery = _db.FeeInvoices.Where(f => !f.IsDeleted && f.Status == PaymentStatus.Paid && f.UpdatedAt.HasValue);
+        if (academicYearId.HasValue)
+            monthlyFeeQuery = monthlyFeeQuery.Where(f => f.AcademicYearId == academicYearId.Value);
+        var monthlyCollections = await monthlyFeeQuery
             .GroupBy(f => f.UpdatedAt.Value.Month)
             .Select(g => new DashboardChartDto { Label = g.Key.ToString(), Value = (int)g.Sum(f => f.PaidAmount) })
             .ToListAsync(ct);
 
-        var recentActivities = await _db.ActivityLogs
-            .Where(l => !l.IsDeleted)
+        var activitiesQuery = _db.ActivityLogs.Where(l => !l.IsDeleted);
+        if (yearStart.HasValue && yearEnd.HasValue)
+            activitiesQuery = activitiesQuery.Where(l => l.CreatedAt >= yearStart.Value && l.CreatedAt <= yearEnd.Value);
+        var recentActivities = await activitiesQuery
             .OrderByDescending(l => l.CreatedAt)
             .Take(10)
             .Select(l => new DashboardActivityDto
@@ -60,7 +97,7 @@ public class DashboardRepository : IDashboardRepository
         var totalAttendance = await _db.Attendance.Where(a => a.StudentId == studentId && !a.IsDeleted).CountAsync(ct);
         var presentAttendance = await _db.Attendance.Where(a => a.StudentId == studentId && (a.Status == AttendanceStatus.Present || a.Status == AttendanceStatus.Late) && !a.IsDeleted).CountAsync(ct);
         var totalInvoiced = await _db.FeeInvoices.Where(f => !f.IsDeleted && f.StudentId == studentId).SumAsync(f => f.TotalAmount, ct);
-        var totalPaid = await _db.FeeInvoices.Where(f => !f.IsDeleted && f.StudentId == studentId && (int)f.Status == 1).SumAsync(f => f.PaidAmount, ct);
+        var totalPaid = await _db.FeeInvoices.Where(f => !f.IsDeleted && f.StudentId == studentId && f.Status == PaymentStatus.Paid).SumAsync(f => f.PaidAmount, ct);
 
         var recentNotices = await _db.Notices
             .Where(n => !n.IsDeleted && n.IsPublished)
@@ -201,6 +238,28 @@ public class DashboardRepository : IDashboardRepository
             await _db.Database.CloseConnectionAsync();
         }
     }
+
+    public async Task<List<StudentResultViewModel>> GetStudentLatestResultsAsync(int studentId, CancellationToken cancellationToken = default)
+    {
+        return await _db.StudentExamResults
+            .AsNoTracking()
+            .Include(r => r.Exam)
+            .Where(r => r.StudentId == studentId && !r.IsDeleted
+                && (r.Status == ResultWorkflowStatus.Published || r.Status == ResultWorkflowStatus.Locked))
+            .OrderByDescending(r => r.CalculatedAt)
+            .Take(5)
+            .Select(r => new StudentResultViewModel
+            {
+                SubjectName = "Overall",
+                ExamName = r.Exam.Name,
+                ObtainedMarks = r.TotalMarks,
+                FullMarks = r.TotalFullMarks,
+                Grade = r.Grade,
+                GPA = r.Gpa,
+                IsPassed = r.IsPassed
+            })
+            .ToListAsync(cancellationToken);
+    }
 }
 
 public class DashboardQueryRepository : IDashboardQueryRepository
@@ -214,7 +273,7 @@ public class DashboardQueryRepository : IDashboardQueryRepository
         _repo = repo;
     }
 
-    public Task<(int totalAttendance, int presentAttendance, decimal feesCollected, decimal feesTotal, List<DashboardChartDto> studentsByClass, List<DashboardChartDto> monthlyCollections, List<DashboardActivityDto> recentActivities, int totalStudents, int pendingAdmissions)> GetAdminDashboardDataAsync(CancellationToken ct) => _repo.GetAdminDashboardDataAsync(ct);
+    public Task<(int totalAttendance, int presentAttendance, decimal feesCollected, decimal feesTotal, List<DashboardChartDto> studentsByClass, List<DashboardChartDto> monthlyCollections, List<DashboardActivityDto> recentActivities, int totalStudents, int pendingAdmissions)> GetAdminDashboardDataAsync(CancellationToken ct, int? academicYearId = null) => _repo.GetAdminDashboardDataAsync(ct, academicYearId);
 
     public Task<(int totalAttendance, int presentAttendance, decimal totalInvoiced, decimal totalPaid, List<DashboardActivityDto> recentNotices, List<DashboardAssignmentDto> upcomingAssignments)> GetStudentDashboardDataAsync(int studentId, int classId, int sectionId, CancellationToken ct) => _repo.GetStudentDashboardDataAsync(studentId, classId, sectionId, ct);
 
@@ -225,4 +284,6 @@ public class DashboardQueryRepository : IDashboardQueryRepository
     public Task<(List<DashboardChartDto> Daily, List<DashboardChartDto> Monthly)> GetAttendanceAnalyticsAsync(CancellationToken ct) => _repo.GetAttendanceAnalyticsAsync(ct);
 
     public Task<List<DashboardChartDto>> GetClassAttendanceAnalyticsAsync(DateTime date, CancellationToken ct) => _repo.GetClassAttendanceAnalyticsAsync(date, ct);
+
+    public Task<List<StudentResultViewModel>> GetStudentLatestResultsAsync(int studentId, CancellationToken cancellationToken = default) => _repo.GetStudentLatestResultsAsync(studentId, cancellationToken);
 }

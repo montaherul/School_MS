@@ -47,6 +47,7 @@ namespace SchoolManagementSystem.Models.ViewModels.Dashboard
         // Calendar Widgets
         public List<UpcomingHolidayDto> UpcomingHolidays { get; set; } = new();
         public List<UpcomingExamDto> UpcomingExams { get; set; } = new();
+        public bool IsResultBlocked { get; set; }
     }
 
     public class GuardianChildSummaryViewModel

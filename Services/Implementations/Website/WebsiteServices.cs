@@ -146,6 +146,8 @@ public class SchoolWebsiteService : ISchoolWebsiteService
             existing.AdmissionOgDescription = settings.AdmissionOgDescription;
             if (!string.IsNullOrEmpty(settings.AdmissionOgImagePath)) existing.AdmissionOgImagePath = settings.AdmissionOgImagePath;
 
+            existing.AllowResultWithDue = settings.AllowResultWithDue;
+
             existing.UpdatedAt = DateTime.UtcNow;
             existing.UpdatedBy = "admin";
             _repo.Update(existing);

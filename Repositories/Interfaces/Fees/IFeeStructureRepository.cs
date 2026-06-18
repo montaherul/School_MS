@@ -6,5 +6,5 @@ namespace SchoolManagementSystem.Repositories.Interfaces.Fees;
 public interface IFeeStructureRepository : IBaseRepository<FeeStructure>
 {
     Task<(List<FeeStructureListItemDto> items, int totalRecords)> GetListByStoredProcedureAsync(
-        int pageNumber, int pageSize, string? searchTerm, CancellationToken ct);
+        int pageNumber, int pageSize, string? searchTerm, int? schoolClassId, int? feeCategoryId, CancellationToken ct);
 }

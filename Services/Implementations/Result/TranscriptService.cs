@@ -2,8 +2,10 @@ using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Helpers.Pdf;
 using SchoolManagementSystem.Models.DTOs.Result;
 using SchoolManagementSystem.Models.Entities.Academic;
+using SchoolManagementSystem.Models.Entities.Fees;
 using SchoolManagementSystem.Models.Entities.Result;
 using SchoolManagementSystem.Models.Entities.System;
+using SchoolManagementSystem.Models.Entities.Website;
 using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
@@ -134,11 +136,35 @@ public class TranscriptService : ITranscriptService
         return transcript;
     }
 
+    public async Task<bool> IsResultBlockedForStudentAsync(int studentId, CancellationToken cancellationToken = default)
+    {
+        if (await IsResultBlockedAsync(cancellationToken))
+            return await HasFeeDueAsync(studentId, cancellationToken);
+        return false;
+    }
+
     public async Task<byte[]?> GenerateTranscriptPdfAsync(int studentId, int academicYearId)
     {
+        if (await IsResultBlockedForStudentAsync(studentId))
+            return null;
+
         var transcript = await GetStudentTranscriptAsync(studentId, academicYearId);
         if (transcript == null) return null;
 
         return _pdfGenerator.GenerateTranscript(transcript);
+    }
+
+    private async Task<bool> HasFeeDueAsync(int studentId, CancellationToken cancellationToken)
+    {
+        return await _uow.Repository<FeeInvoice>().AnyAsync(
+            x => x.StudentId == studentId && !x.IsDeleted && x.Status != PaymentStatus.Paid && x.Status != PaymentStatus.Waived,
+            cancellationToken);
+    }
+
+    private async Task<bool> IsResultBlockedAsync(CancellationToken cancellationToken)
+    {
+        var setting = await _uow.Repository<SchoolSetting>().Query().FirstOrDefaultAsync(cancellationToken);
+        if (setting == null) return false;
+        return !setting.AllowResultWithDue;
     }
 }

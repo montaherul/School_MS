@@ -92,9 +92,18 @@ public class SchoolDbContext : DbContext
     public DbSet<ReEvaluationRequest> ReEvaluationRequests => Set<ReEvaluationRequest>();
     public DbSet<AssignmentTask> Assignments => Set<AssignmentTask>();
     public DbSet<AssignmentSubmission> AssignmentSubmissions => Set<AssignmentSubmission>();
+    public DbSet<FeeCategory> FeeCategories => Set<FeeCategory>();
     public DbSet<FeeStructure> FeeStructures => Set<FeeStructure>();
+    public DbSet<StudentFeeAssignment> StudentFeeAssignments => Set<StudentFeeAssignment>();
     public DbSet<FeeInvoice> FeeInvoices => Set<FeeInvoice>();
+    public DbSet<FeeInvoiceItem> FeeInvoiceItems => Set<FeeInvoiceItem>();
     public DbSet<Payment> Payments => Set<Payment>();
+    public DbSet<FeeDiscount> FeeDiscounts => Set<FeeDiscount>();
+    public DbSet<FeeWaiver> FeeWaivers => Set<FeeWaiver>();
+    public DbSet<FeeRefund> FeeRefunds => Set<FeeRefund>();
+    public DbSet<FeeLedger> FeeLedgers => Set<FeeLedger>();
+    public DbSet<FeeCollectionSummary> FeeCollectionSummaries => Set<FeeCollectionSummary>();
+    public DbSet<LateFeeRule> LateFeeRules => Set<LateFeeRule>();
     public DbSet<FineRule> FineRules => Set<FineRule>();
     public DbSet<Notice> Notices => Set<Notice>();
     public DbSet<MessageThread> MessageThreads => Set<MessageThread>();
@@ -210,7 +219,14 @@ public class SchoolDbContext : DbContext
             .HasFilter("[IsDeleted] = 0 AND [EmployeeId] IS NOT NULL");
         modelBuilder.Entity<Subject>().HasIndex(x => x.Code).IsUnique();
         modelBuilder.Entity<Teacher>().HasIndex(x => x.TeacherCode).IsUnique();
+        modelBuilder.Entity<FeeCategory>().HasIndex(x => x.Name).IsUnique().HasFilter("[IsDeleted] = 0");
+        modelBuilder.Entity<FeeStructure>().HasIndex(x => new { x.SchoolClassId, x.FeeCategoryId, x.FeeName }).IsUnique().HasFilter("[IsDeleted] = 0");
         modelBuilder.Entity<FeeInvoice>().HasIndex(x => x.InvoiceNo).IsUnique();
+        modelBuilder.Entity<StudentFeeAssignment>().HasIndex(x => new { x.StudentId, x.FeeStructureId, x.AcademicYearId }).IsUnique().HasFilter("[IsDeleted] = 0");
+        modelBuilder.Entity<FeeDiscount>().HasIndex(x => x.Name).IsUnique().HasFilter("[IsDeleted] = 0");
+        modelBuilder.Entity<FeeLedger>().HasIndex(x => new { x.StudentId, x.TransactionDate });
+        modelBuilder.Entity<FeeCollectionSummary>().HasIndex(x => new { x.CollectionDate, x.PaymentMethod }).IsUnique().HasFilter("[IsDeleted] = 0");
+        modelBuilder.Entity<LateFeeRule>().HasIndex(x => x.Name).IsUnique().HasFilter("[IsDeleted] = 0");
         modelBuilder.Entity<Book>().HasIndex(x => x.AccessionNo).IsUnique();
         modelBuilder.Entity<AdmissionFeeStructure>().HasIndex(x => x.SchoolClassId).IsUnique();
 

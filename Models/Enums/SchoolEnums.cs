@@ -38,3 +38,7 @@ public enum FailSubjectMode { StrictFail = 0, ExcludeFail = 1, Custom = 2 }
 public enum ReEvaluationStatus { Requested = 1, Approved = 2, Rejected = 3, Revised = 4 }
 public enum PromotionStatus { Pending = 1, Promoted = 2, Repeat = 3, Failed = 4 }
 public enum AttendanceSessionStatus { Draft = 1, Submitted = 2, Locked = 3, Revised = 4, Approved = 5 }
+
+public enum FeeFrequency { Once = 0, Monthly = 1, Quarterly = 2, HalfYearly = 3, Yearly = 4 }
+public enum FeeDiscountType { Percentage = 0, Fixed = 1 }
+public enum FeeLedgerType { Invoice = 1, Payment = 2, Discount = 3, Waiver = 4, Refund = 5, Adjustment = 6, LateFee = 7 }

@@ -1,0 +1,79 @@
+@{
+    ViewData["Title"] = "Student Ledger Report";
+}
+<div class="page-title d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="mb-1"><i class="bi bi-wallet2 me-2"></i>Student Ledger</h1>
+        <p class="text-muted mb-0">Per-student fee transaction history</p>
+    </div>
+    <div>
+        <button class="btn btn-success btn-sm me-1" id="exportExcelBtn"><i class="bi bi-file-earmark-excel me-1"></i> Excel</button>
+        <button class="btn btn-danger btn-sm" id="exportPdfBtn"><i class="bi bi-file-earmark-pdf me-1"></i> PDF</button>
+    </div>
+</div>
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Student ID</label>
+                <input type="number" id="studentId" class="form-control" placeholder="Enter Student ID..." min="1">
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-primary w-100" id="loadBtn"><i class="bi bi-search me-1"></i> Load</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div id="ledger-table"></div>
+    </div>
+</div>
+@section Scripts {
+    <script>
+        var table = new Tabulator("#ledger-table", {
+            height: "calc(100vh - 350px)", layout: "fitColumns",
+            pagination: true, paginationMode: "remote",
+            ajaxURL: "/FeeReport/StudentLedger",
+            paginationSize: 50,
+            ajaxResponse: function(url, params, response) {
+                var rows = Array.isArray(response.data) ? response.data : [];
+                return { last_page: response.last_page || 1, total_records: response.total_records || rows.length, data: rows };
+            },
+            columns: [
+                { title: "Invoice No", field: "invoiceNo", widthGrow: 1.5 },
+                { title: "Due Date", field: "dueDate", width: 110, hozAlign: "center" },
+                { title: "Total Amount", field: "totalAmount", width: 130, hozAlign: "right", formatter: function(c) { return parseFloat(c.getValue()).toLocaleString('en-IN', {minimumFractionDigits: 2}); } },
+                { title: "Paid Amount", field: "paidAmount", width: 130, hozAlign: "right", formatter: function(c) { return parseFloat(c.getValue()).toLocaleString('en-IN', {minimumFractionDigits: 2}); } },
+                { title: "Due Amount", field: "dueAmount", width: 130, hozAlign: "right", formatter: function(c) { return parseFloat(c.getValue()).toLocaleString('en-IN', {minimumFractionDigits: 2}); } },
+                { title: "Status", field: "status", width: 100, hozAlign: "center", formatter: function(c) {
+                    var s = c.getValue();
+                    if (s === "3" || s === "Paid") return '<span class="badge bg-success rounded-pill px-3">Paid</span>';
+                    if (s === "2" || s === "Partial") return '<span class="badge bg-warning text-dark rounded-pill px-3">Partial</span>';
+                    if (s === "4" || s === "Waived") return '<span class="badge bg-danger rounded-pill px-3">Waived</span>';
+                    return '<span class="badge bg-secondary rounded-pill px-3">Unpaid</span>';
+                }},
+                { title: "Paid At", field: "paidAt", width: 150, hozAlign: "center", formatter: function(c) { return c.getValue() ? new Date(c.getValue()).toLocaleString() : '—'; } },
+                { title: "Reference", field: "referenceNo", width: 130 },
+                { title: "Late Fee", field: "lateFee", width: 100, hozAlign: "right", formatter: function(c) { return parseFloat(c.getValue() || 0).toLocaleString('en-IN', {minimumFractionDigits: 2}); } },
+                { title: "Discount", field: "discountAmount", width: 100, hozAlign: "right", formatter: function(c) { return parseFloat(c.getValue() || 0).toLocaleString('en-IN', {minimumFractionDigits: 2}); } }
+            ],
+            placeholder: "<div class='p-4 text-center text-muted'>Enter a Student ID and click Load</div>"
+        });
+        document.getElementById('loadBtn').addEventListener('click', function() {
+            var sid = document.getElementById('studentId').value;
+            if (!sid || sid <= 0) { alert('Please enter a valid Student ID.'); return; }
+            table.setData("/FeeReport/StudentLedger", { studentId: sid });
+            document.getElementById('exportExcelBtn').onclick = function() { window.location.href = '/FeeReport/ExportStudentLedgerExcel?studentId=' + sid; };
+            document.getElementById('exportPdfBtn').onclick = function() { window.location.href = '/FeeReport/ExportStudentLedgerPdf?studentId=' + sid; };
+        });
+    </script>
+    <style>
+        .tabulator { border: none !important; }
+        .tabulator .tabulator-header { background-color: #f8f9fa; border-bottom: 1px solid #e2e8f0; }
+        .tabulator .tabulator-header .tabulator-col { background-color: #f8f9fa; font-weight: 700; color: #475569; padding: 12px 8px; }
+        .tabulator .tabulator-row { border-bottom: 1px solid #f1f5f9; }
+        .tabulator .tabulator-row:hover { background-color: #f8fafc !important; }
+        .tabulator .tabulator-row .tabulator-cell { padding: 12px 8px; vertical-align: middle; }
+    </style>
+}

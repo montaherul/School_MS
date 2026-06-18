@@ -184,6 +184,51 @@
 
     </div>
 
+    <!-- LATEST RESULTS -->
+    @if (Model.Results.Any())
+    {
+        <div class="adm-table-card mb-4" style="border-radius:var(--adm-radius-lg); overflow:hidden; border:1px solid var(--adm-border);">
+            <div style="padding:20px 24px; background:var(--adm-bg-sub); border-bottom:1px solid var(--adm-border);">
+                <h5 class="dash-section__title" style="margin:0;">
+                    <i class="bi bi-journal-text me-2"></i> Latest Results
+                </h5>
+            </div>
+            <div class="p-3">
+                <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:16px;">
+                    @foreach (var r in Model.Results)
+                    {
+                        <div style="padding:16px; border-radius:var(--adm-radius-md); border:1px solid var(--adm-border); background:var(--adm-bg-2);">
+                            <div style="font-weight:700; font-size:14px; margin-bottom:8px;">@r.ExamName</div>
+                            <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:4px;">
+                                <span style="color:var(--adm-text-3);">Grade</span>
+                                <span style="font-weight:600;">@r.Grade</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:4px;">
+                                <span style="color:var(--adm-text-3);">GPA</span>
+                                <span style="font-weight:600;">@r.GPA.ToString("F2")</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:4px;">
+                                <span style="color:var(--adm-text-3);">Marks</span>
+                                <span style="font-weight:600;">@r.ObtainedMarks / @r.FullMarks</span>
+                            </div>
+                            <div style="display:flex; justify-content:space-between; font-size:13px;">
+                                <span style="color:var(--adm-text-3);">Status</span>
+                                @if (r.IsPassed)
+                                {
+                                    <span class="badge bg-success">Passed</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Failed</span>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+
     <!-- ATTENDANCE CALENDAR -->
     <div class="adm-table-card mb-4" style="border-radius:var(--adm-radius-lg); overflow:hidden; border:1px solid var(--adm-border);">
         <div style="padding:20px 24px; background:var(--adm-bg-sub); border-bottom:1px solid var(--adm-border);">
@@ -350,32 +395,51 @@
 
             </a>
 
-            <!-- RESULT -->
-            <a href="/Result"
-               class="dash-action-card">
+            @if (!Model.IsResultBlocked)
+            {
+                <!-- RESULT -->
+                <a href="/Result"
+                   class="dash-action-card">
 
-                <div class="dash-action-card__icon"
-                     style="
-                    background:var(--adm-success-bg);
-                    color:var(--adm-success);">
+                    <div class="dash-action-card__icon"
+                         style="
+                        background:var(--adm-success-bg);
+                        color:var(--adm-success);">
 
-                    <i class="bi bi-journal-text"></i>
+                        <i class="bi bi-journal-text"></i>
 
-                </div>
-
-                <div class="dash-action-card__body">
-
-                    <div class="dash-action-card__title">
-                        My Results
                     </div>
 
-                    <div class="dash-action-card__sub">
-                        Exam reports
+                    <div class="dash-action-card__body">
+
+                        <div class="dash-action-card__title">
+                            My Results
+                        </div>
+
+                        <div class="dash-action-card__sub">
+                            Exam reports
+                        </div>
+
                     </div>
 
+                </a>
+            }
+            else
+            {
+                <div class="dash-action-card" style="opacity:0.6;cursor:not-allowed;background:var(--adm-bg-sub);border-color:var(--adm-border);">
+                    <div class="dash-action-card__icon" style="background:var(--adm-pending-bg);color:var(--adm-pending);">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+                    <div class="dash-action-card__body">
+                        <div class="dash-action-card__title" style="color:var(--adm-pending);">
+                            Results Blocked
+                        </div>
+                        <div class="dash-action-card__sub">
+                            Clear outstanding fees
+                        </div>
+                    </div>
                 </div>
-
-            </a>
+            }
 
             <!-- EXAM ROUTINE -->
             <a href="/Student/ExamRoutine"

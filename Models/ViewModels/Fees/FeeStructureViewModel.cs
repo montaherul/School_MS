@@ -6,4 +6,3 @@ public class FeeStructureViewModel : FeeStructureUpsertDto
 {
     public bool IsEditMode => Id > 0;
 }
-

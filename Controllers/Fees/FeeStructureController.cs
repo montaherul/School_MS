@@ -12,7 +12,8 @@ namespace SchoolManagementSystem.Controllers.Fees;
 public class FeeStructureController : Controller
 {
     private readonly IFeeStructureService _service;
-    public FeeStructureController(IFeeStructureService service) { _service = service; }
+    private readonly IFeeSecurityService _security;
+    public FeeStructureController(IFeeStructureService service, IFeeSecurityService security) { _service = service; _security = security; }
 
     [RequirePermission("FeeStructures.Read")]
     public IActionResult Index() { return View(); }
@@ -27,16 +28,16 @@ public class FeeStructureController : Controller
 
     [HttpGet]
     [RequirePermission("FeeStructures.Read")]
-    public async Task<IActionResult> GetList(int page = 1, int size = 10, string? search = null)
+    public async Task<IActionResult> GetList(int page = 1, int size = 10, string? search = null, int? schoolClassId = null, int? feeCategoryId = null)
     {
-        var result = await _service.GetPagedAsync(page, size, search);
+        var result = await _service.GetPagedAsync(page, size, search, schoolClassId, feeCategoryId);
         return Json(new { data = result.Items, last_page = Math.Ceiling((double)result.TotalItems / result.PageSize) });
     }
 
     [HttpGet]
     public async Task<IActionResult> CreateEdit(int? id)
     {
-        if (!Can(id.HasValue && id > 0 ? "FeeStructures.Update" : "FeeStructures.Create"))
+        if (!_security.Can(User, id.HasValue && id > 0 ? "FeeStructures.Update" : "FeeStructures.Create"))
         {
             return Forbid();
         }
@@ -45,7 +46,13 @@ public class FeeStructureController : Controller
         {
             var dto = await _service.GetForEditAsync(id.Value);
             if (dto == null) return NotFound();
-            var vm = new FeeStructureViewModel { Id = dto.Id,SchoolClassId = dto.SchoolClassId,FeeName = dto.FeeName,Amount = dto.Amount,IsRecurring = dto.IsRecurring,            };
+            var vm = new FeeStructureViewModel
+            {
+                Id = dto.Id, SchoolClassId = dto.SchoolClassId, FeeCategoryId = dto.FeeCategoryId,
+                AcademicYearId = dto.AcademicYearId, FeeName = dto.FeeName, Description = dto.Description,
+                Amount = dto.Amount, IsRecurring = dto.IsRecurring, Frequency = dto.Frequency,
+                DueDay = dto.DueDay, IsActive = dto.IsActive
+            };
             return View(vm);
         }
         return View(new FeeStructureViewModel());
@@ -55,7 +62,7 @@ public class FeeStructureController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> CreateEdit(FeeStructureViewModel vm)
     {
-        if (!Can(vm.IsEditMode ? "FeeStructures.Update" : "FeeStructures.Create"))
+        if (!_security.Can(User, vm.IsEditMode ? "FeeStructures.Update" : "FeeStructures.Create"))
         {
             return Forbid();
         }
@@ -77,14 +84,12 @@ public class FeeStructureController : Controller
     {
         var dto = await _service.GetForEditAsync(id);
         if (dto == null) return NotFound();
-
         return View(new FeeStructureViewModel
         {
-            Id = dto.Id,
-            SchoolClassId = dto.SchoolClassId,
-            FeeName = dto.FeeName,
-            Amount = dto.Amount,
-            IsRecurring = dto.IsRecurring
+            Id = dto.Id, SchoolClassId = dto.SchoolClassId, FeeCategoryId = dto.FeeCategoryId,
+            AcademicYearId = dto.AcademicYearId, FeeName = dto.FeeName, Description = dto.Description,
+            Amount = dto.Amount, IsRecurring = dto.IsRecurring, Frequency = dto.Frequency,
+            DueDay = dto.DueDay, IsActive = dto.IsActive
         });
     }
 
@@ -94,14 +99,12 @@ public class FeeStructureController : Controller
     {
         var dto = await _service.GetForEditAsync(id);
         if (dto == null) return NotFound();
-
         return View(new FeeStructureViewModel
         {
-            Id = dto.Id,
-            SchoolClassId = dto.SchoolClassId,
-            FeeName = dto.FeeName,
-            Amount = dto.Amount,
-            IsRecurring = dto.IsRecurring
+            Id = dto.Id, SchoolClassId = dto.SchoolClassId, FeeCategoryId = dto.FeeCategoryId,
+            AcademicYearId = dto.AcademicYearId, FeeName = dto.FeeName, Description = dto.Description,
+            Amount = dto.Amount, IsRecurring = dto.IsRecurring, Frequency = dto.Frequency,
+            DueDay = dto.DueDay, IsActive = dto.IsActive
         });
     }
 
@@ -116,8 +119,15 @@ public class FeeStructureController : Controller
         return RedirectToAction(nameof(Index));
     }
 
-    private bool Can(string permissionCode)
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [RequirePermission("FeeStructures.Delete")]
+    public async Task<IActionResult> Restore(int id)
     {
-        return User.IsInRole("Super Admin") || User.HasClaim("Permission", permissionCode);
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
+        await _service.RestoreAsync(id, userId);
+        TempData["SuccessMessage"] = "Fee structure restored successfully.";
+        return RedirectToAction(nameof(Index));
     }
+
 }

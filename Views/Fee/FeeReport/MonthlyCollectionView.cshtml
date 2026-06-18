@@ -1,0 +1,77 @@
+@{
+    ViewData["Title"] = "Monthly Collection Report";
+}
+<div class="page-title d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="mb-1"><i class="bi bi-calendar-month me-2"></i>Monthly Collection</h1>
+        <p class="text-muted mb-0">Month-wise collection trends</p>
+    </div>
+    <div>
+        <button class="btn btn-success btn-sm me-1" id="exportExcelBtn"><i class="bi bi-file-earmark-excel me-1"></i> Excel</button>
+        <button class="btn btn-danger btn-sm" id="exportPdfBtn"><i class="bi bi-file-earmark-pdf me-1"></i> PDF</button>
+    </div>
+</div>
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Year</label>
+                <select id="reportYear" class="form-select">
+                    @for (int y = DateTime.UtcNow.Year; y >= DateTime.UtcNow.Year - 5; y--)
+                    {
+                        <option value="@y" selected="@(y == DateTime.UtcNow.Year ? true : null)">@y</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-primary w-100" id="loadBtn"><i class="bi bi-search me-1"></i> Load</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div id="monthly-table"></div>
+    </div>
+</div>
+@section Scripts {
+    <script>
+        function loadData() {
+            var yr = document.getElementById('reportYear').value;
+            table.setData("/FeeReport/MonthlyCollection", { year: yr });
+            document.getElementById('exportExcelBtn').onclick = function() { window.location.href = '/FeeReport/ExportMonthlyCollectionExcel?year=' + yr; };
+            document.getElementById('exportPdfBtn').onclick = function() { window.location.href = '/FeeReport/ExportMonthlyCollectionPdf?year=' + yr; };
+        }
+        var table = new Tabulator("#monthly-table", {
+            height: "calc(100vh - 350px)", layout: "fitColumns",
+            pagination: true, paginationMode: "remote",
+            ajaxURL: "/FeeReport/MonthlyCollection",
+            paginationSize: 50,
+            ajaxResponse: function(url, params, response) {
+                var rows = Array.isArray(response.data) ? response.data : [];
+                return { last_page: response.last_page || 1, total_records: response.total_records || rows.length, data: rows };
+            },
+            columns: [
+                { title: "Year", field: "year", width: 100, hozAlign: "center" },
+                { title: "Month", field: "month", width: 120, hozAlign: "center", formatter: function(c) {
+                    var m = parseInt(c.getValue());
+                    var names = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                    return names[m] || m;
+                }},
+                { title: "Total Collected", field: "totalCollected", widthGrow: 1.5, hozAlign: "right", formatter: function(c) { return parseFloat(c.getValue()).toLocaleString('en-IN', {minimumFractionDigits: 2}); } },
+                { title: "Transactions", field: "transactionCount", width: 120, hozAlign: "center" }
+            ],
+            placeholder: "<div class='p-4 text-center text-muted'>Select a year and click Load</div>"
+        });
+        document.getElementById('loadBtn').addEventListener('click', loadData);
+        loadData();
+    </script>
+    <style>
+        .tabulator { border: none !important; }
+        .tabulator .tabulator-header { background-color: #f8f9fa; border-bottom: 1px solid #e2e8f0; }
+        .tabulator .tabulator-header .tabulator-col { background-color: #f8f9fa; font-weight: 700; color: #475569; padding: 12px 8px; }
+        .tabulator .tabulator-row { border-bottom: 1px solid #f1f5f9; }
+        .tabulator .tabulator-row:hover { background-color: #f8fafc !important; }
+        .tabulator .tabulator-row .tabulator-cell { padding: 12px 8px; vertical-align: middle; }
+    </style>
+}

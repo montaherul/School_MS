@@ -1,143 +1,82 @@
 @model SchoolManagementSystem.Models.ViewModels.IdCard.EmployeeIdCardViewModel
 @{
-    var addr = !string.IsNullOrEmpty(Model.SchoolAddress) ? Model.SchoolAddress : "---";
-    var phone = !string.IsNullOrEmpty(Model.SchoolPhone) ? Model.SchoolPhone : "---";
-    var email = !string.IsNullOrEmpty(Model.SchoolEmail) ? Model.SchoolEmail : "---";
-    var website = !string.IsNullOrEmpty(Model.Website) ? Model.Website : "";
-    var emergency = !string.IsNullOrEmpty(Model.EmergencyContact) ? Model.EmergencyContact : "";
-    var desig = !string.IsNullOrEmpty(Model.Designation) ? Model.Designation : "Staff";
-    var desigLower = desig.ToLowerInvariant();
-
-    var themeClass = "theme-staff-bk";
-    if (desigLower.Contains("principal") || desigLower.Contains("head master")) themeClass = "theme-principal-bk";
-    else if (desigLower.Contains("teacher") || desigLower.Contains("professor") || desigLower.Contains("lecturer")) themeClass = "theme-teacher-bk";
-    else if (desigLower.Contains("accountant") || desigLower.Contains("accounts") || desigLower.Contains("finance")) themeClass = "theme-accountant-bk";
-    else if (desigLower.Contains("librarian") || desigLower.Contains("library")) themeClass = "theme-librarian-bk";
+    var department = !string.IsNullOrWhiteSpace(Model.Department) ? Model.Department : "---";
+    var officeEmail = !string.IsNullOrWhiteSpace(Model.SchoolEmail) ? Model.SchoolEmail : "---";
+    var officePhone = !string.IsNullOrWhiteSpace(Model.SchoolPhone) ? Model.SchoolPhone : "---";
+    var emergency = !string.IsNullOrWhiteSpace(Model.EmergencyContact) ? Model.EmergencyContact : "---";
+    var address = !string.IsNullOrWhiteSpace(Model.PresentAddress) ? Model.PresentAddress : (!string.IsNullOrWhiteSpace(Model.SchoolAddress) ? Model.SchoolAddress : "---");
+    var schoolAddress = !string.IsNullOrWhiteSpace(Model.SchoolAddress) ? Model.SchoolAddress : "---";
+    var website = !string.IsNullOrWhiteSpace(Model.Website) ? Model.Website.Replace("http://", "").Replace("https://", "") : "---";
 }
 
-<div class="pvc ebk @themeClass">
-
-    <!-- ═══ HEADER ═══ -->
-    <div class="bk-hdr">
-        <div class="bk-brand-row">
-            <div class="bk-logo-cell">
-                <div class="bk-logo-box">
-                    @if (!string.IsNullOrEmpty(Model.SchoolLogoDataUri))
-                    {
-                        <img src="@Model.SchoolLogoDataUri" alt="logo" />
-                    }
-                    else
-                    {
-                        <svg viewBox="0 0 14 14" fill="none">
-                            <path d="M7 1L13 4.5V9.5L7 13L1 9.5V4.5L7 1Z" fill="rgba(255,255,255,0.85)"/>
-                            <path d="M7 4L10 5.8V8.8L7 10.5L4 8.8V5.8L7 4Z" fill="#1E40AF"/>
-                        </svg>
-                    }
-                </div>
-            </div>
-            <div class="bk-text-cell">
-                <div class="bk-school-name">@Model.SchoolName</div>
-                <div class="bk-addr"><i class="fa-solid fa-location-dot" style="margin-right:1px; font-size: 5.5pt;"></i> @addr</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ═══ BODY (90%+ PVC Area Used, 4 distinct cards) ═══ -->
-    <div class="bk-body">
-
-        <!-- CARD A: IMPORTANT INSTRUCTIONS -->
-        <div class="bk-card">
-            <div class="section-title">Important Instructions</div>
-            <div class="rule-row">
-                <span class="rule-icon-cell"><span class="rule-icon"><i class="fa-solid fa-id-badge"></i></span></span>
-                <span class="rule-text-cell"><span class="rule-text">Always display this card while on duty.</span></span>
-            </div>
-            <div class="rule-row">
-                <span class="rule-icon-cell"><span class="rule-icon"><i class="fa-solid fa-triangle-exclamation"></i></span></span>
-                <span class="rule-text-cell"><span class="rule-text">Report loss immediately to the HR department.</span></span>
-            </div>
-            <div class="rule-row">
-                <span class="rule-icon-cell"><span class="rule-icon"><i class="fa-solid fa-ban"></i></span></span>
-                <span class="rule-text-cell"><span class="rule-text">This card is non-transferable.</span></span>
-            </div>
-            <div class="rule-row">
-                <span class="rule-icon-cell"><span class="rule-icon"><i class="fa-solid fa-building-columns"></i></span></span>
-                <span class="rule-text-cell"><span class="rule-text">Property of school. Return upon termination.</span></span>
-            </div>
-        </div>
-
-        <!-- CARD B: CONTACT INFORMATION -->
-        <div class="bk-card">
-            <div class="section-title">Contact Information</div>
-            <div class="contact-row">
-                <span class="contact-icon-cell"><i class="fa-solid fa-phone"></i></span>
-                <span class="contact-val-cell"><span class="contact-val">@phone</span></span>
-            </div>
-            <div class="contact-row">
-                <span class="contact-icon-cell"><i class="fa-solid fa-envelope"></i></span>
-                <span class="contact-val-cell"><span class="contact-val">@email</span></span>
-            </div>
-            @if (!string.IsNullOrEmpty(website))
-            {
-                <div class="contact-row">
-                    <span class="contact-icon-cell"><i class="fa-solid fa-globe"></i></span>
-                    <span class="contact-val-cell"><span class="contact-val">@website</span></span>
-                </div>
-            }
-            @if (!string.IsNullOrEmpty(emergency))
-            {
-                <div class="contact-row" style="margin-top: 0.2mm;">
-                    <span class="contact-icon-cell"><i class="fa-solid fa-shield-halved" style="color: #dc2626;"></i></span>
-                    <span class="contact-val-cell">
-                        <span class="contact-val" style="color: #dc2626; font-weight: 700;">Emergency: @emergency</span>
-                    </span>
-                </div>
-            }
-        </div>
-
-        <!-- DOUBLE ROW FOR CARD C AND CARD D -->
-        <div class="bk-double-row">
-            
-            <!-- CARD D: CARD INFORMATION (Left Cell) -->
-            <div class="bk-double-cell left">
-                <div class="bk-card bk-valid-box">
-                    <div class="section-title" style="font-size: 5.5pt; margin-bottom: 1.2mm;">Card Details</div>
-                    <div class="bk-valid-row">
-                        <div class="bk-valid-lbl">Card Number</div>
-                        <div class="bk-valid-val">@Model.CardNumber</div>
-                    </div>
-                    <div class="bk-valid-row">
-                        <div class="bk-valid-lbl">Issue Date</div>
-                        <div class="bk-valid-val">@(!string.IsNullOrEmpty(Model.JoiningDate) ? Model.JoiningDate : DateTime.Now.ToString("dd MMM yyyy"))</div>
-                    </div>
-                    <div class="bk-valid-row">
-                        <div class="bk-valid-lbl">Valid Until</div>
-                        <div class="bk-valid-val">@(!string.IsNullOrEmpty(Model.ValidUntil) ? Model.ValidUntil : "N/A")</div>
-                    </div>
-                    <div class="bk-valid-ref">Ref: @Model.EmployeeIdNo</div>
-                </div>
-            </div>
-
-            <!-- CARD C: ATTENDANCE QR VERIFICATION (Right Cell) -->
-            <div class="bk-double-cell right">
-                <div class="bk-card bk-qr-box">
-                    <div class="qr-label-top">ATTENDANCE QR</div>
-                    <div class="qr-container">
-                        @if (!string.IsNullOrEmpty(Model.QrCodeDataUri))
+<div class="pvc-card employee-card card-back">
+    <div class="back-header">
+        <table class="brand-table">
+            <tr>
+                <td class="brand-logo">
+                    <div class="logo-frame small">
+                        @if (!string.IsNullOrEmpty(Model.SchoolLogoDataUri))
                         {
-                            <img src="@Model.QrCodeDataUri" alt="attendance qr" />
+                            <img src="@Model.SchoolLogoDataUri" alt="School logo" />
                         }
                         else
                         {
-                            <i class="fa-solid fa-qrcode"></i>
+                            <span>@Model.SchoolShortName</span>
                         }
                     </div>
-                    <div class="qr-label-sub" style="font-weight: 700; color: #1e40af;">SCAN FOR ATTENDANCE</div>
-                    <div class="qr-label-sub" style="font-size: 3.8pt; margin-top: 0.1mm;">Attendance Verification</div>
-                </div>
-            </div>
+                </td>
+                <td class="brand-copy">
+                    <div class="school-name">@Model.SchoolName</div>
+                    <div class="school-meta">EMPLOYEE VERIFICATION</div>
+                </td>
+            </tr>
+        </table>
+    </div>
 
+    <div class="back-body">
+        <div class="section-card">
+            <div class="section-title">Office Information</div>
+            <table class="compact-table">
+                <tr><td>Department</td><td>@department</td></tr>
+                <tr><td>Office Email</td><td>@officeEmail</td></tr>
+                <tr><td>Office Phone</td><td>@officePhone</td></tr>
+                <tr><td>Emergency Contact</td><td>@emergency</td></tr>
+                <tr><td>Address</td><td>@address</td></tr>
+            </table>
         </div>
 
+        <div class="qr-section">
+            <div class="qr-box">
+                @if (!string.IsNullOrEmpty(Model.QrCodeDataUri))
+                {
+                    <img src="@Model.QrCodeDataUri" alt="Employee QR code" />
+                }
+                else
+                {
+                    <span>QR</span>
+                }
+            </div>
+            <div class="qr-copy">
+                <div class="qr-title">QR Verification Block</div>
+                <div class="qr-value">@Model.EmployeeIdNo</div>
+            </div>
+        </div>
+
+        <div class="section-card rules-card">
+            <div class="section-title">Rules</div>
+            <ul>
+                <li>Display this card while on duty</li>
+                <li>Card is non-transferable</li>
+                <li>Report lost card immediately</li>
+                <li>Return card when service ends</li>
+            </ul>
+        </div>
+
+        <div class="school-contact">
+            <div>@schoolAddress</div>
+            <div>Phone: @officePhone</div>
+            <div>Email: @officeEmail</div>
+            <div>Website: @website</div>
+        </div>
     </div>
 </div>

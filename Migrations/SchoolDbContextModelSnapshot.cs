@@ -180,6 +180,99 @@ namespace SchoolManagementSystem.Migrations
                     b.ToTable("AdmissionListResults");
                 });
 
+            modelBuilder.Entity("SchoolManagementSystem.Models.DTOs.Identity.EmployeeIdCardBulkDto", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BloodGroup")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("CardExpiryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("CardIssueDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CardVersion")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("DateOfBirth")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Department")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Designation")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Email")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EmergencyContactName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EmergencyContactPhone")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EmployeeCardNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EmployeeCode")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("EmployeeType")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FatherName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Gender")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("JoiningDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("MotherName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NIDNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PresentAddress")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ProfilePicturePath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("QRVerificationCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("EmployeeIdCardBulkResults");
+                });
+
             modelBuilder.Entity("SchoolManagementSystem.Models.DTOs.Identity.EmployeeIdCardListDto", b =>
                 {
                     b.Property<DateTime?>("CardExpiryDate")
@@ -237,6 +330,105 @@ namespace SchoolManagementSystem.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.ToTable("EmployeeIdCardListResults");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.DTOs.Identity.StudentIdCardBulkDto", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("BloodGroup")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ClassId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ClassName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("DateOfBirth")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("EmailAddress")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FatherName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FatherOccupation")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("FullNameBangla")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Gender")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("GroupName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("GuardianMobileNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("GuardianName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MobileNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MotherName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MotherOccupation")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PresentDistrict")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PresentPostOffice")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PresentThana")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PresentVillage")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ProfilePicturePath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Religion")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("RollNumber")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SectionId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("SectionName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int?>("StudentGroupId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("StudentNo")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("StudentIdCardBulkResults");
                 });
 
             modelBuilder.Entity("SchoolManagementSystem.Models.DTOs.Identity.StudentIdCardListDto", b =>
@@ -1286,7 +1478,8 @@ namespace SchoolManagementSystem.Migrations
                             CreatedBy = "system",
                             IsDeleted = false,
                             Name = "Science",
-                            SchoolClassId = 9
+                            SchoolClassId = 9,
+                            StudentGroupId = 1
                         },
                         new
                         {
@@ -1297,7 +1490,8 @@ namespace SchoolManagementSystem.Migrations
                             IsDeleted = false,
                             Name = "Science A",
                             ParentSectionId = 17,
-                            SchoolClassId = 9
+                            SchoolClassId = 9,
+                            StudentGroupId = 1
                         },
                         new
                         {
@@ -1308,7 +1502,8 @@ namespace SchoolManagementSystem.Migrations
                             IsDeleted = false,
                             Name = "Science B",
                             ParentSectionId = 17,
-                            SchoolClassId = 9
+                            SchoolClassId = 9,
+                            StudentGroupId = 1
                         },
                         new
                         {
@@ -1318,7 +1513,8 @@ namespace SchoolManagementSystem.Migrations
                             CreatedBy = "system",
                             IsDeleted = false,
                             Name = "Business Studies",
-                            SchoolClassId = 9
+                            SchoolClassId = 9,
+                            StudentGroupId = 2
                         },
                         new
                         {
@@ -1329,7 +1525,8 @@ namespace SchoolManagementSystem.Migrations
                             IsDeleted = false,
                             Name = "Business Studies A",
                             ParentSectionId = 20,
-                            SchoolClassId = 9
+                            SchoolClassId = 9,
+                            StudentGroupId = 2
                         },
                         new
                         {
@@ -1340,7 +1537,8 @@ namespace SchoolManagementSystem.Migrations
                             IsDeleted = false,
                             Name = "Business Studies B",
                             ParentSectionId = 20,
-                            SchoolClassId = 9
+                            SchoolClassId = 9,
+                            StudentGroupId = 2
                         },
                         new
                         {
@@ -1350,7 +1548,8 @@ namespace SchoolManagementSystem.Migrations
                             CreatedBy = "system",
                             IsDeleted = false,
                             Name = "Humanities",
-                            SchoolClassId = 9
+                            SchoolClassId = 9,
+                            StudentGroupId = 3
                         },
                         new
                         {
@@ -1361,7 +1560,8 @@ namespace SchoolManagementSystem.Migrations
                             IsDeleted = false,
                             Name = "Humanities A",
                             ParentSectionId = 23,
-                            SchoolClassId = 9
+                            SchoolClassId = 9,
+                            StudentGroupId = 3
                         },
                         new
                         {
@@ -1372,7 +1572,8 @@ namespace SchoolManagementSystem.Migrations
                             IsDeleted = false,
                             Name = "Humanities B",
                             ParentSectionId = 23,
-                            SchoolClassId = 9
+                            SchoolClassId = 9,
+                            StudentGroupId = 3
                         },
                         new
                         {
@@ -1382,7 +1583,8 @@ namespace SchoolManagementSystem.Migrations
                             CreatedBy = "system",
                             IsDeleted = false,
                             Name = "Science",
-                            SchoolClassId = 10
+                            SchoolClassId = 10,
+                            StudentGroupId = 1
                         },
                         new
                         {
@@ -1393,7 +1595,8 @@ namespace SchoolManagementSystem.Migrations
                             IsDeleted = false,
                             Name = "Science A",
                             ParentSectionId = 26,
-                            SchoolClassId = 10
+                            SchoolClassId = 10,
+                            StudentGroupId = 1
                         },
                         new
                         {
@@ -1404,7 +1607,8 @@ namespace SchoolManagementSystem.Migrations
                             IsDeleted = false,
                             Name = "Science B",
                             ParentSectionId = 26,
-                            SchoolClassId = 10
+                            SchoolClassId = 10,
+                            StudentGroupId = 1
                         },
                         new
                         {
@@ -1414,7 +1618,8 @@ namespace SchoolManagementSystem.Migrations
                             CreatedBy = "system",
                             IsDeleted = false,
                             Name = "Business Studies",
-                            SchoolClassId = 10
+                            SchoolClassId = 10,
+                            StudentGroupId = 2
                         },
                         new
                         {
@@ -1425,7 +1630,8 @@ namespace SchoolManagementSystem.Migrations
                             IsDeleted = false,
                             Name = "Business Studies A",
                             ParentSectionId = 29,
-                            SchoolClassId = 10
+                            SchoolClassId = 10,
+                            StudentGroupId = 2
                         },
                         new
                         {
@@ -1436,7 +1642,8 @@ namespace SchoolManagementSystem.Migrations
                             IsDeleted = false,
                             Name = "Business Studies B",
                             ParentSectionId = 29,
-                            SchoolClassId = 10
+                            SchoolClassId = 10,
+                            StudentGroupId = 2
                         },
                         new
                         {
@@ -1446,7 +1653,8 @@ namespace SchoolManagementSystem.Migrations
                             CreatedBy = "system",
                             IsDeleted = false,
                             Name = "Humanities",
-                            SchoolClassId = 10
+                            SchoolClassId = 10,
+                            StudentGroupId = 3
                         },
                         new
                         {
@@ -1457,7 +1665,8 @@ namespace SchoolManagementSystem.Migrations
                             IsDeleted = false,
                             Name = "Humanities A",
                             ParentSectionId = 32,
-                            SchoolClassId = 10
+                            SchoolClassId = 10,
+                            StudentGroupId = 3
                         },
                         new
                         {
@@ -1468,7 +1677,8 @@ namespace SchoolManagementSystem.Migrations
                             IsDeleted = false,
                             Name = "Humanities B",
                             ParentSectionId = 32,
-                            SchoolClassId = 10
+                            SchoolClassId = 10,
+                            StudentGroupId = 3
                         });
                 });
 
@@ -13243,6 +13453,15 @@ namespace SchoolManagementSystem.Migrations
                             Description = "Administrator",
                             IsDeleted = false,
                             Name = "Admin"
+                        },
+                        new
+                        {
+                            Id = 27,
+                            CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            CreatedBy = "system",
+                            Description = "Exam and result management operations",
+                            IsDeleted = false,
+                            Name = "Exam Controller"
                         });
                 });
 
@@ -24350,6 +24569,196 @@ namespace SchoolManagementSystem.Migrations
                         {
                             RoleId = 26,
                             PermissionId = 604
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 1
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 2
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 66
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 67
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 92
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 93
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 105
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 106
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 118
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 119
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 131
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 144
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 145
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 146
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 147
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 157
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 158
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 159
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 160
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 163
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 165
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 170
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 261
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 262
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 287
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 288
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 313
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 314
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 326
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 327
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 328
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 329
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 339
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 340
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 521
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 522
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 527
+                        },
+                        new
+                        {
+                            RoleId = 27,
+                            PermissionId = 529
                         });
                 });
 
@@ -25742,6 +26151,9 @@ namespace SchoolManagementSystem.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("ClassId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -25783,6 +26195,9 @@ namespace SchoolManagementSystem.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<int?>("StudentGroupId")
+                        .HasColumnType("int");
+
                     b.Property<int>("SubjectId")
                         .HasColumnType("int");
 
@@ -25797,6 +26212,10 @@ namespace SchoolManagementSystem.Migrations
                         .HasColumnType("nvarchar(64)");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ClassId");
+
+                    b.HasIndex("StudentGroupId");
 
                     b.HasIndex("SubjectId");
 
@@ -25931,7 +26350,7 @@ namespace SchoolManagementSystem.Migrations
                     b.ToTable("SubjectMarkStructures");
                 });
 
-            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Fees.FeeInvoice", b =>
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Fees.FeeCategory", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -25947,6 +26366,191 @@ namespace SchoolManagementSystem.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
 
+                    b.Property<string>("Description")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
+
+                    b.ToTable("FeeCategories");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Fees.FeeCollectionSummary", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly>("CollectionDate")
+                        .HasColumnType("date");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<bool>("IsDailySummary")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int?>("PaymentMethod")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("TotalCollected")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TotalDiscounted")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("TotalRefunded")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("TotalTransactions")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CollectionDate", "PaymentMethod")
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
+
+                    b.ToTable("FeeCollectionSummaries");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Fees.FeeDiscount", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("DiscountType")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("FeeCategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("FeeStructureId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int?>("SchoolClassId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateOnly?>("ValidFrom")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly?>("ValidTo")
+                        .HasColumnType("date");
+
+                    b.Property<decimal>("Value")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
+
+                    b.ToTable("FeeDiscounts");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Fees.FeeInvoice", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("AcademicYearId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<decimal>("DiscountAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<DateOnly>("DueDate")
                         .HasColumnType("date");
 
@@ -25958,9 +26562,17 @@ namespace SchoolManagementSystem.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
+                    b.Property<decimal>("LateFee")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<decimal>("PaidAmount")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Remarks")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -25992,9 +26604,11 @@ namespace SchoolManagementSystem.Migrations
                             Id = 1,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            DiscountAmount = 0m,
                             DueDate = new DateOnly(2026, 5, 10),
                             InvoiceNo = "INV-2026-0001",
                             IsDeleted = false,
+                            LateFee = 0m,
                             PaidAmount = 2500m,
                             Status = 3,
                             StudentId = 1,
@@ -26005,9 +26619,11 @@ namespace SchoolManagementSystem.Migrations
                             Id = 2,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            DiscountAmount = 0m,
                             DueDate = new DateOnly(2026, 5, 10),
                             InvoiceNo = "INV-2026-0002",
                             IsDeleted = false,
+                            LateFee = 0m,
                             PaidAmount = 1000m,
                             Status = 2,
                             StudentId = 2,
@@ -26015,7 +26631,7 @@ namespace SchoolManagementSystem.Migrations
                         });
                 });
 
-            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Fees.FeeStructure", b =>
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Fees.FeeInvoiceItem", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -26035,10 +26651,219 @@ namespace SchoolManagementSystem.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
 
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<decimal>("DiscountAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int?>("FeeCategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FeeInvoiceId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("FeeStructureId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("NetAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("FeeInvoiceItems");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Fees.FeeLedger", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Balance")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<decimal>("Credit")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("Debit")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int?>("FeeInvoiceId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("FeePaymentId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("TransactionDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("TransactionType")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudentId", "TransactionDate");
+
+                    b.ToTable("FeeLedgers");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Fees.FeeRefund", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("ApprovedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ApprovedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<int>("FeePaymentId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsApproved")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("ReferenceNo")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<decimal>("RefundAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("RefundDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("RefundMethod")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("RejectedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RejectedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("FeeRefunds");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Fees.FeeStructure", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("AcademicYearId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Amount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int?>("DueDay")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("FeeCategoryId")
+                        .HasColumnType("int");
+
                     b.Property<string>("FeeName")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<int>("Frequency")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
@@ -26058,7 +26883,92 @@ namespace SchoolManagementSystem.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("SchoolClassId", "FeeCategoryId", "FeeName")
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
+
                     b.ToTable("FeeStructures");
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Fees.FeeWaiver", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("ApprovedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ApprovedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<int?>("FeeCategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("FeeInvoiceId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("FeeStructureId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsApproved")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTime?>("RejectedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("RejectedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateOnly?>("ValidFrom")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly?>("ValidTo")
+                        .HasColumnType("date");
+
+                    b.Property<decimal>("WaiverAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("WaiverType")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("WaiverValue")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("FeeWaivers");
                 });
 
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Fees.FineRule", b =>
@@ -26104,6 +27014,69 @@ namespace SchoolManagementSystem.Migrations
                     b.ToTable("FineRules");
                 });
 
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Fees.LateFeeRule", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<int?>("FeeCategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("FeeType")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("FeeValue")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("GraceDays")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("MaxFee")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<int?>("SchoolClassId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
+
+                    b.ToTable("LateFeeRules");
+                });
+
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Fees.Payment", b =>
                 {
                     b.Property<int>("Id")
@@ -26124,11 +27097,19 @@ namespace SchoolManagementSystem.Migrations
                         .HasMaxLength(64)
                         .HasColumnType("nvarchar(64)");
 
+                    b.Property<decimal>("DiscountAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<int>("FeeInvoiceId")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
+
+                    b.Property<decimal>("LateFee")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("Method")
                         .HasColumnType("int");
@@ -26139,6 +27120,10 @@ namespace SchoolManagementSystem.Migrations
                     b.Property<string>("ReferenceNo")
                         .HasMaxLength(80)
                         .HasColumnType("nvarchar(80)");
+
+                    b.Property<string>("Remarks")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
@@ -26160,11 +27145,70 @@ namespace SchoolManagementSystem.Migrations
                             Amount = 2500m,
                             CreatedAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             CreatedBy = "system",
+                            DiscountAmount = 0m,
                             FeeInvoiceId = 1,
                             IsDeleted = false,
+                            LateFee = 0m,
                             Method = 1,
                             PaidAt = new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc)
                         });
+                });
+
+            modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Fees.StudentFeeAssignment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("AcademicYearId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("CreatedBy")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<decimal?>("CustomAmount")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("FeeStructureId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("StudentId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UpdatedBy")
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)");
+
+                    b.Property<DateOnly?>("ValidFrom")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly?>("ValidTo")
+                        .HasColumnType("date");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StudentId", "FeeStructureId", "AcademicYearId")
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
+
+                    b.ToTable("StudentFeeAssignments");
                 });
 
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Guardian.Guardian", b =>
@@ -29885,6 +30929,9 @@ namespace SchoolManagementSystem.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<bool>("AllowResultWithDue")
+                        .HasColumnType("bit");
+
                     b.Property<string>("BanglaName")
                         .HasMaxLength(160)
                         .HasColumnType("nvarchar(160)");
@@ -30854,11 +31901,22 @@ namespace SchoolManagementSystem.Migrations
 
             modelBuilder.Entity("SchoolManagementSystem.Models.Entities.Exam.ExamSubject", b =>
                 {
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Academic.SchoolClass", "Class")
+                        .WithMany()
+                        .HasForeignKey("ClassId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.HasOne("SchoolManagementSystem.Models.Entities.Exam.Exam", "Exam")
                         .WithMany("ExamSubjects")
                         .HasForeignKey("ExamId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("SchoolManagementSystem.Models.Entities.Academic.StudentGroup", "StudentGroup")
+                        .WithMany()
+                        .HasForeignKey("StudentGroupId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("SchoolManagementSystem.Models.Entities.Academic.Subject", "Subject")
                         .WithMany()
@@ -30871,7 +31929,11 @@ namespace SchoolManagementSystem.Migrations
                         .HasForeignKey("TeacherId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.Navigation("Class");
+
                     b.Navigation("Exam");
+
+                    b.Navigation("StudentGroup");
 
                     b.Navigation("Subject");
 

@@ -1,14 +1,14 @@
 @{
-    ViewData["Title"] = "Fee Structure";
+    ViewData["Title"] = "Fee Payments";
 }
 
 <div class="page-title d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h1 class="mb-1"><i class="bi bi-cash-stack me-2"></i>Fee Structure</h1>
-        <p class="text-muted mb-0">Configure and manage tuition fees and recurring charges</p>
+        <h1 class="mb-1"><i class="bi bi-credit-card me-2"></i>Fee Payments</h1>
+        <p class="text-muted mb-0">Record and track student fee payments</p>
     </div>
-    <a href="/FeeStructure/CreateEdit" class="btn btn-primary shadow-sm">
-        <i class="bi bi-plus-circle me-1"></i> Add Fee Item
+    <a href="/FeePayment/CreateEdit" class="btn btn-primary shadow-sm">
+        <i class="bi bi-plus-circle me-1"></i> Add Payment
     </a>
 </div>
 
@@ -26,12 +26,12 @@
             <div class="col-md-8">
                 <div class="input-group">
                     <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-                    <input type="text" id="feeSearch" class="form-control border-start-0" placeholder="Search by fee name or class...">
-                    <button class="btn btn-outline-secondary" type="button" id="feeSearchBtn">Search</button>
+                    <input type="text" id="paymentSearch" class="form-control border-start-0" placeholder="Search by invoice no or student name...">
+                    <button class="btn btn-outline-secondary" type="button" id="paymentSearchBtn">Search</button>
                 </div>
             </div>
             <div class="col-md-4 text-end">
-                <button class="btn btn-outline-secondary" id="refreshFeeBtn">
+                <button class="btn btn-outline-secondary" id="refreshBtn">
                     <i class="bi bi-arrow-clockwise me-1"></i> Refresh
                 </button>
             </div>
@@ -41,7 +41,7 @@
 
 <div class="card shadow-sm">
     <div class="card-body p-0">
-        <div id="fee-table"></div>
+        <div id="payment-table"></div>
     </div>
 </div>
 
@@ -54,7 +54,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                Are you sure you want to delete <strong id="deleteName"></strong>?
+                Are you sure you want to delete payment for <strong id="deleteName"></strong>?
             </div>
             <div class="modal-footer border-0 pt-0">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -69,15 +69,15 @@
         var pendingDeleteId = null;
         var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
 
-        var table = new Tabulator("#fee-table", {
+        var table = new Tabulator("#payment-table", {
             height: "calc(100vh - 300px)",
             layout: "fitColumns",
             pagination: true,
             paginationMode: "remote",
-            ajaxURL: '@Url.Action("GetList", "FeeStructure")',
+            ajaxURL: '@Url.Action("GetList", "FeePayment")',
             paginationSize: 10,
             ajaxResponse: function(url, params, response) {
-                console.log("FeeStructure API Payload:", response);
+                console.log("FeePayment API Payload:", response);
                 const rows = Array.isArray(response.data) ? response.data : [];
                 return {
                     last_page: response.last_page || 1,
@@ -86,19 +86,31 @@
                 };
             },
             columns: [
-                { title: "Fee Item", field: "feeName", widthGrow: 2, formatter: function(cell) {
+                { title: "Invoice No", field: "invoiceNo", widthGrow: 1.5, formatter: function(cell) {
                     return `<div class="fw-bold text-dark">${cell.getValue()}</div>`;
                 }},
-                { title: "Applicable Class", field: "className", widthGrow: 1.5, formatter: function(cell) {
-                    return `<span class="badge border text-primary bg-primary-soft px-3 rounded-pill">${cell.getValue()}</span>`;
+                { title: "Student", field: "studentName", widthGrow: 2, formatter: function(cell) {
+                    return `<span class="fw-semibold">${cell.getValue()}</span>`;
                 }},
-                { title: "Amount", field: "amount", width: 150, hozAlign: "right", formatter: function(cell) {
+                { title: "Amount", field: "amount", width: 140, hozAlign: "right", formatter: function(cell) {
                     return `<div class="fw-bold text-success">৳${parseFloat(cell.getValue()).toLocaleString('en-IN', {minimumFractionDigits: 2})}</div>`;
                 }},
-                { title: "Frequency", field: "isRecurring", width: 150, hozAlign: "center", formatter: function(cell) {
-                    return cell.getValue() 
-                        ? `<span class="text-warning small fw-bold"><i class="bi bi-repeat me-1"></i>Monthly</span>` 
-                        : `<span class="text-muted small fw-bold"><i class="bi bi-lightning-fill me-1"></i>One-time</span>`;
+                { title: "Method", field: "method", width: 120, hozAlign: "center", formatter: function(cell) {
+                    var m = parseInt(cell.getValue());
+                    if (m === 1) return `<span class="badge bg-info rounded-pill px-3">Cash</span>`;
+                    if (m === 2) return `<span class="badge bg-primary rounded-pill px-3">Bank</span>`;
+                    if (m === 3) return `<span class="badge bg-secondary rounded-pill px-3">Card</span>`;
+                    if (m === 4) return `<span class="badge bg-success rounded-pill px-3">Online</span>`;
+                    return `<span class="badge bg-light text-dark rounded-pill px-3">Other</span>`;
+                }},
+                { title: "Reference No", field: "referenceNo", width: 150, formatter: function(cell) {
+                    return cell.getValue() ? cell.getValue() : `<span class="text-muted">—</span>`;
+                }},
+                { title: "Paid At", field: "paidAt", width: 170, hozAlign: "center", formatter: function(cell) {
+                    var val = cell.getValue();
+                    if (!val) return `<span class="text-muted">—</span>`;
+                    var d = new Date(val);
+                    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
                 }},
                 {
                     title: "Actions",
@@ -110,7 +122,7 @@
                         var id = cell.getValue();
                         return `
                             <div class="btn-group btn-group-sm">
-                                <a href="/FeeStructure/Edit/${id}" class="btn btn-outline-primary" title="Edit"><i class="bi bi-pencil"></i></a>
+                                <a href="/FeePayment/Edit/${id}" class="btn btn-outline-primary" title="Edit"><i class="bi bi-pencil"></i></a>
                                 <button class="btn btn-outline-danger delete-btn" title="Delete"><i class="bi bi-trash"></i></button>
                             </div>
                         `;
@@ -118,31 +130,31 @@
                     cellClick: function(e, cell) {
                         if (e.target.closest('.delete-btn')) {
                             pendingDeleteId = cell.getValue();
-                            document.getElementById('deleteName').textContent = cell.getRow().getData().feeName;
+                            document.getElementById('deleteName').textContent = cell.getRow().getData().invoiceNo;
                             deleteModal.show();
                         }
                     }
                 }
             ],
-            placeholder: "<div class='p-4 text-center text-muted'>No fee structures found</div>"
+            placeholder: "<div class='p-4 text-center text-muted'>No payments found</div>"
         });
 
-        document.getElementById('feeSearchBtn').addEventListener('click', function() {
-            var search = document.getElementById('feeSearch').value;
-            table.setData('@Url.Action("GetList", "FeeStructure")', { search: search });
+        document.getElementById('paymentSearchBtn').addEventListener('click', function() {
+            var search = document.getElementById('paymentSearch').value;
+            table.setData('@Url.Action("GetList", "FeePayment")', { search: search });
         });
 
-        document.getElementById('feeSearch').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') document.getElementById('feeSearchBtn').click();
+        document.getElementById('paymentSearch').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') document.getElementById('paymentSearchBtn').click();
         });
 
-        document.getElementById('refreshFeeBtn').addEventListener('click', function() {
+        document.getElementById('refreshBtn').addEventListener('click', function() {
             table.setData();
         });
 
         document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
             if (!pendingDeleteId) return;
-            fetch(`/FeeStructure/DeleteConfirmed/${pendingDeleteId}`, {
+            fetch(`/FeePayment/DeleteConfirmed/${pendingDeleteId}`, {
                 method: 'POST',
                 headers: {
                     'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value

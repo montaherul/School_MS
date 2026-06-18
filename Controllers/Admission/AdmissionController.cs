@@ -203,6 +203,7 @@ public class AdmissionController : Controller
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
             await _admissionService.ApproveAndConvertAsync(request.Id, request.SectionId, userId, ct);
+            TempData["SuccessMessage"] = "Application approved and converted successfully. Invoice generated.";
             return Json(new { success = true, message = "Application converted successfully." });
         }
         catch (Exception ex)

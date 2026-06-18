@@ -181,6 +181,9 @@ public class SchoolSetting : BaseEntity
     public bool ShowAdmissionRequirements { get; set; } = true;
     public bool ShowAdmissionDownloads { get; set; } = true;
 
+    // Result Access
+    public bool AllowResultWithDue { get; set; } = true;
+
     [MaxLength(200)]
     public string? AdmissionTitle { get; set; }
 

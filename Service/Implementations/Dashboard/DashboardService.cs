@@ -11,9 +11,12 @@ using SchoolManagementSystem.Models.DTOs.Result;
 using SchoolManagementSystem.Models.DTOs.Attendance;
 using SchoolManagementSystem.Services.Interfaces.Guardian;
 using SchoolManagementSystem.Services.Interfaces.Academic;
+using SchoolManagementSystem.Services.Interfaces.Fees;
+using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.Models.Entities.Result;
 using SchoolManagementSystem.Models.Entities.Exam;
 using SchoolManagementSystem.Models.Entities.Teachers;
+using SchoolManagementSystem.Models.DTOs.Fees;
 
 namespace SchoolManagementSystem.Service.Implementations.Dashboard;
 
@@ -27,6 +30,8 @@ public class DashboardService : IDashboardService
     private readonly IExamRepository _examRepository;
     private readonly IResultPublicationRepository _publicationRepository;
     private readonly IStudentExamResultRepository _examResultRepository;
+    private readonly IFeeDashboardService _feeDashboardService;
+    private readonly IReportCardService _reportCardService;
 
     public DashboardService(
         IDashboardRepository dashboardRepository,
@@ -36,7 +41,9 @@ public class DashboardService : IDashboardService
         ICalendarDashboardService calendarDashboardService,
         IExamRepository examRepository,
         IResultPublicationRepository publicationRepository,
-        IStudentExamResultRepository examResultRepository)
+        IStudentExamResultRepository examResultRepository,
+        IFeeDashboardService feeDashboardService,
+        IReportCardService reportCardService)
     {
         _dashboardRepository = dashboardRepository;
         _dashboardQueryRepository = dashboardQueryRepository;
@@ -46,11 +53,18 @@ public class DashboardService : IDashboardService
         _examRepository = examRepository;
         _publicationRepository = publicationRepository;
         _examResultRepository = examResultRepository;
+        _feeDashboardService = feeDashboardService;
+        _reportCardService = reportCardService;
     }
 
     public async Task<DashboardViewModel> GetDashboardAsync(CancellationToken cancellationToken = default)
     {
-        var data = await _dashboardRepository.GetAdminDashboardDataAsync(cancellationToken);
+        var activeYear = await _uow.Repository<SchoolManagementSystem.Models.Entities.Academic.AcademicYear>().Query()
+            .Where(y => y.IsActive && !y.IsDeleted)
+            .FirstOrDefaultAsync(cancellationToken);
+        var academicYearId = activeYear?.Id;
+
+        var data = await _dashboardRepository.GetAdminDashboardDataAsync(cancellationToken, academicYearId);
         var attendanceSummary = await _dashboardRepository.GetAttendanceDashboardSummaryAsync(DateTime.Today, cancellationToken);
 
         var employeeRepo = _uow.Repository<SchoolManagementSystem.Models.Entities.Employee.Employee>();
@@ -153,6 +167,8 @@ public class DashboardService : IDashboardService
         var studentHolidays = await _calendarDashboardService.GetUpcomingHolidaysAsync(5, cancellationToken);
         var studentExams = await _calendarDashboardService.GetUpcomingExamsAsync(5, cancellationToken);
 
+        var latestResults = await _dashboardRepository.GetStudentLatestResultsAsync(student.Id, cancellationToken);
+
         return new StudentDashboardViewModel
         {
             Id = student.Id,
@@ -167,8 +183,10 @@ public class DashboardService : IDashboardService
             RecentNotices = data.recentNotices.Select(MapActivity).ToList(),
             UpcomingAssignments = data.upcomingAssignments.Select(MapAssignment).ToList(),
             AttendanceCalendar = calendar.Select(MapCalendar).ToList(),
+            Results = latestResults,
             UpcomingHolidays = studentHolidays,
-            UpcomingExams = studentExams
+            UpcomingExams = studentExams,
+            IsResultBlocked = await _reportCardService.IsResultBlockedForStudentAsync(student.Id, cancellationToken)
         };
     }
 
@@ -299,6 +317,7 @@ public class DashboardService : IDashboardService
                 model.ClassName = selectedStudent.Class?.Name ?? "N/A";
                 model.SectionName = selectedStudent.Section?.Name ?? "N/A";
                 model.RollNumber = selectedStudent.RollNumber.ToString();
+                model.IsResultBlocked = await _reportCardService.IsResultBlockedForStudentAsync(selectedStudent.Id, cancellationToken);
 
                 var today = DateTime.Today;
                 var startOfMonth = new DateOnly(today.Year, today.Month, 1);
@@ -353,7 +372,7 @@ public class DashboardService : IDashboardService
                 var invoices = await _uow.Repository<SchoolManagementSystem.Models.Entities.Fees.FeeInvoice>().Query()
                     .Where(fi => fi.StudentId == selectedStudent.Id && !fi.IsDeleted)
                     .ToListAsync(cancellationToken);
-                model.SelectedChildOutstandingFees = invoices.Where(i => (int)i.Status != 3).Sum(i => i.TotalAmount - i.PaidAmount);
+                model.SelectedChildOutstandingFees = invoices.Where(i => i.Status != PaymentStatus.Paid).Sum(i => i.TotalAmount - i.PaidAmount);
                 model.SelectedChildTotalPaid = invoices.Sum(i => i.PaidAmount);
                 model.SelectedChildInvoiceCount = invoices.Count;
 
@@ -453,6 +472,11 @@ public class DashboardService : IDashboardService
             UpcomingExams = upcomingExams,
             RecentActivities = recentActivities
         };
+    }
+
+    public async Task<FeeDashboardDto?> GetAccountantDashboardAsync(int? academicYearId = null, CancellationToken cancellationToken = default)
+    {
+        return await _feeDashboardService.GetDashboardDataAsync(academicYearId, cancellationToken);
     }
 
     private async Task<List<RecentActivityItem>> GetRecentExamActivitiesAsync(CancellationToken ct)

@@ -358,19 +358,31 @@
             <div class="widget-value" style="color:#15803d;">৳@Model.SelectedChildOutstandingFees.ToString("N2")</div>
             <div class="widget-sub">@Model.SelectedChildInvoiceCount invoice(s) | Paid: ৳@Model.SelectedChildTotalPaid.ToString("N2")</div>
         </div>
-        <div class="widget">
-            <div class="widget-icon token-result" style="display:flex;"><i class="bi bi-bar-chart-line"></i></div>
-            <div class="widget-title">Latest Result</div>
-            @if (Model.SelectedChildLatestGPA.HasValue)
-            {
-                <div class="widget-value" style="color:#c2410c;">GPA: @Model.SelectedChildLatestGPA.Value.ToString("F2")</div>
-                <div class="widget-sub">Grade: @Model.SelectedChildLatestGrade | @(Model.SelectedChildLatestPassed ? "Passed" : "Failed")</div>
-            }
-            else
-            {
-                <div class="widget-value" style="color:#9ca3af;">No Result</div>
-            }
-        </div>
+        @if (!Model.IsResultBlocked)
+        {
+            <div class="widget">
+                <div class="widget-icon token-result" style="display:flex;"><i class="bi bi-bar-chart-line"></i></div>
+                <div class="widget-title">Latest Result</div>
+                @if (Model.SelectedChildLatestGPA.HasValue)
+                {
+                    <div class="widget-value" style="color:#c2410c;">GPA: @Model.SelectedChildLatestGPA.Value.ToString("F2")</div>
+                    <div class="widget-sub">Grade: @Model.SelectedChildLatestGrade | @(Model.SelectedChildLatestPassed ? "Passed" : "Failed")</div>
+                }
+                else
+                {
+                    <div class="widget-value" style="color:#9ca3af;">No Result</div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="widget">
+                <div class="widget-icon token-result" style="display:flex;background:#fef3c7;color:#d97706;"><i class="bi bi-exclamation-triangle"></i></div>
+                <div class="widget-title" style="color:#d97706;">Results Blocked</div>
+                <div class="widget-value" style="color:#d97706;font-size:14px;">Clear outstanding fees</div>
+                <div class="widget-sub">Results temporarily unavailable</div>
+            </div>
+        }
         <div class="widget">
             <div class="widget-icon token-leave" style="display:flex;"><i class="bi bi-calendar2-x"></i></div>
             <div class="widget-title">Leave Applications</div>
@@ -395,7 +407,14 @@
     {
         <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px;">
             <a asp-action="Attendance" asp-controller="GuardianPortalPages" asp-route-studentId="@Model.SelectedChildId" class="btn btn-outline-primary btn-sm"><i class="bi bi-calendar-check me-1"></i>Attendance</a>
-            <a asp-action="Results" asp-controller="GuardianPortalPages" asp-route-studentId="@Model.SelectedChildId" class="btn btn-outline-primary btn-sm"><i class="bi bi-bar-chart me-1"></i>Results</a>
+            @if (!Model.IsResultBlocked)
+            {
+                <a asp-action="Results" asp-controller="GuardianPortalPages" asp-route-studentId="@Model.SelectedChildId" class="btn btn-outline-primary btn-sm"><i class="bi bi-bar-chart me-1"></i>Results</a>
+            }
+            else
+            {
+                <span class="btn btn-outline-secondary btn-sm" style="opacity:0.6;cursor:not-allowed;" title="Results blocked due to outstanding fees"><i class="bi bi-bar-chart me-1"></i>Results</span>
+            }
             <a href="/Guardian/ExamRoutine?studentId=@Model.SelectedChildId" class="btn btn-outline-primary btn-sm"><i class="bi bi-calendar-event me-1"></i>Exam Routine</a>
             <a asp-action="Fees" asp-controller="GuardianPortalPages" asp-route-studentId="@Model.SelectedChildId" class="btn btn-outline-primary btn-sm"><i class="bi bi-cash me-1"></i>Fees</a>
             <a asp-action="Leaves" asp-controller="GuardianPortalPages" asp-route-studentId="@Model.SelectedChildId" class="btn btn-outline-primary btn-sm"><i class="bi bi-calendar2-x me-1"></i>Leave</a>

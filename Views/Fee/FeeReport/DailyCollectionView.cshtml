@@ -1,0 +1,70 @@
+@{
+    ViewData["Title"] = "Daily Collection Report";
+}
+<div class="page-title d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="mb-1"><i class="bi bi-calendar-day me-2"></i>Daily Collection</h1>
+        <p class="text-muted mb-0">Day-wise collection summary</p>
+    </div>
+    <div>
+        <button class="btn btn-success btn-sm me-1" id="exportExcelBtn"><i class="bi bi-file-earmark-excel me-1"></i> Excel</button>
+        <button class="btn btn-danger btn-sm" id="exportPdfBtn"><i class="bi bi-file-earmark-pdf me-1"></i> PDF</button>
+    </div>
+</div>
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label fw-semibold">Collection Date</label>
+                <input type="date" id="collectionDate" class="form-control" value="@DateOnly.FromDateTime(DateTime.UtcNow).ToString("yyyy-MM-dd")">
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-primary w-100" id="loadBtn"><i class="bi bi-search me-1"></i> Load</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div id="collection-table"></div>
+    </div>
+</div>
+@section Scripts {
+    <script>
+        function loadData() {
+            var dt = document.getElementById('collectionDate').value;
+            table.setData("/FeeReport/DailyCollection", { date: dt });
+            document.getElementById('exportExcelBtn').onclick = function() { window.location.href = '/FeeReport/ExportDailyCollectionExcel?date=' + dt; };
+            document.getElementById('exportPdfBtn').onclick = function() { window.location.href = '/FeeReport/ExportDailyCollectionPdf?date=' + dt; };
+        }
+        var table = new Tabulator("#collection-table", {
+            height: "calc(100vh - 350px)", layout: "fitColumns",
+            pagination: true, paginationMode: "remote",
+            ajaxURL: "/FeeReport/DailyCollection",
+            paginationSize: 50,
+            ajaxResponse: function(url, params, response) {
+                var rows = Array.isArray(response.data) ? response.data : [];
+                return { last_page: response.last_page || 1, total_records: response.total_records || rows.length, data: rows };
+            },
+            columns: [
+                { title: "Invoice No", field: "invoiceNo", widthGrow: 1.5 },
+                { title: "Student Name", field: "studentName", widthGrow: 2 },
+                { title: "Amount", field: "amount", width: 130, hozAlign: "right", formatter: function(c) { return parseFloat(c.getValue()).toLocaleString('en-IN', {minimumFractionDigits: 2}); } },
+                { title: "Payment Method", field: "paymentMethod", width: 130, hozAlign: "center" },
+                { title: "Reference No", field: "referenceNo", width: 140 },
+                { title: "Paid At", field: "paidAt", width: 160, hozAlign: "center", formatter: function(c) { return new Date(c.getValue()).toLocaleString(); } }
+            ],
+            placeholder: "<div class='p-4 text-center text-muted'>Select a date and click Load</div>"
+        });
+        document.getElementById('loadBtn').addEventListener('click', loadData);
+        loadData();
+    </script>
+    <style>
+        .tabulator { border: none !important; }
+        .tabulator .tabulator-header { background-color: #f8f9fa; border-bottom: 1px solid #e2e8f0; }
+        .tabulator .tabulator-header .tabulator-col { background-color: #f8f9fa; font-weight: 700; color: #475569; padding: 12px 8px; }
+        .tabulator .tabulator-row { border-bottom: 1px solid #f1f5f9; }
+        .tabulator .tabulator-row:hover { background-color: #f8fafc !important; }
+        .tabulator .tabulator-row .tabulator-cell { padding: 12px 8px; vertical-align: middle; }
+    </style>
+}

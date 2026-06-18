@@ -1,7 +1,9 @@
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Helpers.Pdf;
 using SchoolManagementSystem.Models.Entities.Academic;
+using SchoolManagementSystem.Models.Entities.Fees;
 using SchoolManagementSystem.Models.Entities.Result;
+using SchoolManagementSystem.Models.Entities.Website;
 using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Repositories.Interfaces.Result;
 using SchoolManagementSystem.Repositories.Interfaces.Website;
@@ -37,8 +39,18 @@ public class ReportCardService : IReportCardService
         _subjectFilter = subjectFilter;
     }
 
+    public async Task<bool> IsResultBlockedForStudentAsync(int studentId, CancellationToken cancellationToken = default)
+    {
+        if (await IsResultBlockedAsync(cancellationToken))
+            return await HasFeeDueAsync(studentId, cancellationToken);
+        return false;
+    }
+
     public async Task<byte[]?> GenerateReportCardPdfAsync(int examId, int studentId, CancellationToken ct = default)
     {
+        if (await IsResultBlockedForStudentAsync(studentId, ct))
+            return null;
+
         var result = await _examResultRepository.Query()
             .Include(r => r.Student)
             .Include(r => r.Exam)
@@ -70,6 +82,20 @@ public class ReportCardService : IReportCardService
         var school = await _schoolSettingRepository.Query().FirstOrDefaultAsync(ct);
  
         return _pdfGenerator.GenerateSchoolReportCard(result, marks, school);
+    }
+
+    private async Task<bool> HasFeeDueAsync(int studentId, CancellationToken cancellationToken)
+    {
+        return await _uow.Repository<FeeInvoice>().AnyAsync(
+            x => x.StudentId == studentId && !x.IsDeleted && x.Status != PaymentStatus.Paid && x.Status != PaymentStatus.Waived,
+            cancellationToken);
+    }
+
+    private async Task<bool> IsResultBlockedAsync(CancellationToken cancellationToken)
+    {
+        var setting = await _schoolSettingRepository.Query().FirstOrDefaultAsync(cancellationToken);
+        if (setting == null) return false;
+        return !setting.AllowResultWithDue;
     }
 
     private string GenerateReportCardHash(int examId, int studentId, decimal totalMarks, string grade, decimal gpa)

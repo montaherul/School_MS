@@ -7,6 +7,7 @@ using SchoolManagementSystem.Models.Entities.Admission;
 using SchoolManagementSystem.Models.Entities.Auth;
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Models.Entities.Guardian;
+using SchoolManagementSystem.Models.Entities.Fees;
 using SchoolManagementSystem.Models.Entities.Website;
 using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Services.Interfaces.Email;
@@ -350,6 +351,84 @@ public class AdmissionService : IAdmissionService
             application.UpdatedBy = approvedBy;
             application.UpdatedAt = DateTime.UtcNow;
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            // --- Fee invoice creation for admission ---
+            var feeStructure = await _unitOfWork.Repository<AdmissionFeeStructure>()
+                .FirstOrDefaultAsync(f => f.SchoolClassId == application.AppliedClassId && f.IsActive && !f.IsDeleted, cancellationToken);
+
+            var admissionFee = feeStructure?.AdmissionFee ?? application.AdmissionFee;
+            var invoiceKey = $"AdmissionApp_{applicationId}";
+
+            if (!await _unitOfWork.Repository<FeeInvoice>().AnyAsync(i => i.Remarks == invoiceKey && !i.IsDeleted, cancellationToken))
+            {
+                var invoiceNo = $"INV-ADM-{DateTime.UtcNow:yyyyMMdd}-{Random.Shared.Next(1000, 9999):D4}";
+                var isPaid = application.AdmissionFeePaid;
+
+                var invoice = new FeeInvoice
+                {
+                    InvoiceNo = invoiceNo,
+                    StudentId = studentId,
+                    DueDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(30)),
+                    TotalAmount = admissionFee,
+                    PaidAmount = isPaid ? admissionFee : 0,
+                    Status = isPaid ? PaymentStatus.Paid : PaymentStatus.Unpaid,
+                    Remarks = invoiceKey,
+                    CreatedBy = approvedBy,
+                    CreatedAt = DateTime.UtcNow
+                };
+
+                await _unitOfWork.Repository<FeeInvoice>().AddAsync(invoice, cancellationToken);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+                var className = feeStructure?.ClassName ?? $"Class-{application.AppliedClassId}";
+
+                await _unitOfWork.Repository<FeeInvoiceItem>().AddAsync(new FeeInvoiceItem
+                {
+                    FeeInvoiceId = invoice.Id,
+                    Description = $"Admission Fee - {className}",
+                    Amount = admissionFee,
+                    NetAmount = admissionFee,
+                    CreatedBy = approvedBy,
+                    CreatedAt = DateTime.UtcNow
+                }, cancellationToken);
+
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+                await _unitOfWork.Repository<FeeLedger>().AddAsync(new FeeLedger
+                {
+                    StudentId = studentId,
+                    FeeInvoiceId = invoice.Id,
+                    TransactionType = FeeLedgerType.Invoice,
+                    Debit = isPaid ? 0 : admissionFee,
+                    Credit = 0,
+                    Balance = isPaid ? 0 : admissionFee,
+                    Description = $"Invoice created: {invoiceNo}",
+                    TransactionDate = DateTime.UtcNow,
+                    CreatedBy = approvedBy,
+                    CreatedAt = DateTime.UtcNow
+                }, cancellationToken);
+
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+                if (isPaid)
+                {
+                    await _unitOfWork.Repository<FeeLedger>().AddAsync(new FeeLedger
+                    {
+                        StudentId = studentId,
+                        FeeInvoiceId = invoice.Id,
+                        TransactionType = FeeLedgerType.Payment,
+                        Debit = 0,
+                        Credit = admissionFee,
+                        Balance = 0,
+                        Description = $"Payment for admission invoice: {invoiceNo}",
+                        TransactionDate = DateTime.UtcNow,
+                        CreatedBy = approvedBy,
+                        CreatedAt = DateTime.UtcNow
+                    }, cancellationToken);
+
+                    await _unitOfWork.SaveChangesAsync(cancellationToken);
+                }
+            }
 
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
 

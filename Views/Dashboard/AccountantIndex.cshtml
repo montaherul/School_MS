@@ -1,0 +1,228 @@
+@model SchoolManagementSystem.Models.DTOs.Fees.FeeDashboardDto
+@{
+    ViewData["Title"] = "Accountant Dashboard";
+}
+
+<div class="adm-page">
+
+    <!-- Header -->
+    <div class="dashboard-hero mb-4">
+        <div class="dashboard-hero__content">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h2 class="fw-bold mb-1"><i class="bi bi-calculator me-2"></i>Finance Dashboard</h2>
+                    <p class="opacity-75 mb-0">Fee collection overview, outstanding balances and payment summaries</p>
+                </div>
+                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                    <div class="dashboard-date-pill">
+                        <i class="bi bi-calendar-event"></i>
+                        <span>@DateTime.Now.ToString("dddd, MMM dd")</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="dashboard-hero__decor"></div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 bg-primary bg-gradient text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="mb-1 small opacity-75">Total Assigned</p>
+                            <h3 class="mb-0 fw-bold">৳@Model.TotalAssigned.ToString("N2")</h3>
+                        </div>
+                        <i class="bi bi-cash-stack fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 bg-success bg-gradient text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="mb-1 small opacity-75">Total Collected</p>
+                            <h3 class="mb-0 fw-bold">৳@Model.TotalCollected.ToString("N2")</h3>
+                        </div>
+                        <i class="bi bi-wallet2 fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 bg-danger bg-gradient text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="mb-1 small opacity-75">Total Outstanding</p>
+                            <h3 class="mb-0 fw-bold">৳@Model.TotalOutstanding.ToString("N2")</h3>
+                        </div>
+                        <i class="bi bi-exclamation-triangle fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 bg-info bg-gradient text-white">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="mb-1 small opacity-75">Collection Rate</p>
+                            <h3 class="mb-0 fw-bold">@Model.CollectionRate.ToString("N1")%</h3>
+                        </div>
+                        <i class="bi bi-graph-up-arrow fs-1 opacity-50"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Method Breakdown -->
+    @if (Model.PaymentMethodBreakdown.Count != 0)
+    {
+        <div class="row g-4 mb-4">
+            <div class="col-12">
+                <div class="adm-table-card">
+                    <div class="dash-section__header p-4 border-bottom">
+                        <h5 class="dash-section__title"><i class="bi bi-pie-chart me-2"></i>Payment Method Breakdown</h5>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="dash-table">
+                            <thead>
+                                <tr>
+                                    <th>Method</th>
+                                    <th class="text-end">Count</th>
+                                    <th class="text-end">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.PaymentMethodBreakdown)
+                                {
+                                    <tr>
+                                        <td class="fw-medium">Method @item.Method</td>
+                                        <td class="text-end">@item.Count</td>
+                                        <td class="text-end fw-bold text-success">৳@item.Total.ToString("N2")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="row g-4">
+        <!-- Monthly Collections -->
+        <div class="col-lg-7">
+            <div class="adm-table-card">
+                <div class="dash-section__header p-4 border-bottom">
+                    <h5 class="dash-section__title"><i class="bi bi-calendar3 me-2"></i>Monthly Collections</h5>
+                </div>
+                <div class="table-responsive">
+                    <table class="dash-table">
+                        <thead>
+                            <tr>
+                                <th class="ps-3">Period</th>
+                                <th class="text-end">Collected</th>
+                                <th class="text-center">Transactions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.MonthlyCollections.Count == 0)
+                            {
+                                <tr>
+                                    <td colspan="3" class="text-center text-muted py-4">No monthly collection data available</td>
+                                </tr>
+                            }
+                            @foreach (var item in Model.MonthlyCollections)
+                            {
+                                <tr>
+                                    <td class="ps-3 fw-medium">@(new DateTime(item.Year, item.Month, 1).ToString("MMMM yyyy"))</td>
+                                    <td class="text-end fw-bold text-success">৳@item.Collected.ToString("N2")</td>
+                                    <td class="text-center"><span class="badge bg-light text-dark rounded-pill">@item.TransactionCount</span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Due Soon Invoices -->
+        <div class="col-lg-5">
+            <div class="adm-table-card">
+                <div class="dash-section__header p-4 border-bottom">
+                    <h5 class="dash-section__title"><i class="bi bi-clock-history me-2"></i>Due Soon Invoices</h5>
+                    <span class="badge bg-warning rounded-pill">@Model.OverdueInvoices Overdue</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="dash-table">
+                        <thead>
+                            <tr>
+                                <th class="ps-3">Invoice</th>
+                                <th>Student</th>
+                                <th class="text-end">Due</th>
+                                <th class="text-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.DueSoonInvoices.Count == 0)
+                            {
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted py-4">No due invoices</td>
+                                </tr>
+                            }
+                            @foreach (var item in Model.DueSoonInvoices)
+                            {
+                                <tr>
+                                    <td class="ps-3"><span class="fw-medium">@item.InvoiceNo</span></td>
+                                    <td class="small text-muted">@item.StudentName</td>
+                                    <td class="text-end fw-bold text-danger">৳@item.DueAmount.ToString("N2")</td>
+                                    <td class="text-center">
+                                        @if (item.DaysRemaining <= 0)
+                                        {
+                                            <span class="badge bg-danger rounded-pill">Overdue</span>
+                                        }
+                                        else if (item.DaysRemaining <= 3)
+                                        {
+                                            <span class="badge bg-warning text-dark rounded-pill">@item.DaysRemaining days</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-info rounded-pill">@item.DaysRemaining days</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Links -->
+    <div class="row g-4 mt-2">
+        <div class="col-12">
+            <div class="adm-table-card">
+                <div class="dash-section__header p-4 border-bottom">
+                    <h5 class="dash-section__title"><i class="bi bi-link-45deg me-2"></i>Quick Links</h5>
+                </div>
+                <div class="p-4">
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="/FeeInvoice/Index" class="adm-btn adm-btn--primary adm-btn--sm"><i class="bi bi-receipt me-1"></i>Invoices</a>
+                        <a href="/FeePayment/Index" class="adm-btn adm-btn--success adm-btn--sm"><i class="bi bi-credit-card me-1"></i>Payments</a>
+                        <a href="/FeeStructure/Index" class="adm-btn adm-btn--info adm-btn--sm"><i class="bi bi-cash-coin me-1"></i>Fee Structures</a>
+                        <a href="/FeeReport/Index" class="adm-btn adm-btn--ghost adm-btn--sm"><i class="bi bi-file-earmark-bar-graph me-1"></i>Reports</a>
+                        <a href="/FeeDashboard/Index" class="adm-btn adm-btn--ghost adm-btn--sm"><i class="bi bi-speedometer2 me-1"></i>Full Fee Dashboard</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>

@@ -6,4 +6,5 @@ public interface ITranscriptService
 {
     Task<StudentTranscriptDto?> GetStudentTranscriptAsync(int studentId, int academicYearId);
     Task<byte[]?> GenerateTranscriptPdfAsync(int studentId, int academicYearId);
+    Task<bool> IsResultBlockedForStudentAsync(int studentId, CancellationToken cancellationToken = default);
 }

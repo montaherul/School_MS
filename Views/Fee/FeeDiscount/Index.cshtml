@@ -1,0 +1,230 @@
+@{
+    ViewData["Title"] = "Fee Discount";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Fee Discount</h1>
+                <p class="adm-header__sub">Manage discount rules applied to student fees</p>
+            </div>
+        </div>
+        <div class="adm-header__right">
+            <a href="/FeeDiscount/CreateEdit" class="adm-btn adm-btn--primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Add Discount
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="adm-alert adm-alert--success">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22,4 12,14 8,10"></polyline>
+            </svg>
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="adm-filters">
+        <div class="adm-filters__row">
+            <div class="adm-filters__field adm-filters__field--search">
+                <label class="adm-label">Search Discounts</label>
+                <div class="adm-input-wrap">
+                    <svg class="adm-input-wrap__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" id="discountSearch" class="adm-input" placeholder="Search by name or class...">
+                    <button type="button" class="adm-input-wrap__btn" id="discountSearchBtn">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="adm-filters__field adm-filters__field--actions">
+                <label class="adm-label">Actions</label>
+                <button type="button" class="adm-btn adm-btn--ghost" id="refreshDiscountBtn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <polyline points="23,4 23,10 17,10"></polyline>
+                        <path d="M20.49,15a9,9,0,1-2.12,6.32A9,9,0,0,1,4.64,6.32"></path>
+                    </svg>
+                    Refresh
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="adm-table-card">
+        <div class="adm-table-card__body">
+            <div id="discount-table"></div>
+        </div>
+    </div>
+
+    <div class="adm-modal-backdrop" id="deleteModal" style="display: none;">
+        <div class="adm-modal">
+            <div class="adm-modal__header">
+                <div class="adm-modal__header-left">
+                    <div class="adm-modal__header-icon adm-modal__header-icon--danger">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                            <path d="M10.29,13.29,16.59,7"></path>
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="2" x2="12" y2="4"></line>
+                            <line x1="20" y1="12" x2="18" y2="12"></line>
+                            <line x1="12" y1="20" x2="12" y2="22"></line>
+                            <line x1="4" y1="12" x2="2" y2="12"></line>
+                            <line x1="17" y1="17" x2="7" y2="7"></line>
+                        </svg>
+                    </div>
+                    <div>
+                        <h6 class="adm-modal__title">Confirm Delete</h6>
+                        <p class="adm-modal__subtitle">This action cannot be undone</p>
+                    </div>
+                </div>
+                <button type="button" class="adm-modal__close" onclick="deleteModal.hide()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="adm-modal__body">
+                <p>Are you sure you want to delete <strong id="deleteName"></strong>? This will permanently remove the discount rule.</p>
+            </div>
+            <div class="adm-modal__footer">
+                <button type="button" class="adm-btn adm-btn--ghost" onclick="deleteModal.hide()">Cancel</button>
+                <button type="button" class="adm-btn adm-btn--danger" id="confirmDeleteBtn">Delete Discount</button>
+            </div>
+        </div>
+    </div>
+
+    @section Scripts {
+        <script>
+            var pendingDeleteId = null;
+            var deleteModal = {
+                show: function() {
+                    document.getElementById('deleteModal').style.display = 'flex';
+                    document.getElementById('deleteModal').classList.add('adm-loading--visible');
+                },
+                hide: function() {
+                    document.getElementById('deleteModal').style.display = 'none';
+                    document.getElementById('deleteModal').classList.remove('adm-loading--visible');
+                }
+            };
+
+            var table = new Tabulator("#discount-table", {
+                height: "calc(100vh - 300px)",
+                layout: "fitColumns",
+                pagination: true,
+                paginationMode: "remote",
+                ajaxURL: '@Url.Action("GetList", "FeeDiscount")',
+                paginationSize: 10,
+                ajaxResponse: function(url, params, response) {
+                    console.log("FeeDiscount API Payload:", response);
+                    const rows = Array.isArray(response.data) ? response.data : [];
+                    return {
+                        last_page: response.last_page || 1,
+                        total_records: response.total_records || rows.length,
+                        data: rows
+                    };
+                },
+                columns: [
+                    { title: "Name", field: "name", widthGrow: 2, formatter: function(cell) {
+                        return `<div class="adm-cell-name">${cell.getValue()}</div>`;
+                    }},
+                    { title: "Type", field: "discountType", width: 120, hozAlign: "center", formatter: function(cell) {
+                        return cell.getValue() === 0
+                            ? `<span class="adm-badge adm-badge--info">Percentage</span>`
+                            : `<span class="adm-badge adm-badge--neutral">Fixed</span>`;
+                    }},
+                    { title: "Value", field: "value", width: 130, hozAlign: "right", formatter: function(cell, formatterParams, onRendered) {
+                        var row = cell.getRow().getData();
+                        if (row.discountType === 0) return `<div class="fw-bold text-dark">${parseFloat(cell.getValue()).toFixed(2)}%</div>`;
+                        return `<div class="fw-bold" style="color: var(--adm-success);">${cell.getValue()}</div>`;
+                    }},
+                    { title: "Class", field: "className", widthGrow: 1.5, formatter: function(cell) {
+                        return cell.getValue()
+                            ? `<span class="adm-badge adm-badge--primary px-3 rounded-pill">${cell.getValue()}</span>`
+                            : `<span class="text-muted">All</span>`;
+                    }},
+                    { title: "Category", field: "feeCategoryName", widthGrow: 1.5, formatter: function(cell) {
+                        return cell.getValue() || `<span class="text-muted">All</span>`;
+                    }},
+                    { title: "Active", field: "isActive", width: 90, hozAlign: "center", formatter: function(cell) {
+                        return cell.getValue()
+                            ? `<span class="text-success"><i class="bi bi-check-circle-fill"></i></span>`
+                            : `<span class="text-danger"><i class="bi bi-x-circle-fill"></i></span>`;
+                    }},
+                    {
+                        title: "Actions",
+                        field: "id",
+                        hozAlign: "right",
+                        headerSort: false,
+                        width: 140,
+                        formatter: function(cell) {
+                            var id = cell.getValue();
+                            return `
+                                <div class="adm-actions">
+                                    <a href="/FeeDiscount/Edit/${id}" class="adm-action adm-action--edit" title="Edit">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                            <path d="M18.5,2.5a2.121,2.121,0,0,1,3,3L12,15l-4,1,1-4Z"></path>
+                                        </svg>
+                                    </a>
+                                    <button class="adm-action adm-action--delete delete-btn" title="Delete" data-id="${id}">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                                            <polyline points="3,6 5,6 21,6"></polyline>
+                                            <path d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6m3,0V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2V6"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            `;
+                        },
+                        cellClick: function(e, cell) {
+                            if (e.target.closest('.delete-btn')) {
+                                pendingDeleteId = cell.getValue();
+                                document.getElementById('deleteName').textContent = cell.getRow().getData().name;
+                                deleteModal.show();
+                            }
+                        }
+                    }
+                ],
+                placeholder: "<div class='adm-loading adm-loading--visible'><div class='adm-loading__spinner'></div><div class='adm-loading__text'>Loading discounts...</div></div>"
+            });
+
+            document.getElementById('discountSearchBtn').addEventListener('click', function() {
+                var search = document.getElementById('discountSearch').value;
+                table.setData('@Url.Action("GetList", "FeeDiscount")', { search: search });
+            });
+
+            document.getElementById('discountSearch').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') document.getElementById('discountSearchBtn').click();
+            });
+
+            document.getElementById('refreshDiscountBtn').addEventListener('click', function() {
+                table.setData();
+            });
+
+            document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+                if (!pendingDeleteId) return;
+                fetch(`/FeeDiscount/DeleteConfirmed/${pendingDeleteId}`, {
+                    method: 'POST',
+                    headers: { 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value }
+                }).then(res => { deleteModal.hide(); table.setData(); });
+            });
+        </script>
+    }
+</div>

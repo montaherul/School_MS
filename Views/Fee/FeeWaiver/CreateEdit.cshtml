@@ -1,0 +1,72 @@
+@model SchoolManagementSystem.Models.ViewModels.Fees.FeeWaiverViewModel
+@{ ViewData["Title"] = Model.IsEditMode ? "Edit Fee Waiver" : "Add Fee Waiver"; }
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="d-flex align-items-center mb-4">
+            <a href="/FeeWaiver/Index" class="btn btn-outline-secondary btn-sm me-3"><i class="bi bi-arrow-left"></i> Back</a>
+            <h2 class="mb-0">@(Model.IsEditMode ? "Edit Fee Waiver" : "Add Fee Waiver")</h2>
+        </div>
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <form asp-action="CreateEdit" method="post">
+                    <input type="hidden" asp-for="Id" />
+                    <div class="mb-3">
+                        <label asp-for="StudentId" class="form-label">Student <span class="text-danger">*</span></label>
+                        <input asp-for="StudentId" class="form-control" type="number" />
+                        <span asp-validation-for="StudentId" class="text-danger small"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="FeeInvoiceId" class="form-label">Invoice</label>
+                        <input asp-for="FeeInvoiceId" class="form-control" type="number" />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="FeeCategoryId" class="form-label">Fee Category</label>
+                        <input asp-for="FeeCategoryId" class="form-control" type="number" />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="FeeStructureId" class="form-label">Fee Structure</label>
+                        <input asp-for="FeeStructureId" class="form-control" type="number" />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="WaiverType" class="form-label">Waiver Type <span class="text-danger">*</span></label>
+                        <select asp-for="WaiverType" class="form-select">
+                            <option value="0">Percentage</option>
+                            <option value="1">Fixed</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="WaiverValue" class="form-label">Waiver Value <span class="text-danger">*</span></label>
+                        <input asp-for="WaiverValue" class="form-control" type="number" step="0.01" min="0" />
+                        <span asp-validation-for="WaiverValue" class="text-danger small"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="WaiverAmount" class="form-label">Waiver Amount</label>
+                        <input asp-for="WaiverAmount" class="form-control" type="number" step="0.01" min="0" />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Reason" class="form-label">Reason</label>
+                        <textarea asp-for="Reason" class="form-control" rows="2"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="ValidFrom" class="form-label">Valid From</label>
+                        <input asp-for="ValidFrom" class="form-control" type="date" />
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="ValidTo" class="form-label">Valid To</label>
+                        <input asp-for="ValidTo" class="form-control" type="date" />
+                    </div>
+                    <div class="mb-3 form-check">
+                        <input asp-for="IsApproved" class="form-check-input" type="checkbox" />
+                        <label asp-for="IsApproved" class="form-check-label fw-semibold">Approved</label>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary px-4"><i class="bi bi-save me-1"></i> Save</button>
+                        <a href="/FeeWaiver/Index" class="btn btn-outline-secondary px-4">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts { @{await Html.RenderPartialAsync("_ValidationScriptsPartial");} }

@@ -185,8 +185,8 @@ public class PlainPdfGenerator : IPdfGenerator
 
     // ─────────────────────────────────────────────────────────────
     //  ID CARD PDF
-    //  Single:  116mm × 92mm (CR80 vertical 54×86mm front+back side-by-side)
-    //  Bulk:    A4 Landscape (multiple cards per page)
+    //  Single:  Exact portrait CR80 PVC page, one side per page
+    //  Bulk:    A4 Landscape, six portrait card pairs per page
     // ─────────────────────────────────────────────────────────────
     private static readonly SynchronizedConverter _converter = new(new PdfTools());
 
@@ -206,7 +206,7 @@ public class PlainPdfGenerator : IPdfGenerator
         }
         else
         {
-            globalSettings.PaperSize = new PechkinPaperSize("116mm", "92mm");
+            globalSettings.PaperSize = new PechkinPaperSize("53.98mm", "85.60mm");
             globalSettings.Orientation = DinkToPdf.Orientation.Portrait;
         }
 

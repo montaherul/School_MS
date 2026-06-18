@@ -1,0 +1,57 @@
+@{
+    ViewData["Title"] = "Due Report";
+}
+<div class="page-title d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="mb-1"><i class="bi bi-exclamation-triangle me-2"></i>Due Report</h1>
+        <p class="text-muted mb-0">Outstanding fee invoices</p>
+    </div>
+    <div>
+        <button class="btn btn-success btn-sm me-1" id="exportExcelBtn"><i class="bi bi-file-earmark-excel me-1"></i> Excel</button>
+        <button class="btn btn-danger btn-sm" id="exportPdfBtn"><i class="bi bi-file-earmark-pdf me-1"></i> PDF</button>
+    </div>
+</div>
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div id="due-table"></div>
+    </div>
+</div>
+@section Scripts {
+    <script>
+        var table = new Tabulator("#due-table", {
+            height: "calc(100vh - 300px)", layout: "fitColumns",
+            pagination: true, paginationMode: "remote",
+            ajaxURL: "/FeeReport/Due",
+            paginationSize: 50,
+            ajaxResponse: function(url, params, response) {
+                var rows = Array.isArray(response.data) ? response.data : [];
+                return { last_page: response.last_page || 1, total_records: response.total_records || rows.length, data: rows };
+            },
+            columns: [
+                { title: "Invoice No", field: "invoiceNo", widthGrow: 1.5 },
+                { title: "Student Name", field: "studentName", widthGrow: 2 },
+                { title: "Class", field: "className", width: 120 },
+                { title: "Due Date", field: "dueDate", width: 110, hozAlign: "center" },
+                { title: "Total Amount", field: "totalAmount", width: 130, hozAlign: "right", formatter: function(c) { return parseFloat(c.getValue()).toLocaleString('en-IN', {minimumFractionDigits: 2}); } },
+                { title: "Paid Amount", field: "paidAmount", width: 130, hozAlign: "right", formatter: function(c) { return parseFloat(c.getValue()).toLocaleString('en-IN', {minimumFractionDigits: 2}); } },
+                { title: "Due Amount", field: "dueAmount", width: 130, hozAlign: "right", formatter: function(c) { return parseFloat(c.getValue()).toLocaleString('en-IN', {minimumFractionDigits: 2}); } },
+                { title: "Days Overdue", field: "daysOverdue", width: 120, hozAlign: "center", formatter: function(c) {
+                    var d = parseInt(c.getValue());
+                    var color = d > 30 ? 'danger' : d > 15 ? 'warning text-dark' : 'secondary';
+                    return '<span class="badge bg-' + color + ' rounded-pill">' + d + ' days</span>';
+                }}
+            ],
+            placeholder: "<div class='p-4 text-center text-muted'>No overdue invoices found</div>"
+        });
+        document.getElementById('exportExcelBtn').addEventListener('click', function() { window.location.href = '/FeeReport/ExportDueExcel'; });
+        document.getElementById('exportPdfBtn').addEventListener('click', function() { window.location.href = '/FeeReport/ExportDuePdf'; });
+    </script>
+    <style>
+        .tabulator { border: none !important; }
+        .tabulator .tabulator-header { background-color: #f8f9fa; border-bottom: 1px solid #e2e8f0; }
+        .tabulator .tabulator-header .tabulator-col { background-color: #f8f9fa; font-weight: 700; color: #475569; padding: 12px 8px; }
+        .tabulator .tabulator-row { border-bottom: 1px solid #f1f5f9; }
+        .tabulator .tabulator-row:hover { background-color: #f8fafc !important; }
+        .tabulator .tabulator-row .tabulator-cell { padding: 12px 8px; vertical-align: middle; }
+    </style>
+}

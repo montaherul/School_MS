@@ -23,7 +23,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <link rel="stylesheet" href="/css/idcard-print.css" />
 </head>
-<body>
+<body class="@(Model.IsBulk ? "idcard-bulk" : "idcard-single")">
 
     @if (Model.IsBulk)
     {
@@ -62,9 +62,14 @@
                     SchoolPhone = Model.SchoolPhone,
                     SchoolEmail = Model.SchoolEmail,
                     SchoolMotto = Model.SchoolMotto,
+                    SchoolEIIN = Model.SchoolEIIN,
                     Website = Model.SchoolWebsite,
                     EmergencyContact = emergencyContact,
                     SchoolSealDataUri = schoolSealUri,
+                    FatherName = student.FatherName ?? "",
+                    MotherName = student.MotherName ?? "",
+                    GuardianMobile = student.GuardianMobileNumber ?? student.FatherOrGuardianMobileNo ?? "",
+                    PresentAddress = string.Join(", ", new[] { student.PresentVillage, student.PresentPostOffice, student.PresentThana, student.PresentDistrict }.Where(x => !string.IsNullOrWhiteSpace(x))),
                     QrCodeDataUri = IdCardQRHelper.GenerateQrCodeBase64(student.StudentNo ?? "N/A"),
                     ValidUntil = validUntil
                 };
@@ -112,18 +117,22 @@
                 SchoolPhone = Model.SchoolPhone,
                 SchoolEmail = Model.SchoolEmail,
                 SchoolMotto = Model.SchoolMotto,
+                SchoolEIIN = Model.SchoolEIIN,
                 Website = Model.SchoolWebsite,
                 EmergencyContact = emergencyContact,
                 SchoolSealDataUri = schoolSealUri,
+                FatherName = student.FatherName ?? "",
+                MotherName = student.MotherName ?? "",
+                GuardianMobile = student.GuardianMobileNumber ?? student.FatherOrGuardianMobileNo ?? "",
+                PresentAddress = string.Join(", ", new[] { student.PresentVillage, student.PresentPostOffice, student.PresentThana, student.PresentDistrict }.Where(x => !string.IsNullOrWhiteSpace(x))),
                 QrCodeDataUri = IdCardQRHelper.GenerateQrCodeBase64(student.StudentNo ?? "N/A"),
                 ValidUntil = validUntil
             };
 
-            <div class="page-single f">
+            <div class="page-single">
                 <partial name="~/Views/Shared/IdCards/_StudentCardFront.cshtml" model="vm" />
             </div>
-            <div class="page-break"></div>
-            <div class="page-single b">
+            <div class="page-single">
                 <partial name="~/Views/Shared/IdCards/_StudentCardBack.cshtml" model="vm" />
             </div>
         }

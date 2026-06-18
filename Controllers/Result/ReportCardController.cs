@@ -172,6 +172,13 @@ public class ReportCardController : Controller
             }
         }
 
+        var isBlocked = await _reportCardService.IsResultBlockedForStudentAsync(studentId, ct);
+        if (isBlocked)
+        {
+            TempData["ErrorMessage"] = "Result access is blocked due to outstanding fees. Please clear your dues to access results.";
+            return RedirectToAction("Index", "Dashboard");
+        }
+
         var examResult = await _uow.Repository<StudentExamResult>()
             .FirstOrDefaultAsync(r => r.ExamId == examId && r.StudentId == studentId && !r.IsDeleted
                 && (r.Status == ResultWorkflowStatus.Published || r.Status == ResultWorkflowStatus.Locked), ct);

@@ -25,9 +25,11 @@ public class EmployeeIdCardViewModel
     public string SchoolPhone { get; set; } = string.Empty;
     public string SchoolEmail { get; set; } = string.Empty;
     public string SchoolMotto { get; set; } = string.Empty;
+    public string SchoolEIIN { get; set; } = string.Empty;
     public string Website { get; set; } = string.Empty;
     public string EmergencyContact { get; set; } = string.Empty;
     public string SchoolSealDataUri { get; set; } = string.Empty;
+    public string PresentAddress { get; set; } = string.Empty;
 
     public string QrCodeDataUri { get; set; } = string.Empty;
     public string ValidUntil { get; set; } = string.Empty;

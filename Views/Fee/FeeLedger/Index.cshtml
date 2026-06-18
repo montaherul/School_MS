@@ -1,0 +1,174 @@
+@{
+    ViewData["Title"] = "Fee Ledger";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14,2 14,8 20,8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10,9 9,9 8,9"></polyline>
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Fee Ledger</h1>
+                <p class="adm-header__sub">View all fee-related transactions and account movements</p>
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="adm-alert adm-alert--success">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22,4 12,14 8,10"></polyline>
+            </svg>
+            @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="adm-filters">
+        <div class="adm-filters__row">
+            <div class="adm-filters__field adm-filters__field--search">
+                <label class="adm-label">Search Ledger</label>
+                <div class="adm-input-wrap">
+                    <svg class="adm-input-wrap__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" id="ledgerSearch" class="adm-input" placeholder="Search by student name or invoice...">
+                    <button type="button" class="adm-input-wrap__btn" id="ledgerSearchBtn">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="adm-filters__field">
+                <label class="adm-label">Filter by Student ID</label>
+                <input type="number" id="filterStudentId" class="adm-input" placeholder="Filter by Student ID" />
+            </div>
+            <div class="adm-filters__field">
+                <label class="adm-label">Transaction Type</label>
+                <select id="filterTransactionType" class="adm-select">
+                    <option value="">All Transaction Types</option>
+                    <option value="1">Invoice</option>
+                    <option value="2">Payment</option>
+                    <option value="3">Discount</option>
+                    <option value="4">Waiver</option>
+                    <option value="5">Refund</option>
+                    <option value="6">Adjustment</option>
+                    <option value="7">Late Fee</option>
+                </select>
+            </div>
+            <div class="adm-filters__field adm-filters__field--actions">
+                <label class="adm-label">Actions</label>
+                <button type="button" class="adm-btn adm-btn--ghost" id="refreshLedgerBtn" title="Refresh">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <polyline points="23,4 23,10 17,10"></polyline>
+                        <path d="M20.49,15a9,9,0,1-2.12,6.32A9,9,0,0,1,4.64,6.32"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="adm-table-card">
+        <div class="adm-table-card__body">
+            <div id="ledger-table"></div>
+        </div>
+    </div>
+
+    @section Scripts {
+        <script>
+            var table = new Tabulator("#ledger-table", {
+                height: "calc(100vh - 300px)",
+                layout: "fitColumns",
+                pagination: true,
+                paginationMode: "remote",
+                ajaxURL: '@Url.Action("GetList", "FeeLedger")',
+                paginationSize: 10,
+                ajaxParams: function() {
+                    return {
+                        search: document.getElementById('ledgerSearch').value,
+                        studentId: document.getElementById('filterStudentId').value || null,
+                        transactionType: document.getElementById('filterTransactionType').value || null
+                    };
+                },
+                ajaxResponse: function(url, params, response) {
+                    console.log("FeeLedger API Payload:", response);
+                    const rows = Array.isArray(response.data) ? response.data : [];
+                    return {
+                        last_page: response.last_page || 1,
+                        total_records: response.total_records || rows.length,
+                        data: rows
+                    };
+                },
+                columns: [
+                    { title: "Student", field: "studentName", widthGrow: 2, formatter: function(cell) {
+                        return `<div class="adm-cell-name">${cell.getValue()}</div>`;
+                    }},
+                    { title: "Invoice No", field: "invoiceNo", width: 140, formatter: function(cell) {
+                        var val = cell.getValue();
+                        return val ? `<span class="text-muted">${val}</span>` : '<span class="text-muted">—</span>';
+                    }},
+                    { title: "Type", field: "transactionType", width: 120, hozAlign: "center", formatter: function(cell) {
+                        var types = { 1: "Invoice", 2: "Payment", 3: "Discount", 4: "Waiver", 5: "Refund", 6: "Adjustment", 7: "Late Fee" };
+                        var badges = { 1: "primary", 2: "success", 3: "info", 4: "warning", 5: "danger", 6: "secondary", 7: "dark" };
+                        var val = cell.getValue();
+                        var label = types[val] || "Unknown";
+                        var cls = badges[val] || "secondary";
+                        return `<span class="adm-badge adm-badge--${cls} rounded-pill">${label}</span>`;
+                    }},
+                    { title: "Debit (৳)", field: "debit", width: 130, hozAlign: "right", formatter: function(cell) {
+                        var val = parseFloat(cell.getValue());
+                        return val > 0 ? `<div class="fw-bold" style="color: var(--adm-danger);">${val}</div>` : '<span class="text-muted">—</span>';
+                    }},
+                    { title: "Credit (৳)", field: "credit", width: 130, hozAlign: "right", formatter: function(cell) {
+                        var val = parseFloat(cell.getValue());
+                        return val > 0 ? `<div class="fw-bold" style="color: var(--adm-success);">${val}</div>` : '<span class="text-muted">—</span>';
+                    }},
+                    { title: "Balance (৳)", field: "balance", width: 140, hozAlign: "right", formatter: function(cell) {
+                        var val = parseFloat(cell.getValue());
+                        return `<div class="fw-bold">${val}</div>`;
+                    }},
+                    { title: "Description", field: "description", widthGrow: 1.5, formatter: function(cell) {
+                        var val = cell.getValue();
+                        return val ? `<span class="text-muted small">${val}</span>` : '<span class="text-muted">—</span>';
+                    }},
+                    { title: "Date", field: "transactionDate", width: 160, hozAlign: "center", formatter: function(cell) {
+                        var d = new Date(cell.getValue());
+                        return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                    }}
+                ],
+                placeholder: "<div class='adm-loading adm-loading--visible'><div class='adm-loading__spinner'></div><div class='adm-loading__text'>Loading ledger entries...</div></div>"
+            });
+
+            document.getElementById('ledgerSearchBtn').addEventListener('click', function() {
+                table.setData();
+            });
+
+            document.getElementById('ledgerSearch').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') document.getElementById('ledgerSearchBtn').click();
+            });
+
+            document.getElementById('filterStudentId').addEventListener('change', function() {
+                table.setData();
+            });
+
+            document.getElementById('filterTransactionType').addEventListener('change', function() {
+                table.setData();
+            });
+
+            document.getElementById('refreshLedgerBtn').addEventListener('click', function() {
+                table.setData();
+            });
+        </script>
+    }
+</div>
