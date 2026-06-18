@@ -205,7 +205,8 @@ public class GuardianService : IGuardianService
         // 1) Direct link from admission form (admin picked an existing guardian)
         if (application.LinkedGuardianId.HasValue && application.LinkedGuardianId.Value > 0)
         {
-            var linked = await _guardianRepo.GetByIdAsync(application.LinkedGuardianId.Value, ct);
+            var linked = await _guardianRepo.Query()
+                .FirstOrDefaultAsync(g => g.Id == application.LinkedGuardianId.Value && !g.IsDeleted, ct);
             if (linked != null)
             {
                 linked = ApplyAdmissionDetailsToGuardian(linked, application, email, mobile, fallbackName!);
@@ -215,11 +216,11 @@ public class GuardianService : IGuardianService
             }
         }
 
-        // 2) Find by email
+        // 2) Find by email (exclude soft-deleted)
         if (!string.IsNullOrWhiteSpace(email))
         {
             var existing = await _guardianRepo.Query()
-                .FirstOrDefaultAsync(g => g.Email != null && g.Email.ToLower() == email, ct);
+                .FirstOrDefaultAsync(g => g.Email != null && g.Email.ToLower() == email && !g.IsDeleted, ct);
             if (existing != null)
             {
                 existing = ApplyAdmissionDetailsToGuardian(existing, application, email, mobile, fallbackName!);
@@ -229,11 +230,11 @@ public class GuardianService : IGuardianService
             }
         }
 
-        // 3) Find by mobile
+        // 3) Find by mobile (exclude soft-deleted)
         if (!string.IsNullOrWhiteSpace(mobile))
         {
             var existing = await _guardianRepo.Query()
-                .FirstOrDefaultAsync(g => g.MobileNumber == mobile, ct);
+                .FirstOrDefaultAsync(g => g.MobileNumber == mobile && !g.IsDeleted, ct);
             if (existing != null)
             {
                 existing = ApplyAdmissionDetailsToGuardian(existing, application, email, mobile, fallbackName!);

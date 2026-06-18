@@ -10,6 +10,9 @@ public class StudentIdCardViewModel
     public string BloodGroup { get; set; } = string.Empty;
     public string DateOfBirth { get; set; } = string.Empty;
     public string AcademicYear { get; set; } = string.Empty;
+    public string GroupName { get; set; } = string.Empty;
+    public string MobileNumber { get; set; } = string.Empty;
+    public string CardNumber { get; set; } = string.Empty;
 
     public string StudentPhotoDataUri { get; set; } = string.Empty;
     public string SchoolName { get; set; } = string.Empty;
@@ -18,6 +21,10 @@ public class StudentIdCardViewModel
     public string SchoolAddress { get; set; } = string.Empty;
     public string SchoolPhone { get; set; } = string.Empty;
     public string SchoolEmail { get; set; } = string.Empty;
+    public string SchoolMotto { get; set; } = string.Empty;
+    public string Website { get; set; } = string.Empty;
+    public string EmergencyContact { get; set; } = string.Empty;
+    public string SchoolSealDataUri { get; set; } = string.Empty;
 
     public string QrCodeDataUri { get; set; } = string.Empty;
     public string ValidUntil { get; set; } = string.Empty;

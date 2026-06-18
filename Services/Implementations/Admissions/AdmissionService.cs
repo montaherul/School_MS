@@ -7,6 +7,7 @@ using SchoolManagementSystem.Models.Entities.Admission;
 using SchoolManagementSystem.Models.Entities.Auth;
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Models.Entities.Guardian;
+using SchoolManagementSystem.Models.Entities.Website;
 using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Services.Interfaces.Email;
 using SchoolManagementSystem.Services.Interfaces.Admissions;
@@ -118,11 +119,35 @@ public class AdmissionService : IAdmissionService
             dto.GuardianPhotoPath = await SaveFileAsync(dto.GuardianPhoto, "admissions/guardians", cancellationToken);
         }
 
-        var count = await _admissionRepository.CountAsync(x => x.CreatedAt.Year == DateTime.UtcNow.Year, cancellationToken) + 1;
+        // Look up admission fee from fee structure
+        decimal admissionFee = 0;
+        var feeStructure = await _unitOfWork.Repository<AdmissionFeeStructure>()
+            .FirstOrDefaultAsync(f => f.SchoolClassId == dto.AppliedClassId && f.IsActive && !f.IsDeleted, cancellationToken);
+        if (feeStructure != null)
+            admissionFee = feeStructure.AdmissionFee;
 
-        var application = new AdmissionApplication
+        string applicationNo;
+        await _unitOfWork.BeginTransactionAsync(cancellationToken);
+        try
         {
-            ApplicationNo = $"APP-{DateTime.UtcNow.Year}-{count:0000}",
+            var year = DateTime.UtcNow.Year;
+            var maxAppNo = await _admissionRepository.Query()
+                .Where(x => x.CreatedAt.Year == year && !x.IsDeleted)
+                .MaxAsync(x => (string?)x.ApplicationNo, cancellationToken);
+
+            var nextSeq = 1;
+            if (!string.IsNullOrEmpty(maxAppNo))
+            {
+                var lastDash = maxAppNo.LastIndexOf('-');
+                if (lastDash >= 0 && int.TryParse(maxAppNo[(lastDash + 1)..], out var lastSeq))
+                    nextSeq = lastSeq + 1;
+            }
+
+            applicationNo = $"APP-{year}-{nextSeq:0000}";
+
+            var application = new AdmissionApplication
+            {
+                ApplicationNo = applicationNo,
             ApplicantName = dto.ApplicantName.Trim(),
             ApplicantNameBangla = dto.ApplicantNameBangla?.Trim(),
             DateOfBirth = dto.DateOfBirth,
@@ -166,20 +191,29 @@ public class AdmissionService : IAdmissionService
             AppliedClassId = dto.AppliedClassId,
             AppliedStudentGroupId = dto.AppliedStudentGroupId,
             LinkedGuardianId = dto.LinkedGuardianId,
+            AdmissionFee = admissionFee,
+            AdmissionFeePaid = false,
             Status = AdmissionStatus.Pending,
             CreatedBy = createdBy
         };
 
-        await _admissionRepository.AddAsync(application, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _admissionRepository.AddAsync(application, cancellationToken);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
-        if (!string.IsNullOrWhiteSpace(application.ApplicantEmail))
-        {
-            try { await _emailService.SendAdmissionReceivedAsync(application.ApplicantEmail, application.ApplicantName, application.ApplicationNo, cancellationToken); }
-            catch (Exception ex) { _logger.LogError(ex, "Admission confirmation email failed for application {ApplicationNo}", application.ApplicationNo); }
+            if (!string.IsNullOrWhiteSpace(application.ApplicantEmail))
+            {
+                try { await _emailService.SendAdmissionReceivedAsync(application.ApplicantEmail, application.ApplicantName, application.ApplicationNo, cancellationToken); }
+                catch (Exception ex) { _logger.LogError(ex, "Admission confirmation email failed for application {ApplicationNo}", application.ApplicationNo); }
+            }
+
+            return application.ApplicationNo;
         }
-
-        return application.ApplicationNo;
+        catch
+        {
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            throw;
+        }
     }
 
     public async Task<int> ApproveAndConvertAsync(int applicationId, int sectionId, string approvedBy, CancellationToken cancellationToken = default)
@@ -200,6 +234,12 @@ public class AdmissionService : IAdmissionService
                 .FirstOrDefaultAsync(cancellationToken);
             if (currentStatus == AdmissionStatus.Converted)
                 throw new InvalidOperationException("Application was already converted by another admin.");
+
+            if (currentStatus == AdmissionStatus.Rejected)
+                throw new InvalidOperationException("Cannot convert a rejected application.");
+
+            if (!application.AdmissionFeePaid)
+                throw new InvalidOperationException($"Admission fee (BDT {application.AdmissionFee:N2}) must be paid before conversion.");
 
             var studentEmail = application.ApplicantEmail?.Trim();
             if (string.IsNullOrWhiteSpace(studentEmail))
@@ -248,13 +288,14 @@ public class AdmissionService : IAdmissionService
             var rollNumber = await NextRollAsync(application.AppliedClassId, sectionId, cancellationToken);
 
             // Derive group from section's StudentGroupId or application preference
-            var section = await _sectionRepository.GetByIdAsync(sectionId, cancellationToken);
-            var studentGroupId = section?.StudentGroupId ?? application.AppliedStudentGroupId;
+            var section = await _sectionRepository.FirstOrDefaultAsync(x => x.Id == sectionId && !x.IsDeleted, cancellationToken)
+                ?? throw new InvalidOperationException("Selected section not found or has been deleted.");
+            var studentGroupId = section.StudentGroupId ?? application.AppliedStudentGroupId;
 
             // Fallback: if no group set and exactly one StudentGroup matches this class, auto-assign
             if (!studentGroupId.HasValue)
             {
-                var schoolClass = await _classRepository.GetByIdAsync(application.AppliedClassId, cancellationToken);
+                var schoolClass = await _classRepository.FirstOrDefaultAsync(x => x.Id == application.AppliedClassId && !x.IsDeleted, cancellationToken);
                 if (schoolClass != null)
                 {
                     var matchingGroups = await _unitOfWork.Repository<StudentGroup>().Query()
@@ -305,6 +346,7 @@ public class AdmissionService : IAdmissionService
 
             application.Status = AdmissionStatus.Converted;
             application.ReviewedAt = DateTime.UtcNow;
+            if (int.TryParse(approvedBy, out var reviewerId)) application.ReviewedByUserId = reviewerId;
             application.UpdatedBy = approvedBy;
             application.UpdatedAt = DateTime.UtcNow;
             await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -346,6 +388,11 @@ public class AdmissionService : IAdmissionService
     {
         var application = await _admissionRepository.FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted, cancellationToken)
             ?? throw new Exception("Admission not found");
+
+        if (application.Status == AdmissionStatus.Converted)
+            throw new InvalidOperationException("Cannot update a converted application.");
+        if (application.Status == AdmissionStatus.Rejected)
+            throw new InvalidOperationException("Cannot update a rejected application.");
 
         if (dto.ProfilePicture != null && dto.ProfilePicture.Length > 0)
         {
@@ -419,8 +466,14 @@ public class AdmissionService : IAdmissionService
         var application = await _admissionRepository.FirstOrDefaultAsync(x => x.Id == applicationId && !x.IsDeleted, cancellationToken)
             ?? throw new InvalidOperationException("Admission application not found.");
 
+        if (application.Status == AdmissionStatus.Converted)
+            throw new InvalidOperationException("Cannot reject a converted application.");
+        if (application.Status == AdmissionStatus.Rejected)
+            throw new InvalidOperationException("Application has already been rejected.");
+
         application.Status = AdmissionStatus.Rejected;
         application.ReviewedAt = DateTime.UtcNow;
+        if (int.TryParse(rejectedBy, out var reviewerId)) application.ReviewedByUserId = reviewerId;
         application.UpdatedBy = rejectedBy;
         application.UpdatedAt = DateTime.UtcNow;
         await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -435,6 +488,25 @@ public class AdmissionService : IAdmissionService
     {
         var application = await _admissionRepository.FirstOrDefaultAsync(x => x.Id == id && !x.IsDeleted, ct)
             ?? throw new InvalidOperationException("Admission application not found.");
+
+        if (application.Status == AdmissionStatus.Converted)
+            throw new InvalidOperationException("Cannot delete a converted application.");
+
+        // Cascade soft-delete to associated documents to prevent orphans
+        var docs = await _unitOfWork.Repository<AdmissionDocument>().Query()
+            .Where(d => d.AdmissionApplicationId == id && !d.IsDeleted)
+            .ToListAsync(ct);
+        foreach (var doc in docs)
+        {
+            doc.IsDeleted = true;
+            DeleteFile(doc.FilePath);
+        }
+
+        // Also clean up uploaded files for this application
+        DeleteFile(application.ProfilePicturePath);
+        DeleteFile(application.BirthCertificatePath);
+        DeleteFile(application.PaymentSlipPath);
+        DeleteFile(application.GuardianPhoto);
 
         application.IsDeleted = true;
         application.UpdatedBy = updatedBy;
@@ -458,15 +530,34 @@ public class AdmissionService : IAdmissionService
             .ToListAsync(ct);
     }
 
+    private static readonly HashSet<string> _allowedExtensions = new(StringComparer.OrdinalIgnoreCase)
+        { ".jpg", ".jpeg", ".png", ".pdf" };
+    private static readonly HashSet<string> _blockedExtensions = new(StringComparer.OrdinalIgnoreCase)
+        { ".exe", ".dll", ".bat", ".cmd", ".ps1", ".aspx", ".cshtml", ".js", ".html", ".svg" };
+    private const long _maxFileSize = 5 * 1024 * 1024; // 5 MB
+
     private async Task<string> SaveFileAsync(IFormFile file, string subFolder, CancellationToken ct)
     {
+        var ext = Path.GetExtension(file.FileName);
+        if (string.IsNullOrEmpty(ext) || !_allowedExtensions.Contains(ext) || _blockedExtensions.Contains(ext))
+            throw new InvalidOperationException($"File type '{ext}' is not allowed. Allowed: jpg, jpeg, png, pdf.");
+
+        if (file.Length == 0 || file.Length > _maxFileSize)
+            throw new InvalidOperationException($"File size must be between 1 byte and 5 MB.");
+
+        var contentType = file.ContentType?.ToLowerInvariant() ?? string.Empty;
+        var allowedTypes = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            { "image/jpeg", "image/jpg", "image/png", "application/pdf" };
+        if (!allowedTypes.Contains(contentType))
+            throw new InvalidOperationException($"Content type '{contentType}' is not allowed.");
+
         var folderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot/uploads", subFolder);
         if (!Directory.Exists(folderPath)) Directory.CreateDirectory(folderPath);
-        var fileName = Guid.NewGuid() + Path.GetExtension(file.FileName);
-        var filePath = Path.Combine(folderPath, fileName);
+        var safeName = Guid.NewGuid().ToString("N") + ext;
+        var filePath = Path.Combine(folderPath, safeName);
         using var stream = new FileStream(filePath, FileMode.Create);
         await file.CopyToAsync(stream, ct);
-        return $"/uploads/{subFolder}/{fileName}";
+        return $"/uploads/{subFolder}/{safeName}";
     }
 
     private void DeleteFile(string? relativePath)

@@ -1,6 +1,7 @@
 @model ExamRoutineViewModel
 @{
     Layout = null;
+    var generatedDate = DateTime.Now;
 }
 
 <!DOCTYPE html>
@@ -9,25 +10,130 @@
     <meta charset="utf-8" />
     <title>@Model.ExamName - Exam Routine</title>
     <style>
-        @@page { margin: 20mm; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 12px; color: #222; }
-        .header { text-align: center; margin-bottom: 24px; border-bottom: 2px solid #1a73e8; padding-bottom: 12px; }
-        .header h1 { font-size: 20px; margin: 0; color: #1a73e8; }
-        .header p { margin: 4px 0; color: #555; }
-        table { width: 100%; border-collapse: collapse; margin-top: 12px; }
-        th { background: #1a73e8; color: #fff; padding: 10px 8px; text-align: left; font-size: 11px; text-transform: uppercase; }
-        td { padding: 8px; border-bottom: 1px solid #e0e0e0; }
-        tr:nth-child(even) { background: #f8f9fa; }
-        .footer { margin-top: 24px; padding-top: 12px; border-top: 1px solid #ddd; text-align: center; color: #888; font-size: 10px; }
+        @@page {
+            size: A4 landscape;
+            margin: 12mm 10mm;
+        }
+        @@page :first {
+            margin-top: 12mm;
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 10pt;
+            color: #222;
+            margin: 0;
+            padding: 0;
+            line-height: 1.4;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #1a73e8;
+        }
+        .header .school-logo {
+            max-height: 50px;
+            margin-bottom: 4px;
+        }
+        .header h1 {
+            font-size: 16pt;
+            margin: 2px 0;
+            color: #1a73e8;
+        }
+        .header .school-name {
+            font-size: 14pt;
+            font-weight: bold;
+            margin: 2px 0;
+        }
+        .header .school-addr {
+            font-size: 8pt;
+            color: #666;
+            margin: 2px 0;
+        }
+        .header .exam-info {
+            font-size: 11pt;
+            font-weight: 600;
+            margin: 6px 0 2px;
+        }
+        .header .exam-dates {
+            font-size: 9pt;
+            color: #555;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 8px;
+            font-size: 9pt;
+        }
+        thead {
+            display: table-header-group;
+        }
+        th {
+            background: #1a73e8;
+            color: #fff;
+            padding: 7px 6px;
+            text-align: left;
+            font-size: 8pt;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        td {
+            padding: 5px 6px;
+            border-bottom: 1px solid #e0e0e0;
+            vertical-align: top;
+        }
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        tr {
+            page-break-inside: avoid;
+        }
+        .footer {
+            margin-top: 10px;
+            padding-top: 6px;
+            border-top: 1px solid #ccc;
+            display: flex;
+            justify-content: space-between;
+            font-size: 7.5pt;
+            color: #888;
+        }
+        .footer .generated {
+            text-align: right;
+        }
+        .print-date {
+            text-align: right;
+            font-size: 8pt;
+            color: #888;
+            margin-top: 6px;
+        }
+        @@media print {
+            thead { display: table-header-group; }
+            tbody { display: table-row-group; }
+        }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>@Model.ExamName</h1>
-        <p>Class: @Model.ClassName @(!string.IsNullOrEmpty(Model.GroupName) ? $"/ {Model.GroupName}" : "")</p>
+        @if (!string.IsNullOrEmpty(Model.SchoolLogo))
+        {
+            <img src="@Model.SchoolLogo" alt="School Logo" class="school-logo" />
+        }
+        <div class="school-name">@Model.SchoolName</div>
+        @if (!string.IsNullOrEmpty(Model.SchoolAddress))
+        {
+            <div class="school-addr">@Model.SchoolAddress</div>
+        }
+        <div class="exam-info">@Model.ExamName</div>
+        <div>
+            Class: @Model.ClassName @(!string.IsNullOrEmpty(Model.GroupName) ? $"/ {Model.GroupName}" : "")
+            @if (!string.IsNullOrEmpty(Model.AcademicYearName))
+            {
+                <text> | Academic Year: @Model.AcademicYearName</text>
+            }
+        </div>
         @if (Model.ExamStartsOn.HasValue)
         {
-            <p>@Model.ExamStartsOn.Value.ToString("dd MMM yyyy") — @(Model.ExamEndsOn?.ToString("dd MMM yyyy") ?? "")</p>
+            <div class="exam-dates">@Model.ExamStartsOn.Value.ToString("dd MMM yyyy") — @(Model.ExamEndsOn?.ToString("dd MMM yyyy") ?? "")</div>
         }
     </div>
 
@@ -40,26 +146,36 @@
         <table>
             <thead>
                 <tr>
-                    <th>Date</th>
-                    <th>Subject</th>
-                    <th>Code</th>
-                    <th>Start</th>
-                    <th>End</th>
-                    <th>Room</th>
-                    <th>Instructions</th>
+                    <th style="width:13%;">Date</th>
+                    <th style="width:26%;">Subject</th>
+                    <th style="width:10%;">Code</th>
+                    <th style="width:9%;">Start</th>
+                    <th style="width:9%;">End</th>
+                    <th style="width:10%;">Room</th>
+                    <th style="width:23%;">Instructions</th>
                 </tr>
             </thead>
             <tbody>
+                @{
+                    DateOnly? lastDate = null;
+                }
                 @foreach (var s in Model.Schedules)
                 {
                     <tr>
-                        <td>@s.ExamDate.ToString("dd MMM yyyy")</td>
+                        <td>
+                            @if (lastDate != s.ExamDate)
+                            {
+                                <strong>@s.ExamDate.ToString("dd MMM yyyy")</strong>
+                                <br /><span style="font-size:7.5pt;color:#888;">@s.ExamDate.ToString("dddd")</span>
+                                lastDate = s.ExamDate;
+                            }
+                        </td>
                         <td><strong>@s.SubjectName</strong></td>
                         <td>@s.SubjectCode</td>
                         <td>@s.StartsAt.ToString("hh:mm tt")</td>
                         <td>@s.EndsAt.ToString("hh:mm tt")</td>
                         <td>@s.RoomNo</td>
-                        <td>@(string.IsNullOrEmpty(s.Instructions) ? "Standard Rules Apply" : s.Instructions)</td>
+                        <td style="font-size:8pt;color:#555;">@(string.IsNullOrEmpty(s.Instructions) ? "Standard Rules Apply" : s.Instructions)</td>
                     </tr>
                 }
             </tbody>
@@ -67,7 +183,8 @@
     }
 
     <div class="footer">
-        <p>Generated by School Management System — @DateTime.Now.ToString("dd MMM yyyy hh:mm tt")</p>
+        <span>@Model.SchoolName @(!string.IsNullOrEmpty(Model.AcademicYearName) ? $"| {Model.AcademicYearName}" : "")</span>
+        <span class="generated">Generated: @generatedDate.ToString("dd MMM yyyy hh:mm tt")</span>
     </div>
 </body>
 </html>

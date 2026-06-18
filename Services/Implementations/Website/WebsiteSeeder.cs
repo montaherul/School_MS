@@ -33,10 +33,10 @@ public class WebsiteSeeder
                 PrincipalDesignation = "Principal",
                 PrincipalMessage = "Welcome to CCSC. For over a century, our institution has stood as a beacon of standard education, character cultivation, and national values in Bangladesh. We welcome all parents and students to join our progressive academic family.",
                 PrincipalImagePath = "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&q=80&w=400",
-                LogoPath = "/images/default-logo.png",
-                FaviconPath = "/favicon.ico",
-                LoginLogoPath = "/images/default-login-logo.png",
-                FooterLogoPath = "/images/default-footer-logo.png",
+                LogoPath = "/images/default-logo.svg",
+                FaviconPath = "/favicon.svg",
+                LoginLogoPath = "/images/default-login-logo.svg",
+                FooterLogoPath = "/images/default-footer-logo.svg",
                 FacebookUrl = "https://facebook.com/collegiate.school",
                 YouTubeUrl = "https://youtube.com/collegiate.school",
                 Mission = "To provide balanced, modern, and value-based education that equips students with critical thinking skills, high moral standards, and patriotic feelings.",
@@ -157,9 +157,9 @@ public class WebsiteSeeder
         }
 
         // 5. Seed CMS Pages
-        if (!await _db.WebsitePages.AnyAsync(p => !p.IsDeleted))
+        if (!await _db.WebsitePages.AnyAsync(p => p.Slug == "facilities" && !p.IsDeleted))
         {
-            var page = new WebsitePage
+            var facilities = new WebsitePage
             {
                 Title = "Our Facilities & Campus",
                 Slug = "facilities",
@@ -182,7 +182,73 @@ public class WebsiteSeeder
                 CreatedBy = "seeder",
                 CreatedAt = DateTime.UtcNow
             };
-            await _db.WebsitePages.AddAsync(page);
+            await _db.WebsitePages.AddAsync(facilities);
+        }
+
+        // Seed history page (used by navigation link /p/history)
+        if (!await _db.WebsitePages.AnyAsync(p => p.Slug == "history" && !p.IsDeleted))
+        {
+            var history = new WebsitePage
+            {
+                Title = "School History & Heritage",
+                Slug = "history",
+                MetaTitle = "History - Chattogram Collegiate School & College",
+                MetaDescription = "Discover the rich 185+ year heritage of Chattogram Collegiate School & College, one of Bangladesh's oldest and most prestigious educational institutions.",
+                Content = @"
+                    <h3>Our Proud Heritage</h3>
+                    <p>Founded in 1836 as Chittagong Government High School, Chattogram Collegiate School & College has been a beacon of education in Bangladesh for nearly two centuries. The institution has evolved through various phases of Bangladesh's history, maintaining its commitment to academic excellence and character building.</p>
+                    <p>From its humble beginnings during the British colonial era, the school has grown into one of the most prestigious educational institutions in the country. It has weathered the storms of history — the partition of India, the Language Movement of 1952, the Liberation War of 1971 — and emerged stronger each time, adapting to the changing needs of society while preserving its core values.</p>
+                    <h4>Milestones</h4>
+                    <ul>
+                        <li><strong>1836:</strong> Established as Chittagong Government High School</li>
+                        <li><strong>1947:</strong> Transitioned post-partition under East Pakistan administration</li>
+                        <li><strong>1971:</strong> Played a vital role during Bangladesh's Liberation War</li>
+                        <li><strong>1980s:</strong> Expanded facilities with science laboratories and library</li>
+                        <li><strong>2000s:</strong> Introduced smart classrooms and digital learning</li>
+                        <li><strong>2020s:</strong> Modernized campus with state-of-the-art infrastructure</li>
+                    </ul>
+                    <p>Today, it stands as a testament to Bangladesh's commitment to quality education, producing leaders in various fields including politics, academia, business, and public service.</p>
+                ",
+                IsPublished = true,
+                CreatedBy = "seeder",
+                CreatedAt = DateTime.UtcNow
+            };
+            await _db.WebsitePages.AddAsync(history);
+        }
+
+        // Seed infrastructure page (used by navigation link /p/infrastructure)
+        if (!await _db.WebsitePages.AnyAsync(p => p.Slug == "infrastructure" && !p.IsDeleted))
+        {
+            var infrastructure = new WebsitePage
+            {
+                Title = "Infrastructure & Campus",
+                Slug = "infrastructure",
+                MetaTitle = "Infrastructure - Chattogram Collegiate School & College",
+                MetaDescription = "Explore the modern campus infrastructure, laboratories, library, and sports facilities of Chattogram Collegiate School & College.",
+                Content = @"
+                    <h3>World-Class Campus Infrastructure</h3>
+                    <p>Our sprawling campus is designed to provide an optimal learning environment. Spread across several acres in the heart of Chattogram, the campus combines historic architecture with modern facilities to create a truly inspiring educational setting.</p>
+                    
+                    <h4>Academic Buildings</h4>
+                    <p>Our main academic building houses 50+ spacious classrooms, each equipped with modern furniture,充足的 natural lighting, and ventilation. The building also features dedicated staff rooms, departmental offices, and student common areas.</p>
+                    
+                    <h4>Science Laboratories</h4>
+                    <p>We maintain fully equipped laboratories for Physics, Chemistry, and Biology. Each lab is designed to accommodate 40+ students and is stocked with modern equipment, chemicals, and specimens required for the secondary and higher secondary curriculum.</p>
+                    
+                    <h4>Library & Resource Center</h4>
+                    <p>Our library houses over 8,000 books, including textbooks, reference works, periodicals, and digital resources. The library features quiet reading areas, research carrels, and a digital learning section with internet-connected computer terminals.</p>
+                    
+                    <h4>Sports & Recreation</h4>
+                    <p>The campus includes a large playground for football and cricket, indoor sports facilities for table tennis and chess, and a dedicated area for physical education classes. Annual sports events are held in our main field.</p>
+                    
+                    <h4>ICT Infrastructure</h4>
+                    <p>Smart classrooms equipped with multimedia projectors, a dedicated computer lab with 30+ workstations, and campus-wide high-speed internet connectivity ensure that our students are prepared for the digital age.</p>
+                ",
+                IsPublished = true,
+                CreatedBy = "seeder",
+                CreatedAt = DateTime.UtcNow
+            };
+            await _db.WebsitePages.AddAsync(infrastructure);
         }
 
         // 6. Seed Email Templates

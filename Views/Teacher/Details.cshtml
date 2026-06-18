@@ -171,12 +171,17 @@
                         </li>
                         <li class="nav-item">
                             <button class="nav-link py-3 border-0" data-bs-toggle="tab" data-bs-target="#pane-identity" type="button">
-                                <i class="bi bi-card-text me-1"></i>Identity & Family
+                                <i class="bi bi-card-text me-1"></i>Family
                             </button>
                         </li>
                         <li class="nav-item">
                             <button class="nav-link py-3 border-0" data-bs-toggle="tab" data-bs-target="#pane-assignments" type="button">
                                 <i class="bi bi-diagram-3 me-1"></i>Assignments
+                            </button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link py-3 border-0" data-bs-toggle="tab" data-bs-target="#pane-documents" type="button">
+                                <i class="bi bi-file-earmark-text me-1"></i>Documents
                             </button>
                         </li>
                     </ul>
@@ -288,16 +293,8 @@
 
                         <!-- Tab: Identity & Family -->
                         <div class="tab-pane fade" id="pane-identity" role="tabpanel">
-                            <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size:.72rem;letter-spacing:.05em">Identity & Family</h6>
+                            <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size:.72rem;letter-spacing:.05em">Family Information</h6>
                             <div class="row g-4">
-                                <div class="col-md-4">
-                                    <div class="text-muted" style="font-size:.72rem">NID Number</div>
-                                    <div class="fw-semibold">@(string.IsNullOrEmpty(Model.NationalIdNo) ? "N/A" : Model.NationalIdNo)</div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="text-muted" style="font-size:.72rem">Passport No.</div>
-                                    <div class="fw-semibold">@(string.IsNullOrEmpty(Model.PassportNo) ? "N/A" : Model.PassportNo)</div>
-                                </div>
                                 <div class="col-md-4">
                                     <div class="text-muted" style="font-size:.72rem">Father's Name</div>
                                     <div class="fw-semibold">@(string.IsNullOrEmpty(Model.FatherName) ? "N/A" : Model.FatherName)</div>
@@ -315,24 +312,6 @@
                                     <div class="fw-semibold">@(string.IsNullOrEmpty(Model.MaritalStatus) ? "N/A" : Model.MaritalStatus)</div>
                                 </div>
                             </div>
-                            @if (!string.IsNullOrEmpty(Model.NationalIdPath))
-                            {
-                                <div class="mt-4">
-                                    <h6 class="fw-bold text-uppercase text-muted mb-3" style="font-size:.72rem">NID Document</h6>
-                                    <a href="@Model.NationalIdPath" target="_blank" class="btn btn-outline-primary btn-sm">
-                                        <i class="bi bi-file-earmark-image me-1"></i>View NID Document
-                                    </a>
-                                </div>
-                            }
-                            @if (!string.IsNullOrEmpty(Model.PassportPath))
-                            {
-                                <div class="mt-3">
-                                    <h6 class="fw-bold text-uppercase text-muted mb-3" style="font-size:.72rem">Passport Document</h6>
-                                    <a href="@Model.PassportPath" target="_blank" class="btn btn-outline-secondary btn-sm">
-                                        <i class="bi bi-file-earmark-image me-1"></i>View Passport Document
-                                    </a>
-                                </div>
-                            }
                         </div>
 
                         <!-- Tab: Assignments -->
@@ -380,6 +359,17 @@
                                 <div class="text-center py-5 text-muted">
                                     <i class="bi bi-hourglass-split fs-2 mb-2 d-block"></i>
                                     Loading assignments...
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tab: Documents -->
+                        <div class="tab-pane fade" id="pane-documents" role="tabpanel">
+                            <h6 class="fw-bold text-uppercase text-muted mb-4" style="font-size:.72rem;letter-spacing:.05em">Employee Documents</h6>
+                            <div id="documents-container">
+                                <div class="text-center py-5 text-muted">
+                                    <i class="bi bi-hourglass-split fs-2 mb-2 d-block"></i>
+                                    Loading documents...
                                 </div>
                             </div>
                         </div>
@@ -497,5 +487,75 @@
                 container.innerHTML = `<div class="alert alert-warning">Could not load assignments. <a href="/TeacherAssignment/@Model.Id">Manage here</a>.</div>`;
             });
     }
+</script>
+<script>
+    var teacherEmployeeId = @(ViewBag.EmployeeId ?? 0);
+
+    // Lazy-load documents when that tab is clicked
+    document.querySelector('[data-bs-target="#pane-documents"]')?.addEventListener('shown.bs.tab', function () {
+        const container = document.getElementById('documents-container');
+        if (container.dataset.loaded) return;
+        container.dataset.loaded = true;
+
+        container.innerHTML = `
+            <div class="text-center py-5 text-muted">
+                <i class="bi bi-hourglass-split fs-2 mb-2 d-block"></i>
+                Loading documents...
+            </div>`;
+
+        fetch('/Teacher/GetDocuments/@Model.Id')
+            .then(r => r.ok ? r.json() : Promise.reject(r))
+            .then(data => {
+                if (!data || data.length === 0) {
+                    container.innerHTML = `
+                        <div class="text-center py-5 text-muted">
+                            <i class="bi bi-file-earmark-text fs-2 mb-2 d-block"></i>
+                            <div>No documents attached. Manage documents from the Employee Profile.</div>
+                        </div>`;
+                    return;
+                }
+                const formatDate = (dt) => dt ? new Date(dt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
+                const rows = data.map(d => {
+                    const isExpired = d.expiryDate && new Date(d.expiryDate) < new Date();
+                    const statusBadge = isExpired
+                        ? '<span class="badge bg-danger-subtle text-danger small">Expired</span>'
+                        : '<span class="badge bg-success-subtle text-success small">Active</span>';
+                    return `<tr>
+                        <td><span class="badge bg-secondary-subtle text-secondary">${d.documentType ?? '—'}</span></td>
+                        <td class="fw-semibold">${d.documentName ?? '—'}</td>
+                        <td class="small text-muted">${formatDate(d.uploadedDate)}</td>
+                        <td class="small text-muted">${formatDate(d.expiryDate)}</td>
+                        <td>${statusBadge}</td>
+                        <td>
+                            <a href="${d.filePath}" target="_blank" class="btn btn-sm btn-outline-primary rounded-circle p-1" title="View">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                        </td>
+                    </tr>`;
+                }).join('');
+                container.innerHTML = `
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead class="bg-light"><tr>
+                                <th class="small py-3">Type</th>
+                                <th class="small py-3">Name</th>
+                                <th class="small py-3">Uploaded</th>
+                                <th class="small py-3">Expiry</th>
+                                <th class="small py-3">Status</th>
+                                <th class="small py-3">Action</th>
+                            </tr></thead>
+                            <tbody>${rows}</tbody>
+                        </table>
+                    </div>
+                    <div class="mt-3">
+                        <a href="/Employee/Details/" + teacherEmployeeId class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-person-badge me-1"></i> Manage Documents from Employee Profile
+                        </a>
+                    </div>`;
+            })
+            .catch(() => {
+                container.innerHTML = `<div class="alert alert-warning py-2 small mb-0">Could not load documents.</div>`;
+            });
+    });
 </script>
 }

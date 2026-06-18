@@ -80,7 +80,8 @@ public static class DbInitializer
             new Role { Id = 23, Name = "TransportStaff", Description = "Transport services", CreatedAt = createdAt },
             new Role { Id = 24, Name = "SupportStaff", Description = "Support and cleaning", CreatedAt = createdAt },
             new Role { Id = 25, Name = "Guardian", Description = "Guardian portal access", CreatedAt = createdAt },
-            new Role { Id = 26, Name = "Admin", Description = "Administrator", CreatedAt = createdAt });
+            new Role { Id = 26, Name = "Admin", Description = "Administrator", CreatedAt = createdAt },
+            new Role { Id = 27, Name = "Exam Controller", Description = "Exam and result management operations", CreatedAt = createdAt });
 
         modelBuilder.Entity<ApplicationUser>().HasData(
             new ApplicationUser
@@ -225,6 +226,25 @@ public static class DbInitializer
             .Where(p => GuardianPermissionCodes.Contains(p.Code))
             .Select(p => new RolePermission { RoleId = GuardianRoleId, PermissionId = p.Id });
         var applicationAdminRolePermissions = allPermissions.Select(p => new RolePermission { RoleId = 26, PermissionId = p.Id });
+        // Exam Controller: exam/result management — admin-level exam/result operations without full system access
+        var examControllerRolePermissions = allPermissions
+            .Where(p => p.Code is
+                "Dashboard.View" or "Dashboard.Read" or
+                "Academic.View" or "Academic.Read" or
+                "Classes.View" or "Classes.Read" or
+                "Sections.View" or "Sections.Read" or
+                "Subjects.View" or "Subjects.Read" or
+                "Students.View" or "Students.Read" or
+                "Student.View" or "Student.Read" or
+                "Attendance.View" or
+                "Assignments.View" or
+                "Exams.View" or "Exams.Read" or "Exams.Create" or "Exams.Edit" or
+                "Exam.View" or "Exam.Read" or "Exam.Create" or "Exam.Edit" or
+                "Marks.View" or "Marks.Read" or "Marks.Create" or "Marks.Edit" or "Marks.Approve" or "Marks.Publish" or
+                "Results.View" or "Results.Read" or "Results.Approve" or "Results.Publish" or
+                "Result.View" or "Result.Read" or
+                "Reports.View" or "Reports.Read")
+            .Select(p => new RolePermission { RoleId = 27, PermissionId = p.Id });
         modelBuilder.Entity<RolePermission>().HasData(
             adminRolePermissions
             .Concat(principalRolePermissions)
@@ -239,7 +259,8 @@ public static class DbInitializer
             .Concat(transportStaffRolePermissions)
             .Concat(supportStaffRolePermissions)
             .Concat(guardianRolePermissions)
-            .Concat(applicationAdminRolePermissions));
+            .Concat(applicationAdminRolePermissions)
+            .Concat(examControllerRolePermissions));
 
         modelBuilder.Entity<AcademicYear>().HasData(new AcademicYear { Id = 1, Name = "2026", StartsOn = new DateTime(2026, 1, 1), EndsOn = new DateTime(2026, 12, 31), IsActive = true, CreatedAt = createdAt });
         //modelBuilder.Entity<SchoolClass>().HasData(

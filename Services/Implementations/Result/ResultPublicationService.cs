@@ -99,6 +99,19 @@ public class ResultPublicationService : IResultPublicationService
             .Where(x => x.ExamId == dto.ExamId)
             .ToListAsync();
 
+        // Validate workflow: all marks must be Approved or Locked before publishing
+        var nonApproved = marks.Where(m => m.Status != ResultWorkflowStatus.Approved && !m.IsLocked).ToList();
+        if (nonApproved.Any())
+        {
+            var statusCounts = nonApproved
+                .GroupBy(m => m.Status)
+                .Select(g => $"{g.Count()} {g.Key}")
+                .ToList();
+            var detail = string.Join(", ", statusCounts);
+            throw new InvalidOperationException(
+                $"All marks must be Approved or Locked before publishing. Found non-approved marks: {detail}.");
+        }
+
         var gradingRules = await _gradingRuleRepository.ListAsync();
         var examSubjects = await _uow.Repository<ExamSubject>().Query()
             .Where(es => es.ExamId == dto.ExamId)

@@ -13,7 +13,7 @@ using SchoolManagementSystem.Services.Interfaces.Website;
 
 namespace SchoolManagementSystem.Controllers.Website;
 
-[Authorize]
+[Authorize(Roles = "Admin,Super Admin,Principal")]
 [Route("Admin/Website")]
 public class WebsiteAdminController : Controller
 {

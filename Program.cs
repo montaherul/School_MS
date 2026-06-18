@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Data;
 using SchoolManagementSystem.Extensions;
@@ -93,6 +94,18 @@ builder.Services.AddDbContext<SchoolDbContext>(options =>
         sql => sql.EnableRetryOnFailure(5, TimeSpan.FromSeconds(10), null)));
 
 
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddFixedWindowLimiter("AdmissionApply", opt =>
+    {
+        opt.PermitLimit = 5;
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst;
+        opt.QueueLimit = 0;
+    });
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+});
+
 builder.Services.AddHostedService<StoredProcedureInstaller>();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -172,6 +185,8 @@ else
 
 app.UseGlobalExceptionMiddleware();
 
+app.UseRateLimiter();
+
 app.UseStaticFiles();
 
 app.UseSecurityHeaders();
@@ -233,6 +248,9 @@ await using (var scope = app.Services.CreateAsyncScope())
     await seederSubjectMark.SeedAsync();
 
     await FinanceRbacSeeder.SeedAsync(db);
+
+    // RBAC: ensure Exam Controller role exists and has the required permissions
+    await ExamControllerRbacSeeder.SeedAsync(db);
 
     // RBAC safety net: ensure Guardian role is permanently restricted to the
     // 9 portal permissions (run after all seeders so it can correct any

@@ -13,7 +13,7 @@ namespace SchoolManagementSystem.Controllers.Result;
 /// ExamAdminController: Admin-only exam management
 /// Controls exam creation, editing, grading rules, and exam configuration
 /// </summary>
-[Authorize(Roles = "Admin,Super Admin,Principal")]
+[Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
 [Route("api/[controller]")]
 [ApiController]
 public class ExamAdminController : ControllerBase

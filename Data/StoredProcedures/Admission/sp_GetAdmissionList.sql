@@ -5,7 +5,7 @@
 -- Created: May 4, 2026
 -- ============================================================================
 
-ALTER PROCEDURE sp_GetAdmissionList
+CREATE OR ALTER PROCEDURE sp_GetAdmissionList
     @PageNumber INT = 1,
     @PageSize INT = 10,
     @SearchTerm NVARCHAR(MAX) = NULL,
@@ -87,6 +87,7 @@ BEGIN
             AND (
                 @SearchTerm IS NULL OR @SearchTerm = ''
                 OR a.ApplicantName LIKE '%' + @SearchTerm + '%'
+                OR a.ApplicantNameBangla LIKE '%' + @SearchTerm + '%'
                 OR a.ApplicationNo LIKE '%' + @SearchTerm + '%'
                 OR a.FatherOrGuardianMobileNo LIKE '%' + @SearchTerm + '%'
                 OR a.ApplicantMobileNumber LIKE '%' + @SearchTerm + '%'

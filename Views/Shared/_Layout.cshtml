@@ -51,6 +51,7 @@
                           : isTeacherLike ? "teacher"
                           : isStudent ? "student"
                           : isGuardian ? "guardian"
+                          : User.IsInRole("Exam Controller") ? "staff"
                           : "staff";
 
     string roleLabel =
@@ -60,6 +61,7 @@
      isAccountant ? "Accountant" :
      isGuardian ? "Guardian" :
      User.IsInRole("Principal") ? "Principal" :
+     User.IsInRole("Exam Controller") ? "Exam Controller" :
      User.IsInRole("Teacher") ? "Teacher" :
      User.IsInRole("Senior Lecturer") ? "Senior Lecturer" :
      User.IsInRole("Lecturer") ? "Lecturer" :
@@ -156,6 +158,33 @@
                         }
                         <span class="nav-section-label"><span class="nav-text">Communication</span></span>
                         <a href="/Communication" data-title="Notices"><i class="bi bi-megaphone"></i><span class="nav-text">Notices</span></a>
+                    }
+                    else if (User.IsInRole("Exam Controller"))
+                    {
+                        <span class="nav-section-label"><span class="nav-text">Overview</span></span>
+                        <a asp-controller="Dashboard" asp-action="Index" data-title="Dashboard"><i class="bi bi-grid-1x2"></i><span class="nav-text">Dashboard</span></a>
+
+                        <span class="nav-section-label"><span class="nav-text">Exams</span></span>
+                        <a asp-controller="Exam" asp-action="Index" data-title="Exam List"><i class="bi bi-pencil-square"></i><span class="nav-text">Exam List</span></a>
+                        <a asp-controller="Exam" asp-action="Create" data-title="Create Exam"><i class="bi bi-plus-circle"></i><span class="nav-text">Create Exam</span></a>
+                        <a asp-controller="ExamSchedule" asp-action="Index" data-title="Exam Schedule"><i class="bi bi-calendar4-event"></i><span class="nav-text">Exam Schedule</span></a>
+                        <a asp-controller="ExamComponents" asp-action="Index" data-title="Subject Configuration"><i class="bi bi-layers"></i><span class="nav-text">Subject Config</span></a>
+
+                        <span class="nav-section-label"><span class="nav-text">Marks</span></span>
+                        <a asp-controller="Marks" asp-action="EntryStatus" data-title="Marks Progress"><i class="bi bi-bar-chart-steps"></i><span class="nav-text">Marks Progress</span></a>
+                        <a asp-controller="Marks" asp-action="AuditLog" data-title="Audit Log"><i class="bi bi-clipboard-data"></i><span class="nav-text">Audit Log</span></a>
+
+                        <span class="nav-section-label"><span class="nav-text">Results</span></span>
+                        <a asp-controller="AdminResult" asp-action="Dashboard" data-title="Result Dashboard"><i class="bi bi-graph-up"></i><span class="nav-text">Result Dashboard</span></a>
+                        <a asp-controller="AdminResult" asp-action="AllResults" data-title="All Results"><i class="bi bi-list-check"></i><span class="nav-text">All Results</span></a>
+                        <a asp-controller="AdminResult" asp-action="TabulationSheet" data-title="Tabulation"><i class="bi bi-table"></i><span class="nav-text">Tabulation</span></a>
+                        <a asp-controller="MeritList" asp-action="Index" data-title="Merit List"><i class="bi bi-trophy"></i><span class="nav-text">Merit List</span></a>
+                        <a asp-controller="AdminResult" asp-action="ResultPublishing" data-title="Publish Results"><i class="bi bi-megaphone"></i><span class="nav-text">Publish Results</span></a>
+
+                        <span class="nav-section-label"><span class="nav-text">Reports</span></span>
+                        <a asp-controller="AdminResult" asp-action="SubjectAnalysis" data-title="Subject Analysis"><i class="bi bi-file-earmark-bar-graph"></i><span class="nav-text">Subject Analysis</span></a>
+                        <a asp-controller="Transcript" asp-action="Index" data-title="Transcript"><i class="bi bi-file-text"></i><span class="nav-text">Transcript</span></a>
+                        <a asp-controller="ReportCard" asp-action="Index" data-title="Report Cards"><i class="bi bi-card-list"></i><span class="nav-text">Report Cards</span></a>
                     }
                     else
                     {

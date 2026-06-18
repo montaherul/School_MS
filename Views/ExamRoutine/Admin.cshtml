@@ -105,6 +105,8 @@
         </div>
     </div>
 
+    <div id="conflictPanel" style="display:none;" class="mb-4"></div>
+
     <div id="routineContainer">
         @if (Model.Schedules.Count > 0)
         {
@@ -172,6 +174,9 @@
             var groupId = document.getElementById('groupFilter').value;
             if (!examId || !classId) return;
 
+            var container = document.getElementById('routineContainer');
+            container.innerHTML = '<div class="er-empty"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><h3 class="er-empty__title mt-3">Loading Schedule</h3><p class="er-empty__desc">Retrieving exam routine data...</p></div>';
+
             var url = '@Url.Action("GetSchedules", "ExamRoutine")?examId=' + examId + '&classId=' + classId;
             if (groupId) url += '&groupId=' + groupId;
 
@@ -187,6 +192,9 @@
 
                     updateKpiCards(data);
                     document.getElementById('kpiContainer').style.display = 'flex';
+
+                    var conflicts = detectConflicts(data);
+                    renderConflictPanel(conflicts);
 
                     container.innerHTML = '<div class="er-card"><div class="er-card__header"><h3 class="er-card__title">Exam Routine</h3><div class="d-flex gap-2"><button type="button" class="er-btn er-btn--sm er-btn--success" onclick="publishRoutine(' + examId + ')">Publish</button><button type="button" class="er-btn er-btn--sm er-btn--danger" onclick="unpublishRoutine(' + examId + ')">Unpublish</button><a href="@Url.Action("BulkPdf", "ExamRoutine")?examId=' + examId + '&classId=' + classId + (groupId ? '&groupId=' + groupId : '') + '" class="er-btn er-btn--sm er-btn--primary">PDF</a></div></div><div class="er-card__body er-card__body--flush"><div id="examRoutineGrid"></div></div></div>';
 
@@ -230,6 +238,46 @@
                 .catch(function() {
                     document.getElementById('routineContainer').innerHTML = '<div class="adm-alert adm-alert--error">Failed to load routine.</div>';
                 });
+        }
+
+        function detectConflicts(data) {
+            var conflicts = { room: [], time: [], duplicate: [] };
+            for (var i = 0; i < data.length; i++) {
+                for (var j = i + 1; j < data.length; j++) {
+                    var a = data[i], b = data[j];
+                    if (a.examDate !== b.examDate) continue;
+                    var aStart = a.startsAt, aEnd = a.endsAt;
+                    var bStart = b.startsAt, bEnd = b.endsAt;
+                    var overlap = aStart < bEnd && aEnd > bStart;
+                    if (!overlap) continue;
+                    if (a.roomNo && b.roomNo && a.roomNo === b.roomNo) {
+                        conflicts.room.push({ date: a.examDate, room: a.roomNo, subjectA: a.subjectName, subjectB: b.subjectName, timeA: aStart + '-' + aEnd, timeB: bStart + '-' + bEnd });
+                    }
+                    if (a.subjectName === b.subjectName) {
+                        conflicts.duplicate.push({ date: a.examDate, subject: a.subjectName, timeA: aStart + '-' + aEnd, timeB: bStart + '-' + bEnd });
+                    }
+                }
+            }
+            return conflicts;
+        }
+
+        function renderConflictPanel(conflicts) {
+            var panel = document.getElementById('conflictPanel');
+            var total = conflicts.room.length + conflicts.time.length + conflicts.duplicate.length;
+            if (total === 0) {
+                panel.style.display = 'none';
+                return;
+            }
+            var html = '<div class="adm-alert adm-alert--warning"><strong><i class="bi bi-exclamation-triangle"></i> Schedule Conflicts Detected</strong><ul>';
+            conflicts.room.forEach(function(c) {
+                html += '<li><strong>Room Conflict:</strong> ' + c.room + ' on ' + c.date + ' — ' + c.subjectA + ' (' + c.timeA + ') & ' + c.subjectB + ' (' + c.timeB + ')</li>';
+            });
+            conflicts.duplicate.forEach(function(c) {
+                html += '<li><strong>Duplicate Schedule:</strong> ' + c.subject + ' on ' + c.date + ' (' + c.timeA + ' & ' + c.timeB + ')</li>';
+            });
+            html += '</ul></div>';
+            panel.innerHTML = html;
+            panel.style.display = 'block';
         }
 
         function updateKpiCards(data) {

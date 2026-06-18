@@ -61,7 +61,7 @@ public class StudentService : IStudentService
 
         var student = new Student
         {
-            StudentNo = await GenerateStudentNoAsync(cancellationToken),
+            StudentNo = !string.IsNullOrWhiteSpace(dto.StudentNo) ? dto.StudentNo : await GenerateStudentNoAsync(cancellationToken),
             FullName = dto.FullName,
             FullNameBangla = dto.FullNameBangla,
             DateOfBirth = dto.DateOfBirth,

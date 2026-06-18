@@ -1,41 +1,51 @@
 @model SchoolManagementSystem.Models.ViewModels.IdCard.StudentIdCardViewModel
 @{
     var bg = Model.BloodGroup ?? "N/A";
-    var isRealBlood = !string.IsNullOrEmpty(bg) && bg != "N/A" && bg != "Unknown";
     var cls = !string.IsNullOrEmpty(Model.ClassName) ? Model.ClassName : "---";
     var sec = !string.IsNullOrEmpty(Model.SectionName) ? Model.SectionName : "---";
-}
-<div class="pvc sf">
-    <div class="stripe"></div>
+    var roll = !string.IsNullOrEmpty(Model.RollNumber) ? Model.RollNumber : "---";
+    var phone = !string.IsNullOrEmpty(Model.MobileNumber) && Model.MobileNumber != "---" ? Model.MobileNumber : "N/A";
+    var dob = !string.IsNullOrEmpty(Model.DateOfBirth) ? Model.DateOfBirth : "N/A";
+    var address = !string.IsNullOrEmpty(Model.SchoolAddress) ? Model.SchoolAddress : "";
+    var website = !string.IsNullOrEmpty(Model.Website) ? Model.Website : "";
+    var motto = !string.IsNullOrEmpty(Model.SchoolMotto) ? Model.SchoolMotto : "Knowledge • Discipline • Excellence";
 
-    <!-- HEADER -->
+    // Prevent duplicate "Class Class X"
+    var displayClass = cls.StartsWith("Class", StringComparison.OrdinalIgnoreCase) ? cls : $"Class {cls}";
+}
+
+<div class="pvc sf">
+
+    <!-- ═══ HEADER ═══ -->
     <div class="hdr">
-        <div class="logo-area">
-            <div class="logo-box">
-                @if (!string.IsNullOrEmpty(Model.SchoolLogoDataUri))
+        <div class="brand-row">
+            <div class="brand-logo-cell">
+                <div class="logo-box">
+                    @if (!string.IsNullOrEmpty(Model.SchoolLogoDataUri))
+                    {
+                        <img src="@Model.SchoolLogoDataUri" alt="logo" />
+                    }
+                    else
+                    {
+                        <span class="logo-fallback">@Model.SchoolShortName</span>
+                    }
+                </div>
+            </div>
+            <div class="brand-text-cell">
+                <div class="school-name">@Model.SchoolName</div>
+                <div class="school-motto">@motto</div>
+                @if (!string.IsNullOrEmpty(address) || !string.IsNullOrEmpty(website))
                 {
-                    <img src="@Model.SchoolLogoDataUri" alt="logo" />
-                }
-                else
-                {
-                    <svg viewBox="0 0 14 14" fill="none">
-                        <path d="M7 1L13 4.5V9.5L7 13L1 9.5V4.5L7 1Z" fill="rgba(255,255,255,0.85)"/>
-                        <path d="M7 4L10 5.8V8.8L7 10.5L4 8.8V5.8L7 4Z" fill="#1A2E5A"/>
-                    </svg>
+                    <div class="school-motto" style="font-size: 4.8pt; font-style: normal; opacity: 0.8; margin-top: 0.1mm;">
+                        @(!string.IsNullOrEmpty(address) ? address.Split(',').Last().Trim() : "") @(!string.IsNullOrEmpty(website) ? "• " + website.Replace("http://", "").Replace("https://", "").Replace("www.", "") : "")
+                    </div>
                 }
             </div>
         </div>
-
-        <div class="school-info">
-            <div class="school-name-line">@Model.SchoolName</div>
-            <div class="school-eiin">EIIN: @Model.SchoolShortName</div>
-            <div class="school-session">Session: @Model.AcademicYear</div>
-        </div>
-
-        <div class="badge">Student</div>
+        <span class="badge">STUDENT</span>
     </div>
 
-    <!-- PHOTO -->
+    <!-- ═══ PHOTO AREA ═══ -->
     <div class="photo-wrap">
         <div class="photo-ring">
             @if (!string.IsNullOrEmpty(Model.StudentPhotoDataUri))
@@ -44,48 +54,87 @@
             }
             else
             {
-                <svg viewBox="0 0 40 42" fill="none">
-                    <ellipse cx="20" cy="14" rx="12" ry="13" fill="#B0C4DE"/>
-                    <ellipse cx="20" cy="46" rx="20" ry="16" fill="#B0C4DE"/>
+                <svg viewBox="0 0 40 42">
+                    <ellipse cx="20" cy="14" rx="12" ry="13" />
+                    <ellipse cx="20" cy="46" rx="20" ry="16" />
                 </svg>
             }
         </div>
     </div>
 
-    <!-- NAME -->
-    <div class="name-section">
-        <div class="student-name">@Model.StudentFullName</div>
-        <div class="student-class">@cls &mdash; @sec</div>
-        <div class="student-roll">Roll: @Model.RollNumber</div>
+    <!-- ═══ IDENTITY AREA ═══ -->
+    <div class="id-block">
+        <div class="identity-zone">
+            <!-- Line 1: Student Name -->
+            <div class="person-name" title="@Model.StudentFullName">@Model.StudentFullName</div>
+            <!-- Line 2: Class • Section • Roll -->
+            <div class="person-sub">@displayClass &middot; Section @sec &middot; Roll @roll</div>
+            <!-- Line 3: Student No -->
+            <div class="person-id">@Model.StudentIdNo</div>
+        </div>
     </div>
 
-    <!-- INFO -->
+    <div class="divider-line"></div>
+
+    <!-- ═══ INFORMATION GRID (Strict 40%/60% Fixed Table, exactly 7 rows) ═══ -->
     <div class="info">
-        <div class="info-row">
-            <span class="info-lbl">Student ID</span>
-            <span class="info-val">@Model.StudentIdNo</span>
-        </div>
-        <div class="info-row">
-            <span class="info-lbl">Blood Group</span>
-            <span class="info-val @(isRealBlood ? "blood-red" : "blood-gray")">@bg</span>
-        </div>
-        <div class="info-row">
-            <span class="info-lbl">Date of Birth</span>
-            <span class="info-val">@Model.DateOfBirth</span>
-        </div>
-        <div class="info-row">
-            <span class="info-lbl">Session</span>
-            <span class="info-val">@Model.AcademicYear</span>
-        </div>
+        <table class="info-table">
+            <tr class="info-row">
+                <td class="info-lbl-cell" style="width: 40%"><span class="info-lbl">Student No</span></td>
+                <td class="info-val-cell" style="width: 60%"><span class="info-val">@Model.StudentIdNo</span></td>
+            </tr>
+            <tr class="info-row">
+                <td class="info-lbl-cell" style="width: 40%"><span class="info-lbl">Class</span></td>
+                <td class="info-val-cell" style="width: 60%"><span class="info-val">@cls</span></td>
+            </tr>
+            <tr class="info-row">
+                <td class="info-lbl-cell" style="width: 40%"><span class="info-lbl">Section</span></td>
+                <td class="info-val-cell" style="width: 60%"><span class="info-val">@sec</span></td>
+            </tr>
+            <tr class="info-row">
+                <td class="info-lbl-cell" style="width: 40%"><span class="info-lbl">Roll</span></td>
+                <td class="info-val-cell" style="width: 60%"><span class="info-val">@roll</span></td>
+            </tr>
+            <tr class="info-row">
+                <td class="info-lbl-cell" style="width: 40%"><span class="info-lbl">Blood Group</span></td>
+                <td class="info-val-cell" style="width: 60%"><span class="info-val">@bg</span></td>
+            </tr>
+            <tr class="info-row">
+                <td class="info-lbl-cell" style="width: 40%"><span class="info-lbl">DOB</span></td>
+                <td class="info-val-cell" style="width: 60%"><span class="info-val">@dob</span></td>
+            </tr>
+            <tr class="info-row">
+                <td class="info-lbl-cell" style="width: 40%"><span class="info-lbl">Mobile</span></td>
+                <td class="info-val-cell" style="width: 60%"><span class="info-val">@phone</span></td>
+            </tr>
+        </table>
     </div>
 
-    <!-- FOOTER -->
+    <!-- ═══ BOTTOM FOOTER ═══ -->
     <div class="ftr">
-        <div class="ftr-accent"></div>
-        <div class="sig">
-            <div class="sig-line"></div>
-            <div class="sig-lbl">Principal</div>
+        @if (!string.IsNullOrEmpty(Model.SchoolSealDataUri))
+        {
+            <img class="ftr-seal-bg" src="@Model.SchoolSealDataUri" alt="seal" />
+        }
+        <div class="ftr-inner">
+            <div class="ftr-cell sig">
+                <div class="sig-container">
+                    @if (!string.IsNullOrEmpty(Model.SchoolSealDataUri))
+                    {
+                        <img class="sig-image" src="@Model.SchoolSealDataUri" alt="signature" />
+                    }
+                </div>
+                <div class="sig-line"></div>
+                <div class="sig-label">Principal</div>
+            </div>
+            <div class="ftr-cell center">
+                <div class="ftr-lbl">Issue Date</div>
+                <div class="ftr-val">@DateTime.Now.ToString("dd MMM yyyy")</div>
+            </div>
+            <div class="ftr-cell right">
+                <div class="ftr-lbl">Valid Until</div>
+                <div class="ftr-val">@(!string.IsNullOrEmpty(Model.ValidUntil) ? Model.ValidUntil : "N/A")</div>
+            </div>
         </div>
-        <div class="card-meta">Issue: @DateTime.Now.ToString("dd MMM yyyy") &nbsp;&bull;&nbsp; Card No: @Model.StudentIdNo</div>
     </div>
 </div>

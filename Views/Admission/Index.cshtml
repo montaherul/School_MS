@@ -194,7 +194,22 @@
         }
         });
 
-        // ── Formatters ───────────────────────────────
+        // ── XSS-Safe Helpers ─────────────────────────
+        function safeSpan(text, className) {
+        var el = document.createElement('span');
+        if (className) el.className = className;
+        el.textContent = text;
+        return el;
+        }
+
+        function safeMuted() {
+        var el = document.createElement('span');
+        el.className = 'text-muted small';
+        el.textContent = '\u2014';
+        return el;
+        }
+
+        // ── Formatters (DOM-based, no innerHTML) ──────
         function statusFormatter(cell) {
         const value = cell.getValue();
         const map = {
@@ -203,34 +218,74 @@
         'Converted': ['adm-status adm-status--converted', 'Converted'],
         'Rejected': ['adm-status adm-status--rejected', 'Rejected']
         };
-        const [cls, label] = map[value] || ['adm-status adm-status--neutral', value];
-        return '<span class="' + cls + '">' + label + '</span>';
+        const entry = map[value];
+        if (entry) {
+        var el = document.createElement('span');
+        el.className = entry[0];
+        el.textContent = entry[1];
+        return el;
+        }
+        return safeSpan(value, 'adm-status adm-status--neutral');
         }
 
         function photoFormatter(cell) {
-        const src = cell.getValue() || '/images/default-user.png';
-        return '<div class="adm-avatar"><img src="' + src + '" alt="" onerror="this.src=\'/images/default-user.png\'"/></div>';
+        var src = cell.getValue();
+        if (!src) src = '/images/default-user.png';
+        var wrapper = document.createElement('div');
+        wrapper.className = 'adm-avatar';
+        var img = document.createElement('img');
+        img.setAttribute('src', src);
+        img.setAttribute('alt', '');
+        img.addEventListener('error', function () { this.setAttribute('src', '/images/default-user.png'); });
+        wrapper.appendChild(img);
+        return wrapper;
         }
 
         function actionFormatter(cell) {
-        const row = cell.getRow().getData();
+        var row = cell.getRow().getData();
+        var wrapper = document.createElement('div');
+        wrapper.className = 'actions-cell';
         if (row.status === 'Pending') {
-        return '<div class="actions-cell">' +
-        '<a href="/Admission/Details/' + row.id + '" class="adm-action adm-action--view" title="Details">' +
-        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>' +
-        '</a>' +
-        '<a href="/Admission/CreateEdit/' + row.id + '" class="adm-action adm-action--edit" title="Edit">' +
-        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>' +
-        '</a>' +
-        '<button type="button" class="adm-action adm-action--convert" onclick="openApproveModal(' + row.id + ', ' + row.appliedClassId + ')" title="Convert">' +
-        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>' +
-        '</button>' +
-        '<button type="button" class="adm-action adm-action--reject" onclick="rejectItem(' + row.id + ')" title="Reject">' +
-        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>' +
-        '</button>' +
-        '</div>';
+        // Details link
+        var a1 = document.createElement('a');
+        a1.className = 'adm-action adm-action--view';
+        a1.setAttribute('href', '/Admission/Details/' + row.id);
+        a1.setAttribute('title', 'Details');
+        a1.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+        wrapper.appendChild(a1);
+        // Edit link
+        var a2 = document.createElement('a');
+        a2.className = 'adm-action adm-action--edit';
+        a2.setAttribute('href', '/Admission/CreateEdit/' + row.id);
+        a2.setAttribute('title', 'Edit');
+        a2.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
+        wrapper.appendChild(a2);
+        // Convert button
+        var b1 = document.createElement('button');
+        b1.type = 'button';
+        b1.className = 'adm-action adm-action--convert';
+        b1.setAttribute('title', 'Convert');
+        b1.dataset.id = row.id;
+        b1.dataset.classId = row.appliedClassId;
+        b1.addEventListener('click', function () { openApproveModal(this.dataset.id, this.dataset.classId); });
+        b1.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
+        wrapper.appendChild(b1);
+        // Reject button
+        var b2 = document.createElement('button');
+        b2.type = 'button';
+        b2.className = 'adm-action adm-action--reject';
+        b2.setAttribute('title', 'Reject');
+        b2.dataset.id = row.id;
+        b2.addEventListener('click', function () { rejectItem(this.dataset.id); });
+        b2.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
+        wrapper.appendChild(b2);
+        } else {
+        var done = document.createElement('span');
+        done.className = 'adm-actions--done';
+        done.textContent = 'Done';
+        wrapper.appendChild(done);
         }
-        return '<span class="adm-actions--done">Done</span>';
+        return wrapper;
         }
 
         // ── Column Definitions ───────────────────────
@@ -238,45 +293,71 @@
         { title: "", field: "profilePicturePath", width: 56, minWidth: 56, sorter: false, headerSort: false, formatter: photoFormatter, cssClass: "adm-col-photo" },
         {
         title: "App No", field: "applicationNo", width: 160, minWidth: 160, sorter: false, headerSort: false,
-        formatter: function (c) { return '<span class="adm-cell-mono">' + c.getValue() + '</span>'; }
+        formatter: function (c) { return safeSpan(c.getValue(), 'adm-cell-mono'); }
         },
         {
         title: "Applicant Name", field: "applicantName", width: 240, minWidth: 240, sorter: false, headerSort: false,
-        formatter: function (c) { return '<span class="adm-cell-name">' + c.getValue() + '</span>'; }
+        formatter: function (c) { return safeSpan(c.getValue(), 'adm-cell-name'); }
+        },
+        {
+        title: "নাম (বাংলা)", field: "applicantNameBangla", width: 200, minWidth: 140, sorter: false, headerSort: false,
+        formatter: function (c) {
+        var v = c.getValue();
+        if (!v) return safeMuted();
+        var el = document.createElement('span');
+        el.className = 'adm-cell-bangla';
+        el.setAttribute('lang', 'bn');
+        el.textContent = v;
+        return el;
+        }
         },
         {
         title: "Age / DOB", field: "dateOfBirth", width: 140, minWidth: 140, sorter: false, headerSort: false,
         formatter: function (c) {
-        const dob = new Date(c.getValue());
-        const age = c.getRow().getData().age;
-        return '<span class="adm-cell-dob"><strong>' + age + '</strong> yrs<br/><span class="adm-cell-dob__date">' + dob.toLocaleDateString('en-BD') + '</span></span>';
+        var el = document.createElement('span');
+        el.className = 'adm-cell-dob';
+        var strong = document.createElement('strong');
+        strong.textContent = c.getRow().getData().age;
+        el.appendChild(strong);
+        el.appendChild(document.createTextNode(' yrs\n'));
+        var dateSpan = document.createElement('span');
+        dateSpan.className = 'adm-cell-dob__date';
+        dateSpan.textContent = new Date(c.getValue()).toLocaleDateString('en-BD');
+        el.appendChild(dateSpan);
+        return el;
         }
         },
         {
         title: "Gender", field: "gender", width: 100, minWidth: 100, sorter: false, headerSort: false,
-        formatter: function (c) { return '<span class="adm-cell-gender">' + c.getValue() + '</span>'; }
+        formatter: function (c) { return safeSpan(c.getValue(), 'adm-cell-gender'); }
         },
         { title: "Class", field: "className", width: 160, minWidth: 160, sorter: false, headerSort: false },
         {
         title: "Phone", field: "applicantMobileNumber", width: 160, minWidth: 160, sorter: false, headerSort: false,
-        formatter: function (c) { return '<span class="adm-cell-phone">' + c.getValue() + '</span>'; }
+        formatter: function (c) { return safeSpan(c.getValue(), 'adm-cell-phone'); }
         },
         {
         title: "Guardian", field: "guardianName", width: 160, minWidth: 120, sorter: false, headerSort: false,
         formatter: function (c) {
-        const g = c.getValue();
-        if (!g) return '<span class="text-muted small">—</span>';
-        return '<span class="fw-medium">' + g + '</span>';
+        var v = c.getValue();
+        return v ? safeSpan(v, 'fw-medium') : safeMuted();
         }
         },
         { title: "G. Phone", field: "guardianMobileNumber", width: 140, minWidth: 120, sorter: false, headerSort: false,
-        formatter: function (c) { return c.getValue() ? '<span class="adm-cell-phone">' + c.getValue() + '</span>' : '<span class="text-muted small">—</span>'; }
+        formatter: function (c) { return c.getValue() ? safeSpan(c.getValue(), 'adm-cell-phone') : safeMuted(); }
         },
         { title: "G. Email", field: "guardianEmail", width: 180, minWidth: 140, sorter: false, headerSort: false,
-        formatter: function (c) { return c.getValue() ? '<span class="small">' + c.getValue() + '</span>' : '<span class="text-muted small">—</span>'; }
+        formatter: function (c) { return c.getValue() ? safeSpan(c.getValue(), 'small') : safeMuted(); }
         },
         { title: "Linked ID", field: "linkedGuardianId", width: 110, minWidth: 90, sorter: false, headerSort: false,
-        formatter: function (c) { return c.getValue() ? '<span class="badge bg-info bg-opacity-10 text-info">#' + c.getValue() + '</span>' : '<span class="text-muted small">—</span>'; }
+        formatter: function (c) {
+        var v = c.getValue();
+        if (!v) return safeMuted();
+        var el = document.createElement('span');
+        el.className = 'badge bg-info bg-opacity-10 text-info';
+        el.textContent = '#' + v;
+        return el;
+        }
         },
         { title: "Status", field: "status", width: 140, minWidth: 140, sorter: false, headerSort: false, formatter: statusFormatter },
         { title: "", field: "id", width: 180, minWidth: 180, sorter: false, headerSort: false, formatter: actionFormatter, cssClass: "adm-col-actions" }
@@ -404,11 +485,26 @@
 
         // ── Filter Badges ────────────────────────────
         function updateFilterBadges() {
-        var badges = [];
-        if (currentStatus) badges.push('<span class="adm-badge adm-badge--primary">Status: ' + currentStatus + '</span>');
-        if (currentClassId) badges.push('<span class="adm-badge adm-badge--neutral">Class: ' + $('#classFilter option:selected').text() + '</span>');
-        if (currentSearchTerm) badges.push('<span class="adm-badge adm-badge--info">Search: "' + currentSearchTerm + '"</span>');
-        document.getElementById('filterBadges').innerHTML = badges.join('');
+        var container = document.getElementById('filterBadges');
+        container.innerHTML = '';
+        if (currentStatus) {
+        var b = document.createElement('span');
+        b.className = 'adm-badge adm-badge--primary';
+        b.textContent = 'Status: ' + currentStatus;
+        container.appendChild(b);
+        }
+        if (currentClassId) {
+        var b = document.createElement('span');
+        b.className = 'adm-badge adm-badge--neutral';
+        b.textContent = 'Class: ' + $('#classFilter option:selected').text();
+        container.appendChild(b);
+        }
+        if (currentSearchTerm) {
+        var b = document.createElement('span');
+        b.className = 'adm-badge adm-badge--info';
+        b.textContent = 'Search: "' + currentSearchTerm + '"';
+        container.appendChild(b);
+        }
         }
 
         // ── Export Helpers ───────────────────────────
@@ -428,10 +524,10 @@
         }
 
         function buildExportRows(rows) {
-        var headers = ['App No', 'Applicant Name', 'Age', 'DOB', 'Gender', 'Class', 'Phone', 'Status'];
+        var headers = ['App No', 'Applicant Name', 'নাম (বাংলা)', 'Age', 'DOB', 'Gender', 'Class', 'Phone', 'Status'];
         var body = rows.map(function (r) {
         var dob = r.dateOfBirth ? new Date(r.dateOfBirth).toLocaleDateString('en-BD') : '';
-        return [r.applicationNo || '', r.applicantName || '', r.age || '', dob, r.gender || '', r.className || '', r.applicantMobileNumber || '', r.status || ''];
+        return [r.applicationNo || '', r.applicantName || '', r.applicantNameBangla || '', r.age || '', dob, r.gender || '', r.className || '', r.applicantMobileNumber || '', r.status || ''];
         });
         return { headers: headers, body: body };
         }
@@ -451,7 +547,7 @@
         var wsData = [result.headers].concat(result.body);
         var wb = XLSX.utils.book_new();
         var ws = XLSX.utils.aoa_to_sheet(wsData);
-        ws['!cols'] = [10, 30, 8, 14, 10, 16, 18, 12].map(function (w) { return { wch: w }; });
+        ws['!cols'] = [10, 30, 22, 8, 14, 10, 16, 18, 12].map(function (w) { return { wch: w }; });
         XLSX.utils.book_append_sheet(wb, ws, getExportTitle().substring(0, 31));
         XLSX.writeFile(wb, 'admissions_' + Date.now() + '.xlsx');
         }).fail(function () { alert('Failed to fetch data for export.'); })
@@ -473,7 +569,7 @@
         styles: { fontSize: 8, cellPadding: 2 },
         headStyles: { fillColor: [15, 118, 110], textColor: 255, fontStyle: 'bold' },
         alternateRowStyles: { fillColor: [240, 253, 250] },
-        columnStyles: { 0: { cellWidth: 22 }, 1: { cellWidth: 50 }, 2: { cellWidth: 12 }, 3: { cellWidth: 22 }, 4: { cellWidth: 18 }, 5: { cellWidth: 22 }, 6: { cellWidth: 28 }, 7: { cellWidth: 20 } }
+        columnStyles: { 0: { cellWidth: 22 }, 1: { cellWidth: 40 }, 2: { cellWidth: 30 }, 3: { cellWidth: 12 }, 4: { cellWidth: 22 }, 5: { cellWidth: 18 }, 6: { cellWidth: 18 }, 7: { cellWidth: 28 }, 8: { cellWidth: 20 } }
         });
         var pc = doc.internal.getNumberOfPages();
         for (var i = 1; i <= pc; i++) {

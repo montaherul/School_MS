@@ -1,0 +1,339 @@
+@model SchoolManagementSystem.Models.ViewModels.Dashboard.ExamControllerDashboardViewModel
+
+@{
+    ViewData["Title"] = "Exam Controller Dashboard";
+}
+
+<div class="adm-page">
+
+    <!-- HERO -->
+    <div class="dashboard-hero mb-4">
+        <div class="dashboard-hero__content">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h2 class="fw-bold mb-1">
+                        <i class="bi bi-clipboard-data me-2"></i>Exam Controller Hub
+                    </h2>
+                    <p class="opacity-75 mb-0">
+                        <i class="bi bi-person-badge me-1"></i> Exam Controller | Dashboard
+                    </p>
+                </div>
+                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                    <div class="dashboard-date-pill">
+                        <i class="bi bi-calendar-event"></i>
+                        <span>@DateTime.Now.ToString("dddd, MMM dd")</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="dashboard-hero__decor"></div>
+    </div>
+
+    <!-- 10 STAT CARDS -->
+    <div class="dash-stats">
+        <!-- TOTAL EXAMS -->
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--primary">
+                <i class="bi bi-journal-bookmark-fill"></i>
+            </div>
+            <div class="dash-stat-card__body">
+                <div class="dash-stat-card__label">Total Exams</div>
+                <div class="dash-stat-card__value">@Model.TotalExams</div>
+            </div>
+        </div>
+
+        <!-- DRAFT EXAMS -->
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--warning">
+                <i class="bi bi-pencil-square"></i>
+            </div>
+            <div class="dash-stat-card__body">
+                <div class="dash-stat-card__label">Draft Exams</div>
+                <div class="dash-stat-card__value">@Model.DraftExams</div>
+            </div>
+        </div>
+
+        <!-- PUBLISHED EXAMS -->
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--success">
+                <i class="bi bi-check2-all"></i>
+            </div>
+            <div class="dash-stat-card__body">
+                <div class="dash-stat-card__label">Published Exams</div>
+                <div class="dash-stat-card__value">@Model.PublishedExams</div>
+            </div>
+        </div>
+
+        <!-- ACTIVE SCHEDULES -->
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--info">
+                <i class="bi bi-calendar-week"></i>
+            </div>
+            <div class="dash-stat-card__body">
+                <div class="dash-stat-card__label">Active Schedules</div>
+                <div class="dash-stat-card__value">@Model.ActiveExamSchedules</div>
+            </div>
+        </div>
+
+        <!-- PENDING MARKS -->
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--danger">
+                <i class="bi bi-exclamation-triangle"></i>
+            </div>
+            <div class="dash-stat-card__body">
+                <div class="dash-stat-card__label">Pending Marks</div>
+                <div class="dash-stat-card__value">@Model.PendingMarksEntry</div>
+            </div>
+        </div>
+
+        <!-- APPROVED MARKS -->
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--success">
+                <i class="bi bi-check-circle"></i>
+            </div>
+            <div class="dash-stat-card__body">
+                <div class="dash-stat-card__label">Approved Marks</div>
+                <div class="dash-stat-card__value">@Model.ApprovedMarks</div>
+            </div>
+        </div>
+
+        <!-- PENDING APPROVAL -->
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--warning">
+                <i class="bi bi-clock-history"></i>
+            </div>
+            <div class="dash-stat-card__body">
+                <div class="dash-stat-card__label">Pending Approval</div>
+                <div class="dash-stat-card__value">@Model.PendingResultApproval</div>
+            </div>
+        </div>
+
+        <!-- PUBLISHED RESULTS -->
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--primary">
+                <i class="bi bi-file-earmark-check"></i>
+            </div>
+            <div class="dash-stat-card__body">
+                <div class="dash-stat-card__label">Published Results</div>
+                <div class="dash-stat-card__value">@Model.PublishedResults</div>
+            </div>
+        </div>
+
+        <!-- STUDENTS APPEARING -->
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--info">
+                <i class="bi bi-people"></i>
+            </div>
+            <div class="dash-stat-card__body">
+                <div class="dash-stat-card__label">Students Appearing</div>
+                <div class="dash-stat-card__value">@Model.StudentsAppearing</div>
+            </div>
+        </div>
+
+        <!-- TEACHERS ASSIGNED -->
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--secondary">
+                <i class="bi bi-person-badge"></i>
+            </div>
+            <div class="dash-stat-card__body">
+                <div class="dash-stat-card__label">Teachers Assigned</div>
+                <div class="dash-stat-card__value">@Model.TeachersAssigned</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHARTS ROW -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-4">
+            <div class="adm-table-card h-100">
+                <div class="dash-section__header p-4 border-bottom">
+                    <h5 class="dash-section__title">Exam Status Distribution</h5>
+                </div>
+                <div class="p-4">
+                    <canvas id="examStatusChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="adm-table-card h-100">
+                <div class="dash-section__header p-4 border-bottom">
+                    <h5 class="dash-section__title">Marks Entry Progress</h5>
+                </div>
+                <div class="p-4">
+                    <canvas id="marksEntryChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="adm-table-card h-100">
+                <div class="dash-section__header p-4 border-bottom">
+                    <h5 class="dash-section__title">Result Publication</h5>
+                </div>
+                <div class="p-4">
+                    <canvas id="resultPubChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- WIDGETS ROW -->
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <!-- UPCOMING EXAMS -->
+            <div class="adm-table-card mb-4">
+                <div class="dash-section__header p-4 border-bottom">
+                    <h5 class="dash-section__title">
+                        <i class="bi bi-calendar-event me-2"></i>Upcoming Exams
+                    </h5>
+                </div>
+                <div class="p-4">
+                    @if (Model.UpcomingExams.Any())
+                    {
+                        <div class="d-flex flex-column gap-3">
+                            @foreach (var exam in Model.UpcomingExams)
+                            {
+                                <div class="schedule-item">
+                                    <div class="schedule-time-box">
+                                        <div class="fw-bold text-primary small">@exam.Date.ToString("dd MMM")</div>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="fw-bold mb-0">@exam.ExamName</h6>
+                                        <p class="text-muted small mb-0">@exam.ClassName</p>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="dash-empty">
+                            <i class="bi bi-calendar2-x fs-1"></i>
+                            <h6 class="dash-empty__title">No Upcoming Exams</h6>
+                            <p class="dash-empty__sub">No exams scheduled in the near future.</p>
+                        </div>
+                    }
+                </div>
+                <div class="p-3 text-center border-top">
+                    <a href="/Exam" class="adm-btn adm-btn--ghost">Manage Exams</a>
+                </div>
+            </div>
+
+            <!-- RECENT ACTIVITIES -->
+            <div class="adm-table-card">
+                <div class="dash-section__header p-4 border-bottom">
+                    <h5 class="dash-section__title">
+                        <i class="bi bi-activity me-2"></i>Recent Activities
+                    </h5>
+                </div>
+                <div>
+                    @foreach (var activity in Model.RecentActivities)
+                    {
+                        <a href="#" class="dash-action-card border-0 border-bottom rounded-0">
+                            <div class="dash-action-card__body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="dash-action-card__title">@activity.Title</div>
+                                    <div class="x-small text-muted">@activity.At.ToString("dd MMM")</div>
+                                </div>
+                                <div class="dash-action-card__sub">@activity.Summary</div>
+                            </div>
+                        </a>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- QUICK LINKS -->
+            <div class="adm-table-card mb-4">
+                <div class="dash-section__header p-4 border-bottom">
+                    <h5 class="dash-section__title">
+                        <i class="bi bi-link-45deg me-2"></i>Quick Links
+                    </h5>
+                </div>
+                <div class="p-4">
+                    <div class="d-flex flex-column gap-2">
+                        <a href="/Exam" class="adm-btn adm-btn--primary w-100 text-start">
+                            <i class="bi bi-journal-plus me-2"></i>Manage Exams
+                        </a>
+                        <a href="/ExamSchedule" class="adm-btn adm-btn--info w-100 text-start">
+                            <i class="bi bi-calendar-plus me-2"></i>Exam Schedules
+                        </a>
+                        <a href="/Marks" class="adm-btn adm-btn--success w-100 text-start">
+                            <i class="bi bi-pencil-square me-2"></i>Marks Entry
+                        </a>
+                        <a href="/Result" class="adm-btn adm-btn--warning w-100 text-start">
+                            <i class="bi bi-file-earmark-check me-2"></i>Result Processing
+                        </a>
+                        <a href="/Result/Reports" class="adm-btn adm-btn--ghost w-100 text-start">
+                            <i class="bi bi-bar-chart me-2"></i>Reports & Analytics
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUPPORT CARD -->
+            <div class="dashboard-hero">
+                <div class="dashboard-hero__content">
+                    <h5 class="fw-bold mb-3">
+                        <i class="bi bi-headset me-2"></i>Exam Support
+                    </h5>
+                    <p class="opacity-75 mb-4">
+                        Need help with exam setup, marks, or results?
+                    </p>
+                    <button class="adm-btn adm-btn--ghost bg-white text-primary">
+                        Contact Support
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Exam Status Distribution
+            var statusLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ExamStatusDistribution.Select(e => e.Label)));
+            var statusData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ExamStatusDistribution.Select(e => e.Value)));
+            if (statusLabels.length > 0) {
+                new Chart(document.getElementById('examStatusChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: statusLabels,
+                        datasets: [{ data: statusData, backgroundColor: ['#3b82f6', '#f59e0b', '#22c55e', '#ef4444', '#8b5cf6', '#6366f1', '#14b8a6'] }]
+                    },
+                    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+                });
+            }
+
+            // Marks Entry Progress
+            var marksLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MarksEntryProgress.Select(e => e.Label)));
+            var marksData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.MarksEntryProgress.Select(e => e.Value)));
+            if (marksLabels.length > 0) {
+                new Chart(document.getElementById('marksEntryChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: marksLabels,
+                        datasets: [{ data: marksData, backgroundColor: ['#f59e0b', '#22c55e'] }]
+                    },
+                    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+                });
+            }
+
+            // Result Publication Progress
+            var pubLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ResultPublicationProgress.Select(e => e.Label)));
+            var pubData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ResultPublicationProgress.Select(e => e.Value)));
+            if (pubLabels.length > 0) {
+                new Chart(document.getElementById('resultPubChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: pubLabels,
+                        datasets: [{ data: pubData, backgroundColor: ['#22c55e', '#f59e0b'] }]
+                    },
+                    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+                });
+            }
+        });
+    </script>
+}

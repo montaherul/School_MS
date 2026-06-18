@@ -26,5 +26,9 @@ public class ExamRoutineViewModel
     public string? ClassName { get; set; }
     public string? GroupName { get; set; }
     public int? SelectedStudentId { get; set; }
+    public string SchoolName { get; set; } = string.Empty;
+    public string SchoolAddress { get; set; } = string.Empty;
+    public string? SchoolLogo { get; set; }
+    public string AcademicYearName { get; set; } = string.Empty;
     public List<ExamRoutineDto> Schedules { get; set; } = new();
 }

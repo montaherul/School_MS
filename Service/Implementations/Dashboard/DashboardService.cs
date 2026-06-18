@@ -5,9 +5,15 @@ using SchoolManagementSystem.Models.ViewModels.Dashboard;
 using SchoolManagementSystem.Service.Interfaces.Dashboard;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using SchoolManagementSystem.Repositories.Interfaces.Dashboard;
+using SchoolManagementSystem.Repositories.Interfaces.Result;
+using SchoolManagementSystem.Models.DTOs.Exam;
+using SchoolManagementSystem.Models.DTOs.Result;
 using SchoolManagementSystem.Models.DTOs.Attendance;
 using SchoolManagementSystem.Services.Interfaces.Guardian;
 using SchoolManagementSystem.Services.Interfaces.Academic;
+using SchoolManagementSystem.Models.Entities.Result;
+using SchoolManagementSystem.Models.Entities.Exam;
+using SchoolManagementSystem.Models.Entities.Teachers;
 
 namespace SchoolManagementSystem.Service.Implementations.Dashboard;
 
@@ -18,19 +24,28 @@ public class DashboardService : IDashboardService
     private readonly IUnitOfWork _uow;
     private readonly IGuardianService _guardianService;
     private readonly ICalendarDashboardService _calendarDashboardService;
+    private readonly IExamRepository _examRepository;
+    private readonly IResultPublicationRepository _publicationRepository;
+    private readonly IStudentExamResultRepository _examResultRepository;
 
     public DashboardService(
         IDashboardRepository dashboardRepository,
         IDashboardQueryRepository dashboardQueryRepository,
         IUnitOfWork uow,
         IGuardianService guardianService,
-        ICalendarDashboardService calendarDashboardService)
+        ICalendarDashboardService calendarDashboardService,
+        IExamRepository examRepository,
+        IResultPublicationRepository publicationRepository,
+        IStudentExamResultRepository examResultRepository)
     {
         _dashboardRepository = dashboardRepository;
         _dashboardQueryRepository = dashboardQueryRepository;
         _uow = uow;
         _guardianService = guardianService;
         _calendarDashboardService = calendarDashboardService;
+        _examRepository = examRepository;
+        _publicationRepository = publicationRepository;
+        _examResultRepository = examResultRepository;
     }
 
     public async Task<DashboardViewModel> GetDashboardAsync(CancellationToken cancellationToken = default)
@@ -366,6 +381,105 @@ public class DashboardService : IDashboardService
         model.UpcomingExams = guardianExams;
 
         return model;
+    }
+
+    public async Task<ExamControllerDashboardViewModel> GetExamControllerDashboardAsync(CancellationToken cancellationToken = default)
+    {
+        var academicYearRepo = _uow.Repository<SchoolManagementSystem.Models.Entities.Academic.AcademicYear>();
+        var activeYear = await academicYearRepo.Query()
+            .Where(y => y.IsActive && !y.IsDeleted)
+            .FirstOrDefaultAsync(cancellationToken);
+        var academicYearId = activeYear?.Id ?? 0;
+
+        var examStats = academicYearId > 0
+            ? await _examRepository.GetDashboardDataAsync(academicYearId, cancellationToken)
+            : new ExamDashboardDto();
+
+        var pubSummary = academicYearId > 0
+            ? (await _publicationRepository.GetPublicationDashboardAsync(academicYearId, cancellationToken)).Summary
+            : new PublicationDashboardSummaryDto();
+
+        var examStatusDist = academicYearId > 0
+            ? await _examRepository.GetStatusDistributionAsync(academicYearId, cancellationToken)
+            : [];
+
+        var now = DateTime.Today;
+        var activeSchedules = await _uow.Repository<ExamSchedule>().Query()
+            .Where(s => !s.IsDeleted && s.ExamDate >= DateOnly.FromDateTime(now))
+            .CountAsync(cancellationToken);
+
+        var pendingMarks = await _uow.Repository<MarkEntry>().Query()
+            .Where(m => !m.IsDeleted && m.Status == ResultWorkflowStatus.Draft)
+            .CountAsync(cancellationToken);
+
+        var approvedMarks = await _uow.Repository<MarkEntry>().Query()
+            .Where(m => !m.IsDeleted && m.Status == ResultWorkflowStatus.Approved)
+            .CountAsync(cancellationToken);
+
+        var pendingApproval = await _uow.Repository<StudentExamResult>().Query()
+            .Where(r => !r.IsDeleted && (r.Status == ResultWorkflowStatus.Submitted || r.Status == ResultWorkflowStatus.Reviewed))
+            .CountAsync(cancellationToken);
+
+        var teachersAssigned = await _uow.Repository<Teacher>().Query()
+            .Where(t => !t.IsDeleted)
+            .CountAsync(cancellationToken);
+
+        var upcomingExams = await _calendarDashboardService.GetUpcomingExamsAsync(8, cancellationToken);
+        var recentActivities = await GetRecentExamActivitiesAsync(cancellationToken);
+
+        return new ExamControllerDashboardViewModel
+        {
+            TotalExams = examStats.TotalExams,
+            DraftExams = examStats.DraftExams,
+            PublishedExams = examStats.PublishedExams,
+            ActiveExamSchedules = activeSchedules,
+            PendingMarksEntry = pendingMarks,
+            ApprovedMarks = approvedMarks,
+            PendingResultApproval = pendingApproval,
+            PublishedResults = pubSummary.TotalPublishedResults,
+            StudentsAppearing = examStats.StudentsAppeared,
+            TeachersAssigned = teachersAssigned,
+            ExamStatusDistribution = examStatusDist.Select(e => new ChartPoint(((ResultWorkflowStatus)e.Status).ToString(), e.Count)).ToList(),
+            MarksEntryProgress =
+            [
+                new ChartPoint("Draft", pendingMarks),
+                new ChartPoint("Approved", approvedMarks)
+            ],
+            ResultPublicationProgress =
+            [
+                new ChartPoint("Published", pubSummary.TotalPublishedResults),
+                new ChartPoint("Pending", Math.Max(0, pubSummary.TotalStudentResults - pubSummary.TotalPublishedResults))
+            ],
+            UpcomingExams = upcomingExams,
+            RecentActivities = recentActivities
+        };
+    }
+
+    private async Task<List<RecentActivityItem>> GetRecentExamActivitiesAsync(CancellationToken ct)
+    {
+        var recentResultPublications = await _publicationRepository.Query()
+            .Where(p => !p.IsDeleted && p.PublishedAt != null)
+            .OrderByDescending(p => p.PublishedAt)
+            .Take(5)
+            .Select(p => new RecentActivityItem("Result Published", $"Exam #{p.ExamId} results published", p.PublishedAt!.Value, p.PublicationNotes ?? ""))
+            .ToListAsync(ct);
+
+        var recentApprovals = await _examResultRepository.Query()
+            .Where(r => !r.IsDeleted && r.Status == ResultWorkflowStatus.Approved && r.PublishedAt != null)
+            .OrderByDescending(r => r.CalculatedAt)
+            .Take(3)
+            .Select(r => new RecentActivityItem("Results Approved", $"Student #{r.StudentId} — Exam #{r.ExamId}", r.PublishedAt ?? r.CalculatedAt, $"GPA: {r.Gpa}"))
+            .ToListAsync(ct);
+
+        var combined = recentResultPublications.Concat(recentApprovals)
+            .OrderByDescending(a => a.At)
+            .Take(8)
+            .ToList();
+
+        return combined.Count != 0 ? combined :
+        [
+            new RecentActivityItem("System", "Welcome to Exam Controller Dashboard", DateTime.Now, "All systems operational")
+        ];
     }
 
     private static ChartPoint MapChart(DashboardChartDto dto) => new ChartPoint(dto.Label, dto.Value);

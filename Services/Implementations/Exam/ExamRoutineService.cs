@@ -4,6 +4,7 @@ using SchoolManagementSystem.Models.DTOs.Exam;
 using SchoolManagementSystem.Models.Entities.Exam;
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Models.Entities.Teachers;
+using SchoolManagementSystem.Models.Entities.Website;
 using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Services.Interfaces.Exam;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
@@ -14,6 +15,10 @@ public class ExamRoutineService : IExamRoutineService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IViewRendererService _viewRenderer;
+    private string? _schoolNameCache;
+    private string? _schoolAddressCache;
+    private string? _schoolLogoCache;
+    private string? _academicYearNameCache;
 
     public ExamRoutineService(IUnitOfWork unitOfWork, IViewRendererService viewRenderer)
     {
@@ -43,7 +48,7 @@ public class ExamRoutineService : IExamRoutineService
                 && s.ClassId == student.ClassId
                 && (s.StudentGroupId == null || s.StudentGroupId == student.StudentGroupId)
                 && (s.SectionId == null || s.SectionId == student.SectionId))
-            .OrderBy(s => s.ExamDate).ThenBy(s => s.StartsAt)
+            .OrderBy(s => s.ExamDate).ThenBy(s => s.StartsAt).ThenBy(s => s.Subject!.Name)
             .ToListAsync(ct);
 
         return schedules.Select(MapToDto).ToList();
@@ -73,6 +78,8 @@ public class ExamRoutineService : IExamRoutineService
                 .FirstOrDefaultAsync(ct);
         }
 
+        var school = await LoadSchoolInfoAsync(ct);
+
         return new ExamRoutineViewModel
         {
             ExamName = exam?.Name ?? "N/A",
@@ -83,6 +90,10 @@ public class ExamRoutineService : IExamRoutineService
             StudentNo = student.StudentNo,
             ClassName = student.Class?.Name,
             GroupName = student.StudentGroup?.Name,
+            SchoolName = school.SchoolName,
+            SchoolAddress = school.SchoolAddress,
+            SchoolLogo = school.SchoolLogo,
+            AcademicYearName = school.AcademicYearName,
             Schedules = schedules
         };
     }
@@ -117,7 +128,7 @@ public class ExamRoutineService : IExamRoutineService
                         && exs.ClassId == s.ClassId
                         && exs.TeacherId == teacherId
                         && !exs.IsDeleted))
-            .OrderBy(s => s.ExamDate).ThenBy(s => s.StartsAt)
+            .OrderBy(s => s.ExamDate).ThenBy(s => s.StartsAt).ThenBy(s => s.Subject!.Name)
             .ToListAsync(ct);
 
         var invigilationSchedules = await _unitOfWork.Repository<ExamSchedule>().Query()
@@ -135,13 +146,13 @@ public class ExamRoutineService : IExamRoutineService
                         && tca.ClassId == s.ClassId
                         && tca.IsActive
                         && !tca.IsDeleted))
-            .OrderBy(s => s.ExamDate).ThenBy(s => s.StartsAt)
+            .OrderBy(s => s.ExamDate).ThenBy(s => s.StartsAt).ThenBy(s => s.Subject!.Name)
             .ToListAsync(ct);
 
         var merged = assignedSubjectSchedules
             .Union(invigilationSchedules)
             .Distinct()
-            .OrderBy(s => s.ExamDate).ThenBy(s => s.StartsAt)
+            .OrderBy(s => s.ExamDate).ThenBy(s => s.StartsAt).ThenBy(s => s.Subject!.Name)
             .ToList();
 
         return merged.Select(MapToDto).ToList();
@@ -167,6 +178,8 @@ public class ExamRoutineService : IExamRoutineService
                 .FirstOrDefaultAsync(ct);
         }
 
+        var school = await LoadSchoolInfoAsync(ct);
+
         return new ExamRoutineViewModel
         {
             ExamName = exam?.Name ?? "N/A",
@@ -174,6 +187,10 @@ public class ExamRoutineService : IExamRoutineService
             ExamStartsOn = exam?.StartsOn,
             ExamEndsOn = exam?.EndsOn,
             StudentName = teacher?.FullName,
+            SchoolName = school.SchoolName,
+            SchoolAddress = school.SchoolAddress,
+            SchoolLogo = school.SchoolLogo,
+            AcademicYearName = school.AcademicYearName,
             Schedules = schedules
         };
     }
@@ -192,7 +209,7 @@ public class ExamRoutineService : IExamRoutineService
                 && (groupId == null || s.StudentGroupId == groupId));
 
         var schedules = await query
-            .OrderBy(s => s.ExamDate).ThenBy(s => s.StartsAt)
+            .OrderBy(s => s.ExamDate).ThenBy(s => s.StartsAt).ThenBy(s => s.Subject!.Name)
             .ToListAsync(ct);
 
         return schedules.Select(MapToDto).ToList();
@@ -214,7 +231,7 @@ public class ExamRoutineService : IExamRoutineService
                 && s.Exam.Status == publishedStatus
                 && s.ClassId == classId
                 && (groupId == null || s.StudentGroupId == groupId))
-            .OrderBy(s => s.ExamDate).ThenBy(s => s.StartsAt)
+            .OrderBy(s => s.ExamDate).ThenBy(s => s.StartsAt).ThenBy(s => s.Subject!.Name)
             .ToListAsync(ct);
 
         return schedules.Select(MapToDto).ToList();
@@ -222,14 +239,41 @@ public class ExamRoutineService : IExamRoutineService
 
     public async Task<string> RenderRoutineHtmlAsync(List<ExamRoutineDto> schedules, string examName, string className, string? groupName, CancellationToken ct = default)
     {
+        var school = await LoadSchoolInfoAsync(ct);
         var viewModel = new ExamRoutineViewModel
         {
             ExamName = examName,
             ClassName = className,
             GroupName = groupName,
+            SchoolName = school.SchoolName,
+            SchoolAddress = school.SchoolAddress,
+            SchoolLogo = school.SchoolLogo,
+            AcademicYearName = school.AcademicYearName,
             Schedules = schedules
         };
         return await _viewRenderer.RenderToStringAsync("~/Views/ExamRoutine/_RoutinePrint.cshtml", viewModel);
+    }
+
+    private async Task<(string SchoolName, string SchoolAddress, string? SchoolLogo, string AcademicYearName)> LoadSchoolInfoAsync(CancellationToken ct)
+    {
+        if (!string.IsNullOrEmpty(_schoolNameCache))
+            return (_schoolNameCache!, _schoolAddressCache ?? "", _schoolLogoCache, _academicYearNameCache ?? "");
+
+        var setting = await _unitOfWork.Repository<SchoolSetting>().Query()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(ct);
+
+        var year = await _unitOfWork.Repository<AcademicYear>().Query()
+            .AsNoTracking()
+            .Where(y => y.IsActive && !y.IsDeleted)
+            .FirstOrDefaultAsync(ct);
+
+        _schoolNameCache = setting?.SchoolName ?? "School Management System";
+        _schoolAddressCache = setting?.Address ?? "";
+        _schoolLogoCache = setting?.LogoPath;
+        _academicYearNameCache = year?.Name ?? "";
+
+        return (_schoolNameCache, _schoolAddressCache, _schoolLogoCache, _academicYearNameCache);
     }
 
     private static ExamRoutineDto MapToDto(ExamSchedule s)

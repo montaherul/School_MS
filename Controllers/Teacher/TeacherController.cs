@@ -5,7 +5,9 @@ using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Helpers.Files;
 using SchoolManagementSystem.Models.DTOs.Teacher;
 using SchoolManagementSystem.Models.Enums;
+using TeacherEntity = SchoolManagementSystem.Models.Entities.Teachers.Teacher;
 using SchoolManagementSystem.Services.Interfaces.Teachers;
+using SchoolManagementSystem.UnitOfWork.Interfaces;
 using System.Security.Claims;
 
 namespace SchoolManagementSystem.Controllers.Teacher;
@@ -15,11 +17,13 @@ public class TeacherController : Controller
 {
     private readonly ITeacherService _service;
     private readonly IFileStorageService _fileStorage;
+    private readonly IUnitOfWork _uow;
 
-    public TeacherController(ITeacherService service, IFileStorageService fileStorage)
+    public TeacherController(ITeacherService service, IFileStorageService fileStorage, IUnitOfWork uow)
     {
         _service = service;
         _fileStorage = fileStorage;
+        _uow = uow;
     }
 
     [RequirePermission("Teachers.View")]
@@ -46,6 +50,11 @@ public class TeacherController : Controller
     {
         var dto = await _service.GetForEditAsync(id, ct);
         if (dto == null) return NotFound();
+
+        var teacherEnt = await _uow.Repository<TeacherEntity>().Query()
+            .FirstOrDefaultAsync(t => t.Id == id && !t.IsDeleted, ct);
+        if (teacherEnt != null) ViewBag.EmployeeId = teacherEnt.EmployeeId;
+
         return View("CreateEdit", dto);
     }
 
@@ -119,6 +128,11 @@ public class TeacherController : Controller
 
         var dto = await _service.GetForEditAsync(targetId, ct);
         if (dto == null) return NotFound("Teacher not found.");
+
+        var teacherEnt = await _uow.Repository<TeacherEntity>().Query()
+            .FirstOrDefaultAsync(t => t.Id == targetId && !t.IsDeleted, ct);
+        if (teacherEnt != null) ViewBag.EmployeeId = teacherEnt.EmployeeId;
+
         return View(dto);
     }
 
@@ -153,6 +167,32 @@ public class TeacherController : Controller
         await _service.ActivateAsync(id, userId, ct);
         TempData["SuccessMessage"] = "Teacher account activated.";
         return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetDocuments(int id, CancellationToken ct)
+    {
+        var teacherEnt = await _uow.Repository<TeacherEntity>()
+            .Query()
+            .Include(t => t.Employee)
+                .ThenInclude(e => e.Documents.Where(d => !d.IsDeleted))
+            .FirstOrDefaultAsync(t => t.Id == id && !t.IsDeleted, ct);
+
+        if (teacherEnt?.Employee == null)
+            return Json(Array.Empty<object>());
+
+        var docs = teacherEnt.Employee.Documents.Select(d => new
+        {
+            d.Id,
+            d.DocumentType,
+            d.DocumentName,
+            d.FilePath,
+            d.ExpiryDate,
+            UploadedDate = d.CreatedAt,
+            d.Remarks
+        });
+
+        return Json(docs);
     }
 }
 

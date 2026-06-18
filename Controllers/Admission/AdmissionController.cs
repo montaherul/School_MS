@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Models.DTOs.Admission;
 using SchoolManagementSystem.Models.Enums;
@@ -38,6 +39,7 @@ public class AdmissionController : Controller
     [HttpPost]
     [AllowAnonymous]
     [ValidateAntiForgeryToken]
+    [EnableRateLimiting("AdmissionApply")]
     public async Task<IActionResult> Apply(AdmissionCreateDto model, CancellationToken ct)
     {
         if (!ModelState.IsValid)

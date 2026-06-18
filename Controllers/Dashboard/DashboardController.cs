@@ -48,6 +48,12 @@ public class DashboardController : Controller
             }
         }
 
+        if (User.IsInRole("Exam Controller"))
+        {
+            var examControllerData = await _service.GetExamControllerDashboardAsync();
+            return View("ExamControllerIndex", examControllerData);
+        }
+
         var data = await _service.GetDashboardAsync();
         return View(data);
     }

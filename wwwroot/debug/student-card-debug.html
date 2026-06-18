@@ -4,7 +4,14 @@
     <meta charset="utf-8" />
     <title>Student ID Card</title>
     
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;600;700&display=swap" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <style>
+/* ═══════════════════════════════════════════════════════════════
+   ENTERPRISE PVC ID CARD SYSTEM — CR80 SPECIFICATION
+   Width: 54.00 mm | Height: 85.60 mm | 300 DPI | Portrait Ready
+   ═══════════════════════════════════════════════════════════════ */
+
 * {
   margin: 0;
   padding: 0;
@@ -16,7 +23,9 @@
 html, body {
   margin: 0;
   padding: 0;
-  background: #ffffff;
+  background: #f1f5f9;
+  font-smooth: always;
+  -webkit-font-smoothing: antialiased;
 }
 
 @page {
@@ -25,20 +34,19 @@ html, body {
 }
 
 @media print {
-  html, body { margin: 0; padding: 0; }
+  html, body {
+    background: #fff;
+  }
 }
 
-/* ──────────────────────────────────────
-   PAGE LAYOUT
-   ────────────────────────────────────── */
+/* ── PAGE LAYOUT ── */
 .page-single {
   width: 116mm;
   height: 92mm;
   text-align: center;
   font-size: 0;
-  padding: 3mm 0;
+  padding: 3.2mm 0;
 }
-
 .page-single.f { page-break-after: always; }
 .page-single.b { page-break-after: always; }
 .page-break { page-break-before: always; }
@@ -55,935 +63,839 @@ html, body {
   height: 92mm;
   font-size: 0;
   text-align: center;
-  padding: 3mm 4mm;
+  padding: 3.2mm 4mm;
   page-break-inside: avoid;
   vertical-align: top;
 }
+.card-group .pvc + .pvc {
+  margin-left: 4mm;
+}
 
-.card-group .pvc + .pvc { margin-left: 4mm; }
-
-/* ──────────────────────────────────────
-   CARD BASE
-   ────────────────────────────────────── */
+/* ── CARD BASE ── */
 .pvc {
-  font-family: 'Inter', Arial, Helvetica, sans-serif;
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
   width: 54mm;
-  height: 86mm;
+  height: 85.6mm;
   position: relative;
   overflow: hidden;
-  border-radius: 3.5mm;
+  border-radius: 3.8mm;
   display: inline-block;
   vertical-align: middle;
+  background: #ffffff;
+  border: 0.3px solid #cbd5e1;
+  box-shadow: 0 1.5mm 4mm rgba(15, 23, 42, 0.08);
 }
 
-/* ──────────────────────────────────────
-   ACCENT STRIPE (left edge)
-   ────────────────────────────────────── */
-.pvc .stripe {
+/* Background security lines and grid watermark */
+.pvc::before {
+  content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 4px;
-  height: 100%;
-  z-index: 10;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #ffffff;
+  background-image: 
+    radial-gradient(circle at 50% 25%, rgba(248, 250, 252, 0.92) 0%, #ffffff 100%),
+    repeating-linear-gradient(45deg, rgba(30, 64, 175, 0.01) 0px, rgba(30, 64, 175, 0.01) 1px, transparent 1px, transparent 6px),
+    repeating-linear-gradient(-45deg, rgba(30, 64, 175, 0.01) 0px, rgba(30, 64, 175, 0.01) 1px, transparent 1px, transparent 6px);
+  z-index: 1;
 }
 
 /* ══════════════════════════════════════
-   STUDENT FRONT
+   FRONT CARD STYLING
    ══════════════════════════════════════ */
-.pvc.sf { background: #F7F9FC; }
-.pvc.sf .stripe { background: #E8A020; }
 
-/* ── HEADER (20%) ── */
-.pvc.sf .hdr {
+/* ── HEADER 15mm (strictly 15mm height) ── */
+.pvc .hdr {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 65px;
-  background: #1A2E5A;
-  z-index: 1;
-}
-
-.pvc.sf .logo-area {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  z-index: 6;
-}
-
-.pvc.sf .logo-box {
-  width: 44px;
-  height: 44px;
-  background: rgba(255,255,255,0.1);
-  border-radius: 4px;
-  text-align: center;
-  line-height: 44px;
-  font-size: 0;
-}
-
-.pvc.sf .logo-box img,
-.pvc.sf .logo-box svg {
-  width: 40px;
-  height: 40px;
-  vertical-align: middle;
-}
-
-.pvc.sf .school-name {
-  position: absolute;
-  top: 8px;
-  left: 60px;
-  right: 60px;
-  text-align: center;
-  z-index: 6;
-}
-
-.pvc.sf .school-name-text {
-  font-family: 'Barlow Condensed', Arial Narrow, Arial, sans-serif;
-  font-size: 13px;
-  font-weight: 800;
-  text-transform: uppercase;
-  color: #E8A020;
-  line-height: 15px;
-  max-height: 30px;
+  top: 0; left: 0; right: 0;
+  height: 15mm;
+  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+  z-index: 2;
+  border-bottom: 0.8mm solid #f97316; /* Dynamic accent line */
   overflow: hidden;
+  padding: 1.5mm 2.2mm;
 }
 
-.pvc.sf .school-sub {
-  font-size: 7px;
-  color: rgba(255,255,255,0.7);
-  line-height: 1.2;
-  margin-top: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.pvc.sf .badge {
+/* Modern Geometric Ribbons */
+.pvc .hdr::after {
+  content: '';
   position: absolute;
-  top: 12px;
-  right: 10px;
-  z-index: 6;
-  background: #E8A020;
-  color: #ffffff;
-  font-size: 9px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding: 3px 10px;
-  border-radius: 10px;
+  width: 25mm;
+  height: 25mm;
+  background: linear-gradient(45deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 70%);
+  transform: rotate(15deg);
+  top: -8mm;
+  right: -5mm;
+  z-index: 2;
+  border-radius: 4mm;
 }
 
-/* ── PHOTO (25%) ── */
-.pvc.sf .photo-wrap {
-  position: absolute;
-  top: 75px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 80px;
-  height: 80px;
-  z-index: 7;
-  background: #ffffff;
-  padding: 3px;
-  border-radius: 50%;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-}
-
-.pvc.sf .photo-inner {
-  width: 74px;
-  height: 74px;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 3px solid #E8A020;
-  background: #EEF2F9;
-  text-align: center;
-  line-height: 74px;
-  font-size: 0;
-}
-
-.pvc.sf .photo-inner img { width: 74px; height: 74px; }
-.pvc.sf .photo-inner svg { width: 42px; height: 42px; vertical-align: middle; }
-
-/* ── NAME SECTION (15%) ── */
-.pvc.sf .name-section {
-  position: absolute;
-  top: 162px;
-  left: 10px;
-  right: 10px;
-  text-align: center;
-  z-index: 4;
-  overflow: hidden;
-}
-
-.pvc.sf .name {
-  font-family: 'Barlow Condensed', Arial Narrow, Arial, sans-serif;
-  font-size: 18px;
-  font-weight: 800;
-  text-transform: uppercase;
-  color: #1A2E5A;
-  line-height: 1.2;
-  margin-bottom: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.pvc.sf .sub-role {
-  font-size: 10px;
-  color: #8A96AE;
-  font-weight: 500;
-  line-height: 1.2;
-}
-
-/* ── INFO SECTION (25%) ── */
-.pvc.sf .fields {
-  position: absolute;
-  top: 210px;
-  left: 14px;
-  right: 14px;
-  z-index: 4;
-  overflow: hidden;
-}
-
-.pvc.sf .f-item {
-  margin-bottom: 4px;
-}
-
-.pvc.sf .f-lbl {
-  display: block;
-  font-size: 6.5px;
-  color: #8A96AE;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  font-weight: 600;
-  line-height: 1;
-  margin-bottom: 1px;
-}
-
-.pvc.sf .f-val {
-  display: block;
-  font-size: 10px;
-  font-weight: 600;
-  color: #1A2E5A;
-  line-height: 1.15;
-}
-
-.pvc.sf .f-val.blood-red { color: #DC2626; font-weight: 700; }
-.pvc.sf .f-val.blood-gray { color: #8A96AE; font-weight: 500; }
-
-/* ── FOOTER (15%) ── */
-.pvc.sf .ftr {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 48px;
-  background: #1A2E5A;
-  z-index: 1;
-}
-
-.pvc.sf .sig {
-  position: absolute;
-  top: 8px;
-  left: 0;
-  right: 0;
-  text-align: center;
-  z-index: 6;
-}
-
-.pvc.sf .sig-line {
-  width: 50px;
-  height: 1px;
-  background: rgba(255,255,255,0.35);
-  margin: 0 auto 2px auto;
-}
-
-.pvc.sf .sig-lbl {
-  font-size: 8px;
-  color: rgba(255,255,255,0.65);
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-
-.pvc.sf .card-info {
-  position: absolute;
-  bottom: 4px;
-  left: 10px;
-  right: 10px;
-  text-align: center;
-  font-size: 6px;
-  color: rgba(255,255,255,0.45);
-  letter-spacing: 0.2px;
-}
-
-/* ══════════════════════════════════════
-   STUDENT BACK
-   ══════════════════════════════════════ */
-.pvc.bk { background: #F7F9FC; }
-.pvc.bk .stripe { background: #E8A020; }
-
-/* ── BACK HEADER ── */
-.pvc.bk .hdr {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 52px;
-  background: #1A2E5A;
-  z-index: 1;
-}
-
-.pvc.bk .school-hdr {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 52px;
-  z-index: 6;
-  text-align: center;
-  padding-top: 6px;
-}
-
-.pvc.bk .s-logo-box {
-  display: block;
-  width: 26px;
-  height: 26px;
-  margin: 0 auto 2px auto;
-  background: rgba(255,255,255,0.1);
-  border-radius: 3px;
-  text-align: center;
-  line-height: 26px;
-  font-size: 0;
-}
-
-.pvc.bk .s-logo-box img,
-.pvc.bk .s-logo-box svg {
-  width: 22px;
-  height: 22px;
-  vertical-align: middle;
-}
-
-.pvc.bk .s-name {
-  font-family: 'Barlow Condensed', Arial Narrow, Arial, sans-serif;
-  font-size: 10px;
-  font-weight: 800;
-  color: #ffffff;
-  text-transform: uppercase;
-  line-height: 1.15;
-  max-width: 180px;
-  margin: 0 auto;
-  overflow: hidden;
-}
-
-.pvc.bk .s-addr {
-  font-size: 7px;
-  color: rgba(255,255,255,0.7);
-  line-height: 1.2;
-  max-width: 180px;
-  margin: 0 auto;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* ── BACK BODY ── */
-.pvc.bk .body {
-  position: absolute;
-  top: 56px;
-  left: 10px;
-  right: 10px;
-  bottom: 70px;
-  z-index: 4;
-  overflow: hidden;
-}
-
-/* ── RULES ── */
-.pvc.bk .rules {
-  background: #ffffff;
-  border: 1px solid #E2E6ED;
-  border-left: 3px solid #1A2E5A;
-  border-radius: 0 4px 4px 0;
-  padding: 5px 7px;
-  margin-bottom: 5px;
-  max-height: 72px;
-  overflow: hidden;
-}
-
-.pvc.bk .rules-title {
-  font-family: 'Barlow Condensed', Arial Narrow, Arial, sans-serif;
-  font-size: 8px;
-  font-weight: 800;
-  color: #1A2E5A;
-  text-transform: uppercase;
-  margin-bottom: 2px;
-}
-
-.pvc.bk .rule {
-  font-size: 7.5px;
-  color: #4A5568;
-  line-height: 1.25;
-  padding: 1px 0;
-  font-weight: 500;
-}
-
-.pvc.bk .r-dot {
-  color: #E8A020;
-  font-weight: 700;
-  margin-right: 3px;
-}
-
-/* ── CONTACT ── */
-.pvc.bk .contact-block {
-  margin-top: 2px;
-}
-
-.pvc.bk .c-title {
-  font-family: 'Barlow Condensed', Arial Narrow, Arial, sans-serif;
-  font-size: 8px;
-  font-weight: 800;
-  color: #1A2E5A;
-  text-transform: uppercase;
-  margin-bottom: 3px;
-}
-
-.pvc.bk .c-table {
+.pvc .brand-row {
+  position: relative;
+  z-index: 3;
   display: table;
   width: 100%;
 }
-
-.pvc.bk .c-row {
-  display: table-row;
-}
-
-.pvc.bk .c-icon-cell {
+.pvc .brand-logo-cell {
   display: table-cell;
-  width: 22px;
-  vertical-align: middle;
-  padding-bottom: 3px;
-}
-
-.pvc.bk .c-icon {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  text-align: center;
-  line-height: 18px;
-  font-size: 0;
-}
-
-.pvc.bk .c-icon svg {
-  width: 10px;
-  height: 10px;
+  width: 8.5mm;
   vertical-align: middle;
 }
-
-.pvc.bk .c-val-cell {
-  display: table-cell;
-  vertical-align: middle;
-  padding-bottom: 3px;
-}
-
-.pvc.bk .c-val {
-  font-size: 8px;
-  color: #4A5568;
-  font-weight: 500;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-}
-
-/* ── BACK FOOTER ── */
-.pvc.bk .ftr {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 66px;
-  background: #1A2E5A;
-  z-index: 1;
-}
-
-.pvc.bk .qr-area {
-  position: absolute;
-  bottom: 4px;
-  right: 10px;
-  z-index: 6;
-}
-
-.pvc.bk .qr-box {
-  width: 60px;
-  height: 60px;
-  background: #ffffff;
-  border-radius: 4px;
-  padding: 3px;
+.pvc .logo-box {
   display: inline-block;
+  width: 8.5mm;
+  height: 8.5mm;
+  border-radius: 50%;
+  background: #ffffff;
+  text-align: center;
+  line-height: 8.5mm;
+  overflow: hidden;
+  box-shadow: 0 0.5mm 1.5mm rgba(0, 0, 0, 0.15);
+  border: 0.3px solid rgba(255,255,255,0.8);
+}
+.pvc .logo-box img {
+  width: 7.6mm;
+  height: 7.6mm;
+  vertical-align: middle;
+  object-fit: contain;
+}
+.pvc .logo-fallback {
+  font-family: 'Poppins', sans-serif;
+  font-weight: 800;
+  font-size: 4mm;
+  color: #1e40af;
+  line-height: 8.5mm;
 }
 
-.pvc.bk .qr-box img { width: 54px; height: 54px; }
-
-.pvc.bk .valid-area {
-  position: absolute;
-  bottom: 8px;
-  left: 12px;
-  z-index: 6;
+.pvc .brand-text-cell {
+  display: table-cell;
+  vertical-align: middle;
+  padding-left: 1.8mm;
   text-align: left;
 }
-
-.pvc.bk .valid-lbl {
-  font-size: 7px;
-  color: rgba(255,255,255,0.55);
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-
-.pvc.bk .valid-val {
-  font-family: 'Barlow Condensed', Arial Narrow, Arial, sans-serif;
-  font-size: 10px;
+.pvc .school-name {
+  font-family: 'Poppins', sans-serif;
+  font-size: 8.8pt;
   font-weight: 800;
-  color: #E8A020;
-  line-height: 1.15;
-}
-
-.pvc.bk .id-mini {
-  font-size: 7px;
-  color: rgba(255,255,255,0.45);
-  margin-top: 1px;
-}
-
-/* ══════════════════════════════════════
-   EMPLOYEE FRONT
-   ══════════════════════════════════════ */
-.pvc.ef { background: #F5F7F5; }
-.pvc.ef .stripe { background: #0F9D94; }
-
-.pvc.ef .hdr {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 65px;
-  background: #1F2937;
-  z-index: 1;
-}
-
-.pvc.ef .logo-area {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  z-index: 6;
-}
-
-.pvc.ef .logo-box {
-  width: 44px;
-  height: 44px;
-  background: rgba(255,255,255,0.1);
-  border-radius: 4px;
-  text-align: center;
-  line-height: 44px;
-  font-size: 0;
-}
-
-.pvc.ef .logo-box img,
-.pvc.ef .logo-box svg {
-  width: 40px;
-  height: 40px;
-  vertical-align: middle;
-}
-
-.pvc.ef .school-name {
-  position: absolute;
-  top: 8px;
-  left: 60px;
-  right: 60px;
-  text-align: center;
-  z-index: 6;
-}
-
-.pvc.ef .school-name-text {
-  font-family: 'Barlow Condensed', Arial Narrow, Arial, sans-serif;
-  font-size: 13px;
-  font-weight: 800;
-  text-transform: uppercase;
-  color: #0F9D94;
-  line-height: 15px;
-  max-height: 30px;
-  overflow: hidden;
-}
-
-.pvc.ef .school-sub {
-  font-size: 7px;
-  color: rgba(255,255,255,0.7);
-  line-height: 1.2;
-  margin-top: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.pvc.ef .badge {
-  position: absolute;
-  top: 12px;
-  right: 10px;
-  z-index: 6;
-  background: #0F9D94;
   color: #ffffff;
-  font-size: 9px;
-  font-weight: 700;
+  line-height: 1.05;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  padding: 3px 10px;
-  border-radius: 10px;
+  letter-spacing: -0.1px;
 }
-
-.pvc.ef .photo-wrap {
-  position: absolute;
-  top: 75px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 80px;
-  height: 80px;
-  z-index: 7;
-  background: #ffffff;
-  padding: 3px;
-  border-radius: 50%;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-}
-
-.pvc.ef .photo-inner {
-  width: 74px;
-  height: 74px;
-  border-radius: 50%;
-  overflow: hidden;
-  border: 3px solid #0F9D94;
-  background: #EEF2F9;
-  text-align: center;
-  line-height: 74px;
-  font-size: 0;
-}
-
-.pvc.ef .photo-inner img { width: 74px; height: 74px; }
-.pvc.ef .photo-inner svg { width: 42px; height: 42px; vertical-align: middle; }
-
-.pvc.ef .name-section {
-  position: absolute;
-  top: 162px;
-  left: 10px;
-  right: 10px;
-  text-align: center;
-  z-index: 4;
-  overflow: hidden;
-}
-
-.pvc.ef .name {
-  font-family: 'Barlow Condensed', Arial Narrow, Arial, sans-serif;
-  font-size: 18px;
-  font-weight: 800;
-  text-transform: uppercase;
-  color: #1F2937;
-  line-height: 1.2;
-  margin-bottom: 2px;
+.pvc .school-motto {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 5.5pt;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.1;
+  margin-top: 0.2mm;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.pvc.ef .sub-role {
-  font-size: 10px;
-  color: #8A96AE;
-  font-weight: 500;
-  line-height: 1.2;
-}
-
-.pvc.ef .fields {
+/* ── ROLE BADGE ── */
+.pvc .badge {
   position: absolute;
-  top: 210px;
-  left: 14px;
-  right: 14px;
-  z-index: 4;
-  overflow: hidden;
-}
-
-.pvc.ef .f-item { margin-bottom: 4px; }
-
-.pvc.ef .f-lbl {
-  display: block;
-  font-size: 6.5px;
-  color: #8A96AE;
+  top: 2mm;
+  right: 2.2mm;
+  z-index: 6;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 6pt;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.4px;
-  font-weight: 600;
-  line-height: 1;
-  margin-bottom: 1px;
+  padding: 0.4mm 1.8mm;
+  border-radius: 10px;
+  white-space: nowrap;
+  color: #ffffff;
+  background: #f97316; /* Fallback accent */
+  box-shadow: 0 0.4mm 1mm rgba(0, 0, 0, 0.15);
 }
 
-.pvc.ef .f-val {
-  display: block;
-  font-size: 10px;
-  font-weight: 600;
-  color: #1F2937;
-  line-height: 1.15;
-}
-
-.pvc.ef .f-val.blood-red { color: #DC2626; font-weight: 700; }
-.pvc.ef .f-val.blood-gray { color: #8A96AE; font-weight: 500; }
-
-.pvc.ef .ftr {
+/* ── PHOTO AREA (Strictly centered 22mm circle / square) ── */
+.pvc .photo-wrap {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 48px;
-  background: #1F2937;
-  z-index: 1;
+  top: 17mm;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 23.6mm;
+  height: 23.6mm;
+  z-index: 7;
+  border-radius: 50%;
+  padding: 0.8mm;
+  background: #ffffff;
+  box-shadow: 0 1.2mm 3.5mm rgba(15, 23, 42, 0.16);
 }
-
-.pvc.ef .sig {
-  position: absolute;
-  top: 8px;
-  left: 0;
-  right: 0;
+.pvc .photo-ring {
+  width: 22mm;
+  height: 22mm;
+  border-radius: 50%;
+  overflow: hidden;
   text-align: center;
-  z-index: 6;
+  background: #f1f5f9;
+}
+.pvc .photo-ring img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  vertical-align: top;
+}
+.pvc .photo-ring svg {
+  width: 11mm;
+  height: 11mm;
+  margin-top: 5mm;
+  fill: #cbd5e1;
 }
 
-.pvc.ef .sig-line {
-  width: 50px;
-  height: 1px;
-  background: rgba(255,255,255,0.35);
-  margin: 0 auto 2px auto;
+/* Employee Photo Frame: Rounded Square */
+.pvc.ef .photo-wrap {
+  border-radius: 3mm;
+}
+.pvc.ef .photo-ring {
+  border-radius: 2.2mm;
+}
+.pvc.ef .photo-ring img {
+  border-radius: 2.2mm;
 }
 
-.pvc.ef .sig-lbl {
-  font-size: 8px;
-  color: rgba(255,255,255,0.65);
+/* ── DEDICATED IDENTITY ZONE (Strictly no overlapping) ── */
+.pvc .id-block {
+  position: absolute;
+  top: 41.5mm;
+  left: 3mm;
+  right: 3mm;
+  text-align: center;
+  z-index: 4;
+}
+.pvc .identity-zone {
+  background: rgba(255, 255, 255, 0.8);
+  border: 0.3px solid rgba(226, 232, 240, 0.9);
+  border-radius: 1.8mm;
+  padding: 1mm 1.5mm;
+  box-shadow: 
+    inset 0 0.5mm 1mm rgba(255,255,255,0.7),
+    0 0.5mm 1.5mm rgba(15, 23, 42, 0.03);
+}
+.pvc .person-name {
+  font-family: 'Poppins', sans-serif;
+  font-size: 10.5pt;
+  font-weight: 800;
+  color: #0f172a;
+  line-height: 1.15;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 0.3mm;
+}
+.pvc .person-sub {
+  font-family: 'Inter', sans-serif;
+  font-size: 7pt;
+  font-weight: 700;
+  color: #475569;
+  line-height: 1.25;
+}
+.pvc .person-id {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 7pt;
+  font-weight: 700;
+  color: #64748b;
+  letter-spacing: 0.2px;
+  margin-top: 0.4mm;
+}
+
+.pvc .divider-line {
+  position: absolute;
+  top: 50.8mm;
+  left: 4.5mm;
+  right: 4.5mm;
+  height: 0.5px;
+  background: linear-gradient(to right, rgba(226,232,240,0.2), #cbd5e1 50%, rgba(226,232,240,0.2));
+  z-index: 4;
+}
+
+/* ── INFORMATION GRID (Fixed 40% / 60% Layout) ── */
+.pvc .info {
+  position: absolute;
+  top: 52mm;
+  left: 3mm;
+  right: 3mm;
+  bottom: 13mm;
+  z-index: 4;
+  overflow: hidden;
+}
+.pvc .info-table {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+}
+.pvc .info-row {
+  display: table-row;
+}
+.pvc .info-table tr:nth-child(even) {
+  background: rgba(15, 23, 42, 0.025);
+}
+.pvc .info-lbl-cell {
+  display: table-cell;
+  width: 40%;
+  text-align: left;
+  vertical-align: middle;
+  padding: 0.45mm 0 0.45mm 1.5mm;
+  overflow: hidden;
+}
+.pvc .info-lbl {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 6.2pt;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.3px;
+  color: #64748b;
+  white-space: nowrap;
 }
-
-.pvc.ef .card-info {
-  position: absolute;
-  bottom: 4px;
-  left: 10px;
-  right: 10px;
-  text-align: center;
-  font-size: 6px;
-  color: rgba(255,255,255,0.45);
-  letter-spacing: 0.2px;
-}
-
-/* ══════════════════════════════════════
-   EMPLOYEE BACK
-   ══════════════════════════════════════ */
-.pvc.ebk { background: #F5F7F5; }
-.pvc.ebk .stripe { background: #0F9D94; }
-
-.pvc.ebk .hdr {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 52px;
-  background: #1F2937;
-  z-index: 1;
-}
-
-.pvc.ebk .school-hdr {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 52px;
-  z-index: 6;
-  text-align: center;
-  padding-top: 6px;
-}
-
-.pvc.ebk .s-logo-box {
-  display: block;
-  width: 26px;
-  height: 26px;
-  margin: 0 auto 2px auto;
-  background: rgba(255,255,255,0.1);
-  border-radius: 3px;
-  text-align: center;
-  line-height: 26px;
-  font-size: 0;
-}
-
-.pvc.ebk .s-logo-box img,
-.pvc.ebk .s-logo-box svg {
-  width: 22px;
-  height: 22px;
+.pvc .info-val-cell {
+  display: table-cell;
+  width: 60%;
+  text-align: left;
   vertical-align: middle;
+  padding: 0.45mm 1.5mm 0.45mm 2mm;
+  border-left: 0.4px solid rgba(226, 232, 240, 0.8);
+  overflow: hidden;
+}
+.pvc .info-val {
+  font-family: 'Inter', sans-serif;
+  font-size: 6.8pt;
+  font-weight: 750;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
 }
 
-.pvc.ebk .s-name {
-  font-family: 'Barlow Condensed', Arial Narrow, Arial, sans-serif;
-  font-size: 10px;
+/* Status Pill in Grid */
+.pvc .status-tag {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 5.2pt;
   font-weight: 800;
-  color: #ffffff;
   text-transform: uppercase;
-  line-height: 1.15;
-  max-width: 180px;
-  margin: 0 auto;
+  letter-spacing: 0.4px;
+  padding: 0.2mm 1mm;
+  border-radius: 0.5mm;
+  display: inline-block;
+}
+.pvc .status-tag.active {
+  background: #dcfce7;
+  color: #15803d;
+}
+.pvc .status-tag.inactive {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+/* ── FOOTER (Strictly aligned 3-columns) ── */
+.pvc .ftr {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 13mm;
+  z-index: 2;
+  background: #f8fafc;
+  border-top: 0.4px solid #cbd5e1;
   overflow: hidden;
 }
 
-.pvc.ebk .s-addr {
-  font-size: 7px;
-  color: rgba(255,255,255,0.7);
-  line-height: 1.2;
-  max-width: 180px;
-  margin: 0 auto;
+/* Footer Background Seal Overlay */
+.pvc .ftr-seal-bg {
+  position: absolute;
+  top: 1mm;
+  left: 3.2mm;
+  width: 10.5mm;
+  height: 10.5mm;
+  opacity: 0.16;
+  z-index: 1;
+}
+
+.pvc .ftr-inner {
+  display: table;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  z-index: 3;
+}
+.pvc .ftr-cell {
+  display: table-cell;
+  vertical-align: middle;
+  width: 33.333%;
+  text-align: center;
+}
+.pvc .ftr-cell.sig {
+  text-align: left;
+  padding-left: 3mm;
+}
+.pvc .ftr-cell.center {
+  border-left: 0.3px solid #e2e8f0;
+  border-right: 0.3px solid #e2e8f0;
+}
+.pvc .ftr-cell.right {
+  text-align: right;
+  padding-right: 3mm;
+}
+
+.pvc .sig-container {
+  position: relative;
+  height: 5.5mm;
+}
+.pvc .sig-image {
+  position: absolute;
+  bottom: -0.5mm;
+  left: 0;
+  height: 7.2mm;
+  max-width: 13.5mm;
+  z-index: 5;
+  object-fit: contain;
+}
+.pvc .sig-line {
+  width: 12.5mm;
+  height: 0.4px;
+  background: #475569;
+  margin-bottom: 0.4mm;
+}
+.pvc .sig-label {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 5.2pt;
+  font-weight: 700;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.pvc .ftr-lbl {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 5.2pt;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.pvc .ftr-val {
+  font-family: 'Inter', sans-serif;
+  font-size: 6.5pt;
+  font-weight: 700;
+  color: #0f172a;
+  margin-top: 0.3mm;
+}
+
+
+/* ══════════════════════════════════════
+   BACK CARD STYLING (4-Card Premium Layout)
+   ══════════════════════════════════════ */
+
+/* ── BACK HEADER 15mm ── */
+.pvc .bk-hdr {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 15mm;
+  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+  z-index: 2;
+  border-bottom: 0.8mm solid #1e40af; /* Will change dynamically */
+  overflow: hidden;
+  padding: 2.2mm 2.5mm;
+}
+.pvc .bk-brand-row {
+  position: relative;
+  z-index: 3;
+  display: table;
+  width: 100%;
+}
+.pvc .bk-logo-cell {
+  display: table-cell;
+  width: 8.5mm;
+  vertical-align: middle;
+}
+.pvc .bk-logo-box {
+  width: 8.5mm;
+  height: 8.5mm;
+  border-radius: 50%;
+  background: #ffffff;
+  text-align: center;
+  line-height: 8.5mm;
+  overflow: hidden;
+  box-shadow: 0 0.4mm 1mm rgba(0,0,0,0.15);
+}
+.pvc .bk-logo-box img {
+  width: 7.6mm;
+  height: 7.6mm;
+  vertical-align: middle;
+  object-fit: contain;
+}
+.pvc .bk-text-cell {
+  display: table-cell;
+  vertical-align: middle;
+  padding-left: 1.8mm;
+  text-align: left;
+}
+.pvc .bk-school-name {
+  font-family: 'Poppins', sans-serif;
+  font-size: 8.5pt;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+.pvc .bk-addr {
+  font-family: 'Inter', sans-serif;
+  font-size: 5.2pt;
+  color: rgba(255, 255, 255, 0.85);
+  line-height: 1.1;
+  margin-top: 0.2mm;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.pvc.ebk .body {
+/* ── BACK BODY (Use 90%+ area, no empty zones) ── */
+.pvc .bk-body {
   position: absolute;
-  top: 56px;
-  left: 10px;
-  right: 10px;
-  bottom: 70px;
+  top: 16.2mm;
+  left: 2.5mm;
+  right: 2.5mm;
+  bottom: 0mm;
   z-index: 4;
-  overflow: hidden;
 }
 
-.pvc.ebk .rules {
+/* Card layout wrapper to segment the back */
+.pvc .bk-card {
   background: #ffffff;
-  border: 1px solid #E2E6ED;
-  border-left: 3px solid #0F9D94;
-  border-radius: 0 4px 4px 0;
-  padding: 5px 7px;
-  margin-bottom: 5px;
-  max-height: 72px;
-  overflow: hidden;
+  border: 0.3px solid #cbd5e1;
+  border-radius: 1.5mm;
+  padding: 1mm 1.5mm;
+  box-shadow: 0 0.4mm 1mm rgba(15, 23, 42, 0.03);
+  margin-bottom: 1.2mm;
 }
 
-.pvc.ebk .rules-title {
-  font-family: 'Barlow Condensed', Arial Narrow, Arial, sans-serif;
-  font-size: 8px;
+/* Sections */
+.pvc .section-title {
+  font-family: 'Poppins', sans-serif;
+  font-size: 6.5pt;
   font-weight: 800;
-  color: #1F2937;
+  color: #1e40af;
   text-transform: uppercase;
-  margin-bottom: 2px;
-}
-
-.pvc.ebk .rule {
-  font-size: 7.5px;
-  color: #4A5568;
-  line-height: 1.25;
-  padding: 1px 0;
-  font-weight: 500;
-}
-
-.pvc.ebk .r-dot {
-  color: #0F9D94;
-  font-weight: 700;
-  margin-right: 3px;
-}
-
-.pvc.ebk .contact-block { margin-top: 2px; }
-
-.pvc.ebk .c-title {
-  font-family: 'Barlow Condensed', Arial Narrow, Arial, sans-serif;
-  font-size: 8px;
-  font-weight: 800;
-  color: #1F2937;
-  text-transform: uppercase;
-  margin-bottom: 3px;
-}
-
-.pvc.ebk .c-table { display: table; width: 100%; }
-.pvc.ebk .c-row { display: table-row; }
-
-.pvc.ebk .c-icon-cell {
-  display: table-cell;
-  width: 22px;
-  vertical-align: middle;
-  padding-bottom: 3px;
-}
-
-.pvc.ebk .c-icon {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  text-align: center;
-  line-height: 18px;
-  font-size: 0;
-}
-
-.pvc.ebk .c-icon svg { width: 10px; height: 10px; vertical-align: middle; }
-
-.pvc.ebk .c-val-cell {
-  display: table-cell;
-  vertical-align: middle;
-  padding-bottom: 3px;
-}
-
-.pvc.ebk .c-val {
-  font-size: 8px;
-  color: #4A5568;
-  font-weight: 500;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-}
-
-.pvc.ebk .ftr {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 66px;
-  background: #1F2937;
-  z-index: 1;
-}
-
-.pvc.ebk .qr-area {
-  position: absolute;
-  bottom: 4px;
-  right: 10px;
-  z-index: 6;
-}
-
-.pvc.ebk .qr-box {
-  width: 60px;
-  height: 60px;
-  background: #ffffff;
-  border-radius: 4px;
-  padding: 3px;
-  display: inline-block;
-}
-
-.pvc.ebk .qr-box img { width: 54px; height: 54px; }
-
-.pvc.ebk .valid-area {
-  position: absolute;
-  bottom: 8px;
-  left: 12px;
-  z-index: 6;
+  letter-spacing: 0.4px;
+  margin-bottom: 0.6mm;
+  border-bottom: 0.4px solid #cbd5e1;
+  padding-bottom: 0.2mm;
   text-align: left;
 }
 
-.pvc.ebk .valid-lbl {
-  font-size: 7px;
-  color: rgba(255,255,255,0.55);
+/* Rules / Instructions list */
+.pvc .rule-row {
+  display: table;
+  width: 100%;
+  padding: 0.3mm 0;
+}
+.pvc .rule-icon-cell {
+  display: table-cell;
+  width: 3.5mm;
+  vertical-align: top;
+}
+.pvc .rule-icon {
+  width: 3.2mm;
+  height: 3.2mm;
+  text-align: center;
+  line-height: 3.2mm;
+}
+.pvc .rule-icon i {
+  font-size: 5.2pt;
+  color: #2563eb;
+  vertical-align: middle;
+}
+.pvc .rule-text-cell {
+  display: table-cell;
+  vertical-align: middle;
+  padding-left: 1mm;
+  text-align: left;
+}
+.pvc .rule-text {
+  font-family: 'Inter', sans-serif;
+  font-size: 5.2pt;
+  font-weight: 600;
+  color: #334155;
+  line-height: 1.25;
+}
+
+/* Contacts */
+.pvc .contact-row {
+  display: table;
+  width: 100%;
+  padding: 0.25mm 0;
+}
+.pvc .contact-icon-cell {
+  display: table-cell;
+  width: 3mm;
+  vertical-align: middle;
+  text-align: center;
+}
+.pvc .contact-icon-cell i {
+  font-size: 5.2pt;
+  color: #2563eb;
+}
+.pvc .contact-val-cell {
+  display: table-cell;
+  vertical-align: middle;
+  padding-left: 1.2mm;
+  text-align: left;
+}
+.pvc .contact-val {
+  font-family: 'Inter', sans-serif;
+  font-size: 5.2pt;
+  font-weight: 600;
+  color: #475569;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+/* ── DOUBLE SIDE-BY-SIDE CARDS FOR QR & CARD INFO ── */
+.pvc .bk-double-row {
+  display: table;
+  width: 100%;
+  margin-top: 1mm;
+}
+.pvc .bk-double-cell {
+  display: table-cell;
+  width: 50%;
+  vertical-align: top;
+}
+.pvc .bk-double-cell.left {
+  padding-right: 0.8mm;
+}
+.pvc .bk-double-cell.right {
+  padding-left: 0.8mm;
+}
+
+/* Card Validation Details card (Card D) */
+.pvc .bk-valid-box {
+  padding: 1mm 1.5mm;
+  min-height: 25.5mm;
+}
+.pvc .bk-valid-row {
+  margin-bottom: 0.6mm;
+}
+.pvc .bk-valid-lbl {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 4.8pt;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.3px;
+  color: #64748b;
+  line-height: 1;
+}
+.pvc .bk-valid-val {
+  font-family: 'Poppins', sans-serif;
+  font-size: 6.2pt;
+  font-weight: 750;
+  color: #0f172a;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pvc .bk-valid-ref {
+  font-family: 'Inter', sans-serif;
+  font-size: 5.2pt;
+  font-weight: 600;
+  color: #94a3b8;
+  margin-top: 0.6mm;
 }
 
-.pvc.ebk .valid-val {
-  font-family: 'Barlow Condensed', Arial Narrow, Arial, sans-serif;
-  font-size: 10px;
+/* Attendance Verification card (Card C) */
+.pvc .bk-qr-box {
+  padding: 1mm 1.5mm;
+  text-align: center;
+  min-height: 25.5mm;
+}
+.pvc .qr-container {
+  display: inline-block;
+  background: #ffffff;
+  border: 0.3px solid #cbd5e1;
+  padding: 0.5mm;
+  border-radius: 1mm;
+  box-shadow: 0 0.3mm 1mm rgba(15, 23, 42, 0.05);
+}
+.pvc .qr-container img {
+  width: 13.5mm;
+  height: 13.5mm;
+  display: block;
+}
+.pvc .qr-container i {
+  font-size: 11pt;
+  color: #1e40af;
+  line-height: 13.5mm;
+  width: 13.5mm;
+  height: 13.5mm;
+  display: block;
+}
+
+.pvc .qr-label-top {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 4.8pt;
   font-weight: 800;
-  color: #0F9D94;
-  line-height: 1.15;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: #1e40af;
+  margin-bottom: 0.4mm;
+}
+.pvc .qr-label-sub {
+  font-family: 'Inter', sans-serif;
+  font-size: 4.2pt;
+  font-weight: 600;
+  color: #94a3b8;
+  line-height: 1;
+  margin-top: 0.4mm;
 }
 
-.pvc.ebk .id-mini {
-  font-size: 7px;
-  color: rgba(255,255,255,0.45);
-  margin-top: 1px;
+
+/* ══════════════════════════════════════
+   DYNAMIC THEMES & ACCENTS
+   ══════════════════════════════════════ */
+
+/* ── STUDENT (Blue + Orange) ── */
+.pvc.sf .hdr {
+  border-bottom-color: #f97316;
+}
+.pvc.sf .badge {
+  background: #f97316;
+}
+.pvc.bk .bk-hdr {
+  border-bottom-color: #f97316;
+}
+.pvc.bk .section-title {
+  color: #f97316;
+}
+.pvc.bk .rule-icon i {
+  color: #f97316;
+}
+.pvc.bk .contact-icon-cell i {
+  color: #f97316;
+}
+.pvc.bk .qr-label-top {
+  color: #f97316;
+}
+
+/* ── TEACHER (Blue + Gold) ── */
+.pvc.theme-teacher .hdr {
+  border-bottom-color: #d4af37;
+}
+.pvc.theme-teacher .badge {
+  background: #d4af37;
+}
+.pvc.theme-teacher-bk .bk-hdr {
+  border-bottom-color: #d4af37;
+}
+.pvc.theme-teacher-bk .section-title {
+  color: #d4af37;
+}
+.pvc.theme-teacher-bk .rule-icon i {
+  color: #d4af37;
+}
+.pvc.theme-teacher-bk .contact-icon-cell i {
+  color: #d4af37;
+}
+.pvc.theme-teacher-bk .qr-label-top {
+  color: #d4af37;
+}
+
+/* ── PRINCIPAL (Blue + Dark Gold) ── */
+.pvc.theme-principal .hdr {
+  border-bottom-color: #b8860b;
+}
+.pvc.theme-principal .badge {
+  background: #b8860b;
+}
+.pvc.theme-principal-bk .bk-hdr {
+  border-bottom-color: #b8860b;
+}
+.pvc.theme-principal-bk .section-title {
+  color: #b8860b;
+}
+.pvc.theme-principal-bk .rule-icon i {
+  color: #b8860b;
+}
+.pvc.theme-principal-bk .contact-icon-cell i {
+  color: #b8860b;
+}
+.pvc.theme-principal-bk .qr-label-top {
+  color: #b8860b;
+}
+
+/* ── STAFF/EMPLOYEE (Blue + Green) ── */
+.pvc.theme-staff .hdr {
+  border-bottom-color: #16a34a;
+}
+.pvc.theme-staff .badge {
+  background: #16a34a;
+}
+.pvc.theme-staff-bk .bk-hdr {
+  border-bottom-color: #16a34a;
+}
+.pvc.theme-staff-bk .section-title {
+  color: #16a34a;
+}
+.pvc.theme-staff-bk .rule-icon i {
+  color: #16a34a;
+}
+.pvc.theme-staff-bk .contact-icon-cell i {
+  color: #16a34a;
+}
+.pvc.theme-staff-bk .qr-label-top {
+  color: #16a34a;
+}
+
+/* ── ACCOUNTANT (Blue + Emerald) ── */
+.pvc.theme-accountant .hdr {
+  border-bottom-color: #059669;
+}
+.pvc.theme-accountant .badge {
+  background: #059669;
+}
+.pvc.theme-accountant-bk .bk-hdr {
+  border-bottom-color: #059669;
+}
+.pvc.theme-accountant-bk .section-title {
+  color: #059669;
+}
+.pvc.theme-accountant-bk .rule-icon i {
+  color: #059669;
+}
+.pvc.theme-accountant-bk .contact-icon-cell i {
+  color: #059669;
+}
+.pvc.theme-accountant-bk .qr-label-top {
+  color: #059669;
+}
+
+/* ── LIBRARIAN (Blue + Purple) ── */
+.pvc.theme-librarian .hdr {
+  border-bottom-color: #8b5cf6;
+}
+.pvc.theme-librarian .badge {
+  background: #8b5cf6;
+}
+.pvc.theme-librarian-bk .bk-hdr {
+  border-bottom-color: #8b5cf6;
+}
+.pvc.theme-librarian-bk .section-title {
+  color: #8b5cf6;
+}
+.pvc.theme-librarian-bk .rule-icon i {
+  color: #8b5cf6;
+}
+.pvc.theme-librarian-bk .contact-icon-cell i {
+  color: #8b5cf6;
+}
+.pvc.theme-librarian-bk .qr-label-top {
+  color: #8b5cf6;
 }
 
 </style>
@@ -991,155 +903,209 @@ html, body {
 <body>
 
             <div class="page-single f">
-                <div class="pvc sf">
-    <div class="stripe"></div>
+                
+<div class="pvc sf">
 
-    <!-- HEADER -->
+    <!-- ═══ HEADER ═══ -->
     <div class="hdr">
-        <div class="logo-area">
-            <div class="logo-box">
-                    <svg viewBox="0 0 14 14" fill="none">
-                        <path d="M7 1L13 4.5V9.5L7 13L1 9.5V4.5L7 1Z" fill="rgba(255,255,255,0.85)"/>
-                        <path d="M7 4L10 5.8V8.8L7 10.5L4 8.8V5.8L7 4Z" fill="#1A2E5A"/>
-                    </svg>
+        <div class="brand-row">
+            <div class="brand-logo-cell">
+                <div class="logo-box">
+                        <span class="logo-fallback">CHA</span>
+                </div>
+            </div>
+            <div class="brand-text-cell">
+                <div class="school-name">Chattogram Collegiate School &amp; College</div>
+                <div class="school-motto">Knowledge &#x2022; Discipline &#x2022; Excellence</div>
+                    <div class="school-motto" style="font-size: 4.8pt; font-style: normal; opacity: 0.8; margin-top: 0.1mm;">
+                        Bangladesh &#x2022; school-ms-7l3e.onrender.com/
+                    </div>
             </div>
         </div>
-
-        <div class="school-name">
-            <div class="school-name-text">Chattogram Collegiate School &amp; College</div>
-            <div class="school-sub">EIIN: CHA</div>
-        </div>
-
-        <div class="badge">Student</div>
+        <span class="badge">STUDENT</span>
     </div>
 
-    <!-- PHOTO -->
+    <!-- ═══ PHOTO AREA ═══ -->
     <div class="photo-wrap">
-        <div class="photo-inner">
-                <svg viewBox="0 0 40 42" fill="none">
-                    <ellipse cx="20" cy="14" rx="12" ry="13" fill="#B0C4DE"/>
-                    <ellipse cx="20" cy="46" rx="20" ry="16" fill="#B0C4DE"/>
+        <div class="photo-ring">
+                <svg viewBox="0 0 40 42">
+                    <ellipse cx="20" cy="14" rx="12" ry="13" />
+                    <ellipse cx="20" cy="46" rx="20" ry="16" />
                 </svg>
         </div>
     </div>
 
-    <!-- NAME -->
-    <div class="name-section">
-        <div class="name">Rony Miah</div>
-        <div class="sub-role">Class Four &mdash; A</div>
-    </div>
-
-    <!-- INFO -->
-    <div class="fields">
-        <div class="f-item">
-            <span class="f-lbl">ID NO</span>
-            <span class="f-val">STU-2026-0014</span>
-        </div>
-        <div class="f-item">
-            <span class="f-lbl">ROLL</span>
-            <span class="f-val">2</span>
-        </div>
-        <div class="f-item">
-            <span class="f-lbl">BLOOD GROUP</span>
-            <span class="f-val blood-gray">N/A</span>
-        </div>
-        <div class="f-item">
-            <span class="f-lbl">SESSION</span>
-            <span class="f-val">2026</span>
+    <!-- ═══ IDENTITY AREA ═══ -->
+    <div class="id-block">
+        <div class="identity-zone">
+            <!-- Line 1: Student Name -->
+            <div class="person-name" title="Mehedi Hasan">Mehedi Hasan</div>
+            <!-- Line 2: Class • Section • Roll -->
+            <div class="person-sub">Class Five &middot; Section A &middot; Roll 2</div>
+            <!-- Line 3: Student No -->
+            <div class="person-id">STU-2026-0016</div>
         </div>
     </div>
 
-    <!-- FOOTER -->
+    <div class="divider-line"></div>
+
+    <!-- ═══ INFORMATION GRID (Strict 40%/60% Fixed Table, exactly 7 rows) ═══ -->
+    <div class="info">
+        <table class="info-table">
+            <tr class="info-row">
+                <td class="info-lbl-cell" style="width: 40%"><span class="info-lbl">Student No</span></td>
+                <td class="info-val-cell" style="width: 60%"><span class="info-val">STU-2026-0016</span></td>
+            </tr>
+            <tr class="info-row">
+                <td class="info-lbl-cell" style="width: 40%"><span class="info-lbl">Class</span></td>
+                <td class="info-val-cell" style="width: 60%"><span class="info-val">Class Five</span></td>
+            </tr>
+            <tr class="info-row">
+                <td class="info-lbl-cell" style="width: 40%"><span class="info-lbl">Section</span></td>
+                <td class="info-val-cell" style="width: 60%"><span class="info-val">A</span></td>
+            </tr>
+            <tr class="info-row">
+                <td class="info-lbl-cell" style="width: 40%"><span class="info-lbl">Roll</span></td>
+                <td class="info-val-cell" style="width: 60%"><span class="info-val">2</span></td>
+            </tr>
+            <tr class="info-row">
+                <td class="info-lbl-cell" style="width: 40%"><span class="info-lbl">Blood Group</span></td>
+                <td class="info-val-cell" style="width: 60%"><span class="info-val">N/A</span></td>
+            </tr>
+            <tr class="info-row">
+                <td class="info-lbl-cell" style="width: 40%"><span class="info-lbl">DOB</span></td>
+                <td class="info-val-cell" style="width: 60%"><span class="info-val">25 Sep 2014</span></td>
+            </tr>
+            <tr class="info-row">
+                <td class="info-lbl-cell" style="width: 40%"><span class="info-lbl">Mobile</span></td>
+                <td class="info-val-cell" style="width: 60%"><span class="info-val">01720000016</span></td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- ═══ BOTTOM FOOTER ═══ -->
     <div class="ftr">
-        <div class="sig">
-            <div class="sig-line"></div>
-            <div class="sig-lbl">Principal</div>
+        <div class="ftr-inner">
+            <div class="ftr-cell sig">
+                <div class="sig-container">
+                </div>
+                <div class="sig-line"></div>
+                <div class="sig-label">Principal</div>
+            </div>
+            <div class="ftr-cell center">
+                <div class="ftr-lbl">Issue Date</div>
+                <div class="ftr-val">18 Jun 2026</div>
+            </div>
+            <div class="ftr-cell right">
+                <div class="ftr-lbl">Valid Until</div>
+                <div class="ftr-val">18 Jun 2027</div>
+            </div>
         </div>
-        <div class="card-info">Card No: STU-2026-0014 &nbsp;&bull;&nbsp; Valid Until: 17 Jun 2027</div>
     </div>
 </div>
 
             </div>
             <div class="page-break"></div>
             <div class="page-single b">
-                <div class="pvc bk">
-    <div class="stripe"></div>
+                
+<div class="pvc bk">
 
-    <!-- HEADER -->
-    <div class="hdr"></div>
-    <div class="school-hdr">
-        <div class="s-logo-box">
-                <svg viewBox="0 0 14 14" fill="none">
-                    <path d="M7 1L13 4.5V9.5L7 13L1 9.5V4.5L7 1Z" fill="rgba(255,255,255,0.85)"/>
-                    <path d="M7 4L10 5.8V8.8L7 10.5L4 8.8V5.8L7 4Z" fill="#1A2E5A"/>
-                </svg>
-        </div>
-        <div class="s-name">Chattogram Collegiate School &amp; College</div>
-        <div class="s-addr">Ice Factory Road, Double Mooring, Chattogram, Bangladesh</div>
-    </div>
-
-    <!-- BODY -->
-    <div class="body">
-        <div class="rules">
-            <div class="rules-title">Card Rules</div>
-            <div class="rule"><span class="r-dot">&bull;</span>Always carry this card within school premises.</div>
-            <div class="rule"><span class="r-dot">&bull;</span>Report immediately if lost or stolen to PRS office.</div>
-            <div class="rule"><span class="r-dot">&bull;</span>This card is strictly non-transferable.</div>
-        </div>
-
-        <div class="contact-block">
-            <div class="c-title">If found, please return to:</div>
-            <div class="c-table">
-                <div class="c-row">
-                    <span class="c-icon-cell">
-                        <span class="c-icon" style="background:#EEF2F9">
-                            <svg viewBox="0 0 8 8" fill="none">
-                                <circle cx="4" cy="3" r="2" fill="#1A2E5A"/>
-                                <path d="M1 7Q4 5 7 7" fill="#1A2E5A"/>
-                            </svg>
-                        </span>
-                    </span>
-                    <span class="c-val-cell"><span class="c-val">Ice Factory Road, Double Mooring, Chattogram, Bangladesh</span></span>
+    <!-- ═══ HEADER ═══ -->
+    <div class="bk-hdr">
+        <div class="bk-brand-row">
+            <div class="bk-logo-cell">
+                <div class="bk-logo-box">
+                        <svg viewBox="0 0 14 14" fill="none">
+                            <path d="M7 1L13 4.5V9.5L7 13L1 9.5V4.5L7 1Z" fill="rgba(255,255,255,0.85)"/>
+                            <path d="M7 4L10 5.8V8.8L7 10.5L4 8.8V5.8L7 4Z" fill="#1E40AF"/>
+                        </svg>
                 </div>
-                <div class="c-row">
-                    <span class="c-icon-cell">
-                        <span class="c-icon" style="background:#E8F4F0">
-                            <svg viewBox="0 0 8 8" fill="none">
-                                <rect x="1" y="2" width="6" height="4.5" rx="1" stroke="#1B7F79" stroke-width=".9"/>
-                                <path d="M1 3L4 5.2L7 3" stroke="#1B7F79" stroke-width=".9"/>
-                            </svg>
-                        </span>
-                    </span>
-                    <span class="c-val-cell"><span class="c-val">&#x2B;880 31 610429</span></span>
-                </div>
-                <div class="c-row">
-                    <span class="c-icon-cell">
-                        <span class="c-icon" style="background:#FFF5E5">
-                            <svg viewBox="0 0 8 8" fill="none">
-                                <path d="M4 1.5L7 3.2V6.8H1V3.2L4 1.5Z" stroke="#D4860B" stroke-width=".85"/>
-                                <line x1="4" y1="4.5" x2="4" y2="6.8" stroke="#D4860B" stroke-width=".85"/>
-                            </svg>
-                        </span>
-                    </span>
-                    <span class="c-val-cell"><span class="c-val">info@collegiate-school.edu.bd</span></span>
-                </div>
+            </div>
+            <div class="bk-text-cell">
+                <div class="bk-school-name">Chattogram Collegiate School &amp; College</div>
+                <div class="bk-addr"><i class="fa-solid fa-location-dot" style="margin-right:1px; font-size: 5.5pt;"></i> Ice Factory Road, Double Mooring, Chattogram, Bangladesh</div>
             </div>
         </div>
     </div>
 
-    <!-- FOOTER -->
-    <div class="ftr"></div>
+    <!-- ═══ BODY (90%+ PVC Area Used, 4 distinct cards) ═══ -->
+    <div class="bk-body">
 
-    <div class="valid-area">
-        <div class="valid-lbl">Valid Until</div>
-        <div class="valid-val">17 Jun 2027</div>
-        <div class="id-mini">STU-2026-0014</div>
-    </div>
-
-    <div class="qr-area">
-        <div class="qr-box">
-                <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASIAAAEiAQMAAABncE31AAAABlBMVEUbTYz////LJPj&#x2B;AAABLUlEQVR4nO2YQQ6DMAwEI/UBPClf50k8oFKaOA64SNAeWKRW40PUhjmt8do4lS9iTlAowTtBdeATf&#x2B;GFyeNRUi7PlPIybjKUWgn7U5ZGVcB&#x2B;hQdQUiVaSvKg&#x2B;i9PGNRdStTkeIag7lYiHFA3KTGcqcyTdYVz/4K6UInQkVd7Ou3bUFcpEWJen8U7KJkSff7sKTFTmla3glIr0QqjxtObcS8R&#x2B;x6AEivhNTF6QR&#x2B;J5mlfQ1ACJWo51OS0ZtyPlqtgT1BKJcIQatcH/gV1vRJbjCmohaFQYiXCJOqHJwdKr8T7xm23doPSKrFtHvqm2fc/h/sJKIESoTBOMgQlUGJcW1fYfytASZQYzlRv7LA02UwKJVZi68jWEHzl2VoDlFiJDwGFErwTVAc&#x2B;8fNe&#x2B;AICM0rGTRDupAAAAABJRU5ErkJggg==" alt="qr" />
+        <!-- CARD A: IMPORTANT INSTRUCTIONS -->
+        <div class="bk-card">
+            <div class="section-title">Important Instructions</div>
+            <div class="rule-row">
+                <span class="rule-icon-cell"><span class="rule-icon"><i class="fa-solid fa-id-badge"></i></span></span>
+                <span class="rule-text-cell"><span class="rule-text">Carry this card at all times on school premises.</span></span>
+            </div>
+            <div class="rule-row">
+                <span class="rule-icon-cell"><span class="rule-icon"><i class="fa-solid fa-triangle-exclamation"></i></span></span>
+                <span class="rule-text-cell"><span class="rule-text">Report loss immediately to the administration.</span></span>
+            </div>
+            <div class="rule-row">
+                <span class="rule-icon-cell"><span class="rule-icon"><i class="fa-solid fa-ban"></i></span></span>
+                <span class="rule-text-cell"><span class="rule-text">This card is non-transferable.</span></span>
+            </div>
+            <div class="rule-row">
+                <span class="rule-icon-cell"><span class="rule-icon"><i class="fa-solid fa-building-columns"></i></span></span>
+                <span class="rule-text-cell"><span class="rule-text">Property of school. Return upon leaving.</span></span>
+            </div>
         </div>
+
+        <!-- CARD B: CONTACT INFORMATION -->
+        <div class="bk-card">
+            <div class="section-title">Contact Information</div>
+            <div class="contact-row">
+                <span class="contact-icon-cell"><i class="fa-solid fa-phone"></i></span>
+                <span class="contact-val-cell"><span class="contact-val">&#x2B;880 31 610429</span></span>
+            </div>
+            <div class="contact-row">
+                <span class="contact-icon-cell"><i class="fa-solid fa-envelope"></i></span>
+                <span class="contact-val-cell"><span class="contact-val">info@collegiate-school.edu.bd</span></span>
+            </div>
+                <div class="contact-row">
+                    <span class="contact-icon-cell"><i class="fa-solid fa-globe"></i></span>
+                    <span class="contact-val-cell"><span class="contact-val">https://school-ms-7l3e.onrender.com/</span></span>
+                </div>
+        </div>
+
+        <!-- DOUBLE ROW FOR CARD C AND CARD D -->
+        <div class="bk-double-row">
+            
+            <!-- CARD D: CARD INFORMATION (Left Cell) -->
+            <div class="bk-double-cell left">
+                <div class="bk-card bk-valid-box">
+                    <div class="section-title" style="font-size: 5.5pt; margin-bottom: 1.2mm;">Card Details</div>
+                    <div class="bk-valid-row">
+                        <div class="bk-valid-lbl">Card Number</div>
+                        <div class="bk-valid-val">STU-2026-0016</div>
+                    </div>
+                    <div class="bk-valid-row">
+                        <div class="bk-valid-lbl">Academic Year</div>
+                        <div class="bk-valid-val">2026</div>
+                    </div>
+                    <div class="bk-valid-row">
+                        <div class="bk-valid-lbl">Issue Date</div>
+                        <div class="bk-valid-val">18 Jun 2026</div>
+                    </div>
+                    <div class="bk-valid-ref">Ref: STU-2026-0016</div>
+                </div>
+            </div>
+
+            <!-- CARD C: ATTENDANCE QR VERIFICATION (Right Cell) -->
+            <div class="bk-double-cell right">
+                <div class="bk-card bk-qr-box">
+                    <div class="qr-label-top">ATTENDANCE QR</div>
+                    <div class="qr-container">
+                            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASIAAAEiAQMAAABncE31AAAABlBMVEUbTYz////LJPj&#x2B;AAABJklEQVR4nO2ZQQ6DMAwEI/UBPImv50k8oFIabEeYtio9sEitJgcUkjmtsdcJpX0xaoFCCb4JsoM68Re1sMS4tTK3e19bxsoMpVbCXtrSqTLFLG1ASZVYQzIvESGfRcCgrlLCEiNiBXWtErEHdaESozK5IcwH9QvqRCWSI1t5OvRtqLOUyMMitF&#x2B;CEirhPuwhGS1RVCsosRKtTmsPNCKS&#x2B;yIosRKp/wx/6C1RtfMAlFwJz4RIkb6SAwYlVcL2qj96I1Tf1y8ogRLbSP7g1gAlViJ1onszhtIrsd24xTk4rh&#x2B;e6heUQol08xCzdB6AukaJlBgfIgQlUCIc2V3h5RQApVBiVCbv/Y3y/1xQaiWSI1s7asExa4ASK3EwoFCCb4LsoE78fC18AO6yRBjQ7gbsAAAAAElFTkSuQmCC" alt="attendance qr" />
+                    </div>
+                    <div class="qr-label-sub" style="font-weight: 700; color: #1e40af;">SCAN FOR ATTENDANCE</div>
+                    <div class="qr-label-sub" style="font-size: 3.8pt; margin-top: 0.1mm;">Attendance Verification</div>
+                </div>
+            </div>
+
+        </div>
+
     </div>
 </div>
 

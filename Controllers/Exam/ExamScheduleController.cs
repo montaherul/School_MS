@@ -196,6 +196,22 @@ public class ExamScheduleController : Controller
         return View(model);
     }
 
+    [HttpGet]
+    public async Task<IActionResult> Details(int id, CancellationToken ct)
+    {
+        var schedule = await _uow.Repository<ExamScheduleEntity>().Query()
+            .Include(s => s.Exam)
+            .Include(s => s.Subject)
+            .Include(s => s.Class)
+            .Include(s => s.Section)
+            .Include(s => s.StudentGroup)
+            .FirstOrDefaultAsync(s => s.Id == id && !s.IsDeleted, ct);
+
+        if (schedule == null) return NotFound();
+
+        return View(schedule);
+    }
+
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int id)

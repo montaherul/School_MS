@@ -124,6 +124,8 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
                 throw new InvalidOperationException($"Marks ({markDto.MarksObtained}) exceed full marks ({examSubject.FullMarks}) for student {markDto.StudentId}.");
             if (subject != null && examSubject == null && markDto.MarksObtained > subject.DefaultFullMarks)
                 throw new InvalidOperationException($"Marks ({markDto.MarksObtained}) exceed full marks ({subject.DefaultFullMarks}) for student {markDto.StudentId}.");
+
+            ValidateComponentMarks(markDto, configuredComponents, markDto.StudentId);
         }
 
         foreach (var markDto in dto.Marks)
@@ -430,6 +432,22 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
             return parsed?.GetValueOrDefault(componentCode);
         }
         catch { return null; }
+    }
+
+    private static void ValidateComponentMarks(
+        MarkEntryDto markDto,
+        List<ComponentColumnDto> configuredComponents,
+        int studentId)
+    {
+        foreach (var component in configuredComponents)
+        {
+            var value = ComponentFieldMapper.GetDtoValue(markDto, component.ComponentCode);
+            if (value.HasValue && (value.Value < 0 || value.Value > component.FullMarks))
+            {
+                throw new InvalidOperationException(
+                    $"Component '{component.ComponentName}' value ({value.Value}) exceeds limit (0-{component.FullMarks}) for student {studentId}.");
+            }
+        }
     }
 
     private static void SetMarkEntryComponentValue(MarkEntryDto dto, string code, decimal val)

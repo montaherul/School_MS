@@ -8,6 +8,7 @@
         : string.Empty;
     Func<string?, string> imgToDataUri = (path) => IdCardImageHelper.FileToDataUri(path, baseFileUrl);
     var schoolLogoUri = imgToDataUri(Model.SchoolLogoPath);
+    var schoolSealUri = imgToDataUri(Model.SchoolSealPath);
     var shortName = !string.IsNullOrEmpty(Model.SchoolNameEn) && Model.SchoolNameEn.Length >= 3
         ? Model.SchoolNameEn[..Math.Min(3, Model.SchoolNameEn.IndexOf(' ') > 0 ? Model.SchoolNameEn.IndexOf(' ') : 3)].ToUpperInvariant()
         : "SCA";
@@ -18,7 +19,8 @@
     <meta charset="utf-8" />
     <title>Student ID Card</title>
     <base href="@Model.BaseUrl" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;600;700&display=swap" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <link rel="stylesheet" href="/css/idcard-print.css" />
 </head>
 <body>
@@ -30,6 +32,15 @@
             {
                 var dob = student.DateOfBirth.ToString("dd MMM yyyy");
                 var validUntil = DateTime.Today.AddYears(1).ToString("dd MMM yyyy");
+                var emergencyContact = "";
+                if (!string.IsNullOrEmpty(student.GuardianName) && !string.IsNullOrEmpty(student.GuardianMobileNumber))
+                {
+                    emergencyContact = $"{student.GuardianName}: {student.GuardianMobileNumber}";
+                }
+                else if (!string.IsNullOrEmpty(student.GuardianMobileNumber))
+                {
+                    emergencyContact = student.GuardianMobileNumber;
+                }
                 var vm = new StudentIdCardViewModel
                 {
                     StudentFullName = student.FullName ?? "---",
@@ -40,6 +51,9 @@
                     BloodGroup = IdCardImageHelper.GetBloodWithColor(student.BloodGroup),
                     DateOfBirth = dob,
                     AcademicYear = Model.AcademicYear,
+                    GroupName = student.GroupName ?? "",
+                    MobileNumber = student.MobileNumber ?? "",
+                    CardNumber = student.StudentNo ?? "---",
                     StudentPhotoDataUri = imgToDataUri(student.ProfilePicturePath),
                     SchoolName = Model.SchoolNameEn,
                     SchoolShortName = shortName,
@@ -47,6 +61,10 @@
                     SchoolAddress = Model.SchoolAddress,
                     SchoolPhone = Model.SchoolPhone,
                     SchoolEmail = Model.SchoolEmail,
+                    SchoolMotto = Model.SchoolMotto,
+                    Website = Model.SchoolWebsite,
+                    EmergencyContact = emergencyContact,
+                    SchoolSealDataUri = schoolSealUri,
                     QrCodeDataUri = IdCardQRHelper.GenerateQrCodeBase64(student.StudentNo ?? "N/A"),
                     ValidUntil = validUntil
                 };
@@ -64,6 +82,15 @@
         {
             var dob = student.DateOfBirth.ToString("dd MMM yyyy");
             var validUntil = DateTime.Today.AddYears(1).ToString("dd MMM yyyy");
+            var emergencyContact = "";
+            if (!string.IsNullOrEmpty(student.GuardianName) && !string.IsNullOrEmpty(student.GuardianMobileNumber))
+            {
+                emergencyContact = $"{student.GuardianName}: {student.GuardianMobileNumber}";
+            }
+            else if (!string.IsNullOrEmpty(student.GuardianMobileNumber))
+            {
+                emergencyContact = student.GuardianMobileNumber;
+            }
             var vm = new StudentIdCardViewModel
             {
                 StudentFullName = student.FullName ?? "---",
@@ -74,6 +101,9 @@
                 BloodGroup = IdCardImageHelper.GetBloodWithColor(student.BloodGroup),
                 DateOfBirth = dob,
                 AcademicYear = Model.AcademicYear,
+                GroupName = student.GroupName ?? "",
+                MobileNumber = student.MobileNumber ?? "",
+                CardNumber = student.StudentNo ?? "---",
                 StudentPhotoDataUri = imgToDataUri(student.ProfilePicturePath),
                 SchoolName = Model.SchoolNameEn,
                 SchoolShortName = shortName,
@@ -81,6 +111,10 @@
                 SchoolAddress = Model.SchoolAddress,
                 SchoolPhone = Model.SchoolPhone,
                 SchoolEmail = Model.SchoolEmail,
+                SchoolMotto = Model.SchoolMotto,
+                Website = Model.SchoolWebsite,
+                EmergencyContact = emergencyContact,
+                SchoolSealDataUri = schoolSealUri,
                 QrCodeDataUri = IdCardQRHelper.GenerateQrCodeBase64(student.StudentNo ?? "N/A"),
                 ValidUntil = validUntil
             };

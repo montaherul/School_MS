@@ -34,6 +34,7 @@ public class AdmissionRepository : BaseRepository<AdmissionApplication>, IAdmiss
             var ordId = reader.GetOrdinal("Id");
             var ordAppNo = reader.GetOrdinal("ApplicationNo");
             var ordName = reader.GetOrdinal("ApplicantName");
+            var ordNameBangla = reader.GetOrdinal("ApplicantNameBangla");
             var ordDob = reader.GetOrdinal("DateOfBirth");
             var ordGender = reader.GetOrdinal("Gender");
             var ordAppClass = reader.GetOrdinal("AppliedClassId");
@@ -85,6 +86,7 @@ public class AdmissionRepository : BaseRepository<AdmissionApplication>, IAdmiss
                     Id = reader.GetInt32(ordId),
                     ApplicationNo = reader.IsDBNull(ordAppNo) ? string.Empty : reader.GetString(ordAppNo),
                     ApplicantName = reader.IsDBNull(ordName) ? string.Empty : reader.GetString(ordName),
+                    ApplicantNameBangla = reader.IsDBNull(ordNameBangla) ? null : reader.GetString(ordNameBangla),
                     DateOfBirth = reader.IsDBNull(ordDob) ? DateTime.MinValue : reader.GetDateTime(ordDob),
                     Gender = reader.IsDBNull(ordGender) ? string.Empty : reader.GetString(ordGender),
                     AppliedClassId = reader.IsDBNull(ordAppClass) ? 0 : reader.GetInt32(ordAppClass),

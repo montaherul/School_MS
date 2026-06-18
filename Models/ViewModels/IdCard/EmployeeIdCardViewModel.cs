@@ -11,6 +11,11 @@ public class EmployeeIdCardViewModel
     public string DateOfBirth { get; set; } = string.Empty;
     public string BadgeLabel { get; set; } = "Staff";
     public string SignatureLabel { get; set; } = "Chairman";
+    public string NIDNumber { get; set; } = string.Empty;
+    public string JoiningDate { get; set; } = string.Empty;
+    public string EmploymentStatus { get; set; } = string.Empty;
+    public string CardNumber { get; set; } = string.Empty;
+    public string ThemeAccent { get; set; } = "#16A34A";
 
     public string EmployeePhotoDataUri { get; set; } = string.Empty;
     public string SchoolName { get; set; } = string.Empty;
@@ -19,6 +24,10 @@ public class EmployeeIdCardViewModel
     public string SchoolAddress { get; set; } = string.Empty;
     public string SchoolPhone { get; set; } = string.Empty;
     public string SchoolEmail { get; set; } = string.Empty;
+    public string SchoolMotto { get; set; } = string.Empty;
+    public string Website { get; set; } = string.Empty;
+    public string EmergencyContact { get; set; } = string.Empty;
+    public string SchoolSealDataUri { get; set; } = string.Empty;
 
     public string QrCodeDataUri { get; set; } = string.Empty;
     public string ValidUntil { get; set; } = string.Empty;

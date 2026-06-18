@@ -284,6 +284,7 @@ public class ExamSubjectService : IExamSubjectService
             .Where(s => s.ExamId == examId)
             .OrderBy(s => s.ExamDate)
             .ThenBy(s => s.StartsAt)
+            .ThenBy(s => s.Subject!.Name)
             .ToListAsync();
 
         return schedules.Select(s => new ExamScheduleDto

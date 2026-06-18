@@ -109,7 +109,7 @@ public class PromotionService : IPromotionService
 
     public async Task<PromotionResult> ProcessClassPromotionAsync(int classId, int academicYearId, int processedByUserId)
     {
-        var students = await _studentRepository.ListAsync(s => s.ClassId == classId);
+        var students = await _studentRepository.ListAsync(s => s.ClassId == classId && !s.IsDeleted);
 
         var studentIds = students.Select(s => s.Id).ToList();
         var finalResults = (await _finalResultRepository.ListAsync(fr => fr.AcademicYearId == academicYearId && studentIds.Contains(fr.StudentId)))
@@ -124,64 +124,75 @@ public class PromotionService : IPromotionService
             TotalStudents = students.Count
         };
 
-        foreach (var student in students)
+        await _uow.ExecuteInTransactionAsync(async () =>
         {
-            finalResults.TryGetValue(student.Id, out var finalResult);
-            var eligibility = CalculatePromotionEligibilityInternal(student.Id, finalResult, rules);
-
-            var status = eligibility.RecommendedAction switch
+            foreach (var student in students)
             {
-                "Promote" => PromotionStatus.Promoted,
-                "Conditional Promotion" => PromotionStatus.Promoted,
-                "Repeat" => PromotionStatus.Repeat,
-                _ => PromotionStatus.Pending
-            };
+                finalResults.TryGetValue(student.Id, out var finalResult);
+                var eligibility = CalculatePromotionEligibilityInternal(student.Id, finalResult, rules);
 
-            var nextClassId = classId + 1;
+                var status = eligibility.RecommendedAction switch
+                {
+                    "Promote" => PromotionStatus.Promoted,
+                    "Conditional Promotion" => PromotionStatus.Promoted,
+                    "Repeat" => PromotionStatus.Repeat,
+                    _ => PromotionStatus.Pending
+                };
 
-            var promotionHistory = new PromotionHistory
-            {
-                StudentId = student.Id,
-                FromClassId = classId,
-                ToClassId = nextClassId,
-                AcademicYearId = academicYearId,
-                Status = status,
-                PromotedAt = DateTime.Now,
-                PromotedByUserId = processedByUserId,
-                Remarks = eligibility.Reason
-            };
+                var nextClassId = classId + 1;
 
-            await _promotionHistoryRepository.AddAsync(promotionHistory);
+                var promotionHistory = new PromotionHistory
+                {
+                    StudentId = student.Id,
+                    FromClassId = classId,
+                    ToClassId = nextClassId,
+                    AcademicYearId = academicYearId,
+                    Status = status,
+                    PromotedAt = DateTime.Now,
+                    PromotedByUserId = processedByUserId,
+                    Remarks = eligibility.Reason
+                };
 
-            var record = new PromotionRecord
-            {
-                StudentId = student.Id,
-                StudentName = student.FullName,
-                FromClassId = classId,
-                ToClassId = nextClassId,
-                Status = status,
-                Reason = eligibility.Reason,
-                ProcessedAt = DateTime.Now,
-                ProcessedByUserId = processedByUserId
-            };
+                await _promotionHistoryRepository.AddAsync(promotionHistory);
 
-            result.Records.Add(record);
+                if (finalResult != null)
+                {
+                    finalResult.PromotionStatus = status;
+                    finalResult.PromotionRemarks = eligibility.Reason;
+                    _finalResultRepository.Update(finalResult);
+                }
 
-            switch (status)
-            {
-                case PromotionStatus.Promoted:
-                    result.PromotedCount++;
-                    break;
-                case PromotionStatus.Repeat:
-                    result.RepeatCount++;
-                    break;
-                default:
-                    result.ConditionalCount++;
-                    break;
+                var record = new PromotionRecord
+                {
+                    StudentId = student.Id,
+                    StudentName = student.FullName,
+                    FromClassId = classId,
+                    ToClassId = nextClassId,
+                    Status = status,
+                    Reason = eligibility.Reason,
+                    ProcessedAt = DateTime.Now,
+                    ProcessedByUserId = processedByUserId
+                };
+
+                result.Records.Add(record);
+
+                switch (status)
+                {
+                    case PromotionStatus.Promoted:
+                        result.PromotedCount++;
+                        break;
+                    case PromotionStatus.Repeat:
+                        result.RepeatCount++;
+                        break;
+                    default:
+                        result.ConditionalCount++;
+                        break;
+                }
             }
-        }
 
-        await _uow.SaveChangesAsync();
+            await _uow.SaveChangesAsync();
+        });
+
         return result;
     }
 
@@ -189,7 +200,7 @@ public class PromotionService : IPromotionService
     {
         var result = new BulkPromotionResult();
 
-        var students = await _studentRepository.ListAsync(s => s.ClassId == request.FromClassId);
+        var students = await _studentRepository.ListAsync(s => s.ClassId == request.FromClassId && !s.IsDeleted);
 
         var studentIds = students.Select(s => s.Id).ToList();
         var finalResults = (await _finalResultRepository.ListAsync(fr => fr.AcademicYearId == request.AcademicYearId && studentIds.Contains(fr.StudentId)))
@@ -197,9 +208,9 @@ public class PromotionService : IPromotionService
 
         var rules = await GetPromotionRulesAsync(request.FromClassId);
 
-        foreach (var student in students)
+        await _uow.ExecuteInTransactionAsync(async () =>
         {
-            try
+            foreach (var student in students)
             {
                 finalResults.TryGetValue(student.Id, out var finalResult);
                 var eligibility = CalculatePromotionEligibilityInternal(student.Id, finalResult, rules);
@@ -225,6 +236,13 @@ public class PromotionService : IPromotionService
 
                 await _promotionHistoryRepository.AddAsync(promotionHistory);
 
+                if (finalResult != null)
+                {
+                    finalResult.PromotionStatus = PromotionStatus.Promoted;
+                    finalResult.PromotionRemarks = request.Comments;
+                    _finalResultRepository.Update(finalResult);
+                }
+
                 var record = new PromotionRecord
                 {
                     StudentId = student.Id,
@@ -240,14 +258,10 @@ public class PromotionService : IPromotionService
                 result.SuccessfulPromotions.Add(record);
                 result.SuccessCount++;
             }
-            catch (Exception ex)
-            {
-                result.FailureCount++;
-                result.Errors.Add($"Student {student.FullName}: {ex.Message}");
-            }
-        }
 
-        await _uow.SaveChangesAsync();
+            await _uow.SaveChangesAsync();
+        });
+
         return result;
     }
 
@@ -374,19 +388,36 @@ public class PromotionService : IPromotionService
         var promotion = await _promotionHistoryRepository.GetByIdAsync(promotionHistoryId);
         if (promotion == null) throw new ArgumentException("Promotion history not found");
 
-        var reversal = new PromotionHistory
-        {
-            StudentId = promotion.StudentId,
-            FromClassId = promotion.ToClassId,
-            ToClassId = promotion.FromClassId,
-            AcademicYearId = promotion.AcademicYearId,
-            Status = PromotionStatus.Repeat,
-            PromotedAt = DateTime.Now,
-            PromotedByUserId = reversedByUserId,
-            Remarks = $"Reversal: {reason}"
-        };
+        var student = await _studentRepository.GetByIdAsync(promotion.StudentId);
+        if (student == null || student.IsDeleted)
+            throw new ArgumentException("Student not found or has been deleted");
 
-        await _promotionHistoryRepository.AddAsync(reversal);
-        await _uow.SaveChangesAsync();
+        await _uow.ExecuteInTransactionAsync(async () =>
+        {
+            var reversal = new PromotionHistory
+            {
+                StudentId = promotion.StudentId,
+                FromClassId = promotion.ToClassId,
+                ToClassId = promotion.FromClassId,
+                AcademicYearId = promotion.AcademicYearId,
+                Status = PromotionStatus.Repeat,
+                PromotedAt = DateTime.Now,
+                PromotedByUserId = reversedByUserId,
+                Remarks = $"Reversal: {reason}"
+            };
+
+            await _promotionHistoryRepository.AddAsync(reversal);
+
+            var finalResult = await _finalResultRepository.FirstOrDefaultAsync(fr =>
+                fr.StudentId == promotion.StudentId && fr.AcademicYearId == promotion.AcademicYearId);
+            if (finalResult != null)
+            {
+                finalResult.PromotionStatus = PromotionStatus.Repeat;
+                finalResult.PromotionRemarks = $"Reversal: {reason}";
+                _finalResultRepository.Update(finalResult);
+            }
+
+            await _uow.SaveChangesAsync();
+        });
     }
 }

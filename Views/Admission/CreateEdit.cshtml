@@ -520,15 +520,20 @@
                     const btn = document.createElement('button');
                     btn.type = 'button';
                     btn.className = 'list-group-item list-group-item-action';
-                    btn.innerHTML = `
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="mb-0">${g.name}</h6>
-                                <small class="text-muted">Code: ${g.code} | Phone: ${g.phone}</small>
-                            </div>
-                            <i class="bi bi-plus-circle text-primary"></i>
-                        </div>
-                    `;
+                    const inner = document.createElement('div');
+                    inner.className = 'd-flex justify-content-between align-items-center';
+                    inner.innerHTML = '<div class="d-flex justify-content-between align-items-center"><div></div><i class="bi bi-plus-circle text-primary"></i></div>';
+                    const textDiv = inner.querySelector('div');
+                    const h6 = document.createElement('h6');
+                    h6.className = 'mb-0';
+                    h6.textContent = g.name || '';
+                    textDiv.appendChild(h6);
+                    const small = document.createElement('small');
+                    small.className = 'text-muted';
+                    small.textContent = 'Code: ' + (g.code || '') + ' | Phone: ' + (g.phone || '');
+                    textDiv.appendChild(small);
+                    btn.innerHTML = '';
+                    btn.appendChild(inner);
                     btn.onclick = () => linkGuardian(g);
                     resultsContainer.appendChild(btn);
                 });

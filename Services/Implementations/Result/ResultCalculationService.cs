@@ -83,57 +83,60 @@ public class ResultCalculationService : IResultCalculationService
         if (!await CanCalculateResultsAsync(examId))
             throw new InvalidOperationException("Cannot calculate results - exam may be locked or published");
 
-        await CalculateSubjectResultsAsync(examId);
-
-        var exam = await _examRepository.Query()
-            .Include(e => e.ExamSubjects)
-            .ThenInclude(es => es.Subject)
-            .FirstOrDefaultAsync(e => e.Id == examId);
-
-        if (exam == null) throw new ArgumentException("Exam not found");
-
-        var classIds = await _examResultRepository.Query()
-            .Include(r => r.Student)
-            .Where(r => r.ExamId == examId)
-            .Select(r => r.Student.ClassId)
-            .Distinct()
-            .ToListAsync();
-
-        var students = await _uow.Repository<Student>().Query()
-            .Where(s => classIds.Contains(s.ClassId))
-            .ToListAsync();
-
-        var allSubjectResults = await _subjectResultRepository.Query()
-            .Include(r => r.Subject)
-            .Where(r => r.ExamId == examId && students.Select(s => s.Id).Contains(r.StudentId))
-            .ToListAsync();
-
-        var subjectResultsByStudent = allSubjectResults.GroupBy(r => r.StudentId)
-            .ToDictionary(g => g.Key, g => g.ToList());
-
-        var newExamResults = new List<StudentExamResult>();
-
-        foreach (var student in students)
+        await _uow.ExecuteInTransactionAsync(async () =>
         {
-            if (subjectResultsByStudent.TryGetValue(student.Id, out var studentSubjectResults))
-            {
-                var examResult = await CalculateStudentExamResultInternalAsync(examId, student.Id, studentSubjectResults, student.ClassId, student.SectionId, student.StudentGroupId);
-                if (examResult != null) newExamResults.Add(examResult);
-            }
-        }
+            await CalculateSubjectResultsAsync(examId);
 
-        if (newExamResults.Any())
-        {
-            var existingResults = await _examResultRepository.Query()
+            var exam = await _examRepository.Query()
+                .Include(e => e.ExamSubjects)
+                .ThenInclude(es => es.Subject)
+                .FirstOrDefaultAsync(e => e.Id == examId);
+
+            if (exam == null) throw new ArgumentException("Exam not found");
+
+            var classIds = await _examResultRepository.Query()
+                .Include(r => r.Student)
+                .Where(r => r.ExamId == examId)
+                .Select(r => r.Student.ClassId)
+                .Distinct()
+                .ToListAsync();
+
+            var students = await _uow.Repository<Student>().Query()
+                .Where(s => classIds.Contains(s.ClassId) && !s.IsDeleted)
+                .ToListAsync();
+
+            var allSubjectResults = await _subjectResultRepository.Query()
+                .Include(r => r.Subject)
                 .Where(r => r.ExamId == examId && students.Select(s => s.Id).Contains(r.StudentId))
                 .ToListAsync();
-            _examResultRepository.RemoveRange(existingResults);
 
-            await _examResultRepository.AddRangeAsync(newExamResults);
-            await _uow.SaveChangesAsync();
-        }
+            var subjectResultsByStudent = allSubjectResults.GroupBy(r => r.StudentId)
+                .ToDictionary(g => g.Key, g => g.ToList());
 
-        await _meritCalculationService.RecalculateMeritPositionsAsync(examId);
+            var newExamResults = new List<StudentExamResult>();
+
+            foreach (var student in students)
+            {
+                if (subjectResultsByStudent.TryGetValue(student.Id, out var studentSubjectResults))
+                {
+                    var examResult = await CalculateStudentExamResultInternalAsync(examId, student.Id, studentSubjectResults, student.ClassId, student.SectionId, student.StudentGroupId);
+                    if (examResult != null) newExamResults.Add(examResult);
+                }
+            }
+
+            if (newExamResults.Any())
+            {
+                var existingResults = await _examResultRepository.Query()
+                    .Where(r => r.ExamId == examId && students.Select(s => s.Id).Contains(r.StudentId))
+                    .ToListAsync();
+                _examResultRepository.RemoveRange(existingResults);
+
+                await _examResultRepository.AddRangeAsync(newExamResults);
+                await _uow.SaveChangesAsync();
+            }
+
+            await _meritCalculationService.RecalculateMeritPositionsAsync(examId);
+        });
     }
 
     public async Task CalculateSubjectResultsAsync(int examId)
@@ -334,7 +337,7 @@ public class ResultCalculationService : IResultCalculationService
 
         var examResults = await _examResultRepository.Query()
             .Include(r => r.Student)
-            .Where(r => examIds.Contains(r.ExamId))
+            .Where(r => examIds.Contains(r.ExamId) && r.Student != null && !r.Student.IsDeleted)
             .ToListAsync();
 
         var studentGroups = examResults
