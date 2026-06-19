@@ -39,16 +39,16 @@ BEGIN
 
     DECLARE @Row INT = 1;
     DECLARE @MaxRow INT;
-    DECLARE @Sid INT, @SubId INT, @Marks DECIMAL(18,2), @Fm DECIMAL(18,2), @Gr NVARCHAR(10), @Gp DECIMAL(18,2);
+    DECLARE @Sid INT, @SubId INT, @MarkVal DECIMAL(18,2), @Fm DECIMAL(18,2), @Gr NVARCHAR(10), @Gp DECIMAL(18,2);
 
     SELECT @MaxRow = MAX(RowNumber) FROM @Marks;
 
     WHILE @Row <= @MaxRow
     BEGIN
-        SELECT @Sid = StudentId, @SubId = SubjectId, @Marks = MarksObtained, @Fm = FullMarks, @Gr = Grade, @Gp = GradePoint
+        SELECT @Sid = StudentId, @SubId = SubjectId, @MarkVal = MarksObtained, @Fm = FullMarks, @Gr = Grade, @Gp = GradePoint
         FROM @Marks WHERE RowNumber = @Row;
 
-        IF @Marks > @Fm
+        IF @MarkVal > @Fm
         BEGIN
             INSERT INTO @Errors VALUES (@Row, 'MarksObtained exceeds FullMarks for StudentId=' + CAST(@Sid AS NVARCHAR) + ', SubjectId=' + CAST(@SubId AS NVARCHAR));
             SET @ErrorCount = @ErrorCount + 1;
@@ -60,10 +60,10 @@ BEGIN
         USING (SELECT @ExamId AS ExamId, @Sid AS StudentId, @SubId AS SubjectId) AS source
         ON (target.ExamId = source.ExamId AND target.StudentId = source.StudentId AND target.SubjectId = source.SubjectId AND target.IsDeleted = 0)
         WHEN MATCHED THEN
-            UPDATE SET MarksObtained = @Marks, Grade = @Gr, GradePoint = @Gp, Status = 1, UpdatedByUserId = @EnteredByTeacherId, UpdatedAt = GETUTCDATE()
+            UPDATE SET MarksObtained = @MarkVal, Grade = @Gr, GradePoint = @Gp, Status = 1, UpdatedByUserId = @EnteredByTeacherId, UpdatedAt = GETUTCDATE()
         WHEN NOT MATCHED THEN
             INSERT (ExamId, StudentId, SubjectId, AcademicYearId, ClassId, SectionId, StudentGroupId, MarksObtained, Grade, GradePoint, EnteredByTeacherId, Status, IsLocked, CreatedByUserId, CreatedAt, IsDeleted)
-            VALUES (@ExamId, @Sid, @SubId, @AcademicYearId, @ClassId, @SectionId, @StudentGroupId, @Marks, @Gr, @Gp, @EnteredByTeacherId, 1, 0, @EnteredByTeacherId, GETUTCDATE(), 0);
+            VALUES (@ExamId, @Sid, @SubId, @AcademicYearId, @ClassId, @SectionId, @StudentGroupId, @MarkVal, @Gr, @Gp, @EnteredByTeacherId, 1, 0, @EnteredByTeacherId, GETUTCDATE(), 0);
 
         SET @SuccessCount = @SuccessCount + 1;
         SET @Row = @Row + 1;

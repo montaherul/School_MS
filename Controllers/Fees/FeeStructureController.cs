@@ -5,6 +5,8 @@ using SchoolManagementSystem.Models.DTOs.Fees;
 using SchoolManagementSystem.Models.ViewModels.Fees;
 using SchoolManagementSystem.Services.Interfaces.Fees;
 using System.Security.Claims;
+using SchoolManagementSystem.Helpers.Pdf;
+using SchoolManagementSystem.Helpers.Reports;
 
 namespace SchoolManagementSystem.Controllers.Fees;
 
@@ -13,7 +15,8 @@ public class FeeStructureController : Controller
 {
     private readonly IFeeStructureService _service;
     private readonly IFeeSecurityService _security;
-    public FeeStructureController(IFeeStructureService service, IFeeSecurityService security) { _service = service; _security = security; }
+    private readonly IPdfGenerator _pdfGenerator;
+    public FeeStructureController(IFeeStructureService service, IFeeSecurityService security, IPdfGenerator pdfGenerator) { _service = service; _security = security; _pdfGenerator = pdfGenerator; }
 
     [RequirePermission("FeeStructures.Read")]
     public IActionResult Index() { return View(); }
@@ -128,6 +131,25 @@ public class FeeStructureController : Controller
         await _service.RestoreAsync(id, userId);
         TempData["SuccessMessage"] = "Fee structure restored successfully.";
         return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet]
+    [RequirePermission("FeeStructures.Read")]
+    public async Task<IActionResult> ExportExcel(string? search = null, int? schoolClassId = null, int? feeCategoryId = null)
+    {
+        var result = await _service.GetPagedAsync(1, 100000, search, schoolClassId, feeCategoryId);
+        var bytes = FeeListExporter.ExportToExcel(result.Items.ToList(), "Fee Structures");
+        return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "fee-structures.xlsx");
+    }
+
+    [HttpGet]
+    [RequirePermission("FeeStructures.Read")]
+    public async Task<IActionResult> ExportPdf(string? search = null, int? schoolClassId = null, int? feeCategoryId = null)
+    {
+        var result = await _service.GetPagedAsync(1, 100000, search, schoolClassId, feeCategoryId);
+        var html = FeeListExporter.BuildExportHtml(result.Items.ToList(), "Fee Structures");
+        var bytes = _pdfGenerator.GenerateFromHtml(html);
+        return File(bytes, "application/pdf", "fee-structures.pdf");
     }
 
 }

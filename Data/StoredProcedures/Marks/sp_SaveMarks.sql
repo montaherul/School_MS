@@ -35,8 +35,8 @@ BEGIN
 
     IF @ExistingId IS NOT NULL
     BEGIN
-        INSERT INTO ResultAuditLogs (ExamId, StudentId, SubjectId, OldMarks, NewMarks, OldGrade, NewGrade, OldGpa, NewGpa, ChangedByUserId, Reason, ChangeType, ChangedAt, CreatedAt, IsDeleted)
-        VALUES (@ExamId, @StudentId, @SubjectId, @OldMarks, @MarksObtained, @OldGrade, @Grade, NULL, NULL, @EnteredByTeacherId, NULL, 'UPDATE', GETUTCDATE(), GETUTCDATE(), 0);
+        INSERT INTO ResultAuditLogs (ExamId, StudentId, SubjectId, OldMarks, NewMarks, OldGpa, NewGpa, ChangedByUserId, Reason, ChangeType, ChangedAt, CreatedAt, IsDeleted)
+        VALUES (@ExamId, @StudentId, @SubjectId, @OldMarks, @MarksObtained, NULL, NULL, @EnteredByTeacherId, NULL, 'UPDATE', GETUTCDATE(), GETUTCDATE(), 0);
 
         UPDATE Marks
         SET MarksObtained = @MarksObtained,

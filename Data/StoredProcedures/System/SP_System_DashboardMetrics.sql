@@ -26,9 +26,9 @@ BEGIN
         SELECT @AvgQueryTime = 0, @SlowQueries = 0, @TotalUsersOnline = 0;
     END CATCH;
 
-    -- Application metrics
-    SELECT @PublishedResults = COUNT(*) FROM [dbo].[StudentExamResults] WHERE [IsPublished] = 1;
-    SELECT @PendingResults   = COUNT(*) FROM [dbo].[StudentExamResults] WHERE [IsPublished] = 0 OR [IsPublished] IS NULL;
+    -- Application metrics (Published = Status 5)
+    SELECT @PublishedResults = COUNT(*) FROM [dbo].[StudentExamResults] WHERE [Status] = 5;
+    SELECT @PendingResults   = COUNT(*) FROM [dbo].[StudentExamResults] WHERE [Status] < 5;
 
     -- Result set
     SELECT
@@ -43,24 +43,24 @@ BEGIN
     -- Exam breakdown
     SELECT
         e.[Id]             AS ExamId,
-        e.[ExamName],
-        e.[ExamType],
+        e.[Name] AS [ExamName],
+        e.[Term] AS [ExamType],
         e.[Status],
         COUNT(DISTINCT ser.[StudentId]) AS TotalStudents,
-        COUNT(DISTINCT CASE WHEN ser.[IsPublished] = 1 THEN ser.[StudentId] END) AS PublishedStudents,
-        AVG(ser.[GradePoint]) AS AvgGPA
+        COUNT(DISTINCT CASE WHEN ser.[Status] = 5 THEN ser.[StudentId] END) AS PublishedStudents,
+        AVG(ser.[Gpa]) AS AvgGPA
     FROM [dbo].[Exams] e
     LEFT JOIN [dbo].[StudentExamResults] ser ON e.[Id] = ser.[ExamId]
-    GROUP BY e.[Id], e.[ExamName], e.[ExamType], e.[Status]
+    GROUP BY e.[Id], e.[Name], e.[Term], e.[Status]
     ORDER BY e.[Id] DESC;
 
     -- Recent activity
     SELECT TOP 20
         [Action],
-        [Entity],
-        [Timestamp],
+        [Module] AS [Entity],
+        [CreatedAt] AS [Timestamp],
         [UserId]
     FROM [dbo].[AuditLogs]
-    ORDER BY [Timestamp] DESC;
+    ORDER BY [CreatedAt] DESC;
 END;
 GO

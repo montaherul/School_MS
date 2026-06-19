@@ -1,4 +1,5 @@
 using SchoolManagementSystem.Models.DTOs.Calendar;
+using SchoolManagementSystem.Models.DTOs.Dashboard;
 using SchoolManagementSystem.Models.Enums;
 
 namespace SchoolManagementSystem.Models.ViewModels.Dashboard;
@@ -24,6 +25,28 @@ public class StudentDashboardViewModel
     public List<UpcomingHolidayDto> UpcomingHolidays { get; set; } = new();
     public List<UpcomingExamDto> UpcomingExams { get; set; } = new();
     public bool IsResultBlocked { get; set; }
+
+    // Routine Widget
+    public StudentRoutineWidgetDto RoutineWidget { get; set; } = new();
+
+    // Assignment Widget
+    public int PendingAssignmentCount { get; set; }
+    public int SubmittedAssignmentCount { get; set; }
+    public int OverdueAssignmentCount { get; set; }
+    public List<StudentAssignmentDto> RecentAssignments { get; set; } = new();
+
+    // Library Widget
+    public List<StudentLibraryBookDto> IssuedBooks { get; set; } = new();
+    public int TotalIssuedBooks { get; set; }
+
+    // Notification Center
+    public int UnreadNotificationCount { get; set; }
+    public List<StudentNotificationItemDto> RecentNotifications { get; set; } = new();
+
+    // Finance Summary (loaded async via AJAX)
+    public decimal FinanceTotalInvoiced { get; set; }
+    public decimal FinanceTotalPaid { get; set; }
+    public decimal FinanceTotalDue { get; set; }
 }
 
 public class AttendanceCalendarDto

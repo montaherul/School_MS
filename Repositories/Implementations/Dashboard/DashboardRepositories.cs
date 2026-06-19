@@ -260,6 +260,363 @@ public class DashboardRepository : IDashboardRepository
             })
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<StudentRoutineWidgetDto> GetStudentRoutineWidgetAsync(int classId, int sectionId, int? groupId, CancellationToken ct)
+    {
+        var today = DateTime.UtcNow.DayOfWeek.ToString();
+        var dayNames = new[] { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
+
+        var routines = await _db.Set<SchoolManagementSystem.Models.Entities.Teachers.TeacherTimetable>()
+            .Where(r => r.ClassId == classId && r.SectionId == sectionId && !r.IsDeleted
+                && (groupId == null || r.GroupId == null || r.GroupId == groupId))
+            .Select(r => new RoutineClassDto
+            {
+                SubjectName = r.Subject != null ? r.Subject.Name : "",
+                TeacherName = r.Teacher != null ? r.Teacher.FullName : "",
+                DayOfWeek = r.DayOfWeek,
+                StartTime = r.StartTime,
+                EndTime = r.EndTime,
+                RoomNo = r.RoomNo
+            })
+            .ToListAsync(ct);
+
+        var todayClasses = routines.Where(r => r.DayOfWeek == today).OrderBy(r => r.StartTime).ToList();
+        var nextClass = todayClasses.FirstOrDefault();
+
+        return new StudentRoutineWidgetDto
+        {
+            TodayClasses = todayClasses,
+            ThisWeekClasses = routines.Where(r => dayNames.Contains(r.DayOfWeek)).OrderBy(r => Array.IndexOf(dayNames, r.DayOfWeek)).ThenBy(r => r.StartTime).ToList(),
+            NextClass = nextClass
+        };
+    }
+
+    public async Task<(int Pending, int Submitted, int Overdue, List<StudentAssignmentDto> Recent)> GetStudentAssignmentWidgetAsync(int studentId, int classId, int sectionId, CancellationToken ct)
+    {
+        var now = DateTime.UtcNow;
+        var assignments = await _db.Assignments
+            .Where(a => a.SchoolClassId == classId && a.SectionId == sectionId && !a.IsDeleted)
+            .Select(a => new
+            {
+                a.Id,
+                a.Title,
+                a.Instructions,
+                a.Deadline,
+                a.Status,
+                SubjectName = a.SubjectId > 0 ? _db.Subjects.Where(s => s.Id == a.SubjectId).Select(s => s.Name).FirstOrDefault() : "",
+                TeacherName = a.TeacherProfileId > 0 ? _db.Teachers.Where(t => t.Id == a.TeacherProfileId).Select(t => t.FullName).FirstOrDefault() : ""
+            })
+            .ToListAsync(ct);
+
+        var submissionIds = await _db.AssignmentSubmissions
+            .Where(s => s.StudentId == studentId && !s.IsDeleted)
+            .Select(s => s.AssignmentTaskId)
+            .ToListAsync(ct);
+
+        var pending = assignments.Where(a => !submissionIds.Contains(a.Id) && a.Deadline > now).ToList();
+        var submitted = assignments.Where(a => submissionIds.Contains(a.Id)).ToList();
+        var overdue = assignments.Where(a => !submissionIds.Contains(a.Id) && a.Deadline <= now).ToList();
+
+        var recent = assignments.OrderByDescending(a => a.Deadline).Take(5).Select(a => new StudentAssignmentDto
+        {
+            Id = a.Id,
+            Title = a.Title,
+            Instructions = a.Instructions,
+            Deadline = a.Deadline,
+            AssignmentStatus = (int)a.Status,
+            SubjectName = a.SubjectName ?? "",
+            TeacherName = a.TeacherName ?? "",
+            IsSubmitted = submissionIds.Contains(a.Id)
+        }).ToList();
+
+        return (pending.Count, submitted.Count, overdue.Count, recent);
+    }
+
+    public async Task<(List<StudentLibraryBookDto> Books, int Total)> GetStudentLibraryWidgetAsync(int studentId, CancellationToken ct)
+    {
+        var books = await _db.BookIssues
+            .Where(bi => bi.StudentId == studentId && !bi.IsDeleted)
+            .OrderByDescending(bi => bi.IssueDate)
+            .Select(bi => new StudentLibraryBookDto
+            {
+                Id = bi.Id,
+                BookTitle = bi.BookId > 0 ? _db.Books.Where(b => b.Id == bi.BookId).Select(b => b.Title).FirstOrDefault() ?? "" : "",
+                Author = bi.BookId > 0 ? _db.Books.Where(b => b.Id == bi.BookId).Select(b => b.Author).FirstOrDefault() ?? "" : "",
+                AccessionNo = bi.BookId > 0 ? _db.Books.Where(b => b.Id == bi.BookId).Select(b => b.AccessionNo).FirstOrDefault() ?? "" : "",
+                IssueDate = bi.IssueDate,
+                DueDate = bi.DueDate,
+                ReturnedDate = bi.ReturnedDate,
+                FineAmount = bi.FineAmount,
+                Status = bi.ReturnedDate == null ? "Issued" : "Returned"
+            })
+            .ToListAsync(ct);
+
+        return (books, books.Count);
+    }
+
+    public async Task<(int UnreadCount, List<StudentNotificationItemDto> Recent)> GetStudentNotificationWidgetAsync(int userId, CancellationToken ct)
+    {
+        var recent = await _db.Notifications
+            .Where(n => n.UserId == userId && !n.IsDeleted)
+            .OrderByDescending(n => n.CreatedAt)
+            .Take(10)
+            .Select(n => new StudentNotificationItemDto
+            {
+                Id = n.Id,
+                Title = n.Title,
+                Body = n.Body,
+                Channel = (int)n.Channel,
+                IsRead = n.IsRead,
+                SentAt = n.SentAt,
+                CreatedAt = n.CreatedAt
+            })
+            .ToListAsync(ct);
+
+        var unreadCount = recent.Count(n => !n.IsRead);
+
+        return (unreadCount, recent);
+    }
+
+    // ──────────────── Teacher Widgets ────────────────────────────────────────
+
+    public async Task<List<TeacherScheduleItemDto>> GetTeacherTimetableAsync(int teacherId, CancellationToken ct)
+    {
+        var dayNames = new[] { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
+
+        return await _db.Set<SchoolManagementSystem.Models.Entities.Teachers.TeacherTimetable>()
+            .AsNoTracking()
+            .Include(r => r.Subject)
+            .Include(r => r.Class)
+            .Include(r => r.Section)
+            .Where(r => r.TeacherId == teacherId && !r.IsDeleted)
+            .OrderBy(r => Array.IndexOf(dayNames, r.DayOfWeek))
+            .ThenBy(r => r.StartTime)
+            .Select(r => new TeacherScheduleItemDto
+            {
+                SubjectName = r.Subject != null ? r.Subject.Name : "",
+                ClassName = r.Class != null ? r.Class.Name : "",
+                SectionName = r.Section != null ? r.Section.Name : "",
+                DayOfWeek = r.DayOfWeek,
+                StartTime = r.StartTime,
+                EndTime = r.EndTime,
+                RoomNo = r.RoomNo
+            })
+            .ToListAsync(ct);
+    }
+
+    public async Task<List<TeacherMarkEntryStatusDto>> GetTeacherMarkEntryStatusAsync(int teacherId, CancellationToken ct)
+    {
+        var markEntries = await _db.Marks
+            .AsNoTracking()
+            .Include(m => m.Exam)
+            .Include(m => m.Subject)
+            .Where(m => m.EnteredByTeacherId == teacherId && !m.IsDeleted)
+            .GroupBy(m => new { m.ExamId, m.SubjectId, m.ClassId, m.SectionId })
+            .Select(g => new
+            {
+                g.Key.ExamId,
+                g.Key.SubjectId,
+                g.Key.ClassId,
+                g.Key.SectionId,
+                ExamName = g.First().Exam.Name,
+                SubjectName = g.First().Subject.Name,
+                TotalStudents = g.Count(),
+                MarksEntered = g.Count(m => m.MarksObtained > 0),
+                Status = g.First().Status
+            })
+            .ToListAsync(ct);
+
+        var result = new List<TeacherMarkEntryStatusDto>();
+        foreach (var entry in markEntries)
+        {
+            var className = await _db.Classes.Where(c => c.Id == entry.ClassId && !c.IsDeleted).Select(c => c.Name).FirstOrDefaultAsync(ct) ?? "";
+            var sectionName = await _db.Sections.Where(s => s.Id == entry.SectionId && !s.IsDeleted).Select(s => s.Name).FirstOrDefaultAsync(ct) ?? "";
+
+            result.Add(new TeacherMarkEntryStatusDto
+            {
+                SubjectName = entry.SubjectName,
+                ExamName = entry.ExamName,
+                ClassName = className,
+                SectionName = sectionName,
+                TotalStudents = entry.TotalStudents,
+                MarksEntered = entry.MarksEntered,
+                PendingCount = entry.TotalStudents - entry.MarksEntered,
+                Status = entry.Status.ToString()
+            });
+        }
+
+        return result;
+    }
+
+    public async Task<(List<StudentAssignmentDto> Recent, int Total)> GetTeacherAssignmentWidgetAsync(int teacherId, CancellationToken ct)
+    {
+        var assignments = await _db.Assignments
+            .AsNoTracking()
+            .Where(a => a.TeacherProfileId == teacherId && !a.IsDeleted)
+            .OrderByDescending(a => a.Deadline)
+            .Select(a => new StudentAssignmentDto
+            {
+                Id = a.Id,
+                Title = a.Title,
+                Instructions = a.Instructions,
+                Deadline = a.Deadline,
+                AssignmentStatus = (int)a.Status,
+                SubjectName = a.SubjectId > 0 ? _db.Subjects.Where(s => s.Id == a.SubjectId).Select(s => s.Name).FirstOrDefault() ?? "" : "",
+                TeacherName = ""
+            })
+            .ToListAsync(ct);
+
+        var total = assignments.Count;
+        var recent = assignments.Take(5).ToList();
+
+        return (recent, total);
+    }
+
+    public async Task<int> GetTeacherPendingResultCountAsync(int teacherId, CancellationToken ct)
+    {
+        return await _db.Marks
+            .CountAsync(m => m.EnteredByTeacherId == teacherId && !m.IsDeleted && m.Status == ResultWorkflowStatus.Draft, ct);
+    }
+
+    public async Task<TeacherLeaveStatusDto> GetTeacherLeaveStatusAsync(int employeeId, CancellationToken ct)
+    {
+        var leaves = await _db.LeaveApplications
+            .Where(l => l.EmployeeId == employeeId)
+            .ToListAsync(ct);
+
+        return new TeacherLeaveStatusDto
+        {
+            TotalLeaves = leaves.Count,
+            ApprovedLeaves = leaves.Count(l => l.ApprovalStatus == LeaveStatus.Approved),
+            PendingLeaves = leaves.Count(l => l.ApprovalStatus == LeaveStatus.Pending),
+            RejectedLeaves = leaves.Count(l => l.ApprovalStatus == LeaveStatus.Rejected)
+        };
+    }
+
+    public async Task<(int UnreadCount, List<TeacherNotificationItemDto> Recent)> GetTeacherNotificationWidgetAsync(int userId, CancellationToken ct)
+    {
+        var recent = await _db.Notifications
+            .Where(n => n.UserId == userId && !n.IsDeleted)
+            .OrderByDescending(n => n.CreatedAt)
+            .Take(10)
+            .Select(n => new TeacherNotificationItemDto
+            {
+                Id = n.Id,
+                Title = n.Title,
+                Body = n.Body,
+                IsRead = n.IsRead,
+                SentAt = n.SentAt
+            })
+            .ToListAsync(ct);
+
+        var unreadCount = recent.Count(n => !n.IsRead);
+
+        return (unreadCount, recent);
+    }
+
+    public async Task<LibrarianDashboardViewModel> GetLibrarianDashboardDataAsync(CancellationToken ct)
+    {
+        var today = DateOnly.FromDateTime(DateTime.Today);
+
+        var booksIssuedToday = await _db.BookIssues
+            .CountAsync(bi => bi.IssueDate == today && !bi.IsDeleted, ct);
+
+        var booksReturnedToday = await _db.BookIssues
+            .CountAsync(bi => bi.ReturnedDate == today && !bi.IsDeleted, ct);
+
+        var overdueBooks = await _db.BookIssues
+            .CountAsync(bi => bi.ReturnedDate == null && bi.DueDate < today && !bi.IsDeleted, ct);
+
+        var totalFineCollected = await _db.BookIssues
+            .Where(bi => bi.ReturnedDate != null && !bi.IsDeleted)
+            .SumAsync(bi => bi.FineAmount, ct);
+
+        var activeMembers = await _db.BookIssues
+            .Where(bi => !bi.IsDeleted)
+            .Select(bi => bi.StudentId)
+            .Distinct()
+            .CountAsync(ct);
+
+        var pendingReturns = await _db.BookIssues
+            .CountAsync(bi => bi.ReturnedDate == null && !bi.IsDeleted, ct);
+
+        var recentTransactions = await _db.BookIssues
+            .Where(bi => !bi.IsDeleted)
+            .OrderByDescending(bi => bi.IssueDate)
+            .Take(10)
+            .Select(bi => new LibrarianTransactionDto
+            {
+                Id = bi.Id,
+                BookTitle = bi.BookId > 0 ? _db.Books.Where(b => b.Id == bi.BookId).Select(b => b.Title).FirstOrDefault() ?? "" : "",
+                StudentName = bi.StudentId > 0 ? _db.Students.Where(s => s.Id == bi.StudentId).Select(s => s.FullName).FirstOrDefault() ?? "" : "",
+                StudentNo = bi.StudentId > 0 ? _db.Students.Where(s => s.Id == bi.StudentId).Select(s => s.StudentNo).FirstOrDefault() ?? "" : "",
+                IssueDate = bi.IssueDate,
+                DueDate = bi.DueDate,
+                ReturnedDate = bi.ReturnedDate,
+                FineAmount = bi.FineAmount,
+                Status = bi.ReturnedDate == null ? "Issued" : "Returned"
+            })
+            .ToListAsync(ct);
+
+        var notifications = await _db.Notifications
+            .Where(n => !n.IsDeleted)
+            .OrderByDescending(n => n.CreatedAt)
+            .Take(10)
+            .Select(n => new LibrarianNotificationDto
+            {
+                Id = n.Id,
+                Title = n.Title,
+                Body = n.Body,
+                IsRead = n.IsRead,
+                SentAt = n.SentAt
+            })
+            .ToListAsync(ct);
+
+        var unreadNotificationCount = notifications.Count(n => !n.IsRead);
+
+        var dailyIssued = await _db.BookIssues.CountAsync(bi => bi.IssueDate == today && !bi.IsDeleted, ct);
+        var dailyReturned = await _db.BookIssues.CountAsync(bi => bi.ReturnedDate == today && !bi.IsDeleted, ct);
+        var dailyFines = await _db.BookIssues
+            .Where(bi => bi.ReturnedDate == today && !bi.IsDeleted)
+            .SumAsync(bi => bi.FineAmount, ct);
+
+        var monthStart = new DateOnly(today.Year, today.Month, 1);
+        var monthlyIssued = await _db.BookIssues
+            .CountAsync(bi => bi.IssueDate >= monthStart && bi.IssueDate <= today && !bi.IsDeleted, ct);
+        var monthlyReturned = await _db.BookIssues
+            .CountAsync(bi => bi.ReturnedDate >= monthStart && bi.ReturnedDate <= today && !bi.IsDeleted, ct);
+        var monthlyFines = await _db.BookIssues
+            .Where(bi => bi.ReturnedDate >= monthStart && bi.ReturnedDate <= today && !bi.IsDeleted)
+            .SumAsync(bi => bi.FineAmount, ct);
+        var monthlyOverdue = await _db.BookIssues
+            .CountAsync(bi => bi.ReturnedDate == null && bi.DueDate < today && !bi.IsDeleted, ct);
+
+        return new LibrarianDashboardViewModel
+        {
+            BooksIssuedToday = booksIssuedToday,
+            BooksReturnedToday = booksReturnedToday,
+            OverdueBooks = overdueBooks,
+            TotalFineCollected = totalFineCollected,
+            ActiveMembers = activeMembers,
+            PendingReturns = pendingReturns,
+            RecentTransactions = recentTransactions,
+            UnreadNotificationCount = unreadNotificationCount,
+            RecentNotifications = notifications,
+            DailyActivity = new DailyActivityReport
+            {
+                Issued = dailyIssued,
+                Returned = dailyReturned,
+                FinesCollected = dailyFines
+            },
+            MonthlyActivity = new MonthlyActivityReport
+            {
+                TotalIssued = monthlyIssued,
+                TotalReturned = monthlyReturned,
+                TotalFinesCollected = monthlyFines,
+                TotalOverdue = monthlyOverdue
+            }
+        };
+    }
 }
 
 public class DashboardQueryRepository : IDashboardQueryRepository
@@ -286,4 +643,14 @@ public class DashboardQueryRepository : IDashboardQueryRepository
     public Task<List<DashboardChartDto>> GetClassAttendanceAnalyticsAsync(DateTime date, CancellationToken ct) => _repo.GetClassAttendanceAnalyticsAsync(date, ct);
 
     public Task<List<StudentResultViewModel>> GetStudentLatestResultsAsync(int studentId, CancellationToken cancellationToken = default) => _repo.GetStudentLatestResultsAsync(studentId, cancellationToken);
+
+    public Task<StudentRoutineWidgetDto> GetStudentRoutineWidgetAsync(int classId, int sectionId, int? groupId, CancellationToken ct) => _repo.GetStudentRoutineWidgetAsync(classId, sectionId, groupId, ct);
+
+    public Task<(int Pending, int Submitted, int Overdue, List<StudentAssignmentDto> Recent)> GetStudentAssignmentWidgetAsync(int studentId, int classId, int sectionId, CancellationToken ct) => _repo.GetStudentAssignmentWidgetAsync(studentId, classId, sectionId, ct);
+
+    public Task<(List<StudentLibraryBookDto> Books, int Total)> GetStudentLibraryWidgetAsync(int studentId, CancellationToken ct) => _repo.GetStudentLibraryWidgetAsync(studentId, ct);
+
+    public Task<(int UnreadCount, List<StudentNotificationItemDto> Recent)> GetStudentNotificationWidgetAsync(int userId, CancellationToken ct) => _repo.GetStudentNotificationWidgetAsync(userId, ct);
+
+    public Task<LibrarianDashboardViewModel> GetLibrarianDashboardDataAsync(CancellationToken ct) => _repo.GetLibrarianDashboardDataAsync(ct);
 }

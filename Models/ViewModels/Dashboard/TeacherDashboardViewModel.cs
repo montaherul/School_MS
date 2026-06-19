@@ -1,4 +1,5 @@
 using SchoolManagementSystem.Models.DTOs.Calendar;
+using SchoolManagementSystem.Models.DTOs.Dashboard;
 
 namespace SchoolManagementSystem.Models.ViewModels.Dashboard;
 
@@ -32,6 +33,29 @@ public class TeacherDashboardViewModel
     public List<UpcomingHolidayDto> UpcomingHolidays { get; set; } = new();
     public List<UpcomingExamDto> UpcomingExams { get; set; } = new();
     public List<UpcomingEventDto> UpcomingEvents { get; set; } = new();
+
+    // ── Teacher Widgets ───────────────────────────────────────────────────
+
+    // Schedule Widget
+    public List<TeacherScheduleItemDto> TodaySchedule { get; set; } = new();
+    public List<TeacherScheduleItemDto> WeeklySchedule { get; set; } = new();
+
+    // Mark Entry Widget
+    public List<TeacherMarkEntryStatusDto> MarkEntryStatus { get; set; } = new();
+
+    // Assignment Widget
+    public List<StudentAssignmentDto> RecentAssignments { get; set; } = new();
+    public int TotalAssignments { get; set; }
+
+    // Leave Status
+    public TeacherLeaveStatusDto LeaveStatus { get; set; } = new();
+
+    // Notifications
+    public int TeacherUnreadNotificationCount { get; set; }
+    public List<TeacherNotificationItemDto> TeacherRecentNotifications { get; set; } = new();
+
+    // Summary
+    public int TotalStudentsTaught { get; set; }
 }
 
 public class PrincipalStats

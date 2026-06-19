@@ -4,6 +4,7 @@ public class FeeReceiptDto
 {
     public string ReceiptNo { get; set; } = string.Empty;
     public string InvoiceNo { get; set; } = string.Empty;
+    public int StudentId { get; set; }
     public string StudentName { get; set; } = string.Empty;
     public string StudentIdNo { get; set; } = string.Empty;
     public string ClassName { get; set; } = string.Empty;
@@ -19,5 +20,8 @@ public class FeeReceiptDto
     public string SchoolAddress { get; set; } = string.Empty;
     public string SchoolPhone { get; set; } = string.Empty;
     public string SchoolEmail { get; set; } = string.Empty;
+    public string SchoolWebsite { get; set; } = string.Empty;
+    public string SchoolMotto { get; set; } = string.Empty;
+    public string SchoolLogoBase64 { get; set; } = string.Empty;
     public string QrVerificationCode { get; set; } = string.Empty;
 }

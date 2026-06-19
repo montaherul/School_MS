@@ -20,18 +20,18 @@ BEGIN
     UNION ALL
     SELECT 'StudentExamResults', COUNT(*) FROM [dbo].[StudentExamResults]
     UNION ALL
-    SELECT 'ReportCardsGenerated', COUNT(*) FROM [dbo].[StudentExamResults] WHERE [IsPublished] = 1
+    SELECT 'ReportCardsGenerated', COUNT(*) FROM [dbo].[StudentExamResults] WHERE [Status] = 5
     UNION ALL
     SELECT 'AdmitCardsGenerated', COUNT(*) FROM [dbo].[AdmitCards]
     UNION ALL
-    SELECT 'AttendanceRecords', COUNT(*) FROM [dbo].[Attendances];
+    SELECT 'AttendanceRecords', COUNT(*) FROM [dbo].[Attendance] WHERE [IsDeleted] = 0;
 
     -- Recent activity timestamps
     SELECT
-        (SELECT MAX([Timestamp]) FROM [dbo].[AuditLogs] WHERE [Action] LIKE '%Backup%') AS LastBackup,
-        (SELECT MAX([Timestamp]) FROM [dbo].[AuditLogs] WHERE [Action] LIKE '%Restore%') AS LastRestore,
+        (SELECT MAX([CreatedAt]) FROM [dbo].[AuditLogs] WHERE [Action] LIKE '%Backup%') AS LastBackup,
+        (SELECT MAX([CreatedAt]) FROM [dbo].[AuditLogs] WHERE [Action] LIKE '%Restore%') AS LastRestore,
         (SELECT MAX([PublishedAt]) FROM [dbo].[StudentExamResults]) AS LastResultPublish,
-        (SELECT MAX([Timestamp]) FROM [dbo].[AuditLogs] WHERE [Action] LIKE '%Publish%') AS LastPublishAction,
+        (SELECT MAX([CreatedAt]) FROM [dbo].[AuditLogs] WHERE [Action] LIKE '%Publish%') AS LastPublishAction,
         GETDATE() AS ReportGeneratedAt;
 
     -- Stored procedure health

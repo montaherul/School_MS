@@ -5,6 +5,8 @@ using SchoolManagementSystem.Models.DTOs.Fees;
 using SchoolManagementSystem.Models.ViewModels.Fees;
 using SchoolManagementSystem.Models.Entities.Fees;
 using SchoolManagementSystem.Services.Interfaces.Fees;
+using SchoolManagementSystem.Helpers.Pdf;
+using SchoolManagementSystem.Helpers.Reports;
 using System.Security.Claims;
 
 namespace SchoolManagementSystem.Controllers.Fees;
@@ -14,7 +16,8 @@ public class FeeInvoiceController : Controller
 {
     private readonly IFeeInvoiceService _service;
     private readonly IFeeSecurityService _security;
-    public FeeInvoiceController(IFeeInvoiceService service, IFeeSecurityService security) { _service = service; _security = security; }
+    private readonly IPdfGenerator _pdfGenerator;
+    public FeeInvoiceController(IFeeInvoiceService service, IFeeSecurityService security, IPdfGenerator pdfGenerator) { _service = service; _security = security; _pdfGenerator = pdfGenerator; }
 
     [RequirePermission("FeeInvoices.Read")]
     public IActionResult Index() { return View(); }
@@ -34,6 +37,27 @@ public class FeeInvoiceController : Controller
         if (_security.HasStudentRole(User)) studentId = _security.GetCurrentStudentId(User);
         var result = await _service.GetPagedAsync(page, size, search, studentId, status);
         return Json(new { data = result.Items, last_page = Math.Ceiling((double)result.TotalItems / result.PageSize) });
+    }
+
+    [HttpGet]
+    [RequirePermission("FeeInvoices.Read")]
+    public async Task<IActionResult> ExportExcel(string? search = null, int? studentId = null, int? status = null)
+    {
+        if (_security.HasStudentRole(User)) studentId = _security.GetCurrentStudentId(User);
+        var result = await _service.GetPagedAsync(1, 100000, search, studentId, status);
+        var bytes = FeeListExporter.ExportToExcel(result.Items.ToList(), "Fee Invoices");
+        return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "fee-invoices.xlsx");
+    }
+
+    [HttpGet]
+    [RequirePermission("FeeInvoices.Read")]
+    public async Task<IActionResult> ExportPdf(string? search = null, int? studentId = null, int? status = null)
+    {
+        if (_security.HasStudentRole(User)) studentId = _security.GetCurrentStudentId(User);
+        var result = await _service.GetPagedAsync(1, 100000, search, studentId, status);
+        var html = FeeListExporter.BuildExportHtml(result.Items.ToList(), "Fee Invoices");
+        var bytes = _pdfGenerator.GenerateFromHtml(html);
+        return File(bytes, "application/pdf", "fee-invoices.pdf");
     }
 
     [HttpGet]

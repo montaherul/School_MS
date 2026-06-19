@@ -43,7 +43,7 @@ BEGIN
             s.Nationality,
             s.BirthCertificateNo,
             s.ProfilePicturePath,
-            (SELECT TOP 1 Phone FROM Guardians WHERE StudentId = s.Id) AS FatherOrGuardianMobileNo,
+            (SELECT TOP 1 g.MobileNumber FROM StudentGuardians sg INNER JOIN Guardians g ON sg.GuardianId = g.Id WHERE sg.StudentId = s.Id AND sg.IsPrimaryGuardian = 1) AS FatherOrGuardianMobileNo,
             ROW_NUMBER() OVER (ORDER BY s.Id DESC) AS RowNum,
             COUNT(*) OVER () AS TotalCount
         FROM 

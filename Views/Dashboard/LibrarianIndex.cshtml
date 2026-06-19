@@ -1,0 +1,509 @@
+@model SchoolManagementSystem.Models.ViewModels.Dashboard.LibrarianDashboardViewModel
+@using System.Text.Json
+
+@{
+    ViewData["Title"] = "Librarian Portal";
+}
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabulator/6.2.1/css/tabulator_bootstrap5.min.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tabulator/6.2.1/js/tabulator.min.js"></script>
+
+<style>
+    .librarian-root {
+        font-family: 'Inter', system-ui, sans-serif;
+        padding: 24px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .l-hero {
+        background: linear-gradient(135deg, #0f172a 0%, #1e293b 60%, #334155 100%);
+        border-radius: 20px;
+        padding: 32px 40px;
+        color: #fff;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 20px;
+        margin-bottom: 28px;
+        box-shadow: 0 8px 32px rgba(15, 23, 42, 0.2);
+        position: relative;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .l-hero::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.03'%3E%3Ccircle cx='30' cy='30' r='30'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E") repeat;
+        pointer-events: none;
+    }
+
+    .l-hero-info h1 {
+        margin: 0 0 8px;
+        font-size: 26px;
+        font-weight: 800;
+        letter-spacing: -.5px;
+    }
+
+    .l-hero-info p {
+        margin: 0;
+        opacity: .8;
+        font-size: 14px;
+    }
+
+    .l-hero-badge {
+        background: rgba(255,255,255,.08);
+        backdrop-filter: blur(8px);
+        border: 1px solid rgba(255,255,255,.15);
+        border-radius: 12px;
+        padding: 14px 22px;
+        text-align: center;
+        min-width: 140px;
+    }
+
+    .l-hero-badge .badge-label {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: .8px;
+        opacity: .7;
+        margin-bottom: 4px;
+    }
+
+    .l-hero-badge .badge-value {
+        font-size: 20px;
+        font-weight: 800;
+    }
+
+    .dash-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .dash-stat-card {
+        background: var(--adm-card-bg,#fff);
+        border: 1px solid var(--adm-border,#e5e7eb);
+        border-radius: 14px;
+        padding: 20px;
+        transition: transform .2s, box-shadow .2s;
+    }
+
+    .dash-stat-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0,0,0,.05);
+    }
+
+    .dash-stat-label {
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: .6px;
+        color: var(--adm-text-muted,#6b7280);
+        margin-bottom: 6px;
+    }
+
+    .dash-stat-value {
+        font-size: 26px;
+        font-weight: 800;
+        line-height: 1.2;
+    }
+
+    .dash-stat-sub {
+        font-size: 12px;
+        color: #9ca3af;
+        margin-top: 4px;
+    }
+
+    .adm-tabs {
+        display: flex;
+        gap: 4px;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+    }
+
+    .adm-tab {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        background: var(--adm-hover-bg, #f1f5f9);
+        color: var(--adm-text-muted, #64748b);
+        transition: all .2s;
+        font-family: inherit;
+    }
+
+    .adm-tab:hover {
+        background: #e2e8f0;
+        color: #0f172a;
+    }
+
+    .adm-tab--active {
+        background: #0f172a !important;
+        color: #fff !important;
+    }
+
+    .tab-panel {
+        display: none;
+    }
+
+    .tab-panel--active {
+        display: block;
+    }
+
+    .adm-table-card {
+        background: var(--adm-card-bg,#fff);
+        border: 1px solid var(--adm-border,#e5e7eb);
+        border-radius: 14px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .adm-table-card h3 {
+        font-size: 15px;
+        font-weight: 700;
+        margin: 0 0 12px;
+    }
+
+    .reports-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 18px;
+        margin-bottom: 24px;
+    }
+
+    .report-card {
+        background: var(--adm-card-bg,#fff);
+        border: 1px solid var(--adm-border,#e5e7eb);
+        border-radius: 14px;
+        padding: 24px;
+    }
+
+    .report-card h3 {
+        font-size: 14px;
+        font-weight: 700;
+        margin: 0 0 16px;
+        color: #0f172a;
+    }
+
+    .report-stat {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #f1f5f9;
+        font-size: 14px;
+    }
+
+    .report-stat:last-child {
+        border-bottom: none;
+    }
+
+    .report-stat-label {
+        color: #6b7280;
+    }
+
+    .report-stat-value {
+        font-weight: 700;
+        color: #0f172a;
+    }
+
+    .notification-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .notification-item {
+        padding: 14px 0;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .notification-item:last-child {
+        border-bottom: none;
+    }
+
+    .notification-item .notif-title {
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .notification-item .notif-body {
+        font-size: 13px;
+        color: #6b7280;
+        margin-top: 4px;
+    }
+
+    .notification-item .notif-date {
+        font-size: 12px;
+        color: #9ca3af;
+        margin-top: 2px;
+    }
+
+    .g-empty {
+        text-align: center;
+        padding: 48px 24px;
+        color: var(--adm-text-muted,#6b7280);
+        font-size: 14px;
+    }
+
+    .g-empty i {
+        font-size: 40px;
+        opacity: .35;
+        margin-bottom: 12px;
+        display: block;
+    }
+
+    .status-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 3px 10px;
+        border-radius: 100px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .status-pill.Issued {
+        background: #dbeafe;
+        color: #2563eb;
+    }
+
+    .status-pill.Returned {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    @@media (max-width: 768px) {
+        .librarian-root { padding: 12px; }
+        .l-hero { padding: 20px; }
+        .l-hero-badge { min-width: 100px; }
+        .dash-stat-value { font-size: 22px; }
+    }
+
+    @@media (max-width: 375px) {
+        .l-hero-info h1 { font-size: 20px; }
+        .dash-stats { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+        .dash-stat-card { padding: 14px; }
+        .dash-stat-value { font-size: 18px; }
+    }
+</style>
+
+<div class="librarian-root">
+
+    <div class="l-hero">
+        <div class="l-hero-info">
+            <h1><i class="bi bi-book me-2"></i>Librarian Portal</h1>
+            <p><i class="bi bi-person-fill"></i> <strong>@Model.LibrarianName</strong></p>
+        </div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap;">
+            <div class="l-hero-badge">
+                <div class="badge-label">Overdue Books</div>
+                <div class="badge-value" style="color:#f87171;">@Model.OverdueBooks</div>
+            </div>
+            <div class="l-hero-badge">
+                <div class="badge-label">Pending Returns</div>
+                <div class="badge-value" style="color:#fbbf24;">@Model.PendingReturns</div>
+            </div>
+            <div class="l-hero-badge">
+                <div class="badge-label">Unread Notifications</div>
+                <div class="badge-value">@Model.UnreadNotificationCount</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="adm-tabs">
+        <button class="adm-tab adm-tab--active" data-tab="overview" onclick="switchTab('overview')"><i class="bi bi-grid-1x2 me-1"></i> Overview</button>
+        <button class="adm-tab" data-tab="reports" onclick="switchTab('reports')"><i class="bi bi-bar-chart me-1"></i> Reports</button>
+        <button class="adm-tab" data-tab="notifications" onclick="switchTab('notifications')"><i class="bi bi-bell me-1"></i> Notifications</button>
+    </div>
+
+    @* ── Overview Tab ── *@
+    <div class="tab-panel tab-panel--active" data-tab="overview">
+        <div class="dash-stats">
+            <div class="dash-stat-card">
+                <div class="dash-stat-label">Books Issued Today</div>
+                <div class="dash-stat-value" style="color:#2563eb;">@Model.BooksIssuedToday</div>
+            </div>
+            <div class="dash-stat-card">
+                <div class="dash-stat-label">Books Returned Today</div>
+                <div class="dash-stat-value" style="color:#16a34a;">@Model.BooksReturnedToday</div>
+            </div>
+            <div class="dash-stat-card">
+                <div class="dash-stat-label">Overdue Books</div>
+                <div class="dash-stat-value" style="color:#dc2626;">@Model.OverdueBooks</div>
+            </div>
+            <div class="dash-stat-card">
+                <div class="dash-stat-label">Fine Collected</div>
+                <div class="dash-stat-value" style="color:#ca8a04;">৳@Model.TotalFineCollected.ToString("N2")</div>
+            </div>
+            <div class="dash-stat-card">
+                <div class="dash-stat-label">Active Members</div>
+                <div class="dash-stat-value" style="color:#7c3aed;">@Model.ActiveMembers</div>
+            </div>
+            <div class="dash-stat-card">
+                <div class="dash-stat-label">Pending Returns</div>
+                <div class="dash-stat-value" style="color:#ea580c;">@Model.PendingReturns</div>
+            </div>
+        </div>
+
+        <div class="adm-table-card">
+            <h3><i class="bi bi-arrow-left-right me-1"></i> Recent Transactions</h3>
+            @if (Model.RecentTransactions.Any())
+            {
+                <div id="librarian-transaction-grid"></div>
+            }
+            else
+            {
+                <div class="g-empty"><i class="bi bi-book"></i> No recent transactions found.</div>
+            }
+        </div>
+    </div>
+
+    @* ── Reports Tab ── *@
+    <div class="tab-panel" data-tab="reports">
+        <div class="reports-grid">
+            <div class="report-card">
+                <h3><i class="bi bi-calendar-day me-1"></i> Daily Activity</h3>
+                <div class="report-stat">
+                    <span class="report-stat-label">Issued</span>
+                    <span class="report-stat-value" style="color:#2563eb;">@Model.DailyActivity.Issued</span>
+                </div>
+                <div class="report-stat">
+                    <span class="report-stat-label">Returned</span>
+                    <span class="report-stat-value" style="color:#16a34a;">@Model.DailyActivity.Returned</span>
+                </div>
+                <div class="report-stat">
+                    <span class="report-stat-label">Fines Collected</span>
+                    <span class="report-stat-value" style="color:#ca8a04;">৳@Model.DailyActivity.FinesCollected.ToString("N2")</span>
+                </div>
+            </div>
+
+            <div class="report-card">
+                <h3><i class="bi bi-calendar-month me-1"></i> Monthly Activity</h3>
+                <div class="report-stat">
+                    <span class="report-stat-label">Total Issued</span>
+                    <span class="report-stat-value" style="color:#2563eb;">@Model.MonthlyActivity.TotalIssued</span>
+                </div>
+                <div class="report-stat">
+                    <span class="report-stat-label">Total Returned</span>
+                    <span class="report-stat-value" style="color:#16a34a;">@Model.MonthlyActivity.TotalReturned</span>
+                </div>
+                <div class="report-stat">
+                    <span class="report-stat-label">Total Fines</span>
+                    <span class="report-stat-value" style="color:#ca8a04;">৳@Model.MonthlyActivity.TotalFinesCollected.ToString("N2")</span>
+                </div>
+                <div class="report-stat">
+                    <span class="report-stat-label">Total Overdue</span>
+                    <span class="report-stat-value" style="color:#dc2626;">@Model.MonthlyActivity.TotalOverdue</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @* ── Notifications Tab ── *@
+    <div class="tab-panel" data-tab="notifications">
+        <div class="dash-stats">
+            <div class="dash-stat-card">
+                <div class="dash-stat-label">Unread</div>
+                <div class="dash-stat-value" style="color:#7c3aed;">@Model.UnreadNotificationCount</div>
+                <div class="dash-stat-sub">notifications</div>
+            </div>
+        </div>
+
+        @if (Model.RecentNotifications.Any())
+        {
+            <div class="adm-table-card">
+                <h3><i class="bi bi-bell me-1"></i> Recent Notifications</h3>
+                <div id="librarian-notification-grid"></div>
+            </div>
+        }
+        else
+        {
+            <div class="adm-table-card">
+                <div class="g-empty"><i class="bi bi-bell-slash"></i> No notifications.</div>
+            </div>
+        }
+    </div>
+
+</div>
+
+<script>
+    function switchTab(name) {
+        document.querySelectorAll('.adm-tab').forEach(t => t.classList.remove('adm-tab--active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('tab-panel--active'));
+        document.querySelector(`.adm-tab[data-tab="${name}"]`)?.classList.add('adm-tab--active');
+        document.querySelector(`.tab-panel[data-tab="${name}"]`)?.classList.add('tab-panel--active');
+        if (name === 'overview') initTransactionGrid();
+        if (name === 'notifications') initNotificationGrid();
+    }
+
+    let transactionGridInited = false;
+    let notificationGridInited = false;
+
+    function initTransactionGrid() {
+        if (transactionGridInited) return;
+        const data = @Html.Raw(JsonSerializer.Serialize(Model.RecentTransactions));
+        if (!data.length) return;
+        transactionGridInited = true;
+        new Tabulator('#librarian-transaction-grid', {
+            data: data,
+            layout: 'fitColumns',
+            placeholder: 'No transactions',
+            columns: [
+                { title: 'Book Title', field: 'bookTitle', widthGrow: 3 },
+                { title: 'Student', field: 'studentName', widthGrow: 2 },
+                { title: 'Student No', field: 'studentNo', widthGrow: 1 },
+                { title: 'Issue Date', field: 'issueDate', widthGrow: 1 },
+                { title: 'Due Date', field: 'dueDate', widthGrow: 1 },
+                { title: 'Returned', field: 'returnedDate', widthGrow: 1, formatter: function(c) {
+                    return c.getValue() ? new Date(c.getValue()).toLocaleDateString() : '—';
+                }},
+                { title: 'Fine', field: 'fineAmount', formatter: 'money', formatterParams: { precision: 2 }, widthGrow: 1 },
+                {
+                    title: 'Status', field: 'status', widthGrow: 1,
+                    formatter: function(cell) {
+                        const v = cell.getValue();
+                        return v === 'Returned'
+                            ? '<span class="status-pill Returned"><i class="bi bi-check-circle"></i> Returned</span>'
+                            : '<span class="status-pill Issued"><i class="bi bi-book"></i> Issued</span>';
+                    }
+                }
+            ]
+        });
+    }
+
+    function initNotificationGrid() {
+        if (notificationGridInited) return;
+        const data = @Html.Raw(JsonSerializer.Serialize(Model.RecentNotifications));
+        if (!data.length) return;
+        notificationGridInited = true;
+        new Tabulator('#librarian-notification-grid', {
+            data: data,
+            layout: 'fitColumns',
+            placeholder: 'No notifications',
+            columns: [
+                { title: 'Title', field: 'title', widthGrow: 2 },
+                { title: 'Message', field: 'body', widthGrow: 3 },
+                { title: 'Date', field: 'sentAt', formatter: 'datetime', formatterParams: { inputFormat: 'iso', outputFormat: 'dd MMM yyyy' }, widthGrow: 1 },
+                {
+                    title: 'Read', field: 'isRead', widthGrow: 1,
+                    formatter: function(cell) {
+                        return cell.getValue()
+                            ? '<span style="color:#9ca3af;">Read</span>'
+                            : '<span style="color:#7c3aed;font-weight:600;">Unread</span>';
+                    }
+                }
+            ]
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        initTransactionGrid();
+    });
+</script>

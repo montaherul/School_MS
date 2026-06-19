@@ -169,6 +169,11 @@ public class DashboardService : IDashboardService
 
         var latestResults = await _dashboardRepository.GetStudentLatestResultsAsync(student.Id, cancellationToken);
 
+        var routineWidget = await _dashboardRepository.GetStudentRoutineWidgetAsync(student.ClassId, student.SectionId, student.StudentGroupId, cancellationToken);
+        var (pendingAssign, submittedAssign, overdueAssign, recentAssign) = await _dashboardRepository.GetStudentAssignmentWidgetAsync(student.Id, student.ClassId, student.SectionId, cancellationToken);
+        var (issuedBooks, totalBooks) = await _dashboardRepository.GetStudentLibraryWidgetAsync(student.Id, cancellationToken);
+        var (unreadNotifCount, recentNotifs) = await _dashboardRepository.GetStudentNotificationWidgetAsync(userId, cancellationToken);
+
         return new StudentDashboardViewModel
         {
             Id = student.Id,
@@ -186,7 +191,18 @@ public class DashboardService : IDashboardService
             Results = latestResults,
             UpcomingHolidays = studentHolidays,
             UpcomingExams = studentExams,
-            IsResultBlocked = await _reportCardService.IsResultBlockedForStudentAsync(student.Id, cancellationToken)
+            IsResultBlocked = await _reportCardService.IsResultBlockedForStudentAsync(student.Id, cancellationToken),
+
+            // Widget data
+            RoutineWidget = routineWidget,
+            PendingAssignmentCount = pendingAssign,
+            SubmittedAssignmentCount = submittedAssign,
+            OverdueAssignmentCount = overdueAssign,
+            RecentAssignments = recentAssign,
+            IssuedBooks = issuedBooks,
+            TotalIssuedBooks = totalBooks,
+            UnreadNotificationCount = unreadNotifCount,
+            RecentNotifications = recentNotifs
         };
     }
 
@@ -247,7 +263,7 @@ public class DashboardService : IDashboardService
         };
 
         var notices = await _uow.Repository<SchoolManagementSystem.Models.Entities.Communication.Notice>().Query()
-            .Where(n => !n.IsDeleted && (n.AudienceRole == "All" || n.AudienceRole == "Teacher"))
+            .Where(n => !n.IsDeleted && (n.AudienceRole == "All" || n.AudienceRole == "Teacher" || n.AudienceRole == "Parent" || n.AudienceRole == "Parents"))
             .OrderByDescending(n => n.PublishAt)
             .Take(5)
             .Select(n => new DashboardActivityDto { Module = "Notice", Title = n.Title, At = n.PublishAt, Summary = n.Body ?? "" })
@@ -271,6 +287,29 @@ public class DashboardService : IDashboardService
         model.UpcomingHolidays = teacherHolidays;
         model.UpcomingExams = teacherExams;
         model.UpcomingEvents = teacherEvents;
+
+        // ── Widget data ────────────────────────────────────────────────────
+        var teacherId = teacher.Id;
+        var allSchedule = await _dashboardRepository.GetTeacherTimetableAsync(teacherId, cancellationToken);
+        var today = DateTime.UtcNow.DayOfWeek.ToString();
+        model.TodaySchedule = allSchedule.Where(s => s.DayOfWeek == today).OrderBy(s => s.StartTime).ToList();
+        model.WeeklySchedule = allSchedule;
+        model.MarkEntryStatus = await _dashboardRepository.GetTeacherMarkEntryStatusAsync(teacherId, cancellationToken);
+        model.PendingResultEntries = await _dashboardRepository.GetTeacherPendingResultCountAsync(teacherId, cancellationToken);
+        var (recentAsgn, totalAsgn) = await _dashboardRepository.GetTeacherAssignmentWidgetAsync(teacherId, cancellationToken);
+        model.RecentAssignments = recentAsgn;
+        model.TotalAssignments = totalAsgn;
+        model.LeaveStatus = await _dashboardRepository.GetTeacherLeaveStatusAsync(teacher.EmployeeId, cancellationToken);
+        var (unreadNotif, notifList) = await _dashboardRepository.GetTeacherNotificationWidgetAsync(userId, cancellationToken);
+        model.TeacherUnreadNotificationCount = unreadNotif;
+        model.TeacherRecentNotifications = notifList;
+
+        var classIds = classAssignments.Select(a => a.ClassId).Distinct().ToList();
+        var sectionIds = classAssignments.Select(a => a.SectionId).Distinct().ToList();
+        var studentCount = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query()
+            .CountAsync(s => classIds.Contains(s.ClassId) && sectionIds.Contains(s.SectionId) && !s.IsDeleted
+                && s.Status == StudentStatus.Active, cancellationToken);
+        model.TotalStudentsTaught = studentCount;
 
         return model;
     }
@@ -391,6 +430,31 @@ public class DashboardService : IDashboardService
                     .CountAsync(l => l.StudentId == selectedStudent.Id, cancellationToken);
                 model.SelectedChildPendingLeaveCount = await _uow.Repository<SchoolManagementSystem.Models.Entities.Attendance.StudentLeaveApplication>().Query()
                     .CountAsync(l => l.StudentId == selectedStudent.Id && l.ApprovalStatus == SchoolManagementSystem.Models.Entities.Attendance.StudentLeaveApplication.ApprovalStatusEnum.Pending, cancellationToken);
+
+                // Widget data
+                var classId = selectedStudent.ClassId;
+                var sectionId = selectedStudent.SectionId;
+                model.SelectedChildUserId = selectedStudent.UserId ?? 0;
+
+                model.SelectedChildRoutineWidget = await _dashboardRepository.GetStudentRoutineWidgetAsync(classId, sectionId, null, cancellationToken);
+
+                var (pending, submitted, overdue, recent) = await _dashboardRepository.GetStudentAssignmentWidgetAsync(selectedStudent.Id, classId, sectionId, cancellationToken);
+                model.SelectedChildPendingAssignmentCount = pending;
+                model.SelectedChildSubmittedAssignmentCount = submitted;
+                model.SelectedChildOverdueAssignmentCount = overdue;
+                model.SelectedChildRecentAssignments = recent.ToList();
+
+                var (books, totalBooks) = await _dashboardRepository.GetStudentLibraryWidgetAsync(selectedStudent.Id, cancellationToken);
+                model.SelectedChildIssuedBooks = books;
+                model.SelectedChildTotalIssuedBooks = totalBooks;
+
+                var (unread, notifications) = await _dashboardRepository.GetStudentNotificationWidgetAsync(model.SelectedChildUserId, cancellationToken);
+                model.SelectedChildUnreadNotificationCount = unread;
+                model.SelectedChildRecentNotifications = notifications;
+
+                model.SelectedChildTotalInvoiced = invoices.Sum(i => i.TotalAmount + i.LateFee);
+                model.SelectedChildTotalPaidFinance = invoices.Sum(i => i.PaidAmount);
+                model.SelectedChildTotalDue = model.SelectedChildTotalInvoiced - model.SelectedChildTotalPaidFinance;
             }
         }
 
@@ -477,6 +541,11 @@ public class DashboardService : IDashboardService
     public async Task<FeeDashboardDto?> GetAccountantDashboardAsync(int? academicYearId = null, CancellationToken cancellationToken = default)
     {
         return await _feeDashboardService.GetDashboardDataAsync(academicYearId, cancellationToken);
+    }
+
+    public async Task<LibrarianDashboardViewModel> GetLibrarianDashboardAsync(CancellationToken ct = default)
+    {
+        return await _dashboardRepository.GetLibrarianDashboardDataAsync(ct);
     }
 
     private async Task<List<RecentActivityItem>> GetRecentExamActivitiesAsync(CancellationToken ct)

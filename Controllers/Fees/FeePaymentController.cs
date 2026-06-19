@@ -5,6 +5,8 @@ using SchoolManagementSystem.Models.DTOs.Common;
 using SchoolManagementSystem.Models.DTOs.Fees;
 using SchoolManagementSystem.Models.ViewModels.Fees;
 using SchoolManagementSystem.Services.Interfaces.Fees;
+using SchoolManagementSystem.Helpers.Pdf;
+using SchoolManagementSystem.Helpers.Reports;
 using System.Security.Claims;
 
 namespace SchoolManagementSystem.Controllers.Fees;
@@ -14,7 +16,8 @@ public class FeePaymentController : Controller
 {
     private readonly IFeePaymentService _service;
     private readonly IFeeSecurityService _security;
-    public FeePaymentController(IFeePaymentService service, IFeeSecurityService security) { _service = service; _security = security; }
+    private readonly IPdfGenerator _pdfGenerator;
+    public FeePaymentController(IFeePaymentService service, IFeeSecurityService security, IPdfGenerator pdfGenerator) { _service = service; _security = security; _pdfGenerator = pdfGenerator; }
 
     [RequirePermission("FeePayments.Read")]
     public IActionResult Index() { return View(); }
@@ -39,6 +42,25 @@ public class FeePaymentController : Controller
                 result = new PagedResult<FeePaymentListItemDto> { Items = result.Items.Where(i => i.StudentId == myId.Value).ToList(), Page = result.Page, PageSize = result.PageSize, TotalItems = result.TotalItems };
         }
         return Json(new { data = result.Items, last_page = Math.Ceiling((double)result.TotalItems / result.PageSize) });
+    }
+
+    [HttpGet]
+    [RequirePermission("FeePayments.Read")]
+    public async Task<IActionResult> ExportExcel(string? search = null, int? feeInvoiceId = null, int? paymentMethod = null)
+    {
+        var result = await _service.GetPagedAsync(1, 100000, search, feeInvoiceId, paymentMethod);
+        var bytes = FeeListExporter.ExportToExcel(result.Items.ToList(), "Fee Payments");
+        return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "fee-payments.xlsx");
+    }
+
+    [HttpGet]
+    [RequirePermission("FeePayments.Read")]
+    public async Task<IActionResult> ExportPdf(string? search = null, int? feeInvoiceId = null, int? paymentMethod = null)
+    {
+        var result = await _service.GetPagedAsync(1, 100000, search, feeInvoiceId, paymentMethod);
+        var html = FeeListExporter.BuildExportHtml(result.Items.ToList(), "Fee Payments");
+        var bytes = _pdfGenerator.GenerateFromHtml(html);
+        return File(bytes, "application/pdf", "fee-payments.pdf");
     }
 
     [HttpGet]

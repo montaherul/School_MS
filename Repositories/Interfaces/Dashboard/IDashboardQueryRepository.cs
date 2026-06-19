@@ -13,4 +13,9 @@ public interface IDashboardQueryRepository
     Task<(List<DashboardChartDto> Daily, List<DashboardChartDto> Monthly)> GetAttendanceAnalyticsAsync(CancellationToken ct);
     Task<List<DashboardChartDto>> GetClassAttendanceAnalyticsAsync(DateTime date, CancellationToken ct);
     Task<List<StudentResultViewModel>> GetStudentLatestResultsAsync(int studentId, CancellationToken cancellationToken = default);
+    Task<StudentRoutineWidgetDto> GetStudentRoutineWidgetAsync(int classId, int sectionId, int? groupId, CancellationToken ct);
+    Task<(int Pending, int Submitted, int Overdue, List<StudentAssignmentDto> Recent)> GetStudentAssignmentWidgetAsync(int studentId, int classId, int sectionId, CancellationToken ct);
+    Task<(List<StudentLibraryBookDto> Books, int Total)> GetStudentLibraryWidgetAsync(int studentId, CancellationToken ct);
+    Task<(int UnreadCount, List<StudentNotificationItemDto> Recent)> GetStudentNotificationWidgetAsync(int userId, CancellationToken ct);
+    Task<LibrarianDashboardViewModel> GetLibrarianDashboardDataAsync(CancellationToken ct);
 }

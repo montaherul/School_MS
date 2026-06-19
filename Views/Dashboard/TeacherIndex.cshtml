@@ -1,690 +1,617 @@
 @model SchoolManagementSystem.Models.ViewModels.Dashboard.TeacherDashboardViewModel
+@using System.Text.Json
+@using SchoolManagementSystem.Models.DTOs.Dashboard
 
 @{
     ViewData["Title"] = "Teacher Dashboard";
 }
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabulator/6.2.1/css/tabulator_bootstrap5.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tabulator/6.2.1/js/tabulator.min.js"></script>
+
+<style>
+    .teacher-tab { display:flex; gap:4px; border-bottom:2px solid var(--adm-border); margin-bottom:24px; overflow-x:auto; }
+    .teacher-tab__btn { padding:10px 20px; border:none; background:none; font-weight:500; color:var(--adm-muted); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-2px; white-space:nowrap; transition:all .2s; }
+    .teacher-tab__btn:hover { color:var(--clr-primary); }
+    .teacher-tab__btn--active { color:var(--clr-primary); border-bottom-color:var(--clr-primary); }
+    .teacher-tab__badge { display:inline-block; background:var(--clr-danger); color:#fff; font-size:11px; font-weight:700; padding:1px 7px; border-radius:10px; margin-left:6px; }
+    .schedule-item { display:flex; align-items:center; gap:16px; padding:12px 16px; background:var(--adm-bg); border-radius:12px; transition:all .2s; }
+    .schedule-item:hover { background:var(--adm-hover); }
+    .schedule-time-box { min-width:56px; text-align:center; }
+    .notif-badge { position:relative; }
+    .notif-badge[data-count]:after { content:attr(data-count); position:absolute; top:-6px; right:-8px; background:var(--clr-danger); color:#fff; font-size:10px; font-weight:700; padding:1px 6px; border-radius:8px; }
+</style>
+
 <div class="adm-page">
 
     <!-- HERO -->
     <div class="dashboard-hero mb-4">
-
         <div class="dashboard-hero__content">
-
             <div class="row align-items-center">
-
                 <div class="col-md-8">
-
-                    <h2 class="fw-bold mb-1">
-                        Welcome back, @Model.FullName!
-                    </h2>
-
-                    <p class="opacity-75 mb-0">
-                        @Model.Designation | @Model.TeacherNo
-                    </p>
-
+                    <h2 class="fw-bold mb-1">Welcome back, @Model.FullName!</h2>
+                    <p class="opacity-75 mb-0">@Model.Designation | @Model.TeacherNo</p>
                 </div>
-
                 <div class="col-md-4 text-md-end mt-3 mt-md-0">
-
                     <div class="dashboard-date-pill">
-
                         <i class="bi bi-calendar-event"></i>
-
-                        <span>
-                            @DateTime.Now.ToString("dddd, MMM dd")
-                        </span>
-
+                        <span>@DateTime.Now.ToString("dddd, MMM dd")</span>
                     </div>
-
                 </div>
-
             </div>
-
         </div>
-
         <div class="dashboard-hero__decor"></div>
-
     </div>
 
     <!-- STATS -->
     <div class="dash-stats">
-
-        <!-- CLASSES -->
         <div class="dash-stat-card">
-
-            <div class="dash-stat-card__icon dash-stat-card__icon--primary">
-
-                <i class="bi bi-building"></i>
-
-            </div>
-
+            <div class="dash-stat-card__icon dash-stat-card__icon--primary"><i class="bi bi-building"></i></div>
             <div class="dash-stat-card__body">
-
-                <div class="dash-stat-card__label">
-                    Assigned Classes
-                </div>
-
-                <div class="dash-stat-card__value">
-                    @Model.MyClassesCount
-                </div>
-
+                <div class="dash-stat-card__label">Assigned Classes</div>
+                <div class="dash-stat-card__value">@Model.MyClassesCount</div>
             </div>
-
         </div>
-
-        <!-- SUBJECTS -->
         <div class="dash-stat-card">
-
-            <div class="dash-stat-card__icon dash-stat-card__icon--success">
-
-                <i class="bi bi-book"></i>
-
-            </div>
-
+            <div class="dash-stat-card__icon dash-stat-card__icon--success"><i class="bi bi-book"></i></div>
             <div class="dash-stat-card__body">
-
-                <div class="dash-stat-card__label">
-                    My Subjects
-                </div>
-
-                <div class="dash-stat-card__value">
-                    @Model.MySubjectsCount
-                </div>
-
+                <div class="dash-stat-card__label">My Subjects</div>
+                <div class="dash-stat-card__value">@Model.MySubjectsCount</div>
             </div>
-
         </div>
-
-        <!-- ATTENDANCE -->
         <div class="dash-stat-card">
-
-            <div class="dash-stat-card__icon dash-stat-card__icon--info">
-
-                <i class="bi bi-check2-all"></i>
-
-            </div>
-
+            <div class="dash-stat-card__icon dash-stat-card__icon--info"><i class="bi bi-check2-all"></i></div>
             <div class="dash-stat-card__body">
-
-                <div class="dash-stat-card__label">
-                    Attendance Rate
-                </div>
-
-                <div class="dash-stat-card__value">
-                    @Model.AttendanceRate%
-                </div>
-
+                <div class="dash-stat-card__label">Attendance Rate</div>
+                <div class="dash-stat-card__value">@Model.AttendanceRate%</div>
             </div>
-
         </div>
-
-        <!-- RESULTS -->
         <div class="dash-stat-card">
-
-            <div class="dash-stat-card__icon dash-stat-card__icon--warning">
-
-                <i class="bi bi-pencil-square"></i>
-
-            </div>
-
+            <div class="dash-stat-card__icon dash-stat-card__icon--warning"><i class="bi bi-pencil-square"></i></div>
             <div class="dash-stat-card__body">
-
-                <div class="dash-stat-card__label">
-                    Pending Results
-                </div>
-
-                <div class="dash-stat-card__value">
-                    @Model.PendingResultEntries
-                </div>
-
+                <div class="dash-stat-card__label">Pending Results</div>
+                <div class="dash-stat-card__value">@Model.PendingResultEntries</div>
             </div>
-
         </div>
-
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--primary"><i class="bi bi-people"></i></div>
+            <div class="dash-stat-card__body">
+                <div class="dash-stat-card__label">Students Taught</div>
+                <div class="dash-stat-card__value">@Model.TotalStudentsTaught</div>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__icon dash-stat-card__icon--info"><i class="bi bi-bell"></i></div>
+            <div class="dash-stat-card__body">
+                <div class="dash-stat-card__label">Notifications</div>
+                <div class="notif-badge" data-count="@Model.TeacherUnreadNotificationCount">
+                    <span class="dash-stat-card__value">@Model.TeacherRecentNotifications.Count</span>
+                </div>
+            </div>
+        </div>
     </div>
 
     @if (Model.IsPrincipal && Model.PrincipalStats != null)
     {
         <!-- PRINCIPAL OVERVIEW -->
         <div class="dash-section">
-
             <div class="dash-section__header">
-
-                <h5 class="dash-section__title">
-
-                    <i class="bi bi-shield-lock-fill me-2"></i>
-
-                    School Financial & Resource Overview
-
-                </h5>
-
+                <h5 class="dash-section__title"><i class="bi bi-shield-lock-fill me-2"></i>School Financial & Resource Overview</h5>
             </div>
-
             <div class="row g-4">
-
-                <!-- REVENUE -->
                 <div class="col-lg-4">
-
                     <div class="adm-table-card h-100">
-
                         <div class="p-4">
-
                             <div class="d-flex justify-content-between align-items-start mb-3">
-
                                 <div>
-
-                                    <div class="dash-stat-card__label mb-2">
-                                        Monthly Revenue
-                                    </div>
-
-                                    <div class="dash-stat-card__value">
-                                        ৳ @Model.PrincipalStats.MonthlyRevenue.ToString("N0")
-                                    </div>
-
+                                    <div class="dash-stat-card__label mb-2">Monthly Revenue</div>
+                                    <div class="dash-stat-card__value">৳ @Model.PrincipalStats.MonthlyRevenue.ToString("N0")</div>
                                 </div>
-
-                                <span class="adm-status adm-status--approved">
-                                    +12%
-                                </span>
-
+                                <span class="adm-status adm-status--approved">+12%</span>
                             </div>
-
-                            <div class="progress mt-4">
-
-                                <div class="progress-bar bg-success"
-                                     role="progressbar"
-                                     style="width:70%">
-                                </div>
-
-                            </div>
-
+                            <div class="progress mt-4"><div class="progress-bar bg-success" role="progressbar" style="width:70%"></div></div>
                         </div>
-
                     </div>
-
                 </div>
-
-                <!-- DISTRIBUTION -->
                 <div class="col-lg-8">
-
                     <div class="adm-table-card h-100">
-
                         <div class="p-4">
-
-                            <h6 class="fw-bold mb-4">
-                                Global Resource Distribution
-                            </h6>
-
+                            <h6 class="fw-bold mb-4">Global Resource Distribution</h6>
                             <div class="row g-3">
-
                                 <div class="col-md-4">
-
                                     <div class="dash-action-card">
-
-                                        <div class="dash-action-card__icon dash-stat-card__icon--primary">
-
-                                            <i class="bi bi-people"></i>
-
-                                        </div>
-
-                                        <div class="dash-action-card__body">
-
-                                            <div class="dash-action-card__title">
-                                                Students
-                                            </div>
-
-                                            <div class="dash-action-card__sub">
-                                                @Model.PrincipalStats.TotalStudents
-                                            </div>
-
-                                        </div>
-
+                                        <div class="dash-action-card__icon dash-stat-card__icon--primary"><i class="bi bi-people"></i></div>
+                                        <div class="dash-action-card__body"><div class="dash-action-card__title">Students</div><div class="dash-action-card__sub">@Model.PrincipalStats.TotalStudents</div></div>
                                     </div>
-
                                 </div>
-
                                 <div class="col-md-4">
-
                                     <div class="dash-action-card">
-
-                                        <div class="dash-action-card__icon dash-stat-card__icon--success">
-
-                                            <i class="bi bi-person-badge"></i>
-
-                                        </div>
-
-                                        <div class="dash-action-card__body">
-
-                                            <div class="dash-action-card__title">
-                                                Staff
-                                            </div>
-
-                                            <div class="dash-action-card__sub">
-                                                @Model.PrincipalStats.TotalStaff
-                                            </div>
-
-                                        </div>
-
+                                        <div class="dash-action-card__icon dash-stat-card__icon--success"><i class="bi bi-person-badge"></i></div>
+                                        <div class="dash-action-card__body"><div class="dash-action-card__title">Staff</div><div class="dash-action-card__sub">@Model.PrincipalStats.TotalStaff</div></div>
                                     </div>
-
                                 </div>
-
                                 <div class="col-md-4">
-
                                     <div class="dash-action-card">
-
-                                        <div class="dash-action-card__icon dash-stat-card__icon--warning">
-
-                                            <i class="bi bi-cash-stack"></i>
-
-                                        </div>
-
-                                        <div class="dash-action-card__body">
-
-                                            <div class="dash-action-card__title">
-                                                Expense
-                                            </div>
-
-                                            <div class="dash-action-card__sub">
-                                                @Model.PrincipalStats.ExpensePercentage%
-                                            </div>
-
-                                        </div>
-
+                                        <div class="dash-action-card__icon dash-stat-card__icon--warning"><i class="bi bi-cash-stack"></i></div>
+                                        <div class="dash-action-card__body"><div class="dash-action-card__title">Expense</div><div class="dash-action-card__sub">@Model.PrincipalStats.ExpensePercentage%</div></div>
                                     </div>
-
                                 </div>
-
                             </div>
-
                         </div>
-
                     </div>
-
                 </div>
-
             </div>
-
         </div>
     }
 
-    <div class="row g-4">
+    <!-- Tabs -->
+    <div class="teacher-tab">
+        <button class="teacher-tab__btn teacher-tab__btn--active" data-tab="overview">Overview</button>
+        <button class="teacher-tab__btn" data-tab="schedule">Schedule</button>
+        <button class="teacher-tab__btn" data-tab="marks">Mark Entry</button>
+        <button class="teacher-tab__btn" data-tab="assignments">Assignments @if(Model.TotalAssignments > 0){<span class="teacher-tab__badge">@Model.TotalAssignments</span>}</button>
+        <button class="teacher-tab__btn" data-tab="notifications">Notifications @if(Model.TeacherUnreadNotificationCount > 0){<span class="teacher-tab__badge">@Model.TeacherUnreadNotificationCount</span>}</button>
+    </div>
 
-        <!-- LEFT -->
-        <div class="col-lg-8">
+    <!-- TAB: Overview -->
+    <div class="teacher-panel" id="tab-overview">
+        <div class="row g-4">
+            <div class="col-lg-8">
 
-            <!-- MY ASSIGNMENTS -->
-            <div class="row g-4 mb-4">
-                <!-- CLASS TEACHER AREA -->
-                <div class="col-md-6">
-                    <div class="adm-table-card h-100">
-                        <div class="dash-section__header p-4 border-bottom">
-                            <h5 class="dash-section__title">Class Teacher Area</h5>
+                <!-- CLASS TEACHER / SUBJECT TEACHER AREA -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-6">
+                        <div class="adm-table-card h-100">
+                            <div class="dash-section__header p-4 border-bottom"><h5 class="dash-section__title">Class Teacher Area</h5></div>
+                            <div class="p-4">
+                                <h6 class="fw-bold mb-2">My Classes</h6>
+                                @if (Model.MyClasses.Any())
+                                {
+                                    <ul class="list-unstyled">
+                                        @foreach (var cls in Model.MyClasses)
+                                        {
+                                            <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>@cls</li>
+                                        }
+                                    </ul>
+                                }
+                                else
+                                {
+                                    <p class="text-muted">No classes assigned as class teacher.</p>
+                                }
+                                <hr />
+                                <h6 class="fw-bold mb-2">Quick Actions</h6>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <a href="/StudentAttendance" class="adm-btn adm-btn--sm adm-btn--primary">Mark Attendance</a>
+                                    <a href="/StudentAttendance/Report" class="adm-btn adm-btn--sm adm-btn--ghost">Attendance Reports</a>
+                                    <a href="/Teacher/ExamRoutine" class="adm-btn adm-btn--sm adm-btn--info">Exam Routine</a>
+                                </div>
+                            </div>
                         </div>
-                        <div class="p-4">
-                            <h6 class="fw-bold mb-2">My Classes</h6>
-                            @if (Model.MyClasses.Any())
-                            {
-                                <ul class="list-unstyled">
-                                    @foreach (var cls in Model.MyClasses)
-                                    {
-                                        <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i>@cls</li>
-                                    }
-                                </ul>
-                            }
-                            else
-                            {
-                                <p class="text-muted">No classes assigned as class teacher.</p>
-                            }
-                            <hr />
-                            <h6 class="fw-bold mb-2">Quick Actions</h6>
-                            <div class="d-flex flex-wrap gap-2">
-                                <a href="/StudentAttendance" class="adm-btn adm-btn--sm adm-btn--primary">Mark Attendance</a>
-                                <a href="/StudentAttendance/Report" class="adm-btn adm-btn--sm adm-btn--ghost">Attendance Reports</a>
-                                <a href="/Teacher/ExamRoutine" class="adm-btn adm-btn--sm adm-btn--info">Exam Routine</a>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="adm-table-card h-100">
+                            <div class="dash-section__header p-4 border-bottom"><h5 class="dash-section__title">Subject Teacher Area</h5></div>
+                            <div class="p-4">
+                                <h6 class="fw-bold mb-2">My Subjects</h6>
+                                @if (Model.MySubjects.Any())
+                                {
+                                    <ul class="list-unstyled">
+                                        @foreach (var sub in Model.MySubjects)
+                                        {
+                                            <li class="mb-2"><i class="bi bi-book-half text-info me-2"></i>@sub</li>
+                                        }
+                                    </ul>
+                                }
+                                else
+                                {
+                                    <p class="text-muted">No subjects assigned as subject teacher.</p>
+                                }
+                                <hr />
+                                <h6 class="fw-bold mb-2">Quick Actions</h6>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <a href="/Marks" class="adm-btn adm-btn--sm adm-btn--success">Enter Marks</a>
+                                    <a href="/Result/Analytics" class="adm-btn adm-btn--sm adm-btn--ghost">Result Analytics</a>
+                                    <a href="/Teacher/ExamRoutine" class="adm-btn adm-btn--sm adm-btn--info">Exam Routine</a>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- SUBJECT TEACHER AREA -->
-                <div class="col-md-6">
-                    <div class="adm-table-card h-100">
-                        <div class="dash-section__header p-4 border-bottom">
-                            <h5 class="dash-section__title">Subject Teacher Area</h5>
-                        </div>
-                        <div class="p-4">
-                            <h6 class="fw-bold mb-2">My Subjects</h6>
-                            @if (Model.MySubjects.Any())
-                            {
-                                <ul class="list-unstyled">
-                                    @foreach (var sub in Model.MySubjects)
-                                    {
-                                        <li class="mb-2"><i class="bi bi-book-half text-info me-2"></i>@sub</li>
-                                    }
-                                </ul>
-                            }
-                            else
-                            {
-                                <p class="text-muted">No subjects assigned as subject teacher.</p>
-                            }
-                            <hr />
-                            <h6 class="fw-bold mb-2">Quick Actions</h6>
-                            <div class="d-flex flex-wrap gap-2">
-                                <a href="/Marks" class="adm-btn adm-btn--sm adm-btn--success">Enter Marks</a>
-                                <a href="/Result/Analytics" class="adm-btn adm-btn--sm adm-btn--ghost">Result Analytics</a>
-                                <a href="/Teacher/ExamRoutine" class="adm-btn adm-btn--sm adm-btn--info">Exam Routine</a>
+                <!-- LEAVE STATUS -->
+                <div class="adm-table-card mb-4">
+                    <div class="dash-section__header p-4 border-bottom"><h5 class="dash-section__title">Leave Status</h5></div>
+                    <div class="p-4">
+                        <div class="row g-3 text-center">
+                            <div class="col-3">
+                                <div class="fw-bold fs-4 text-primary">@Model.LeaveStatus.TotalLeaves</div>
+                                <small class="text-muted">Total</small>
+                            </div>
+                            <div class="col-3">
+                                <div class="fw-bold fs-4 text-success">@Model.LeaveStatus.ApprovedLeaves</div>
+                                <small class="text-muted">Approved</small>
+                            </div>
+                            <div class="col-3">
+                                <div class="fw-bold fs-4 text-warning">@Model.LeaveStatus.PendingLeaves</div>
+                                <small class="text-muted">Pending</small>
+                            </div>
+                            <div class="col-3">
+                                <div class="fw-bold fs-4 text-danger">@Model.LeaveStatus.RejectedLeaves</div>
+                                <small class="text-muted">Rejected</small>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- TODAY'S SCHEDULE -->
+                <div class="adm-table-card">
+                    <div class="dash-section__header p-4 border-bottom">
+                        <h5 class="dash-section__title">My Schedule (Today)</h5>
+                        <a href="#" onclick="switchTab('schedule'); return false;" class="adm-btn adm-btn--ghost adm-btn--sm">View Full Week</a>
+                    </div>
+                    <div class="p-4">
+                        @if (Model.TodaySchedule.Any())
+                        {
+                            <div class="d-flex flex-column gap-3">
+                                @foreach (var item in Model.TodaySchedule)
+                                {
+                                    <div class="schedule-item">
+                                        <div class="schedule-time-box">
+                                            <div class="fw-bold text-primary small">@item.StartTime.ToString(@"hh\:mm")</div>
+                                            <div class="x-small text-muted">@(item.StartTime.Hours < 12 ? "AM" : "PM")</div>
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <h6 class="fw-bold mb-0">@item.SubjectName</h6>
+                                            <p class="text-muted small mb-0">@item.ClassName, Section @item.SectionName@(string.IsNullOrEmpty(item.RoomNo) ? "" : " (Room " + item.RoomNo + ")")</p>
+                                        </div>
+                                        <span class="adm-status adm-status--approved">Scheduled</span>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="dash-empty">
+                                <i class="bi bi-calendar-x fs-1"></i>
+                                <h6 class="dash-empty__title">No Classes Today</h6>
+                                <p class="dash-empty__sub">You have no scheduled classes for today.</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+
             </div>
 
-            <!-- RESULT STATUS -->
-            <div class="adm-table-card mb-4">
+            <!-- RIGHT COLUMN -->
+            <div class="col-lg-4">
 
-                <div class="dash-section__header p-4 border-bottom">
-
-                    <h5 class="dash-section__title">
-                        Result Entry Status
-                    </h5>
-
-                    <a href="/ResultManagement/TeacherEntry"
-                       class="adm-btn adm-btn--primary">
-
-                        Entry Results
-
-                    </a>
-
+                <!-- NOTICES -->
+                <div class="adm-table-card mb-4">
+                    <div class="dash-section__header p-4 border-bottom">
+                        <h5 class="dash-section__title">Latest Notices</h5>
+                    </div>
+                    <div>
+                        @if (Model.RecentNotices.Any())
+                        {
+                            @foreach (var notice in Model.RecentNotices)
+                            {
+                                <a href="#" class="dash-action-card border-0 border-bottom rounded-0">
+                                    <div class="dash-action-card__body">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div class="dash-action-card__title">@notice.Title</div>
+                                            <div class="x-small text-muted">@notice.At.ToString("dd MMM")</div>
+                                        </div>
+                                        <div class="dash-action-card__sub">@notice.Summary</div>
+                                    </div>
+                                </a>
+                            }
+                        }
+                        else
+                        {
+                            <div class="p-4 text-center text-muted small">No notices available.</div>
+                        }
+                    </div>
+                    <div class="p-3 text-center border-top">
+                        <a href="/Communication" class="adm-btn adm-btn--ghost">View All Notices</a>
+                    </div>
                 </div>
 
-                <div class="table-responsive">
+                <!-- NOTIFICATIONS -->
+                <div class="adm-table-card mb-4">
+                    <div class="dash-section__header p-4 border-bottom">
+                        <h5 class="dash-section__title">
+                            Recent Notifications
+                            @if (Model.TeacherUnreadNotificationCount > 0)
+                            {
+                                <span class="teacher-tab__badge">@Model.TeacherUnreadNotificationCount</span>
+                            }
+                        </h5>
+                    </div>
+                    <div>
+                        @if (Model.TeacherRecentNotifications.Any())
+                        {
+                            @foreach (var n in Model.TeacherRecentNotifications)
+                            {
+                                <div class="dash-action-card border-0 border-bottom rounded-0 @(n.IsRead ? "" : "bg-light")">
+                                    <div class="dash-action-card__body">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div class="dash-action-card__title">
+                                                @n.Title
+                                                @if (!n.IsRead)
+                                                {
+                                                    <span class="badge bg-danger ms-1" style="font-size:8px;vertical-align:middle;">New</span>
+                                                }
+                                            </div>
+                                            <div class="x-small text-muted">@(n.SentAt?.ToString("dd MMM") ?? "")</div>
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(n.Body))
+                                        {
+                                            <div class="dash-action-card__sub">@n.Body</div>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="p-4 text-center text-muted small">No notifications.</div>
+                        }
+                    </div>
+                </div>
 
-                    <table class="dash-table">
+                <!-- QUICK HELP -->
+                <div class="dashboard-hero">
+                    <div class="dashboard-hero__content">
+                        <h5 class="fw-bold mb-3">Quick Help</h5>
+                        <p class="opacity-75 mb-4">Need assistance with the system or student grading?</p>
+                        <button class="adm-btn adm-btn--ghost bg-white text-primary">Contact Support</button>
+                    </div>
+                </div>
 
-                        <thead>
+            </div>
+        </div>
+    </div>
 
+    <!-- TAB: Schedule (Weekly) -->
+    <div class="teacher-panel d-none" id="tab-schedule">
+        <div class="adm-table-card">
+            <div class="dash-section__header p-4 border-bottom">
+                <h5 class="dash-section__title">Weekly Schedule</h5>
+            </div>
+            <div class="p-4">
+                @{
+                    var dayOrder = new[] { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
+                    var grouped = Model.WeeklySchedule.GroupBy(s => s.DayOfWeek).OrderBy(g => Array.IndexOf(dayOrder, g.Key));
+                }
+                @if (Model.WeeklySchedule.Any())
+                {
+                    <div class="row g-4">
+                        @foreach (var dayGroup in grouped)
+                        {
+                            <div class="col-md-6 col-lg-4 mb-3">
+                                <div class="card h-100">
+                                    <div class="card-header fw-bold bg-light">@dayGroup.Key</div>
+                                    <div class="card-body p-3">
+                                        @foreach (var item in dayGroup.OrderBy(s => s.StartTime))
+                                        {
+                                            <div class="d-flex align-items-center gap-2 mb-2 pb-2 border-bottom border-light">
+                                                <div class="small text-primary fw-bold" style="min-width:50px;">@item.StartTime.ToString(@"hh\:mm")</div>
+                                                <div>
+                                                    <div class="fw-bold small">@item.SubjectName</div>
+                                                    <div class="x-small text-muted">@item.ClassName - @item.SectionName@(string.IsNullOrEmpty(item.RoomNo) ? "" : $" | {item.RoomNo}")</div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="dash-empty">
+                        <i class="bi bi-calendar-week fs-1"></i>
+                        <h6 class="dash-empty__title">No Schedule Found</h6>
+                        <p class="dash-empty__sub">Your weekly timetable is not yet configured.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB: Mark Entry -->
+    <div class="teacher-panel d-none" id="tab-marks">
+        <div class="adm-table-card">
+            <div class="dash-section__header p-4 border-bottom">
+                <h5 class="dash-section__title">Mark Entry Status</h5>
+                <a href="/ResultManagement/TeacherEntry" class="adm-btn adm-btn--primary">Enter Results</a>
+            </div>
+            <div class="table-responsive">
+                <table class="dash-table">
+                    <thead>
+                        <tr>
+                            <th>Subject</th>
+                            <th>Exam</th>
+                            <th>Class / Section</th>
+                            <th>Entered / Total</th>
+                            <th>Status</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.MarkEntryStatus.Any())
+                        {
+                            @foreach (var item in Model.MarkEntryStatus)
+                            {
+                                <tr>
+                                    <td><div class="fw-bold">@item.SubjectName</div></td>
+                                    <td><div class="x-small text-muted">@item.ExamName</div></td>
+                                    <td>@item.ClassName - @item.SectionName</td>
+                                    <td>@item.MarksEntered / @item.TotalStudents</td>
+                                    <td>
+                                        @if (item.PendingCount == 0 && item.TotalStudents > 0)
+                                        {
+                                            <span class="adm-status adm-status--approved">Complete</span>
+                                        }
+                                        else if (item.MarksEntered > 0)
+                                        {
+                                            <span class="adm-status adm-status--pending">Partial (@item.PendingCount pending)</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="adm-status adm-status--neutral">Pending</span>
+                                        }
+                                    </td>
+                                    <td class="text-end"><a href="/Marks" class="adm-btn adm-btn--ghost">Edit</a></td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
                             <tr>
-
-                                <th>Subject</th>
-
-                                <th>Class / Section</th>
-
-                                <th>Status</th>
-
-                                <th class="text-end">
-                                    Action
-                                </th>
-
+                                <td colspan="6">
+                                    <div class="dash-empty">
+                                        <i class="bi bi-journal-x fs-1"></i>
+                                        <h6 class="dash-empty__title">No Mark Entry Tasks</h6>
+                                        <p class="dash-empty__sub">You have no assigned mark entry tasks.</p>
+                                    </div>
+                                </td>
                             </tr>
-
-                        </thead>
-
-                        <tbody>
-
-                            @if (Model.MySubjectsCount > 0)
-                            {
-                                <tr>
-
-                                    <td>
-
-                                        <div class="fw-bold">
-                                            Physics
-                                        </div>
-
-                                        <div class="x-small text-muted">
-                                            Final Exam 2026
-                                        </div>
-
-                                    </td>
-
-                                    <td>
-                                        Class 10 - Sec A
-                                    </td>
-
-                                    <td>
-
-                                        <span class="adm-status adm-status--pending">
-                                            Pending
-                                        </span>
-
-                                    </td>
-
-                                    <td class="text-end">
-
-                                        <a href="/Marks" class="adm-btn adm-btn--ghost">
-
-                                            Edit
-
-                                        </a>
-
-                                    </td>
-
-                                </tr>
-                            }
-                            else
-                            {
-                                <tr>
-
-                                    <td colspan="4">
-
-                                        <div class="dash-empty">
-
-                                            <i class="bi bi-journal-x fs-1"></i>
-
-                                            <h6 class="dash-empty__title">
-                                                No Tasks Assigned
-                                            </h6>
-
-                                            <p class="dash-empty__sub">
-                                                No result entry tasks assigned.
-                                            </p>
-
-                                        </div>
-
-                                    </td>
-
-                                </tr>
-                            }
-
-                        </tbody>
-
-                    </table>
-
-                </div>
-
+                        }
+                    </tbody>
+                </table>
             </div>
-
-            <!-- SCHEDULE -->
-            <div class="adm-table-card">
-
-                <div class="dash-section__header p-4 border-bottom">
-
-                    <h5 class="dash-section__title">
-
-                        My Schedule (Today)
-
-                    </h5>
-
-                </div>
-
-                <div class="p-4">
-
-                    <div class="d-flex flex-column gap-3">
-
-                        <!-- ITEM -->
-                        <div class="schedule-item">
-
-                            <div class="schedule-time-box">
-
-                                <div class="fw-bold text-primary small">
-                                    09:00
-                                </div>
-
-                                <div class="x-small text-muted">
-                                    AM
-                                </div>
-
-                            </div>
-
-                            <div class="flex-grow-1">
-
-                                <h6 class="fw-bold mb-0">
-                                    Physics 1st Paper
-                                </h6>
-
-                                <p class="text-muted small mb-0">
-                                    Class 10, Section A (Room 302)
-                                </p>
-
-                            </div>
-
-                            <span class="adm-status adm-status--approved">
-
-                                Live
-
-                            </span>
-
-                        </div>
-
-                        <!-- ITEM -->
-                        <div class="schedule-item">
-
-                            <div class="schedule-time-box">
-
-                                <div class="fw-bold text-primary small">
-                                    11:30
-                                </div>
-
-                                <div class="x-small text-muted">
-                                    AM
-                                </div>
-
-                            </div>
-
-                            <div class="flex-grow-1">
-
-                                <h6 class="fw-bold mb-0">
-                                    Mathematics
-                                </h6>
-
-                                <p class="text-muted small mb-0">
-                                    Class 9, Section B (Room 205)
-                                </p>
-
-                            </div>
-
-                            <span class="adm-status adm-status--neutral">
-
-                                Next
-
-                            </span>
-
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
         </div>
+    </div>
 
-        <!-- RIGHT -->
-        <div class="col-lg-4">
+    <!-- TAB: Assignments -->
+    <div class="teacher-panel d-none" id="tab-assignments">
+        <div class="adm-table-card">
+            <div class="dash-section__header p-4 border-bottom">
+                <h5 class="dash-section__title">My Assignments (@Model.TotalAssignments total)</h5>
+                <a href="/Assignment/Create" class="adm-btn adm-btn--primary">Create Assignment</a>
+            </div>
+            <div class="table-responsive">
+                <table class="dash-table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Subject</th>
+                            <th>Deadline</th>
+                            <th>Status</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.RecentAssignments.Any())
+                        {
+                            @foreach (var a in Model.RecentAssignments)
+                            {
+                                <tr>
+                                    <td><div class="fw-bold">@a.Title</div></td>
+                                    <td>@a.SubjectName</td>
+                                    <td>@a.Deadline.ToString("dd MMM yyyy")</td>
+                                    <td>
+                                        @if (a.Deadline < DateTime.UtcNow)
+                                        {
+                                            <span class="adm-status adm-status--danger">Overdue</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="adm-status adm-status--approved">Open</span>
+                                        }
+                                    </td>
+                                    <td class="text-end"><a href="/Assignment/Edit/@a.Id" class="adm-btn adm-btn--ghost">View</a></td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <td colspan="5">
+                                    <div class="dash-empty">
+                                        <i class="bi bi-journal-text fs-1"></i>
+                                        <h6 class="dash-empty__title">No Assignments</h6>
+                                        <p class="dash-empty__sub">You haven't created any assignments yet.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
-            <!-- NOTICES -->
-            <div class="adm-table-card mb-4">
-
-                <div class="dash-section__header p-4 border-bottom">
-
-                    <h5 class="dash-section__title">
-
-                        Latest Notices
-
-                    </h5>
-
-                </div>
-
-                <div>
-
-                    @foreach (var notice in Model.RecentNotices)
+    <!-- TAB: Notifications -->
+    <div class="teacher-panel d-none" id="tab-notifications">
+        <div class="adm-table-card">
+            <div class="dash-section__header p-4 border-bottom">
+                <h5 class="dash-section__title">
+                    All Notifications
+                    @if (Model.TeacherUnreadNotificationCount > 0)
                     {
-                        <a href="#"
-                           class="dash-action-card border-0 border-bottom rounded-0">
-
-                            <div class="dash-action-card__body">
-
-                                <div class="d-flex justify-content-between align-items-start">
-
-                                    <div class="dash-action-card__title">
-
-                                        @notice.Title
-
-                                    </div>
-
-                                    <div class="x-small text-muted">
-
-                                        @notice.At.ToString("dd MMM")
-
-                                    </div>
-
-                                </div>
-
-                                <div class="dash-action-card__sub">
-
-                                    @notice.Summary
-
-                                </div>
-
-                            </div>
-
-                        </a>
+                        <span class="teacher-tab__badge">@Model.TeacherUnreadNotificationCount unread</span>
                     }
-
-                </div>
-
-                <div class="p-3 text-center border-top">
-
-                    <a href="/Communication"
-                       class="adm-btn adm-btn--ghost">
-
-                        View All Notices
-
-                    </a>
-
-                </div>
-
+                </h5>
             </div>
-
-            <!-- SUPPORT -->
-            <div class="dashboard-hero">
-
-                <div class="dashboard-hero__content">
-
-                    <h5 class="fw-bold mb-3">
-                        Quick Help
-                    </h5>
-
-                    <p class="opacity-75 mb-4">
-
-                        Need assistance with the system or student grading?
-
-                    </p>
-
-                    <button class="adm-btn adm-btn--ghost bg-white text-primary">
-
-                        Contact Support
-
-                    </button>
-
-                </div>
-
+            <div>
+                @if (Model.TeacherRecentNotifications.Any())
+                {
+                    @foreach (var n in Model.TeacherRecentNotifications)
+                    {
+                        <div class="dash-action-card border-0 border-bottom rounded-0 @(n.IsRead ? "" : "bg-light border-start border-primary border-3")">
+                            <div class="dash-action-card__body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <div class="dash-action-card__title">
+                                            @n.Title
+                                            @if (!n.IsRead)
+                                            {
+                                                <span class="badge bg-danger ms-2">New</span>
+                                            }
+                                        </div>
+                                        @if (!string.IsNullOrEmpty(n.Body))
+                                        {
+                                            <div class="dash-action-card__sub mt-1">@n.Body</div>
+                                        }
+                                    </div>
+                                    <div class="x-small text-muted text-nowrap ms-3">@(n.SentAt?.ToString("dd MMM yyyy") ?? "")</div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="dash-empty">
+                        <i class="bi bi-bell-slash fs-1"></i>
+                        <h6 class="dash-empty__title">No Notifications</h6>
+                        <p class="dash-empty__sub">You're all caught up!</p>
+                    </div>
+                }
             </div>
-
         </div>
-
     </div>
 
 </div>
+
+<script>
+    // Tab switching
+    document.querySelectorAll('.teacher-tab__btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.teacher-tab__btn').forEach(function(b) { b.classList.remove('teacher-tab__btn--active'); });
+            this.classList.add('teacher-tab__btn--active');
+            var tab = this.getAttribute('data-tab');
+            document.querySelectorAll('.teacher-panel').forEach(function(p) { p.classList.add('d-none'); });
+            var panel = document.getElementById('tab-' + tab);
+            if (panel) panel.classList.remove('d-none');
+        });
+    });
+
+    function switchTab(tab) {
+        var btn = document.querySelector('.teacher-tab__btn[data-tab="' + tab + '"]');
+        if (btn) btn.click();
+    }
+</script>

@@ -184,6 +184,31 @@
 
     </div>
 
+    <!-- TAB NAVIGATION -->
+    <div class="adm-tabs mb-4" style="display:flex;gap:4px;border-bottom:2px solid var(--adm-border);padding-bottom:0;">
+        <button class="adm-tab adm-tab--active" data-tab="overview" onclick="switchTab('overview')" style="padding:10px 20px;border:none;background:none;cursor:pointer;font-weight:600;color:var(--adm-text);border-bottom:2px solid var(--adm-primary);margin-bottom:-2px;">
+            <i class="bi bi-grid-1x2 me-1"></i> Overview
+        </button>
+        <button class="adm-tab" data-tab="finance" onclick="switchTab('finance')" style="padding:10px 20px;border:none;background:none;cursor:pointer;font-weight:500;color:var(--adm-text-3);border-bottom:2px solid transparent;">
+            <i class="bi bi-cash-coin me-1"></i> Finance
+        </button>
+        <button class="adm-tab" data-tab="routine" onclick="switchTab('routine')" style="padding:10px 20px;border:none;background:none;cursor:pointer;font-weight:500;color:var(--adm-text-3);border-bottom:2px solid transparent;">
+            <i class="bi bi-calendar-week me-1"></i> Routine
+        </button>
+        <button class="adm-tab" data-tab="assignments" onclick="switchTab('assignments')" style="padding:10px 20px;border:none;background:none;cursor:pointer;font-weight:500;color:var(--adm-text-3);border-bottom:2px solid transparent;">
+            <i class="bi bi-journal-check me-1"></i> Assignments
+        </button>
+        <button class="adm-tab" data-tab="library" onclick="switchTab('library')" style="padding:10px 20px;border:none;background:none;cursor:pointer;font-weight:500;color:var(--adm-text-3);border-bottom:2px solid transparent;">
+            <i class="bi bi-book me-1"></i> Library
+        </button>
+        <button class="adm-tab" data-tab="notifications" onclick="switchTab('notifications')" style="padding:10px 20px;border:none;background:none;cursor:pointer;font-weight:500;color:var(--adm-text-3);border-bottom:2px solid transparent;">
+            <i class="bi bi-bell me-1"></i> Notifications @if(Model.UnreadNotificationCount > 0){<span class="badge bg-danger ms-1" style="font-size:10px;">@Model.UnreadNotificationCount</span>}
+        </button>
+    </div>
+
+    <!-- TAB: OVERVIEW -->
+    <div id="tab-overview" class="tab-panel" style="display:block;">
+
     <!-- LATEST RESULTS -->
     @if (Model.Results.Any())
     {
@@ -526,12 +551,372 @@
 
     </div>
 
-</div>
+    </div> <!-- /tab-overview -->
+
+    <!-- TAB: FINANCE -->
+    <div id="tab-finance" class="tab-panel" style="display:none;">
+        <div class="row g-3 mb-4" id="finance-summary">
+            <div class="col-md-3">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-card__icon dash-stat-card__icon--primary"><i class="bi bi-receipt"></i></div>
+                    <div class="dash-stat-card__body">
+                        <div class="dash-stat-card__label">Total Invoiced</div>
+                        <div class="dash-stat-card__value" id="fin-total-invoiced">--</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-card__icon dash-stat-card__icon--success"><i class="bi bi-check-circle"></i></div>
+                    <div class="dash-stat-card__body">
+                        <div class="dash-stat-card__label">Total Paid</div>
+                        <div class="dash-stat-card__value" id="fin-total-paid">--</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-card__icon dash-stat-card__icon--warning"><i class="bi bi-exclamation-circle"></i></div>
+                    <div class="dash-stat-card__body">
+                        <div class="dash-stat-card__label">Total Due</div>
+                        <div class="dash-stat-card__value" id="fin-total-due">--</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-card__icon dash-stat-card__icon--info"><i class="bi bi-clock-history"></i></div>
+                    <div class="dash-stat-card__body">
+                        <div class="dash-stat-card__label">Last Payment</div>
+                        <div class="dash-stat-card__value" id="fin-last-payment">--</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="adm-table-card mb-4">
+            <div style="padding:16px 20px;border-bottom:1px solid var(--adm-border);">
+                <h5 style="margin:0;font-weight:700;"><i class="bi bi-file-text me-2"></i>Invoice List</h5>
+            </div>
+            <div class="p-3"><div id="invoice-grid"></div></div>
+        </div>
+
+        <div class="adm-table-card mb-4">
+            <div style="padding:16px 20px;border-bottom:1px solid var(--adm-border);">
+                <h5 style="margin:0;font-weight:700;"><i class="bi bi-credit-card me-2"></i>Payment History</h5>
+            </div>
+            <div class="p-3"><div id="payment-grid"></div></div>
+        </div>
+
+        <div class="adm-table-card mb-4">
+            <div style="padding:16px 20px;border-bottom:1px solid var(--adm-border);">
+                <h5 style="margin:0;font-weight:700;"><i class="bi bi-journal-text me-2"></i>Fee Ledger</h5>
+            </div>
+            <div class="p-3"><div id="ledger-grid"></div></div>
+        </div>
+    </div>
+
+    <!-- TAB: ROUTINE -->
+    <div id="tab-routine" class="tab-panel" style="display:none;">
+        <div class="adm-table-card mb-4">
+            <div style="padding:16px 20px;border-bottom:1px solid var(--adm-border);">
+                <h5 style="margin:0;font-weight:700;"><i class="bi bi-clock me-2"></i>Today's Classes (@Model.RoutineWidget.TodayClasses.Count)</h5>
+            </div>
+            <div class="p-3">
+                @if (Model.RoutineWidget.TodayClasses.Any())
+                {
+                    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px;">
+                        @foreach (var cls in Model.RoutineWidget.TodayClasses)
+                        {
+                            <div style="padding:16px;border-radius:var(--adm-radius-md);border:1px solid var(--adm-border);background:var(--adm-bg-2);">
+                                <div style="font-weight:700;font-size:14px;">@cls.SubjectName</div>
+                                <div style="font-size:12px;color:var(--adm-text-3);margin-top:8px;">
+                                    <div>@cls.StartTime.ToString(@"hh\:mm") - @cls.EndTime.ToString(@"hh\:mm")</div>
+                                    <div>@cls.TeacherName</div>
+                                    @if (!string.IsNullOrEmpty(cls.RoomNo)) { <div>Room: @cls.RoomNo</div> }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-4" style="color:var(--adm-text-3);">No classes scheduled for today.</div>
+                }
+            </div>
+        </div>
+
+        <div class="adm-table-card">
+            <div style="padding:16px 20px;border-bottom:1px solid var(--adm-border);">
+                <h5 style="margin:0;font-weight:700;"><i class="bi bi-calendar-week me-2"></i>This Week</h5>
+            </div>
+            <div class="p-3">
+                @if (Model.RoutineWidget.ThisWeekClasses.Any())
+                {
+                    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px;">
+                        @foreach (var cls in Model.RoutineWidget.ThisWeekClasses)
+                        {
+                            <div style="padding:16px;border-radius:var(--adm-radius-md);border:1px solid var(--adm-border);background:var(--adm-bg-2);">
+                                <div style="display:flex;justify-content:space-between;align-items:center;">
+                                    <span class="adm-badge adm-badge--primary" style="font-size:11px;">@cls.DayOfWeek</span>
+                                    <span style="font-size:11px;color:var(--adm-text-3);">@cls.StartTime.ToString(@"hh\:mm")</span>
+                                </div>
+                                <div style="font-weight:700;font-size:14px;margin-top:8px;">@cls.SubjectName</div>
+                                <div style="font-size:12px;color:var(--adm-text-3);">@cls.TeacherName</div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-4" style="color:var(--adm-text-3);">No classes scheduled for this week.</div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB: ASSIGNMENTS -->
+    <div id="tab-assignments" class="tab-panel" style="display:none;">
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-card__icon dash-stat-card__icon--warning"><i class="bi bi-clock"></i></div>
+                    <div class="dash-stat-card__body">
+                        <div class="dash-stat-card__label">Pending</div>
+                        <div class="dash-stat-card__value">@Model.PendingAssignmentCount</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-card__icon dash-stat-card__icon--success"><i class="bi bi-check-all"></i></div>
+                    <div class="dash-stat-card__body">
+                        <div class="dash-stat-card__label">Submitted</div>
+                        <div class="dash-stat-card__value">@Model.SubmittedAssignmentCount</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-card__icon dash-stat-card__icon--danger"><i class="bi bi-exclamation-triangle"></i></div>
+                    <div class="dash-stat-card__body">
+                        <div class="dash-stat-card__label">Overdue</div>
+                        <div class="dash-stat-card__value">@Model.OverdueAssignmentCount</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="adm-table-card">
+            <div class="p-3"><div id="assignment-full-grid"></div></div>
+        </div>
+    </div>
+
+    <!-- TAB: LIBRARY -->
+    <div id="tab-library" class="tab-panel" style="display:none;">
+        <div class="adm-table-card mb-4">
+            <div style="padding:16px 20px;border-bottom:1px solid var(--adm-border);">
+                <h5 style="margin:0;font-weight:700;"><i class="bi bi-book me-2"></i>Issued Books (@Model.TotalIssuedBooks)</h5>
+            </div>
+            <div class="p-3">
+                @if (Model.IssuedBooks.Any())
+                {
+                    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px;">
+                        @foreach (var book in Model.IssuedBooks)
+                        {
+                            <div style="padding:16px;border-radius:var(--adm-radius-md);border:1px solid var(--adm-border);background:var(--adm-bg-2);">
+                                <div style="font-weight:700;font-size:14px;">@book.BookTitle</div>
+                                <div style="font-size:12px;color:var(--adm-text-3);margin-top:6px;">
+                                    <div>Author: @book.Author</div>
+                                    <div>Issue: @book.IssueDate.ToString("dd MMM yyyy")</div>
+                                    <div>Due: @book.DueDate.ToString("dd MMM yyyy")</div>
+                                    @if (book.ReturnedDate.HasValue) { <div>Returned: @book.ReturnedDate.Value.ToString("dd MMM yyyy")</div> }
+                                    @if (book.FineAmount > 0) { <div style="color:var(--adm-danger);">Fine: ৳@book.FineAmount</div> }
+                                </div>
+                                <div style="margin-top:8px;">
+                                    <span class="adm-badge @(book.Status == "Issued" ? "adm-badge--warning" : "adm-badge--success")">@book.Status</span>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-4" style="color:var(--adm-text-3);">No books currently issued.</div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- TAB: NOTIFICATIONS -->
+    <div id="tab-notifications" class="tab-panel" style="display:none;">
+        <div class="adm-table-card mb-4">
+            <div style="padding:16px 20px;border-bottom:1px solid var(--adm-border);display:flex;align-items:center;justify-content:space-between;">
+                <h5 style="margin:0;font-weight:700;"><i class="bi bi-bell me-2"></i>Notifications</h5>
+                @if (Model.UnreadNotificationCount > 0)
+                {
+                    <span class="adm-badge adm-badge--danger">@Model.UnreadNotificationCount unread</span>
+                }
+            </div>
+            <div class="p-3">
+                @if (Model.RecentNotifications.Any())
+                {
+                    <div style="display:flex;flex-direction:column;gap:8px;">
+                        @foreach (var notif in Model.RecentNotifications)
+                        {
+                            <div style="padding:16px;border-radius:var(--adm-radius-md);border:1px solid var(--adm-border);background:@(notif.IsRead ? "var(--adm-bg-2)" : "var(--adm-bg-sub)");@(notif.IsRead ? "" : "border-left:3px solid var(--adm-primary);")">
+                                <div style="display:flex;justify-content:space-between;align-items:center;">
+                                    <div style="font-weight:600;font-size:14px;">@notif.Title</div>
+                                    @if (!notif.IsRead) { <span class="adm-badge adm-badge--primary" style="font-size:10px;">New</span> }
+                                </div>
+                                @if (!string.IsNullOrEmpty(notif.Body))
+                                {
+                                    <div style="font-size:12px;color:var(--adm-text-3);margin-top:6px;">@notif.Body</div>
+                                }
+                                <div style="font-size:11px;color:var(--adm-text-3);margin-top:8px;">
+                                    @(notif.SentAt?.ToString("dd MMM yyyy hh:mm tt") ?? notif.CreatedAt.ToString("dd MMM yyyy hh:mm tt"))
+                                </div>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="text-center py-4" style="color:var(--adm-text-3);">No notifications.</div>
+                }
+            </div>
+        </div>
+    </div>
+
+</div> <!-- /adm-page -->
 
 @section Scripts {
 
     <script>
 
+        // Tab switching
+        function switchTab(name) {
+            document.querySelectorAll('.tab-panel').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.adm-tab').forEach(el => {
+                el.style.color = 'var(--adm-text-3)';
+                el.style.fontWeight = '500';
+                el.style.borderBottomColor = 'transparent';
+            });
+            const panel = document.getElementById('tab-' + name);
+            if (panel) panel.style.display = 'block';
+            const btn = document.querySelector(`.adm-tab[data-tab="${name}"]`);
+            if (btn) {
+                btn.style.color = 'var(--adm-text)';
+                btn.style.fontWeight = '600';
+                btn.style.borderBottomColor = 'var(--adm-primary)';
+            }
+            // Load finance data on first visit
+            if (name === 'finance' && !window._financeLoaded) {
+                window._financeLoaded = true;
+                loadFinanceSummary();
+                initInvoiceGrid();
+                initPaymentGrid();
+                initLedgerGrid();
+            }
+        }
+
+        // Finance summary
+        async function loadFinanceSummary() {
+            try {
+                const r = await fetch('/StudentFinance/GetFinanceSummary');
+                const d = await r.json();
+                document.getElementById('fin-total-invoiced').textContent = '\u09F3' + d.totalInvoiced.toLocaleString();
+                document.getElementById('fin-total-paid').textContent = '\u09F3' + d.totalPaid.toLocaleString();
+                document.getElementById('fin-total-due').textContent = '\u09F3' + d.totalDue.toLocaleString();
+                document.getElementById('fin-last-payment').textContent = d.lastPayment
+                    ? '\u09F3' + d.lastPayment.amount.toLocaleString() + ' (' + new Date(d.lastPayment.paymentDate).toLocaleDateString() + ')'
+                    : 'No payments yet';
+            } catch (e) { console.error('Finance summary error', e); }
+        }
+
+        // Invoice Tabulator
+        let invoiceGrid;
+        function initInvoiceGrid() {
+            if (invoiceGrid) { invoiceGrid.replaceData(); return; }
+            invoiceGrid = new Tabulator("#invoice-grid", {
+                ajaxURL: "/StudentFinance/GetInvoices",
+                ajaxParams: { page: 1, size: 10 },
+                pagination: "remote",
+                paginationSize: 10,
+                paginationSizeSelector: [5, 10, 20, 50],
+                layout: "fitColumns",
+                placeholder: "No invoices found",
+                columns: [
+                    { title: "Invoice No", field: "invoiceNo", width: 140 },
+                    { title: "Date", field: "invoiceDate", width: 110, formatter: "datetime", formatterParams: { inputFormat: "iso", outputFormat: "dd MMM yyyy" } },
+                    { title: "Due Date", field: "dueDate", width: 110, formatter: "datetime", formatterParams: { inputFormat: "iso", outputFormat: "dd MMM yyyy" } },
+                    { title: "Amount", field: "totalAmount", width: 100, formatter: "money", formatterParams: { symbol: "\u09F3", precision: 2 } },
+                    { title: "Paid", field: "paidAmount", width: 90, formatter: "money", formatterParams: { symbol: "\u09F3", precision: 2 } },
+                    { title: "Due", field: "dueAmount", width: 90, formatter: "money", formatterParams: { symbol: "\u09F3", precision: 2 } },
+                    {
+                        title: "Status", field: "status", width: 100,
+                        formatter: function (c) {
+                            const s = c.getValue();
+                            const map = { 1: ['Unpaid', 'warning'], 2: ['Partial', 'primary'], 3: ['Paid', 'success'], 4: ['Waived', 'secondary'] };
+                            const m = map[s] || ['Unknown', 'secondary'];
+                            return `<span class="adm-badge adm-badge--${m[1]}">${m[0]}</span>`;
+                        }
+                    }
+                ]
+            });
+        }
+
+        // Payment Tabulator
+        let paymentGrid;
+        function initPaymentGrid() {
+            if (paymentGrid) { paymentGrid.replaceData(); return; }
+            paymentGrid = new Tabulator("#payment-grid", {
+                ajaxURL: "/StudentFinance/GetPayments",
+                ajaxParams: { page: 1, size: 10 },
+                pagination: "remote",
+                paginationSize: 10,
+                paginationSizeSelector: [5, 10, 20, 50],
+                layout: "fitColumns",
+                placeholder: "No payments found",
+                columns: [
+                    { title: "Date", field: "paymentDate", width: 120, formatter: "datetime", formatterParams: { inputFormat: "iso", outputFormat: "dd MMM yyyy" } },
+                    { title: "Invoice", field: "invoiceNo", width: 140 },
+                    { title: "Amount", field: "amount", width: 100, formatter: "money", formatterParams: { symbol: "\u09F3", precision: 2 } },
+                    { title: "Method", field: "method", width: 110 },
+                    { title: "Reference", field: "referenceNo", width: 130 },
+                    {
+                        title: "Receipt", width: 90, formatter: function (c) {
+                            const id = c.getData().id;
+                            return `<a href="/StudentFinance/DownloadReceipt/${id}" target="_blank" class="adm-btn adm-btn--sm adm-btn--ghost"><i class="bi bi-download"></i></a>`;
+                        }
+                    }
+                ]
+            });
+        }
+
+        // Ledger Tabulator
+        let ledgerGrid;
+        function initLedgerGrid() {
+            if (ledgerGrid) { ledgerGrid.replaceData(); return; }
+            ledgerGrid = new Tabulator("#ledger-grid", {
+                ajaxURL: "/StudentFinance/GetLedger",
+                ajaxParams: { page: 1, size: 10 },
+                pagination: "remote",
+                paginationSize: 10,
+                paginationSizeSelector: [5, 10, 20, 50],
+                layout: "fitColumns",
+                placeholder: "No ledger entries found",
+                columns: [
+                    { title: "Date", field: "transactionDate", width: 120, formatter: "datetime", formatterParams: { inputFormat: "iso", outputFormat: "dd MMM yyyy" } },
+                    { title: "Type", field: "type", width: 100 },
+                    { title: "Description", field: "description", widthGrow: 2 },
+                    { title: "Debit", field: "debit", width: 100, formatter: "money", formatterParams: { symbol: "\u09F3", precision: 2 } },
+                    { title: "Credit", field: "credit", width: 100, formatter: "money", formatterParams: { symbol: "\u09F3", precision: 2 } },
+                    { title: "Balance", field: "balance", width: 100, formatter: "money", formatterParams: { symbol: "\u09F3", precision: 2 } }
+                ]
+            });
+        }
+
+        // Existing assignment grid
         const assignments =
                     @Html.Raw(JsonSerializer.Serialize(Model.UpcomingAssignments));
 

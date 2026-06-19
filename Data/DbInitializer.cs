@@ -24,6 +24,11 @@ public static class DbInitializer
     public const int GuardianRoleId = 25;
 
     /// <summary>
+    /// Parent role ID (alias for Guardian).
+    /// </summary>
+    public const int ParentRoleId = 31;
+
+    /// <summary>
     /// EXACT permission codes the Guardian role is allowed to have.
     /// This is the single source of truth — both the EF seed AND the runtime
     /// enforcer (<see cref="GuardianRbacEnforcer"/>) read from this set.

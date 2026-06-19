@@ -91,6 +91,7 @@ public static class ServiceRegistration
         services.AddScoped<IFineRuleRepository, FineRuleRepository>();
         services.AddScoped<IFeeDashboardRepository, FeeDashboardRepository>();
         services.AddScoped<IFeeReportRepository, FeeReportRepository>();
+        services.AddScoped<IStudentFinanceRepository, StudentFinanceRepository>();
         services.AddScoped<IStudentRepository, StudentRepository>();
         services.AddScoped<ITeacherRepository, TeacherRepository>();
         services.AddScoped<ITeacherClassAssignmentRepository, TeacherClassAssignmentRepository>();
@@ -161,6 +162,7 @@ public static class ServiceRegistration
         services.AddScoped<ILateFeeEngineService, LateFeeEngineService>();
         services.AddScoped<IFeeReceiptService, FeeReceiptService>();
         services.AddScoped<IFeeSecurityService, FeeSecurityService>();
+        services.AddScoped<IStudentFinanceService, StudentFinanceService>();
         services.AddScoped<ITeacherService, TeacherService>();
         services.AddScoped<ITeacherSynchronizationService, TeacherSynchronizationService>();
         services.AddScoped<ITeacherScopeService, TeacherScopeService>();

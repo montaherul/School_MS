@@ -1,5 +1,6 @@
 using SchoolManagementSystem.Models.DTOs.Attendance;
 using SchoolManagementSystem.Models.DTOs.Calendar;
+using SchoolManagementSystem.Models.DTOs.Dashboard;
 using SchoolManagementSystem.Models.DTOs.Guardian;
 using SchoolManagementSystem.Services.Interfaces.Guardian;
 
@@ -43,6 +44,31 @@ namespace SchoolManagementSystem.Models.ViewModels.Dashboard
         public bool SelectedChildLatestPassed { get; set; }
         public int SelectedChildLeaveCount { get; set; }
         public int SelectedChildPendingLeaveCount { get; set; }
+
+        // Finance Summary
+        public decimal SelectedChildTotalInvoiced { get; set; }
+        public decimal SelectedChildTotalPaidFinance { get; set; }
+        public decimal SelectedChildTotalDue { get; set; }
+
+        // Routine Widget
+        public StudentRoutineWidgetDto SelectedChildRoutineWidget { get; set; } = new();
+
+        // Assignment Widget
+        public int SelectedChildPendingAssignmentCount { get; set; }
+        public int SelectedChildSubmittedAssignmentCount { get; set; }
+        public int SelectedChildOverdueAssignmentCount { get; set; }
+        public List<StudentAssignmentDto> SelectedChildRecentAssignments { get; set; } = new();
+
+        // Library Widget
+        public List<StudentLibraryBookDto> SelectedChildIssuedBooks { get; set; } = new();
+        public int SelectedChildTotalIssuedBooks { get; set; }
+
+        // Notification Center
+        public int SelectedChildUnreadNotificationCount { get; set; }
+        public List<StudentNotificationItemDto> SelectedChildRecentNotifications { get; set; } = new();
+
+        // Student UserId for notification scoping
+        public int SelectedChildUserId { get; set; }
 
         // Calendar Widgets
         public List<UpcomingHolidayDto> UpcomingHolidays { get; set; } = new();

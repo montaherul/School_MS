@@ -5,6 +5,8 @@ using SchoolManagementSystem.Models.DTOs.Fees;
 using SchoolManagementSystem.Models.ViewModels.Fees;
 using SchoolManagementSystem.Services.Interfaces.Fees;
 using System.Security.Claims;
+using SchoolManagementSystem.Helpers.Pdf;
+using SchoolManagementSystem.Helpers.Reports;
 
 namespace SchoolManagementSystem.Controllers.Fees;
 
@@ -13,7 +15,8 @@ public class FeeCategoryController : Controller
 {
     private readonly IFeeCategoryService _service;
     private readonly IFeeSecurityService _security;
-    public FeeCategoryController(IFeeCategoryService service, IFeeSecurityService security) { _service = service; _security = security; }
+    private readonly IPdfGenerator _pdfGenerator;
+    public FeeCategoryController(IFeeCategoryService service, IFeeSecurityService security, IPdfGenerator pdfGenerator) { _service = service; _security = security; _pdfGenerator = pdfGenerator; }
 
     [RequirePermission("FeeCategories.Read")]
     public IActionResult Index() { return View(); }
@@ -104,6 +107,25 @@ public class FeeCategoryController : Controller
         await _service.RestoreAsync(id, userId);
         TempData["SuccessMessage"] = "Fee category restored successfully.";
         return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet]
+    [RequirePermission("FeeCategories.Read")]
+    public async Task<IActionResult> ExportExcel(string? search = null)
+    {
+        var result = await _service.GetPagedAsync(1, 100000, search);
+        var bytes = FeeListExporter.ExportToExcel(result.Items.ToList(), "Fee Categories");
+        return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "fee-categories.xlsx");
+    }
+
+    [HttpGet]
+    [RequirePermission("FeeCategories.Read")]
+    public async Task<IActionResult> ExportPdf(string? search = null)
+    {
+        var result = await _service.GetPagedAsync(1, 100000, search);
+        var html = FeeListExporter.BuildExportHtml(result.Items.ToList(), "Fee Categories");
+        var bytes = _pdfGenerator.GenerateFromHtml(html);
+        return File(bytes, "application/pdf", "fee-categories.pdf");
     }
 
 }

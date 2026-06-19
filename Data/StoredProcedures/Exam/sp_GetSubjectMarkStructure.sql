@@ -1,5 +1,4 @@
 CREATE OR ALTER PROCEDURE [dbo].[sp_GetSubjectMarkStructure]
-    @ExamId INT,
     @SubjectId INT,
     @ClassId INT = NULL,
     @StudentGroupId INT = NULL
@@ -12,7 +11,6 @@ BEGIN
         s.ComponentId,
         c.Name AS ComponentName,
         c.Code AS ComponentCode,
-        s.ExamId,
         s.SubjectId,
         s.ClassId,
         s.StudentGroupId,
@@ -29,10 +27,9 @@ BEGIN
     WHERE s.IsDeleted = 0
       AND s.IsActive = 1
       AND c.IsActive = 1
-      AND ((s.ExamId = @ExamId AND s.SubjectId = @SubjectId)
-        OR (s.ExamId IS NULL AND s.SubjectId = @SubjectId)
-        OR (s.ExamId IS NULL AND s.SubjectId IS NULL AND s.ClassId = @ClassId)
-        OR (s.ExamId IS NULL AND s.SubjectId IS NULL AND s.ClassId IS NULL AND s.StudentGroupId = @StudentGroupId))
+      AND (s.SubjectId = @SubjectId
+        OR (s.SubjectId IS NULL AND s.ClassId = @ClassId)
+        OR (s.SubjectId IS NULL AND s.ClassId IS NULL AND s.StudentGroupId = @StudentGroupId))
     ORDER BY s.DisplayOrder, c.DisplayOrder;
 END;
 GO

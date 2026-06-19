@@ -13,4 +13,21 @@ public interface IDashboardRepository
     Task<(List<DashboardChartDto> Daily, List<DashboardChartDto> Monthly)> GetAttendanceAnalyticsAsync(CancellationToken ct);
     Task<List<DashboardChartDto>> GetClassAttendanceAnalyticsAsync(DateTime date, CancellationToken ct);
     Task<List<StudentResultViewModel>> GetStudentLatestResultsAsync(int studentId, CancellationToken cancellationToken = default);
+
+    // Widget Data
+    Task<StudentRoutineWidgetDto> GetStudentRoutineWidgetAsync(int classId, int sectionId, int? groupId, CancellationToken ct);
+    Task<(int Pending, int Submitted, int Overdue, List<StudentAssignmentDto> Recent)> GetStudentAssignmentWidgetAsync(int studentId, int classId, int sectionId, CancellationToken ct);
+    Task<(List<StudentLibraryBookDto> Books, int Total)> GetStudentLibraryWidgetAsync(int studentId, CancellationToken ct);
+    Task<(int UnreadCount, List<StudentNotificationItemDto> Recent)> GetStudentNotificationWidgetAsync(int userId, CancellationToken ct);
+
+    // Teacher Widgets
+    Task<List<TeacherScheduleItemDto>> GetTeacherTimetableAsync(int teacherId, CancellationToken ct);
+    Task<List<TeacherMarkEntryStatusDto>> GetTeacherMarkEntryStatusAsync(int teacherId, CancellationToken ct);
+    Task<(List<StudentAssignmentDto> Recent, int Total)> GetTeacherAssignmentWidgetAsync(int teacherId, CancellationToken ct);
+    Task<int> GetTeacherPendingResultCountAsync(int teacherId, CancellationToken ct);
+    Task<TeacherLeaveStatusDto> GetTeacherLeaveStatusAsync(int employeeId, CancellationToken ct);
+    Task<(int UnreadCount, List<TeacherNotificationItemDto> Recent)> GetTeacherNotificationWidgetAsync(int userId, CancellationToken ct);
+
+    // Librarian Widgets
+    Task<LibrarianDashboardViewModel> GetLibrarianDashboardDataAsync(CancellationToken ct);
 }

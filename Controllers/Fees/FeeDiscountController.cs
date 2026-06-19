@@ -5,6 +5,8 @@ using SchoolManagementSystem.Models.DTOs.Fees;
 using SchoolManagementSystem.Models.ViewModels.Fees;
 using SchoolManagementSystem.Services.Interfaces.Fees;
 using System.Security.Claims;
+using SchoolManagementSystem.Helpers.Pdf;
+using SchoolManagementSystem.Helpers.Reports;
 
 namespace SchoolManagementSystem.Controllers.Fees;
 
@@ -13,7 +15,8 @@ public class FeeDiscountController : Controller
 {
     private readonly IFeeDiscountService _service;
     private readonly IFeeSecurityService _security;
-    public FeeDiscountController(IFeeDiscountService service, IFeeSecurityService security) { _service = service; _security = security; }
+    private readonly IPdfGenerator _pdfGenerator;
+    public FeeDiscountController(IFeeDiscountService service, IFeeSecurityService security, IPdfGenerator pdfGenerator) { _service = service; _security = security; _pdfGenerator = pdfGenerator; }
 
     [RequirePermission("FeeDiscounts.Read")]
     public IActionResult Index() { return View(); }
@@ -103,6 +106,25 @@ public class FeeDiscountController : Controller
         await _service.RestoreAsync(id, userId);
         TempData["SuccessMessage"] = "Discount restored successfully.";
         return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet]
+    [RequirePermission("FeeDiscounts.Read")]
+    public async Task<IActionResult> ExportExcel(string? search = null)
+    {
+        var result = await _service.GetPagedAsync(1, 100000, search);
+        var bytes = FeeListExporter.ExportToExcel(result.Items.ToList(), "Fee Discounts");
+        return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "fee-discounts.xlsx");
+    }
+
+    [HttpGet]
+    [RequirePermission("FeeDiscounts.Read")]
+    public async Task<IActionResult> ExportPdf(string? search = null)
+    {
+        var result = await _service.GetPagedAsync(1, 100000, search);
+        var html = FeeListExporter.BuildExportHtml(result.Items.ToList(), "Fee Discounts");
+        var bytes = _pdfGenerator.GenerateFromHtml(html);
+        return File(bytes, "application/pdf", "fee-discounts.pdf");
     }
 
 }

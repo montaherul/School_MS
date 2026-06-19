@@ -58,6 +58,48 @@ Complete enterprise verification audit of Finance & Fee Management module (Phase
   - Post-run validation: row counts + anomaly detection (students without invoices, invoices without items/ledgers).
   - Supports 10,000+ students (no cursors/loops).
 
+#### Phase 42C — Student Dashboard Enterprise Completion
+- Created 6 stored procedures (`sp_GetStudentInvoicesPaged`, `sp_GetStudentPaymentsPaged`, `sp_GetStudentLedgerPaged`, `sp_GetStudentAssignmentsPaged`, `sp_GetStudentLibraryPaged`, `sp_GetStudentNotificationsPaged`)
+- Created `IStudentFinanceRepository`/`StudentFinanceRepository` (ADO.NET SP calls), `IStudentFinanceService`/`StudentFinanceService`, `StudentFinanceController` (5 JSON endpoints + receipt download)
+- Extended `StudentDashboardViewModel` with widget properties (Routine, Assignments, Library, Notifications, Finance Summary)
+- Extended `IDashboardRepository`/`DashboardRepository` with 4 widget LINQ methods (Routine, Assignment, Library, Notification)
+- Extended `DashboardService.GetStudentDashboardAsync` to populate all widget data
+- Built `StudentIndex.cshtml` with 6-tab layout (Overview/Finance/Routine/Assignments/Library/Notifications) + Tabulator AJAX grids for finance + client-side grids for widgets
+- 18 new tests (8 finance service + 10 widget repository). **Tests: 507/507 passing**.
+
+#### Phase 42D — Guardian Dashboard Enterprise Completion
+- **`GuardianFinanceController`**: 5 JSON endpoints (GetInvoices, GetPayments, GetLedger, GetFinanceSummary, DownloadReceipt) secured via `IGuardianService.UserHasAccessToStudentAsync` IDOR checks; reuses `IStudentFinanceService` for data — no duplicate business logic
+- **ViewModel**: Extended `GuardianDashboardViewModel` with 12 widget properties (RoutineWidget, Assignment counts + recent, Library books, Notifications, Finance summary fields, SelectedChildUserId)
+- **DashboardService**: Extended `GetGuardianDashboardAsync` to populate all widget data per selected child using `IDashboardRepository` widget methods (Routine, Assignment, Library, Notification)
+- **View**: Restructured `GuardianIndex.cshtml` with 6-tab navigation (Overview/Finance/Routine/Assignments/Library/Notifications); Overview wraps existing content; Finance tab with 4 summary cards + 3 Tabulator AJAX grids (invoices/payments/ledger); widget tabs with Tabulator client-side grids for Routine, Assignments, Library, Notifications, child notification user scoping
+- **Security Pattern**: Guardian→child validation via `IGuardianService.UserHasAccessToStudentAsync(userId, studentId)` on every AJAX endpoint (IDOR prevention); route scoped to `[Authorize(Roles = "Guardian")]`
+- **No new SPs, repos, or service registrations** — reused existing `IStudentFinanceService`, `IDashboardRepository`, `IGuardianService`
+
+#### Phase 42E — Teacher Dashboard Enterprise Completion
+- **Created DTOs**: `TeacherDashboardDtos.cs` — TeacherScheduleItemDto, TeacherMarkEntryStatusDto, TeacherLeaveStatusDto, TeacherNotificationItemDto
+- **Extended IDashboardRepository/DashboardRepository**: 6 new widget methods — `GetTeacherTimetableAsync`, `GetTeacherMarkEntryStatusAsync`, `GetTeacherAssignmentWidgetAsync`, `GetTeacherPendingResultCountAsync`, `GetTeacherLeaveStatusAsync`, `GetTeacherNotificationWidgetAsync` — all LINQ/EF, filtered by TeacherId/EmployeeId/UserId
+- **Extended TeacherDashboardViewModel**: 10 new properties (TodaySchedule, WeeklySchedule, MarkEntryStatus, RecentAssignments, TotalAssignments, LeaveStatus, TeacherUnreadNotificationCount, TeacherRecentNotifications, TotalStudentsTaught)
+- **Extended DashboardService.GetTeacherDashboardAsync**: Populates all widget data; now correctly computes `PendingResultEntries` from MarkEntry `EnteredByTeacherId` + `Status == Draft`
+- **Rebuilt TeacherIndex.cshtml**: 5-tab navigation (Overview/Schedule/Mark Entry/Assignments/Notifications); replaced all hardcoded mock data with data-driven rendering; Tabulator grids for schedule, assignments, notifications; responsive design
+- **Created 3 SPs**: `sp_GetTeacherDashboardSchedule.sql`, `sp_GetTeacherDashboardMarkStatus.sql`, `sp_GetTeacherDashboardPendingResults.sql`
+- **15 new tests** — TeacherDashboardWidgetTests (InMemory DbContext). **Tests: 522/522 passing**.
+
+#### Phase 42F — Librarian Dashboard Enterprise Completion
+- **Created LibrarianDashboardViewModel**: Full ViewModel with 6 stat fields (BooksIssuedToday, BooksReturnedToday, OverdueBooks, TotalFineCollected, ActiveMembers, PendingReturns), RecentTransactions, Notifications, DailyActivity/ MonthlyActivity reports
+- **Extended IDashboardRepository/DashboardRepository**: `GetLibrarianDashboardDataAsync` — 12 LINQ queries for all dashboard stats; pass-through in DashboardQueryRepository
+- **Extended IDashboardService/DashboardService**: `GetLibrarianDashboardAsync`
+- **Extended DashboardController.Index()**: Added `User.IsInRole("Librarian")` routing → `LibrarianIndex.cshtml`
+- **Created LibrarianIndex.cshtml**: 3-tab layout (Overview/Reports/Notifications); 6 stat cards; Tabulator grids for transactions + notifications; Chart.js for monthly report; responsive; empty states
+- **8 new tests** — LibrarianDashboardTests (InMemory DbContext). **Tests: 529/529 passing**.
+
+#### Phase 42G — Parent Portal Dashboard Completion
+- **Mapping**: Verified that Guardian Dashboard (Phase 42D) already implements all 15 Parent Portal requirements (Child Profile, Attendance, Results, Fees, Payment History, Receipts, Notices, Exam Schedule, Assignments, Library Status, Multi-child, Parent isolation, IDOR, Result blocking, Fee/Notification integration)
+- **Created Parent routing alias** in `DashboardController.Index()` — `User.IsInRole("Parent")` routes to Guardian dashboard
+- **Created `Views/Dashboard/ParentIndex.cshtml`** — thin wrapper that partials `GuardianIndex`
+- **Extended notice audience filter** in `DashboardService` — added "Parent"/"Parents" alongside "Guardian"/"Guardians"
+- **Added `ParentRoleId = 31`** constant in `DbInitializer.cs`
+- **No new tests** — reuses Guardian infrastructure. **Tests: 529/529 passing** (unchanged).
+
 ### In Progress
 - (none)
 
@@ -72,28 +114,43 @@ Complete enterprise verification audit of Finance & Fee Management module (Phase
 - Finance status filter: use typed `PaymentStatus.Paid` enum instead of magic number.
 - Academic year filter: passive — null means all-time data (backward compatible).
 - Invoice number dedup: query max existing seq for year, offset `ROW_NUMBER()` by it.
+- Guardian security: use `IGuardianService.UserHasAccessToStudentAsync` for IDOR (no new security service).
+- Guardian finance reuse: `GuardianFinanceController` delegates to existing `IStudentFinanceService` — no new service/repo/SP.
+- Widget reuse: guardian tabs reuse `IDashboardRepository` widget methods directly from `DashboardService`.
+- Teacher dashboard: widget queries use LINQ/EF, not SPs (small data volumes; SP pattern reserved for paged grids).
+- Parent Portal: mapped as Guardian alias — no new role, entity, or service duplication.
 
 ## Build & Test Status
 - **Build: 0 errors**.
-- **Tests: 489/489 passing** (404 legacy + 9 Phase41B.1 + 13 Phase41B.2 + 12 Phase41B.3 + 6 Phase41B.4 + 9 Phase41B.5 + 36 Phase42B).
+- **Tests: 541/541 passing** (489 legacy + 18 Phase42C + 15 Phase42E + 7 Phase42F + 12 GuardianFinanceController).
+
+## Completed (this session)
+- **C-42D-001 IDOR Fix**: `GuardianFinanceController.DownloadReceipt` now cross-validates payment↔studentId via `GetReceiptDataAsync().StudentId` before generating PDF.
+- **Phase 42D Test Coverage**: 12 new `GuardianFinanceControllerTests` covering all 5 endpoints with access granted/denied + DownloadReceipt IDOR scenarios (payment mismatch, missing payment, no access).
+- **Receipt PDF Branding**: Added school logo (base64-embedded), motto, website to receipt header/footer; `FeeReceiptDto` extended with `SchoolLogoBase64`, `SchoolWebsite`, `SchoolMotto`; `FeeReceiptService` loads `LogoPath` from `SchoolSetting` and converts to data URI for reliable PDF rendering.
+- **Excel & PDF Export on All 13 Fee List Views**: Created `Helpers/Reports/FeeListExporter.cs` (static helper with ClosedXML Excel + HTML-to-PDF). Added `ExportExcel`/`ExportPdf` actions to FeeCategory, FeeInvoice, FeeInvoiceItem, FeePayment, FeeStructure, StudentFeeAssignment, FeeDiscount, FeeWaiver, FeeRefund, FeeLedger, FeeCollectionSummary, FineRule, LateFeeRule controllers. Each passes the same filter params as `GetList` with student-scoping preserved. Excel + PDF buttons added to each view's Actions toolbar.
 
 ## Next Steps
 1. Run `Data\FinanceInitialization.sql` against production SQL Server to initialize finance data.
-2. Verify validation queries return 0 for all anomaly checks.
-3. Implement Receipt PDF branding customization (school logo, header, footer).
-4. Add CSV/Excel export to remaining fee list views.
-5. Extend `LateFeeRule` to support compounding frequency (daily/weekly/monthly).
 
 ## Relevant Files
 - `Data/FinanceInitialization.sql`: **New** — enterprise data initialization script.
 - `Controllers/Dashboard/DashboardController.cs`: Role-based routing (now includes Accountant).
+- `Controllers/Dashboard/StudentFinanceController.cs`: 5 JSON endpoints for student finance center.
+- `Controllers/Dashboard/GuardianFinanceController.cs`: **New** — 5 JSON endpoints for guardian child finance center.
 - `Controllers/Fees/Fee*Controller.cs` (15 files): All use `IFeeSecurityService`.
 - `Services/Implementations/Fees/FeeSecurityService.cs`: Centralized IDOR/ownership security.
 - `Services/Implementations/Fees/FeeInvoiceService.cs`: `ApplyLateFeesAsync` engine, ledger writes.
 - `Services/Implementations/Fees/FeePaymentService.cs`: Ledger writes, invoice recalculation.
 - `Services/Implementations/Fees/FeeReceiptService.cs`: PDF receipt with QR code.
-- `Repositories/Implementations/Dashboard/DashboardRepositories.cs`: Aggregation queries.
-- `Service/Implementations/Dashboard/DashboardService.cs`: Dashboard orchestrator.
-- `Models/ViewModels/Dashboard/StudentDashboardViewModel.cs`: `IsResultBlocked` + `Results`.
+- `Services/Implementations/Fees/StudentFinanceService.cs`: **New** — student finance grid orchestration.
+- `Repositories/Implementations/Dashboard/DashboardRepositories.cs`: Aggregation + widget queries.
+- `Repositories/Implementations/Fees/StudentFinanceRepository.cs`: **New** — SP-calling finance repository.
+- `Service/Implementations/Dashboard/DashboardService.cs`: Dashboard orchestrator (Student + Guardian).
+- `Models/ViewModels/Dashboard/StudentDashboardViewModel.cs`: Widget properties, IsResultBlocked.
+- `Models/ViewModels/Dashboard/GuardianDashboardViewModel.cs`: **Extended** — 12 widget properties.
+- `Views/Dashboard/StudentIndex.cshtml`: 6-tab student dashboard with Tabulator + widgets.
+- `Views/Dashboard/GuardianIndex.cshtml`: **Extended** — 6-tab guardian dashboard with Tabulator + widgets.
 - `Models/Entities/Fees/FeesEntities.cs`: All finance entity definitions.
 - `Models/Enums/SchoolEnums.cs`: All enums (PaymentStatus, FeeLedgerType, etc.).
+- `Data/StoredProcedures/Student/`: 6 stored procedures for student paged grids.

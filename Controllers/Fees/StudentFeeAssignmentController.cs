@@ -5,6 +5,8 @@ using SchoolManagementSystem.Models.DTOs.Fees;
 using SchoolManagementSystem.Models.ViewModels.Fees;
 using SchoolManagementSystem.Services.Interfaces.Fees;
 using System.Security.Claims;
+using SchoolManagementSystem.Helpers.Pdf;
+using SchoolManagementSystem.Helpers.Reports;
 
 namespace SchoolManagementSystem.Controllers.Fees;
 
@@ -13,7 +15,8 @@ public class StudentFeeAssignmentController : Controller
 {
     private readonly IStudentFeeAssignmentService _service;
     private readonly IFeeSecurityService _security;
-    public StudentFeeAssignmentController(IStudentFeeAssignmentService service, IFeeSecurityService security) { _service = service; _security = security; }
+    private readonly IPdfGenerator _pdfGenerator;
+    public StudentFeeAssignmentController(IStudentFeeAssignmentService service, IFeeSecurityService security, IPdfGenerator pdfGenerator) { _service = service; _security = security; _pdfGenerator = pdfGenerator; }
 
     [RequirePermission("StudentFeeAssignments.Read")]
     public IActionResult Index() { return View(); }
@@ -110,5 +113,26 @@ public class StudentFeeAssignmentController : Controller
         await _service.RestoreAsync(id, userId);
         TempData["SuccessMessage"] = "Assignment restored successfully.";
         return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet]
+    [RequirePermission("StudentFeeAssignments.Read")]
+    public async Task<IActionResult> ExportExcel(string? search = null, int? studentId = null, int? feeStructureId = null)
+    {
+        if (_security.HasStudentRole(User)) studentId = _security.GetCurrentStudentId(User);
+        var result = await _service.GetPagedAsync(1, 100000, search, studentId, feeStructureId);
+        var bytes = FeeListExporter.ExportToExcel(result.Items.ToList(), "Student Fee Assignments");
+        return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "student-fee-assignments.xlsx");
+    }
+
+    [HttpGet]
+    [RequirePermission("StudentFeeAssignments.Read")]
+    public async Task<IActionResult> ExportPdf(string? search = null, int? studentId = null, int? feeStructureId = null)
+    {
+        if (_security.HasStudentRole(User)) studentId = _security.GetCurrentStudentId(User);
+        var result = await _service.GetPagedAsync(1, 100000, search, studentId, feeStructureId);
+        var html = FeeListExporter.BuildExportHtml(result.Items.ToList(), "Student Fee Assignments");
+        var bytes = _pdfGenerator.GenerateFromHtml(html);
+        return File(bytes, "application/pdf", "student-fee-assignments.pdf");
     }
 }

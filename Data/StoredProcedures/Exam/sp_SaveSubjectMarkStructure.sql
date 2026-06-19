@@ -1,6 +1,8 @@
+SET QUOTED_IDENTIFIER ON;
+GO
+
 CREATE OR ALTER PROCEDURE [dbo].[sp_SaveSubjectMarkStructure]
     @ComponentId INT,
-    @ExamId INT = NULL,
     @SubjectId INT = NULL,
     @ClassId INT = NULL,
     @StudentGroupId INT = NULL,
@@ -17,11 +19,23 @@ BEGIN
     SELECT @ExistingId = Id
     FROM SubjectMarkStructures
     WHERE ComponentId = @ComponentId
-      AND (@ExamId IS NULL OR ExamId = @ExamId)
       AND (@SubjectId IS NULL OR SubjectId = @SubjectId)
       AND (@ClassId IS NULL OR ClassId = @ClassId)
       AND (@StudentGroupId IS NULL OR StudentGroupId = @StudentGroupId)
       AND IsDeleted = 0;
+
+    -- Ensure existing record is not soft-deleted
+    IF @ExistingId IS NOT NULL
+    BEGIN
+        UPDATE SubjectMarkStructures
+        SET IsDeleted = 0
+        WHERE Id = @ExistingId AND IsDeleted = 1;
+
+        -- Reset the flag if we just restored
+        SELECT @ExistingId = Id
+        FROM SubjectMarkStructures
+        WHERE Id = @ExistingId;
+    END
 
     IF @ExistingId IS NOT NULL
     BEGIN
@@ -38,13 +52,13 @@ BEGIN
     ELSE
     BEGIN
         INSERT INTO SubjectMarkStructures
-            (ComponentId, ExamId, SubjectId, ClassId, StudentGroupId,
+            (ComponentId, SubjectId, ClassId, StudentGroupId,
              FullMarks, PassMarks, DisplayOrder, IsActive,
-             CreatedAt, CreatedBy)
+             IsDeleted, CreatedAt, CreatedBy)
         VALUES
-            (@ComponentId, @ExamId, @SubjectId, @ClassId, @StudentGroupId,
+            (@ComponentId, @SubjectId, @ClassId, @StudentGroupId,
              @FullMarks, @PassMarks, @DisplayOrder, 1,
-             GETUTCDATE(), @CreatedBy);
+             0, GETUTCDATE(), @CreatedBy);
 
         SELECT SCOPE_IDENTITY() AS Id, 'Created' AS Action;
     END

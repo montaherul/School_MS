@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Data;
 using SchoolManagementSystem.Models.DTOs.Fees;
@@ -16,12 +17,14 @@ public class FeeReceiptService : IFeeReceiptService
     private readonly IUnitOfWork _unitOfWork;
     private readonly IPdfGenerator _pdfGenerator;
     private readonly SchoolDbContext _db;
+    private readonly IWebHostEnvironment _env;
 
-    public FeeReceiptService(IUnitOfWork unitOfWork, IPdfGenerator pdfGenerator, SchoolDbContext db)
+    public FeeReceiptService(IUnitOfWork unitOfWork, IPdfGenerator pdfGenerator, SchoolDbContext db, IWebHostEnvironment env)
     {
         _unitOfWork = unitOfWork;
         _pdfGenerator = pdfGenerator;
         _db = db;
+        _env = env;
     }
 
     public async Task<FeeReceiptDto?> GetReceiptDataAsync(int paymentId, CancellationToken cancellationToken = default)
@@ -37,10 +40,31 @@ public class FeeReceiptService : IFeeReceiptService
         var student = await _db.Students.FindAsync(new object[] { invoice.StudentId }, cancellationToken);
         var schoolSetting = await _db.SchoolSettings.FirstOrDefaultAsync(cancellationToken);
 
+        var logoBase64 = string.Empty;
+        if (!string.IsNullOrEmpty(schoolSetting?.LogoPath))
+        {
+            var logoFullPath = Path.Combine(_env.WebRootPath, schoolSetting.LogoPath.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+            if (File.Exists(logoFullPath))
+            {
+                var ext = Path.GetExtension(logoFullPath).ToLowerInvariant();
+                var mime = ext switch
+                {
+                    ".png" => "image/png",
+                    ".jpg" or ".jpeg" => "image/jpeg",
+                    ".gif" => "image/gif",
+                    ".svg" => "image/svg+xml",
+                    _ => "image/png"
+                };
+                var bytes = await File.ReadAllBytesAsync(logoFullPath, cancellationToken);
+                logoBase64 = $"data:{mime};base64,{Convert.ToBase64String(bytes)}";
+            }
+        }
+
         return new FeeReceiptDto
         {
             ReceiptNo = $"RCP-{payment.Id:D6}",
             InvoiceNo = invoice.InvoiceNo,
+            StudentId = invoice.StudentId,
             StudentName = student?.FullName ?? "N/A",
             StudentIdNo = student?.StudentNo ?? "N/A",
             ClassName = "",
@@ -56,6 +80,9 @@ public class FeeReceiptService : IFeeReceiptService
             SchoolAddress = schoolSetting?.Address ?? "",
             SchoolPhone = schoolSetting?.Phone ?? "",
             SchoolEmail = schoolSetting?.Email ?? "",
+            SchoolWebsite = schoolSetting?.Website ?? "",
+            SchoolMotto = schoolSetting?.SchoolMotto ?? "",
+            SchoolLogoBase64 = logoBase64,
             QrVerificationCode = GenerateVerificationCode(payment.Id, payment.PaidAt)
         };
     }
@@ -78,6 +105,13 @@ public class FeeReceiptService : IFeeReceiptService
 
     private static string BuildReceiptHtml(FeeReceiptDto data)
     {
+        var logoHtml = !string.IsNullOrEmpty(data.SchoolLogoBase64)
+            ? $"<img src='{data.SchoolLogoBase64}' alt='School Logo' style='max-height:70px;max-width:200px;margin-bottom:8px;'/>"
+            : "";
+        var mottoHtml = !string.IsNullOrEmpty(data.SchoolMotto)
+            ? $"<p style='margin:2px 0;color:#888;font-style:italic;font-size:12px;'>{data.SchoolMotto}</p>"
+            : "";
+
         return $@"<!DOCTYPE html>
 <html>
 <head>
@@ -104,9 +138,11 @@ public class FeeReceiptService : IFeeReceiptService
 <body>
 <div class='receipt'>
   <div class='header'>
+    {logoHtml}
     <h1>{data.SchoolName}</h1>
+    {mottoHtml}
     <p>{data.SchoolAddress}</p>
-    <p>Phone: {data.SchoolPhone} | Email: {data.SchoolEmail}</p>
+    <p>Phone: {data.SchoolPhone} | Email: {data.SchoolEmail} | Web: {data.SchoolWebsite}</p>
   </div>
   <div class='title'>PAYMENT RECEIPT</div>
   <table class='details'>
@@ -129,6 +165,8 @@ public class FeeReceiptService : IFeeReceiptService
     <div class='qr-code'>Verification: {data.QrVerificationCode}</div>
   </div>
   <div class='footer'>
+    <p>{data.SchoolName} &mdash; {data.SchoolAddress}</p>
+    <p>Phone: {data.SchoolPhone} | Email: {data.SchoolEmail} | {data.SchoolWebsite}</p>
     <p>This is a computer-generated receipt. No signature required.</p>
     <p>Verification code: {data.QrVerificationCode}</p>
   </div>

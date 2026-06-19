@@ -4,6 +4,8 @@ using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Models.DTOs.Fees;
 using SchoolManagementSystem.Models.ViewModels.Fees;
 using SchoolManagementSystem.Services.Interfaces.Fees;
+using SchoolManagementSystem.Helpers.Pdf;
+using SchoolManagementSystem.Helpers.Reports;
 using System.Security.Claims;
 
 namespace SchoolManagementSystem.Controllers.Fees;
@@ -13,7 +15,8 @@ public class FeeCollectionSummaryController : Controller
 {
     private readonly IFeeCollectionSummaryService _service;
     private readonly IFeeSecurityService _security;
-    public FeeCollectionSummaryController(IFeeCollectionSummaryService service, IFeeSecurityService security) { _service = service; _security = security; }
+    private readonly IPdfGenerator _pdfGenerator;
+    public FeeCollectionSummaryController(IFeeCollectionSummaryService service, IFeeSecurityService security, IPdfGenerator pdfGenerator) { _service = service; _security = security; _pdfGenerator = pdfGenerator; }
 
     [RequirePermission("FeeCollectionSummaries.Read")]
     public IActionResult Index() { return View(); }
@@ -94,4 +97,22 @@ public class FeeCollectionSummaryController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [HttpGet]
+    [RequirePermission("FeeCollectionSummaries.Read")]
+    public async Task<IActionResult> ExportExcel(string? search = null, DateOnly? fromDate = null, DateOnly? toDate = null)
+    {
+        var result = await _service.GetPagedAsync(1, 100000, search, fromDate, toDate);
+        var bytes = FeeListExporter.ExportToExcel(result.Items.ToList(), "Fee Collection Summaries");
+        return File(bytes, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "fee-collection-summaries.xlsx");
+    }
+
+    [HttpGet]
+    [RequirePermission("FeeCollectionSummaries.Read")]
+    public async Task<IActionResult> ExportPdf(string? search = null, DateOnly? fromDate = null, DateOnly? toDate = null)
+    {
+        var result = await _service.GetPagedAsync(1, 100000, search, fromDate, toDate);
+        var html = FeeListExporter.BuildExportHtml(result.Items.ToList(), "Fee Collection Summaries");
+        var bytes = _pdfGenerator.GenerateFromHtml(html);
+        return File(bytes, "application/pdf", "fee-collection-summaries.pdf");
+    }
 }

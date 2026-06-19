@@ -6,7 +6,9 @@
 }
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabulator/6.2.1/css/tabulator_bootstrap5.min.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tabulator/6.2.1/js/tabulator.min.js"></script>
 
 <style>
     .guardian-root {
@@ -273,6 +275,48 @@
         .g-table thead th { padding: 8px 10px; font-size: 10px; }
         .g-table tbody td { padding: 8px 10px; }
     }
+
+    .adm-tabs { display: flex; gap: 4px; margin-bottom: 24px; flex-wrap: wrap; }
+    .adm-tab {
+        padding: 10px 20px; border: none; border-radius: 10px;
+        font-size: 14px; font-weight: 600; cursor: pointer;
+        background: var(--adm-hover-bg, #f1f5f9); color: var(--adm-text-muted, #64748b);
+        transition: all .2s; font-family: inherit;
+    }
+    .adm-tab:hover { background: #e2e8f0; color: #0f172a; }
+    .adm-tab--active { background: #0f172a !important; color: #fff !important; }
+    .tab-panel { display: none; }
+    .tab-panel--active { display: block; }
+    .tab-panel--active.dash-flex { display: flex; }
+    .tab-panel--active.dash-grid { display: grid; }
+
+    .dash-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .dash-stat-card {
+        background: var(--adm-card-bg,#fff); border: 1px solid var(--adm-border,#e5e7eb);
+        border-radius: 14px; padding: 20px; transition: transform .2s, box-shadow .2s;
+    }
+    .dash-stat-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.05); }
+    .dash-stat-label { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .6px; color: var(--adm-text-muted,#6b7280); margin-bottom: 6px; }
+    .dash-stat-value { font-size: 26px; font-weight: 800; line-height: 1.2; }
+    .dash-stat-sub { font-size: 12px; color: #9ca3af; margin-top: 4px; }
+
+    .adm-table-card {
+        background: var(--adm-card-bg,#fff); border: 1px solid var(--adm-border,#e5e7eb);
+        border-radius: 14px; padding: 20px; margin-bottom: 20px;
+    }
+    .adm-table-card h3 { font-size: 15px; font-weight: 700; margin: 0 0 12px; }
+
+    .dash-section { margin-bottom: 28px; }
+    .dash-section h3 { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+    .dash-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    .dash-action-card {
+        background: var(--adm-card-bg,#fff); border: 1px solid var(--adm-border,#e5e7eb);
+        border-radius: 12px; padding: 16px 20px; cursor: pointer; transition: all .2s;
+        text-decoration: none; color: inherit; min-width: 140px; flex: 1;
+    }
+    .dash-action-card:hover { border-color: #2563eb; box-shadow: 0 4px 12px rgba(37,99,235,.1); transform: translateY(-2px); }
+    .dash-action-card .action-icon { font-size: 24px; margin-bottom: 8px; }
+    .dash-action-card .action-label { font-size: 13px; font-weight: 600; }
 </style>
 
 <div class="guardian-root">
@@ -336,6 +380,16 @@
         </div>
     }
 
+    <div class="adm-tabs">
+        <button class="adm-tab adm-tab--active" data-tab="overview" onclick="switchTab('overview')"><i class="bi bi-grid-1x2 me-1"></i> Overview</button>
+        <button class="adm-tab" data-tab="finance" onclick="switchTab('finance')"><i class="bi bi-cash-coin me-1"></i> Finance</button>
+        <button class="adm-tab" data-tab="routine" onclick="switchTab('routine')"><i class="bi bi-calendar-week me-1"></i> Routine</button>
+        <button class="adm-tab" data-tab="assignments" onclick="switchTab('assignments')"><i class="bi bi-journal-text me-1"></i> Assignments</button>
+        <button class="adm-tab" data-tab="library" onclick="switchTab('library')"><i class="bi bi-book me-1"></i> Library</button>
+        <button class="adm-tab" data-tab="notifications" onclick="switchTab('notifications')"><i class="bi bi-bell me-1"></i> Notifications</button>
+    </div>
+
+    <div class="tab-panel tab-panel--active" data-tab="overview">
     <div class="widget-grid">
         <div class="widget">
             <div class="widget-icon token-present" style="display:flex;"><i class="bi bi-check-circle"></i></div>
@@ -536,9 +590,362 @@
         </div>
     </div>
 
+</div> @* End Overview tab *@
+
+@* ── Finance Tab ── *@
+<div class="tab-panel" data-tab="finance">
+    <div class="dash-stats" id="finance-summary">
+        <div class="dash-stat-card">
+            <div class="dash-stat-label">Total Invoiced</div>
+            <div class="dash-stat-value" style="color:#2563eb;" id="fin-total-invoiced">—</div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-label">Total Paid</div>
+            <div class="dash-stat-value" style="color:#16a34a;" id="fin-total-paid">—</div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-label">Total Due</div>
+            <div class="dash-stat-value" style="color:#dc2626;" id="fin-total-due">—</div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-label">Last Payment</div>
+            <div class="dash-stat-value" style="color:#7c3aed;font-size:18px;" id="fin-last-payment">—</div>
+            <div class="dash-stat-sub" id="fin-last-date"></div>
+        </div>
+    </div>
+
+    <div class="adm-table-card">
+        <h3><i class="bi bi-receipt me-1"></i> Invoices</h3>
+        <div id="guardian-invoice-grid"></div>
+    </div>
+
+    <div class="adm-table-card">
+        <h3><i class="bi bi-cash me-1"></i> Payments</h3>
+        <div id="guardian-payment-grid"></div>
+    </div>
+
+    <div class="adm-table-card">
+        <h3><i class="bi bi-journal-text me-1"></i> Fee Ledger</h3>
+        <div id="guardian-ledger-grid"></div>
+    </div>
 </div>
 
+@* ── Routine Tab ── *@
+<div class="tab-panel" data-tab="routine">
+    @if (Model.SelectedChildRoutineWidget.TodayClasses.Any())
+    {
+        <div class="adm-table-card">
+            <h3><i class="bi bi-calendar-check me-1"></i> Today's Classes</h3>
+            <div id="guardian-routine-grid-today"></div>
+        </div>
+    }
+    else
+    {
+        <div class="adm-table-card">
+            <div class="g-empty"><i class="bi bi-calendar-x"></i> No classes scheduled for today.</div>
+        </div>
+    }
+
+    @if (Model.SelectedChildRoutineWidget.ThisWeekClasses.Any())
+    {
+        <div class="adm-table-card">
+            <h3><i class="bi bi-calendar-week me-1"></i> This Week's Classes</h3>
+            <div id="guardian-routine-grid-week"></div>
+        </div>
+    }
+
+    @if (Model.SelectedChildRoutineWidget.NextClass != null)
+    {
+        <div class="dash-stat-card" style="margin-bottom:20px;">
+            <div class="dash-stat-label">Next Class</div>
+            <div class="dash-stat-value" style="font-size:18px;color:#0f172a;">@Model.SelectedChildRoutineWidget.NextClass.SubjectName</div>
+            <div class="dash-stat-sub">@Model.SelectedChildRoutineWidget.NextClass.TeacherName · @Model.SelectedChildRoutineWidget.NextClass.StartTime.ToString(@"hh\:mm") - @Model.SelectedChildRoutineWidget.NextClass.EndTime.ToString(@"hh\:mm")</div>
+        </div>
+    }
+</div>
+
+@* ── Assignments Tab ── *@
+<div class="tab-panel" data-tab="assignments">
+    <div class="dash-stats">
+        <div class="dash-stat-card">
+            <div class="dash-stat-label">Pending</div>
+            <div class="dash-stat-value" style="color:#ca8a04;">@Model.SelectedChildPendingAssignmentCount</div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-label">Submitted</div>
+            <div class="dash-stat-value" style="color:#16a34a;">@Model.SelectedChildSubmittedAssignmentCount</div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-label">Overdue</div>
+            <div class="dash-stat-value" style="color:#dc2626;">@Model.SelectedChildOverdueAssignmentCount</div>
+        </div>
+    </div>
+
+    @if (Model.SelectedChildRecentAssignments.Any())
+    {
+        <div class="adm-table-card">
+            <h3><i class="bi bi-journal-text me-1"></i> Recent Assignments</h3>
+            <div id="guardian-assignment-grid"></div>
+        </div>
+    }
+    else
+    {
+        <div class="adm-table-card">
+            <div class="g-empty"><i class="bi bi-journal-x"></i> No assignments found.</div>
+        </div>
+    }
+</div>
+
+@* ── Library Tab ── *@
+<div class="tab-panel" data-tab="library">
+    <div class="dash-stats">
+        <div class="dash-stat-card">
+            <div class="dash-stat-label">Total Issued Books</div>
+            <div class="dash-stat-value" style="color:#2563eb;">@Model.SelectedChildTotalIssuedBooks</div>
+        </div>
+    </div>
+
+    @if (Model.SelectedChildIssuedBooks.Any())
+    {
+        <div class="adm-table-card">
+            <h3><i class="bi bi-book me-1"></i> Issued Books</h3>
+            <div id="guardian-library-grid"></div>
+        </div>
+    }
+    else
+    {
+        <div class="adm-table-card">
+            <div class="g-empty"><i class="bi bi-book-x"></i> No books currently issued.</div>
+        </div>
+    }
+</div>
+
+@* ── Notifications Tab ── *@
+<div class="tab-panel" data-tab="notifications">
+    <div class="dash-stats">
+        <div class="dash-stat-card">
+            <div class="dash-stat-label">Unread</div>
+            <div class="dash-stat-value" style="color:#7c3aed;">@Model.SelectedChildUnreadNotificationCount</div>
+            <div class="dash-stat-sub">notifications</div>
+        </div>
+    </div>
+
+    @if (Model.SelectedChildRecentNotifications.Any())
+    {
+        <div class="adm-table-card">
+            <h3><i class="bi bi-bell me-1"></i> Recent Notifications</h3>
+            <div id="guardian-notification-grid"></div>
+        </div>
+    }
+    else
+    {
+        <div class="adm-table-card">
+            <div class="g-empty"><i class="bi bi-bell-slash"></i> No notifications.</div>
+        </div>
+    }
+</div>
+
+</div> @* End guardian-root *@
+
 <script>
+    const selectedChildId = @(Model.SelectedChildId ?? 0);
+
+    function switchTab(name) {
+        document.querySelectorAll('.adm-tab').forEach(t => t.classList.remove('adm-tab--active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('tab-panel--active'));
+        document.querySelector(`.adm-tab[data-tab="${name}"]`)?.classList.add('adm-tab--active');
+        document.querySelector(`.tab-panel[data-tab="${name}"]`)?.classList.add('tab-panel--active');
+        if (name === 'finance' && selectedChildId > 0) {
+            loadFinanceSummary();
+            initFinanceGrids();
+        }
+        if (name === 'routine' && selectedChildId > 0) initRoutineGrids();
+        if (name === 'assignments' && selectedChildId > 0) initAssignmentGrid();
+        if (name === 'library' && selectedChildId > 0) initLibraryGrid();
+        if (name === 'notifications' && selectedChildId > 0) initNotificationGrid();
+    }
+
+    let financeLoaded = false;
+
+    async function loadFinanceSummary() {
+        if (financeLoaded || !selectedChildId) return;
+        try {
+            const r = await fetch(`/GuardianFinance/GetFinanceSummary?studentId=${selectedChildId}`);
+            const d = await r.json();
+            document.getElementById('fin-total-invoiced').textContent = '৳' + Number(d.totalInvoiced).toLocaleString(undefined, { minimumFractionDigits: 2 });
+            document.getElementById('fin-total-paid').textContent = '৳' + Number(d.totalPaid).toLocaleString(undefined, { minimumFractionDigits: 2 });
+            document.getElementById('fin-total-due').textContent = '৳' + Number(d.totalDue).toLocaleString(undefined, { minimumFractionDigits: 2 });
+            if (d.lastPayment) {
+                document.getElementById('fin-last-payment').textContent = '৳' + Number(d.lastPayment.amount).toLocaleString(undefined, { minimumFractionDigits: 2 });
+                document.getElementById('fin-last-date').textContent = new Date(d.lastPayment.paymentDate).toLocaleDateString();
+            } else {
+                document.getElementById('fin-last-payment').textContent = 'None';
+            }
+            financeLoaded = true;
+        } catch (e) { console.error('Finance summary load error', e); }
+    }
+
+    let financeGridsInited = false;
+
+    function initFinanceGrids() {
+        if (financeGridsInited || !selectedChildId) return;
+        financeGridsInited = true;
+
+        new Tabulator('#guardian-invoice-grid', {
+            ajaxURL: '/GuardianFinance/GetInvoices',
+            ajaxParams: { studentId: selectedChildId, page: 1, size: 10 },
+            pagination: 'remote',
+            paginationSize: 10,
+            paginationSizeSelector: [5, 10, 20, 50],
+            layout: 'fitColumns',
+            placeholder: 'No invoices found',
+            columns: [
+                { title: 'Invoice #', field: 'invoiceNo', widthGrow: 2 },
+                { title: 'Date', field: 'invoiceDate', formatter: 'datetime', formatterParams: { inputFormat: 'iso', outputFormat: 'dd MMM yyyy' }, widthGrow: 2 },
+                { title: 'Due Date', field: 'dueDate', formatter: 'datetime', formatterParams: { inputFormat: 'iso', outputFormat: 'dd MMM yyyy' }, widthGrow: 2 },
+                { title: 'Amount', field: 'totalAmount', formatter: 'money', formatterParams: { precision: 2 }, widthGrow: 1 },
+                { title: 'Paid', field: 'paidAmount', formatter: 'money', formatterParams: { precision: 2 }, widthGrow: 1 },
+                { title: 'Due', field: 'dueAmount', formatter: 'money', formatterParams: { precision: 2 }, widthGrow: 1 },
+                {
+                    title: 'Status', field: 'status', widthGrow: 1,
+                    formatter: function(cell) {
+                        const v = cell.getValue();
+                        const labels = { 1: 'Unpaid', 2: 'Partial', 3: 'Paid', 4: 'Waived' };
+                        const colors = { 1: '#dc2626', 2: '#ca8a04', 3: '#16a34a', 4: '#7c3aed' };
+                        return `<span style="color:${colors[v] || '#6b7280'};font-weight:600;">${labels[v] || 'Unknown'}</span>`;
+                    }
+                }
+            ]
+        });
+
+        new Tabulator('#guardian-payment-grid', {
+            ajaxURL: '/GuardianFinance/GetPayments',
+            ajaxParams: { studentId: selectedChildId, page: 1, size: 10 },
+            pagination: 'remote',
+            paginationSize: 10,
+            paginationSizeSelector: [5, 10, 20, 50],
+            layout: 'fitColumns',
+            placeholder: 'No payments found',
+            columns: [
+                { title: 'Date', field: 'paymentDate', formatter: 'datetime', formatterParams: { inputFormat: 'iso', outputFormat: 'dd MMM yyyy' }, widthGrow: 2 },
+                { title: 'Invoice', field: 'invoiceNo', widthGrow: 2 },
+                { title: 'Amount', field: 'amount', formatter: 'money', formatterParams: { precision: 2 }, widthGrow: 1 },
+                { title: 'Ref #', field: 'referenceNo', widthGrow: 2 },
+                {
+                    title: 'Receipt', widthGrow: 1, formatter: 'html',
+                    formatter: function(cell) {
+                        const id = cell.getData().id;
+                        return `<a href="/GuardianFinance/DownloadReceipt/${id}?studentId=${selectedChildId}" target="_blank" class="adm-btn adm-btn-sm"><i class="bi bi-download"></i></a>`;
+                    }
+                }
+            ]
+        });
+
+        new Tabulator('#guardian-ledger-grid', {
+            ajaxURL: '/GuardianFinance/GetLedger',
+            ajaxParams: { studentId: selectedChildId, page: 1, size: 10 },
+            pagination: 'remote',
+            paginationSize: 10,
+            paginationSizeSelector: [5, 10, 20, 50],
+            layout: 'fitColumns',
+            placeholder: 'No ledger entries found',
+            columns: [
+                { title: 'Date', field: 'transactionDate', formatter: 'datetime', formatterParams: { inputFormat: 'iso', outputFormat: 'dd MMM yyyy' }, widthGrow: 2 },
+                { title: 'Description', field: 'description', widthGrow: 3 },
+                { title: 'Debit', field: 'debit', formatter: 'money', formatterParams: { precision: 2 }, widthGrow: 1 },
+                { title: 'Credit', field: 'credit', formatter: 'money', formatterParams: { precision: 2 }, widthGrow: 1 },
+                { title: 'Balance', field: 'balance', formatter: 'money', formatterParams: { precision: 2 }, widthGrow: 1 }
+            ]
+        });
+    }
+
+    function initRoutineGrids() {
+        const todayData = @Html.Raw(JsonSerializer.Serialize(Model.SelectedChildRoutineWidget.TodayClasses));
+        if (todayData.length && !document.querySelector('#guardian-routine-grid-today .tabulator')) {
+            new Tabulator('#guardian-routine-grid-today', {
+                data: todayData, layout: 'fitColumns', placeholder: 'No classes',
+                columns: [
+                    { title: 'Subject', field: 'subjectName', widthGrow: 2 },
+                    { title: 'Teacher', field: 'teacherName', widthGrow: 2 },
+                    { title: 'Start', field: 'startTime', widthGrow: 1 },
+                    { title: 'End', field: 'endTime', widthGrow: 1 },
+                    { title: 'Room', field: 'roomNo', widthGrow: 1 }
+                ]
+            });
+        }
+        const weekData = @Html.Raw(JsonSerializer.Serialize(Model.SelectedChildRoutineWidget.ThisWeekClasses));
+        if (weekData.length && !document.querySelector('#guardian-routine-grid-week .tabulator')) {
+            new Tabulator('#guardian-routine-grid-week', {
+                data: weekData, layout: 'fitColumns', placeholder: 'No classes',
+                columns: [
+                    { title: 'Day', field: 'dayOfWeek', widthGrow: 1 },
+                    { title: 'Subject', field: 'subjectName', widthGrow: 2 },
+                    { title: 'Teacher', field: 'teacherName', widthGrow: 2 },
+                    { title: 'Start', field: 'startTime', widthGrow: 1 },
+                    { title: 'End', field: 'endTime', widthGrow: 1 },
+                    { title: 'Room', field: 'roomNo', widthGrow: 1 }
+                ]
+            });
+        }
+    }
+
+    function initAssignmentGrid() {
+        const data = @Html.Raw(JsonSerializer.Serialize(Model.SelectedChildRecentAssignments));
+        if (!data.length || document.querySelector('#guardian-assignment-grid .tabulator')) return;
+        new Tabulator('#guardian-assignment-grid', {
+            data: data, layout: 'fitColumns', placeholder: 'No assignments',
+            columns: [
+                { title: 'Title', field: 'title', widthGrow: 2 },
+                { title: 'Subject', field: 'subjectName', widthGrow: 1 },
+                { title: 'Deadline', field: 'deadline', formatter: 'datetime', formatterParams: { inputFormat: 'iso', outputFormat: 'dd MMM yyyy' }, widthGrow: 1 },
+                {
+                    title: 'Status', field: 'isSubmitted', widthGrow: 1,
+                    formatter: function(cell) {
+                        return cell.getValue()
+                            ? '<span style="color:#16a34a;font-weight:600;">Submitted</span>'
+                            : '<span style="color:#ca8a04;font-weight:600;">Pending</span>';
+                    }
+                }
+            ]
+        });
+    }
+
+    function initLibraryGrid() {
+        const data = @Html.Raw(JsonSerializer.Serialize(Model.SelectedChildIssuedBooks));
+        if (!data.length || document.querySelector('#guardian-library-grid .tabulator')) return;
+        new Tabulator('#guardian-library-grid', {
+            data: data, layout: 'fitColumns', placeholder: 'No books',
+            columns: [
+                { title: 'Book Title', field: 'bookTitle', widthGrow: 2 },
+                { title: 'Author', field: 'author', widthGrow: 1 },
+                { title: 'Issue Date', field: 'issueDate', widthGrow: 1 },
+                { title: 'Due Date', field: 'dueDate', widthGrow: 1 },
+                { title: 'Status', field: 'status', widthGrow: 1 }
+            ]
+        });
+    }
+
+    function initNotificationGrid() {
+        const data = @Html.Raw(JsonSerializer.Serialize(Model.SelectedChildRecentNotifications));
+        if (!data.length || document.querySelector('#guardian-notification-grid .tabulator')) return;
+        new Tabulator('#guardian-notification-grid', {
+            data: data, layout: 'fitColumns', placeholder: 'No notifications',
+            columns: [
+                { title: 'Title', field: 'title', widthGrow: 2 },
+                { title: 'Message', field: 'body', widthGrow: 3 },
+                { title: 'Date', field: 'sentAt', formatter: 'datetime', formatterParams: { inputFormat: 'iso', outputFormat: 'dd MMM yyyy' }, widthGrow: 1 },
+                {
+                    title: 'Read', field: 'isRead', widthGrow: 1,
+                    formatter: function(cell) {
+                        return cell.getValue()
+                            ? '<span style="color:#9ca3af;">Read</span>'
+                            : '<span style="color:#7c3aed;font-weight:600;">Unread</span>';
+                    }
+                }
+            ]
+        });
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         const ctx = document.getElementById('gChart').getContext('2d');
         const p = @Model.PresentCount;
@@ -556,35 +963,26 @@
                 },
                 options: { cutout: '72%', plugins: { legend: { display: false }, tooltip: { enabled: false } } }
             });
-            return;
-        }
-
-        new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Present', 'Absent', 'Late', 'Leave'],
-                datasets: [{
-                    data: [p, ab, l, lv],
-                    backgroundColor: ['#22c55e', '#ef4444', '#eab308', '#8b5cf6'],
-                    borderWidth: 0,
-                    hoverOffset: 6
-                }]
-            },
-            options: {
-                cutout: '72%',
-                plugins: {
-                    legend: {
-                        display: true,
-                        position: 'bottom',
-                        labels: { usePointStyle: true, padding: 16, font: { size: 12 } }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: ctx => ` ${ctx.label}: ${ctx.parsed} days`
-                        }
+        } else {
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Present', 'Absent', 'Late', 'Leave'],
+                    datasets: [{
+                        data: [p, ab, l, lv],
+                        backgroundColor: ['#22c55e', '#ef4444', '#eab308', '#8b5cf6'],
+                        borderWidth: 0,
+                        hoverOffset: 6
+                    }]
+                },
+                options: {
+                    cutout: '72%',
+                    plugins: {
+                        legend: { display: true, position: 'bottom', labels: { usePointStyle: true, padding: 16, font: { size: 12 } } },
+                        tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.parsed} days` } }
                     }
                 }
-            }
-        });
+            });
+        }
     });
 </script>

@@ -1,48 +1,24 @@
 CREATE OR ALTER PROCEDURE [dbo].[sp_Audit_LogAction]
     @UserId        INT,
     @Action        NVARCHAR(100),
-    @Entity        NVARCHAR(100),
-    @EntityId      INT           = NULL,
-    @OldValue      NVARCHAR(MAX) = NULL,
-    @NewValue      NVARCHAR(MAX) = NULL,
-    @Reason        NVARCHAR(500) = NULL,
+    @Module        NVARCHAR(100) = NULL,
+    @IpAddress     NVARCHAR(64)  = NULL,
+    @Details       NVARCHAR(1000) = NULL,
     @AuditId       INT OUTPUT
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    INSERT INTO [dbo].[AuditLogs] ([UserId], [Action], [Entity], [EntityId], [OldValue], [NewValue], [Reason], [Timestamp])
-    VALUES (@UserId, @Action, @Entity, @EntityId, @OldValue, @NewValue, @Reason, SYSDATETIME());
+    INSERT INTO [dbo].[AuditLogs] ([UserId], [Action], [Module], [IpAddress], [Details], [CreatedAt], [CreatedBy])
+    VALUES (@UserId, @Action, @Module, @IpAddress, @Details, SYSDATETIME(), 'system');
 
     SET @AuditId = SCOPE_IDENTITY();
-
-    RETURN @AuditId;
 END;
-GO
-
--- Verify AuditLogs table exists
-IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'AuditLogs')
-BEGIN
-    CREATE TABLE [dbo].[AuditLogs] (
-        [AuditId]    INT             IDENTITY(1,1) PRIMARY KEY,
-        [UserId]     INT             NOT NULL,
-        [Action]     NVARCHAR(100)   NOT NULL,
-        [Entity]     NVARCHAR(100)   NOT NULL,
-        [EntityId]   INT             NULL,
-        [OldValue]   NVARCHAR(MAX)   NULL,
-        [NewValue]   NVARCHAR(MAX)   NULL,
-        [Reason]     NVARCHAR(500)   NULL,
-        [Timestamp]  DATETIME2       NOT NULL DEFAULT SYSDATETIME(),
-        INDEX [IX_AuditLogs_Timestamp] ([Timestamp] DESC),
-        INDEX [IX_AuditLogs_Action] ([Action]),
-        INDEX [IX_AuditLogs_EntityId] ([EntityId])
-    );
-END
 GO
 
 CREATE OR ALTER PROCEDURE [dbo].[sp_Audit_GetLogs]
     @Action         NVARCHAR(100) = NULL,
-    @Entity         NVARCHAR(100) = NULL,
+    @Module         NVARCHAR(100) = NULL,
     @UserId         INT           = NULL,
     @FromDate       DATETIME2     = NULL,
     @ToDate         DATETIME2     = NULL,
@@ -56,21 +32,21 @@ BEGIN
 
     SELECT al.*, u.UserName, u.Email
     FROM [dbo].[AuditLogs] al
-    LEFT JOIN [dbo].[Users] u ON al.UserId = u.UserId
+    LEFT JOIN [dbo].[Users] u ON al.UserId = u.Id
     WHERE (@Action   IS NULL OR al.Action = @Action)
-      AND (@Entity   IS NULL OR al.Entity = @Entity)
+      AND (@Module   IS NULL OR al.Module = @Module)
       AND (@UserId   IS NULL OR al.UserId = @UserId)
-      AND (@FromDate IS NULL OR al.Timestamp >= @FromDate)
-      AND (@ToDate   IS NULL OR al.Timestamp <= @ToDate)
-    ORDER BY al.Timestamp DESC
+      AND (@FromDate IS NULL OR al.CreatedAt >= @FromDate)
+      AND (@ToDate   IS NULL OR al.CreatedAt <= @ToDate)
+    ORDER BY al.CreatedAt DESC
     OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
 
     SELECT COUNT(*) AS TotalCount
     FROM [dbo].[AuditLogs] al
     WHERE (@Action   IS NULL OR al.Action = @Action)
-      AND (@Entity   IS NULL OR al.Entity = @Entity)
+      AND (@Module   IS NULL OR al.Module = @Module)
       AND (@UserId   IS NULL OR al.UserId = @UserId)
-      AND (@FromDate IS NULL OR al.Timestamp >= @FromDate)
-      AND (@ToDate   IS NULL OR al.Timestamp <= @ToDate);
+      AND (@FromDate IS NULL OR al.CreatedAt >= @FromDate)
+      AND (@ToDate   IS NULL OR al.CreatedAt <= @ToDate);
 END;
 GO

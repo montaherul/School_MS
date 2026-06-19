@@ -11,4 +11,5 @@ public interface IDashboardService
     Task<GuardianDashboardViewModel> GetGuardianDashboardAsync(int userId, CancellationToken cancellationToken = default);
     Task<ExamControllerDashboardViewModel> GetExamControllerDashboardAsync(CancellationToken cancellationToken = default);
     Task<FeeDashboardDto?> GetAccountantDashboardAsync(int? academicYearId = null, CancellationToken cancellationToken = default);
+    Task<LibrarianDashboardViewModel> GetLibrarianDashboardAsync(CancellationToken ct = default);
 }

@@ -27,13 +27,14 @@ public class DashboardController : Controller
             }
         }
 
-        if (User.IsInRole("Guardian"))
+        if (User.IsInRole("Guardian") || User.IsInRole("Parent"))
         {
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (int.TryParse(userIdStr, out var userId))
             {
-                var guardianData = await _service.GetGuardianDashboardAsync(userId);
-                return View("GuardianIndex", guardianData);
+                var viewName = User.IsInRole("Parent") ? "ParentIndex" : "GuardianIndex";
+                var parentData = await _service.GetGuardianDashboardAsync(userId);
+                return View(viewName, parentData);
             }
         }
 
@@ -52,6 +53,16 @@ public class DashboardController : Controller
         {
             var examControllerData = await _service.GetExamControllerDashboardAsync();
             return View("ExamControllerIndex", examControllerData);
+        }
+
+        if (User.IsInRole("Librarian"))
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (int.TryParse(userIdStr, out var userId))
+            {
+                var librarianData = await _service.GetLibrarianDashboardAsync();
+                return View("LibrarianIndex", librarianData);
+            }
         }
 
         if (User.IsInRole("Accountant"))

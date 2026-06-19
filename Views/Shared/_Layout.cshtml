@@ -150,7 +150,7 @@
                         @if (CanAny("Invoices.Read", "Payments.Read", "StudentDues.Read", "Receipts.Read"))
                         {
                             <span class="nav-section-label"><span class="nav-text">Finance</span></span>
-                            <a asp-controller="Dashboard" asp-action="Index" data-title="My Finance"><i class="bi bi-cash-coin"></i><span class="nav-text">My Finance</span></a>
+                            <a asp-controller="Payment" asp-action="Index" data-title="My Finance"><i class="bi bi-cash-coin"></i><span class="nav-text">My Finance</span></a>
                             @if (Can("Payments.Read"))
                             {
                                 <a asp-controller="Payment" asp-action="Index" data-title="Payment History"><i class="bi bi-credit-card"></i><span class="nav-text">Payment History</span></a>
