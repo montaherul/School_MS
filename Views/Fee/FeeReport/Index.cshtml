@@ -21,138 +21,138 @@
         </div>
     </div>
 
-    <div class="row g-4">
-        <div class="col-md-3">
-            <div class="adm-card adm-card--elevated">
-                <div class="adm-card__body" style="text-align: center; padding: 24px;">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color: var(--adm-primary); margin-bottom: 16px;">
-                        <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"></path>
-                        <polyline points="2,7 12,12 22,7"></polyline>
-                        <line x1="12" y1="12" x2="12" y2="22"></line>
-                        <line x1="8" y1="12" x2="8" y2="22"></line>
-                        <line x1="16" y1="12" x2="16" y2="22"></line>
-                    </svg>
-                    <h5 class="adm-card__title">Student Ledger</h5>
-                    <p class="small text-muted">Per-student fee transaction history</p>
-                    <div class="adm-mt-md">
-                        <a href="/FeeReport/StudentLedgerView" class="adm-btn adm-btn--primary adm-btn--sm">Open Report</a>
-                    </div>
-                </div>
+    <div class="dash-actions">
+        <a href="/FeeReport/StudentLedgerView" class="dash-action-card">
+            <div class="dash-action-card__icon dash-stat-card__icon--primary">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"></path>
+                    <polyline points="2,7 12,12 22,7"></polyline>
+                    <line x1="12" y1="12" x2="12" y2="22"></line>
+                    <line x1="8" y1="12" x2="8" y2="22"></line>
+                    <line x1="16" y1="12" x2="16" y2="22"></line>
+                </svg>
             </div>
-        </div>
-        <div class="col-md-3">
-            <div class="adm-card adm-card--elevated">
-                <div class="adm-card__body" style="text-align: center; padding: 24px;">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color: var(--adm-success); margin-bottom: 16px;">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                        <line x1="16" y1="2" x2="16" y2="6"></line>
-                        <line x1="8" y1="2" x2="8" y2="6"></line>
-                        <line x1="3" y1="10" x2="21" y2="10"></line>
-                    </svg>
-                    <h5 class="adm-card__title">Daily Collection</h5>
-                    <p class="small text-muted">Day-wise collection summary</p>
-                    <div class="adm-mt-md">
-                        <a href="/FeeReport/DailyCollectionView" class="adm-btn adm-btn--success adm-btn--sm">Open Report</a>
-                    </div>
-                </div>
+            <div class="dash-action-card__body">
+                <span class="dash-action-card__title">Student Ledger</span>
+                <span class="dash-action-card__sub">Per-student fee transaction history</span>
             </div>
-        </div>
-        <div class="col-md-3">
-            <div class="adm-card adm-card--elevated">
-                <div class="adm-card__body" style="text-align: center; padding: 24px;">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color: var(--adm-info); margin-bottom: 16px;">
-                        <path d="M3 3h18v18H3z"></path>
-                        <path d="M9 9h6v6H9z"></path>
-                        <path d="M3 9h18"></path>
-                        <path d="M3 15h18"></path>
-                    </svg>
-                    <h5 class="adm-card__title">Monthly Collection</h5>
-                    <p class="small text-muted">Month-wise collection trends</p>
-                    <div class="adm-mt-md">
-                        <a href="/FeeReport/MonthlyCollectionView" class="adm-btn adm-btn--info adm-btn--sm">Open Report</a>
-                    </div>
-                </div>
+            <svg class="dash-action-card__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <polyline points="9,18 15,12 9,6"></polyline>
+            </svg>
+        </a>
+        <a href="/FeeReport/DailyCollectionView" class="dash-action-card">
+            <div class="dash-action-card__icon dash-stat-card__icon--success">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
             </div>
-        </div>
-        <div class="col-md-3">
-            <div class="adm-card adm-card--elevated">
-                <div class="adm-card__body" style="text-align: center; padding: 24px;">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color: var(--adm-danger); margin-bottom: 16px;">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <line x1="12" y1="8" x2="12" y2="12"></line>
-                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                    </svg>
-                    <h5 class="adm-card__title">Due Report</h5>
-                    <p class="small text-muted">Outstanding fee invoices</p>
-                    <div class="adm-mt-md">
-                        <a href="/FeeReport/DueView" class="adm-btn adm-btn--danger adm-btn--sm">Open Report</a>
-                    </div>
-                </div>
+            <div class="dash-action-card__body">
+                <span class="dash-action-card__title">Daily Collection</span>
+                <span class="dash-action-card__sub">Day-wise collection summary</span>
             </div>
-        </div>
-        <div class="col-md-3">
-            <div class="adm-card adm-card--elevated">
-                <div class="adm-card__body" style="text-align: center; padding: 24px;">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color: var(--adm-warning); margin-bottom: 16px;">
-                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                    </svg>
-                    <h5 class="adm-card__title">Discount Report</h5>
-                    <p class="small text-muted">Fee discount analysis</p>
-                    <div class="adm-mt-md">
-                        <a href="/FeeReport/DiscountView" class="adm-btn adm-btn--warning adm-btn--sm">Open Report</a>
-                    </div>
-                </div>
+            <svg class="dash-action-card__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <polyline points="9,18 15,12 9,6"></polyline>
+            </svg>
+        </a>
+        <a href="/FeeReport/MonthlyCollectionView" class="dash-action-card">
+            <div class="dash-action-card__icon dash-stat-card__icon--info">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M3 3h18v18H3z"></path>
+                    <path d="M9 9h6v6H9z"></path>
+                    <path d="M3 9h18"></path>
+                    <path d="M3 15h18"></path>
+                </svg>
             </div>
-        </div>
-        <div class="col-md-3">
-            <div class="adm-card adm-card--elevated">
-                <div class="adm-card__body" style="text-align: center; padding: 24px;">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color: var(--adm-secondary); margin-bottom: 16px;">
-                        <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"></path>
-                        <polyline points="2,7 12,12 22,7"></polyline>
-                        <line x1="12" y1="12" x2="12" y2="22"></line>
-                        <line x1="8" y1="12" x2="8" y2="22"></line>
-                        <line x1="16" y1="12" x2="16" y2="22"></line>
-                    </svg>
-                    <h5 class="adm-card__title">Waiver Report</h5>
-                    <p class="small text-muted">Fee waiver history</p>
-                    <div class="adm-mt-md">
-                        <a href="/FeeReport/WaiverView" class="adm-btn adm-btn--secondary adm-btn--sm">Open Report</a>
-                    </div>
-                </div>
+            <div class="dash-action-card__body">
+                <span class="dash-action-card__title">Monthly Collection</span>
+                <span class="dash-action-card__sub">Month-wise collection trends</span>
             </div>
-        </div>
-        <div class="col-md-3">
-            <div class="adm-card adm-card--elevated">
-                <div class="adm-card__body" style="text-align: center; padding: 24px;">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color: var(--adm-text); margin-bottom: 16px;">
-                        <path d="M21 15a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                        <path d="M17 19v-6M17 11V5"></path>
-                    </svg>
-                    <h5 class="adm-card__title">Refund Report</h5>
-                    <p class="small text-muted">Fee refund history</p>
-                    <div class="adm-mt-md">
-                        <a href="/FeeReport/RefundView" class="adm-btn adm-btn--neutral adm-btn--sm">Open Report</a>
-                    </div>
-                </div>
+            <svg class="dash-action-card__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <polyline points="9,18 15,12 9,6"></polyline>
+            </svg>
+        </a>
+        <a href="/FeeReport/DueView" class="dash-action-card">
+            <div class="dash-action-card__icon dash-stat-card__icon--warning">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
             </div>
-        </div>
-        <div class="col-md-3">
-            <div class="adm-card adm-card--elevated">
-                <div class="adm-card__body" style="text-align: center; padding: 24px;">
-                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color: var(--adm-primary); margin-bottom: 16px;">
-                        <path d="M3 3h18v18H3z"></path>
-                        <path d="M9 9h6v6H9z"></path>
-                        <path d="M3 9h18"></path>
-                        <path d="M3 15h18"></path>
-                    </svg>
-                    <h5 class="adm-card__title">Class Summary</h5>
-                    <p class="small text-muted">Per-class collection status</p>
-                    <div class="adm-mt-md">
-                        <a href="/FeeReport/ClassSummaryView" class="adm-btn adm-btn--primary adm-btn--sm">Open Report</a>
-                    </div>
-                </div>
+            <div class="dash-action-card__body">
+                <span class="dash-action-card__title">Due Report</span>
+                <span class="dash-action-card__sub">Outstanding fee invoices</span>
             </div>
-        </div>
+            <svg class="dash-action-card__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <polyline points="9,18 15,12 9,6"></polyline>
+            </svg>
+        </a>
+        <a href="/FeeReport/DiscountView" class="dash-action-card">
+            <div class="dash-action-card__icon dash-stat-card__icon--warning">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                </svg>
+            </div>
+            <div class="dash-action-card__body">
+                <span class="dash-action-card__title">Discount Report</span>
+                <span class="dash-action-card__sub">Fee discount analysis</span>
+            </div>
+            <svg class="dash-action-card__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <polyline points="9,18 15,12 9,6"></polyline>
+            </svg>
+        </a>
+        <a href="/FeeReport/WaiverView" class="dash-action-card">
+            <div class="dash-action-card__icon dash-stat-card__icon--primary">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"></path>
+                    <polyline points="2,7 12,12 22,7"></polyline>
+                    <line x1="12" y1="12" x2="12" y2="22"></line>
+                    <line x1="8" y1="12" x2="8" y2="22"></line>
+                    <line x1="16" y1="12" x2="16" y2="22"></line>
+                </svg>
+            </div>
+            <div class="dash-action-card__body">
+                <span class="dash-action-card__title">Waiver Report</span>
+                <span class="dash-action-card__sub">Fee waiver history</span>
+            </div>
+            <svg class="dash-action-card__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <polyline points="9,18 15,12 9,6"></polyline>
+            </svg>
+        </a>
+        <a href="/FeeReport/RefundView" class="dash-action-card">
+            <div class="dash-action-card__icon dash-stat-card__icon--info">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                    <path d="M17 19v-6M17 11V5"></path>
+                </svg>
+            </div>
+            <div class="dash-action-card__body">
+                <span class="dash-action-card__title">Refund Report</span>
+                <span class="dash-action-card__sub">Fee refund history</span>
+            </div>
+            <svg class="dash-action-card__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <polyline points="9,18 15,12 9,6"></polyline>
+            </svg>
+        </a>
+        <a href="/FeeReport/ClassSummaryView" class="dash-action-card">
+            <div class="dash-action-card__icon dash-stat-card__icon--success">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M3 3h18v18H3z"></path>
+                    <path d="M9 9h6v6H9z"></path>
+                    <path d="M3 9h18"></path>
+                    <path d="M3 15h18"></path>
+                </svg>
+            </div>
+            <div class="dash-action-card__body">
+                <span class="dash-action-card__title">Class Summary</span>
+                <span class="dash-action-card__sub">Per-class collection status</span>
+            </div>
+            <svg class="dash-action-card__arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <polyline points="9,18 15,12 9,6"></polyline>
+            </svg>
+        </a>
     </div>
 </div>

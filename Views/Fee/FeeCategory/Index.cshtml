@@ -140,6 +140,16 @@
                     const rows = Array.isArray(response.data) ? response.data : [];
                     return { last_page: response.last_page || 1, data: rows };
                 },
+                ajaxError: function(xhr, textStatus, errorThrown) {
+                    console.error('Tabulator AJAX error:', textStatus, errorThrown, xhr);
+                    document.getElementById('data-table').innerHTML =
+                        '<div style="padding:40px;text-align:center;color:var(--adm-rejected);">' +
+                        '<svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-bottom:12px;">' +
+                        '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>' +
+                        '</svg><br/><strong>Failed to load data</strong><br/>' +
+                        (xhr.status ? 'HTTP ' + xhr.status + ': ' + xhr.statusText : textStatus) +
+                        '</div>';
+                },
                 columns: [
                     { title: "Name", field: "name", widthGrow: 2, formatter: function(cell) {
                         return `<div class="adm-cell-name">${cell.getValue()}</div>`;
@@ -173,15 +183,15 @@
                                 </button>
                             </div>
                         `;
-                    }},
-                    cellClick: function(e, cell) {
-                        if (e.target.closest('.delete-btn')) {
-                            pendingDeleteId = cell.getValue();
-                            document.getElementById('deleteName').textContent = cell.getRow().getData().name;
-                            deleteModal.show();
-                        }
-                    }
+                    }}
                 ],
+                cellClick: function(e, cell) {
+                    if (e.target.closest('.delete-btn')) {
+                        pendingDeleteId = cell.getValue();
+                        document.getElementById('deleteName').textContent = cell.getRow().getData().name;
+                        deleteModal.show();
+                    }
+                },
                 placeholder: "<div class='adm-loading adm-loading--visible'><div class='adm-loading__spinner'></div><div class='adm-loading__text'>Loading categories...</div></div>"
             });
 

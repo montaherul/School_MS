@@ -2,173 +2,229 @@
     ViewData["Title"] = "Fee Invoices";
 }
 
-<div class="page-title d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h1 class="mb-1"><i class="bi bi-receipt me-2"></i>Fee Invoices</h1>
-        <p class="text-muted mb-0">Manage student fee invoices and payment tracking</p>
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14,2 14,8 20,8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10,9 9,9 8,9"></polyline>
+                </svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Fee Invoices</h1>
+                <p class="adm-header__sub">Manage student fee invoices and payment tracking</p>
+            </div>
+        </div>
+        <div class="adm-header__right">
+            <a href="/FeeInvoice/CreateEdit" class="adm-btn adm-btn--primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+                Add Invoice
+            </a>
+        </div>
     </div>
-    <a href="/FeeInvoice/CreateEdit" class="btn btn-primary shadow-sm">
-        <i class="bi bi-plus-circle me-1"></i> Add Invoice
-    </a>
-</div>
 
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
-        <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-}
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="adm-alert adm-alert--success">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22,4 12,14 8,10"></polyline>
+            </svg>
+            @TempData["SuccessMessage"]
+        </div>
+    }
 
-<div class="card shadow-sm mb-4">
-    <div class="card-body">
-        <div class="row g-3">
-            <div class="col-md-8">
-                <div class="input-group">
-                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
-                    <input type="text" id="invoiceSearch" class="form-control border-start-0" placeholder="Search by invoice no or student name...">
-                    <button class="btn btn-outline-secondary" type="button" id="invoiceSearchBtn">Search</button>
+    <div class="adm-filters">
+        <div class="adm-filters__row">
+            <div class="adm-filters__field adm-filters__field--search">
+                <label class="adm-label">Search Invoices</label>
+                <div class="adm-input-wrap">
+                    <svg class="adm-input-wrap__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                    <input type="text" id="invoiceSearch" class="adm-input" placeholder="Search by invoice no or student name...">
+                    <button type="button" class="adm-input-wrap__btn" id="invoiceSearchBtn">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                    </button>
                 </div>
             </div>
-            <div class="col-md-4 text-end">
-                <button class="btn btn-outline-secondary" id="refreshBtn">
-                    <i class="bi bi-arrow-clockwise me-1"></i> Refresh
+            <div class="adm-filters__field adm-filters__field--actions">
+                <label class="adm-label">Actions</label>
+                <button type="button" class="adm-btn adm-btn--ghost" id="refreshBtn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <polyline points="23,4 23,10 17,10"></polyline>
+                        <path d="M20.49,15a9,9,0,1-2.12,6.32A9,9,0,0,1,4.64,6.32"></path>
+                    </svg>
+                    Refresh
                 </button>
             </div>
         </div>
     </div>
-</div>
 
-<div class="card shadow-sm">
-    <div class="card-body p-0">
-        <div id="invoice-table"></div>
+    <div class="adm-table-card">
+        <div class="adm-table-card__body">
+            <div id="invoice-table"></div>
+        </div>
     </div>
-</div>
 
-<!-- Delete Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i> Confirm Delete</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <div class="adm-modal-backdrop" id="deleteModal" style="display: none;">
+        <div class="adm-modal">
+            <div class="adm-modal__header">
+                <div class="adm-modal__header-left">
+                    <div class="adm-modal__header-icon adm-modal__header-icon--danger">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                            <path d="M10.29,13.29,16.59,7"></path>
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="2" x2="12" y2="4"></line>
+                            <line x1="20" y1="12" x2="18" y2="12"></line>
+                            <line x1="12" y1="20" x2="12" y2="22"></line>
+                            <line x1="4" y1="12" x2="2" y2="12"></line>
+                            <line x1="17" y1="17" x2="7" y2="7"></line>
+                        </svg>
+                    </div>
+                    <div>
+                        <h6 class="adm-modal__title">Confirm Delete</h6>
+                        <p class="adm-modal__subtitle">This action cannot be undone</p>
+                    </div>
+                </div>
+                <button type="button" class="adm-modal__close" onclick="deleteModal.hide()">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
             </div>
-            <div class="modal-body">
-                Are you sure you want to delete invoice <strong id="deleteName"></strong>?
+            <div class="adm-modal__body">
+                <p>Are you sure you want to delete invoice <strong id="deleteName"></strong>? This will permanently remove the invoice and related data.</p>
             </div>
-            <div class="modal-footer border-0 pt-0">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger" id="confirmDeleteBtn"><i class="bi bi-trash me-1"></i> Delete</button>
+            <div class="adm-modal__footer">
+                <button type="button" class="adm-btn adm-btn--ghost" onclick="deleteModal.hide()">Cancel</button>
+                <button type="button" class="adm-btn adm-btn--danger" id="confirmDeleteBtn">Delete Invoice</button>
             </div>
         </div>
     </div>
-</div>
 
-@section Scripts {
-    <script>
-        var pendingDeleteId = null;
-        var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    @section Scripts {
+        <script>
+            var pendingDeleteId = null;
+            var deleteModal = {
+                show: function() {
+                    document.getElementById('deleteModal').style.display = 'flex';
+                    document.getElementById('deleteModal').classList.add('adm-loading--visible');
+                },
+                hide: function() {
+                    document.getElementById('deleteModal').style.display = 'none';
+                    document.getElementById('deleteModal').classList.remove('adm-loading--visible');
+                }
+            };
 
-        var table = new Tabulator("#invoice-table", {
-            height: "calc(100vh - 300px)",
-            layout: "fitColumns",
-            pagination: true,
-            paginationMode: "remote",
-            ajaxURL: '@Url.Action("GetList", "FeeInvoice")',
-            paginationSize: 10,
-            ajaxResponse: function(url, params, response) {
-                console.log("FeeInvoice API Payload:", response);
-                const rows = Array.isArray(response.data) ? response.data : [];
-                return {
-                    last_page: response.last_page || 1,
-                    total_records: response.total_records || rows.length,
-                    data: rows
-                };
-            },
-            columns: [
-                { title: "Invoice No", field: "invoiceNo", widthGrow: 1.5, formatter: function(cell) {
-                    return `<div class="fw-bold text-dark">${cell.getValue()}</div>`;
-                }},
-                { title: "Student", field: "studentName", widthGrow: 2, formatter: function(cell) {
-                    return `<span class="fw-semibold">${cell.getValue()}</span>`;
-                }},
-                { title: "Due Date", field: "dueDate", width: 130, hozAlign: "center", formatter: function(cell) {
-                    return cell.getValue() ? cell.getValue() : `<span class="text-muted">—</span>`;
-                }},
-                { title: "Total Amount", field: "totalAmount", width: 150, hozAlign: "right", formatter: function(cell) {
-                    return `<div class="fw-bold text-success">৳${parseFloat(cell.getValue()).toLocaleString('en-IN', {minimumFractionDigits: 2})}</div>`;
-                }},
-                { title: "Paid Amount", field: "paidAmount", width: 140, hozAlign: "right", formatter: function(cell) {
-                    return `<div class="fw-bold">৳${parseFloat(cell.getValue()).toLocaleString('en-IN', {minimumFractionDigits: 2})}</div>`;
-                }},
-                { title: "Status", field: "status", width: 120, hozAlign: "center", formatter: function(cell) {
-                    var s = parseInt(cell.getValue());
-                    if (s === 2) return `<span class="badge bg-warning text-dark rounded-pill px-3">Partial</span>`;
-                    if (s === 3) return `<span class="badge bg-success rounded-pill px-3">Paid</span>`;
-                    if (s === 4) return `<span class="badge bg-danger rounded-pill px-3">Waived</span>`;
-                    return `<span class="badge bg-secondary rounded-pill px-3">Unpaid</span>`;
-                }},
-                {
-                    title: "Actions",
-                    field: "id",
-                    hozAlign: "right",
-                    headerSort: false,
-                    width: 140,
-                    formatter: function(cell) {
-                        var id = cell.getValue();
-                        return `
-                            <div class="btn-group btn-group-sm">
-                                <a href="/FeeInvoice/Edit/${id}" class="btn btn-outline-primary" title="Edit"><i class="bi bi-pencil"></i></a>
-                                <button class="btn btn-outline-danger delete-btn" title="Delete"><i class="bi bi-trash"></i></button>
-                            </div>
-                        `;
-                    },
-                    cellClick: function(e, cell) {
-                        if (e.target.closest('.delete-btn')) {
-                            pendingDeleteId = cell.getValue();
-                            document.getElementById('deleteName').textContent = cell.getRow().getData().invoiceNo;
-                            deleteModal.show();
+            var table = new Tabulator("#invoice-table", {
+                height: "calc(100vh - 300px)",
+                layout: "fitColumns",
+                pagination: true,
+                paginationMode: "remote",
+                ajaxURL: '@Url.Action("GetList", "FeeInvoice")',
+                paginationSize: 10,
+                ajaxResponse: function(url, params, response) {
+                    console.log("FeeInvoice API Payload:", response);
+                    const rows = Array.isArray(response.data) ? response.data : [];
+                    return {
+                        last_page: response.last_page || 1,
+                        total_records: response.total_records || rows.length,
+                        data: rows
+                    };
+                },
+                columns: [
+                    { title: "Invoice No", field: "invoiceNo", widthGrow: 1.5, formatter: function(cell) {
+                        return `<div class="adm-cell-name">${cell.getValue()}</div>`;
+                    }},
+                    { title: "Student", field: "studentName", widthGrow: 2, formatter: function(cell) {
+                        return `<span class="fw-semibold">${cell.getValue()}</span>`;
+                    }},
+                    { title: "Due Date", field: "dueDate", width: 130, hozAlign: "center", formatter: function(cell) {
+                        return cell.getValue() ? cell.getValue() : `<span class="text-muted">—</span>`;
+                    }},
+                    { title: "Total Amount", field: "totalAmount", width: 150, hozAlign: "right", formatter: function(cell) {
+                        return `<div class="fw-bold" style="color: var(--adm-success);">${cell.getValue()}</div>`;
+                    }},
+                    { title: "Paid Amount", field: "paidAmount", width: 140, hozAlign: "right", formatter: function(cell) {
+                        return `<div class="fw-bold">${cell.getValue()}</div>`;
+                    }},
+                    { title: "Status", field: "status", width: 120, hozAlign: "center", formatter: function(cell) {
+                        var s = parseInt(cell.getValue());
+                        if (s === 2) return `<span class="adm-badge adm-badge--warning">Partial</span>`;
+                        if (s === 3) return `<span class="adm-badge adm-badge--success">Paid</span>`;
+                        if (s === 4) return `<span class="adm-badge adm-badge--danger">Waived</span>`;
+                        return `<span class="adm-badge adm-badge--neutral">Unpaid</span>`;
+                    }},
+                    {
+                        title: "Actions",
+                        field: "id",
+                        hozAlign: "right",
+                        headerSort: false,
+                        width: 140,
+                        formatter: function(cell) {
+                            var id = cell.getValue();
+                            return `
+                                <div class="adm-actions">
+                                    <a href="/FeeInvoice/Edit/${id}" class="adm-action adm-action--edit" title="Edit">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                            <path d="M18.5,2.5a2.121,2.121,0,0,1,3,3L12,15l-4,1,1-4Z"></path>
+                                        </svg>
+                                    </a>
+                                    <button class="adm-action adm-action--delete delete-btn" title="Delete" data-id="${id}">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                                            <polyline points="3,6 5,6 21,6"></polyline>
+                                            <path d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6m3,0V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2V6"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            `;
+                        },
+                        cellClick: function(e, cell) {
+                            if (e.target.closest('.delete-btn')) {
+                                pendingDeleteId = cell.getValue();
+                                document.getElementById('deleteName').textContent = cell.getRow().getData().invoiceNo;
+                                deleteModal.show();
+                            }
                         }
                     }
-                }
-            ],
-            placeholder: "<div class='p-4 text-center text-muted'>No invoices found</div>"
-        });
+                ],
+                placeholder: "<div class='adm-loading adm-loading--visible'><div class='adm-loading__spinner'></div><div class='adm-loading__text'>Loading invoices...</div></div>"
+            });
 
-        document.getElementById('invoiceSearchBtn').addEventListener('click', function() {
-            var search = document.getElementById('invoiceSearch').value;
-            table.setData('@Url.Action("GetList", "FeeInvoice")', { search: search });
-        });
+            document.getElementById('invoiceSearchBtn').addEventListener('click', function() {
+                var search = document.getElementById('invoiceSearch').value;
+                table.setData('@Url.Action("GetList", "FeeInvoice")', { search: search });
+            });
 
-        document.getElementById('invoiceSearch').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') document.getElementById('invoiceSearchBtn').click();
-        });
+            document.getElementById('invoiceSearch').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') document.getElementById('invoiceSearchBtn').click();
+            });
 
-        document.getElementById('refreshBtn').addEventListener('click', function() {
-            table.setData();
-        });
-
-        document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
-            if (!pendingDeleteId) return;
-            fetch(`/FeeInvoice/DeleteConfirmed/${pendingDeleteId}`, {
-                method: 'POST',
-                headers: {
-                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
-                }
-            }).then(res => {
-                deleteModal.hide();
+            document.getElementById('refreshBtn').addEventListener('click', function() {
                 table.setData();
             });
-        });
-    </script>
 
-    <style>
-        .bg-primary-soft { background-color: rgba(26, 86, 219, 0.1); }
-        .tabulator { border: none !important; }
-        .tabulator .tabulator-header { background-color: #f8f9fa; border-bottom: 1px solid #e2e8f0; }
-        .tabulator .tabulator-header .tabulator-col { background-color: #f8f9fa; font-weight: 700; color: #475569; padding: 12px 8px; }
-        .tabulator .tabulator-row { border-bottom: 1px solid #f1f5f9; }
-        .tabulator .tabulator-row:hover { background-color: #f8fafc !important; }
-        .tabulator .tabulator-row .tabulator-cell { padding: 12px 8px; vertical-align: middle; }
-    </style>
-}
+            document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+                if (!pendingDeleteId) return;
+                fetch(`/FeeInvoice/DeleteConfirmed/${pendingDeleteId}`, {
+                    method: 'POST',
+                    headers: { 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value }
+                }).then(res => { deleteModal.hide(); table.setData(); });
+            });
+        </script>
+    }
+</div>

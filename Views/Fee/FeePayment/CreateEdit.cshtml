@@ -1,78 +1,90 @@
 @model SchoolManagementSystem.Models.ViewModels.Fees.FeePaymentViewModel
 @{ ViewData["Title"] = Model.IsEditMode ? "Edit Payment" : "Record Payment"; }
 
-<div class="row justify-content-center">
-    <div class="col-lg-6">
-        <div class="d-flex align-items-center mb-4">
-            <a href="/FeePayment/Index" class="btn btn-outline-secondary btn-sm me-3"><i class="bi bi-arrow-left"></i> Back</a>
-            <h2 class="mb-0">@(Model.IsEditMode ? "Edit Payment" : "Record Payment")</h2>
-        </div>
-        <div class="card shadow-sm">
-            <div class="card-body p-4">
-                <form asp-action="CreateEdit" method="post">
-                    <input type="hidden" asp-for="Id" />
-                    <div class="mb-3">
-                        <label asp-for="FeeInvoiceId" class="form-label">Fee Invoice <span class="text-danger">*</span></label>
-                        <input asp-for="FeeInvoiceId" class="form-control" type="number" />
-                        <span asp-validation-for="FeeInvoiceId" class="text-danger small"></span>
-                    </div>
-                    <div class="mb-3">
-                        <label asp-for="Amount" class="form-label">Amount <span class="text-danger">*</span></label>
-                        <div class="input-group">
-                            <span class="input-group-text">৳</span>
-                            <input asp-for="Amount" class="form-control" type="number" step="0.01" min="0" />
-                        </div>
-                        <span asp-validation-for="Amount" class="text-danger small"></span>
-                    </div>
-                    <div class="mb-3">
-                        <label asp-for="LateFee" class="form-label">Late Fee</label>
-                        <div class="input-group">
-                            <span class="input-group-text">৳</span>
-                            <input asp-for="LateFee" class="form-control" type="number" step="0.01" min="0" />
-                        </div>
-                        <span asp-validation-for="LateFee" class="text-danger small"></span>
-                    </div>
-                    <div class="mb-3">
-                        <label asp-for="DiscountAmount" class="form-label">Discount Amount</label>
-                        <div class="input-group">
-                            <span class="input-group-text">৳</span>
-                            <input asp-for="DiscountAmount" class="form-control" type="number" step="0.01" min="0" />
-                        </div>
-                        <span asp-validation-for="DiscountAmount" class="text-danger small"></span>
-                    </div>
-                    <div class="mb-3">
-                        <label asp-for="Method" class="form-label">Payment Method <span class="text-danger">*</span></label>
-                        <select asp-for="Method" class="form-select">
-                            <option value="1">Cash</option>
-                            <option value="2">Bank Transfer</option>
-                            <option value="3">Card</option>
-                            <option value="4">Online</option>
-                            <option value="5">Other</option>
-                        </select>
-                        <span asp-validation-for="Method" class="text-danger small"></span>
-                    </div>
-                    <div class="mb-3">
-                        <label asp-for="ReferenceNo" class="form-label">Reference No</label>
-                        <input asp-for="ReferenceNo" class="form-control" placeholder="e.g. Transaction ID, Cheque No..." />
-                        <span asp-validation-for="ReferenceNo" class="text-danger small"></span>
-                    </div>
-                    <div class="mb-3">
-                        <label asp-for="PaidAt" class="form-label">Paid At</label>
-                        <input asp-for="PaidAt" class="form-control" type="datetime-local" />
-                        <span asp-validation-for="PaidAt" class="text-danger small"></span>
-                    </div>
-                    <div class="mb-3">
-                        <label asp-for="Remarks" class="form-label">Remarks</label>
-                        <textarea asp-for="Remarks" class="form-control" rows="2"></textarea>
-                        <span asp-validation-for="Remarks" class="text-danger small"></span>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary px-4"><i class="bi bi-save me-1"></i> Save</button>
-                        <a href="/FeePayment/Index" class="btn btn-outline-secondary px-4">Cancel</a>
-                    </div>
-                </form>
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <a href="/FeePayment/Index" class="adm-btn adm-btn--ghost" style="padding:8px 12px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <polyline points="15,18 9,12 15,6"></polyline>
+                </svg>
+            </a>
+            <div>
+                <h1 class="adm-header__title">@(Model.IsEditMode ? "Edit Payment" : "Record Payment")</h1>
+                <p class="adm-header__sub">Record student fee payments</p>
             </div>
         </div>
+    </div>
+    <div style="max-width:600px;">
+        <form asp-action="CreateEdit" method="post">
+            <input type="hidden" asp-for="Id" />
+            <div class="adm-form-group">
+                <label asp-for="FeeInvoiceId" class="adm-form-label">Fee Invoice <span class="adm-required">*</span></label>
+                <input asp-for="FeeInvoiceId" class="adm-input" style="padding-left:12px;" type="number" />
+                <span asp-validation-for="FeeInvoiceId" style="font-size:12px;color:var(--adm-rejected);"></span>
+            </div>
+            <div class="adm-form-group">
+                <label asp-for="Amount" class="adm-form-label">Amount <span class="adm-required">*</span></label>
+                <div style="display:flex;">
+                    <div class="adm-input-wrap__addon" style="border-radius:var(--adm-radius) 0 0 var(--adm-radius);border-right:none;">৳</div>
+                    <input asp-for="Amount" class="adm-input" style="border-radius:0 var(--adm-radius) var(--adm-radius) 0;padding-left:12px;" type="number" step="0.01" min="0" />
+                </div>
+                <span asp-validation-for="Amount" style="font-size:12px;color:var(--adm-rejected);"></span>
+            </div>
+            <div class="adm-form-group">
+                <label asp-for="LateFee" class="adm-form-label">Late Fee</label>
+                <div style="display:flex;">
+                    <div class="adm-input-wrap__addon" style="border-radius:var(--adm-radius) 0 0 var(--adm-radius);border-right:none;">৳</div>
+                    <input asp-for="LateFee" class="adm-input" style="border-radius:0 var(--adm-radius) var(--adm-radius) 0;padding-left:12px;" type="number" step="0.01" min="0" />
+                </div>
+                <span asp-validation-for="LateFee" style="font-size:12px;color:var(--adm-rejected);"></span>
+            </div>
+            <div class="adm-form-group">
+                <label asp-for="DiscountAmount" class="adm-form-label">Discount Amount</label>
+                <div style="display:flex;">
+                    <div class="adm-input-wrap__addon" style="border-radius:var(--adm-radius) 0 0 var(--adm-radius);border-right:none;">৳</div>
+                    <input asp-for="DiscountAmount" class="adm-input" style="border-radius:0 var(--adm-radius) var(--adm-radius) 0;padding-left:12px;" type="number" step="0.01" min="0" />
+                </div>
+                <span asp-validation-for="DiscountAmount" style="font-size:12px;color:var(--adm-rejected);"></span>
+            </div>
+            <div class="adm-form-group">
+                <label asp-for="Method" class="adm-form-label">Payment Method <span class="adm-required">*</span></label>
+                <select asp-for="Method" class="adm-select" style="padding-left:12px;">
+                    <option value="1">Cash</option>
+                    <option value="2">Bank Transfer</option>
+                    <option value="3">Card</option>
+                    <option value="4">Online</option>
+                    <option value="5">Other</option>
+                </select>
+                <span asp-validation-for="Method" style="font-size:12px;color:var(--adm-rejected);"></span>
+            </div>
+            <div class="adm-form-group">
+                <label asp-for="ReferenceNo" class="adm-form-label">Reference No</label>
+                <input asp-for="ReferenceNo" class="adm-input" style="padding-left:12px;" placeholder="e.g. Transaction ID, Cheque No..." />
+                <span asp-validation-for="ReferenceNo" style="font-size:12px;color:var(--adm-rejected);"></span>
+            </div>
+            <div class="adm-form-group">
+                <label asp-for="PaidAt" class="adm-form-label">Paid At</label>
+                <input asp-for="PaidAt" class="adm-input" style="padding-left:12px;" type="datetime-local" />
+                <span asp-validation-for="PaidAt" style="font-size:12px;color:var(--adm-rejected);"></span>
+            </div>
+            <div class="adm-form-group">
+                <label asp-for="Remarks" class="adm-form-label">Remarks</label>
+                <textarea asp-for="Remarks" class="adm-input" style="padding-left:12px;" rows="2"></textarea>
+                <span asp-validation-for="Remarks" style="font-size:12px;color:var(--adm-rejected);"></span>
+            </div>
+            <div class="adm-btn-group" style="margin-top:28px;">
+                <button type="submit" class="adm-btn adm-btn--primary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                        <polyline points="17,21 17,13 7,13 7,21"></polyline>
+                        <polyline points="7,3 7,8 15,8"></polyline>
+                    </svg>
+                    Save
+                </button>
+                <a href="/FeePayment/Index" class="adm-btn adm-btn--ghost">Cancel</a>
+            </div>
+        </form>
     </div>
 </div>
 @section Scripts { @{await Html.RenderPartialAsync("_ValidationScriptsPartial");} }

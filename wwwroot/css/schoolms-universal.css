@@ -1065,6 +1065,27 @@ body {
     color: var(--adm-converted);
 }
 
+.adm-badge--success {
+    background: var(--adm-success-bg);
+    color: var(--adm-success);
+}
+
+.adm-badge--danger {
+    background: var(--adm-rejected-bg);
+    color: var(--adm-rejected);
+}
+
+.adm-badge--warning {
+    background: var(--adm-pending-bg);
+    color: var(--adm-pending);
+}
+
+.adm-badge--secondary {
+    background: var(--adm-surface-2);
+    color: var(--adm-text-2);
+    border: 1px solid var(--adm-border);
+}
+
 /* ─────────────────────────────────────────────────────────────────
    13. STATUS TABS
    ───────────────────────────────────────────────────────────────── */

@@ -1,70 +1,82 @@
 @model SchoolManagementSystem.Models.ViewModels.Fees.FeeCollectionSummaryViewModel
 @{ ViewData["Title"] = Model.IsEditMode ? "Edit Collection Summary" : "Add Collection Summary"; }
 
-<div class="row justify-content-center">
-    <div class="col-lg-6">
-        <div class="d-flex align-items-center mb-4">
-            <a href="/FeeCollectionSummary/Index" class="btn btn-outline-secondary btn-sm me-3"><i class="bi bi-arrow-left"></i> Back</a>
-            <h2 class="mb-0">@(Model.IsEditMode ? "Edit Collection Summary" : "Add Collection Summary")</h2>
-        </div>
-        <div class="card shadow-sm">
-            <div class="card-body p-4">
-                <form asp-action="CreateEdit" method="post">
-                    <input type="hidden" asp-for="Id" />
-                    <input type="hidden" asp-for="IsDailySummary" />
-                    <div class="mb-3">
-                        <label asp-for="CollectionDate" class="form-label">Collection Date <span class="text-danger">*</span></label>
-                        <input asp-for="CollectionDate" class="form-control" type="date" />
-                        <span asp-validation-for="CollectionDate" class="text-danger small"></span>
-                    </div>
-                    <div class="mb-3">
-                        <label asp-for="TotalCollected" class="form-label">Total Collected</label>
-                        <div class="input-group">
-                            <span class="input-group-text">৳</span>
-                            <input asp-for="TotalCollected" class="form-control" type="number" step="0.01" min="0" />
-                        </div>
-                        <span asp-validation-for="TotalCollected" class="text-danger small"></span>
-                    </div>
-                    <div class="mb-3">
-                        <label asp-for="TotalDiscounted" class="form-label">Total Discounted</label>
-                        <div class="input-group">
-                            <span class="input-group-text">৳</span>
-                            <input asp-for="TotalDiscounted" class="form-control" type="number" step="0.01" min="0" />
-                        </div>
-                        <span asp-validation-for="TotalDiscounted" class="text-danger small"></span>
-                    </div>
-                    <div class="mb-3">
-                        <label asp-for="TotalRefunded" class="form-label">Total Refunded</label>
-                        <div class="input-group">
-                            <span class="input-group-text">৳</span>
-                            <input asp-for="TotalRefunded" class="form-control" type="number" step="0.01" min="0" />
-                        </div>
-                        <span asp-validation-for="TotalRefunded" class="text-danger small"></span>
-                    </div>
-                    <div class="mb-3">
-                        <label asp-for="TotalTransactions" class="form-label">Total Transactions</label>
-                        <input asp-for="TotalTransactions" class="form-control" type="number" min="0" />
-                        <span asp-validation-for="TotalTransactions" class="text-danger small"></span>
-                    </div>
-                    <div class="mb-3">
-                        <label asp-for="PaymentMethod" class="form-label">Payment Method</label>
-                        <select asp-for="PaymentMethod" class="form-select">
-                            <option value="">— Select —</option>
-                            <option value="1">Cash</option>
-                            <option value="2">Bank</option>
-                            <option value="3">Card</option>
-                            <option value="4">Mobile Banking</option>
-                            <option value="5">Online</option>
-                        </select>
-                        <span asp-validation-for="PaymentMethod" class="text-danger small"></span>
-                    </div>
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary px-4"><i class="bi bi-save me-1"></i> Save</button>
-                        <a href="/FeeCollectionSummary/Index" class="btn btn-outline-secondary px-4">Cancel</a>
-                    </div>
-                </form>
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <a href="/FeeCollectionSummary/Index" class="adm-btn adm-btn--ghost" style="padding:8px 12px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <polyline points="15,18 9,12 15,6"></polyline>
+                </svg>
+            </a>
+            <div>
+                <h1 class="adm-header__title">@(Model.IsEditMode ? "Edit Collection Summary" : "Add Collection Summary")</h1>
+                <p class="adm-header__sub">Manage collection summaries</p>
             </div>
         </div>
+    </div>
+    <div style="max-width:600px;">
+        <form asp-action="CreateEdit" method="post">
+            <input type="hidden" asp-for="Id" />
+            <input type="hidden" asp-for="IsDailySummary" />
+            <div class="adm-form-group">
+                <label asp-for="CollectionDate" class="adm-form-label">Collection Date <span class="adm-required">*</span></label>
+                <input asp-for="CollectionDate" class="adm-input" style="padding-left:12px;" type="date" />
+                <span asp-validation-for="CollectionDate" style="font-size:12px;color:var(--adm-rejected);"></span>
+            </div>
+            <div class="adm-form-group">
+                <label asp-for="TotalCollected" class="adm-form-label">Total Collected</label>
+                <div style="display:flex;">
+                    <div class="adm-input-wrap__addon" style="border-radius:var(--adm-radius) 0 0 var(--adm-radius);border-right:none;">৳</div>
+                    <input asp-for="TotalCollected" class="adm-input" style="border-radius:0 var(--adm-radius) var(--adm-radius) 0;padding-left:12px;" type="number" step="0.01" min="0" />
+                </div>
+                <span asp-validation-for="TotalCollected" style="font-size:12px;color:var(--adm-rejected);"></span>
+            </div>
+            <div class="adm-form-group">
+                <label asp-for="TotalDiscounted" class="adm-form-label">Total Discounted</label>
+                <div style="display:flex;">
+                    <div class="adm-input-wrap__addon" style="border-radius:var(--adm-radius) 0 0 var(--adm-radius);border-right:none;">৳</div>
+                    <input asp-for="TotalDiscounted" class="adm-input" style="border-radius:0 var(--adm-radius) var(--adm-radius) 0;padding-left:12px;" type="number" step="0.01" min="0" />
+                </div>
+                <span asp-validation-for="TotalDiscounted" style="font-size:12px;color:var(--adm-rejected);"></span>
+            </div>
+            <div class="adm-form-group">
+                <label asp-for="TotalRefunded" class="adm-form-label">Total Refunded</label>
+                <div style="display:flex;">
+                    <div class="adm-input-wrap__addon" style="border-radius:var(--adm-radius) 0 0 var(--adm-radius);border-right:none;">৳</div>
+                    <input asp-for="TotalRefunded" class="adm-input" style="border-radius:0 var(--adm-radius) var(--adm-radius) 0;padding-left:12px;" type="number" step="0.01" min="0" />
+                </div>
+                <span asp-validation-for="TotalRefunded" style="font-size:12px;color:var(--adm-rejected);"></span>
+            </div>
+            <div class="adm-form-group">
+                <label asp-for="TotalTransactions" class="adm-form-label">Total Transactions</label>
+                <input asp-for="TotalTransactions" class="adm-input" style="padding-left:12px;" type="number" min="0" />
+                <span asp-validation-for="TotalTransactions" style="font-size:12px;color:var(--adm-rejected);"></span>
+            </div>
+            <div class="adm-form-group">
+                <label asp-for="PaymentMethod" class="adm-form-label">Payment Method</label>
+                <select asp-for="PaymentMethod" class="adm-select" style="padding-left:12px;">
+                    <option value="">— Select —</option>
+                    <option value="1">Cash</option>
+                    <option value="2">Bank</option>
+                    <option value="3">Card</option>
+                    <option value="4">Mobile Banking</option>
+                    <option value="5">Online</option>
+                </select>
+                <span asp-validation-for="PaymentMethod" style="font-size:12px;color:var(--adm-rejected);"></span>
+            </div>
+            <div class="adm-btn-group" style="margin-top:28px;">
+                <button type="submit" class="adm-btn adm-btn--primary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                        <polyline points="17,21 17,13 7,13 7,21"></polyline>
+                        <polyline points="7,3 7,8 15,8"></polyline>
+                    </svg>
+                    Save
+                </button>
+                <a href="/FeeCollectionSummary/Index" class="adm-btn adm-btn--ghost">Cancel</a>
+            </div>
+        </form>
     </div>
 </div>
 @section Scripts { @{await Html.RenderPartialAsync("_ValidationScriptsPartial");} }

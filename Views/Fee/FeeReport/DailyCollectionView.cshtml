@@ -1,32 +1,34 @@
 @{
     ViewData["Title"] = "Daily Collection Report";
 }
-<div class="page-title d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h1 class="mb-1"><i class="bi bi-calendar-day me-2"></i>Daily Collection</h1>
-        <p class="text-muted mb-0">Day-wise collection summary</p>
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <h1 class="adm-header__title">Daily Collection</h1>
+            <p class="adm-header__sub">Day-wise collection summary</p>
+        </div>
+        <div class="adm-header__right">
+            <button class="adm-btn adm-btn--success me-1" id="exportExcelBtn"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Excel</button>
+            <button class="adm-btn" style="background:var(--adm-rejected);color:#fff;" id="exportPdfBtn"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> PDF</button>
+        </div>
     </div>
-    <div>
-        <button class="btn btn-success btn-sm me-1" id="exportExcelBtn"><i class="bi bi-file-earmark-excel me-1"></i> Excel</button>
-        <button class="btn btn-danger btn-sm" id="exportPdfBtn"><i class="bi bi-file-earmark-pdf me-1"></i> PDF</button>
-    </div>
-</div>
-<div class="card shadow-sm mb-4">
-    <div class="card-body">
-        <div class="row g-3 align-items-end">
-            <div class="col-md-3">
-                <label class="form-label fw-semibold">Collection Date</label>
-                <input type="date" id="collectionDate" class="form-control" value="@DateOnly.FromDateTime(DateTime.UtcNow).ToString("yyyy-MM-dd")">
-            </div>
-            <div class="col-md-2">
-                <button class="btn btn-primary w-100" id="loadBtn"><i class="bi bi-search me-1"></i> Load</button>
+    <div class="adm-table-card mb-4">
+        <div class="adm-table-card__body">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-3">
+                    <label class="form-label fw-semibold">Collection Date</label>
+                    <input type="date" id="collectionDate" class="adm-input" style="padding-left:12px;" value="@DateOnly.FromDateTime(DateTime.UtcNow).ToString("yyyy-MM-dd")">
+                </div>
+                <div class="col-md-2">
+                    <button class="adm-btn adm-btn--primary w-100" id="loadBtn"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Load</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
-<div class="card shadow-sm">
-    <div class="card-body p-0">
-        <div id="collection-table"></div>
+    <div class="adm-table-card">
+        <div class="adm-table-card__body">
+            <div id="collection-table"></div>
+        </div>
     </div>
 </div>
 @section Scripts {

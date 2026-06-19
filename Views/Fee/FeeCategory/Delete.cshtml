@@ -1,3 +1,72 @@
 @model SchoolManagementSystem.Models.DTOs.Fees.FeeCategoryUpsertDto
 @{ ViewData["Title"] = "Delete Fee Category"; }
-<partial name="_ObjectDelete" model="Model" />
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <a href="/FeeCategory/Index" class="adm-btn adm-btn--ghost" style="padding:8px 12px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <polyline points="15,18 9,12 15,6"></polyline>
+                </svg>
+            </a>
+            <div>
+                <h1 class="adm-header__title">Delete Fee Category</h1>
+                <p class="adm-header__sub">This action cannot be undone</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="adm-table-card" style="max-width:600px;border-left:3px solid var(--adm-rejected);">
+        <div style="padding:24px;">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding:12px 16px;background:var(--adm-rejected-bg);border-radius:var(--adm-radius);">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--adm-rejected)" stroke-width="2" stroke-linecap="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <span style="font-size:13px;color:var(--adm-rejected);">Confirm deletion for this fee category. This action is permanent.</span>
+            </div>
+
+            <table style="width:100%;border-collapse:collapse;">
+                <tr>
+                    <td style="padding:12px 16px 12px 0;font-size:12px;font-weight:600;color:var(--adm-text-3);text-transform:uppercase;letter-spacing:0.05em;width:160px;vertical-align:top;">Name</td>
+                    <td style="padding:12px 0;font-size:14px;color:var(--adm-text);"><strong>@Model.Name</strong></td>
+                </tr>
+                <tr>
+                    <td style="padding:12px 16px 12px 0;font-size:12px;font-weight:600;color:var(--adm-text-3);text-transform:uppercase;letter-spacing:0.05em;width:160px;vertical-align:top;">Description</td>
+                    <td style="padding:12px 0;font-size:14px;color:var(--adm-text);">@(Model.Description ?? "—")</td>
+                </tr>
+                <tr>
+                    <td style="padding:12px 16px 12px 0;font-size:12px;font-weight:600;color:var(--adm-text-3);text-transform:uppercase;letter-spacing:0.05em;width:160px;vertical-align:top;">Display Order</td>
+                    <td style="padding:12px 0;font-size:14px;color:var(--adm-text);"><span class="adm-badge adm-badge--neutral">@Model.DisplayOrder</span></td>
+                </tr>
+                <tr>
+                    <td style="padding:12px 16px 12px 0;font-size:12px;font-weight:600;color:var(--adm-text-3);text-transform:uppercase;letter-spacing:0.05em;width:160px;vertical-align:top;">Active</td>
+                    <td style="padding:12px 0;font-size:14px;color:var(--adm-text);">
+                        @if (Model.IsActive)
+                        {
+                            <span class="adm-badge adm-badge--primary">Active</span>
+                        }
+                        else
+                        {
+                            <span class="adm-badge" style="background:var(--adm-surface-2);color:var(--adm-text-3);border:1px solid var(--adm-border);">Inactive</span>
+                        }
+                    </td>
+                </tr>
+            </table>
+
+            <form asp-action="DeleteConfirmed" method="post" style="margin-top:24px;display:flex;gap:10px;">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.Id" />
+                <button type="submit" class="adm-btn" style="background:var(--adm-rejected);color:#fff;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                        <polyline points="3,6 5,6 21,6"></polyline>
+                        <path d="M19,6v14a2,2,0,0,1-2,2H7a2,2,0,0,1-2-2V6m3,0V4a2,2,0,0,1,2-2h4a2,2,0,0,1,2,2V6"></path>
+                    </svg>
+                    Delete
+                </button>
+                <a href="/FeeCategory/Index" class="adm-btn adm-btn--ghost">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>

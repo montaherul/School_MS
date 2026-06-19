@@ -1,19 +1,21 @@
 @{
     ViewData["Title"] = "Class Collection Summary";
 }
-<div class="page-title d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h1 class="mb-1"><i class="bi bi-grid-3x3-gap me-2"></i>Class Collection Summary</h1>
-        <p class="text-muted mb-0">Per-class collection status</p>
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <h1 class="adm-header__title">Class Collection Summary</h1>
+            <p class="adm-header__sub">Per-class collection status</p>
+        </div>
+        <div class="adm-header__right">
+            <button class="adm-btn adm-btn--success me-1" id="exportExcelBtn"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg> Excel</button>
+            <button class="adm-btn" style="background:var(--adm-rejected);color:#fff;" id="exportPdfBtn"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> PDF</button>
+        </div>
     </div>
-    <div>
-        <button class="btn btn-success btn-sm me-1" id="exportExcelBtn"><i class="bi bi-file-earmark-excel me-1"></i> Excel</button>
-        <button class="btn btn-danger btn-sm" id="exportPdfBtn"><i class="bi bi-file-earmark-pdf me-1"></i> PDF</button>
-    </div>
-</div>
-<div class="card shadow-sm">
-    <div class="card-body p-0">
-        <div id="class-table"></div>
+    <div class="adm-table-card">
+        <div class="adm-table-card__body">
+            <div id="class-table"></div>
+        </div>
     </div>
 </div>
 @section Scripts {
@@ -34,8 +36,8 @@
                 { title: "Total Due", field: "totalDue", width: 130, hozAlign: "right", formatter: function(c) { return parseFloat(c.getValue()).toLocaleString('en-IN', {minimumFractionDigits: 2}); } },
                 { title: "Collection Rate", field: "collectionRate", width: 130, hozAlign: "center", formatter: function(c) {
                     var r = parseFloat(c.getValue());
-                    var color = r >= 90 ? 'success' : r >= 60 ? 'warning text-dark' : 'danger';
-                    return '<span class="badge bg-' + color + ' rounded-pill px-3">' + r.toFixed(1) + '%</span>';
+                    var cls = r >= 90 ? 'success' : r >= 60 ? 'warning' : 'danger';
+                    return '<span class="adm-badge adm-badge--' + cls + '">' + r.toFixed(1) + '%</span>';
                 }},
                 { title: "Students", field: "studentCount", width: 100, hozAlign: "center" }
             ],

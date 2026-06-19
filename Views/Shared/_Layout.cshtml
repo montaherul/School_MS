@@ -613,32 +613,53 @@
 
         // ── Active nav link ───────────────────────
         if (sidebarNav) {
-        var path = location.pathname.toLowerCase();
-        var links = sidebarNav.querySelectorAll('a');
-        var bestMatch = null;
-        var bestLen = 0;
+            var path = location.pathname.toLowerCase();
+            var links = sidebarNav.querySelectorAll('a');
+            var bestMatch = null;
+            var bestLen = 0;
 
-        links.forEach(function (a) {
-        var href = (a.getAttribute('href') || '').toLowerCase();
-        if (href && href !== '/' && path.startsWith(href)) {
-        if (href.length > bestLen) {
-        bestLen = href.length;
-        bestMatch = a;
-        }
-        }
-        });
+            links.forEach(function (a) {
+                var href = (a.getAttribute('href') || '').toLowerCase();
+                if (href && href !== '/' && path.startsWith(href)) {
+                    if (href.length > bestLen) {
+                        bestLen = href.length;
+                        bestMatch = a;
+                    }
+                }
+            });
 
-        if (bestMatch) {
-        bestMatch.classList.add('active');
-        bestMatch.setAttribute('aria-current', 'page');
-        }
+            if (bestMatch) {
+                bestMatch.classList.add('active');
+                bestMatch.setAttribute('aria-current', 'page');
+            }
 
-        // Close mobile sidebar on nav click
-        links.forEach(function (a) {
-        a.addEventListener('click', function () {
-        if (window.innerWidth < 1024) closeMobile();
-        });
-        });
+            // ── Sidebar scroll persistence ────────
+            var SCROLL_KEY = 'sms_sidebar_scroll';
+
+            // Save scroll position before page unload
+            window.addEventListener('beforeunload', function () {
+                try { sessionStorage.setItem(SCROLL_KEY, sidebarNav.scrollTop); } catch (e) { }
+            });
+
+            // Restore scroll position, or scroll active link into view
+            var savedScroll = null;
+            try { savedScroll = sessionStorage.getItem(SCROLL_KEY); } catch (e) { }
+            if (savedScroll !== null && savedScroll !== undefined) {
+                sidebarNav.scrollTop = parseInt(savedScroll, 10);
+                // Clear so we don't restore stale value on future loads
+                try { sessionStorage.removeItem(SCROLL_KEY); } catch (e) { }
+            } else if (bestMatch) {
+                // Fallback: scroll active link into view
+                bestMatch.scrollIntoView({ block: 'nearest', behavior: 'instant' });
+            }
+
+            // Also save on nav link clicks (belt-and-suspenders with beforeunload)
+            links.forEach(function (a) {
+                a.addEventListener('click', function () {
+                    try { sessionStorage.setItem(SCROLL_KEY, sidebarNav.scrollTop); } catch (e) { }
+                    if (window.innerWidth < 1024) closeMobile();
+                });
+            });
         }
 
         // ── Expose for inline handlers if needed ──
