@@ -7,1131 +7,930 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;600;700&display=swap" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <style>
-/* ═══════════════════════════════════════════════════════════════
-   ENTERPRISE PVC ID CARD SYSTEM — CR80 SPECIFICATION
-   Width: 54.00 mm | Height: 85.60 mm | 300 DPI | Portrait Ready
-   ═══════════════════════════════════════════════════════════════ */
-
-* {
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
   -webkit-print-color-adjust: exact;
   print-color-adjust: exact;
 }
 
-html, body {
-  margin: 0;
-  padding: 0;
-  background: #f1f5f9;
-  font-smooth: always;
-  -webkit-font-smoothing: antialiased;
+html,
+body {
+  background: #fff;
+  color: #2D2D2D;
+  font-family: "Segoe UI", "Arial", "Noto Sans Bengali", "Nirmala UI", sans-serif;
 }
 
 @page {
   margin: 0;
-  size: 116mm 92mm;
 }
 
-@media print {
-  html, body {
-    background: #fff;
-  }
-}
+/* ── Page containers ─────────────────────────────────────── */
 
-/* ── PAGE LAYOUT ── */
 .page-single {
-  width: 116mm;
-  height: 92mm;
-  text-align: center;
-  font-size: 0;
-  padding: 3.2mm 0;
+  width: 53.98mm;
+  height: 85.6mm;
+  overflow: hidden;
+  page-break-after: always;
 }
-.page-single.f { page-break-after: always; }
-.page-single.b { page-break-after: always; }
-.page-break { page-break-before: always; }
+
+.page-single:last-child {
+  page-break-after: auto;
+}
 
 .page-bulk {
   width: 297mm;
+  min-height: 210mm;
+  padding: 6mm 7.5mm;
   font-size: 0;
-  padding: 4mm;
+  background: #fff;
 }
 
 .card-group {
   display: inline-block;
-  width: 116mm;
-  height: 92mm;
-  font-size: 0;
+  width: 94mm;
+  height: 99mm;
+  padding: 2mm 0;
   text-align: center;
-  padding: 3.2mm 4mm;
+  vertical-align: top;
   page-break-inside: avoid;
-  vertical-align: top;
-}
-.card-group .pvc + .pvc {
-  margin-left: 4mm;
 }
 
-/* ── CARD BASE ── */
-.pvc {
-  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
-  width: 54mm;
+.card-group .pvc-card {
+  margin: 0 1.2mm;
+}
+
+/* ── Card shell ──────────────────────────────────────────── */
+
+.pvc-card {
+  position: relative;
+  display: inline-block;
+  width: 53.98mm;
   height: 85.6mm;
-  position: relative;
   overflow: hidden;
-  border-radius: 3.8mm;
-  display: inline-block;
-  vertical-align: middle;
-  background: #ffffff;
-  border: 0.3px solid #cbd5e1;
-  box-shadow: 0 1.5mm 4mm rgba(15, 23, 42, 0.08);
-}
-
-/* Guilloche-style background security lines and grid watermark */
-.pvc::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background-color: #ffffff;
-  background-image: 
-    radial-gradient(circle at 50% 20%, rgba(248, 250, 252, 0.9) 0%, #ffffff 100%),
-    repeating-linear-gradient(45deg, rgba(30, 64, 175, 0.01) 0px, rgba(30, 64, 175, 0.01) 1px, transparent 1px, transparent 6px),
-    repeating-linear-gradient(-45deg, rgba(30, 64, 175, 0.01) 0px, rgba(30, 64, 175, 0.01) 1px, transparent 1px, transparent 6px);
-  z-index: 1;
-}
-
-/* ══════════════════════════════════════
-   FRONT CARD STYLING
-   ══════════════════════════════════════ */
-
-/* ── HEADER 15% (13.5mm) ── */
-.pvc .hdr {
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 13.5mm;
-  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
-  z-index: 2;
-  border-bottom: 0.8mm solid #f97316; /* Fallback student color */
-  overflow: hidden;
-  padding: 1.5mm 2.5mm;
-}
-
-/* Modern Geometric Ribbons */
-.pvc .hdr::after {
-  content: '';
-  position: absolute;
-  width: 24mm;
-  height: 24mm;
-  background: linear-gradient(45deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 70%);
-  transform: rotate(15deg);
-  top: -8mm;
-  right: -5mm;
-  z-index: 2;
-  border-radius: 4mm;
-}
-
-.pvc .brand-row {
-  position: relative;
-  z-index: 3;
-  display: table;
-  width: 100%;
-}
-.pvc .brand-logo-cell {
-  display: table-cell;
-  width: 8.2mm;
-  vertical-align: middle;
-}
-.pvc .logo-box {
-  display: inline-block;
-  width: 8.2mm;
-  height: 8.2mm;
-  border-radius: 50%;
-  background: #ffffff;
-  text-align: center;
-  line-height: 8.2mm;
-  overflow: hidden;
-  box-shadow: 0 0.5mm 1.5mm rgba(0, 0, 0, 0.15);
-  border: 0.3px solid rgba(255,255,255,0.8);
-}
-.pvc .logo-box img {
-  width: 7.4mm;
-  height: 7.4mm;
-  vertical-align: middle;
-  object-fit: contain;
-}
-.pvc .logo-fallback {
-  font-family: 'Poppins', sans-serif;
-  font-weight: 800;
-  font-size: 4mm;
-  color: #1e40af;
-  line-height: 8.2mm;
-}
-
-.pvc .brand-text-cell {
-  display: table-cell;
-  vertical-align: middle;
-  padding-left: 1.8mm;
-  text-align: left;
-}
-.pvc .school-name {
-  font-family: 'Poppins', sans-serif;
-  font-size: 8.8pt;
-  font-weight: 800;
-  color: #ffffff;
-  line-height: 1.05;
-  text-transform: uppercase;
-  letter-spacing: -0.1px;
-}
-.pvc .school-motto {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 5.5pt;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.85);
-  line-height: 1.1;
-  margin-top: 0.2mm;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* ── ROLE BADGE ── */
-.pvc .badge {
-  position: absolute;
-  top: 1.8mm;
-  right: 2.2mm;
-  z-index: 6;
-  font-family: 'Montserrat', sans-serif;
-  font-size: 6.5pt;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  padding: 0.4mm 1.8mm;
-  border-radius: 10px;
-  white-space: nowrap;
-  color: #ffffff;
-  background: #f97316; /* Fallback accent */
-  box-shadow: 0 0.4mm 1mm rgba(0, 0, 0, 0.15);
-}
-
-/* ── GOLD EMV SMART CHIP ── */
-.pvc .smart-chip {
-  position: absolute;
-  top: 19mm;
-  left: 4.5mm;
-  width: 8.5mm;
-  height: 7mm;
-  background: linear-gradient(135deg, #ffe066 0%, #f5c400 30%, #d4af37 60%, #b28d00 100%);
-  border-radius: 1.2mm;
-  z-index: 5;
-  box-shadow: 0 0.3mm 1mm rgba(0,0,0,0.18);
-  border: 0.2px solid rgba(255, 255, 255, 0.2);
-  overflow: hidden;
-}
-/* Micro-wires simulated inside the chip */
-.pvc .smart-chip::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background-image: 
-    linear-gradient(to right, transparent 2.5mm, rgba(0,0,0,0.18) 2.5mm, rgba(0,0,0,0.18) 2.8mm, transparent 2.8mm, transparent 5.7mm, rgba(0,0,0,0.18) 5.7mm, rgba(0,0,0,0.18) 6.0mm, transparent 6.0mm),
-    linear-gradient(to bottom, transparent 3.3mm, rgba(0,0,0,0.18) 3.3mm, rgba(0,0,0,0.18) 3.6mm, transparent 3.6mm);
-  z-index: 6;
-}
-.pvc .smart-chip::after {
-  content: '';
-  position: absolute;
-  top: 1.5mm; left: 2mm; width: 4.5mm; height: 4mm;
-  border: 0.3px solid rgba(0,0,0,0.12);
-  border-radius: 0.6mm;
-  z-index: 7;
-}
-
-/* ── PHOTO AREA ── */
-.pvc .photo-wrap {
-  position: absolute;
-  top: 14.8mm;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 23.5mm;
-  height: 23.5mm;
-  z-index: 7;
-  border-radius: 50%;
-  padding: 0.8mm;
-  background: #ffffff;
-  box-shadow: 0 1.2mm 3.5mm rgba(15, 23, 42, 0.16);
-}
-.pvc .photo-ring {
-  width: 21.9mm;
-  height: 21.9mm;
-  border-radius: 50%;
-  overflow: hidden;
-  text-align: center;
-  background: #f1f5f9;
-}
-.pvc .photo-ring img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
   vertical-align: top;
-}
-.pvc .photo-ring svg {
-  width: 11mm;
-  height: 11mm;
-  margin-top: 5mm;
-  fill: #cbd5e1;
-}
-
-/* Employee Photo Frame: Rounded Square */
-.pvc.ef .photo-wrap {
+  background: #fff;
+  border: 0.2mm solid #d1d5db;
   border-radius: 3mm;
-}
-.pvc.ef .photo-ring {
-  border-radius: 2.2mm;
-}
-.pvc.ef .photo-ring img {
-  border-radius: 2.2mm;
+  box-shadow: 0 0.5mm 1.5mm rgba(15, 23, 42, 0.08);
 }
 
-/* ── DEDICATED IDENTITY ZONE ── */
-.pvc .id-block {
+/* ── Premium security pattern ────────────────────────────── */
+
+.pvc-card::before {
+  content: "";
   position: absolute;
-  top: 39.8mm;
-  left: 3mm;
-  right: 3mm;
-  text-align: center;
-  z-index: 4;
-}
-.pvc .identity-zone {
-  background: rgba(255, 255, 255, 0.75);
-  border: 0.3px solid rgba(226, 232, 240, 0.8);
-  border-radius: 1.8mm;
-  padding: 1mm 1.5mm;
-  box-shadow: 
-    inset 0 0.5mm 1mm rgba(255,255,255,0.7),
-    0 0.5mm 1.5mm rgba(15, 23, 42, 0.03);
-}
-.pvc .person-name {
-  font-family: 'Poppins', sans-serif;
-  font-size: 10.5pt;
-  font-weight: 800;
-  color: #0f172a;
-  line-height: 1.15;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-bottom: 0.3mm;
-}
-.pvc .person-sub {
-  font-family: 'Inter', sans-serif;
-  font-size: 7.2pt;
-  font-weight: 700;
-  color: #475569;
-  line-height: 1.25;
-}
-.pvc .person-id {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 7pt;
-  font-weight: 700;
-  color: #64748b;
-  letter-spacing: 0.2px;
-  margin-top: 0.4mm;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 85% 8%, rgba(216, 162, 22, 0.10), transparent 14mm),
+    radial-gradient(circle at 12% 42%, rgba(30, 52, 125, 0.06), transparent 16mm),
+    repeating-linear-gradient(
+      135deg,
+      rgba(30, 52, 125, 0.02) 0,
+      rgba(30, 52, 125, 0.02) 0.3mm,
+      transparent 0.3mm,
+      transparent 3mm
+    );
 }
 
-/* ── INFORMATION GRID ── */
-.pvc .info {
-  position: absolute;
-  top: 49.5mm;
-  left: 3mm;
-  right: 3mm;
-  bottom: 13mm;
-  z-index: 4;
+/* ── FRONT CARD HEADER ───────────────────────────────────── */
+
+.card-header {
+  position: relative;
+  z-index: 1;
+  height: 15.5mm;
+  padding: 2mm 2mm 1.2mm;
+  color: #fff;
+  background: #1E347D;
   overflow: hidden;
 }
-.pvc .info-table {
+
+.card-header::after {
+  content: "";
+  position: absolute;
+  right: -6mm;
+  top: -10mm;
+  width: 26mm;
+  height: 26mm;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.card-header .accent-bar {
+  position: absolute;
+  left: 2mm;
+  right: 2mm;
+  bottom: 0;
+  height: 0.5mm;
+  background: #D8A216;
+  border-radius: 0.25mm;
+}
+
+.brand-table {
+  position: relative;
+  z-index: 2;
   width: 100%;
   border-collapse: collapse;
 }
-.pvc .info-row {
-  display: table-row;
-}
-/* Alternate row background for premium grid feel */
-.pvc .info-table tr:nth-child(even) {
-  background: rgba(15, 23, 42, 0.025);
-}
-.pvc .info-lbl-cell {
-  display: table-cell;
-  width: 44%;
-  text-align: left;
+
+.brand-logo-cell {
+  width: 8.5mm;
   vertical-align: middle;
-  padding: 0.45mm 0 0.45mm 1.5mm;
 }
-.pvc .info-lbl {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 6.5pt;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  color: #64748b;
-}
-.pvc .info-val-cell {
-  display: table-cell;
-  width: 56%;
-  text-align: left;
-  vertical-align: middle;
-  padding: 0.45mm 1.5mm 0.45mm 2mm;
-  border-left: 0.4px solid rgba(226, 232, 240, 0.8);
-}
-.pvc .info-val {
-  font-family: 'Inter', sans-serif;
-  font-size: 7pt;
-  font-weight: 750;
-  color: #0f172a;
-  white-space: nowrap;
+
+.logo-frame {
+  width: 7.5mm;
+  height: 7.5mm;
   overflow: hidden;
+  text-align: center;
+  line-height: 7.5mm;
+  background: #fff;
+  border: 0.3mm solid rgba(255, 255, 255, 0.9);
+  border-radius: 1.5mm;
+  box-shadow: 0 0.4mm 1mm rgba(15, 23, 42, 0.12);
+}
+
+.logo-frame img {
+  width: 6.5mm;
+  height: 6.5mm;
+  object-fit: contain;
+  vertical-align: middle;
+}
+
+.logo-frame span {
+  display: block;
+  color: #1E347D;
+  font-size: 5pt;
+  font-weight: 800;
+}
+
+.brand-text-cell {
+  vertical-align: middle;
+  padding-left: 1.5mm;
+}
+
+.school-name {
+  max-height: 5.5mm;
+  overflow: hidden;
+  color: #fff;
+  font-size: 6pt;
+  font-weight: 800;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.school-meta {
+  max-width: 34mm;
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 4.2pt;
+  font-weight: 600;
+  line-height: 1.2;
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Card body ───────────────────────────────────────────── */
+
+.card-body {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  min-height: 50.6mm;
+  padding: 0 2mm 1mm;
+}
+
+/* Centered photo overlapping header bottom edge */
+.photo-center-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: -10.5mm;
+  margin-bottom: 2mm;
+  position: relative;
+  z-index: 10;
+}
+
+/* ── Photo panel (circular) ──────────────────────────────── */
+
+.photo-frame {
+  width: 20mm;
+  height: 20mm;
+  border-radius: 50%;
+  border: 1mm solid #ffffff;
+  outline: 0.8mm solid #C47D3A;
+  overflow: hidden;
+  background: #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.photo-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
   display: block;
 }
 
-/* Status Pill in Grid */
-.pvc .status-tag {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 5.5pt;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  padding: 0.2mm 1mm;
-  border-radius: 0.5mm;
-  display: inline-block;
-}
-.pvc .status-tag.active {
-  background: #dcfce7;
-  color: #15803d;
-}
-.pvc .status-tag.inactive {
-  background: #fee2e2;
-  color: #b91c1c;
-}
-
-/* ── FOOTER 15% (13mm) ── */
-.pvc .ftr {
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 13mm;
-  z-index: 2;
-  background: #f8fafc;
-  border-top: 0.4px solid #cbd5e1;
-  overflow: hidden;
-}
-
-/* Footer Background Seal Overlay */
-.pvc .ftr-seal-bg {
-  position: absolute;
-  top: 1mm;
-  left: 3mm;
-  width: 10.5mm;
-  height: 10.5mm;
-  opacity: 0.16;
-  z-index: 1;
-}
-
-.pvc .ftr-inner {
-  display: table;
+.photo-placeholder {
   width: 100%;
   height: 100%;
-  position: relative;
-  z-index: 3;
-}
-.pvc .ftr-cell {
-  display: table-cell;
-  vertical-align: middle;
-  width: 33.333%;
-  text-align: center;
-}
-.pvc .ftr-cell.sig {
-  text-align: left;
-  padding-left: 3mm;
-}
-.pvc .ftr-cell.center {
-  border-left: 0.3px solid #e2e8f0;
-  border-right: 0.3px solid #e2e8f0;
-}
-.pvc .ftr-cell.right {
-  text-align: right;
-  padding-right: 3mm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  background: #f1f5f9;
+  font-size: 5pt;
+  font-weight: 800;
 }
 
-.pvc .sig-container {
-  position: relative;
-  height: 5.5mm;
-}
-.pvc .sig-image {
-  position: absolute;
-  bottom: -0.5mm;
-  left: 0;
-  height: 7.2mm;
-  max-width: 13.5mm;
-  z-index: 5;
-  object-fit: contain;
-}
-.pvc .sig-line {
-  width: 12.5mm;
-  height: 0.4px;
-  background: #475569;
-  margin-bottom: 0.4mm;
-}
-.pvc .sig-label {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 5.2pt;
-  font-weight: 700;
-  color: #475569;
-  text-transform: uppercase;
+/* ── Role badge (centered layout) ────────────────────────── */
+
+.role-badge {
+  display: inline-block;
+  margin: 1.5mm auto 0;
+  padding: 0.5mm 3mm;
+  color: #fff;
+  background: #1E347D;
+  border-radius: 6mm;
+  font-size: 5pt;
+  font-weight: 800;
   letter-spacing: 0.3px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 38mm;
+  line-height: 1.3;
+}
+
+.role-badge-gold {
+  background: #B8860B;
+}
+
+.role-badge-green {
+  background: #059669;
+}
+
+.role-badge-purple {
+  background: #7C3AED;
+}
+
+.role-badge-teal {
+  background: #0D9488;
+}
+
+/* ── Name section (centered) ─────────────────────────────── */
+
+.person-name {
+  overflow: visible;
+  color: #1E347D;
+  font-size: 10pt;
+  font-weight: 800;
+  line-height: 1.2;
+  text-transform: uppercase;
+  word-break: break-word;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  text-align: center;
+}
+
+.text-center {
+  text-align: center;
+}
+
+/* ── Info panel ──────────────────────────────────────────── */
+
+.info-divider {
+  width: 40%;
+  height: 0.3mm;
+  margin: 1mm auto 0.6mm;
+  background: #D8A216;
+  border: none;
+}
+
+.info-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+}
+
+.info-table tr {
+  height: auto;
+}
+
+.info-table td {
+  overflow: visible;
+  font-size: 5.5pt;
+  line-height: 1.25;
+  text-align: left;
+  vertical-align: middle;
+  padding: 0.15mm 0;
+  word-break: break-word;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.info-table .label-cell {
+  width: 16mm;
+  min-width: 16mm;
+  color: #6B7280;
+  font-weight: 700;
   white-space: nowrap;
 }
 
-.pvc .ftr-lbl {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 5.2pt;
-  font-weight: 700;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-.pvc .ftr-val {
-  font-family: 'Inter', sans-serif;
-  font-size: 6.5pt;
-  font-weight: 700;
-  color: #0f172a;
-  margin-top: 0.3mm;
+.info-table .value-cell {
+  color: #2D2D2D;
+  font-weight: 600;
 }
 
+/* ── Card footer (front) ─────────────────────────────────── */
 
-/* ══════════════════════════════════════
-   BACK CARD STYLING
-   ══════════════════════════════════════ */
-
-/* ── BACK HEADER 13mm ── */
-.pvc .bk-hdr {
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 13.5mm;
-  background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
-  z-index: 2;
-  border-bottom: 0.8mm solid #1e40af; /* Will change dynamically */
-  overflow: hidden;
-  padding: 1.5mm 2.5mm;
-}
-.pvc .bk-brand-row {
+.card-footer {
   position: relative;
-  z-index: 3;
+  z-index: 1;
+  height: 19.5mm;
+  padding: 1.2mm 2mm 1mm;
+  background: #f8fafc;
+  border-top: 0.2mm solid #e5e7eb;
+}
+
+.footer-grid {
   display: table;
   width: 100%;
+  height: 100%;
 }
-.pvc .bk-logo-cell {
+
+.footer-qr-cell {
   display: table-cell;
-  width: 7.5mm;
-  vertical-align: middle;
-}
-.pvc .bk-logo-box {
-  width: 7.5mm;
-  height: 7.5mm;
-  border-radius: 50%;
-  background: #ffffff;
+  width: 20mm;
+  vertical-align: top;
   text-align: center;
-  line-height: 7.5mm;
-  overflow: hidden;
-  box-shadow: 0 0.4mm 1mm rgba(0,0,0,0.15);
 }
-.pvc .bk-logo-box img {
-  width: 6.8mm;
-  height: 6.8mm;
-  vertical-align: middle;
-  object-fit: contain;
+
+.footer-qr-cell .qr-img {
+  display: inline-block;
+  width: 18mm;
+  height: 18mm;
+  padding: 0.4mm;
+  background: #fff;
+  border: 0.2mm solid #d1d5db;
+  border-radius: 1.2mm;
 }
-.pvc .bk-text-cell {
+
+.footer-qr-text {
+  display: block;
+  margin-top: 0.5mm;
+  color: #1E347D;
+  font-size: 4.2pt;
+  font-weight: 700;
+  line-height: 1.15;
+  text-transform: uppercase;
+}
+
+.footer-info-cell {
   display: table-cell;
   vertical-align: middle;
+  padding: 0 1.5mm;
+}
+
+.footer-info-row {
+  color: #2D2D2D;
+  font-size: 5pt;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.footer-info-label {
+  display: inline-block;
+  min-width: 12mm;
+  color: #6B7280;
+  font-weight: 700;
+  font-size: 4.5pt;
+  text-transform: uppercase;
+}
+
+.footer-sign-cell {
+  display: table-cell;
+  width: 18mm;
+  vertical-align: middle;
+  text-align: center;
+}
+
+.signature-seal {
+  display: block;
+  max-width: 12mm;
+  max-height: 3mm;
+  object-fit: contain;
+  margin: 0 auto 0.2mm;
+}
+
+.signature-line {
+  width: 14mm;
+  height: 0.3mm;
+  margin: 0 auto;
+  background: #2D2D2D;
+  border-bottom: 0.15mm solid #2D2D2D;
+}
+
+.signature-label {
+  margin-top: 0.3mm;
+  color: #6B7280;
+  font-size: 4.5pt;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+/* ── BACK SIDE ───────────────────────────────────────────── */
+
+.back-header {
+  position: relative;
+  z-index: 1;
+  height: 13mm;
+  padding: 1.5mm 2mm 1.2mm;
+  color: #fff;
+  background: #1E347D;
+  overflow: hidden;
+}
+
+.back-header::after {
+  content: "";
+  position: absolute;
+  right: -6mm;
+  top: -8mm;
+  width: 22mm;
+  height: 22mm;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.back-header .accent-bar {
+  position: absolute;
+  left: 2mm;
+  right: 2mm;
+  bottom: 0;
+  height: 0.4mm;
+  background: #D8A216;
+  border-radius: 0.2mm;
+}
+
+.back-subtitle {
+  max-width: 34mm;
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 4.2pt;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  letter-spacing: 0.5px;
+}
+
+.logo-frame.small {
+  width: 6mm;
+  height: 6mm;
+  line-height: 6mm;
+}
+
+.logo-frame.small img {
+  width: 5.2mm;
+  height: 5.2mm;
+}
+
+.school-name-sm {
+  max-height: 5mm;
+  overflow: hidden;
+  color: #fff;
+  font-size: 5.5pt;
+  font-weight: 800;
+  line-height: 1.08;
+  text-transform: uppercase;
+}
+
+/* ── Back body ───────────────────────────────────────────── */
+
+.back-body {
+  position: relative;
+  z-index: 1;
+  height: 68.6mm;
+  padding: 1.5mm 2mm;
+  overflow: hidden;
+}
+
+.back-section {
+  margin-bottom: 1mm;
+  padding: 0.8mm 1mm;
+  background: rgba(255, 255, 255, 0.95);
+  border: 0.15mm solid #e5e7eb;
+  border-radius: 1.5mm;
+}
+
+.back-section-title {
+  margin-bottom: 0.4mm;
+  color: #1E347D;
+  font-size: 4.8pt;
+  font-weight: 900;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.contact-line {
+  color: #2D2D2D;
+  font-size: 4.5pt;
+  font-weight: 600;
+  line-height: 1.25;
+  padding: 0.1mm 0;
+  word-break: break-word;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.contact-line .contact-label {
+  display: inline-block;
+  min-width: 10mm;
+  color: #6B7280;
+  font-weight: 700;
+  font-size: 4.2pt;
+}
+
+/* ── Guardian info section ────────────────────────────────── */
+
+.guardian-grid {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.guardian-grid td {
+  padding: 0.15mm 0;
+  color: #2D2D2D;
+  font-size: 4.5pt;
+  font-weight: 600;
+  line-height: 1.2;
+  vertical-align: top;
+  word-break: break-word;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.guardian-grid .gl-label {
+  width: 14mm;
+  color: #6B7280;
+  font-weight: 700;
+  font-size: 4.2pt;
+  white-space: nowrap;
+}
+
+/* ── Terms section ───────────────────────────────────────── */
+
+.terms-list {
+  list-style: none;
+}
+
+.terms-list li {
+  position: relative;
+  margin-bottom: 0.2mm;
+  padding-left: 2mm;
+  color: #2D2D2D;
+  font-size: 4.2pt;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.terms-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.4mm;
+  width: 0.8mm;
+  height: 0.8mm;
+  background: #D8A216;
+  border-radius: 50%;
+}
+
+/* ── Attendance QR section (back) ─────────────────────────── */
+
+.qr-section {
+  display: table;
+  width: 100%;
+  margin-top: 0.8mm;
+  padding: 1mm 1.2mm;
+  background: #EFF6FF;
+  border: 0.15mm solid #BFDBFE;
+  border-radius: 1.5mm;
+}
+
+.qr-section-left,
+.qr-section-right {
+  display: table-cell;
+  vertical-align: middle;
+}
+
+.qr-section-left {
+  width: 22mm;
+  text-align: center;
+}
+
+.qr-section-left img {
+  display: inline-block;
+  width: 20mm;
+  height: 20mm;
+  padding: 0.5mm;
+  background: #fff;
+  border: 0.15mm solid #DBEAFE;
+  border-radius: 1.2mm;
+}
+
+.qr-section-right {
   padding-left: 1.5mm;
   text-align: left;
 }
-.pvc .bk-school-name {
-  font-family: 'Poppins', sans-serif;
-  font-size: 8pt;
-  font-weight: 800;
-  color: #ffffff;
-  line-height: 1.1;
+
+.qr-attendance-title {
+  color: #1E347D;
+  font-size: 5pt;
+  font-weight: 900;
   text-transform: uppercase;
 }
-.pvc .bk-addr {
-  font-family: 'Inter', sans-serif;
+
+.qr-attendance-id {
+  max-width: 24mm;
+  margin-top: 0.3mm;
+  overflow: hidden;
+  color: #2D2D2D;
   font-size: 5.2pt;
-  color: rgba(255, 255, 255, 0.85);
-  line-height: 1.1;
-  margin-top: 0.2mm;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* ── BACK BODY ── */
-.pvc .bk-body {
-  position: absolute;
-  top: 14.8mm;
-  left: 2.8mm;
-  right: 2.8mm;
-  bottom: 23mm;
-  z-index: 4;
-  overflow: hidden;
-}
-
-/* Dedicated card containers on back side to eliminate empty spaces */
-.pvc .bk-card {
-  background: #ffffff;
-  border: 0.3px solid #cbd5e1;
-  border-radius: 1.8mm;
-  padding: 1.2mm 1.5mm;
-  box-shadow: 0 0.4mm 1mm rgba(15, 23, 42, 0.03);
-  margin-bottom: 1.2mm;
-}
-
-/* Sections */
-.pvc .section-title {
-  font-family: 'Poppins', sans-serif;
-  font-size: 6.8pt;
   font-weight: 800;
-  color: #1e40af;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  margin-bottom: 0.8mm;
-  border-bottom: 0.4px solid #cbd5e1;
-  padding-bottom: 0.2mm;
-  text-align: left;
-}
-
-/* Rules / Instructions list */
-.pvc .rule-row {
-  display: table;
-  width: 100%;
-  padding: 0.35mm 0;
-}
-.pvc .rule-icon-cell {
-  display: table-cell;
-  width: 3.5mm;
-  vertical-align: top;
-}
-.pvc .rule-icon {
-  width: 3.2mm;
-  height: 3.2mm;
-  text-align: center;
-  line-height: 3.2mm;
-}
-.pvc .rule-icon i {
-  font-size: 5.5pt;
-  color: #2563eb;
-  vertical-align: middle;
-}
-.pvc .rule-text-cell {
-  display: table-cell;
-  vertical-align: middle;
-  padding-left: 1mm;
-  text-align: left;
-}
-.pvc .rule-text {
-  font-family: 'Inter', sans-serif;
-  font-size: 5.5pt;
-  font-weight: 600;
-  color: #334155;
-  line-height: 1.25;
-}
-
-/* Contacts */
-.pvc .bk-contact {
-  /* Inherits from .bk-card */
-}
-.pvc .contact-row {
-  display: table;
-  width: 100%;
-  padding: 0.25mm 0;
-}
-.pvc .contact-icon-cell {
-  display: table-cell;
-  width: 3mm;
-  vertical-align: middle;
-  text-align: center;
-}
-.pvc .contact-icon-cell i {
-  font-size: 5.5pt;
-  color: #2563eb;
-}
-.pvc .contact-val-cell {
-  display: table-cell;
-  vertical-align: middle;
-  padding-left: 1.2mm;
-  text-align: left;
-}
-.pvc .contact-val {
-  font-family: 'Inter', sans-serif;
-  font-size: 5.5pt;
-  font-weight: 600;
-  color: #475569;
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
   text-overflow: ellipsis;
-  display: block;
+  white-space: nowrap;
 }
 
-/* ── BACK FOOTER (Validation + QR) ── */
-.pvc .bk-ftr {
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 23mm;
-  z-index: 2;
-  background: #f8fafc;
-  border-top: 0.4px solid #cbd5e1;
-  padding: 1.5mm 3mm;
+.qr-attendance-sub {
+  margin-top: 0.2mm;
+  color: #6B7280;
+  font-size: 4.2pt;
+  font-weight: 600;
 }
-.pvc .bk-ftr-inner {
-  display: table;
+
+/* ── Back footer ─────────────────────────────────────────── */
+
+.back-footer {
+  position: relative;
+  z-index: 1;
+  height: 4mm;
+  background: #1E347D;
+  text-align: center;
+  line-height: 4mm;
+}
+
+.back-footer span {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 3.5pt;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+/* ── EMPLOYEE CARD VARIATIONS ────────────────────────────── */
+
+.employee-card .card-header {
+  background: #1E347D;
+}
+
+.employee-card .person-name {
+  color: #1E347D;
+}
+
+.employee-card .role-badge {
+  background: #B8860B;
+}
+
+.employee-card .info-divider {
+  background: #D8A216;
+}
+
+.employee-card .back-section-title {
+  color: #1E347D;
+}
+
+.employee-card .qr-attendance-title {
+  color: #1E347D;
+}
+
+.employee-card .back-header {
+  background: #1E347D;
+}
+
+.employee-card .back-footer {
+  background: #1E347D;
+}
+
+.employee-card .footer-qr-text {
+  color: #B8860B;
+}
+
+/* ── STUDENT CARD VARIATIONS ─────────────────────────────── */
+
+.student-card .role-badge {
+  background: #1E347D;
+}
+
+.student-card .footer-qr-text {
+  color: #1E347D;
+}
+
+/* ── Empty state ─────────────────────────────────────────── */
+
+.no-photo {
   width: 100%;
   height: 100%;
-}
-.pvc .bk-valid-col {
-  display: table-cell;
-  vertical-align: middle;
-  text-align: left;
-}
-.pvc .bk-valid-row {
-  margin-bottom: 0.5mm;
-}
-.pvc .bk-valid-lbl {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 5.2pt;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94A3B8;
+  background: #F1F5F9;
+  font-size: 5pt;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  color: #64748b;
-  line-height: 1.1;
-}
-.pvc .bk-valid-val {
-  font-family: 'Poppins', sans-serif;
-  font-size: 6.8pt;
-  font-weight: 700;
-  color: #0f172a;
-  line-height: 1.1;
-}
-.pvc .bk-valid-ref {
-  font-family: 'Inter', sans-serif;
-  font-size: 5.5pt;
-  font-weight: 600;
-  color: #94a3b8;
-  margin-top: 0.3mm;
+  letter-spacing: 0.5px;
 }
 
-.pvc .bk-qr-col {
-  display: table-cell;
-  vertical-align: middle;
-  text-align: right;
-  width: 21mm;
-}
-.pvc .qr-wrap {
-  display: inline-block;
-  text-align: center;
-}
-.pvc .qr-box {
-  width: 18mm;
-  height: 18mm;
-  border-radius: 1.5mm;
-  background: #ffffff;
-  border: 0.3px solid #cbd5e1;
-  padding: 0.8mm;
-  display: inline-block;
-  box-shadow: 0 0.3mm 1mm rgba(15, 23, 42, 0.06);
-}
-.pvc .qr-box img {
-  width: 16.2mm;
-  height: 16.2mm;
-  vertical-align: middle;
-}
-.pvc .qr-box i {
-  font-size: 14pt;
-  color: #1e40af;
-  line-height: 16.2mm;
-}
-.pvc .qr-label {
-  font-family: 'Montserrat', sans-serif;
-  font-size: 5.2pt;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  color: #1e40af;
-  margin-top: 0.3mm;
-}
-.pvc .qr-sub {
-  font-family: 'Inter', sans-serif;
-  font-size: 4.8pt;
-  font-weight: 600;
-  color: #94a3b8;
-  line-height: 1.1;
-}
+/* ── Print-specific overrides ────────────────────────────── */
 
-
-/* ══════════════════════════════════════
-   DYNAMIC THEMES & ACCENTS
-   ══════════════════════════════════════ */
-
-/* ── STUDENT (Blue + Orange) ── */
-.pvc.sf .hdr {
-  border-bottom-color: #f97316;
-}
-.pvc.sf .badge {
-  background: #f97316;
-}
-.pvc.bk .bk-hdr {
-  border-bottom-color: #f97316;
-}
-.pvc.bk .section-title {
-  color: #f97316;
-}
-.pvc.bk .rule-icon i {
-  color: #f97316;
-}
-.pvc.bk .contact-icon-cell i {
-  color: #f97316;
-}
-.pvc.bk .qr-label {
-  color: #f97316;
-}
-
-/* ── TEACHER (Blue + Gold) ── */
-.pvc.theme-teacher .hdr {
-  border-bottom-color: #d4af37;
-}
-.pvc.theme-teacher .badge {
-  background: #d4af37;
-}
-.pvc.theme-teacher-bk .bk-hdr {
-  border-bottom-color: #d4af37;
-}
-.pvc.theme-teacher-bk .section-title {
-  color: #d4af37;
-}
-.pvc.theme-teacher-bk .rule-icon i {
-  color: #d4af37;
-}
-.pvc.theme-teacher-bk .contact-icon-cell i {
-  color: #d4af37;
-}
-.pvc.theme-teacher-bk .qr-label {
-  color: #d4af37;
-}
-
-/* ── PRINCIPAL (Blue + Dark Gold) ── */
-.pvc.theme-principal .hdr {
-  border-bottom-color: #b8860b;
-}
-.pvc.theme-principal .badge {
-  background: #b8860b;
-}
-.pvc.theme-principal-bk .bk-hdr {
-  border-bottom-color: #b8860b;
-}
-.pvc.theme-principal-bk .section-title {
-  color: #b8860b;
-}
-.pvc.theme-principal-bk .rule-icon i {
-  color: #b8860b;
-}
-.pvc.theme-principal-bk .contact-icon-cell i {
-  color: #b8860b;
-}
-.pvc.theme-principal-bk .qr-label {
-  color: #b8860b;
-}
-
-/* ── STAFF/EMPLOYEE (Blue + Green) ── */
-.pvc.theme-staff .hdr {
-  border-bottom-color: #16a34a;
-}
-.pvc.theme-staff .badge {
-  background: #16a34a;
-}
-.pvc.theme-staff-bk .bk-hdr {
-  border-bottom-color: #16a34a;
-}
-.pvc.theme-staff-bk .section-title {
-  color: #16a34a;
-}
-.pvc.theme-staff-bk .rule-icon i {
-  color: #16a34a;
-}
-.pvc.theme-staff-bk .contact-icon-cell i {
-  color: #16a34a;
-}
-.pvc.theme-staff-bk .qr-label {
-  color: #16a34a;
-}
-
-/* ── ACCOUNTANT (Blue + Emerald) ── */
-.pvc.theme-accountant .hdr {
-  border-bottom-color: #059669;
-}
-.pvc.theme-accountant .badge {
-  background: #059669;
-}
-.pvc.theme-accountant-bk .bk-hdr {
-  border-bottom-color: #059669;
-}
-.pvc.theme-accountant-bk .section-title {
-  color: #059669;
-}
-.pvc.theme-accountant-bk .rule-icon i {
-  color: #059669;
-}
-.pvc.theme-accountant-bk .contact-icon-cell i {
-  color: #059669;
-}
-.pvc.theme-accountant-bk .qr-label {
-  color: #059669;
-}
-
-/* ── LIBRARIAN (Blue + Purple) ── */
-.pvc.theme-librarian .hdr {
-  border-bottom-color: #8b5cf6;
-}
-.pvc.theme-librarian .badge {
-  background: #8b5cf6;
-}
-.pvc.theme-librarian-bk .bk-hdr {
-  border-bottom-color: #8b5cf6;
-}
-.pvc.theme-librarian-bk .section-title {
-  color: #8b5cf6;
-}
-.pvc.theme-librarian-bk .rule-icon i {
-  color: #8b5cf6;
-}
-.pvc.theme-librarian-bk .contact-icon-cell i {
-  color: #8b5cf6;
-}
-.pvc.theme-librarian-bk .qr-label {
-  color: #8b5cf6;
+@media print {
+  .pvc-card {
+    box-shadow: none;
+    border-color: #bbb;
+  }
+  .photo-frame {
+    outline: 0.8mm solid #C47D3A;
+  }
 }
 
 </style>
 </head>
-<body>
+<body class="idcard-single">
 
-            <div class="page-single f">
+            <div class="page-single">
                 
-<div class="pvc ef theme-teacher">
-
-    <!-- ═══ HEADER ═══ -->
-    <div class="hdr">
-        <div class="brand-row">
-            <div class="brand-logo-cell">
-                <div class="logo-box">
-                        <span class="logo-fallback">CHA</span>
-                </div>
-            </div>
-            <div class="brand-text-cell">
-                <div class="school-name">Chattogram Collegiate School &amp; College</div>
-                    <div class="school-motto" style="font-size: 4.8pt; font-style: normal; opacity: 0.8; margin-top: 0.1mm;">
-                        Bangladesh &#x2022; school-ms-7l3e.onrender.com/
+<div class="pvc-card employee-card card-front">
+    <div class="card-header">
+        <table class="brand-table">
+            <tr>
+                <td class="brand-logo-cell">
+                    <div class="logo-frame">
+                            <span>CHA</span>
                     </div>
+                </td>
+                <td class="brand-text-cell">
+                    <div class="school-name">Chattogram Collegiate School &amp; College</div>
+                    <div class="school-meta">Knowledge. Discipline. Excellence</div>
+                    <div class="school-meta">EIIN 104298 | CHA</div>
+                </td>
+            </tr>
+        </table>
+        <div class="accent-bar"></div>
+    </div>
+
+    <div class="card-body">
+        <div class="photo-center-wrap">
+            <div class="photo-frame">
+                    <div class="no-photo">PHOTO</div>
             </div>
         </div>
-        <span class="badge" style="background:#D4AF37;">Senior Teacher</span>
-    </div>
 
-    <!-- ═══ GOLD SMART CHIP ═══ -->
-    <div class="smart-chip"></div>
+        <div class="person-name text-center">Hasan Mahmud</div>
+        <div class="role-badge text-center role-badge-green">Accountant</div>
+        <div class="info-divider"></div>
 
-    <!-- ═══ PHOTO AREA (Rounded Square) ═══ -->
-    <div class="photo-wrap">
-        <div class="photo-ring">
-                <svg viewBox="0 0 40 42">
-                    <rect x="4" y="4" width="32" height="34" rx="4" style="fill:none; stroke:#cbd5e1; stroke-width:2;" />
-                    <ellipse cx="20" cy="16" rx="9" ry="10" style="fill:#cbd5e1;" />
-                    <ellipse cx="20" cy="44" rx="16" ry="12" style="fill:#cbd5e1;" />
-                </svg>
-        </div>
-    </div>
-
-    <!-- ═══ IDENTITY AREA ═══ -->
-    <div class="id-block">
-        <div class="identity-zone">
-            <div class="person-name" title="Nafisa Jahan">Nafisa Jahan</div>
-            <div class="person-sub">Administration &middot; Senior Teacher</div>
-            <div class="person-id">Code: EMP-00004</div>
-        </div>
-    </div>
-
-    <div class="divider-line"></div>
-
-    <!-- ═══ INFORMATION GRID ═══ -->
-    <div class="info">
         <table class="info-table">
-            <tr class="info-row">
-                <td class="info-lbl-cell"><span class="info-lbl">Emp Code</span></td>
-                <td class="info-val-cell"><span class="info-val">EMP-00004</span></td>
+            <tr>
+                <td class="label-cell">Employee Code</td>
+                <td class="value-cell">EMP-00009</td>
             </tr>
-            <tr class="info-row">
-                <td class="info-lbl-cell"><span class="info-lbl">Department</span></td>
-                <td class="info-val-cell"><span class="info-val">Administration</span></td>
+            <tr>
+                <td class="label-cell">Department</td>
+                <td class="value-cell">Security &amp; Safety</td>
             </tr>
-            <tr class="info-row">
-                <td class="info-lbl-cell"><span class="info-lbl">Designation</span></td>
-                <td class="info-val-cell"><span class="info-val">Senior Teacher</span></td>
+            <tr>
+                <td class="label-cell">Designation</td>
+                <td class="value-cell">Accountant</td>
             </tr>
-            <tr class="info-row">
-                <td class="info-lbl-cell"><span class="info-lbl">Blood Group</span></td>
-                <td class="info-val-cell"><span class="info-val">AB&#x2B;</span></td>
+            <tr>
+                <td class="label-cell">Joining Date</td>
+                <td class="value-cell">01 Jan 2025</td>
             </tr>
-                <tr class="info-row">
-                    <td class="info-lbl-cell"><span class="info-lbl">Joining Date</span></td>
-                    <td class="info-val-cell"><span class="info-val">01 Jun 2024</span></td>
-                </tr>
-                <tr class="info-row">
-                    <td class="info-lbl-cell"><span class="info-lbl">NID Number</span></td>
-                    <td class="info-val-cell"><span class="info-val">4567890123</span></td>
-                </tr>
-            <tr class="info-row">
-                <td class="info-lbl-cell"><span class="info-lbl">Mobile</span></td>
-                <td class="info-val-cell"><span class="info-val">01711110004</span></td>
+            <tr>
+                <td class="label-cell">Blood Group</td>
+                <td class="value-cell">B&#x2B;</td>
             </tr>
-            <tr class="info-row">
-                <td class="info-lbl-cell"><span class="info-lbl">Status</span></td>
-                <td class="info-val-cell">
-                    <span class="info-val">
-                        <span class="status-tag active">active</span>
-                    </span>
-                </td>
+            <tr>
+                <td class="label-cell">Mobile Number</td>
+                <td class="value-cell">01711110009</td>
+            </tr>
+            <tr>
+                <td class="label-cell">Email Address</td>
+                <td class="value-cell">info@collegiate-school.edu.bd</td>
             </tr>
         </table>
     </div>
 
-    <!-- ═══ BOTTOM FOOTER ═══ -->
-    <div class="ftr">
-        <div class="ftr-inner">
-            <div class="ftr-cell sig">
-                <div class="sig-container">
+    <div class="card-footer">
+        <div class="footer-grid">
+            <div class="footer-info-cell">
+                <div class="footer-info-row">
+                    <span class="footer-info-label">Issue</span>
+                    <span>21 Jun 2026</span>
                 </div>
-                <div class="sig-line"></div>
-                <div class="sig-label">Authorized</div>
+                <div class="footer-info-row">
+                    <span class="footer-info-label">Valid</span>
+                    <span>31 Dec 2027</span>
+                </div>
+                <div class="footer-info-row">
+                    <span class="footer-info-label">Card No</span>
+                    <span>EMP-00009</span>
+                </div>
             </div>
-            <div class="ftr-cell center">
-                <div class="ftr-lbl">Issue Date</div>
-                <div class="ftr-val">18 Jun 2026</div>
-            </div>
-            <div class="ftr-cell right">
-                <div class="ftr-lbl">Valid Until</div>
-                <div class="ftr-val">31 Dec 2027</div>
+            <div class="footer-sign-cell">
+                <div class="signature-line"></div>
+                <div class="signature-label">Authorized Signatory</div>
             </div>
         </div>
     </div>
 </div>
 
             </div>
-            <div class="page-break"></div>
-            <div class="page-single b">
+            <div class="page-single">
                 
-<div class="pvc ebk theme-teacher-bk">
-
-    <!-- ═══ HEADER ═══ -->
-    <div class="bk-hdr">
-        <div class="bk-brand-row">
-            <div class="bk-logo-cell">
-                <div class="bk-logo-box">
-                        <svg viewBox="0 0 14 14" fill="none">
-                            <path d="M7 1L13 4.5V9.5L7 13L1 9.5V4.5L7 1Z" fill="rgba(255,255,255,0.85)"/>
-                            <path d="M7 4L10 5.8V8.8L7 10.5L4 8.8V5.8L7 4Z" fill="#1E40AF"/>
-                        </svg>
-                </div>
-            </div>
-            <div class="bk-text-cell">
-                <div class="bk-school-name">Chattogram Collegiate School &amp; College</div>
-                <div class="bk-addr"><i class="fa-solid fa-location-dot" style="margin-right:1px; font-size: 5.5pt;"></i> Ice Factory Road, Double Mooring, Chattogram, Bangladesh</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ═══ BODY ═══ -->
-    <div class="bk-body">
-
-        <!-- SECTION A: IMPORTANT INSTRUCTIONS -->
-        <div class="bk-card">
-            <div class="section-title">Important Instructions</div>
-            <div class="rule-row">
-                <span class="rule-icon-cell"><span class="rule-icon"><i class="fa-solid fa-id-badge"></i></span></span>
-                <span class="rule-text-cell"><span class="rule-text">Always display this card while on duty.</span></span>
-            </div>
-            <div class="rule-row">
-                <span class="rule-icon-cell"><span class="rule-icon"><i class="fa-solid fa-triangle-exclamation"></i></span></span>
-                <span class="rule-text-cell"><span class="rule-text">Report loss immediately to the HR department.</span></span>
-            </div>
-            <div class="rule-row">
-                <span class="rule-icon-cell"><span class="rule-icon"><i class="fa-solid fa-ban"></i></span></span>
-                <span class="rule-text-cell"><span class="rule-text">This card is non-transferable.</span></span>
-            </div>
-            <div class="rule-row">
-                <span class="rule-icon-cell"><span class="rule-icon"><i class="fa-solid fa-building-columns"></i></span></span>
-                <span class="rule-text-cell"><span class="rule-text">Property of school. Return upon termination.</span></span>
-            </div>
-        </div>
-
-        <!-- SECTION B: CONTACT INFORMATION -->
-        <div class="bk-card">
-            <div class="section-title">Contact Information</div>
-            <div class="contact-row">
-                <span class="contact-icon-cell"><i class="fa-solid fa-phone"></i></span>
-                <span class="contact-val-cell"><span class="contact-val">&#x2B;880 31 610429</span></span>
-            </div>
-            <div class="contact-row">
-                <span class="contact-icon-cell"><i class="fa-solid fa-envelope"></i></span>
-                <span class="contact-val-cell"><span class="contact-val">info@collegiate-school.edu.bd</span></span>
-            </div>
-                <div class="contact-row">
-                    <span class="contact-icon-cell"><i class="fa-solid fa-globe"></i></span>
-                    <span class="contact-val-cell"><span class="contact-val">https://school-ms-7l3e.onrender.com/</span></span>
-                </div>
-                <div class="contact-row" style="margin-top: 0.2mm;">
-                    <span class="contact-icon-cell"><i class="fa-solid fa-shield-halved" style="color: #dc2626;"></i></span>
-                    <span class="contact-val-cell">
-                        <span class="contact-val" style="color: #dc2626; font-weight: 700;">Emergency: Mr. Jahan: 01711119004</span>
-                    </span>
-                </div>
-        </div>
-    </div>
-
-    <!-- ═══ FOOTER: VALIDATION + QR ═══ -->
-    <div class="bk-ftr">
-        <div class="bk-ftr-inner">
-            <div class="bk-valid-col">
-                <div class="bk-valid-row">
-                    <div class="bk-valid-lbl">Card Number</div>
-                    <div class="bk-valid-val">EMP-CARD-00004</div>
-                </div>
-                <div class="bk-valid-row">
-                    <div class="bk-valid-lbl">Issue Date</div>
-                    <div class="bk-valid-val" style="font-size: 6.8pt;">01 Jun 2024</div>
-                </div>
-                <div class="bk-valid-row">
-                    <div class="bk-valid-lbl">Valid Until</div>
-                    <div class="bk-valid-val" style="font-size: 6.8pt;">31 Dec 2027</div>
-                </div>
-                <div class="bk-valid-ref">Ref: EMP-00004</div>
-            </div>
-            
-            <div class="bk-qr-col">
-                <div class="qr-wrap">
-                    <div class="qr-box">
-                            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASIAAAEiAQMAAABncE31AAAABlBMVEUbTYz////LJPj&#x2B;AAABI0lEQVR4nO2YwQ2DMAxFIzEAI7E6IzEAEnVih5iqtBxiqlbPBwTJO/2P7ThpuxBzgkIJ/gmygzrxF7UwWQyyMsrntNSVCSpaifKxLUMG7OE2oEKVyJaUvXlcZS2j2TCoO5XQgPqCEilpZYK6T4nqi6xcqF9QHZXYO3LtCu/7NlQ/JQ6x2l4LqEAl3BlIO7Imhr1BRSph9ajyUqNSkjV5QEUr4TvyzueACleiuaEjsDpU8wQqVInSC/zNg3kFdYcSFjIFiC82Ap&#x2B;ehqD6KeFu3LJXpUnoUOAdggpRok1gmifNJqhwJVxHLgehOoad3U9A9VeiJsarjgwVq4Q7iepUBhWuhKtMm3MIKl6JduPmr92eHYIKUOJDQKEE/wTZQZ34&#x2B;Vr4ACwXPD0gYdSmAAAAAElFTkSuQmCC" alt="qr" />
+<div class="pvc-card employee-card card-back">
+    <div class="back-header">
+        <table class="brand-table">
+            <tr>
+                <td class="brand-logo-cell">
+                    <div class="logo-frame small">
+                            <span>CHA</span>
                     </div>
-                    <div class="qr-label">Scan To Verify</div>
-                    <div class="qr-sub">Verification Portal</div>
-                </div>
+                </td>
+                <td class="brand-text-cell">
+                    <div class="school-name-sm">Chattogram Collegiate School &amp; College</div>
+                    <div class="back-subtitle">EMPLOYEE ID CARD</div>
+                </td>
+            </tr>
+        </table>
+        <div class="accent-bar"></div>
+    </div>
+
+    <div class="back-body">
+        <div class="back-section">
+            <div class="back-section-title">Office Address</div>
+            <div class="contact-line">Ice Factory Road, Double Mooring, Chattogram, Bangladesh</div>
+            <div class="contact-line"><span class="contact-label">Phone</span>&#x2B;880 31 610429</div>
+            <div class="contact-line"><span class="contact-label">Email</span>info@collegiate-school.edu.bd</div>
+            <div class="contact-line"><span class="contact-label">Website</span>school-ms-7l3e.onrender.com/</div>
+        </div>
+
+        <div class="back-section">
+            <div class="back-section-title">Emergency Contact</div>
+            <table class="guardian-grid">
+                <tr>
+                    <td class="gl-label">Emergency</td>
+                    <td>Mrs. Mahmud: 01711119009</td>
+                </tr>
+                <tr>
+                    <td class="gl-label">Department</td>
+                    <td>Security &amp; Safety</td>
+                </tr>
+                <tr>
+                    <td class="gl-label">Present Address</td>
+                    <td>99, Rampura, Dhaka</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="back-section">
+            <div class="back-section-title">Terms</div>
+            <ul class="terms-list">
+                <li>Display card while on duty</li>
+                <li>Return card upon resignation</li>
+                <li>Unauthorised use prohibited</li>
+                <li>Card is school property</li>
+            </ul>
+        </div>
+
+        <div class="qr-section">
+            <div class="qr-section-left">
+                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASIAAAEiAQMAAABncE31AAAABlBMVEUbTYz////LJPj&#x2B;AAABGklEQVR4nO2YwQ3DMAhFLWWAjNTVM1IHiJQaMMRNVbmHkKrV4xA5&#x2B;PXyfwCVsn0QS4FCCb4JqoM&#x2B;8Re9sLSY6vmuD8/coLKV0BcBSpnlVdG4gEpVQiyxO3&#x2B;oYVDXKlFqDuoLSmjaTlAXKeGdqWamcf&#x2B;COlGJmMjNpsHchjpPiS6WuOtzUGlKuC9SHfMaFdNOUMlKqC9rP5bFK6gLlDhMBclJQKUrUUPMCdQc8jqBSlVCM2rOPpZtEQGVrUSE1YT8yLsVVK4STxs3HQj9XwGoVCW6qSDmyNrttTNB5SgRmwerDnPoWB1QqUoo8GYiQ&#x2B;Uq0TZulhvt5aBOUSI6k4U7BJWvxL5x69duR4egEpQYBBRK8E1QHfSJn&#x2B;&#x2B;FDz9uQHX5Ao0GAAAAAElFTkSuQmCC" alt="Attendance QR" />
+            </div>
+            <div class="qr-section-right">
+                <div class="qr-attendance-title">Attendance QR</div>
+                <div class="qr-attendance-id">EMP-00009</div>
+                <div class="qr-attendance-sub">Employee Attendance Access</div>
             </div>
         </div>
+    </div>
+
+    <div class="back-footer">
+        <span>Chattogram Collegiate School &amp; College &mdash; Knowledge. Discipline. Excellence</span>
     </div>
 </div>
 

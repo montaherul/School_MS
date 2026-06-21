@@ -29,7 +29,7 @@ BEGIN
             fd.IsActive,
             fd.ValidFrom,
             fd.ValidTo,
-            ROW_NUMBER() OVER (ORDER BY fd.Name) AS RowNum,
+            ROW_NUMBER() OVER (ORDER BY fd.Name, fd.Id) AS RowNum,
             COUNT(*) OVER () AS TotalCount
         FROM 
             FeeDiscounts fd

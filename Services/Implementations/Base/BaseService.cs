@@ -81,20 +81,20 @@ public class BaseService<TEntity> : IBaseService<TEntity> where TEntity : BaseEn
 
             if (searchableProperties.Count > 0)
             {
-                var items = await query.ToListAsync(ct);
-                items = items.Where(x => searchableProperties.Any(p => 
-                    (p.GetValue(x) as string)?.Contains(search, StringComparison.OrdinalIgnoreCase) == true)).ToList();
-                
-                var total = items.Count;
-                var pagedItems = items.OrderByDescending(x => x.Id).Skip((page - 1) * pageSize).Take(pageSize).ToList();
-                
-                return new PagedResult<TEntity>
+                var parameter = Expression.Parameter(typeof(TEntity), "e");
+                Expression combined = Expression.Constant(false);
+                var containsMethod = typeof(string).GetMethod("Contains", new[] { typeof(string) });
+                var searchConstant = Expression.Constant(search);
+
+                foreach (var prop in searchableProperties)
                 {
-                    Items = pagedItems,
-                    Page = page,
-                    PageSize = pageSize,
-                    TotalItems = total
-                };
+                    var property = Expression.Property(parameter, prop.Name);
+                    var containsCall = Expression.Call(property, containsMethod, searchConstant);
+                    combined = Expression.OrElse(combined, containsCall);
+                }
+
+                var lambda = Expression.Lambda<Func<TEntity, bool>>(combined, parameter);
+                query = query.Where(lambda);
             }
         }
 

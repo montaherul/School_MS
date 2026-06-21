@@ -21,7 +21,7 @@ BEGIN
     JOIN Classes c ON s.ClassId = c.Id
     WHERE fi.IsDeleted = 0 AND (@AcademicYearId = 0 OR fi.AcademicYearId = @AcademicYearId)
     GROUP BY c.Name, c.Id
-    ORDER BY c.Name
+    ORDER BY c.Name, c.Id
     OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
 END;
 GO

@@ -25,7 +25,7 @@ BEGIN
             fcs.TotalTransactions,
             fcs.PaymentMethod,
             fcs.IsDailySummary,
-            ROW_NUMBER() OVER (ORDER BY fcs.CollectionDate DESC) AS RowNum,
+            ROW_NUMBER() OVER (ORDER BY fcs.CollectionDate DESC, fcs.Id DESC) AS RowNum,
             COUNT(*) OVER () AS TotalCount
         FROM 
             FeeCollectionSummaries fcs

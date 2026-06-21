@@ -14,7 +14,7 @@ BEGIN
     JOIN Students s ON fw.StudentId = s.Id
     LEFT JOIN FeeInvoices fi ON fw.FeeInvoiceId = fi.Id
     WHERE fw.IsDeleted = 0
-    ORDER BY fw.CreatedAt DESC
+    ORDER BY fw.CreatedAt DESC, fw.Id DESC
     OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
 END;
 GO

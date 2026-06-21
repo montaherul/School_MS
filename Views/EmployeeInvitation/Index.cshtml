@@ -69,7 +69,8 @@
                 ajaxURL: "/EmployeeInvitation/Index",
                 pagination: true,
                 paginationMode: "remote",
-                paginationSize: 10,
+                paginationSize: 15,
+                paginationSizeSelector: [15,25,50,100],
                 ajaxParams: function () {
                     return {
                         search: $("#invitationSearch").val()

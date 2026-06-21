@@ -282,10 +282,18 @@
             paginationSize: 10,
             ajaxParams: function() { return getFilters(); },
             ajaxResponse: function (url, params, response) {
+                if (response.error) {
+                    console.error("Student list error:", response.error);
+                    return { data: [], last_page: 1 };
+                }
                 return {
                     data: response.data || [],
                     last_page: response.last_page || 1
                 };
+            },
+            ajaxError: function (xhr, textStatus, errorThrown) {
+                console.error("Student list AJAX error:", textStatus, errorThrown);
+                showToast("Failed to load student data: " + textStatus, 'error');
             },
             placeholder: `
                 <div class='dash-empty'>

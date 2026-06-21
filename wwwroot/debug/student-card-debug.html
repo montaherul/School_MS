@@ -7,7 +7,9 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;600;700&display=swap" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
     <style>
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -18,13 +20,15 @@
 html,
 body {
   background: #fff;
-  color: #111827;
-  font-family: "Inter", "Segoe UI", Arial, sans-serif;
+  color: #2D2D2D;
+  font-family: "Segoe UI", "Arial", "Noto Sans Bengali", "Nirmala UI", sans-serif;
 }
 
 @page {
   margin: 0;
 }
+
+/* ── Page containers ─────────────────────────────────────── */
 
 .page-single {
   width: 53.98mm;
@@ -59,6 +63,8 @@ body {
   margin: 0 1.2mm;
 }
 
+/* ── Card shell ──────────────────────────────────────────── */
+
 .pvc-card {
   position: relative;
   display: inline-block;
@@ -67,47 +73,61 @@ body {
   overflow: hidden;
   vertical-align: top;
   background: #fff;
-  border: 0.22mm solid #dbe5f3;
-  border-radius: 3.2mm;
-  box-shadow: 0 1.2mm 3mm rgba(15, 23, 42, 0.13);
+  border: 0.2mm solid #d1d5db;
+  border-radius: 3mm;
+  box-shadow: 0 0.5mm 1.5mm rgba(15, 23, 42, 0.08);
 }
 
-.pvc-card:before {
+/* ── Premium security pattern ────────────────────────────── */
+
+.pvc-card::before {
   content: "";
   position: absolute;
   inset: 0;
   z-index: 0;
   background:
-    radial-gradient(circle at 84% 8%, rgba(212, 175, 55, 0.16), transparent 15mm),
-    radial-gradient(circle at 8% 38%, rgba(37, 99, 235, 0.11), transparent 18mm),
-    repeating-linear-gradient(135deg, rgba(30, 64, 175, 0.028) 0, rgba(30, 64, 175, 0.028) 0.35mm, transparent 0.35mm, transparent 3.4mm);
+    radial-gradient(circle at 85% 8%, rgba(216, 162, 22, 0.10), transparent 14mm),
+    radial-gradient(circle at 12% 42%, rgba(30, 52, 125, 0.06), transparent 16mm),
+    repeating-linear-gradient(
+      135deg,
+      rgba(30, 52, 125, 0.02) 0,
+      rgba(30, 52, 125, 0.02) 0.3mm,
+      transparent 0.3mm,
+      transparent 3mm
+    );
 }
 
-.card-header,
-.back-header {
+/* ── FRONT CARD HEADER ───────────────────────────────────── */
+
+.card-header {
   position: relative;
   z-index: 1;
-  height: 21.4mm;
-  padding: 2.2mm 2.7mm 1.5mm;
+  height: 15.5mm;
+  padding: 2mm 2mm 1.2mm;
   color: #fff;
-  background: linear-gradient(135deg, #0f172a 0%, #1e40af 58%, #2563eb 100%);
-  border-bottom: 0.65mm solid #d4af37;
+  background: #1E347D;
+  overflow: hidden;
 }
 
-.back-header {
-  height: 18.5mm;
-}
-
-.card-header:after,
-.back-header:after {
+.card-header::after {
   content: "";
   position: absolute;
-  right: -10mm;
-  top: -12mm;
-  width: 31mm;
-  height: 31mm;
+  right: -6mm;
+  top: -10mm;
+  width: 26mm;
+  height: 26mm;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.11);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.card-header .accent-bar {
+  position: absolute;
+  left: 2mm;
+  right: 2mm;
+  bottom: 0;
+  height: 0.5mm;
+  background: #D8A216;
+  border-radius: 0.25mm;
 }
 
 .brand-table {
@@ -117,104 +137,103 @@ body {
   border-collapse: collapse;
 }
 
-.brand-logo {
-  width: 9.8mm;
-  vertical-align: top;
+.brand-logo-cell {
+  width: 8.5mm;
+  vertical-align: middle;
 }
 
 .logo-frame {
-  width: 8.7mm;
-  height: 8.7mm;
+  width: 7.5mm;
+  height: 7.5mm;
   overflow: hidden;
   text-align: center;
-  line-height: 8.7mm;
+  line-height: 7.5mm;
   background: #fff;
-  border: 0.25mm solid rgba(255, 255, 255, 0.85);
-  border-radius: 2.2mm;
-  box-shadow: 0 0.7mm 1.8mm rgba(15, 23, 42, 0.18);
-}
-
-.logo-frame.small {
-  width: 8mm;
-  height: 8mm;
-  line-height: 8mm;
+  border: 0.3mm solid rgba(255, 255, 255, 0.9);
+  border-radius: 1.5mm;
+  box-shadow: 0 0.4mm 1mm rgba(15, 23, 42, 0.12);
 }
 
 .logo-frame img {
-  width: 7.7mm;
-  height: 7.7mm;
+  width: 6.5mm;
+  height: 6.5mm;
   object-fit: contain;
   vertical-align: middle;
 }
 
 .logo-frame span {
   display: block;
-  color: #1e40af;
-  font-size: 6pt;
+  color: #1E347D;
+  font-size: 5pt;
   font-weight: 800;
 }
 
-.brand-copy {
-  vertical-align: top;
-  text-align: left;
-  padding-left: 1.6mm;
+.brand-text-cell {
+  vertical-align: middle;
+  padding-left: 1.5mm;
 }
 
 .school-name {
-  max-height: 7.2mm;
+  max-height: 5.5mm;
   overflow: hidden;
   color: #fff;
-  font-family: "Poppins", "Segoe UI", Arial, sans-serif;
-  font-size: 7.4pt;
+  font-size: 6pt;
   font-weight: 800;
-  line-height: 1.08;
+  line-height: 1.1;
   text-transform: uppercase;
 }
 
 .school-meta {
-  max-width: 36mm;
+  max-width: 34mm;
   overflow: hidden;
-  color: rgba(255, 255, 255, 0.88);
-  font-size: 4.8pt;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 4.2pt;
   font-weight: 600;
-  line-height: 1.15;
+  line-height: 1.2;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.card-type {
-  position: absolute;
-  left: 2.7mm;
-  bottom: 1.5mm;
-  z-index: 2;
-  display: inline-block;
-  padding: 0.55mm 2.2mm;
-  color: #0f172a;
-  background: #fff;
-  border: 0.25mm solid rgba(212, 175, 55, 0.7);
-  border-radius: 7mm;
-  font-size: 5.8pt;
-  font-weight: 800;
-  letter-spacing: 0.35px;
-}
+/* ── Card body ───────────────────────────────────────────── */
 
-.photo-panel {
+.card-body {
   position: relative;
   z-index: 1;
-  height: 29.8mm;
-  padding-top: 3.5mm;
-  text-align: center;
+  display: table;
+  width: 100%;
+  height: 50.6mm;
+  padding: 1mm 2mm;
 }
+
+.body-left {
+  display: table-cell;
+  width: 35%;
+  min-width: 17.5mm;
+  vertical-align: top;
+  text-align: center;
+  padding-top: 1.5mm;
+}
+
+.body-right {
+  display: table-cell;
+  vertical-align: top;
+  padding: 2mm 0 0 2.5mm;
+  width: 65%;
+}
+
+/* ── Photo panel ─────────────────────────────────────────── */
 
 .photo-frame {
   display: inline-block;
-  width: 24.8mm;
-  height: 28.2mm;
+  width: 16.5mm;
+  height: 22mm;
   overflow: hidden;
   background: #f8fafc;
-  border: 0.95mm solid #fff;
-  border-radius: 3mm;
-  box-shadow: 0 1.1mm 3mm rgba(15, 23, 42, 0.18);
+  border: 0.5mm solid #fff;
+  border-radius: 2mm;
+  box-shadow:
+    0 0 0 0.8mm #D8A216,
+    0 0.6mm 2mm rgba(15, 23, 42, 0.15);
 }
 
 .photo-frame img {
@@ -224,360 +243,530 @@ body {
   display: block;
 }
 
-.employee-photo {
-  height: 29mm;
-}
-
 .photo-placeholder {
   width: 100%;
   height: 100%;
-  padding-top: 12mm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: #64748b;
-  background: linear-gradient(180deg, #f8fafc, #e5e7eb);
-  font-size: 7pt;
+  background: #f1f5f9;
+  font-size: 5pt;
   font-weight: 800;
-  text-align: center;
 }
 
-.identity-panel {
-  position: relative;
-  z-index: 1;
-  height: 12.2mm;
-  padding: 0.6mm 3.2mm 0;
-  text-align: center;
+/* ── Role badge ──────────────────────────────────────────── */
+
+.role-badge {
+  display: inline-block;
+  margin-top: 2.5mm;
+  padding: 0.5mm 2.5mm;
+  color: #fff;
+  background: #1E347D;
+  border-radius: 6mm;
+  font-size: 5pt;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 16mm;
+  line-height: 1.3;
 }
+
+.role-badge-gold {
+  background: #B8860B;
+}
+
+.role-badge-green {
+  background: #059669;
+}
+
+.role-badge-purple {
+  background: #7C3AED;
+}
+
+.role-badge-teal {
+  background: #0D9488;
+}
+
+/* ── Name section ────────────────────────────────────────── */
 
 .person-name {
-  overflow: hidden;
-  color: #0f172a;
-  font-family: "Poppins", "Segoe UI", Arial, sans-serif;
+  overflow: visible;
+  color: #1E347D;
   font-size: 10pt;
   font-weight: 800;
-  line-height: 1.1;
-  text-overflow: ellipsis;
+  line-height: 1.2;
   text-transform: uppercase;
+  word-break: break-word;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-height: 7mm;
+}
+
+/* ── Info panel ──────────────────────────────────────────── */
+
+.info-divider {
+  width: 100%;
+  height: 0.3mm;
+  margin: 0.8mm 0 0.6mm;
+  background: #D8A216;
+  border: none;
+}
+
+.info-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto;
+}
+
+.info-table tr {
+  height: auto;
+}
+
+.info-table td {
+  overflow: visible;
+  font-size: 5.5pt;
+  line-height: 1.25;
+  text-align: left;
+  vertical-align: middle;
+  padding: 0.15mm 0;
+  word-break: break-word;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.info-table .label-cell {
+  width: 16mm;
+  min-width: 16mm;
+  color: #6B7280;
+  font-weight: 700;
   white-space: nowrap;
 }
 
-.employee-card .person-name {
-  font-size: 9.2pt;
+.info-table .value-cell {
+  color: #2D2D2D;
+  font-weight: 600;
 }
 
-.person-code {
-  margin-top: 0.6mm;
-  color: #1e40af;
-  font-size: 6.6pt;
-  font-weight: 800;
-}
+/* ── Card footer (front) ─────────────────────────────────── */
 
-.role-pill {
-  display: inline-block;
-  max-width: 42mm;
-  margin-bottom: 0.6mm;
-  padding: 0.45mm 2.6mm;
-  overflow: hidden;
-  color: #fff;
-  background: #1e40af;
-  border-radius: 6mm;
-  font-size: 5.4pt;
-  font-weight: 800;
-  letter-spacing: 0.25px;
-  text-overflow: ellipsis;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.info-panel {
+.card-footer {
   position: relative;
   z-index: 1;
-  height: 16.4mm;
-  margin: 0 3mm;
-  padding-top: 0.6mm;
-  border-top: 0.22mm solid #dbeafe;
+  height: 19.5mm;
+  padding: 1.2mm 2mm 1mm;
+  background: #f8fafc;
+  border-top: 0.2mm solid #e5e7eb;
 }
 
-.employee-info {
-  height: 14.5mm;
-}
-
-.field-table,
-.compact-table {
+.footer-grid {
+  display: table;
   width: 100%;
-  table-layout: fixed;
-  border-collapse: collapse;
+  height: 100%;
 }
 
-.field-table tr {
-  height: 2.15mm;
-}
-
-.field-table td {
-  overflow: hidden;
-  color: #111827;
-  font-size: 5.55pt;
-  font-weight: 800;
-  line-height: 1.05;
-  text-align: left;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  vertical-align: middle;
-}
-
-.field-table td:first-child {
-  width: 49%;
-  color: #6b7280;
-  font-size: 5.2pt;
-  font-weight: 700;
-}
-
-.field-icon {
-  display: inline-block;
-  width: 4.2mm;
-  margin-right: 1mm;
-  padding: 0.3mm 0;
-  color: #1e40af;
-  background: #eff6ff;
-  border-radius: 1mm;
-  font-size: 4.2pt;
-  font-weight: 900;
+.footer-qr-cell {
+  display: table-cell;
+  width: 20mm;
+  vertical-align: top;
   text-align: center;
 }
 
-.field-label {
+.footer-qr-cell .qr-img {
   display: inline-block;
-  vertical-align: middle;
+  width: 18mm;
+  height: 18mm;
+  padding: 0.4mm;
+  background: #fff;
+  border: 0.2mm solid #d1d5db;
+  border-radius: 1.2mm;
 }
 
-.front-footer {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1;
-  height: 10.4mm;
-  display: table;
-  width: 100%;
-  background: #f8fafc;
-  border-top: 0.22mm solid #dbe5f3;
-}
-
-.signature-box,
-.date-box {
-  display: table-cell;
-  width: 50%;
-  vertical-align: middle;
-}
-
-.signature-box {
-  padding-left: 3mm;
-  text-align: left;
-}
-
-.signature-box img {
+.footer-qr-text {
   display: block;
-  max-width: 17mm;
-  height: 4.6mm;
+  margin-top: 0.5mm;
+  color: #1E347D;
+  font-size: 4.2pt;
+  font-weight: 700;
+  line-height: 1.15;
+  text-transform: uppercase;
+}
+
+.footer-info-cell {
+  display: table-cell;
+  vertical-align: middle;
+  padding: 0 1.5mm;
+}
+
+.footer-info-row {
+  color: #2D2D2D;
+  font-size: 5pt;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.footer-info-label {
+  display: inline-block;
+  min-width: 12mm;
+  color: #6B7280;
+  font-weight: 700;
+  font-size: 4.5pt;
+  text-transform: uppercase;
+}
+
+.footer-sign-cell {
+  display: table-cell;
+  width: 18mm;
+  vertical-align: middle;
+  text-align: center;
+}
+
+.signature-seal {
+  display: block;
+  max-width: 12mm;
+  max-height: 3mm;
   object-fit: contain;
+  margin: 0 auto 0.2mm;
 }
 
 .signature-line {
-  width: 17mm;
-  height: 0.22mm;
-  background: #0f172a;
+  width: 14mm;
+  height: 0.3mm;
+  margin: 0 auto;
+  background: #2D2D2D;
+  border-bottom: 0.15mm solid #2D2D2D;
 }
 
 .signature-label {
-  margin-top: 0.35mm;
-  color: #6b7280;
-  font-size: 4.8pt;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-
-.date-box {
-  padding-right: 3mm;
-  color: #111827;
-  font-size: 5.2pt;
-  font-weight: 800;
-  line-height: 1.45;
-  text-align: right;
-}
-
-.date-box span {
-  display: inline-block;
-  width: 6.8mm;
-  margin-right: 1mm;
-  color: #6b7280;
+  margin-top: 0.3mm;
+  color: #6B7280;
   font-size: 4.5pt;
   font-weight: 800;
   text-transform: uppercase;
 }
 
-.back-body {
+/* ── BACK SIDE ───────────────────────────────────────────── */
+
+.back-header {
   position: relative;
   z-index: 1;
-  padding: 2.3mm 2.7mm 0;
+  height: 13mm;
+  padding: 1.5mm 2mm 1.2mm;
+  color: #fff;
+  background: #1E347D;
+  overflow: hidden;
 }
 
-.section-card {
-  margin-bottom: 1.6mm;
-  padding: 1.3mm 1.5mm;
-  background: rgba(255, 255, 255, 0.92);
-  border: 0.22mm solid #dbe5f3;
-  border-radius: 2mm;
-  box-shadow: 0 0.5mm 1.4mm rgba(15, 23, 42, 0.045);
+.back-header::after {
+  content: "";
+  position: absolute;
+  right: -6mm;
+  top: -8mm;
+  width: 22mm;
+  height: 22mm;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
 }
 
-.section-title {
-  margin-bottom: 0.85mm;
-  color: #1e40af;
-  font-size: 5.6pt;
-  font-weight: 900;
-  letter-spacing: 0.25px;
+.back-header .accent-bar {
+  position: absolute;
+  left: 2mm;
+  right: 2mm;
+  bottom: 0;
+  height: 0.4mm;
+  background: #D8A216;
+  border-radius: 0.2mm;
+}
+
+.back-subtitle {
+  max-width: 34mm;
+  overflow: hidden;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 4.2pt;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  letter-spacing: 0.5px;
+}
+
+.logo-frame.small {
+  width: 6mm;
+  height: 6mm;
+  line-height: 6mm;
+}
+
+.logo-frame.small img {
+  width: 5.2mm;
+  height: 5.2mm;
+}
+
+.school-name-sm {
+  max-height: 5mm;
+  overflow: hidden;
+  color: #fff;
+  font-size: 5.5pt;
+  font-weight: 800;
+  line-height: 1.08;
   text-transform: uppercase;
 }
 
-.compact-table td {
+/* ── Back body ───────────────────────────────────────────── */
+
+.back-body {
+  position: relative;
+  z-index: 1;
+  height: 68.6mm;
+  padding: 1.5mm 2mm;
   overflow: hidden;
-  padding: 0.2mm 0;
-  font-size: 5.15pt;
-  line-height: 1.12;
-  text-align: left;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  vertical-align: top;
 }
 
-.compact-table td:first-child {
-  width: 37%;
-  color: #6b7280;
-  font-weight: 800;
+.back-section {
+  margin-bottom: 1mm;
+  padding: 0.8mm 1mm;
+  background: rgba(255, 255, 255, 0.95);
+  border: 0.15mm solid #e5e7eb;
+  border-radius: 1.5mm;
 }
 
-.compact-table td:last-child {
-  color: #111827;
+.back-section-title {
+  margin-bottom: 0.4mm;
+  color: #1E347D;
+  font-size: 4.8pt;
+  font-weight: 900;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.contact-line {
+  color: #2D2D2D;
+  font-size: 4.5pt;
+  font-weight: 600;
+  line-height: 1.25;
+  padding: 0.1mm 0;
+  word-break: break-word;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.contact-line .contact-label {
+  display: inline-block;
+  min-width: 10mm;
+  color: #6B7280;
   font-weight: 700;
+  font-size: 4.2pt;
 }
+
+/* ── Guardian info section ────────────────────────────────── */
+
+.guardian-grid {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.guardian-grid td {
+  padding: 0.15mm 0;
+  color: #2D2D2D;
+  font-size: 4.5pt;
+  font-weight: 600;
+  line-height: 1.2;
+  vertical-align: top;
+  word-break: break-word;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.guardian-grid .gl-label {
+  width: 14mm;
+  color: #6B7280;
+  font-weight: 700;
+  font-size: 4.2pt;
+  white-space: nowrap;
+}
+
+/* ── Terms section ───────────────────────────────────────── */
+
+.terms-list {
+  list-style: none;
+}
+
+.terms-list li {
+  position: relative;
+  margin-bottom: 0.2mm;
+  padding-left: 2mm;
+  color: #2D2D2D;
+  font-size: 4.2pt;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.terms-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.4mm;
+  width: 0.8mm;
+  height: 0.8mm;
+  background: #D8A216;
+  border-radius: 50%;
+}
+
+/* ── Attendance QR section (back) ─────────────────────────── */
 
 .qr-section {
   display: table;
   width: 100%;
-  margin-bottom: 1.6mm;
-  padding: 1.4mm;
-  background: #eff6ff;
-  border: 0.22mm solid #bfdbfe;
-  border-radius: 2mm;
+  margin-top: 0.8mm;
+  padding: 1mm 1.2mm;
+  background: #EFF6FF;
+  border: 0.15mm solid #BFDBFE;
+  border-radius: 1.5mm;
 }
 
-.qr-box,
-.qr-copy {
+.qr-section-left,
+.qr-section-right {
   display: table-cell;
   vertical-align: middle;
 }
 
-.qr-box {
-  width: 18mm;
+.qr-section-left {
+  width: 22mm;
   text-align: center;
 }
 
-.qr-box img,
-.qr-box span {
+.qr-section-left img {
   display: inline-block;
-  width: 15.5mm;
-  height: 15.5mm;
-  padding: 0.7mm;
+  width: 20mm;
+  height: 20mm;
+  padding: 0.5mm;
   background: #fff;
-  border: 0.22mm solid #dbe5f3;
-  border-radius: 1.4mm;
+  border: 0.15mm solid #DBEAFE;
+  border-radius: 1.2mm;
 }
 
-.qr-box span {
-  color: #1e40af;
-  font-size: 7pt;
-  font-weight: 900;
-  line-height: 13.7mm;
-}
-
-.qr-copy {
-  padding-left: 1.7mm;
+.qr-section-right {
+  padding-left: 1.5mm;
   text-align: left;
 }
 
-.qr-title {
-  color: #1e40af;
-  font-size: 6pt;
+.qr-attendance-title {
+  color: #1E347D;
+  font-size: 5pt;
   font-weight: 900;
   text-transform: uppercase;
 }
 
-.qr-value {
-  max-width: 26mm;
-  margin-top: 0.8mm;
+.qr-attendance-id {
+  max-width: 24mm;
+  margin-top: 0.3mm;
   overflow: hidden;
-  color: #0f172a;
-  font-size: 6.2pt;
+  color: #2D2D2D;
+  font-size: 5.2pt;
   font-weight: 800;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.rules-card {
-  margin-bottom: 1.2mm;
+.qr-attendance-sub {
+  margin-top: 0.2mm;
+  color: #6B7280;
+  font-size: 4.2pt;
+  font-weight: 600;
 }
 
-.rules-card ul {
-  list-style: none;
-}
+/* ── Back footer ─────────────────────────────────────────── */
 
-.rules-card li {
+.back-footer {
   position: relative;
-  margin-bottom: 0.35mm;
-  padding-left: 2.4mm;
-  color: #374151;
-  font-size: 5.05pt;
-  font-weight: 650;
-  line-height: 1.12;
-  text-align: left;
-}
-
-.rules-card li:before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0.7mm;
-  width: 1.1mm;
-  height: 1.1mm;
-  background: #d4af37;
-  border-radius: 50%;
-}
-
-.school-contact {
-  padding: 0 1.1mm;
-  color: #4b5563;
-  font-size: 4.8pt;
-  font-weight: 700;
-  line-height: 1.18;
+  z-index: 1;
+  height: 4mm;
+  background: #1E347D;
   text-align: center;
+  line-height: 4mm;
 }
 
-.student-card .role-pill,
-.student-card .field-icon {
-  color: #1e40af;
+.back-footer span {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 3.5pt;
+  font-weight: 600;
+  letter-spacing: 0.3px;
 }
 
-.employee-card .card-header,
+/* ── EMPLOYEE CARD VARIATIONS ────────────────────────────── */
+
+.employee-card .card-header {
+  background: #1E347D;
+}
+
+.employee-card .person-name {
+  color: #1E347D;
+}
+
+.employee-card .role-badge {
+  background: #B8860B;
+}
+
+.employee-card .info-divider {
+  background: #D8A216;
+}
+
+.employee-card .back-section-title {
+  color: #1E347D;
+}
+
+.employee-card .qr-attendance-title {
+  color: #1E347D;
+}
+
 .employee-card .back-header {
-  border-bottom-color: #d4af37;
+  background: #1E347D;
 }
 
-.employee-card .field-icon {
-  color: #0f172a;
-  background: #fef3c7;
+.employee-card .back-footer {
+  background: #1E347D;
 }
 
-.employee-card .section-title,
-.employee-card .qr-title {
-  color: #0f172a;
+.employee-card .footer-qr-text {
+  color: #B8860B;
+}
+
+/* ── STUDENT CARD VARIATIONS ─────────────────────────────── */
+
+.student-card .role-badge {
+  background: #1E347D;
+}
+
+.student-card .footer-qr-text {
+  color: #1E347D;
+}
+
+/* ── Empty state ─────────────────────────────────────────── */
+
+.no-photo {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94A3B8;
+  background: #F1F5F9;
+  font-size: 5pt;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* ── Print-specific overrides ────────────────────────────── */
+
+@media print {
+  .pvc-card {
+    box-shadow: none;
+    border-color: #bbb;
+  }
+  .photo-frame {
+    box-shadow: 0 0 0 0.8mm #D8A216;
+  }
 }
 
 </style>
@@ -590,73 +779,102 @@ body {
     <div class="card-header">
         <table class="brand-table">
             <tr>
-                <td class="brand-logo">
+                <td class="brand-logo-cell">
                     <div class="logo-frame">
                             <span>CHA</span>
                     </div>
                 </td>
-                <td class="brand-copy">
+                <td class="brand-text-cell">
                     <div class="school-name">Chattogram Collegiate School &amp; College</div>
                     <div class="school-meta">Knowledge. Discipline. Excellence</div>
-                    <div class="school-meta">EIIN 104298  | school-ms-7l3e.onrender.com/</div>
+                    <div class="school-meta">EIIN 104298 | 2026</div>
                 </td>
             </tr>
         </table>
-        <div class="card-type">STUDENT ID CARD</div>
+        <div class="accent-bar"></div>
     </div>
 
-    <div class="photo-panel">
-        <div class="photo-frame">
-                <div class="photo-placeholder">PHOTO</div>
+    <div class="card-body">
+        <div class="body-left">
+            <div class="photo-frame">
+                    <div class="no-photo">PHOTO</div>
+            </div>
+            <div class="role-badge">Class Ten</div>
+        </div>
+
+        <div class="body-right">
+            <div class="person-name">Shah Alam</div>
+            <div class="info-divider"></div>
+
+            <table class="info-table">
+                <tr>
+                    <td class="label-cell">Student ID</td>
+                    <td class="value-cell">STU-2026-0027</td>
+                </tr>
+                <tr>
+                    <td class="label-cell">Roll Number</td>
+                    <td class="value-cell">1</td>
+                </tr>
+                <tr>
+                    <td class="label-cell">Class</td>
+                    <td class="value-cell">Class Ten</td>
+                </tr>
+                <tr>
+                    <td class="label-cell">Section</td>
+                    <td class="value-cell">A</td>
+                </tr>
+                <tr>
+                    <td class="label-cell">Group</td>
+                    <td class="value-cell">Science</td>
+                </tr>
+                <tr>
+                    <td class="label-cell">Session</td>
+                    <td class="value-cell">2026</td>
+                </tr>
+                <tr>
+                    <td class="label-cell">Date Of Birth</td>
+                    <td class="value-cell">15 Jan 2008</td>
+                </tr>
+                <tr>
+                    <td class="label-cell">Blood Group</td>
+                    <td class="value-cell">N/A</td>
+                </tr>
+                <tr>
+                    <td class="label-cell">Guardian Name</td>
+                    <td class="value-cell">Nurul Huda</td>
+                </tr>
+                <tr>
+                    <td class="label-cell">Mobile Number</td>
+                    <td class="value-cell">01720000027</td>
+                </tr>
+            </table>
         </div>
     </div>
 
-    <div class="identity-panel">
-        <div class="person-name">Rony Miah</div>
-        <div class="person-code">STU-2026-0014</div>
-    </div>
-
-    <div class="info-panel">
-        <table class="field-table">
-            <tr>
-                <td><span class="field-icon">ID</span><span class="field-label">Student ID</span></td>
-                <td>STU-2026-0014</td>
-            </tr>
-            <tr>
-                <td><span class="field-icon">RL</span><span class="field-label">Roll</span></td>
-                <td>2</td>
-            </tr>
-            <tr>
-                <td><span class="field-icon">CL</span><span class="field-label">Class</span></td>
-                <td>Class Four</td>
-            </tr>
-            <tr>
-                <td><span class="field-icon">SC</span><span class="field-label">Section</span></td>
-                <td>A</td>
-            </tr>
-            <tr>
-                <td><span class="field-icon">GR</span><span class="field-label">Group</span></td>
-                <td>---</td>
-            </tr>
-            <tr>
-                <td><span class="field-icon">BG</span><span class="field-label">Blood</span></td>
-                <td>N/A</td>
-            </tr>
-            <tr>
-                <td><span class="field-icon">DB</span><span class="field-label">DOB</span></td>
-                <td>20 Jul 2015</td>
-            </tr>
-        </table>
-    </div>
-
-    <div class="front-footer">
-        <div class="signature-box">
-            <div class="signature-line"></div>
-            <div class="signature-label">Principal</div>
-        </div>
-        <div class="date-box">
-            <div><span>Issue</span>19 Jun 2026</div>
-            <div><span>Valid</span>19 Jun 2027</div>
+    <div class="card-footer">
+        <div class="footer-grid">
+            <div class="footer-qr-cell">
+                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASIAAAEiAQMAAABncE31AAAABlBMVEUbTYz////LJPj&#x2B;AAABJElEQVR4nO2Zyw3DIAxAkTpARsrqHSkDVErBNnH&#x2B;7QEjtXocqgbe6TnYmKT5i/FMUJjgnWB3kCf&#x2B;IhcmG488M5SJqc6MUNEm5GGeCpWX9J8vQIWaKCEZ81pKw0spCRhUTxNl2nio3iY8VlB9TNTM5BG6y19QDU0sFXkVppu6DdXOhA&#x2B;pChawZUAFmqghkdOQR8i2CFSkifXRU9NTORLpD1SsCQmJNAAyHDjWbajWJpY1my4tsPbBUMEmJB/JfcNmT&#x2B;wzE1SEiZOKbH0wVLCJ1Y3b6WaBCjThHZie/bUVuO5&#x2B;oRqa2N366JqECaqbCbvryUnpUBWggk2M27IMFW&#x2B;iZqbdx5Wr7zBQ7Uz4jZudgewzyzZCUAEmPgwoTPBOsDvIEz&#x2B;fC9&#x2B;oQ5BhvysOUAAAAABJRU5ErkJggg==" alt="Attendance QR" class="qr-img" />
+                <span class="footer-qr-text">Scan For<br />Attendance</span>
+            </div>
+            <div class="footer-info-cell">
+                <div class="footer-info-row">
+                    <span class="footer-info-label">Issue</span>
+                    <span>21 Jun 2026</span>
+                </div>
+                <div class="footer-info-row">
+                    <span class="footer-info-label">Valid</span>
+                    <span>21 Jun 2027</span>
+                </div>
+                <div class="footer-info-row">
+                    <span class="footer-info-label">Card No</span>
+                    <span>STU-2026-0027</span>
+                </div>
+            </div>
+            <div class="footer-sign-cell">
+                <div class="signature-line"></div>
+                <div class="signature-label">Principal</div>
+            </div>
         </div>
     </div>
 </div>
@@ -668,57 +886,75 @@ body {
     <div class="back-header">
         <table class="brand-table">
             <tr>
-                <td class="brand-logo">
+                <td class="brand-logo-cell">
                     <div class="logo-frame small">
                             <span>CHA</span>
                     </div>
                 </td>
-                <td class="brand-copy">
-                    <div class="school-name">Chattogram Collegiate School &amp; College</div>
-                    <div class="school-meta">IMPORTANT INFORMATION</div>
+                <td class="brand-text-cell">
+                    <div class="school-name-sm">Chattogram Collegiate School &amp; College</div>
+                    <div class="back-subtitle">STUDENT ID CARD</div>
                 </td>
             </tr>
         </table>
+        <div class="accent-bar"></div>
     </div>
 
     <div class="back-body">
-        <div class="section-card">
-            <div class="section-title">Guardian Details</div>
-            <table class="compact-table">
-                <tr><td>Father</td><td>Abul Hossain</td></tr>
-                <tr><td>Mother</td><td>Shahida Begum</td></tr>
-                <tr><td>Guardian Mobile</td><td>---</td></tr>
-                <tr><td>Emergency Contact</td><td>---</td></tr>
-                <tr><td>Address</td><td>---</td></tr>
+        <div class="back-section">
+            <div class="back-section-title">School Address</div>
+            <div class="contact-line">Ice Factory Road, Double Mooring, Chattogram, Bangladesh</div>
+            <div class="contact-line"><span class="contact-label">Phone</span>&#x2B;880 31 610429</div>
+            <div class="contact-line"><span class="contact-label">Email</span>info@collegiate-school.edu.bd</div>
+            <div class="contact-line"><span class="contact-label">Website</span>school-ms-7l3e.onrender.com/</div>
+        </div>
+
+        <div class="back-section">
+            <div class="back-section-title">Guardian &amp; Emergency</div>
+            <table class="guardian-grid">
+                <tr>
+                    <td class="gl-label">Father Name</td>
+                    <td>Nurul Huda</td>
+                </tr>
+                <tr>
+                    <td class="gl-label">Mother Name</td>
+                    <td>Rahima Khatun</td>
+                </tr>
+                <tr>
+                    <td class="gl-label">Guardian Mobile</td>
+                    <td>---</td>
+                </tr>
+                <tr>
+                    <td class="gl-label">Emergency Contact</td>
+                    <td>---</td>
+                </tr>
             </table>
         </div>
 
-        <div class="qr-section">
-            <div class="qr-box">
-                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASIAAAEiAQMAAABncE31AAAABlBMVEUbTYz////LJPj&#x2B;AAABLUlEQVR4nO2YQQ6DMAwEI/UBPClf50k8oFKaOA64SNAeWKRW40PUhjmt8do4lS9iTlAowTtBdeATf&#x2B;GFyeNRUi7PlPIybjKUWgn7U5ZGVcB&#x2B;hQdQUiVaSvKg&#x2B;i9PGNRdStTkeIag7lYiHFA3KTGcqcyTdYVz/4K6UInQkVd7Ou3bUFcpEWJen8U7KJkSff7sKTFTmla3glIr0QqjxtObcS8R&#x2B;x6AEivhNTF6QR&#x2B;J5mlfQ1ACJWo51OS0ZtyPlqtgT1BKJcIQatcH/gV1vRJbjCmohaFQYiXCJOqHJwdKr8T7xm23doPSKrFtHvqm2fc/h/sJKIESoTBOMgQlUGJcW1fYfytASZQYzlRv7LA02UwKJVZi68jWEHzl2VoDlFiJDwGFErwTVAc&#x2B;8fNe&#x2B;AICM0rGTRDupAAAAABJRU5ErkJggg==" alt="Student QR code" />
-            </div>
-            <div class="qr-copy">
-                <div class="qr-title">SCAN for attendence</div>
-                <div class="qr-value">STU-2026-0014</div>
-            </div>
-        </div>
-
-        <div class="section-card rules-card">
-            <div class="section-title">Rules</div>
-            <ul>
-                <li>Carry card daily</li>
-                <li>Card is non-transferable</li>
-                <li>Lost card must be reported immediately</li>
-                <li>School authority reserves all rights</li>
+        <div class="back-section">
+            <div class="back-section-title">Terms &amp; Conditions</div>
+            <ul class="terms-list">
+                <li>Carry card daily to school</li>
+                <li>Required during attendance &amp; examination</li>
+                <li>Card is school property</li>
+                <li>Report loss immediately</li>
             </ul>
         </div>
 
-        <div class="school-contact">
-            <div>Ice Factory Road, Double Mooring, Chattogram, Bangladesh</div>
-            <div>Phone: &#x2B;880 31 610429</div>
-            <div>Email: info@collegiate-school.edu.bd</div>
-            <div>Website: school-ms-7l3e.onrender.com/</div>
+        <div class="qr-section">
+            <div class="qr-section-left">
+                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASIAAAEiAQMAAABncE31AAAABlBMVEUbTYz////LJPj&#x2B;AAABJElEQVR4nO2Zyw3DIAxAkTpARsrqHSkDVErBNnH&#x2B;7QEjtXocqgbe6TnYmKT5i/FMUJjgnWB3kCf&#x2B;IhcmG488M5SJqc6MUNEm5GGeCpWX9J8vQIWaKCEZ81pKw0spCRhUTxNl2nio3iY8VlB9TNTM5BG6y19QDU0sFXkVppu6DdXOhA&#x2B;pChawZUAFmqghkdOQR8i2CFSkifXRU9NTORLpD1SsCQmJNAAyHDjWbajWJpY1my4tsPbBUMEmJB/JfcNmT&#x2B;wzE1SEiZOKbH0wVLCJ1Y3b6WaBCjThHZie/bUVuO5&#x2B;oRqa2N366JqECaqbCbvryUnpUBWggk2M27IMFW&#x2B;iZqbdx5Wr7zBQ7Uz4jZudgewzyzZCUAEmPgwoTPBOsDvIEz&#x2B;fC9&#x2B;oQ5BhvysOUAAAAABJRU5ErkJggg==" alt="Attendance QR" />
+            </div>
+            <div class="qr-section-right">
+                <div class="qr-attendance-title">Attendance QR</div>
+                <div class="qr-attendance-id">STU-2026-0027</div>
+                <div class="qr-attendance-sub">Student Attendance Access</div>
+            </div>
         </div>
+    </div>
+
+    <div class="back-footer">
+        <span>Chattogram Collegiate School &amp; College &mdash; Knowledge. Discipline. Excellence</span>
     </div>
 </div>
 

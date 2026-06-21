@@ -29,7 +29,7 @@ BEGIN
             p.ReferenceNo,
             p.PaidAt,
             p.Remarks,
-            ROW_NUMBER() OVER (ORDER BY p.PaidAt DESC) AS RowNum,
+            ROW_NUMBER() OVER (ORDER BY p.PaidAt DESC, p.Id DESC) AS RowNum,
             COUNT(*) OVER () AS TotalCount
         FROM 
             Payments p

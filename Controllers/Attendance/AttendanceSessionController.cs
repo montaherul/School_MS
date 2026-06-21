@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using SchoolManagementSystem.Services.Interfaces.Attendance;
 using SchoolManagementSystem.Models.Entities.Attendance;
+using SchoolManagementSystem.Models.Entities.Academic;
+using SchoolManagementSystem.Models.Enums;
 
 namespace SchoolManagementSystem.Controllers.Attendance
 {
@@ -66,37 +68,67 @@ namespace SchoolManagementSystem.Controllers.Attendance
                 .Skip((page - 1) * size).Take(size)
                 .ToListAsync(ct);
 
-            var attendanceRepo = _uow.Repository<AttendanceRecord>();
+            // Batch load names for all sessions in one query each
+            var classIds = items.Select(s => s.SchoolClassId).Distinct().ToList();
+            var sectionIds = items.Select(s => s.SectionId).Distinct().ToList();
+            var groupIds = items.Select(s => s.StudentGroupId).Where(id => id.HasValue).Select(id => id!.Value).Distinct().ToList();
+            var dates = items.Select(s => s.AttendanceDate).Distinct().ToList();
+
+            var classDict = await _uow.Repository<SchoolManagementSystem.Models.Entities.Academic.SchoolClass>().Query()
+                .Where(c => classIds.Contains(c.Id))
+                .ToDictionaryAsync(c => c.Id, c => c.Name, ct);
+
+            var sectionDict = await _uow.Repository<SchoolManagementSystem.Models.Entities.Academic.Section>().Query()
+                .Where(s => sectionIds.Contains(s.Id))
+                .ToDictionaryAsync(s => s.Id, s => s.Name, ct);
+
+            var groupDict = groupIds.Count > 0
+                ? await _uow.Repository<SchoolManagementSystem.Models.Entities.Academic.StudentGroup>().Query()
+                    .Where(g => groupIds.Contains(g.Id))
+                    .ToDictionaryAsync(g => g.Id, g => g.Name, ct)
+                : new Dictionary<int, string>();
+
+            // Single batch query for attendance records
+            var attendanceRecords = await _uow.Repository<AttendanceRecord>().Query()
+                .Where(a => dates.Contains(a.AttendanceDate)
+                         && classIds.Contains(a.SchoolClassId)
+                         && sectionIds.Contains(a.SectionId)
+                         && !a.IsDeleted)
+                .Include(a => a.Student)
+                .ToListAsync(ct);
+
+            var recordsByKey = attendanceRecords
+                .GroupBy(a => (a.AttendanceDate, a.SchoolClassId, a.SectionId))
+                .ToDictionary(g => g.Key, g => g.ToList());
 
             var rows = items.Select(s =>
             {
-                var dateOnly = s.AttendanceDate;
-                var classIdVal = s.SchoolClassId;
-                var sectionIdVal = s.SectionId;
-                var groupIdVal = s.StudentGroupId;
+                var key = (s.AttendanceDate, s.SchoolClassId, s.SectionId);
+                var records = recordsByKey.TryGetValue(key, out var recs)
+                    ? (IEnumerable<AttendanceRecord>)recs
+                    : Enumerable.Empty<AttendanceRecord>();
 
-                var records = attendanceRepo.Query().Where(a => a.AttendanceDate == dateOnly && a.SchoolClassId == classIdVal && a.SectionId == sectionIdVal && !a.IsDeleted);
-                if (groupIdVal.HasValue)
-                    records = records.Where(a => a.Student != null && a.Student.StudentGroupId == groupIdVal.Value);
+                if (s.StudentGroupId.HasValue)
+                    records = records.Where(a => a.Student != null && a.Student.StudentGroupId == s.StudentGroupId.Value);
 
                 var totalStudents = records.Count();
-                var present = records.Count(a => a.Status == SchoolManagementSystem.Models.Enums.AttendanceStatus.Present);
-                var absent = records.Count(a => a.Status == SchoolManagementSystem.Models.Enums.AttendanceStatus.Absent);
+                var present = records.Count(a => a.Status == AttendanceStatus.Present);
+                var absent = records.Count(a => a.Status == AttendanceStatus.Absent);
 
-                var className = _uow.Repository<SchoolManagementSystem.Models.Entities.Academic.SchoolClass>().Query().Where(c => c.Id == classIdVal).Select(c => c.Name).FirstOrDefault();
-                var sectionName = _uow.Repository<SchoolManagementSystem.Models.Entities.Academic.Section>().Query().Where(sx => sx.Id == sectionIdVal).Select(x => x.Name).FirstOrDefault();
-                var groupName = groupIdVal.HasValue ? _uow.Repository<SchoolManagementSystem.Models.Entities.Academic.StudentGroup>().Query().Where(g => g.Id == groupIdVal.Value).Select(g => g.Name).FirstOrDefault() : string.Empty;
+                var className = classDict.GetValueOrDefault(s.SchoolClassId, string.Empty);
+                var sectionName = sectionDict.GetValueOrDefault(s.SectionId, string.Empty);
+                var groupName = s.StudentGroupId.HasValue ? groupDict.GetValueOrDefault(s.StudentGroupId.Value, string.Empty) : string.Empty;
 
                 return new
                 {
                     s.Id,
                     attendanceDate = s.AttendanceDate.ToDateTime(TimeOnly.MinValue),
                     classId = s.SchoolClassId,
-                    className = className ?? string.Empty,
+                    className,
                     sectionId = s.SectionId,
-                    sectionName = sectionName ?? string.Empty,
+                    sectionName,
                     studentGroupId = s.StudentGroupId,
-                    studentGroupName = groupName ?? string.Empty,
+                    studentGroupName = groupName,
                     status = s.Status.ToString(),
                     statusValue = (int)s.Status,
                     submittedBy = s.SubmittedBy ?? s.CreatedBy,

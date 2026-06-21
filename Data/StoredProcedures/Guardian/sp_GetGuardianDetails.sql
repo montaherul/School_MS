@@ -47,7 +47,7 @@ BEGIN
         END AS Status,
         g.Remarks
     FROM Guardians g
-    WHERE g.Id = @GuardianId;
+    WHERE g.Id = @GuardianId AND g.IsDeleted = 0;
 
     -- Children section
     SELECT 
@@ -71,9 +71,9 @@ BEGIN
             ELSE 'Other'
         END AS RelationshipToStudent
     FROM StudentGuardians sg
-    JOIN Students s ON sg.StudentId = s.Id
+    JOIN Students s ON sg.StudentId = s.Id AND s.IsDeleted = 0
     LEFT JOIN Classes c ON s.ClassId = c.Id
     LEFT JOIN Sections sec ON s.SectionId = sec.Id
-    WHERE sg.GuardianId = @GuardianId;
+    WHERE sg.GuardianId = @GuardianId AND sg.IsDeleted = 0;
 END
 GO

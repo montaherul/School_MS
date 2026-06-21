@@ -1,4 +1,6 @@
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -9,13 +11,15 @@
 html,
 body {
   background: #fff;
-  color: #111827;
-  font-family: "Inter", "Segoe UI", Arial, sans-serif;
+  color: #2D2D2D;
+  font-family: "Segoe UI", "Arial", "Noto Sans Bengali", "Nirmala UI", sans-serif;
 }
 
 @page {
   margin: 0;
 }
+
+/* ── Page containers ─────────────────────────────────────── */
 
 .page-single {
   width: 53.98mm;
@@ -50,55 +54,81 @@ body {
   margin: 0 1.2mm;
 }
 
+/* ── Card shell ──────────────────────────────────────────── */
+
 .pvc-card {
   position: relative;
-  display: inline-block;
   width: 53.98mm;
   height: 85.6mm;
   overflow: hidden;
+  display: inline-block;
   vertical-align: top;
   background: #fff;
-  border: 0.22mm solid #dbe5f3;
-  border-radius: 3.2mm;
-  box-shadow: 0 1.2mm 3mm rgba(15, 23, 42, 0.13);
+  border: 0.2mm solid #d1d5db;
+  border-radius: 3mm;
+  box-shadow: 0 0.5mm 1.5mm rgba(15, 23, 42, 0.08);
 }
 
-.pvc-card:before {
+.pvc-card-inner {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Premium security pattern ────────────────────────────── */
+
+.pvc-card::before {
   content: "";
   position: absolute;
   inset: 0;
   z-index: 0;
   background:
-    radial-gradient(circle at 84% 8%, rgba(212, 175, 55, 0.16), transparent 15mm),
-    radial-gradient(circle at 8% 38%, rgba(37, 99, 235, 0.11), transparent 18mm),
-    repeating-linear-gradient(135deg, rgba(30, 64, 175, 0.028) 0, rgba(30, 64, 175, 0.028) 0.35mm, transparent 0.35mm, transparent 3.4mm);
+    radial-gradient(circle at 85% 8%, rgba(216, 162, 22, 0.10), transparent 14mm),
+    radial-gradient(circle at 12% 42%, rgba(30, 52, 125, 0.06), transparent 16mm),
+    repeating-linear-gradient(
+      135deg,
+      rgba(30, 52, 125, 0.02) 0,
+      rgba(30, 52, 125, 0.02) 0.3mm,
+      transparent 0.3mm,
+      transparent 3mm
+    );
 }
 
-.card-header,
-.back-header {
+/* ══════════════════════════════════════════════════════════
+   FRONT CARD HEADER
+══════════════════════════════════════════════════════════ */
+
+.card-header {
   position: relative;
   z-index: 1;
-  height: 21.4mm;
-  padding: 2.2mm 2.7mm 1.5mm;
+  height: 18mm;
+  padding: 2mm 2.5mm 1.5mm;
   color: #fff;
-  background: linear-gradient(135deg, #0f172a 0%, #1e40af 58%, #2563eb 100%);
-  border-bottom: 0.65mm solid #d4af37;
+  background: #1E347D;
+  overflow: visible;
+  flex-shrink: 0;
 }
 
-.back-header {
-  height: 18.5mm;
-}
-
-.card-header:after,
-.back-header:after {
+.card-header::after {
   content: "";
   position: absolute;
-  right: -10mm;
-  top: -12mm;
-  width: 31mm;
-  height: 31mm;
+  right: -5mm;
+  top: -8mm;
+  width: 22mm;
+  height: 22mm;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.11);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.card-header .accent-bar {
+  position: absolute;
+  left: 2.5mm;
+  right: 2.5mm;
+  bottom: 0;
+  height: 0.6mm;
+  background: #D8A216;
+  border-radius: 0.3mm;
 }
 
 .brand-table {
@@ -108,104 +138,97 @@ body {
   border-collapse: collapse;
 }
 
-.brand-logo {
-  width: 9.8mm;
-  vertical-align: top;
+.brand-logo-cell {
+  width: 9mm;
+  vertical-align: middle;
 }
 
 .logo-frame {
-  width: 8.7mm;
-  height: 8.7mm;
-  overflow: hidden;
-  text-align: center;
-  line-height: 8.7mm;
-  background: #fff;
-  border: 0.25mm solid rgba(255, 255, 255, 0.85);
-  border-radius: 2.2mm;
-  box-shadow: 0 0.7mm 1.8mm rgba(15, 23, 42, 0.18);
-}
-
-.logo-frame.small {
   width: 8mm;
   height: 8mm;
+  overflow: hidden;
+  text-align: center;
   line-height: 8mm;
+  background: #fff;
+  border: 0.3mm solid rgba(255, 255, 255, 0.9);
+  border-radius: 1.5mm;
+  box-shadow: 0 0.4mm 1mm rgba(15, 23, 42, 0.12);
 }
 
 .logo-frame img {
-  width: 7.7mm;
-  height: 7.7mm;
+  width: 7mm;
+  height: 7mm;
   object-fit: contain;
   vertical-align: middle;
 }
 
 .logo-frame span {
   display: block;
-  color: #1e40af;
-  font-size: 6pt;
+  color: #1E347D;
+  font-size: 5pt;
   font-weight: 800;
 }
 
-.brand-copy {
-  vertical-align: top;
-  text-align: left;
-  padding-left: 1.6mm;
+.brand-text-cell {
+  vertical-align: middle;
+  padding-left: 1.5mm;
 }
 
 .school-name {
-  max-height: 7.2mm;
-  overflow: hidden;
   color: #fff;
-  font-family: "Poppins", "Segoe UI", Arial, sans-serif;
-  font-size: 7.4pt;
+  font-size: 6.5pt;
   font-weight: 800;
-  line-height: 1.08;
+  line-height: 1.15;
   text-transform: uppercase;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .school-meta {
-  max-width: 36mm;
-  overflow: hidden;
   color: rgba(255, 255, 255, 0.88);
-  font-size: 4.8pt;
+  font-size: 4.5pt;
   font-weight: 600;
-  line-height: 1.15;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.3;
+  letter-spacing: 0.2px;
 }
 
-.card-type {
-  position: absolute;
-  left: 2.7mm;
-  bottom: 1.5mm;
-  z-index: 2;
-  display: inline-block;
-  padding: 0.55mm 2.2mm;
-  color: #0f172a;
-  background: #fff;
-  border: 0.25mm solid rgba(212, 175, 55, 0.7);
-  border-radius: 7mm;
-  font-size: 5.8pt;
-  font-weight: 800;
-  letter-spacing: 0.35px;
-}
+/* ══════════════════════════════════════════════════════════
+   FRONT CARD BODY
+══════════════════════════════════════════════════════════ */
 
-.photo-panel {
+.card-body {
   position: relative;
   z-index: 1;
-  height: 29.8mm;
-  padding-top: 3.5mm;
-  text-align: center;
+  flex: 1;
+  padding: 0 2.5mm 1mm;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Photo (rectangular, centered, NO overlap) ─────────── */
+
+.photo-center-wrap {
+  display: flex;
+  justify-content: center;
+  padding-top: 1.5mm;
+  margin-bottom: 2mm;
+  flex-shrink: 0;
 }
 
 .photo-frame {
-  display: inline-block;
-  width: 24.8mm;
-  height: 28.2mm;
+  width: 85px;
+  height: 113px;
   overflow: hidden;
-  background: #f8fafc;
-  border: 0.95mm solid #fff;
-  border-radius: 3mm;
-  box-shadow: 0 1.1mm 3mm rgba(15, 23, 42, 0.18);
+  background: #e0e0e0;
+  border: 1.5px solid #ffffff;
+  outline: 1.5px solid #D8A216;
+  outline-offset: -1px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
 .photo-frame img {
@@ -215,358 +238,498 @@ body {
   display: block;
 }
 
-.employee-photo {
-  height: 29mm;
-}
-
 .photo-placeholder {
   width: 100%;
   height: 100%;
-  padding-top: 12mm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   color: #64748b;
-  background: linear-gradient(180deg, #f8fafc, #e5e7eb);
-  font-size: 7pt;
+  background: #f1f5f9;
+  font-size: 5pt;
   font-weight: 800;
-  text-align: center;
 }
 
-.identity-panel {
-  position: relative;
-  z-index: 1;
-  height: 12.2mm;
-  padding: 0.6mm 3.2mm 0;
-  text-align: center;
-}
+/* ── Name + Badge ──────────────────────────────────────── */
 
 .person-name {
-  overflow: hidden;
-  color: #0f172a;
-  font-family: "Poppins", "Segoe UI", Arial, sans-serif;
-  font-size: 10pt;
+  color: #1E347D;
+  font-size: 11pt;
   font-weight: 800;
-  line-height: 1.1;
-  text-overflow: ellipsis;
+  line-height: 1.2;
   text-transform: uppercase;
-  white-space: nowrap;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  text-align: center;
+  flex-shrink: 0;
+  margin-bottom: 2mm;
 }
 
-.employee-card .person-name {
-  font-size: 9.2pt;
-}
-
-.person-code {
-  margin-top: 0.6mm;
-  color: #1e40af;
-  font-size: 6.6pt;
-  font-weight: 800;
-}
-
-.role-pill {
-  display: inline-block;
-  max-width: 42mm;
-  margin-bottom: 0.6mm;
-  padding: 0.45mm 2.6mm;
-  overflow: hidden;
-  color: #fff;
-  background: #1e40af;
-  border-radius: 6mm;
-  font-size: 5.4pt;
-  font-weight: 800;
-  letter-spacing: 0.25px;
-  text-overflow: ellipsis;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.info-panel {
-  position: relative;
-  z-index: 1;
-  height: 16.4mm;
-  margin: 0 3mm;
-  padding-top: 0.6mm;
-  border-top: 0.22mm solid #dbeafe;
-}
-
-.employee-info {
-  height: 14.5mm;
-}
-
-.field-table,
-.compact-table {
-  width: 100%;
-  table-layout: fixed;
-  border-collapse: collapse;
-}
-
-.field-table tr {
-  height: 2.15mm;
-}
-
-.field-table td {
-  overflow: hidden;
-  color: #111827;
-  font-size: 5.55pt;
-  font-weight: 800;
-  line-height: 1.05;
-  text-align: left;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  vertical-align: middle;
-}
-
-.field-table td:first-child {
-  width: 49%;
-  color: #6b7280;
-  font-size: 5.2pt;
-  font-weight: 700;
-}
-
-.field-icon {
-  display: inline-block;
-  width: 4.2mm;
-  margin-right: 1mm;
-  padding: 0.3mm 0;
-  color: #1e40af;
-  background: #eff6ff;
-  border-radius: 1mm;
-  font-size: 4.2pt;
-  font-weight: 900;
+.text-center {
   text-align: center;
 }
 
-.field-label {
+.role-badge {
   display: inline-block;
-  vertical-align: middle;
+  margin: 0 auto 2mm;
+  padding: 1mm 3.5mm;
+  color: #fff;
+  background: #1E347D;
+  border-radius: 6mm;
+  font-size: 5.5pt;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 28mm;
+  max-width: 40mm;
+  line-height: 1.3;
+  flex-shrink: 0;
 }
 
-.front-footer {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 1;
-  height: 10.4mm;
-  display: table;
+.role-badge-gold {
+  background: #B8860B;
+}
+
+.role-badge-green {
+  background: #059669;
+}
+
+.role-badge-purple {
+  background: #7C3AED;
+}
+
+.role-badge-teal {
+  background: #0D9488;
+}
+
+.info-divider {
+  width: 45%;
+  height: 0.3mm;
+  margin: 0 auto 1.5mm;
+  background: #D8A216;
+  border: none;
+  flex-shrink: 0;
+}
+
+/* ── Info grid ─────────────────────────────────────────── */
+
+.info-table {
   width: 100%;
-  background: #f8fafc;
-  border-top: 0.22mm solid #dbe5f3;
+  border-collapse: collapse;
+  table-layout: fixed;
+  flex-shrink: 0;
 }
 
-.signature-box,
-.date-box {
-  display: table-cell;
-  width: 50%;
-  vertical-align: middle;
+.info-table tr {
+  height: auto;
 }
 
-.signature-box {
-  padding-left: 3mm;
+.info-table td {
+  font-size: 5.5pt;
+  line-height: 1.2;
   text-align: left;
+  vertical-align: middle;
+  padding: 0.5mm 0;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
-.signature-box img {
+.info-table .label-cell {
+  width: 105px;
+  min-width: 105px;
+  max-width: 105px;
+  color: #6B7280;
+  font-weight: 700;
+  white-space: nowrap;
+  padding-right: 1mm;
+}
+
+.info-table .value-cell {
+  color: #2D2D2D;
+  font-weight: 600;
+}
+
+/* ══════════════════════════════════════════════════════════
+   FRONT CARD FOOTER
+══════════════════════════════════════════════════════════ */
+
+.card-footer {
+  position: relative;
+  z-index: 1;
+  height: 19mm;
+  padding: 1mm 2.5mm;
+  background: #f8fafc;
+  border-top: 0.2mm solid #e5e7eb;
+  flex-shrink: 0;
+}
+
+.footer-grid {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+}
+
+.footer-info-cell {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.8mm;
+}
+
+.footer-info-row {
+  color: #2D2D2D;
+  font-size: 5.5pt;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.footer-info-label {
+  display: inline-block;
+  min-width: 12mm;
+  color: #6B7280;
+  font-weight: 700;
+  font-size: 4.8pt;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.footer-sign-cell {
+  text-align: center;
+  flex-shrink: 0;
+  min-width: 32mm;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.signature-seal {
   display: block;
-  max-width: 17mm;
-  height: 4.6mm;
+  max-width: 14mm;
+  max-height: 4mm;
   object-fit: contain;
+  margin: 0 auto 0.3mm;
 }
 
 .signature-line {
-  width: 17mm;
-  height: 0.22mm;
-  background: #0f172a;
+  width: 30mm;
+  height: 0.3mm;
+  margin: 0 auto 0.2mm;
+  background: #2D2D2D;
+  border-bottom: 0.15mm solid #2D2D2D;
 }
 
 .signature-label {
-  margin-top: 0.35mm;
-  color: #6b7280;
-  font-size: 4.8pt;
+  margin-top: 0.3mm;
+  color: #6B7280;
+  font-size: 5pt;
   font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   BACK SIDE
+══════════════════════════════════════════════════════════ */
+
+/* ── Back header ───────────────────────────────────────── */
+
+.back-header {
+  position: relative;
+  z-index: 1;
+  height: 12mm;
+  padding: 1.2mm 2mm 1mm;
+  color: #fff;
+  background: #1E347D;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.back-header::after {
+  content: "";
+  position: absolute;
+  right: -5mm;
+  top: -6mm;
+  width: 18mm;
+  height: 18mm;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.back-header .accent-bar {
+  position: absolute;
+  left: 2mm;
+  right: 2mm;
+  bottom: 0;
+  height: 0.4mm;
+  background: #D8A216;
+  border-radius: 0.2mm;
+}
+
+.back-subtitle {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 4.2pt;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.logo-frame.small {
+  width: 6mm;
+  height: 6mm;
+  line-height: 6mm;
+}
+
+.logo-frame.small img {
+  width: 5.2mm;
+  height: 5.2mm;
+}
+
+.school-name-sm {
+  color: #fff;
+  font-size: 5.5pt;
+  font-weight: 800;
+  line-height: 1.1;
   text-transform: uppercase;
 }
 
-.date-box {
-  padding-right: 3mm;
-  color: #111827;
-  font-size: 5.2pt;
-  font-weight: 800;
-  line-height: 1.45;
-  text-align: right;
-}
-
-.date-box span {
-  display: inline-block;
-  width: 6.8mm;
-  margin-right: 1mm;
-  color: #6b7280;
-  font-size: 4.5pt;
-  font-weight: 800;
-  text-transform: uppercase;
-}
+/* ── Back body ─────────────────────────────────────────── */
 
 .back-body {
   position: relative;
   z-index: 1;
-  padding: 2.3mm 2.7mm 0;
+  flex: 1;
+  padding: 1.2mm 2mm;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8mm;
 }
 
-.section-card {
-  margin-bottom: 1.6mm;
-  padding: 1.3mm 1.5mm;
-  background: rgba(255, 255, 255, 0.92);
-  border: 0.22mm solid #dbe5f3;
-  border-radius: 2mm;
-  box-shadow: 0 0.5mm 1.4mm rgba(15, 23, 42, 0.045);
+.back-section {
+  padding: 0.6mm 1mm;
+  background: rgba(255, 255, 255, 0.95);
+  border: 0.15mm solid #e5e7eb;
+  border-radius: 1.5mm;
 }
 
-.section-title {
-  margin-bottom: 0.85mm;
-  color: #1e40af;
-  font-size: 5.6pt;
+.back-section-title {
+  margin-bottom: 0.3mm;
+  color: #1E347D;
+  font-size: 4.8pt;
   font-weight: 900;
-  letter-spacing: 0.25px;
+  letter-spacing: 0.3px;
   text-transform: uppercase;
 }
 
-.compact-table td {
-  overflow: hidden;
-  padding: 0.2mm 0;
-  font-size: 5.15pt;
-  line-height: 1.12;
-  text-align: left;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  vertical-align: top;
+.contact-line {
+  color: #2D2D2D;
+  font-size: 4.5pt;
+  font-weight: 600;
+  line-height: 1.25;
+  padding: 0.1mm 0;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
-.compact-table td:first-child {
-  width: 37%;
-  color: #6b7280;
-  font-weight: 800;
-}
-
-.compact-table td:last-child {
-  color: #111827;
-  font-weight: 700;
-}
-
-.qr-section {
-  display: table;
-  width: 100%;
-  margin-bottom: 1.6mm;
-  padding: 1.4mm;
-  background: #eff6ff;
-  border: 0.22mm solid #bfdbfe;
-  border-radius: 2mm;
-}
-
-.qr-box,
-.qr-copy {
-  display: table-cell;
-  vertical-align: middle;
-}
-
-.qr-box {
-  width: 18mm;
-  text-align: center;
-}
-
-.qr-box img,
-.qr-box span {
+.contact-line .contact-label {
   display: inline-block;
-  width: 15.5mm;
-  height: 15.5mm;
-  padding: 0.7mm;
-  background: #fff;
-  border: 0.22mm solid #dbe5f3;
-  border-radius: 1.4mm;
+  min-width: 10mm;
+  color: #6B7280;
+  font-weight: 700;
+  font-size: 4.2pt;
 }
 
-.qr-box span {
-  color: #1e40af;
-  font-size: 7pt;
-  font-weight: 900;
-  line-height: 13.7mm;
+/* ── Guardian info section ──────────────────────────────── */
+
+.guardian-grid {
+  width: 100%;
+  border-collapse: collapse;
 }
 
-.qr-copy {
-  padding-left: 1.7mm;
-  text-align: left;
+.guardian-grid td {
+  padding: 0.1mm 0;
+  color: #2D2D2D;
+  font-size: 4.5pt;
+  font-weight: 600;
+  line-height: 1.2;
+  vertical-align: top;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
-.qr-title {
-  color: #1e40af;
-  font-size: 6pt;
-  font-weight: 900;
-  text-transform: uppercase;
-}
-
-.qr-value {
-  max-width: 26mm;
-  margin-top: 0.8mm;
-  overflow: hidden;
-  color: #0f172a;
-  font-size: 6.2pt;
-  font-weight: 800;
-  text-overflow: ellipsis;
+.guardian-grid .gl-label {
+  width: 14mm;
+  color: #6B7280;
+  font-weight: 700;
+  font-size: 4.2pt;
   white-space: nowrap;
 }
 
-.rules-card {
-  margin-bottom: 1.2mm;
-}
+/* ── Terms section ─────────────────────────────────────── */
 
-.rules-card ul {
+.terms-list {
   list-style: none;
 }
 
-.rules-card li {
+.terms-list li {
   position: relative;
-  margin-bottom: 0.35mm;
-  padding-left: 2.4mm;
-  color: #374151;
-  font-size: 5.05pt;
-  font-weight: 650;
-  line-height: 1.12;
-  text-align: left;
+  margin-bottom: 0.1mm;
+  padding-left: 2mm;
+  color: #2D2D2D;
+  font-size: 4.2pt;
+  font-weight: 600;
+  line-height: 1.2;
 }
 
-.rules-card li:before {
+.terms-list li::before {
   content: "";
   position: absolute;
   left: 0;
-  top: 0.7mm;
-  width: 1.1mm;
-  height: 1.1mm;
-  background: #d4af37;
+  top: 0.35mm;
+  width: 0.8mm;
+  height: 0.8mm;
+  background: #D8A216;
   border-radius: 50%;
 }
 
-.school-contact {
-  padding: 0 1.1mm;
-  color: #4b5563;
-  font-size: 4.8pt;
-  font-weight: 700;
-  line-height: 1.18;
+/* ── Attendance QR section (back) ──────────────────────── */
+
+.qr-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-top: auto;
+  padding: 1mm 1.2mm;
+  background: #EFF6FF;
+  border: 0.15mm solid #BFDBFE;
+  border-radius: 1.5mm;
   text-align: center;
 }
 
-.student-card .role-pill,
-.student-card .field-icon {
-  color: #1e40af;
+.qr-section img {
+  width: 24mm;
+  height: 24mm;
+  padding: 0.5mm;
+  background: #fff;
+  border: 0.15mm solid #DBEAFE;
+  border-radius: 1.2mm;
 }
 
-.employee-card .card-header,
+.qr-attendance-title {
+  margin-top: 0.5mm;
+  color: #1E347D;
+  font-size: 5.5pt;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.qr-attendance-id {
+  margin-top: 0.2mm;
+  color: #2D2D2D;
+  font-size: 5.2pt;
+  font-weight: 800;
+}
+
+.qr-attendance-sub {
+  margin-top: 0;
+  color: #6B7280;
+  font-size: 4.2pt;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ── Back footer ───────────────────────────────────────── */
+
+.back-footer {
+  position: relative;
+  z-index: 1;
+  height: 4mm;
+  background: #1E347D;
+  text-align: center;
+  line-height: 4mm;
+  flex-shrink: 0;
+}
+
+.back-footer span {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 3.5pt;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   EMPLOYEE CARD VARIATIONS
+══════════════════════════════════════════════════════════ */
+
+.employee-card .card-header {
+  background: #1E347D;
+}
+
+.employee-card .person-name {
+  color: #1E347D;
+}
+
+.employee-card .role-badge {
+  background: #B8860B;
+}
+
+.employee-card .info-divider {
+  background: #D8A216;
+}
+
+.employee-card .back-section-title {
+  color: #1E347D;
+}
+
+.employee-card .qr-attendance-title {
+  color: #1E347D;
+}
+
 .employee-card .back-header {
-  border-bottom-color: #d4af37;
+  background: #1E347D;
 }
 
-.employee-card .field-icon {
-  color: #0f172a;
-  background: #fef3c7;
+.employee-card .back-footer {
+  background: #1E347D;
 }
 
-.employee-card .section-title,
-.employee-card .qr-title {
-  color: #0f172a;
+/* ══════════════════════════════════════════════════════════
+   EMPTY STATE
+══════════════════════════════════════════════════════════ */
+
+.no-photo {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94A3B8;
+  background: #F1F5F9;
+  font-size: 5pt;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   PRINT OVERRIDES
+══════════════════════════════════════════════════════════ */
+
+@media print {
+  .pvc-card {
+    box-shadow: none;
+    border-color: #bbb;
+  }
+  .photo-frame {
+    outline: 1.5px solid #D8A216;
+  }
 }

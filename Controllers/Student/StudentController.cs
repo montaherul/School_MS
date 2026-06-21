@@ -44,7 +44,7 @@ public class StudentController : Controller
             return RedirectToAction(nameof(Details), new { id = studentId });
         }
 
-        bool isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest" || Request.Headers["Accept"].ToString().Contains("application/json") || Request.Query.ContainsKey("page");
+        bool isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest" || Request.Headers["Accept"].ToString().Contains("application/json");
 
         if (isAjax)
         {
@@ -65,13 +65,23 @@ public class StudentController : Controller
     }
 
     [HttpGet]
+    [RequirePermission("Student.View")]
     public async Task<IActionResult> GetList(int page = 1, int pageSize = 10, string? search = null, int? classId = null, int? sectionId = null, CancellationToken ct = default)
     {
-        var result = await _studentService.GetPagedAsync(page, pageSize, search, classId, sectionId, null, ct);
-        return Json(new {
-            data = result.Items,
-            last_page = Math.Ceiling((double)result.TotalItems / pageSize)
-        });
+        try
+        {
+            var result = await _studentService.GetPagedAsync(page, pageSize, search, classId, sectionId, null, ct);
+            return Json(new
+            {
+                data = result.Items,
+                last_page = Math.Ceiling((double)result.TotalItems / pageSize),
+                total_records = result.TotalItems
+            });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { error = ex.Message });
+        }
     }
 
     [HttpGet]

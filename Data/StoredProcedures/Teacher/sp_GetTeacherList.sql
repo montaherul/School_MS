@@ -27,7 +27,7 @@ BEGIN
             e.[Status],
             e.ProfilePicturePath,
             t.IsDeleted,
-            ROW_NUMBER() OVER (ORDER BY e.FullName ASC) AS RowNum,
+            ROW_NUMBER() OVER (ORDER BY e.FullName ASC, t.Id ASC) AS RowNum,
             COUNT(*) OVER () AS TotalCount
         FROM
             Teachers t

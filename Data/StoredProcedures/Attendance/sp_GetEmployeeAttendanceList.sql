@@ -108,7 +108,7 @@ BEGIN
         AttendanceWithLate awl,
         FinalCount fc
     ORDER BY
-        awl.EmployeeName ASC
+        awl.EmployeeName ASC, awl.EmployeeId ASC
     OFFSET @Offset ROWS
     FETCH NEXT @PageSize ROWS ONLY;
 END;

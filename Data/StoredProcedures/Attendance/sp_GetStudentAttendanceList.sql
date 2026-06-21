@@ -103,7 +103,8 @@ BEGIN
         FinalCount fc
     ORDER BY
         TRY_CAST(aws.RollNumber AS INT) ASC,
-        aws.StudentName ASC
+        aws.StudentName ASC,
+        aws.StudentId ASC
     OFFSET @Offset ROWS
     FETCH NEXT @PageSize ROWS ONLY;
 END;

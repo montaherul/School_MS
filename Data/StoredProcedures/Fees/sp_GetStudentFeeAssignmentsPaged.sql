@@ -29,7 +29,7 @@ BEGIN
             sfa.IsActive,
             sfa.ValidFrom,
             sfa.ValidTo,
-            ROW_NUMBER() OVER (ORDER BY st.FullName, fs.FeeName) AS RowNum,
+            ROW_NUMBER() OVER (ORDER BY st.FullName, fs.FeeName, sfa.Id) AS RowNum,
             COUNT(*) OVER () AS TotalCount
         FROM 
             StudentFeeAssignments sfa

@@ -20,7 +20,7 @@ BEGIN
             fc.Description,
             fc.DisplayOrder,
             fc.IsActive,
-            ROW_NUMBER() OVER (ORDER BY fc.DisplayOrder, fc.Name) AS RowNum,
+            ROW_NUMBER() OVER (ORDER BY fc.DisplayOrder, fc.Name, fc.Id) AS RowNum,
             COUNT(*) OVER () AS TotalCount
         FROM 
             FeeCategories fc

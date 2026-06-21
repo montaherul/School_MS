@@ -238,7 +238,8 @@
             layout: "fitColumns",
             pagination: true,
             paginationMode: "remote",
-            paginationSize: 10,
+            paginationSize: 15,
+            paginationSizeSelector: [15,25,50,100],
             ajaxURL: '@Url.Action("GetList", "ClassSubjectMapping")',
             ajaxParams: function() {
                 return {

@@ -31,7 +31,7 @@ BEGIN
             fs.Frequency,
             fs.DueDay,
             fs.IsActive,
-            ROW_NUMBER() OVER (ORDER BY c.SortOrder, fc.DisplayOrder, fs.FeeName) AS RowNum,
+            ROW_NUMBER() OVER (ORDER BY c.SortOrder, fc.DisplayOrder, fs.FeeName, fs.Id) AS RowNum,
             COUNT(*) OVER () AS TotalCount
         FROM 
             FeeStructures fs

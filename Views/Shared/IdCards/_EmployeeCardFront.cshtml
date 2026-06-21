@@ -1,97 +1,130 @@
 @model SchoolManagementSystem.Models.ViewModels.IdCard.EmployeeIdCardViewModel
 @{
-    var employeeName = !string.IsNullOrWhiteSpace(Model.EmployeeFullName) ? Model.EmployeeFullName : "---";
-    var employeeCode = !string.IsNullOrWhiteSpace(Model.EmployeeIdNo) ? Model.EmployeeIdNo : "---";
+    var name = !string.IsNullOrWhiteSpace(Model.EmployeeFullName) ? Model.EmployeeFullName : "---";
+    var code = !string.IsNullOrWhiteSpace(Model.EmployeeIdNo) ? Model.EmployeeIdNo : "---";
+    var dept = !string.IsNullOrWhiteSpace(Model.Department) ? Model.Department : "---";
     var designation = !string.IsNullOrWhiteSpace(Model.Designation) ? Model.Designation : "Office Staff";
-    var department = !string.IsNullOrWhiteSpace(Model.Department) ? Model.Department : "---";
+    var joining = !string.IsNullOrWhiteSpace(Model.JoiningDate) ? Model.JoiningDate : "---";
     var blood = !string.IsNullOrWhiteSpace(Model.BloodGroup) ? Model.BloodGroup : "N/A";
-    var joining = !string.IsNullOrWhiteSpace(Model.JoiningDate) ? Model.JoiningDate : "N/A";
+    var mobile = !string.IsNullOrWhiteSpace(Model.MobileNumber) ? Model.MobileNumber : "---";
+    var email = !string.IsNullOrWhiteSpace(Model.SchoolEmail) ? Model.SchoolEmail : "---";
     var motto = !string.IsNullOrWhiteSpace(Model.SchoolMotto) ? Model.SchoolMotto : "Knowledge. Discipline. Excellence";
-    var website = !string.IsNullOrWhiteSpace(Model.Website) ? Model.Website.Replace("http://", "").Replace("https://", "").Replace("www.", "") : "";
+    var eiin = !string.IsNullOrWhiteSpace(Model.SchoolEIIN) ? Model.SchoolEIIN : "N/A";
+    var validUntil = !string.IsNullOrWhiteSpace(Model.ValidUntil) ? Model.ValidUntil : "N/A";
+    var issueDate = DateTime.Today.ToString("dd MMM yyyy");
+
+    var badgeBg = designation.ToLowerInvariant() switch
+    {
+        var d when d.Contains("principal") || d.Contains("head master") => "role-badge-gold",
+        var d when d.Contains("teacher") || d.Contains("professor") || d.Contains("lecturer") => "role-badge",
+        var d when d.Contains("accountant") || d.Contains("accounts") || d.Contains("finance") => "role-badge-green",
+        var d when d.Contains("librarian") || d.Contains("library") => "role-badge-purple",
+        _ => "role-badge-teal"
+    };
 }
 
 <div class="pvc-card employee-card card-front">
-    <div class="card-header">
-        <table class="brand-table">
-            <tr>
-                <td class="brand-logo">
-                    <div class="logo-frame">
-                        @if (!string.IsNullOrEmpty(Model.SchoolLogoDataUri))
-                        {
-                            <img src="@Model.SchoolLogoDataUri" alt="School logo" />
-                        }
-                        else
-                        {
-                            <span>@Model.SchoolShortName</span>
-                        }
+    <div class="pvc-card-inner">
+        <div class="card-header">
+            <table class="brand-table">
+                <tr>
+                    <td class="brand-logo-cell">
+                        <div class="logo-frame">
+                            @if (!string.IsNullOrEmpty(Model.SchoolLogoDataUri))
+                            {
+                                <img src="@Model.SchoolLogoDataUri" alt="School logo" />
+                            }
+                            else
+                            {
+                                <span>@Model.SchoolShortName</span>
+                            }
+                        </div>
+                    </td>
+                    <td class="brand-text-cell">
+                        <div class="school-name">@Model.SchoolName</div>
+                        <div class="school-meta">@motto</div>
+                        <div class="school-meta">EIIN @eiin | @Model.SchoolShortName</div>
+                    </td>
+                </tr>
+            </table>
+            <div class="accent-bar"></div>
+        </div>
+
+        <div class="card-body">
+            <div class="photo-center-wrap">
+                <div class="photo-frame">
+                    @if (!string.IsNullOrEmpty(Model.EmployeePhotoDataUri))
+                    {
+                        <img src="@Model.EmployeePhotoDataUri" alt="Employee photo" />
+                    }
+                    else
+                    {
+                        <div class="no-photo">PHOTO</div>
+                    }
+                </div>
+            </div>
+
+            <div class="person-name text-center">@name</div>
+            <div class="role-badge text-center @badgeBg">@designation</div>
+            <div class="info-divider"></div>
+
+            <table class="info-table">
+                <tr>
+                    <td class="label-cell">Employee Code</td>
+                    <td class="value-cell">@code</td>
+                </tr>
+                <tr>
+                    <td class="label-cell">Department</td>
+                    <td class="value-cell">@dept</td>
+                </tr>
+                <tr>
+                    <td class="label-cell">Designation</td>
+                    <td class="value-cell">@designation</td>
+                </tr>
+                <tr>
+                    <td class="label-cell">Joining Date</td>
+                    <td class="value-cell">@joining</td>
+                </tr>
+                <tr>
+                    <td class="label-cell">Blood Group</td>
+                    <td class="value-cell">@blood</td>
+                </tr>
+                <tr>
+                    <td class="label-cell">Mobile Number</td>
+                    <td class="value-cell">@mobile</td>
+                </tr>
+                <tr>
+                    <td class="label-cell">Email Address</td>
+                    <td class="value-cell">@email</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="card-footer">
+            <div class="footer-grid">
+                <div class="footer-info-cell">
+                    <div class="footer-info-row">
+                        <span class="footer-info-label">Issue</span>
+                        <span>@issueDate</span>
                     </div>
-                </td>
-                <td class="brand-copy">
-                    <div class="school-name">@Model.SchoolName</div>
-                    <div class="school-meta">@motto</div>
-                    <div class="school-meta">EIIN @(!string.IsNullOrWhiteSpace(Model.SchoolEIIN) ? Model.SchoolEIIN : "N/A") @(!string.IsNullOrWhiteSpace(website) ? " | " + website : "")</div>
-                </td>
-            </tr>
-        </table>
-        <div class="card-type">EMPLOYEE ID CARD</div>
-    </div>
-
-    <div class="photo-panel">
-        <div class="photo-frame employee-photo">
-            @if (!string.IsNullOrEmpty(Model.EmployeePhotoDataUri))
-            {
-                <img src="@Model.EmployeePhotoDataUri" alt="Employee photo" />
-            }
-            else
-            {
-                <div class="photo-placeholder">PHOTO</div>
-            }
-        </div>
-    </div>
-
-    <div class="identity-panel">
-        <div class="role-pill">@designation</div>
-        <div class="person-name">@employeeName</div>
-        <div class="person-code">@employeeCode</div>
-    </div>
-
-    <div class="info-panel employee-info">
-        <table class="field-table">
-            <tr>
-                <td><span class="field-icon">EC</span><span class="field-label">Code</span></td>
-                <td>@employeeCode</td>
-            </tr>
-            <tr>
-                <td><span class="field-icon">DS</span><span class="field-label">Designation</span></td>
-                <td>@designation</td>
-            </tr>
-            <tr>
-                <td><span class="field-icon">DP</span><span class="field-label">Department</span></td>
-                <td>@department</td>
-            </tr>
-            <tr>
-                <td><span class="field-icon">BG</span><span class="field-label">Blood</span></td>
-                <td>@blood</td>
-            </tr>
-            <tr>
-                <td><span class="field-icon">JD</span><span class="field-label">Joining</span></td>
-                <td>@joining</td>
-            </tr>
-        </table>
-    </div>
-
-    <div class="front-footer">
-        <div class="signature-box">
-            @if (!string.IsNullOrEmpty(Model.SchoolSealDataUri))
-            {
-                <img src="@Model.SchoolSealDataUri" alt="Authorized signature" />
-            }
-            <div class="signature-line"></div>
-            <div class="signature-label">Principal</div>
-        </div>
-        <div class="date-box">
-            <div><span>Issue</span>@DateTime.Today.ToString("dd MMM yyyy")</div>
-            <div><span>Valid</span>@(!string.IsNullOrWhiteSpace(Model.ValidUntil) ? Model.ValidUntil : "N/A")</div>
+                    <div class="footer-info-row">
+                        <span class="footer-info-label">Valid</span>
+                        <span>@validUntil</span>
+                    </div>
+                    <div class="footer-info-row">
+                        <span class="footer-info-label">Card No</span>
+                        <span>@code</span>
+                    </div>
+                </div>
+                <div class="footer-sign-cell">
+                    @if (!string.IsNullOrEmpty(Model.SchoolSealDataUri))
+                    {
+                        <img src="@Model.SchoolSealDataUri" alt="Seal" class="signature-seal" />
+                    }
+                    <div class="signature-line"></div>
+                    <div class="signature-label">Authorized Signatory</div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

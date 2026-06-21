@@ -27,7 +27,7 @@ BEGIN
             fr.Reason,
             fr.IsApproved,
             fr.RefundDate,
-            ROW_NUMBER() OVER (ORDER BY fr.RefundDate DESC) AS RowNum,
+            ROW_NUMBER() OVER (ORDER BY fr.RefundDate DESC, fr.Id DESC) AS RowNum,
             COUNT(*) OVER () AS TotalCount
         FROM 
             FeeRefunds fr

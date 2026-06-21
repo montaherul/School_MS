@@ -9,7 +9,8 @@ BEGIN
 
     -- Get total count
     SELECT COUNT(*) FROM Guardians g
-    WHERE (@SearchTerm IS NULL OR 
+    WHERE g.IsDeleted = 0
+      AND (@SearchTerm IS NULL OR 
            g.FirstName LIKE '%' + @SearchTerm + '%' OR 
            g.LastName LIKE '%' + @SearchTerm + '%' OR 
            g.GuardianCode LIKE '%' + @SearchTerm + '%' OR 
@@ -52,7 +53,8 @@ BEGIN
         (SELECT COUNT(*) FROM StudentGuardians sg WHERE sg.GuardianId = g.Id) AS ChildrenCount,
         g.CreatedAt
     FROM Guardians g
-    WHERE (@SearchTerm IS NULL OR 
+    WHERE g.IsDeleted = 0
+      AND (@SearchTerm IS NULL OR 
            g.FirstName LIKE '%' + @SearchTerm + '%' OR 
            g.LastName LIKE '%' + @SearchTerm + '%' OR 
            g.GuardianCode LIKE '%' + @SearchTerm + '%' OR 
@@ -65,7 +67,7 @@ BEGIN
                 WHEN 3 THEN 'PendingActivation'
                 ELSE 'Unknown'
            END = @Status)
-    ORDER BY g.CreatedAt DESC
+    ORDER BY g.CreatedAt DESC, g.Id DESC
     OFFSET (@PageNumber - 1) * @PageSize ROWS
     FETCH NEXT @PageSize ROWS ONLY;
 END

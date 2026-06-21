@@ -17,7 +17,7 @@ BEGIN
     JOIN Classes c ON s.ClassId = c.Id
     WHERE fi.IsDeleted = 0 AND fi.Status IN (1, 2)
       AND (@ClassId = 0 OR s.ClassId = @ClassId)
-    ORDER BY fi.DueDate
+    ORDER BY fi.DueDate, fi.Id
     OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
 END;
 GO

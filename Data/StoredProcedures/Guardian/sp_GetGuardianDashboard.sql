@@ -9,12 +9,12 @@ BEGIN
     DECLARE @TotalDue DECIMAL(18,2);
     DECLARE @UnreadNotifications INT;
 
-    SELECT @TotalChildren = COUNT(*) FROM StudentGuardians WHERE GuardianId = @GuardianId;
+    SELECT @TotalChildren = COUNT(*) FROM StudentGuardians WHERE GuardianId = @GuardianId AND IsDeleted = 0;
 
     SELECT @TotalDue = SUM(fi.TotalAmount - fi.PaidAmount)
     FROM FeeInvoices fi
-    JOIN StudentGuardians sg ON fi.StudentId = sg.StudentId
-    WHERE sg.GuardianId = @GuardianId AND fi.Status <> 3; -- 3 = Paid
+    JOIN StudentGuardians sg ON fi.StudentId = sg.StudentId AND sg.IsDeleted = 0
+    WHERE sg.GuardianId = @GuardianId AND fi.IsDeleted = 0 AND fi.Status <> 3; -- 3 = Paid
 
     SELECT @UnreadNotifications = COUNT(*)
     FROM GuardianNotifications gn
@@ -33,11 +33,11 @@ BEGIN
         COUNT(CASE WHEN ar.Status = 2 THEN 1 END) AS AbsentCount,  -- AttendanceStatus_Absent
         COUNT(ar.Id) AS TotalDays
     FROM StudentGuardians sg
-    JOIN Students s ON sg.StudentId = s.Id
-    LEFT JOIN Attendance ar ON s.Id = ar.StudentId 
-        AND MONTH(ar.AttendanceDate) = MONTH(GETDATE()) 
-        AND YEAR(ar.AttendanceDate) = YEAR(GETDATE())
-    WHERE sg.GuardianId = @GuardianId
+    JOIN Students s ON sg.StudentId = s.Id AND s.IsDeleted = 0
+    LEFT JOIN Attendance ar ON s.Id = ar.StudentId AND ar.IsDeleted = 0
+        AND ar.AttendanceDate >= DATEFROMPARTS(YEAR(GETDATE()), MONTH(GETDATE()), 1)
+        AND ar.AttendanceDate < DATEADD(MONTH, 1, DATEFROMPARTS(YEAR(GETDATE()), MONTH(GETDATE()), 1))
+    WHERE sg.GuardianId = @GuardianId AND sg.IsDeleted = 0
     GROUP BY s.Id, s.FullName;
 
     -- Recent Notices

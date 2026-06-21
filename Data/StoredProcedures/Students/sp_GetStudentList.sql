@@ -68,7 +68,7 @@ BEGIN
             s.BirthCertificateNo,
             s.Nationality,
             s.CreatedAt,
-            ROW_NUMBER() OVER (ORDER BY s.CreatedAt DESC) AS RowNum,
+            ROW_NUMBER() OVER (ORDER BY s.CreatedAt DESC, s.Id DESC) AS RowNum,
             COUNT(*) OVER () AS TotalCount
         FROM 
             Students s

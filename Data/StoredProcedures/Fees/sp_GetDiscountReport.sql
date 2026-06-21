@@ -13,7 +13,7 @@ BEGIN
     LEFT JOIN Classes c ON fd.SchoolClassId = c.Id
     LEFT JOIN FeeCategories fc ON fd.FeeCategoryId = fc.Id
     WHERE fd.IsDeleted = 0
-    ORDER BY fd.Name
+    ORDER BY fd.Name, fd.Id
     OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
 END;
 GO

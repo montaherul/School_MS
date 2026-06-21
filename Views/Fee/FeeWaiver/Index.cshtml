@@ -151,7 +151,8 @@
                 pagination: true,
                 paginationMode: "remote",
                 ajaxURL: '@Url.Action("GetList", "FeeWaiver")',
-                paginationSize: 10,
+                paginationSize: 15,
+                paginationSizeSelector: [15,25,50,100],
                 ajaxResponse: function(url, params, response) {
                     console.log("FeeWaiver API Payload:", response);
                     const rows = Array.isArray(response.data) ? response.data : [];

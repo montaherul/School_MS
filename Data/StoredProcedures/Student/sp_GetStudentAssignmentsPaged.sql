@@ -22,7 +22,7 @@ BEGIN
             asub.SubmittedAt,
             asub.Marks,
             asub.Feedback,
-            ROW_NUMBER() OVER (ORDER BY at.Deadline ASC) AS RowNum,
+            ROW_NUMBER() OVER (ORDER BY at.Deadline ASC, at.Id ASC) AS RowNum,
             COUNT(*) OVER () AS TotalCount
         FROM AssignmentTasks at
         INNER JOIN Subjects s ON at.SubjectId = s.Id

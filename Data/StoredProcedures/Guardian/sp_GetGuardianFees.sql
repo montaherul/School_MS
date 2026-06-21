@@ -28,10 +28,10 @@ BEGIN
         (fi.TotalAmount - fi.PaidAmount) AS DueAmount,
         fi.Status,
         CASE fi.Status
-            WHEN 1 THEN 'Pending'
+            WHEN 1 THEN 'Unpaid'
             WHEN 2 THEN 'Partial'
             WHEN 3 THEN 'Paid'
-            WHEN 4 THEN 'Overdue'
+            WHEN 4 THEN 'Waived'
             ELSE 'Unknown'
         END AS StatusName,
         fi.DueDate
@@ -47,7 +47,8 @@ BEGIN
         p.PaidAt,
         p.ReferenceNo AS Reference
     FROM Payments p
-    WHERE p.FeeInvoiceId IN (SELECT Id FROM FeeInvoices WHERE StudentId = @StudentId AND IsDeleted = 0)
+    INNER JOIN FeeInvoices fi ON p.FeeInvoiceId = fi.Id AND fi.StudentId = @StudentId AND fi.IsDeleted = 0
+    WHERE p.IsDeleted = 0
     ORDER BY p.PaidAt DESC;
 END
 GO

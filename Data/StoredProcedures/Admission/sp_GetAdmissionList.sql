@@ -75,7 +75,7 @@ BEGIN
             a.ProfilePicturePath,
             a.CreatedBy,
             a.CreatedAt,
-            ROW_NUMBER() OVER (ORDER BY a.CreatedAt DESC) AS RowNum,
+            ROW_NUMBER() OVER (ORDER BY a.CreatedAt DESC, a.Id DESC) AS RowNum,
             COUNT(*) OVER () AS TotalCount
         FROM 
             Admissions a

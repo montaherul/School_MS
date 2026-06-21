@@ -18,7 +18,7 @@ BEGIN
             bi.ReturnedDate,
             bi.FineAmount,
             CASE WHEN bi.ReturnedDate IS NULL THEN 'Issued' ELSE 'Returned' END AS [Status],
-            ROW_NUMBER() OVER (ORDER BY bi.IssueDate DESC) AS RowNum,
+            ROW_NUMBER() OVER (ORDER BY bi.IssueDate DESC, bi.Id DESC) AS RowNum,
             COUNT(*) OVER () AS TotalCount
         FROM BookIssues bi
         INNER JOIN Books b ON bi.BookId = b.Id AND b.IsDeleted = 0

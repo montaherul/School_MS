@@ -10,12 +10,17 @@ BEGIN
     SELECT fi.Id, fi.InvoiceNo, fi.DueDate, fi.TotalAmount, fi.PaidAmount,
            (fi.TotalAmount - fi.PaidAmount) AS DueAmount,
            CAST(fi.Status AS NVARCHAR(20)) AS Status,
-           p.PaidAt, p.ReferenceNo, fi.LateFee, fi.DiscountAmount,
+           agg.PaidAt, agg.ReferenceNo, fi.LateFee, fi.DiscountAmount,
            COUNT(*) OVER() AS TotalRecords
     FROM FeeInvoices fi
-    LEFT JOIN Payments p ON p.FeeInvoiceId = fi.Id AND p.IsDeleted = 0
+    OUTER APPLY (
+        SELECT TOP 1 p.PaidAt, p.ReferenceNo
+        FROM Payments p
+        WHERE p.FeeInvoiceId = fi.Id AND p.IsDeleted = 0
+        ORDER BY p.PaidAt DESC
+    ) agg
     WHERE fi.StudentId = @StudentId AND fi.IsDeleted = 0
-    ORDER BY fi.DueDate DESC
+    ORDER BY fi.DueDate DESC, fi.Id DESC
     OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
 END;
 GO

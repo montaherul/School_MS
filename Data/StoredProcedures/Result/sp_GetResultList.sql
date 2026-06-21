@@ -13,17 +13,7 @@ BEGIN
 
     DECLARE @Offset INT = (@PageNumber - 1) * @PageSize;
 
-    SELECT COUNT(*) AS TotalCount
-    FROM StudentExamResults ser
-    INNER JOIN Students s ON ser.StudentId = s.Id
-    LEFT JOIN Exams e ON ser.ExamId = e.Id
-    WHERE ser.IsDeleted = 0
-      AND (@ExamId IS NULL OR ser.ExamId = @ExamId)
-      AND (@ClassId IS NULL OR s.ClassId = @ClassId)
-      AND (@SectionId IS NULL OR s.SectionId = @SectionId)
-      AND (@StudentGroupId IS NULL OR s.StudentGroupId = @StudentGroupId)
-      AND (@Status IS NULL OR ser.Status = @Status)
-      AND (@SearchTerm IS NULL OR s.FullName LIKE '%' + @SearchTerm + '%' OR s.StudentNo LIKE '%' + @SearchTerm + '%' OR s.RollNumber LIKE '%' + @SearchTerm + '%');
+    -- TotalCount is now computed via window function in main query
 
     SELECT 
         ser.Id,
@@ -51,7 +41,8 @@ BEGIN
         ser.FailedSubjectCount,
         ser.PassedSubjectCount,
         ser.Status,
-        ser.PublishedAt
+        ser.PublishedAt,
+        COUNT(*) OVER () AS TotalCount
     FROM StudentExamResults ser
     INNER JOIN Students s ON ser.StudentId = s.Id
     INNER JOIN Exams e ON ser.ExamId = e.Id
@@ -65,7 +56,7 @@ BEGIN
       AND (@StudentGroupId IS NULL OR s.StudentGroupId = @StudentGroupId)
       AND (@Status IS NULL OR ser.Status = @Status)
       AND (@SearchTerm IS NULL OR s.FullName LIKE '%' + @SearchTerm + '%' OR s.StudentNo LIKE '%' + @SearchTerm + '%' OR s.RollNumber LIKE '%' + @SearchTerm + '%')
-    ORDER BY s.ClassId, s.RollNumber
+    ORDER BY s.ClassId, s.RollNumber, ser.Id
     OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
 END;
 GO

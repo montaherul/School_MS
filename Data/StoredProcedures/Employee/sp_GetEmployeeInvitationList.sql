@@ -58,7 +58,7 @@ BEGIN
 		c.TotalRecords
 	FROM InvitationData i
 	CROSS JOIN CountData c
-	ORDER BY i.CreatedAt DESC
+	ORDER BY i.CreatedAt DESC, i.Id DESC
 	OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
 END
 GO

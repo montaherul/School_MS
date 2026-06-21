@@ -46,13 +46,14 @@ BEGIN
     -- Monthly student summary
     IF @StudentId > 0 AND @Year > 0 AND @Month > 0
     BEGIN
+        DECLARE @MonthStart DATE = DATEFROMPARTS(@Year, @Month, 1);
+        DECLARE @NextMonthStart DATE = DATEADD(MONTH, 1, @MonthStart);
         SELECT
             Status,
             CountValue = COUNT(*)
         FROM Attendance
         WHERE StudentId = @StudentId
-          AND YEAR(AttendanceDate) = @Year
-          AND MONTH(AttendanceDate) = @Month
+          AND AttendanceDate >= @MonthStart AND AttendanceDate < @NextMonthStart
           AND IsDeleted = 0
         GROUP BY Status;
         RETURN;
@@ -61,13 +62,14 @@ BEGIN
     -- Monthly employee summary
     IF @EmployeeId > 0 AND @Year > 0 AND @Month > 0
     BEGIN
+        DECLARE @EmpMonthStart DATE = DATEFROMPARTS(@Year, @Month, 1);
+        DECLARE @EmpNextMonth DATE = DATEADD(MONTH, 1, @EmpMonthStart);
         SELECT
             Status,
             CountValue = COUNT(*)
         FROM EmployeeAttendances
         WHERE EmployeeId = @EmployeeId
-          AND YEAR(AttendanceDate) = @Year
-          AND MONTH(AttendanceDate) = @Month
+          AND AttendanceDate >= @EmpMonthStart AND AttendanceDate < @EmpNextMonth
           AND IsDeleted = 0
         GROUP BY Status;
     END

@@ -45,7 +45,7 @@ BEGIN
         CASE WHEN @SortColumn = 'StartsOn' AND @SortDirection = 'DESC' THEN CONVERT(NVARCHAR(10), e.StartsOn, 112) END DESC,
         CASE WHEN @SortColumn = 'Status' AND @SortDirection = 'ASC' THEN RIGHT('000' + CAST(e.Status AS NVARCHAR), 3) END ASC,
         CASE WHEN @SortColumn = 'Status' AND @SortDirection = 'DESC' THEN RIGHT('000' + CAST(e.Status AS NVARCHAR), 3) END DESC,
-        e.CreatedAt DESC
+        e.CreatedAt DESC, e.Id DESC
     OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
 END;
 GO

@@ -19,7 +19,7 @@ BEGIN
             fr.Name,
             fr.GraceDays,
             fr.FinePerDay,
-            ROW_NUMBER() OVER (ORDER BY fr.Name) AS RowNum,
+            ROW_NUMBER() OVER (ORDER BY fr.Name, fr.Id) AS RowNum,
             COUNT(*) OVER () AS TotalCount
         FROM 
             FineRules fr

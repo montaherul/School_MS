@@ -26,7 +26,7 @@ BEGIN
             lfr.FeeCategoryId,
             fc.Name AS FeeCategoryName,
             lfr.IsActive,
-            ROW_NUMBER() OVER (ORDER BY lfr.Name) AS RowNum,
+            ROW_NUMBER() OVER (ORDER BY lfr.Name, lfr.Id) AS RowNum,
             COUNT(*) OVER () AS TotalCount
         FROM 
             LateFeeRules lfr

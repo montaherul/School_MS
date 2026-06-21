@@ -39,7 +39,7 @@ BEGIN
             s.Status,
             s.CreatedAt AS AdmissionDate,
             COALESCE(g.FullName, s.FatherName, '') AS GuardianName,
-            ROW_NUMBER() OVER (ORDER BY s.CreatedAt DESC) AS RowNum,
+            ROW_NUMBER() OVER (ORDER BY s.CreatedAt DESC, s.Id DESC) AS RowNum,
             COUNT(*) OVER () AS TotalCount
         FROM 
             Students s

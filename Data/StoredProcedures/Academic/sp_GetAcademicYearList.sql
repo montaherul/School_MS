@@ -22,7 +22,7 @@ BEGIN
             y.StartsOn,
             y.EndsOn,
             y.IsActive,
-            ROW_NUMBER() OVER (ORDER BY y.StartsOn DESC) AS RowNum,
+            ROW_NUMBER() OVER (ORDER BY y.StartsOn DESC, y.Id DESC) AS RowNum,
             COUNT(*) OVER () AS TotalCount
         FROM 
             AcademicYears y
