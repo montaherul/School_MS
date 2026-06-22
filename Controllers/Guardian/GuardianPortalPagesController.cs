@@ -11,6 +11,7 @@ using SchoolManagementSystem.Models.Entities.Result;
 using SchoolManagementSystem.Models.Enums;
 using GuardianEntity = SchoolManagementSystem.Models.Entities.Guardian.Guardian;
 using SchoolManagementSystem.Repositories.Interfaces.Result;
+using SchoolManagementSystem.Repositories.Interfaces.Website;
 using SchoolManagementSystem.Services.Interfaces.Guardian;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
@@ -23,6 +24,7 @@ namespace SchoolManagementSystem.Controllers.Guardian;
 public class GuardianPortalPagesController : Controller
 {
     private readonly IGuardianService _guardianService;
+    private readonly ISchoolSettingRepository _settingRepo;
     private readonly IUnitOfWork _uow;
     private readonly IStudentExamResultRepository _studentExamResultRepository;
     private readonly ITranscriptService _transcriptService;
@@ -30,16 +32,24 @@ public class GuardianPortalPagesController : Controller
 
     public GuardianPortalPagesController(
         IGuardianService guardianService,
+        ISchoolSettingRepository settingRepo,
         IUnitOfWork uow,
         IStudentExamResultRepository studentExamResultRepository,
         ITranscriptService transcriptService,
         ILogger<GuardianPortalPagesController> logger)
     {
         _guardianService = guardianService;
+        _settingRepo = settingRepo;
         _uow = uow;
         _studentExamResultRepository = studentExamResultRepository;
         _transcriptService = transcriptService;
         _logger = logger;
+    }
+
+    private async Task<bool> IsGuardianPortalEnabledAsync()
+    {
+        var settings = await _settingRepo.GetCurrentSettingsAsync();
+        return settings?.EnableGuardianPortal == true;
     }
 
     private int CurrentUserId()
@@ -61,6 +71,8 @@ public class GuardianPortalPagesController : Controller
     [HttpGet("Attendance")]
     public async Task<IActionResult> Attendance(int? studentId, DateTime? from, DateTime? to, CancellationToken ct)
     {
+        if (!await IsGuardianPortalEnabledAsync())
+            return RedirectToAction("Index", "Dashboard");
         var userId = CurrentUserId();
         var sid = await ResolveOrFirstChildAsync(studentId, ct);
         if (sid == 0) { return View("~/Views/GuardianPortal/Empty.cshtml", "No child linked to your account."); }
@@ -83,6 +95,8 @@ public class GuardianPortalPagesController : Controller
     [HttpGet("Results")]
     public async Task<IActionResult> Results(int? studentId, CancellationToken ct)
     {
+        if (!await IsGuardianPortalEnabledAsync())
+            return RedirectToAction("Index", "Dashboard");
         var userId = CurrentUserId();
         var sid = await ResolveOrFirstChildAsync(studentId, ct);
         if (sid == 0) { return View("~/Views/GuardianPortal/Empty.cshtml", "No child linked to your account."); }
@@ -110,6 +124,8 @@ public class GuardianPortalPagesController : Controller
     [HttpGet("Fees")]
     public async Task<IActionResult> Fees(int? studentId, CancellationToken ct)
     {
+        if (!await IsGuardianPortalEnabledAsync())
+            return RedirectToAction("Index", "Dashboard");
         var userId = CurrentUserId();
         var sid = await ResolveOrFirstChildAsync(studentId, ct);
         if (sid == 0) { return View("~/Views/GuardianPortal/Empty.cshtml", "No child linked to your account."); }
@@ -139,6 +155,8 @@ public class GuardianPortalPagesController : Controller
     [HttpGet("Leaves")]
     public async Task<IActionResult> Leaves(int? studentId, CancellationToken ct)
     {
+        if (!await IsGuardianPortalEnabledAsync())
+            return RedirectToAction("Index", "Dashboard");
         var userId = CurrentUserId();
         var sid = await ResolveOrFirstChildAsync(studentId, ct);
         if (sid == 0) { return View("~/Views/GuardianPortal/Empty.cshtml", "No child linked to your account."); }
@@ -161,6 +179,8 @@ public class GuardianPortalPagesController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ApplyLeave(int studentId, int leaveTypeId, DateTime fromDate, DateTime toDate, string reason, CancellationToken ct)
     {
+        if (!await IsGuardianPortalEnabledAsync())
+            return RedirectToAction("Index", "Dashboard");
         var userId = CurrentUserId();
         if (!await _guardianService.UserHasAccessToStudentAsync(userId, studentId, ct)) return Forbid();
 
@@ -198,6 +218,8 @@ public class GuardianPortalPagesController : Controller
     [HttpGet("Notices")]
     public async Task<IActionResult> Notices(CancellationToken ct)
     {
+        if (!await IsGuardianPortalEnabledAsync())
+            return RedirectToAction("Index", "Dashboard");
         var notices = await _uow.Repository<Notice>().Query().AsNoTracking()
             .Where(n => !n.IsDeleted && n.IsPublished
                 && (n.AudienceRole == "All" || n.AudienceRole == "Guardian" || n.AudienceRole == "Guardians" || n.AudienceRole == "Parent" || n.AudienceRole == "Parents"))
@@ -210,6 +232,8 @@ public class GuardianPortalPagesController : Controller
     [HttpGet("Calendar")]
     public async Task<IActionResult> Calendar(CancellationToken ct)
     {
+        if (!await IsGuardianPortalEnabledAsync())
+            return RedirectToAction("Index", "Dashboard");
         var events = await _uow.Repository<AcademicCalendarEvent>().Query().AsNoTracking()
             .Include(e => e.AcademicCalendar)
             .Where(e => !e.IsDeleted && e.IsActive)
@@ -221,6 +245,8 @@ public class GuardianPortalPagesController : Controller
     [HttpGet("Notifications")]
     public async Task<IActionResult> Notifications(CancellationToken ct)
     {
+        if (!await IsGuardianPortalEnabledAsync())
+            return RedirectToAction("Index", "Dashboard");
         var userId = CurrentUserId();
         var guardian = await _uow.Repository<GuardianEntity>().Query().AsNoTracking().FirstOrDefaultAsync(g => g.UserId == userId && !g.IsDeleted, ct);
         if (guardian == null) { return View("~/Views/GuardianPortal/Empty.cshtml", "No guardian profile."); }
@@ -237,6 +263,8 @@ public class GuardianPortalPagesController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> MarkRead(int id, CancellationToken ct)
     {
+        if (!await IsGuardianPortalEnabledAsync())
+            return RedirectToAction("Index", "Dashboard");
         var userId = CurrentUserId();
         var guardian = await _uow.Repository<GuardianEntity>().Query().AsNoTracking().FirstOrDefaultAsync(g => g.UserId == userId && !g.IsDeleted, ct);
         if (guardian == null) return Forbid();
@@ -255,6 +283,8 @@ public class GuardianPortalPagesController : Controller
     [HttpGet("Profile")]
     public async Task<IActionResult> Profile(CancellationToken ct)
     {
+        if (!await IsGuardianPortalEnabledAsync())
+            return RedirectToAction("Index", "Dashboard");
         var userId = CurrentUserId();
         var guardian = await _uow.Repository<GuardianEntity>().Query().AsNoTracking()
             .FirstOrDefaultAsync(g => g.UserId == userId && !g.IsDeleted, ct);
@@ -274,6 +304,8 @@ public class GuardianPortalPagesController : Controller
     [HttpGet("ReportCard")]
     public async Task<IActionResult> ReportCard(int? studentId, int examId, CancellationToken ct)
     {
+        if (!await IsGuardianPortalEnabledAsync())
+            return RedirectToAction("Index", "Dashboard");
         var userId = CurrentUserId();
         var sid = await ResolveOrFirstChildAsync(studentId, ct);
         if (sid == 0) { return View("~/Views/GuardianPortal/Empty.cshtml", "No child linked to your account."); }
@@ -289,6 +321,8 @@ public class GuardianPortalPagesController : Controller
     [HttpGet("Transcript")]
     public async Task<IActionResult> Transcript(int? studentId, int? academicYearId, CancellationToken ct)
     {
+        if (!await IsGuardianPortalEnabledAsync())
+            return RedirectToAction("Index", "Dashboard");
         var userId = CurrentUserId();
         var sid = await ResolveOrFirstChildAsync(studentId, ct);
         if (sid == 0) { return View("~/Views/GuardianPortal/Empty.cshtml", "No child linked to your account."); }
@@ -308,6 +342,8 @@ public class GuardianPortalPagesController : Controller
     [HttpGet("ExamComparison")]
     public async Task<IActionResult> ExamComparison(int? studentId, CancellationToken ct)
     {
+        if (!await IsGuardianPortalEnabledAsync())
+            return RedirectToAction("Index", "Dashboard");
         var userId = CurrentUserId();
         var sid = await ResolveOrFirstChildAsync(studentId, ct);
         if (sid == 0) { return View("~/Views/GuardianPortal/Empty.cshtml", "No child linked to your account."); }
@@ -336,6 +372,8 @@ public class GuardianPortalPagesController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> UpdateProfile([FromForm] GuardianProfileUpdateDto dto, CancellationToken ct)
     {
+        if (!await IsGuardianPortalEnabledAsync())
+            return RedirectToAction("Index", "Dashboard");
         var userId = CurrentUserId();
         if (userId == 0) return RedirectToAction("Login", "Auth");
 

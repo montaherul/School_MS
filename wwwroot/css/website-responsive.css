@@ -1,0 +1,192 @@
+/* ───────────────────────────────────────────────
+   WEBSITE RESPONSIVE — Mobile, Tablet, Desktop
+   ═══════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════
+   TABLET (768px - 1023px)
+   ═══════════════════════════════════════════ */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .ws-hero-slider { height: 460px; }
+  .ws-hero-slide__title { font-size: 38px; }
+
+  .ws-section { padding: 56px 0; }
+  .ws-section__title { font-size: 28px; }
+
+  .ws-stat__number { font-size: 36px; }
+  .ws-album-card__image { height: 210px; }
+  .ws-gallery-item { height: 170px; }
+
+  .ws-page-hero { padding: 60px 0; }
+  .ws-page-hero h1 { font-size: 34px; }
+}
+
+/* ═══════════════════════════════════════════
+   MOBILE (320px - 767px)
+   ═══════════════════════════════════════════ */
+@media (max-width: 767px) {
+  /* Layout */
+  .ws-section { padding: 40px 0; }
+  .ws-section__title { font-size: 22px; }
+  .ws-section__header { margin-bottom: 24px; }
+  .ws-section__subtitle { font-size: 15px; }
+
+  /* Hero */
+  .ws-hero-slider { height: 360px; }
+  .ws-hero-slide__title { font-size: 26px; }
+  .ws-hero-slide__text { font-size: 14px; }
+  .ws-hero-slide__badge { font-size: 11px; padding: 4px 14px; }
+  .ws-hero-btn { width: 34px; height: 34px; font-size: 14px; }
+  .ws-hero-btn--prev { left: 8px; }
+  .ws-hero-btn--next { right: 8px; }
+  .ws-hero-dots { bottom: 16px; }
+  .ws-hero-dot.active { width: 24px; }
+
+  /* Page Hero */
+  .ws-page-hero { padding: 40px 0; }
+  .ws-page-hero h1 { font-size: 24px; }
+  .ws-page-hero p { font-size: 14px; }
+
+  /* Stats */
+  .ws-stat { padding: 16px 8px; }
+  .ws-stat__number { font-size: 28px; }
+  .ws-stat__icon { width: 48px; height: 48px; font-size: 18px; margin-bottom: 10px; }
+  .ws-stat__label { font-size: 11px; }
+
+  /* Cards */
+  .ws-card__body { padding: 16px; }
+  .ws-card__header { padding: 12px 16px; font-size: 16px; }
+  .ws-card__footer { padding: 12px 16px; }
+
+  /* Notice */
+  .ws-notice-card { padding: 14px 16px; }
+  .ws-notice-card__title { font-size: 16px; }
+  .ws-notice-card__body { font-size: 13px; }
+
+  /* Event */
+  .ws-event-card__image { height: 180px; }
+  .ws-event-card__body { padding: 16px; }
+  .ws-event-card__title { font-size: 16px; }
+  .ws-event-card__desc { font-size: 13px; }
+
+  .ws-event-item { padding: 14px; }
+  .ws-event-item__date { display: flex; align-items: center; gap: 8px; min-width: auto; padding: 6px 12px; }
+  .ws-event-item__day { font-size: 18px; }
+
+  /* Gallery */
+  .ws-album-card__image { height: 180px; }
+  .ws-album-card__overlay { padding: 14px; }
+  .ws-album-card__overlay h4 { font-size: 17px; }
+  .ws-gallery-item { height: 130px; }
+
+  /* Calendar */
+  .ws-cal-card { padding: 14px 10px; }
+  .ws-cal-card__day { font-size: 30px; }
+
+  /* Countdown */
+  .ws-countdown { padding: 16px; }
+  .ws-countdown__value { font-size: 24px; }
+  .ws-countdown__numbers { gap: 8px; }
+  .ws-countdown__sep { font-size: 20px; }
+  .ws-countdown__title { font-size: 11px; }
+
+  /* Buttons */
+  .ws-btn { padding: 10px 20px; font-size: 13px; }
+  .ws-btn--lg { padding: 12px 24px; font-size: 14px; }
+  .ws-btn--sm { padding: 7px 16px; font-size: 12px; }
+
+  /* Pagination */
+  .ws-pagination { gap: 4px; margin-top: 24px; }
+  .ws-pagination__item { min-width: 34px; height: 34px; font-size: 13px; padding: 0 8px; }
+
+  /* Testimonial */
+  .ws-testimonial { padding: 20px; }
+  .ws-testimonial::before { font-size: 34px; top: 10px; left: 16px; }
+  .ws-testimonial__text { font-size: 14px; }
+
+  /* CTA */
+  .ws-cta { padding: 24px 0; }
+  .ws-cta__box { padding: 20px 16px; }
+  .ws-cta__title { font-size: 18px; }
+
+  /* Fee Table */
+  .ws-fee-table { font-size: 12px; }
+  .ws-fee-table th,
+  .ws-fee-table td { padding: 8px 10px; }
+
+  /* Contact */
+  .ws-contact-item { flex-direction: column; align-items: center; text-align: center; margin-bottom: 20px; }
+
+  /* Features */
+  .ws-feature { flex-direction: column; align-items: center; text-align: center; }
+
+  /* Empty state */
+  .ws-empty { padding: 40px 16px; }
+  .ws-empty__icon { font-size: 36px; }
+  .ws-empty__title { font-size: 17px; }
+
+  /* Lightbox */
+  .ws-lightbox { padding: 16px; }
+  .ws-lightbox__caption { font-size: 14px; bottom: 16px; }
+
+  /* Brand */
+  .ws-brand { font-size: 17px; gap: 8px; }
+  .ws-brand__logo { height: 32px; }
+  .ws-brand__icon { width: 32px; height: 32px; font-size: 14px; }
+
+  /* Form elements */
+  .ws-form-input,
+  .ws-form-select,
+  .ws-form-textarea { padding: 10px 14px; font-size: 14px; }
+}
+
+/* ═══════════════════════════════════════════
+   SMALL MOBILE (320px - 480px)
+   ═══════════════════════════════════════════ */
+@media (max-width: 480px) {
+  .ws-hero-slider { height: 300px; }
+  .ws-hero-slide__title { font-size: 22px; }
+  .ws-hero-slide__badge { font-size: 10px; padding: 3px 12px; }
+  .ws-stat__number { font-size: 24px; }
+  .ws-stat__icon { width: 40px; height: 40px; font-size: 16px; }
+  .ws-page-hero { padding: 32px 0; }
+  .ws-page-hero h1 { font-size: 22px; }
+}
+
+/* ═══════════════════════════════════════════
+   REDUCED MOTION
+   ═══════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .ws-announcement__label { animation: none !important; }
+  .ws-announcement__track div { animation: none !important; }
+}
+
+/* ═══════════════════════════════════════════
+   PRINT
+   ═══════════════════════════════════════════ */
+@media print {
+  .ws-topbar, .ws-navbar, .ws-footer,
+  .ws-hero-btn, .ws-hero-dots, .ws-announcement,
+  .ws-btn, .ws-nav-toggle { display: none !important; }
+  .ws-section { padding: 16px 0; }
+  .ws-page-hero { padding: 16px 0; background: none !important; }
+  .ws-page-hero h1 { color: var(--ws-text); }
+  .ws-page-hero::before { display: none; }
+  .ws-card { box-shadow: none; border: 1px solid #ddd; }
+}
+
+/* ═══════════════════════════════════════════
+   ACCESSIBILITY
+   ═══════════════════════════════════════════ */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--ws-accent);
+  outline-offset: 2px;
+}

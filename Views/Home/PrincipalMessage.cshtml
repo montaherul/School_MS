@@ -4,63 +4,58 @@
     ViewData["Title"] = "Principal's Message";
 }
 
-<!-- Header Hero -->
-<div class="py-5 text-white" style="background: linear-gradient(135deg, var(--edu-navy), var(--edu-dark));">
-    <div class="container text-center py-4">
-        <h1 class="display-4 fw-bold">Principal's Address</h1>
-        <p class="lead text-white-50">Words of inspiration and welcome from our honorable head teacher</p>
+<div class="ws-page-hero">
+    <div class="ws-container">
+        <h1>Principal's Address</h1>
+        <p>Words of inspiration and welcome from our honorable head teacher</p>
     </div>
 </div>
 
-<section class="py-5 bg-white">
-    <div class="container py-3">
-        <div class="row g-5">
-            <div class="col-lg-4 text-center">
-                <div class="p-3 bg-light rounded shadow-sm border mb-4">
+<section class="ws-section">
+    <div class="ws-container">
+        <div class="ws-row ws-g-6">
+            <div class="ws-col-12 ws-col-lg-4 ws-text-center">
+                <div style="padding:24px;background:var(--ws-bg-alt);border-radius:var(--ws-radius-lg);box-shadow:var(--ws-shadow-sm);border:1px solid var(--ws-border-light);">
                     @if (!string.IsNullOrEmpty(Model.PrincipalImagePath))
                     {
-                        <img src="@Model.PrincipalImagePath" class="img-fluid rounded shadow mb-3" style="max-height:360px; object-fit:cover;" alt="Principal"/>
+                        <img src="@Model.PrincipalImagePath" style="width:100%;max-height:360px;object-fit:cover;border-radius:var(--ws-radius-lg);box-shadow:var(--ws-shadow-md);margin-bottom:16px;" alt="Principal" />
                     }
                     else
                     {
-                        <div class="bg-secondary text-white rounded d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 260px; height: 280px;">
-                            <i class="bi bi-person-fill display-1"></i>
+                        <div style="width:100%;height:280px;background:var(--ws-muted);border-radius:var(--ws-radius-lg);display:flex;align-items:center;justify-content:center;color:#fff;font-size:64px;margin-bottom:16px;">
+                            <i class="bi bi-person-fill"></i>
                         </div>
                     }
-                    <h4 class="fw-bold text-dark mb-1">@Model.PrincipalName</h4>
-                    <p class="text-warning fw-semibold mb-0">Principal & CEO</p>
-                    <p class="text-muted small">@Model.SchoolName</p>
+                    <h4 style="font-weight:700;margin-bottom:4px;">@Model.PrincipalName</h4>
+                    <p style="color:var(--ws-accent);font-weight:600;margin-bottom:0;">Principal & CEO</p>
+                    <p style="color:var(--ws-muted);font-size:14px;">@Model.SchoolName</p>
                 </div>
             </div>
-            
-            <div class="col-lg-8">
-                <span class="text-warning fw-bold text-uppercase fs-6">Welcome Note</span>
-                <h2 class="fw-bold text-dark mb-3">Message from the Head</h2>
-                <hr class="border-warning border-3 opacity-100 mb-4" style="width: 60px; height: 4px;"/>
-                
-                <div class="text-muted leading-relaxed" style="font-size:16px; line-height:1.8;">
+
+            <div class="ws-col-12 ws-col-lg-8">
+                <span class="ws-section__label">Welcome Note</span>
+                <h2 style="font-size:var(--ws-text-4xl);font-weight:800;margin-bottom:16px;">Message from the Head</h2>
+                <div style="width:64px;height:4px;background:var(--ws-accent);border-radius:2px;margin-bottom:24px;"></div>
+
+                <div style="color:var(--ws-text-light);font-size:16px;line-height:1.8;">
                     @if (!string.IsNullOrEmpty(Model.PrincipalMessage))
                     {
                         @Html.Raw(Model.PrincipalMessage.Replace("\r\n", "<br/>").Replace("\n", "<br/>"))
                     }
                     else
                     {
-                        <p>
-                            Welcome to the web portal of our school. Education is not just about scoring grades; it is a life-long journey of character formulation, value inclusion, and preparation for global challenges. At our school, we offer a rich mix of scientific inquiry, language skills, and moral principles.
-                        </p>
-                        <p>
-                            We encourage every student to think outside the box, participate in sports, and engage in social community works. Together with our highly qualified teachers and support staff, we are dedicated to securing a bright future for every child.
-                        </p>
+                        <p>Welcome to the web portal of our school. Education is not just about scoring grades; it is a life-long journey of character formulation, value inclusion, and preparation for global challenges. At our school, we offer a rich mix of scientific inquiry, language skills, and moral principles.</p>
+                        <p>We encourage every student to think outside the box, participate in sports, and engage in social community works. Together with our highly qualified teachers and support staff, we are dedicated to securing a bright future for every child.</p>
                     }
                 </div>
 
-                <div class="mt-5 pt-3 border-top">
-                    <h5 class="fw-bold text-dark mb-1">Sincerely,</h5>
-                    <div class="my-3">
-                        <span class="text-muted font-italic" style="font-family:'Courier New', Courier, monospace; font-size:24px; font-style:italic; color:var(--edu-blue);">@Model.PrincipalName</span>
+                <div style="margin-top:40px;padding-top:24px;border-top:1px solid var(--ws-border);">
+                    <h5 style="font-weight:700;margin-bottom:8px;">Sincerely,</h5>
+                    <div style="margin:12px 0;">
+                        <span style="font-family:'Courier New',monospace;font-size:24px;font-style:italic;color:var(--ws-secondary);">@Model.PrincipalName</span>
                     </div>
-                    <h6 class="fw-bold text-muted mb-0">Principal</h6>
-                    <span class="text-muted small">@Model.SchoolName</span>
+                    <h6 style="font-weight:700;color:var(--ws-muted);margin-bottom:0;">Principal</h6>
+                    <span style="font-size:14px;color:var(--ws-muted);">@Model.SchoolName</span>
                 </div>
             </div>
         </div>

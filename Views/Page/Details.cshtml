@@ -6,25 +6,23 @@
     ViewData["MetaDescription"] = Model.MetaDescription;
 }
 
-<!-- Header Hero -->
-<div class="py-5 text-white" style="background: linear-gradient(135deg, var(--edu-navy), var(--edu-dark));">
-    <div class="container text-center py-4">
-        <h1 class="display-4 fw-bold">@Model.Title</h1>
-        <p class="lead text-white-50"><i class="bi bi-clock-history me-1"></i> Last updated: @(Model.UpdatedAt?.ToString("dd MMMM yyyy") ?? Model.CreatedAt.ToString("dd MMMM yyyy"))</p>
+<div class="ws-page-hero">
+    <div class="ws-container">
+        <h1>@Model.Title</h1>
+        <p><i class="bi bi-clock-history me-1"></i> Last updated: @(Model.UpdatedAt?.ToString("dd MMMM yyyy") ?? Model.CreatedAt.ToString("dd MMMM yyyy"))</p>
     </div>
 </div>
 
-<section class="py-5 bg-white">
-    <div class="container py-3">
-        <div class="row justify-content-center">
-            <div class="col-lg-10">
-                <div class="card border-0 shadow-sm p-4 p-md-5 bg-light rounded" style="border-top: 5px solid var(--edu-navy);">
-                    <div class="text-dark fs-5 leading-relaxed" style="line-height: 1.8;">
+<section class="ws-section">
+    <div class="ws-container">
+        <div class="ws-row" style="justify-content:center;">
+            <div class="ws-col-12 ws-col-lg-10">
+                <div class="ws-card" style="border-top:5px solid var(--ws-primary);background:var(--ws-bg-alt);padding:40px;">
+                    <div style="color:var(--ws-text);font-size:1.1rem;line-height:1.8;">
                         @Html.Raw(Model.Content)
                     </div>
-
-                    <div class="mt-5 border-top pt-4 text-center">
-                        <a href="/" class="btn btn-outline-secondary"><i class="bi bi-house-fill me-2"></i> Go back Home</a>
+                    <div style="margin-top:40px;padding-top:24px;border-top:1px solid var(--ws-border);text-align:center;">
+                        <a href="/" class="ws-btn ws-btn--outline"><i class="bi bi-house-fill me-2"></i> Go back Home</a>
                     </div>
                 </div>
             </div>

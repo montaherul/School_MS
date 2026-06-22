@@ -57,422 +57,243 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-    <!-- Bootstrap -->
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <!-- Animate CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
-    
-    <style>
-        :root {
-            --edu-navy: #0B2545;
-            --edu-blue: #134074;
-            --edu-gold: #D4AF37;
-            --edu-light: #EEF4F8;
-            --edu-dark: #081C33;
-            --edu-accent: #00B4D8;
-            --font-display: 'Outfit', sans-serif;
-            --font-body: 'Plus Jakarta Sans', sans-serif;
-            --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        body {
-            font-family: var(--font-body);
-            color: #333;
-            background-color: #fff;
-            overflow-x: hidden;
-        }
-
-        h1, h2, h3, h4, h5, h6 {
-            font-family: var(--font-display);
-            font-weight: 700;
-        }
-
-        /* ── Header Top Bar ── */
-        .edu-topbar {
-            background-color: var(--edu-dark);
-            color: rgba(255,255,255,0.85);
-            font-size: 13px;
-            padding: 8px 0;
-            border-bottom: 2px solid var(--edu-gold);
-        }
-        .edu-topbar a {
-            color: rgba(255,255,255,0.9);
-            text-decoration: none;
-            transition: var(--transition-smooth);
-        }
-        .edu-topbar a:hover {
-            color: var(--edu-gold);
-        }
-
-        /* ── Navbar ── */
-        .edu-navbar {
-            background-color: #fff;
-            box-shadow: 0 10px 30px rgba(11,37,69, 0.06);
-            padding: 15px 0;
-            transition: var(--transition-smooth);
-        }
-        .edu-navbar.scrolled {
-            padding: 10px 0;
-            background-color: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(15px);
-        }
-        .edu-brand {
-            font-family: var(--font-display);
-            font-weight: 800;
-            font-size: 24px;
-            color: var(--edu-navy) !important;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-decoration: none;
-        }
-        .edu-brand span {
-            color: var(--edu-gold);
-        }
-        .edu-nav-link {
-            font-weight: 600;
-            color: var(--edu-navy) !important;
-            font-size: 15px;
-            padding: 8px 16px !important;
-            transition: var(--transition-smooth);
-            border-bottom: 2px solid transparent;
-        }
-        .edu-nav-link:hover, .edu-nav-link.active {
-            color: var(--edu-gold) !important;
-            transform: translateY(-1px);
-        }
-        .edu-dropdown-menu {
-            border: none;
-            border-radius: 8px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
-            background-color: #fff;
-            padding: 10px 0;
-        }
-        .edu-dropdown-item {
-            font-weight: 600;
-            font-size: 14px;
-            color: var(--edu-navy);
-            padding: 8px 20px;
-            transition: var(--transition-smooth);
-        }
-        .edu-dropdown-item:hover {
-            background-color: var(--edu-light);
-            color: var(--edu-gold);
-            padding-left: 25px;
-        }
-
-        /* Buttons */
-        .btn-edu-gold {
-            background-color: var(--edu-gold);
-            color: var(--edu-dark);
-            font-family: var(--font-display);
-            font-weight: 700;
-            padding: 10px 24px;
-            border-radius: 6px;
-            border: 2px solid var(--edu-gold);
-            transition: var(--transition-smooth);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .btn-edu-gold:hover {
-            background-color: transparent;
-            color: var(--edu-gold);
-            box-shadow: 0 5px 15px rgba(212,175,55,0.4);
-        }
-        .btn-edu-navy {
-            background-color: var(--edu-navy);
-            color: #fff;
-            font-family: var(--font-display);
-            font-weight: 700;
-            padding: 10px 24px;
-            border-radius: 6px;
-            border: 2px solid var(--edu-navy);
-            transition: var(--transition-smooth);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .btn-edu-navy:hover {
-            background-color: transparent;
-            color: var(--edu-navy);
-            box-shadow: 0 5px 15px rgba(11,37,69,0.3);
-        }
-
-        /* Footer */
-        .edu-footer {
-            background-color: var(--edu-dark);
-            color: rgba(255,255,255,0.8);
-            font-family: var(--font-body);
-            padding: 80px 0 30px;
-            position: relative;
-        }
-        .edu-footer::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, var(--edu-gold), var(--edu-accent));
-        }
-        .edu-footer-title {
-            color: #fff;
-            font-weight: 700;
-            margin-bottom: 25px;
-            position: relative;
-            padding-bottom: 10px;
-        }
-        .edu-footer-title::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 40px;
-            height: 3px;
-            background-color: var(--edu-gold);
-        }
-        .edu-footer-link {
-            color: rgba(255,255,255,0.7);
-            text-decoration: none;
-            display: block;
-            margin-bottom: 12px;
-            transition: var(--transition-smooth);
-            font-weight: 500;
-        }
-        .edu-footer-link:hover {
-            color: var(--edu-gold);
-            padding-left: 8px;
-        }
-        .edu-footer-bottom {
-            border-top: 1px solid rgba(255,255,255,0.1);
-            margin-top: 50px;
-            padding-top: 30px;
-            font-size: 14px;
-        }
-        .social-btn {
-            width: 40px;
-            height: 40px;
-            background-color: rgba(255,255,255,0.06);
-            color: #fff;
-            border-radius: 50%;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            transition: var(--transition-smooth);
-            margin-right: 10px;
-            text-decoration: none;
-        }
-        .social-btn:hover {
-            background-color: var(--edu-gold);
-            color: var(--edu-dark);
-            transform: scale(1.1);
-        }
-    </style>
+    <!-- Design System -->
+    <link rel="stylesheet" href="~/css/design-system.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/website-layout.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/website-components.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/website-responsive.css" asp-append-version="true" />
     @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
 
     <!-- ── Top Header Bar ── -->
-    <div class="edu-topbar">
-        <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-2">
-            <div class="d-flex align-items-center gap-3 flex-wrap justify-content-center">
-                <span><i class="bi bi-geo-alt-fill text-warning me-1"></i> @(websiteSettings?.Address ?? "Dhaka, Bangladesh")</span>
-                <span><i class="bi bi-telephone-fill text-warning me-1"></i> @(websiteSettings?.Phone ?? "+8801700000000")</span>
-                <span><i class="bi bi-envelope-fill text-warning me-1"></i> @(websiteSettings?.Email ?? "info@school.gov.bd")</span>
+    <div class="ws-topbar">
+        <div class="ws-container ws-flex-between ws-flex-wrap" style="gap: 8px;">
+            <div class="ws-topbar__contact ws-flex ws-flex-wrap ws-gap-4" style="justify-content: center;">
+                <span><i class="bi bi-geo-alt-fill ws-topbar__icon"></i> @(websiteSettings?.Address ?? "Dhaka, Bangladesh")</span>
+                <span><i class="bi bi-telephone-fill ws-topbar__icon"></i> @(websiteSettings?.Phone ?? "+8801700000000")</span>
+                <span><i class="bi bi-envelope-fill ws-topbar__icon"></i> @(websiteSettings?.Email ?? "info@school.gov.bd")</span>
             </div>
-            <div class="d-flex align-items-center gap-3">
-                <a href="/academic-calendar"><i class="bi bi-calendar-event me-1"></i> Academic Calendar</a>
-                <a href="/admission-info"><i class="bi bi-info-circle me-1"></i> Admission Info</a>
+            <div class="ws-topbar__links ws-flex ws-gap-3">
+                <a href="/academic-calendar"><i class="bi bi-calendar-event ws-topbar__icon"></i> Academic Calendar</a>
+                <a href="/admission-info"><i class="bi bi-info-circle ws-topbar__icon"></i> Admission Info</a>
                 @if (User.Identity?.IsAuthenticated == true)
                 {
-                    <a href="/Dashboard" class="badge bg-warning text-dark px-2 py-1"><i class="bi bi-speedometer2"></i> Portal Panel</a>
+                    <a href="/Dashboard" class="ws-badge ws-badge--accent"><i class="bi bi-speedometer2"></i> Portal Panel</a>
                 }
             </div>
         </div>
     </div>
 
     <!-- ── Main Navigation ── -->
-    <nav class="navbar navbar-expand-lg edu-navbar sticky-top">
-        <div class="container">
-            <a class="edu-brand" href="/">
+    <nav class="ws-navbar" id="wsNavbar">
+        <div class="ws-container ws-navbar__inner">
+            <a class="ws-brand" href="/">
                 @if (!string.IsNullOrEmpty(websiteSettings?.LogoPath))
                 {
-                    <img src="@websiteSettings.LogoPath" alt="Logo" style="height:42px; object-fit:contain; border-radius:8px;" onerror="this.style.display='none'; document.getElementById('fallback-logo').style.display='flex';" />
+                    <img src="@websiteSettings.LogoPath" alt="Logo" class="ws-brand__logo" onerror="this.style.display='none'; document.getElementById('fallback-logo').style.display='flex';" />
                 }
-                <div id="fallback-logo" style="width:42px;height:42px;background:linear-gradient(135deg, var(--edu-navy), var(--edu-blue));border-radius:8px;color:#fff;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow: 0 4px 10px rgba(11,37,69,0.3); @(!string.IsNullOrEmpty(websiteSettings?.LogoPath) ? "display:none;" : "")">
+                <div id="fallback-logo" class="ws-brand__icon" style="@(!string.IsNullOrEmpty(websiteSettings?.LogoPath) ? "display:none;" : "")">
                     <i class="bi bi-mortarboard-fill"></i>
                 </div>
                 @if (!string.IsNullOrEmpty(websiteSettings?.ShortName))
                 {
-                    <span>@websiteSettings.ShortName</span>
+                    <span class="ws-brand__name">@websiteSettings.ShortName</span>
                 }
                 else
                 {
-                    <span>Government</span>@("School")
+                    <span class="ws-brand__accent">Government</span>@("School")
                 }
                 @if (!string.IsNullOrEmpty(websiteSettings?.SchoolMotto))
                 {
-                    <small class="d-none d-md-block text-muted ms-2" style="font-size:11px; max-width:200px; line-height:1.2;">@websiteSettings.SchoolMotto</small>
+                    <small class="ws-brand__motto">@websiteSettings.SchoolMotto</small>
                 }
             </a>
-            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
-                <i class="bi bi-list fs-1 text-dark"></i>
+
+            <button class="ws-nav-toggle" id="wsNavToggle" type="button" aria-label="Toggle navigation">
+                <span></span>
             </button>
-            <div class="collapse navbar-collapse" id="mainNavbar">
-                <ul class="navbar-nav mx-auto">
-                    <li class="nav-item"><a class="nav-link edu-nav-link" href="/">Home</a></li>
-                    
-                    <li class="nav-item dropdown">
-                        <a class="nav-link edu-nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">About</a>
-                        <ul class="dropdown-menu edu-dropdown-menu">
-                            <li><a class="dropdown-item edu-dropdown-item" href="/about">About School</a></li>
-                            <li><a class="dropdown-item edu-dropdown-item" href="/principal-message">Principal's Message</a></li>
-                            <li><a class="dropdown-item edu-dropdown-item" href="/mission-vision">Mission & Vision</a></li>
-                            <li><a class="dropdown-item edu-dropdown-item" href="/p/history">School History</a></li>
-                            <li><a class="dropdown-item edu-dropdown-item" href="/p/infrastructure">Infrastructure & Campus</a></li>
-                        </ul>
-                    </li>
 
-                    <li class="nav-item"><a class="nav-link edu-nav-link" href="/notices">Notices</a></li>
-                    <li class="nav-item"><a class="nav-link edu-nav-link" href="/events">Events</a></li>
-                    <li class="nav-item"><a class="nav-link edu-nav-link" href="/academic-calendar">Academic Calendar</a></li>
-                    <li class="nav-item"><a class="nav-link edu-nav-link" href="/gallery">Gallery</a></li>
-                    
-                    <li class="nav-item dropdown">
-                        <a class="nav-link edu-nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">Admissions</a>
-                        <ul class="dropdown-menu edu-dropdown-menu">
-                            <li><a class="dropdown-item edu-dropdown-item" href="/admission-info">Admission Info</a></li>
-                            <li><a class="dropdown-item edu-dropdown-item" href="/Admission/Apply">Apply Online</a></li>
-                        </ul>
-                    </li>
-
-                    <li class="nav-item"><a class="nav-link edu-nav-link" href="/contact">Contact</a></li>
-                </ul>
-                <div class="d-flex align-items-center gap-3">
+            <ul class="ws-nav" id="wsNav">
+                <li><a class="ws-nav__link" href="/">Home</a></li>
+                <li class="ws-dropdown">
+                    <a class="ws-nav__link ws-nav__link--dropdown" href="#">About</a>
+                    <div class="ws-dropdown__menu">
+                        <a class="ws-dropdown__item" href="/about">About School</a>
+                        <a class="ws-dropdown__item" href="/principal-message">Principal's Message</a>
+                        <a class="ws-dropdown__item" href="/mission-vision">Mission & Vision</a>
+                        <a class="ws-dropdown__item" href="/p/history">School History</a>
+                        <a class="ws-dropdown__item" href="/p/infrastructure">Infrastructure & Campus</a>
+                    </div>
+                </li>
+                <li><a class="ws-nav__link" href="/notices">Notices</a></li>
+                <li><a class="ws-nav__link" href="/events">Events</a></li>
+                <li><a class="ws-nav__link" href="/academic-calendar">Academic Calendar</a></li>
+                <li><a class="ws-nav__link" href="/gallery">Gallery</a></li>
+                <li class="ws-dropdown">
+                    <a class="ws-nav__link ws-nav__link--dropdown" href="#">Admissions</a>
+                    <div class="ws-dropdown__menu">
+                        <a class="ws-dropdown__item" href="/admission-info">Admission Info</a>
+                        <a class="ws-dropdown__item" href="/Admission/Apply">Apply Online</a>
+                    </div>
+                </li>
+                <li><a class="ws-nav__link" href="/contact">Contact</a></li>
+                <li class="ws-d-md-none" style="padding:12px 0 0;border-top:1px solid var(--ws-border-light);margin-top:8px;">
                     @if (User.Identity?.IsAuthenticated == true)
                     {
-                        <a href="/Dashboard" class="btn btn-edu-navy"><i class="bi bi-grid-fill me-1"></i> Dashboard</a>
+                        <a href="/Dashboard" class="ws-btn ws-btn--primary ws-btn--block ws-btn--sm"><i class="bi bi-grid-fill me-1"></i> Dashboard</a>
                     }
                     else
                     {
-                        <a href="/Auth/Login" class="btn btn-edu-navy"><i class="bi bi-box-arrow-in-right me-1"></i> Login Portal</a>
+                        <a href="/Auth/Login" class="ws-btn ws-btn--primary ws-btn--block ws-btn--sm"><i class="bi bi-box-arrow-in-right me-1"></i> Login Portal</a>
                     }
-                </div>
+                </li>
+            </ul>
+
+            <div class="ws-d-sm-none ws-d-md-block">
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a href="/Dashboard" class="ws-btn ws-btn--primary ws-btn--sm"><i class="bi bi-grid-fill me-1"></i> Dashboard</a>
+                }
+                else
+                {
+                    <a href="/Auth/Login" class="ws-btn ws-btn--primary ws-btn--sm"><i class="bi bi-box-arrow-in-right me-1"></i> Login</a>
+                }
             </div>
         </div>
     </nav>
 
     <!-- ── Page Content ── -->
-    <main role="main" class="pb-3">
+    <main role="main">
         @RenderBody()
     </main>
 
     <!-- ── Footer ── -->
-    <footer class="edu-footer">
-        <div class="container">
-            <div class="row g-4">
-                <div class="col-lg-4 col-md-12">
-                    <div class="edu-brand mb-4" style="color:#fff !important">
+    <footer class="ws-footer">
+        <div class="ws-container">
+            <div class="ws-row ws-g-6">
+                <div class="ws-col-12 ws-col-lg-4">
+                    <div class="ws-footer__brand" style="color:#fff;">
                         @if (!string.IsNullOrEmpty(websiteSettings?.LogoPath))
                         {
-                            <img src="@websiteSettings.LogoPath" alt="Logo" style="height:40px; object-fit:contain; border-radius:8px;" onerror="this.style.display='none'; document.getElementById('footer-fallback-logo').style.display='flex';" />
+                            <img src="@websiteSettings.LogoPath" alt="Logo" onerror="this.style.display='none'; document.getElementById('footer-fallback-logo').style.display='flex';" />
                         }
-                        <div id="footer-fallback-logo" style="width:40px;height:40px;background:rgba(255,255,255,0.1);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:20px;color: #fff; @(!string.IsNullOrEmpty(websiteSettings?.LogoPath) ? "display:none;" : "")">
+                        <div id="footer-fallback-logo" class="ws-brand__icon" style="width:40px;height:40px;background:rgba(255,255,255,0.1);color:#fff;font-size:20px;@(!string.IsNullOrEmpty(websiteSettings?.LogoPath) ? "display:none;" : "")">
                             <i class="bi bi-mortarboard-fill"></i>
                         </div>
                         @if (!string.IsNullOrEmpty(websiteSettings?.ShortName))
                         {
-                            <span style="color:var(--edu-gold)">@websiteSettings.ShortName</span>
+                            <span style="color:var(--ws-accent)">@websiteSettings.ShortName</span>
                         }
                         else
                         {
-                            <span style="color:var(--edu-gold)">Government</span>@("School")
+                            <span style="color:var(--ws-accent)">Government</span>@("School")
                         }
                     </div>
-                    <p class="mb-4" style="max-width:320px; font-size:14px; line-height: 1.6;">
+                    <p class="ws-footer__text">
                         @(websiteSettings?.FooterText ?? "A premier educational institute of high repute, building enlightened citizens of tomorrow through quality education and character construction in Bangladesh.")
                     </p>
-                    <div class="d-flex flex-wrap gap-1">
+                    <div class="ws-flex ws-flex-wrap ws-gap-2">
                         @if (!string.IsNullOrEmpty(websiteSettings?.FacebookUrl))
                         {
-                            <a href="@websiteSettings.FacebookUrl" class="social-btn" target="_blank" title="Facebook"><i class="bi bi-facebook"></i></a>
+                            <a href="@websiteSettings.FacebookUrl" class="ws-social-btn" target="_blank" title="Facebook"><i class="bi bi-facebook"></i></a>
                         }
                         @if (!string.IsNullOrEmpty(websiteSettings?.YouTubeUrl))
                         {
-                            <a href="@websiteSettings.YouTubeUrl" class="social-btn" target="_blank" title="YouTube"><i class="bi bi-youtube"></i></a>
+                            <a href="@websiteSettings.YouTubeUrl" class="ws-social-btn" target="_blank" title="YouTube"><i class="bi bi-youtube"></i></a>
                         }
                         @if (!string.IsNullOrEmpty(websiteSettings?.InstagramUrl))
                         {
-                            <a href="@websiteSettings.InstagramUrl" class="social-btn" target="_blank" title="Instagram"><i class="bi bi-instagram"></i></a>
+                            <a href="@websiteSettings.InstagramUrl" class="ws-social-btn" target="_blank" title="Instagram"><i class="bi bi-instagram"></i></a>
                         }
                         @if (!string.IsNullOrEmpty(websiteSettings?.LinkedInUrl))
                         {
-                            <a href="@websiteSettings.LinkedInUrl" class="social-btn" target="_blank" title="LinkedIn"><i class="bi bi-linkedin"></i></a>
+                            <a href="@websiteSettings.LinkedInUrl" class="ws-social-btn" target="_blank" title="LinkedIn"><i class="bi bi-linkedin"></i></a>
                         }
                         @if (!string.IsNullOrEmpty(websiteSettings?.TwitterUrl))
                         {
-                            <a href="@websiteSettings.TwitterUrl" class="social-btn" target="_blank" title="Twitter/X"><i class="bi bi-twitter-x"></i></a>
+                            <a href="@websiteSettings.TwitterUrl" class="ws-social-btn" target="_blank" title="Twitter/X"><i class="bi bi-twitter-x"></i></a>
                         }
                     </div>
                 </div>
 
-                <div class="col-lg-2 col-md-4">
-                    <h5 class="edu-footer-title">About Us</h5>
-                    <a href="/about" class="edu-footer-link">About School</a>
-                    <a href="/principal-message" class="edu-footer-link">Principal Message</a>
-                    <a href="/mission-vision" class="edu-footer-link">Mission & Vision</a>
-                    <a href="/p/history" class="edu-footer-link">History</a>
-                    <a href="/p/infrastructure" class="edu-footer-link">Infrastructure</a>
+                <div class="ws-col-6 ws-col-md-4 ws-col-lg-2">
+                    <h5 class="ws-footer__title">About Us</h5>
+                    <a href="/about" class="ws-footer__link">About School</a>
+                    <a href="/principal-message" class="ws-footer__link">Principal Message</a>
+                    <a href="/mission-vision" class="ws-footer__link">Mission & Vision</a>
+                    <a href="/p/history" class="ws-footer__link">History</a>
+                    <a href="/p/infrastructure" class="ws-footer__link">Infrastructure</a>
                 </div>
 
-                <div class="col-lg-3 col-md-4">
-                    <h5 class="edu-footer-title">Academic Links</h5>
-                    <a href="/notices" class="edu-footer-link">Notice Board</a>
-                    <a href="/events" class="edu-footer-link">Upcoming Events</a>
-                    <a href="/academic-calendar" class="edu-footer-link">Academic Calendar</a>
-                    <a href="/gallery" class="edu-footer-link">Photo Gallery</a>
-                    <a href="/admission-info" class="edu-footer-link">Admission Guidelines</a>
-                    <a href="/Admission/Apply" class="edu-footer-link">Online Admission Form</a>
+                <div class="ws-col-6 ws-col-md-4 ws-col-lg-3">
+                    <h5 class="ws-footer__title">Academic Links</h5>
+                    <a href="/notices" class="ws-footer__link">Notice Board</a>
+                    <a href="/events" class="ws-footer__link">Upcoming Events</a>
+                    <a href="/academic-calendar" class="ws-footer__link">Academic Calendar</a>
+                    <a href="/gallery" class="ws-footer__link">Photo Gallery</a>
+                    <a href="/admission-info" class="ws-footer__link">Admission Guidelines</a>
+                    <a href="/Admission/Apply" class="ws-footer__link">Online Admission Form</a>
                 </div>
 
-                <div class="col-lg-3 col-md-4">
-                    <h5 class="edu-footer-title">Reach Us</h5>
-                    <div class="d-flex align-items-start gap-3 mb-3" style="font-size:14px">
-                        <i class="bi bi-geo-alt-fill text-warning mt-1"></i>
+                <div class="ws-col-12 ws-col-sm-6 ws-col-md-4 ws-col-lg-3">
+                    <h5 class="ws-footer__title">Reach Us</h5>
+                    <div class="ws-footer__contact">
+                        <i class="bi bi-geo-alt-fill ws-footer__contact-icon"></i>
                         <span>@(websiteSettings?.Address ?? "12 Education Rd, Motijheel C/A, Dhaka - 1000, Bangladesh")</span>
                     </div>
-                    <div class="d-flex align-items-center gap-3 mb-3" style="font-size:14px">
-                        <i class="bi bi-telephone-fill text-warning"></i>
+                    <div class="ws-footer__contact">
+                        <i class="bi bi-telephone-fill ws-footer__contact-icon"></i>
                         <span>@(websiteSettings?.Phone ?? "+88029550000, +8801700000000")</span>
                     </div>
-                    <div class="d-flex align-items-center gap-3 mb-3" style="font-size:14px">
-                        <i class="bi bi-envelope-fill text-warning"></i>
+                    <div class="ws-footer__contact">
+                        <i class="bi bi-envelope-fill ws-footer__contact-icon"></i>
                         <span>@(websiteSettings?.Email ?? "info@school.gov.bd")</span>
                     </div>
                 </div>
             </div>
 
-            <div class="edu-footer-bottom d-flex flex-column flex-md-row justify-content-between align-items-center gap-3 text-center">
+            <div class="ws-footer__bottom">
                 <div>@(websiteSettings?.CopyrightText ?? websiteSettings?.FooterText ?? "© 2026 Bangladesh Public School. All rights reserved.")</div>
-                <div class="d-flex gap-4">
-                    <a href="/Auth/Login" class="text-white-50 text-decoration-none">Faculty Login</a>
-                    <a href="/Auth/Login" class="text-white-50 text-decoration-none">Student Portal</a>
-                    <a href="/about" class="text-white-50 text-decoration-none">Terms of Use</a>
+                <div class="ws-footer__bottom-links">
+                    <a href="/Auth/Login">Faculty Login</a>
+                    <a href="/Auth/Login">Student Portal</a>
+                    <a href="/about">Terms of Use</a>
                 </div>
             </div>
         </div>
     </footer>
 
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Mobile nav toggle
+        document.getElementById('wsNavToggle')?.addEventListener('click', function() {
+            document.getElementById('wsNav').classList.toggle('open');
+        });
+
+        // Mobile dropdown toggle
+        document.querySelectorAll('.ws-dropdown > .ws-nav__link--dropdown').forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                if (window.innerWidth < 992) {
+                    e.preventDefault();
+                    this.parentElement.classList.toggle('open');
+                }
+            });
+        });
+
         // Shrink header on scroll
         window.addEventListener('scroll', function() {
-            var navbar = document.querySelector('.edu-navbar');
+            var navbar = document.getElementById('wsNavbar');
             if (navbar) {
-                if (window.scrollY > 40) {
-                    navbar.classList.add('scrolled');
-                } else {
-                    navbar.classList.remove('scrolled');
-                }
+                navbar.classList.toggle('scrolled', window.scrollY > 40);
+            }
+        });
+
+        // Close mobile nav on outside click
+        document.addEventListener('click', function(e) {
+            var nav = document.getElementById('wsNav');
+            var toggle = document.getElementById('wsNavToggle');
+            if (nav && nav.classList.contains('open') && !nav.contains(e.target) && !toggle.contains(e.target)) {
+                nav.classList.remove('open');
             }
         });
     </script>

@@ -4,38 +4,38 @@
     ViewData["Title"] = Model.Id > 0 ? "Edit Announcement" : "Create Announcement";
 }
 
-<div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0 text-gray-800"><i class="bi bi-megaphone me-2 text-primary"></i> @ViewData["Title"]</h1>
-        <a href="/Admin/Website" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i> Back to Dashboard</a>
+<div class="adm-page">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+        <h1 style="font-size:1.75rem;margin:0;color:var(--adm-text);"><i style="margin-right:8px;color:var(--adm-primary);" class="bi bi-megaphone"></i> @ViewData["Title"]</h1>
+        <a href="/Admin/Website" class="adm-btn adm-btn--ghost"><i style="margin-right:4px;" class="bi bi-arrow-left"></i> Back to Dashboard</a>
     </div>
 
-    <div class="card border-0 shadow-sm">
-        <div class="card-body p-4">
+    <div style="background:var(--adm-surface);border:1px solid var(--adm-border);border-radius:var(--adm-radius-lg);box-shadow:var(--adm-shadow);overflow:hidden;">
+        <div style="padding:20px;">
             <form method="post" asp-action="AnnouncementCreateEdit">
                 @if (Model.Id > 0)
                 {
                     <input type="hidden" asp-for="Id" />
                 }
 
-                <div class="mb-3">
-                    <label asp-for="Title" class="form-label fw-semibold">Title</label>
-                    <input asp-for="Title" class="form-control" required />
-                    <span asp-validation-for="Title" class="text-danger"></span>
+                <div style="margin-bottom:12px;">
+                    <label asp-for="Title" class="adm-form-label">Title</label>
+                    <input asp-for="Title" class="adm-input" required />
+                    <span asp-validation-for="Title" style="color:var(--adm-rejected);"></span>
                 </div>
 
-                <div class="mb-3">
-                    <label asp-for="Content" class="form-label fw-semibold">Content</label>
-                    <textarea asp-for="Content" class="form-control" rows="4" required></textarea>
-                    <span asp-validation-for="Content" class="text-danger"></span>
+                <div style="margin-bottom:12px;">
+                    <label asp-for="Content" class="adm-form-label">Content</label>
+                    <textarea asp-for="Content" class="adm-input" rows="4" required></textarea>
+                    <span asp-validation-for="Content" style="color:var(--adm-rejected);"></span>
                 </div>
 
-                <div class="form-check mb-3">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
                     <input asp-for="IsActive" class="form-check-input" />
-                    <label asp-for="IsActive" class="form-check-label fw-semibold">Active</label>
+                    <label asp-for="IsActive" style="font-weight:600;">Active</label>
                 </div>
 
-                <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i> Save</button>
+                <button type="submit" class="adm-btn adm-btn--primary"><i style="margin-right:4px;" class="bi bi-check-lg"></i> Save</button>
             </form>
         </div>
     </div>

@@ -3,146 +3,132 @@
     ViewData["Title"] = "Public Website Configuration";
 }
 
-<div class="container-fluid py-4">
+<div class="adm-page">
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show">@TempData["SuccessMessage"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+        <div style="padding:12px 16px;border-radius:var(--adm-radius);background:var(--adm-success-bg);color:var(--adm-success);border:1px solid rgba(5,150,105,0.15);display:flex;align-items:center;justify-content:space-between;gap:12px;">
+            @TempData["SuccessMessage"]
+            <button type="button" onclick="this.parentElement.style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--adm-success);">&times;</button>
+        </div>
     }
     @if (TempData["ErrorMessage"] != null)
     {
-        <div class="alert alert-danger alert-dismissible fade show">@TempData["ErrorMessage"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
-    }
-    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
-        <div>
-            <h1 class="h3 mb-0 text-gray-800"><i class="bi bi-globe me-2 text-primary"></i> Public Website Administration</h1>
-            <p class="text-muted mb-0">Configure settings, home sliders, notices, events, and galleries of the public portal.</p>
+        <div style="padding:12px 16px;border-radius:var(--adm-radius);background:var(--adm-rejected-bg);color:var(--adm-rejected);border:1px solid rgba(239,68,68,0.15);display:flex;align-items:center;justify-content:space-between;gap:12px;">
+            @TempData["ErrorMessage"]
+            <button type="button" onclick="this.parentElement.style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--adm-rejected);">&times;</button>
         </div>
-        <div class="d-flex gap-2">
-            <a href="/Admin/Website/Settings" class="btn btn-primary shadow-sm"><i class="bi bi-gear-fill me-1"></i> Edit School Settings</a>
-            <a href="/" target="_blank" class="btn btn-outline-secondary shadow-sm"><i class="bi bi-eye-fill me-1"></i> View Live Site</a>
+    }
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+        <div>
+            <h1 style="font-size:22px;font-weight:700;margin:0;"><i class="bi bi-globe" style="margin-right:8px;color:var(--adm-primary);"></i> Public Website Administration</h1>
+            <p style="color:var(--adm-text-3);margin:0;">Configure settings, home sliders, notices, events, and galleries of the public portal.</p>
+        </div>
+        <div style="display:flex;gap:8px;">
+            <a href="/Admin/Website/Settings" class="adm-btn adm-btn--primary"><i class="bi bi-gear-fill" style="margin-right:4px;"></i> Edit School Settings</a>
+            <a href="/" target="_blank" class="adm-btn adm-btn--ghost"><i class="bi bi-eye-fill" style="margin-right:4px;"></i> View Live Site</a>
         </div>
     </div>
 
     <!-- Navigation Tabs -->
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-header bg-white p-0 border-bottom">
-            <ul class="nav nav-tabs border-0" id="websiteTabs" role="tablist">
-                <li class="nav-item">
-                    <button class="nav-link active px-4 py-3 fw-bold border-0 border-bottom-primary" id="sliders-tab" data-bs-toggle="tab" data-bs-target="#sliders-pane" type="button" role="tab"><i class="bi bi-images me-1"></i> Home Sliders</button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link px-4 py-3 fw-bold border-0" id="notices-tab" data-bs-toggle="tab" data-bs-target="#notices-pane" type="button" role="tab"><i class="bi bi-megaphone-fill me-1"></i> Notice Board</button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link px-4 py-3 fw-bold border-0" id="events-tab" data-bs-toggle="tab" data-bs-target="#events-pane" type="button" role="tab"><i class="bi bi-calendar3 me-1"></i> School Events</button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link px-4 py-3 fw-bold border-0" id="galleries-tab" data-bs-toggle="tab" data-bs-target="#galleries-pane" type="button" role="tab"><i class="bi bi-images-alt me-1"></i> Photo Albums</button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link px-4 py-3 fw-bold border-0" id="pages-tab" data-bs-toggle="tab" data-bs-target="#pages-pane" type="button" role="tab"><i class="bi bi-file-earmark-richtext-fill me-1"></i> CMS Pages</button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link px-4 py-3 fw-bold border-0" id="messages-tab" data-bs-toggle="tab" data-bs-target="#messages-pane" type="button" role="tab"><i class="bi bi-chat-dots-fill me-1"></i> Contact Inbox</button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link px-4 py-3 fw-bold border-0" id="templates-tab" data-bs-toggle="tab" data-bs-target="#templates-pane" type="button" role="tab"><i class="bi bi-envelope-paper-fill me-1"></i> Email Templates</button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link px-4 py-3 fw-bold border-0" id="announcements-tab" data-bs-toggle="tab" data-bs-target="#announcements-pane" type="button" role="tab"><i class="bi bi-megaphone me-1"></i> Announcements</button>
-                </li>
-                <li class="nav-item">
-                    <button class="nav-link px-4 py-3 fw-bold border-0" id="fees-tab" data-bs-toggle="tab" data-bs-target="#fees-pane" type="button" role="tab"><i class="bi bi-cash-stack me-1"></i> Admission Fees</button>
-                </li>
-            </ul>
-        </div>
-        <div class="card-body p-4">
-            <div class="tab-content" id="websiteTabsContent">
-                
-                <!-- ── 1. Hero Sliders Pane ── -->
-                <div class="tab-pane fade show active" id="sliders-pane" role="tabpanel">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="fw-bold mb-0">Hero Slideshow Settings</h5>
-                        <a href="/Admin/Website/Sliders/CreateEdit" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i> Add New Slide</a>
-                    </div>
-                    <div id="slidersGrid"></div>
-                </div>
-
-                <!-- ── 2. Notices Pane ── -->
-                <div class="tab-pane fade" id="notices-pane" role="tabpanel">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="fw-bold mb-0">Bulletin Notice Board Announcements</h5>
-                        <a href="/Admin/Website/Notices/CreateEdit" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i> Create Notice</a>
-                    </div>
-                    <div id="noticesGrid"></div>
-                </div>
-
-                <!-- ── 3. Events Pane ── -->
-                <div class="tab-pane fade" id="events-pane" role="tabpanel">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="fw-bold mb-0">Academic & Extra Events</h5>
-                        <a href="/Admin/Website/Events/CreateEdit" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i> Create Event</a>
-                    </div>
-                    <div id="eventsGrid"></div>
-                </div>
-
-                <!-- ── 4. Galleries Pane ── -->
-                <div class="tab-pane fade" id="galleries-pane" role="tabpanel">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="fw-bold mb-0">School Life Photo Albums</h5>
-                        <a href="/Admin/Website/Galleries/CreateEdit" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i> Add Photo Album</a>
-                    </div>
-                    <div id="galleriesGrid"></div>
-                </div>
-
-                <!-- ── 5. CMS Pages Pane ── -->
-                <div class="tab-pane fade" id="pages-pane" role="tabpanel">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="fw-bold mb-0">Dynamic Lightweight CMS Pages</h5>
-                        <a href="/Admin/Website/Pages/CreateEdit" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i> Add Custom Page</a>
-                    </div>
-                    <div id="pagesGrid"></div>
-                </div>
-
-                <!-- ── 6. Contact Messages Inbox Pane ── -->
-                <div class="tab-pane fade" id="messages-pane" role="tabpanel">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="fw-bold mb-0">Contact Form Inbox</h5>
-                    </div>
-                    <div id="messagesGrid"></div>
-                </div>
-
-                <!-- ── 7. Email Templates Pane ── -->
-                <div class="tab-pane fade" id="templates-pane" role="tabpanel">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="fw-bold mb-0">Email Notification Templates</h5>
-                        <a href="/Admin/Website/EmailTemplates/CreateEdit" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i> Add Template</a>
-                    </div>
-                    <div id="templatesGrid"></div>
-                </div>
-
-                <!-- ── 8. Announcements Pane ── -->
-                <div class="tab-pane fade" id="announcements-pane" role="tabpanel">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="fw-bold mb-0">Website Announcements</h5>
-                        <a href="/Admin/Website/Announcements/CreateEdit" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i> Add Announcement</a>
-                    </div>
-                    <div id="announcementsGrid"></div>
-                </div>
-
-                <!-- ── 9. Admission Fee Structures Pane ── -->
-                <div class="tab-pane fade" id="fees-pane" role="tabpanel">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h5 class="fw-bold mb-0">Admission Fee Structure</h5>
-                        <div class="d-flex gap-2">
-                            <a href="/admission-info" target="_blank" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye me-1"></i> Preview Page</a>
-                            <a href="/Admin/Website/AdmissionFees/CreateEdit" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i> Add Fee Row</a>
-                        </div>
-                    </div>
-                    <div id="feesGrid"></div>
-                </div>
-
+    <div style="background:var(--adm-surface);border:1px solid var(--adm-border);border-radius:var(--adm-radius-lg);box-shadow:var(--adm-shadow);">
+        <div style="padding:0;border-bottom:1px solid var(--adm-border);">
+            <div style="display:flex;flex-wrap:wrap;gap:0;" id="websiteTabs" role="tablist">
+                <button class="adm-tab adm-tab--active" id="sliders-tab" onclick="switchTab('sliders-pane', this)" type="button" role="tab"><i class="bi bi-images" style="margin-right:4px;"></i> Home Sliders</button>
+                <button class="adm-tab" id="notices-tab" onclick="switchTab('notices-pane', this)" type="button" role="tab"><i class="bi bi-megaphone-fill" style="margin-right:4px;"></i> Notice Board</button>
+                <button class="adm-tab" id="events-tab" onclick="switchTab('events-pane', this)" type="button" role="tab"><i class="bi bi-calendar3" style="margin-right:4px;"></i> School Events</button>
+                <button class="adm-tab" id="galleries-tab" onclick="switchTab('galleries-pane', this)" type="button" role="tab"><i class="bi bi-images-alt" style="margin-right:4px;"></i> Photo Albums</button>
+                <button class="adm-tab" id="pages-tab" onclick="switchTab('pages-pane', this)" type="button" role="tab"><i class="bi bi-file-earmark-richtext-fill" style="margin-right:4px;"></i> CMS Pages</button>
+                <button class="adm-tab" id="messages-tab" onclick="switchTab('messages-pane', this)" type="button" role="tab"><i class="bi bi-chat-dots-fill" style="margin-right:4px;"></i> Contact Inbox</button>
+                <button class="adm-tab" id="templates-tab" onclick="switchTab('templates-pane', this)" type="button" role="tab"><i class="bi bi-envelope-paper-fill" style="margin-right:4px;"></i> Email Templates</button>
+                <button class="adm-tab" id="announcements-tab" onclick="switchTab('announcements-pane', this)" type="button" role="tab"><i class="bi bi-megaphone" style="margin-right:4px;"></i> Announcements</button>
+                <button class="adm-tab" id="fees-tab" onclick="switchTab('fees-pane', this)" type="button" role="tab"><i class="bi bi-cash-stack" style="margin-right:4px;"></i> Admission Fees</button>
             </div>
+        </div>
+        <div style="padding:20px;">
+
+            <!-- ── 1. Hero Sliders Pane ── -->
+            <div id="sliders-pane" style="display:block;">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+                    <h5 style="font-weight:700;margin:0;">Hero Slideshow Settings</h5>
+                    <a href="/Admin/Website/Sliders/CreateEdit" class="adm-btn adm-btn--primary"><i class="bi bi-plus-lg" style="margin-right:4px;"></i> Add New Slide</a>
+                </div>
+                <div id="slidersGrid"></div>
+            </div>
+
+            <!-- ── 2. Notices Pane ── -->
+            <div id="notices-pane" style="display:none;">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+                    <h5 style="font-weight:700;margin:0;">Bulletin Notice Board Announcements</h5>
+                    <a href="/Admin/Website/Notices/CreateEdit" class="adm-btn adm-btn--primary"><i class="bi bi-plus-lg" style="margin-right:4px;"></i> Create Notice</a>
+                </div>
+                <div id="noticesGrid"></div>
+            </div>
+
+            <!-- ── 3. Events Pane ── -->
+            <div id="events-pane" style="display:none;">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+                    <h5 style="font-weight:700;margin:0;">Academic & Extra Events</h5>
+                    <a href="/Admin/Website/Events/CreateEdit" class="adm-btn adm-btn--primary"><i class="bi bi-plus-lg" style="margin-right:4px;"></i> Create Event</a>
+                </div>
+                <div id="eventsGrid"></div>
+            </div>
+
+            <!-- ── 4. Galleries Pane ── -->
+            <div id="galleries-pane" style="display:none;">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+                    <h5 style="font-weight:700;margin:0;">School Life Photo Albums</h5>
+                    <a href="/Admin/Website/Galleries/CreateEdit" class="adm-btn adm-btn--primary"><i class="bi bi-plus-lg" style="margin-right:4px;"></i> Add Photo Album</a>
+                </div>
+                <div id="galleriesGrid"></div>
+            </div>
+
+            <!-- ── 5. CMS Pages Pane ── -->
+            <div id="pages-pane" style="display:none;">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+                    <h5 style="font-weight:700;margin:0;">Dynamic Lightweight CMS Pages</h5>
+                    <a href="/Admin/Website/Pages/CreateEdit" class="adm-btn adm-btn--primary"><i class="bi bi-plus-lg" style="margin-right:4px;"></i> Add Custom Page</a>
+                </div>
+                <div id="pagesGrid"></div>
+            </div>
+
+            <!-- ── 6. Contact Messages Inbox Pane ── -->
+            <div id="messages-pane" style="display:none;">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+                    <h5 style="font-weight:700;margin:0;">Contact Form Inbox</h5>
+                </div>
+                <div id="messagesGrid"></div>
+            </div>
+
+            <!-- ── 7. Email Templates Pane ── -->
+            <div id="templates-pane" style="display:none;">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+                    <h5 style="font-weight:700;margin:0;">Email Notification Templates</h5>
+                    <a href="/Admin/Website/EmailTemplates/CreateEdit" class="adm-btn adm-btn--primary"><i class="bi bi-plus-lg" style="margin-right:4px;"></i> Add Template</a>
+                </div>
+                <div id="templatesGrid"></div>
+            </div>
+
+            <!-- ── 8. Announcements Pane ── -->
+            <div id="announcements-pane" style="display:none;">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+                    <h5 style="font-weight:700;margin:0;">Website Announcements</h5>
+                    <a href="/Admin/Website/Announcements/CreateEdit" class="adm-btn adm-btn--primary"><i class="bi bi-plus-lg" style="margin-right:4px;"></i> Add Announcement</a>
+                </div>
+                <div id="announcementsGrid"></div>
+            </div>
+
+            <!-- ── 9. Admission Fee Structures Pane ── -->
+            <div id="fees-pane" style="display:none;">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+                    <h5 style="font-weight:700;margin:0;">Admission Fee Structure</h5>
+                    <div style="display:flex;gap:8px;">
+                        <a href="/admission-info" target="_blank" class="adm-btn adm-btn--ghost"><i class="bi bi-eye" style="margin-right:4px;"></i> Preview Page</a>
+                        <a href="/Admin/Website/AdmissionFees/CreateEdit" class="adm-btn adm-btn--primary"><i class="bi bi-plus-lg" style="margin-right:4px;"></i> Add Fee Row</a>
+                    </div>
+                </div>
+                <div id="feesGrid"></div>
+            </div>
+
         </div>
     </div>
 </div>
@@ -153,12 +139,28 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-        // Anti-Forgery Token Helper
+        // Tab switching function
+        function switchTab(paneId, btn) {
+            document.querySelectorAll('[id$="-pane"]').forEach(p => p.style.display = 'none');
+            document.getElementById(paneId).style.display = 'block';
+            document.querySelectorAll('.adm-tab').forEach(t => t.classList.remove('adm-tab--active'));
+            btn.classList.add('adm-tab--active');
+
+            if (paneId === 'sliders-pane') slidersTable.redraw();
+            else if (paneId === 'notices-pane') noticesTable.redraw();
+            else if (paneId === 'events-pane') eventsTable.redraw();
+            else if (paneId === 'galleries-pane') galleriesTable.redraw();
+            else if (paneId === 'pages-pane') pagesTable.redraw();
+            else if (paneId === 'messages-pane') messagesTable.redraw();
+            else if (paneId === 'templates-pane') templatesTable.redraw();
+            else if (paneId === 'announcements-pane') announcementsTable.redraw();
+            else if (paneId === 'fees-pane') feesTable.redraw();
+        }
+
         const getAntiforgeryToken = () => {
             return document.querySelector('input[name="__RequestVerificationToken"]')?.value || "";
         };
 
-        // Initialize Sliders Grid
         const slidersTable = new Tabulator("#slidersGrid", {
             ajaxURL: "/Admin/Website/Sliders/List",
             layout: "fitColumns",
@@ -172,21 +174,20 @@
                 { title: "Slide Title", field: "title" },
                 { title: "Subtitle Tagline", field: "subtitle" },
                 { title: "Status", field: "isActive", width: 120, horizAlign: "center", formatter: function(cell) {
-                    return cell.getValue() ? `<span class="badge bg-success">Active</span>` : `<span class="badge bg-secondary">Hidden</span>`;
+                    return cell.getValue() ? `<span class="adm-badge adm-badge--success">Active</span>` : `<span class="adm-badge adm-badge--neutral">Hidden</span>`;
                 }},
                 { title: "Actions", width: 150, horizAlign: "center", headerSort: false, formatter: function(cell) {
                     const row = cell.getRow().getData();
                     return `
-                        <div class="btn-group btn-group-sm">
-                            <a href="/Admin/Website/Sliders/CreateEdit/${row.id}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteObject('/Admin/Website/Sliders/Delete/${row.id}', slidersTable)"><i class="bi bi-trash"></i></button>
+                        <div style="display:inline-flex;gap:4px;">
+                            <a href="/Admin/Website/Sliders/CreateEdit/${row.id}" style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--adm-border);border-radius:var(--adm-radius-sm);color:var(--adm-text-3);text-decoration:none;" title="Edit"><i class="bi bi-pencil"></i></a>
+                            <button style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--adm-border);border-radius:var(--adm-radius-sm);background:var(--adm-surface);color:var(--adm-text-3);cursor:pointer;" onclick="deleteObject('/Admin/Website/Sliders/Delete/${row.id}', slidersTable)" title="Delete"><i class="bi bi-trash"></i></button>
                         </div>
                     `;
                 }}
             ]
         });
 
-        // Initialize Notices Grid
         const noticesTable = new Tabulator("#noticesGrid", {
             ajaxURL: "/Admin/Website/Notices/List",
             layout: "fitColumns",
@@ -196,10 +197,7 @@
             paginationSize: 15,
             paginationSizeSelector: [15,25,50,100],
             ajaxResponse: function(url, params, response) {
-                return {
-                    last_page: response.last_page,
-                    data: response.data
-                };
+                return { last_page: response.last_page, data: response.data };
             },
             placeholder: "No announcements published",
             columns: [
@@ -209,21 +207,20 @@
                 { title: "Title / Subject", field: "title" },
                 { title: "Target Audience", field: "audienceRole", width: 160 },
                 { title: "Published", field: "isPublished", width: 120, horizAlign: "center", formatter: function(cell) {
-                    return cell.getValue() ? `<span class="badge bg-success">Published</span>` : `<span class="badge bg-warning">Draft</span>`;
+                    return cell.getValue() ? `<span class="adm-badge adm-badge--success">Published</span>` : `<span class="adm-badge adm-badge--warning">Draft</span>`;
                 }},
                 { title: "Actions", width: 150, horizAlign: "center", headerSort: false, formatter: function(cell) {
                     const row = cell.getRow().getData();
                     return `
-                        <div class="btn-group btn-group-sm">
-                            <a href="/Admin/Website/Notices/CreateEdit/${row.id}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteObject('/Admin/Website/Notices/Delete/${row.id}', noticesTable)"><i class="bi bi-trash"></i></button>
+                        <div style="display:inline-flex;gap:4px;">
+                            <a href="/Admin/Website/Notices/CreateEdit/${row.id}" style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--adm-border);border-radius:var(--adm-radius-sm);color:var(--adm-text-3);text-decoration:none;" title="Edit"><i class="bi bi-pencil"></i></a>
+                            <button style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--adm-border);border-radius:var(--adm-radius-sm);background:var(--adm-surface);color:var(--adm-text-3);cursor:pointer;" onclick="deleteObject('/Admin/Website/Notices/Delete/${row.id}', noticesTable)" title="Delete"><i class="bi bi-trash"></i></button>
                         </div>
                     `;
                 }}
             ]
         });
 
-        // Initialize Events Grid
         const eventsTable = new Tabulator("#eventsGrid", {
             ajaxURL: "/Admin/Website/Events/List",
             layout: "fitColumns",
@@ -236,21 +233,20 @@
                 { title: "Event Title", field: "title" },
                 { title: "Venue", field: "eventLocation", width: 200 },
                 { title: "Status", field: "isPublished", width: 120, horizAlign: "center", formatter: function(cell) {
-                    return cell.getValue() ? `<span class="badge bg-success">Active</span>` : `<span class="badge bg-secondary">Draft</span>`;
+                    return cell.getValue() ? `<span class="adm-badge adm-badge--success">Active</span>` : `<span class="adm-badge adm-badge--neutral">Draft</span>`;
                 }},
                 { title: "Actions", width: 150, horizAlign: "center", headerSort: false, formatter: function(cell) {
                     const row = cell.getRow().getData();
                     return `
-                        <div class="btn-group btn-group-sm">
-                            <a href="/Admin/Website/Events/CreateEdit/${row.id}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteObject('/Admin/Website/Events/Delete/${row.id}', eventsTable)"><i class="bi bi-trash"></i></button>
+                        <div style="display:inline-flex;gap:4px;">
+                            <a href="/Admin/Website/Events/CreateEdit/${row.id}" style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--adm-border);border-radius:var(--adm-radius-sm);color:var(--adm-text-3);text-decoration:none;" title="Edit"><i class="bi bi-pencil"></i></a>
+                            <button style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--adm-border);border-radius:var(--adm-radius-sm);background:var(--adm-surface);color:var(--adm-text-3);cursor:pointer;" onclick="deleteObject('/Admin/Website/Events/Delete/${row.id}', eventsTable)" title="Delete"><i class="bi bi-trash"></i></button>
                         </div>
                     `;
                 }}
             ]
         });
 
-        // Initialize Galleries Grid
         const galleriesTable = new Tabulator("#galleriesGrid", {
             ajaxURL: "/Admin/Website/Galleries/List",
             layout: "fitColumns",
@@ -258,23 +254,22 @@
             placeholder: "No photo albums created",
             columns: [
                 { title: "Cover", field: "coverImagePath", width: 120, formatter: function(cell) {
-                    return cell.getValue() ? `<img src="${cell.getValue()}" style="height:36px; border-radius:4px; object-fit:cover;"/>` : `<i class="bi bi-images text-muted fs-3"></i>`;
+                    return cell.getValue() ? `<img src="${cell.getValue()}" style="height:36px; border-radius:4px; object-fit:cover;"/>` : `<i class="bi bi-images" style="color:var(--adm-text-3);font-size:1.75rem;"></i>`;
                 }},
                 { title: "Album Title", field: "albumName" },
                 { title: "Description Tagline", field: "description" },
                 { title: "Actions", width: 150, horizAlign: "center", headerSort: false, formatter: function(cell) {
                     const row = cell.getRow().getData();
                     return `
-                        <div class="btn-group btn-group-sm">
-                            <a href="/Admin/Website/Galleries/CreateEdit/${row.id}" class="btn btn-sm btn-outline-primary" title="Edit Album / Upload Images"><i class="bi bi-images"></i> Manage</a>
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteObject('/Admin/Website/Galleries/Delete/${row.id}', galleriesTable)"><i class="bi bi-trash"></i></button>
+                        <div style="display:inline-flex;gap:4px;">
+                            <a href="/Admin/Website/Galleries/CreateEdit/${row.id}" style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--adm-border);border-radius:var(--adm-radius-sm);color:var(--adm-text-3);text-decoration:none;" title="Edit Album / Upload Images"><i class="bi bi-images"></i></a>
+                            <button style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--adm-border);border-radius:var(--adm-radius-sm);background:var(--adm-surface);color:var(--adm-text-3);cursor:pointer;" onclick="deleteObject('/Admin/Website/Galleries/Delete/${row.id}', galleriesTable)" title="Delete"><i class="bi bi-trash"></i></button>
                         </div>
                     `;
                 }}
             ]
         });
 
-        // Initialize Pages Grid
         const pagesTable = new Tabulator("#pagesGrid", {
             ajaxURL: "/Admin/Website/Pages/List",
             layout: "fitColumns",
@@ -286,22 +281,21 @@
                     return `<code>/p/${cell.getValue()}</code>`;
                 }},
                 { title: "Published", field: "isPublished", width: 120, horizAlign: "center", formatter: function(cell) {
-                    return cell.getValue() ? `<span class="badge bg-success">Published</span>` : `<span class="badge bg-secondary">Draft</span>`;
+                    return cell.getValue() ? `<span class="adm-badge adm-badge--success">Published</span>` : `<span class="adm-badge adm-badge--neutral">Draft</span>`;
                 }},
                 { title: "Actions", width: 180, horizAlign: "center", headerSort: false, formatter: function(cell) {
                     const row = cell.getRow().getData();
                     return `
-                        <div class="btn-group btn-group-sm">
-                            <a href="/p/${row.slug}" target="_blank" class="btn btn-sm btn-outline-secondary" title="View Page"><i class="bi bi-eye"></i></a>
-                            <a href="/Admin/Website/Pages/CreateEdit/${row.id}" class="btn btn-sm btn-outline-primary" title="Edit Page"><i class="bi bi-pencil"></i></a>
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteObject('/Admin/Website/Pages/Delete/${row.id}', pagesTable)"><i class="bi bi-trash"></i></button>
+                        <div style="display:inline-flex;gap:4px;">
+                            <a href="/p/${row.slug}" target="_blank" style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--adm-border);border-radius:var(--adm-radius-sm);color:var(--adm-text-3);text-decoration:none;" title="View Page"><i class="bi bi-eye"></i></a>
+                            <a href="/Admin/Website/Pages/CreateEdit/${row.id}" style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--adm-border);border-radius:var(--adm-radius-sm);color:var(--adm-text-3);text-decoration:none;" title="Edit Page"><i class="bi bi-pencil"></i></a>
+                            <button style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--adm-border);border-radius:var(--adm-radius-sm);background:var(--adm-surface);color:var(--adm-text-3);cursor:pointer;" onclick="deleteObject('/Admin/Website/Pages/Delete/${row.id}', pagesTable)" title="Delete"><i class="bi bi-trash"></i></button>
                         </div>
                     `;
                 }}
             ]
         });
 
-        // Combined Delete Helper
         function deleteObject(url, targetTable) {
             Swal.fire({
                 title: "Are you sure?",
@@ -313,15 +307,10 @@
                 confirmButtonText: "Yes, delete it!"
             }).then((result) => {
                 if (result.isConfirmed) {
-                    // Create verification token form payload
                     const token = getAntiforgeryToken();
-                    
                     fetch(url, {
                         method: "POST",
-                        headers: {
-                            "RequestVerificationToken": token,
-                            "Content-Type": "application/json"
-                        }
+                        headers: { "RequestVerificationToken": token, "Content-Type": "application/json" }
                     })
                     .then(response => response.json())
                     .then(data => {
@@ -332,14 +321,11 @@
                             Swal.fire("Error!", "Deletion failed: " + data.message, "error");
                         }
                     })
-                    .catch(err => {
-                        Swal.fire("Error!", "An unexpected request conflict occurred.", "error");
-                    });
+                    .catch(err => { Swal.fire("Error!", "An unexpected request conflict occurred.", "error"); });
                 }
             });
         }
 
-        // Initialize Contact Messages Grid
         const messagesTable = new Tabulator("#messagesGrid", {
             ajaxURL: "/Admin/Website/Messages/List",
             layout: "fitColumns",
@@ -350,7 +336,7 @@
                     return new Date(cell.getValue()).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
                 }},
                 { title: "Status", field: "status", width: 100, horizAlign: "center", formatter: function(cell) {
-                    return cell.getValue() === "Unread" ? `<span class="badge bg-danger">Unread</span>` : `<span class="badge bg-success">Read</span>`;
+                    return cell.getValue() === "Unread" ? `<span class="adm-badge adm-badge--danger">Unread</span>` : `<span class="adm-badge adm-badge--success">Read</span>`;
                 }},
                 { title: "Name", field: "name" },
                 { title: "Email", field: "email" },
@@ -358,20 +344,19 @@
                 { title: "Actions", width: 200, horizAlign: "center", headerSort: false, formatter: function(cell) {
                     const row = cell.getRow().getData();
                     const markReadBtn = row.status === "Unread"
-                        ? `<button class="btn btn-sm btn-outline-success" onclick="markRead('/Admin/Website/Messages/MarkRead/${row.id}', messagesTable)"><i class="bi bi-check2"></i></button>`
+                        ? `<button class="adm-btn adm-btn--ghost" onclick="markRead('/Admin/Website/Messages/MarkRead/${row.id}', messagesTable)"><i class="bi bi-check2"></i></button>`
                         : '';
                     return `
-                        <div class="btn-group btn-group-sm">
-                            <a href="/Admin/Website/Messages/Details/${row.id}" class="btn btn-sm btn-outline-info"><i class="bi bi-eye"></i></a>
+                        <div style="display:inline-flex;gap:4px;">
+                            <a href="/Admin/Website/Messages/Details/${row.id}" class="adm-btn adm-btn--ghost"><i class="bi bi-eye"></i></a>
                             ${markReadBtn}
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteObject('/Admin/Website/Messages/Delete/${row.id}', messagesTable)"><i class="bi bi-trash"></i></button>
+                            <button class="adm-btn adm-btn--ghost" onclick="deleteObject('/Admin/Website/Messages/Delete/${row.id}', messagesTable)"><i class="bi bi-trash"></i></button>
                         </div>
                     `;
                 }}
             ]
         });
 
-        // Initialize Email Templates Grid
         const templatesTable = new Tabulator("#templatesGrid", {
             ajaxURL: "/Admin/Website/EmailTemplates/List",
             layout: "fitColumns",
@@ -381,21 +366,20 @@
                 { title: "Template Name", field: "templateName" },
                 { title: "Subject", field: "subject" },
                 { title: "Active", field: "isActive", width: 100, horizAlign: "center", formatter: function(cell) {
-                    return cell.getValue() ? `<span class="badge bg-success">Active</span>` : `<span class="badge bg-secondary">Inactive</span>`;
+                    return cell.getValue() ? `<span class="adm-badge adm-badge--success">Active</span>` : `<span class="adm-badge adm-badge--neutral">Inactive</span>`;
                 }},
                 { title: "Actions", width: 150, horizAlign: "center", headerSort: false, formatter: function(cell) {
                     const row = cell.getRow().getData();
                     return `
-                        <div class="btn-group btn-group-sm">
-                            <a href="/Admin/Website/EmailTemplates/CreateEdit/${row.id}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteObject('/Admin/Website/EmailTemplates/Delete/${row.id}', templatesTable)"><i class="bi bi-trash"></i></button>
+                        <div style="display:inline-flex;gap:4px;">
+                            <a href="/Admin/Website/EmailTemplates/CreateEdit/${row.id}" style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--adm-border);border-radius:var(--adm-radius-sm);color:var(--adm-text-3);text-decoration:none;" title="Edit"><i class="bi bi-pencil"></i></a>
+                            <button style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--adm-border);border-radius:var(--adm-radius-sm);background:var(--adm-surface);color:var(--adm-text-3);cursor:pointer;" onclick="deleteObject('/Admin/Website/EmailTemplates/Delete/${row.id}', templatesTable)" title="Delete"><i class="bi bi-trash"></i></button>
                         </div>
                     `;
                 }}
             ]
         });
 
-        // Initialize Announcements Grid
         const announcementsTable = new Tabulator("#announcementsGrid", {
             ajaxURL: "/Admin/Website/Announcements/List",
             layout: "fitColumns",
@@ -408,21 +392,20 @@
                     return val.length > 80 ? val.substring(0, 80) + "..." : val;
                 }},
                 { title: "Status", field: "isActive", width: 100, horizAlign: "center", formatter: function(cell) {
-                    return cell.getValue() ? `<span class="badge bg-success">Active</span>` : `<span class="badge bg-secondary">Inactive</span>`;
+                    return cell.getValue() ? `<span class="adm-badge adm-badge--success">Active</span>` : `<span class="adm-badge adm-badge--neutral">Inactive</span>`;
                 }},
                 { title: "Actions", width: 150, horizAlign: "center", headerSort: false, formatter: function(cell) {
                     const row = cell.getRow().getData();
                     return `
-                        <div class="btn-group btn-group-sm">
-                            <a href="/Admin/Website/Announcements/CreateEdit/${row.id}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteObject('/Admin/Website/Announcements/Delete/${row.id}', announcementsTable)"><i class="bi bi-trash"></i></button>
+                        <div style="display:inline-flex;gap:4px;">
+                            <a href="/Admin/Website/Announcements/CreateEdit/${row.id}" style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--adm-border);border-radius:var(--adm-radius-sm);color:var(--adm-text-3);text-decoration:none;" title="Edit"><i class="bi bi-pencil"></i></a>
+                            <button style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--adm-border);border-radius:var(--adm-radius-sm);background:var(--adm-surface);color:var(--adm-text-3);cursor:pointer;" onclick="deleteObject('/Admin/Website/Announcements/Delete/${row.id}', announcementsTable)" title="Delete"><i class="bi bi-trash"></i></button>
                         </div>
                     `;
                 }}
             ]
         });
 
-        // Initialize Admission Fee Structures Grid
         const feesTable = new Tabulator("#feesGrid", {
             ajaxURL: "/Admin/Website/AdmissionFees/List",
             layout: "fitColumns",
@@ -432,7 +415,7 @@
                 { title: "Order", field: "displayOrder", width: 80, horizAlign: "center" },
                 { title: "Class", field: "className" },
                 { title: "Admission Fee", field: "admissionFee", width: 130, formatter: function(cell) {
-                    return cell.getValue() > 0 ? `BDT ${cell.getValue().toLocaleString()}` : '<span class="text-success">Free</span>';
+                    return cell.getValue() > 0 ? `BDT ${cell.getValue().toLocaleString()}` : '<span style="color:var(--adm-success)">Free</span>';
                 }},
                 { title: "Monthly Fee", field: "monthlyFee", width: 120, formatter: function(cell) {
                     return cell.getValue() > 0 ? `BDT ${cell.getValue().toLocaleString()}` : '-';
@@ -447,52 +430,28 @@
                     return cell.getValue() > 0 ? `BDT ${cell.getValue().toLocaleString()}` : '-';
                 }},
                 { title: "Status", field: "isActive", width: 100, horizAlign: "center", formatter: function(cell) {
-                    return cell.getValue() ? `<span class="badge bg-success">Active</span>` : `<span class="badge bg-secondary">Hidden</span>`;
+                    return cell.getValue() ? `<span class="adm-badge adm-badge--success">Active</span>` : `<span class="adm-badge adm-badge--neutral">Hidden</span>`;
                 }},
                 { title: "Actions", width: 150, horizAlign: "center", headerSort: false, formatter: function(cell) {
                     const row = cell.getRow().getData();
                     return `
-                        <div class="btn-group btn-group-sm">
-                            <a href="/Admin/Website/AdmissionFees/CreateEdit/${row.id}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
-                            <button class="btn btn-sm btn-outline-danger" onclick="deleteObject('/Admin/Website/AdmissionFees/Delete/${row.id}', feesTable)"><i class="bi bi-trash"></i></button>
+                        <div style="display:inline-flex;gap:4px;">
+                            <a href="/Admin/Website/AdmissionFees/CreateEdit/${row.id}" style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--adm-border);border-radius:var(--adm-radius-sm);color:var(--adm-text-3);text-decoration:none;" title="Edit"><i class="bi bi-pencil"></i></a>
+                            <button style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--adm-border);border-radius:var(--adm-radius-sm);background:var(--adm-surface);color:var(--adm-text-3);cursor:pointer;" onclick="deleteObject('/Admin/Website/AdmissionFees/Delete/${row.id}', feesTable)" title="Delete"><i class="bi bi-trash"></i></button>
                         </div>
                     `;
                 }}
             ]
         });
 
-        // Mark as read helper
         function markRead(url, targetTable) {
             const token = getAntiforgeryToken();
             fetch(url, {
                 method: "POST",
-                headers: {
-                    "RequestVerificationToken": token,
-                    "Content-Type": "application/json"
-                }
+                headers: { "RequestVerificationToken": token, "Content-Type": "application/json" }
             })
             .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    targetTable.setData();
-                }
-            });
+            .then(data => { if (data.success) targetTable.setData(); });
         }
-
-        // Fix Bootstrap tab resizing issue with Tabulator
-        document.querySelectorAll('button[data-bs-toggle="tab"]').forEach(tabEl => {
-            tabEl.addEventListener('shown.bs.tab', function (event) {
-                const targetPane = event.target.getAttribute("data-bs-target");
-                if (targetPane === "#sliders-pane") slidersTable.redraw();
-                else if (targetPane === "#notices-pane") noticesTable.redraw();
-                else if (targetPane === "#events-pane") eventsTable.redraw();
-                else if (targetPane === "#galleries-pane") galleriesTable.redraw();
-                else if (targetPane === "#pages-pane") pagesTable.redraw();
-                else if (targetPane === "#messages-pane") messagesTable.redraw();
-                else if (targetPane === "#templates-pane") templatesTable.redraw();
-                else if (targetPane === "#announcements-pane") announcementsTable.redraw();
-                else if (targetPane === "#fees-pane") feesTable.redraw();
-            });
-        });
     </script>
 }

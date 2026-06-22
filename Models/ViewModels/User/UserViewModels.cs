@@ -19,7 +19,6 @@ public class UserListItemVm
     public AccountStatus Status { get; set; }
     public bool IsDeleted { get; set; }
     public string RolesText { get; set; } = string.Empty;
-    public int TotalRecords { get; set; }
 
     /// <summary>User type: Employee, Guardian, Student, or System.</summary>
     public string UserType { get; set; } = "System";
@@ -59,13 +58,14 @@ public class UserUpsertViewModel
     [Required]
     public AccountStatus Status { get; set; } = AccountStatus.Active;
 
-    // Admin-controlled raw password (optional on edit).
     [DataType(DataType.Password)]
     [Display(Name = "Password")]
+    [StringLength(100, MinimumLength = 6, ErrorMessage = "Password must be at least 6 characters")]
     public string? Password { get; set; }
 
     [DataType(DataType.Password)]
     [Display(Name = "Confirm password")]
+    [Compare("Password", ErrorMessage = "Password and confirmation password do not match")]
     public string? ConfirmPassword { get; set; }
 
     public List<int> SelectedRoleIds { get; set; } = [];

@@ -4,64 +4,64 @@
     ViewData["Title"] = "Contact Message Details";
 }
 
-<div class="container-fluid px-4 py-3">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="fw-bold mb-0"><i class="bi bi-chat-dots me-2"></i> Contact Message Details</h4>
-        <a href="/Admin/Website" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i> Back to Inbox</a>
+<div class="adm-page">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+        <h4 style="font-size:18px;font-weight:700;margin:0;"><i style="margin-right:8px;" class="bi bi-chat-dots"></i> Contact Message Details</h4>
+        <a href="/Admin/Website" class="adm-btn adm-btn--ghost"><i style="margin-right:4px;" class="bi bi-arrow-left"></i> Back to Inbox</a>
     </div>
 
-    <div class="card shadow-sm border-0">
-        <div class="card-body p-4">
-            <div class="row g-4">
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label class="fw-bold text-muted small text-uppercase">Name</label>
-                        <p class="fs-5 mb-0">@Model.Name</p>
+    <div style="background:var(--adm-surface);border:1px solid var(--adm-border);border-radius:var(--adm-radius-lg);box-shadow:var(--adm-shadow);overflow:hidden;">
+        <div style="padding:20px;">
+            <div style="display:flex;flex-wrap:wrap;gap:16px;">
+                <div style="flex:1 1 calc(50% - 16px);min-width:280px;">
+                    <div style="margin-bottom:12px;">
+                        <label style="font-weight:700;color:var(--adm-text-3);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Name</label>
+                        <p style="font-size:18px;margin:0;">@Model.Name</p>
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label class="fw-bold text-muted small text-uppercase">Status</label>
-                        <p class="mb-0">
+                <div style="flex:1 1 calc(50% - 16px);min-width:280px;">
+                    <div style="margin-bottom:12px;">
+                        <label style="font-weight:700;color:var(--adm-text-3);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Status</label>
+                        <p style="margin:0;">
                             @if (Model.Status == "Unread")
                             {
-                                <span class="badge bg-danger fs-6">Unread</span>
+                                <span class="adm-badge adm-badge--danger">Unread</span>
                             }
                             else
                             {
-                                <span class="badge bg-success fs-6">Read</span>
+                                <span class="adm-badge adm-badge--success">Read</span>
                             }
                         </p>
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label class="fw-bold text-muted small text-uppercase">Email</label>
-                        <p class="fs-5 mb-0">@Model.Email</p>
+                <div style="flex:1 1 calc(50% - 16px);min-width:280px;">
+                    <div style="margin-bottom:12px;">
+                        <label style="font-weight:700;color:var(--adm-text-3);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Email</label>
+                        <p style="font-size:18px;margin:0;">@Model.Email</p>
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label class="fw-bold text-muted small text-uppercase">Phone</label>
-                        <p class="fs-5 mb-0">@(!string.IsNullOrEmpty(Model.Phone) ? Model.Phone : "—")</p>
+                <div style="flex:1 1 calc(50% - 16px);min-width:280px;">
+                    <div style="margin-bottom:12px;">
+                        <label style="font-weight:700;color:var(--adm-text-3);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Phone</label>
+                        <p style="font-size:18px;margin:0;">@(!string.IsNullOrEmpty(Model.Phone) ? Model.Phone : "—")</p>
                     </div>
                 </div>
-                <div class="col-12">
-                    <div class="mb-3">
-                        <label class="fw-bold text-muted small text-uppercase">Subject</label>
-                        <p class="fs-5 mb-0">@Model.Subject</p>
+                <div style="flex:1 1 100%;">
+                    <div style="margin-bottom:12px;">
+                        <label style="font-weight:700;color:var(--adm-text-3);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Subject</label>
+                        <p style="font-size:18px;margin:0;">@Model.Subject</p>
                     </div>
                 </div>
-                <div class="col-12">
-                    <div class="mb-3">
-                        <label class="fw-bold text-muted small text-uppercase">Message</label>
-                        <div class="p-3 bg-light rounded border" style="white-space: pre-wrap; line-height: 1.7;">@Model.Message</div>
+                <div style="flex:1 1 100%;">
+                    <div style="margin-bottom:12px;">
+                        <label style="font-weight:700;color:var(--adm-text-3);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Message</label>
+                        <div style="padding:12px;background:var(--adm-surface-2);border:1px solid var(--adm-border);border-radius:var(--adm-radius);white-space:pre-wrap;line-height:1.7;">@Model.Message</div>
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label class="fw-bold text-muted small text-uppercase">Received On</label>
-                        <p class="mb-0">@Model.CreatedAt.ToString("dd MMMM yyyy, hh:mm tt")</p>
+                <div style="flex:1 1 calc(50% - 16px);min-width:280px;">
+                    <div style="margin-bottom:12px;">
+                        <label style="font-weight:700;color:var(--adm-text-3);font-size:11px;text-transform:uppercase;letter-spacing:0.5px;">Received On</label>
+                        <p style="margin:0;">@Model.CreatedAt.ToString("dd MMMM yyyy, hh:mm tt")</p>
                     </div>
                 </div>
             </div>

@@ -12,6 +12,7 @@ using SchoolManagementSystem.Repositories.Interfaces.Auth;
 using SchoolManagementSystem.Repositories.Interfaces.Academic;
 using SchoolManagementSystem.Models.Entities.Auth;
 using SchoolManagementSystem.Repositories.Interfaces.Students;
+using SchoolManagementSystem.Repositories.Interfaces.Website;
 using SchoolManagementSystem.Services.Interfaces.Guardian;
 using Microsoft.Extensions.Logging;
 using SchoolManagementSystem.Models.DTOs.Admission;
@@ -37,6 +38,7 @@ public class Phase37B_AdmissionSecurityFixTests
     private readonly Mock<ISectionRepository> _sectionRepoMock = new(MockBehavior.Loose);
     private readonly Mock<IGuardianService> _guardianServiceMock = new(MockBehavior.Loose);
     private readonly Mock<ILogger<AdmissionService>> _loggerMock = new(MockBehavior.Loose);
+    private readonly Mock<ISchoolSettingRepository> _settingRepoMock = new(MockBehavior.Loose);
 
     private AdmissionService CreateService()
     {
@@ -46,7 +48,7 @@ public class Phase37B_AdmissionSecurityFixTests
             _userRepoMock.Object, _roleRepoMock.Object,
             _userRoleRepoMock.Object, _classRepoMock.Object,
             _studentRepoMock.Object, _sectionRepoMock.Object,
-            _guardianServiceMock.Object, _loggerMock.Object);
+            _guardianServiceMock.Object, _settingRepoMock.Object, _loggerMock.Object);
     }
 
     // ─── P6: Status Transition Guards ────────────────────────────

@@ -19,6 +19,7 @@ using SchoolManagementSystem.Repositories.Interfaces.Academic;
 using SchoolManagementSystem.Repositories.Interfaces.Students;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using SchoolManagementSystem.Repositories.Interfaces.Admission;
+using SchoolManagementSystem.Repositories.Interfaces.Website;
 using System.Data;
 
 namespace SchoolManagementSystem.Services.Implementations.Admissions;
@@ -36,6 +37,7 @@ public class AdmissionService : IAdmissionService
     private readonly IStudentRepository _studentRepository;
     private readonly ISectionRepository _sectionRepository;
     private readonly IGuardianService _guardianService;
+    private readonly ISchoolSettingRepository _settingRepo;
     private readonly ILogger<AdmissionService> _logger;
 
     public AdmissionService(
@@ -50,6 +52,7 @@ public class AdmissionService : IAdmissionService
         IStudentRepository studentRepository,
         ISectionRepository sectionRepository,
         IGuardianService guardianService,
+        ISchoolSettingRepository settingRepo,
         ILogger<AdmissionService> logger)
     {
         _unitOfWork = unitOfWork;
@@ -63,6 +66,7 @@ public class AdmissionService : IAdmissionService
         _studentRepository = studentRepository;
         _sectionRepository = sectionRepository;
         _guardianService = guardianService;
+        _settingRepo = settingRepo;
         _logger = logger;
     }
 
@@ -309,19 +313,56 @@ public class AdmissionService : IAdmissionService
                 }
             }
 
-            // PHASE 6: Ensure Guardian (auto-create or auto-link) BEFORE student creation
-            // so the student can be linked to a valid guardian.
-            var guardian = await _guardianService.EnsureGuardianFromAdmissionAsync(application, cancellationToken);
-            application.LinkedGuardianId = guardian.Id;
+            // PHASE 42H.2: Optional Guardian Portal — check settings before creating guardian
+            var settings = await _settingRepo.GetCurrentSettingsAsync(cancellationToken);
+            bool guardianPortalEnabled = settings?.EnableGuardianPortal ?? false;
+            bool guardianActivationEnabled = settings?.EnableGuardianActivation ?? false;
 
-            var studentId = await _studentService.CreateAsync(new StudentUpsertDto
+            int? linkedGuardianId = null;
+            string? guardianActivationToken = null;
+            string? guardianEmail = null;
+            string? guardianFullName = null;
+            string? guardianCode = null;
+
+            if (guardianPortalEnabled)
+            {
+                // PHASE 6: Ensure Guardian (auto-create or auto-link) BEFORE student creation
+                var guardian = await _guardianService.EnsureGuardianFromAdmissionAsync(application, cancellationToken);
+                application.LinkedGuardianId = guardian.Id;
+                linkedGuardianId = guardian.Id;
+                guardianEmail = guardian.Email;
+                guardianFullName = guardian.FullName;
+                guardianCode = guardian.GuardianCode;
+
+                // PHASE 6/7: Create a Guardian portal user (gdn-{Code}) + activation link
+                if (guardianActivationEnabled)
+                {
+                    try
+                    {
+                        guardianActivationToken = await _guardianService.EnsureGuardianUserAsync(guardian.Id, cancellationToken);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Guardian user provisioning failed for admission {ApplicationNo}", application.ApplicationNo);
+                    }
+                }
+            }
+            else
+            {
+                // Guardian portal disabled — skip guardian creation entirely
+                application.LinkedGuardianId = null;
+            }
+
+            // When guardian portal is off, prevent StudentService from creating inline guardians
+            var studentDto = new StudentUpsertDto
             {
                 StudentNo = candidateUserName, FullName = application.ApplicantName, FullNameBangla = application.ApplicantNameBangla,
                 DateOfBirth = application.DateOfBirth, Gender = application.Gender, FatherName = application.FatherName,
                 FatherOccupation = application.FatherOccupation, MotherName = application.MotherName, MotherOccupation = application.MotherOccupation,
                 GuardianName = application.GuardianName, GuardianOccupation = application.GuardianOccupation,
                 MobileNumber = application.ApplicantMobileNumber ?? string.Empty, AlternativeNumber = application.AlternativeNumber,
-                FatherOrGuardianMobileNo = application.FatherOrGuardianMobileNo, EmailAddress = studentEmail,
+                FatherOrGuardianMobileNo = guardianPortalEnabled ? application.FatherOrGuardianMobileNo : null,
+                EmailAddress = studentEmail,
                 Nationality = application.Nationality, Country = application.Country, MaritalStatus = application.MaritalStatus,
                 Religion = application.Religion, BloodGroup = application.BloodGroup,
                 BirthCertificateNo = application.BirthCertificateNo,
@@ -331,19 +372,10 @@ public class AdmissionService : IAdmissionService
                 PermanentPostOffice = application.PermanentPostOffice, PermanentThana = application.PermanentThana,
                 PermanentDistrict = application.PermanentDistrict, ClassId = application.AppliedClassId,
                 SectionId = sectionId, StudentGroupId = studentGroupId, RollNumber = rollNumber, UserId = pendingUser.Id,
-                LinkedGuardianId = guardian.Id
-            }, approvedBy, cancellationToken);
+                LinkedGuardianId = linkedGuardianId
+            };
 
-            // PHASE 6/7: Create a Guardian portal user (gdn-{Code}) + activation link
-            string? guardianActivationToken = null;
-            try
-            {
-                guardianActivationToken = await _guardianService.EnsureGuardianUserAsync(guardian.Id, cancellationToken);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Guardian user provisioning failed for admission {ApplicationNo}", application.ApplicationNo);
-            }
+            var studentId = await _studentService.CreateAsync(studentDto, approvedBy, cancellationToken);
 
             application.Status = AdmissionStatus.Converted;
             application.ReviewedAt = DateTime.UtcNow;
@@ -435,15 +467,15 @@ public class AdmissionService : IAdmissionService
             try { await _emailService.SendStudentActivationAsync(studentEmail, application.ApplicantName, pendingUser.UserName, activationToken, cancellationToken); }
             catch (Exception ex) { _logger.LogError(ex, "Student activation email failed for application {ApplicationNo}", application.ApplicationNo); }
 
-            if (!string.IsNullOrEmpty(guardianActivationToken) && !string.IsNullOrWhiteSpace(guardian.Email))
+            if (!string.IsNullOrEmpty(guardianActivationToken) && !string.IsNullOrWhiteSpace(guardianEmail))
             {
                 try
                 {
                     // The EmailService falls back to its own configured BaseUrl/LocalUrl when an empty string is passed.
                     await _emailService.SendGuardianActivationAsync(
-                        guardian.Email,
-                        guardian.FullName,
-                        $"gdn-{(guardian.GuardianCode ?? "guardian").Replace("-", string.Empty)}",
+                        guardianEmail,
+                        guardianFullName ?? application.GuardianName ?? application.FatherName ?? "Guardian",
+                        $"gdn-{(guardianCode ?? "guardian").Replace("-", string.Empty)}",
                         guardianActivationToken,
                         string.Empty,
                         cancellationToken);

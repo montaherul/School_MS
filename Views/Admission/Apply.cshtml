@@ -4,317 +4,383 @@
     ViewData["Title"] = "Admission Application Form";
 }
 
-<section class="lp-section" style="background-color: var(--clr-canvas);">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-lg-10">
-                <div class="text-center mb-5">
-                    <h1 class="lp-section-title text-primary">Student Admission Form</h1>
-                    <p class="lp-section-subtitle mb-0">Please fill in all the required information accurately to begin your journey with us.</p>
-                </div>
+<div class="ws-page-hero">
+    <div class="ws-container">
+        <span class="ws-badge ws-badge--accent" style="margin-bottom:12px;font-size:13px;padding:6px 18px;">
+            <i class="bi bi-pencil-square me-1"></i> Online Admission
+        </span>
+        <h1>Student Admission Form</h1>
+        <p>Please fill in all the required information accurately to begin your journey with us.</p>
+    </div>
+</div>
 
+<section class="ws-section">
+    <div class="ws-container">
+        <div class="ws-row" style="justify-content:center;">
+            <div class="ws-col-12 ws-col-lg-10">
                 <form asp-action="Apply" method="post" enctype="multipart/form-data">
                     @Html.AntiForgeryToken()
-                    <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-3"></div>
+                    <div asp-validation-summary="ModelOnly" class="ws-form-alert ws-form-alert--error" style="margin-bottom:24px;"></div>
 
-                    @* ── Section 1: Personal Information ── *@
-                    <div class="card shadow-sm mb-4 border-0" style="border-radius: var(--radius-lg);">
-                        <div class="card-header bg-primary text-white py-3" style="border-radius: var(--radius-lg) var(--radius-lg) 0 0;">
-                            <h5 class="mb-0"><i class="bi bi-person-fill me-2"></i>Personal Information</h5>
+                    <!-- ── Section 1: Personal Information ── -->
+                    <div class="ws-card ws-card--bordered-top ws-mb-6">
+                        <div class="ws-card__header" style="background:var(--ws-primary);color:#fff;border-radius:12px 12px 0 0;">
+                            <i class="bi bi-person-fill"></i> Personal Information
                         </div>
-                        <div class="card-body p-4">
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label asp-for="ApplicantName" class="form-label">Applicant's Name (English) <span class="text-danger">*</span></label>
-                                    <input asp-for="ApplicantName" class="form-control" placeholder="e.g. John Doe" />
-                                    <span asp-validation-for="ApplicantName" class="text-danger small"></span>
+                        <div class="ws-card__body">
+                            <div class="ws-row ws-g-3">
+                                <div class="ws-col-12 ws-col-md-6">
+                                    <div class="ws-form-group">
+                                        <label asp-for="ApplicantName" class="ws-form-label">Applicant's Name (English) <span style="color:var(--ws-danger);">*</span></label>
+                                        <input asp-for="ApplicantName" class="ws-form-input" placeholder="e.g. John Doe" />
+                                        <span asp-validation-for="ApplicantName" style="color:var(--ws-danger);font-size:13px;"></span>
+                                    </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <label asp-for="ApplicantNameBangla" class="form-label">Applicant's Name (Bangla)</label>
-                                    <input asp-for="ApplicantNameBangla" class="form-control" placeholder="বাংলায় নাম" />
-                                    <span asp-validation-for="ApplicantNameBangla" class="text-danger small"></span>
+                                <div class="ws-col-12 ws-col-md-6">
+                                    <div class="ws-form-group">
+                                        <label asp-for="ApplicantNameBangla" class="ws-form-label">Applicant's Name (Bangla)</label>
+                                        <input asp-for="ApplicantNameBangla" class="ws-form-input" placeholder="বাংলায় নাম" />
+                                        <span asp-validation-for="ApplicantNameBangla" style="color:var(--ws-danger);font-size:13px;"></span>
+                                    </div>
                                 </div>
-                                <div class="col-md-4">
-                                    <label asp-for="DateOfBirth" class="form-label">Date of Birth <span class="text-danger">*</span></label>
-                                    <input asp-for="DateOfBirth" type="date" class="form-control" />
-                                    <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
+                                <div class="ws-col-12 ws-col-md-4">
+                                    <div class="ws-form-group">
+                                        <label asp-for="DateOfBirth" class="ws-form-label">Date of Birth <span style="color:var(--ws-danger);">*</span></label>
+                                        <input asp-for="DateOfBirth" type="date" class="ws-form-input" />
+                                        <span asp-validation-for="DateOfBirth" style="color:var(--ws-danger);font-size:13px;"></span>
+                                    </div>
                                 </div>
-                                <div class="col-md-4">
-                                    <label asp-for="Gender" class="form-label">Gender <span class="text-danger">*</span></label>
-                                    <select asp-for="Gender" class="form-select">
-                                        <option value="">Select</option>
-                                        <option value="Male">Male</option>
-                                        <option value="Female">Female</option>
-                                        <option value="Other">Other</option>
-                                    </select>
-                                    <span asp-validation-for="Gender" class="text-danger small"></span>
+                                <div class="ws-col-12 ws-col-md-4">
+                                    <div class="ws-form-group">
+                                        <label asp-for="Gender" class="ws-form-label">Gender <span style="color:var(--ws-danger);">*</span></label>
+                                        <select asp-for="Gender" class="ws-form-select">
+                                            <option value="">Select</option>
+                                            <option value="Male">Male</option>
+                                            <option value="Female">Female</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                        <span asp-validation-for="Gender" style="color:var(--ws-danger);font-size:13px;"></span>
+                                    </div>
                                 </div>
-                                <div class="col-md-4">
-                                    <label asp-for="BloodGroup" class="form-label">Blood Group</label>
-                                    <select asp-for="BloodGroup" class="form-select">
-                                        <option value="">Select</option>
-                                        <option value="A+">A+</option>
-                                        <option value="A-">A-</option>
-                                        <option value="B+">B+</option>
-                                        <option value="B-">B-</option>
-                                        <option value="AB+">AB+</option>
-                                        <option value="AB-">AB-</option>
-                                        <option value="O+">O+</option>
-                                        <option value="O-">O-</option>
-                                    </select>
+                                <div class="ws-col-12 ws-col-md-4">
+                                    <div class="ws-form-group">
+                                        <label asp-for="BloodGroup" class="ws-form-label">Blood Group</label>
+                                        <select asp-for="BloodGroup" class="ws-form-select">
+                                            <option value="">Select</option>
+                                            <option value="A+">A+</option>
+                                            <option value="A-">A-</option>
+                                            <option value="B+">B+</option>
+                                            <option value="B-">B-</option>
+                                            <option value="AB+">AB+</option>
+                                            <option value="AB-">AB-</option>
+                                            <option value="O+">O+</option>
+                                            <option value="O-">O-</option>
+                                        </select>
+                                    </div>
                                 </div>
-                                <div class="col-md-4">
-                                    <label asp-for="MaritalStatus" class="form-label">Marital Status <span class="text-danger">*</span></label>
-                                    <select asp-for="MaritalStatus" class="form-select">
-                                        <option value="">Select</option>
-                                        <option value="Single">Single</option>
-                                        <option value="Married">Married</option>
-                                        <option value="Widowed">Widowed</option>
-                                        <option value="Divorced">Divorced</option>
-                                    </select>
-                                    <span asp-validation-for="MaritalStatus" class="text-danger small"></span>
+                                <div class="ws-col-12 ws-col-md-4">
+                                    <div class="ws-form-group">
+                                        <label asp-for="MaritalStatus" class="ws-form-label">Marital Status <span style="color:var(--ws-danger);">*</span></label>
+                                        <select asp-for="MaritalStatus" class="ws-form-select">
+                                            <option value="">Select</option>
+                                            <option value="Single">Single</option>
+                                            <option value="Married">Married</option>
+                                            <option value="Widowed">Widowed</option>
+                                            <option value="Divorced">Divorced</option>
+                                        </select>
+                                        <span asp-validation-for="MaritalStatus" style="color:var(--ws-danger);font-size:13px;"></span>
+                                    </div>
                                 </div>
-                                <div class="col-md-4">
-                                    <label asp-for="Religion" class="form-label">Religion <span class="text-danger">*</span></label>
-                                    <select asp-for="Religion" class="form-select">
-                                        <option value="">Select</option>
-                                        <option value="Islam">Islam</option>
-                                        <option value="Hinduism">Hinduism</option>
-                                        <option value="Christianity">Christianity</option>
-                                        <option value="Buddhism">Buddhism</option>
-                                        <option value="Other">Other</option>
-                                    </select>
-                                    <span asp-validation-for="Religion" class="text-danger small"></span>
+                                <div class="ws-col-12 ws-col-md-4">
+                                    <div class="ws-form-group">
+                                        <label asp-for="Religion" class="ws-form-label">Religion <span style="color:var(--ws-danger);">*</span></label>
+                                        <select asp-for="Religion" class="ws-form-select">
+                                            <option value="">Select</option>
+                                            <option value="Islam">Islam</option>
+                                            <option value="Hinduism">Hinduism</option>
+                                            <option value="Christianity">Christianity</option>
+                                            <option value="Buddhism">Buddhism</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                        <span asp-validation-for="Religion" style="color:var(--ws-danger);font-size:13px;"></span>
+                                    </div>
                                 </div>
-                                <div class="col-md-4">
-                                    <label asp-for="ProfilePicture" class="form-label">Profile Picture</label>
-                                    <input asp-for="ProfilePicture" type="file" class="form-control" accept="image/*" onchange="previewAdmissionImage(event)" />
-                                    <div class="mt-2 text-center">
-                                        <img id="previewAdmissionImg" src="/images/default-user.png" style="width:90px;height:90px;border-radius:50%;object-fit:cover;border:1px solid #ddd;" />
+                                <div class="ws-col-12 ws-col-md-4">
+                                    <div class="ws-form-group">
+                                        <label asp-for="ProfilePicture" class="ws-form-label">Profile Picture</label>
+                                        <input asp-for="ProfilePicture" type="file" class="ws-form-input" accept="image/*" onchange="previewAdmissionImage(event)" />
+                                        <div style="margin-top:8px;text-align:center;">
+                                            <img id="previewAdmissionImg" src="/images/default-user.png" style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:2px solid var(--ws-border);" />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    @* ── Section 2: Family Information ── *@
-                    <div class="card shadow-sm mb-4 border-0" style="border-radius: var(--radius-lg);">
-                        <div class="card-header bg-success text-white py-3" style="border-radius: var(--radius-lg) var(--radius-lg) 0 0;">
-                            <h5 class="mb-0"><i class="bi bi-people-fill me-2"></i>Family Information</h5>
+                    <!-- ── Section 2: Family Information ── -->
+                    <div class="ws-card ws-card--bordered-top ws-mb-6" style="border-top-color:var(--ws-success);">
+                        <div class="ws-card__header" style="background:var(--ws-success);color:#fff;border-radius:12px 12px 0 0;">
+                            <i class="bi bi-people-fill"></i> Family Information
                         </div>
-                        <div class="card-body p-4">
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label asp-for="FatherName" class="form-label">Father's Name <span class="text-danger">*</span></label>
-                                    <input asp-for="FatherName" class="form-control" placeholder="Father's full name" />
-                                    <span asp-validation-for="FatherName" class="text-danger small"></span>
+                        <div class="ws-card__body">
+                            <div class="ws-row ws-g-3">
+                                <div class="ws-col-12 ws-col-md-6">
+                                    <div class="ws-form-group">
+                                        <label asp-for="FatherName" class="ws-form-label">Father's Name <span style="color:var(--ws-danger);">*</span></label>
+                                        <input asp-for="FatherName" class="ws-form-input" placeholder="Father's full name" />
+                                        <span asp-validation-for="FatherName" style="color:var(--ws-danger);font-size:13px;"></span>
+                                    </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <label asp-for="FatherOccupation" class="form-label">Father's Occupation</label>
-                                    <input asp-for="FatherOccupation" class="form-control" />
+                                <div class="ws-col-12 ws-col-md-6">
+                                    <div class="ws-form-group">
+                                        <label asp-for="FatherOccupation" class="ws-form-label">Father's Occupation</label>
+                                        <input asp-for="FatherOccupation" class="ws-form-input" />
+                                    </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <label asp-for="MotherName" class="form-label">Mother's Name <span class="text-danger">*</span></label>
-                                    <input asp-for="MotherName" class="form-control" placeholder="Mother's full name" />
-                                    <span asp-validation-for="MotherName" class="text-danger small"></span>
+                                <div class="ws-col-12 ws-col-md-6">
+                                    <div class="ws-form-group">
+                                        <label asp-for="MotherName" class="ws-form-label">Mother's Name <span style="color:var(--ws-danger);">*</span></label>
+                                        <input asp-for="MotherName" class="ws-form-input" placeholder="Mother's full name" />
+                                        <span asp-validation-for="MotherName" style="color:var(--ws-danger);font-size:13px;"></span>
+                                    </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <label asp-for="MotherOccupation" class="form-label">Mother's Occupation</label>
-                                    <input asp-for="MotherOccupation" class="form-control" />
+                                <div class="ws-col-12 ws-col-md-6">
+                                    <div class="ws-form-group">
+                                        <label asp-for="MotherOccupation" class="ws-form-label">Mother's Occupation</label>
+                                        <input asp-for="MotherOccupation" class="ws-form-input" />
+                                    </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <label asp-for="GuardianName" class="form-label">Guardian's Name</label>
-                                    <input asp-for="GuardianName" class="form-control" />
+                                <div class="ws-col-12 ws-col-md-6">
+                                    <div class="ws-form-group">
+                                        <label asp-for="GuardianName" class="ws-form-label">Guardian's Name</label>
+                                        <input asp-for="GuardianName" class="ws-form-input" />
+                                    </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <label asp-for="GuardianOccupation" class="form-label">Guardian's Occupation</label>
-                                    <input asp-for="GuardianOccupation" class="form-control" />
+                                <div class="ws-col-12 ws-col-md-6">
+                                    <div class="ws-form-group">
+                                        <label asp-for="GuardianOccupation" class="ws-form-label">Guardian's Occupation</label>
+                                        <input asp-for="GuardianOccupation" class="ws-form-input" />
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    @* ── Section 3: Guardian Information ── *@
-                    <div class="card shadow-sm mb-4 border-0" style="border-radius: var(--radius-lg);">
-                        <div class="card-header" style="background-color:#6f42c1;color:#fff;border-radius: var(--radius-lg) var(--radius-lg) 0 0;">
-                            <h5 class="mb-0"><i class="bi bi-shield-fill me-2"></i>Guardian Information</h5>
+                    <!-- ── Section 3: Guardian Information ── -->
+                    <div class="ws-card ws-card--bordered-top ws-mb-6" style="border-top-color:#6f42c1;">
+                        <div class="ws-card__header" style="background:#6f42c1;color:#fff;border-radius:12px 12px 0 0;">
+                            <i class="bi bi-shield-fill"></i> Guardian Information
                         </div>
-                        <div class="card-body p-4">
-                            <div class="row g-3">
-                                <div class="col-md-4">
-                                    <label asp-for="GuardianEmail" class="form-label">Guardian Email</label>
-                                    <input asp-for="GuardianEmail" type="email" class="form-control" placeholder="guardian@mail.com" />
+                        <div class="ws-card__body">
+                            <div class="ws-row ws-g-3">
+                                <div class="ws-col-12 ws-col-md-4">
+                                    <div class="ws-form-group">
+                                        <label asp-for="GuardianEmail" class="ws-form-label">Guardian Email</label>
+                                        <input asp-for="GuardianEmail" type="email" class="ws-form-input" placeholder="guardian@mail.com" />
+                                    </div>
                                 </div>
-                                <div class="col-md-4">
-                                    <label asp-for="GuardianMobileNumber" class="form-label">Guardian Mobile Number</label>
-                                    <input asp-for="GuardianMobileNumber" class="form-control" placeholder="01XXXXXXXXX" />
+                                <div class="ws-col-12 ws-col-md-4">
+                                    <div class="ws-form-group">
+                                        <label asp-for="GuardianMobileNumber" class="ws-form-label">Guardian Mobile Number</label>
+                                        <input asp-for="GuardianMobileNumber" class="ws-form-input" placeholder="01XXXXXXXXX" />
+                                    </div>
                                 </div>
-                                <div class="col-md-4">
-                                    <label asp-for="GuardianRelationship" class="form-label">Guardian Relationship</label>
-                                    <select asp-for="GuardianRelationship" class="form-select">
-                                        <option value="">Select</option>
-                                        <option value="Father">Father</option>
-                                        <option value="Mother">Mother</option>
-                                        <option value="LegalGuardian">Legal Guardian</option>
-                                        <option value="Grandfather">Grandfather</option>
-                                        <option value="Grandmother">Grandmother</option>
-                                        <option value="Uncle">Uncle</option>
-                                        <option value="Aunt">Aunt</option>
-                                        <option value="Brother">Brother</option>
-                                        <option value="Sister">Sister</option>
-                                        <option value="Other">Other</option>
-                                    </select>
+                                <div class="ws-col-12 ws-col-md-4">
+                                    <div class="ws-form-group">
+                                        <label asp-for="GuardianRelationship" class="ws-form-label">Guardian Relationship</label>
+                                        <select asp-for="GuardianRelationship" class="ws-form-select">
+                                            <option value="">Select</option>
+                                            <option value="Father">Father</option>
+                                            <option value="Mother">Mother</option>
+                                            <option value="LegalGuardian">Legal Guardian</option>
+                                            <option value="Grandfather">Grandfather</option>
+                                            <option value="Grandmother">Grandmother</option>
+                                            <option value="Uncle">Uncle</option>
+                                            <option value="Aunt">Aunt</option>
+                                            <option value="Brother">Brother</option>
+                                            <option value="Sister">Sister</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <label asp-for="GuardianNationalId" class="form-label">Guardian National ID</label>
-                                    <input asp-for="GuardianNationalId" class="form-control" placeholder="National ID / NID number" />
+                                <div class="ws-col-12 ws-col-md-6">
+                                    <div class="ws-form-group">
+                                        <label asp-for="GuardianNationalId" class="ws-form-label">Guardian National ID</label>
+                                        <input asp-for="GuardianNationalId" class="ws-form-input" placeholder="National ID / NID number" />
+                                    </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <label asp-for="GuardianAddress" class="form-label">Guardian Address</label>
-                                    <textarea asp-for="GuardianAddress" class="form-control" rows="2" placeholder="Full address of guardian"></textarea>
+                                <div class="ws-col-12 ws-col-md-6">
+                                    <div class="ws-form-group">
+                                        <label asp-for="GuardianAddress" class="ws-form-label">Guardian Address</label>
+                                        <textarea asp-for="GuardianAddress" class="ws-form-textarea" rows="2" placeholder="Full address of guardian"></textarea>
+                                    </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <label asp-for="GuardianPhoto" class="form-label">Guardian Photo</label>
-                                    <input asp-for="GuardianPhoto" type="file" class="form-control" accept="image/*" />
+                                <div class="ws-col-12 ws-col-md-6">
+                                    <div class="ws-form-group">
+                                        <label asp-for="GuardianPhoto" class="ws-form-label">Guardian Photo</label>
+                                        <input asp-for="GuardianPhoto" type="file" class="ws-form-input" accept="image/*" />
+                                    </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <label asp-for="GuardianRemarks" class="form-label">Guardian Remarks</label>
-                                    <textarea asp-for="GuardianRemarks" class="form-control" rows="2" placeholder="Additional notes about guardian"></textarea>
+                                <div class="ws-col-12 ws-col-md-6">
+                                    <div class="ws-form-group">
+                                        <label asp-for="GuardianRemarks" class="ws-form-label">Guardian Remarks</label>
+                                        <textarea asp-for="GuardianRemarks" class="ws-form-textarea" rows="2" placeholder="Additional notes about guardian"></textarea>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    @* ── Section 4: Contact Details ── *@
-                    <div class="card shadow-sm mb-4 border-0" style="border-radius: var(--radius-lg);">
-                        <div class="card-header bg-info text-white py-3" style="border-radius: var(--radius-lg) var(--radius-lg) 0 0;">
-                            <h5 class="mb-0"><i class="bi bi-telephone-fill me-2"></i>Contact Details</h5>
+                    <!-- ── Section 4: Contact Details ── -->
+                    <div class="ws-card ws-card--bordered-top ws-mb-6" style="border-top-color:var(--ws-info);">
+                        <div class="ws-card__header" style="background:var(--ws-info);color:#fff;border-radius:12px 12px 0 0;">
+                            <i class="bi bi-telephone-fill"></i> Contact Details
                         </div>
-                        <div class="card-body p-4">
-                            <div class="row g-3">
-                                <div class="col-md-4">
-                                    <label asp-for="ApplicantMobileNumber" class="form-label">Applicant's Mobile <span class="text-danger">*</span></label>
-                                    <input asp-for="ApplicantMobileNumber" class="form-control" placeholder="01XXXXXXXXX" />
-                                    <span asp-validation-for="ApplicantMobileNumber" class="text-danger small"></span>
+                        <div class="ws-card__body">
+                            <div class="ws-row ws-g-3">
+                                <div class="ws-col-12 ws-col-md-4">
+                                    <div class="ws-form-group">
+                                        <label asp-for="ApplicantMobileNumber" class="ws-form-label">Applicant's Mobile <span style="color:var(--ws-danger);">*</span></label>
+                                        <input asp-for="ApplicantMobileNumber" class="ws-form-input" placeholder="01XXXXXXXXX" />
+                                        <span asp-validation-for="ApplicantMobileNumber" style="color:var(--ws-danger);font-size:13px;"></span>
+                                    </div>
                                 </div>
-                                <div class="col-md-4">
-                                    <label asp-for="FatherOrGuardianMobileNo" class="form-label">Father/Guardian Mobile <span class="text-danger">*</span></label>
-                                    <input asp-for="FatherOrGuardianMobileNo" class="form-control" placeholder="01XXXXXXXXX" />
-                                    <span asp-validation-for="FatherOrGuardianMobileNo" class="text-danger small"></span>
+                                <div class="ws-col-12 ws-col-md-4">
+                                    <div class="ws-form-group">
+                                        <label asp-for="FatherOrGuardianMobileNo" class="ws-form-label">Father/Guardian Mobile <span style="color:var(--ws-danger);">*</span></label>
+                                        <input asp-for="FatherOrGuardianMobileNo" class="ws-form-input" placeholder="01XXXXXXXXX" />
+                                        <span asp-validation-for="FatherOrGuardianMobileNo" style="color:var(--ws-danger);font-size:13px;"></span>
+                                    </div>
                                 </div>
-                                <div class="col-md-4">
-                                    <label asp-for="AlternativeNumber" class="form-label">Alternative Number</label>
-                                    <input asp-for="AlternativeNumber" class="form-control" />
+                                <div class="ws-col-12 ws-col-md-4">
+                                    <div class="ws-form-group">
+                                        <label asp-for="AlternativeNumber" class="ws-form-label">Alternative Number</label>
+                                        <input asp-for="AlternativeNumber" class="ws-form-input" />
+                                    </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <label asp-for="ApplicantEmail" class="form-label">Email Address <span class="text-danger">*</span></label>
-                                    <input asp-for="ApplicantEmail" type="email" class="form-control" placeholder="example@mail.com" />
-                                    <span asp-validation-for="ApplicantEmail" class="text-danger small"></span>
+                                <div class="ws-col-12 ws-col-md-6">
+                                    <div class="ws-form-group">
+                                        <label asp-for="ApplicantEmail" class="ws-form-label">Email Address <span style="color:var(--ws-danger);">*</span></label>
+                                        <input asp-for="ApplicantEmail" type="email" class="ws-form-input" placeholder="example@mail.com" />
+                                        <span asp-validation-for="ApplicantEmail" style="color:var(--ws-danger);font-size:13px;"></span>
+                                    </div>
                                 </div>
-                                <div class="col-md-3">
-                                    <label asp-for="Nationality" class="form-label">Nationality <span class="text-danger">*</span></label>
-                                    <input asp-for="Nationality" class="form-control" />
+                                <div class="ws-col-12 ws-col-md-3">
+                                    <div class="ws-form-group">
+                                        <label asp-for="Nationality" class="ws-form-label">Nationality <span style="color:var(--ws-danger);">*</span></label>
+                                        <input asp-for="Nationality" class="ws-form-input" />
+                                    </div>
                                 </div>
-                                <div class="col-md-3">
-                                    <label asp-for="Country" class="form-label">Country <span class="text-danger">*</span></label>
-                                    <input asp-for="Country" class="form-control" />
+                                <div class="ws-col-12 ws-col-md-3">
+                                    <div class="ws-form-group">
+                                        <label asp-for="Country" class="ws-form-label">Country <span style="color:var(--ws-danger);">*</span></label>
+                                        <input asp-for="Country" class="ws-form-input" />
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    @* ── Section 4: Address Information ── *@
-                    <div class="card shadow-sm mb-4 border-0" style="border-radius: var(--radius-lg);">
-                        <div class="card-header bg-info text-white py-3" style="border-radius: var(--radius-lg) var(--radius-lg) 0 0;">
-                            <h5 class="mb-0"><i class="bi bi-geo-alt-fill me-2"></i>Address Information</h5>
+                    <!-- ── Section 5: Address Information ── -->
+                    <div class="ws-card ws-card--bordered-top ws-mb-6" style="border-top-color:var(--ws-info);">
+                        <div class="ws-card__header" style="background:var(--ws-info);color:#fff;border-radius:12px 12px 0 0;">
+                            <i class="bi bi-geo-alt-fill"></i> Address Information
                         </div>
-                        <div class="card-body p-4">
-                            <div class="row g-4">
-                                <div class="col-md-6">
-                                    <h6 class="fw-bold text-primary mb-3">Present Address</h6>
-                                    <div class="mb-2">
-                                        <label asp-for="PresentVillage" class="form-label">Village</label>
-                                        <input asp-for="PresentVillage" class="form-control" />
+                        <div class="ws-card__body">
+                            <div class="ws-row ws-g-4">
+                                <div class="ws-col-12 ws-col-md-6">
+                                    <h6 style="font-weight:700;color:var(--ws-secondary);margin-bottom:16px;">Present Address</h6>
+                                    <div class="ws-form-group">
+                                        <label asp-for="PresentVillage" class="ws-form-label">Village</label>
+                                        <input asp-for="PresentVillage" class="ws-form-input" />
                                     </div>
-                                    <div class="mb-2">
-                                        <label asp-for="PresentPostOffice" class="form-label">Area/Post Office <span class="text-danger">*</span></label>
-                                        <input asp-for="PresentPostOffice" class="form-control" />
+                                    <div class="ws-form-group">
+                                        <label asp-for="PresentPostOffice" class="ws-form-label">Area/Post Office <span style="color:var(--ws-danger);">*</span></label>
+                                        <input asp-for="PresentPostOffice" class="ws-form-input" />
                                     </div>
-                                    <div class="mb-2">
-                                        <label asp-for="PresentThana" class="form-label">Thana/Upazila <span class="text-danger">*</span></label>
-                                        <input asp-for="PresentThana" class="form-control" />
+                                    <div class="ws-form-group">
+                                        <label asp-for="PresentThana" class="ws-form-label">Thana/Upazila <span style="color:var(--ws-danger);">*</span></label>
+                                        <input asp-for="PresentThana" class="ws-form-input" />
                                     </div>
-                                    <div class="mb-2">
-                                        <label asp-for="PresentDistrict" class="form-label">District <span class="text-danger">*</span></label>
-                                        <input asp-for="PresentDistrict" class="form-control" />
+                                    <div class="ws-form-group">
+                                        <label asp-for="PresentDistrict" class="ws-form-label">District <span style="color:var(--ws-danger);">*</span></label>
+                                        <input asp-for="PresentDistrict" class="ws-form-input" />
                                     </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <h6 class="fw-bold text-success mb-3">
+                                <div class="ws-col-12 ws-col-md-6">
+                                    <h6 style="font-weight:700;color:var(--ws-success);margin-bottom:16px;">
                                         Permanent Address
-                                        <input type="checkbox" id="sameAddress" class="ms-2" />
-                                        <small class="text-muted">Same as Present</small>
-                                    </h6>
-                                    <div class="mb-2">
-                                        <label asp-for="PermanentVillage" class="form-label">Village</label>
-                                        <input asp-for="PermanentVillage" class="form-control" />
-                                    </div>
-                                    <div class="mb-2">
-                                        <label asp-for="PermanentPostOffice" class="form-label">Area/Post Office <span class="text-danger">*</span></label>
-                                        <input asp-for="PermanentPostOffice" class="form-control" />
-                                    </div>
-                                    <div class="mb-2">
-                                        <label asp-for="PermanentThana" class="form-label">Thana/Upazila <span class="text-danger">*</span></label>
-                                        <input asp-for="PermanentThana" class="form-control" />
-                                    </div>
-                                    <div class="mb-2">
-                                        <label asp-for="PermanentDistrict" class="form-label">District <span class="text-danger">*</span></label>
-                                        <input asp-for="PermanentDistrict" class="form-control" />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    @* ── Section 5: ID Documents ── *@
-                    <div class="card shadow-sm mb-4 border-0" style="border-radius: var(--radius-lg);">
-                        <div class="card-header bg-warning text-white py-3" style="border-radius: var(--radius-lg) var(--radius-lg) 0 0;">
-                            <h5 class="mb-0"><i class="bi bi-card-text me-2"></i>ID Documents</h5>
-                        </div>
-                        <div class="card-body p-4">
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label asp-for="BirthCertificateNo" class="form-label">Birth Certificate No.</label>
-                                    <input asp-for="BirthCertificateNo" class="form-control" />
-                                </div>
-                                <div class="col-md-6">
-                                    <label asp-for="BirthCertificateFile" class="form-label">Birth Certificate (Document)</label>
-                                    <input asp-for="BirthCertificateFile" type="file" class="form-control" accept=".pdf,.jpg,.jpeg,.png" />
-                                    <span asp-validation-for="BirthCertificateFile" class="text-danger small"></span>
-                                </div>
-                                <div class="col-md-6">
-                                    <label asp-for="PaymentSlipFile" class="form-label">Payment Slip / Receipt (Document)</label>
-                                    <input asp-for="PaymentSlipFile" type="file" class="form-control" accept=".pdf,.jpg,.jpeg,.png" />
-                                    <span asp-validation-for="PaymentSlipFile" class="text-danger small"></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    @* ── Section 6: Academic & Payment ── *@
-                    <div class="card shadow-sm mb-5 border-0" style="border-radius: var(--radius-lg);">
-                        <div class="card-header bg-secondary text-white p-3" style="border-radius: var(--radius-lg) var(--radius-lg) 0 0;">
-                            <h5 class="mb-0"><i class="bi bi-mortarboard-fill me-2"></i>Academic & Payment</h5>
-                        </div>
-                        <div class="card-body p-4">
-                            <div class="row g-3">
-
-                                    <!-- Class -->
-                                    <div class="col-md-4">
-                                        <label asp-for="AppliedClassId" class="form-label fw-bold">
-                                            Select Class <span class="text-danger">*</span>
+                                        <label style="display:inline-flex;align-items:center;gap:6px;margin-left:8px;font-weight:400;font-size:13px;color:var(--ws-muted);cursor:pointer;">
+                                            <input type="checkbox" id="sameAddress" style="width:16px;height:16px;" />
+                                            Same as Present
                                         </label>
-                                        <select asp-for="AppliedClassId" class="form-select form-select-lg" id="AppliedClassId">
+                                    </h6>
+                                    <div class="ws-form-group">
+                                        <label asp-for="PermanentVillage" class="ws-form-label">Village</label>
+                                        <input asp-for="PermanentVillage" class="ws-form-input" />
+                                    </div>
+                                    <div class="ws-form-group">
+                                        <label asp-for="PermanentPostOffice" class="ws-form-label">Area/Post Office <span style="color:var(--ws-danger);">*</span></label>
+                                        <input asp-for="PermanentPostOffice" class="ws-form-input" />
+                                    </div>
+                                    <div class="ws-form-group">
+                                        <label asp-for="PermanentThana" class="ws-form-label">Thana/Upazila <span style="color:var(--ws-danger);">*</span></label>
+                                        <input asp-for="PermanentThana" class="ws-form-input" />
+                                    </div>
+                                    <div class="ws-form-group">
+                                        <label asp-for="PermanentDistrict" class="ws-form-label">District <span style="color:var(--ws-danger);">*</span></label>
+                                        <input asp-for="PermanentDistrict" class="ws-form-input" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── Section 6: ID Documents ── -->
+                    <div class="ws-card ws-card--bordered-top ws-mb-6" style="border-top-color:var(--ws-warning);">
+                        <div class="ws-card__header" style="background:var(--ws-warning);color:#fff;border-radius:12px 12px 0 0;">
+                            <i class="bi bi-card-text"></i> ID Documents
+                        </div>
+                        <div class="ws-card__body">
+                            <div class="ws-row ws-g-3">
+                                <div class="ws-col-12 ws-col-md-6">
+                                    <div class="ws-form-group">
+                                        <label asp-for="BirthCertificateNo" class="ws-form-label">Birth Certificate No.</label>
+                                        <input asp-for="BirthCertificateNo" class="ws-form-input" />
+                                    </div>
+                                </div>
+                                <div class="ws-col-12 ws-col-md-6">
+                                    <div class="ws-form-group">
+                                        <label asp-for="BirthCertificateFile" class="ws-form-label">Birth Certificate (Document)</label>
+                                        <input asp-for="BirthCertificateFile" type="file" class="ws-form-input" accept=".pdf,.jpg,.jpeg,.png" />
+                                        <span asp-validation-for="BirthCertificateFile" style="color:var(--ws-danger);font-size:13px;"></span>
+                                    </div>
+                                </div>
+                                <div class="ws-col-12 ws-col-md-6">
+                                    <div class="ws-form-group">
+                                        <label asp-for="PaymentSlipFile" class="ws-form-label">Payment Slip / Receipt (Document)</label>
+                                        <input asp-for="PaymentSlipFile" type="file" class="ws-form-input" accept=".pdf,.jpg,.jpeg,.png" />
+                                        <span asp-validation-for="PaymentSlipFile" style="color:var(--ws-danger);font-size:13px;"></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── Section 7: Academic & Payment ── -->
+                    <div class="ws-card ws-card--bordered-top ws-mb-6" style="border-top-color:var(--ws-secondary);">
+                        <div class="ws-card__header" style="background:var(--ws-secondary);color:#fff;border-radius:12px 12px 0 0;">
+                            <i class="bi bi-mortarboard-fill"></i> Academic & Payment
+                        </div>
+                        <div class="ws-card__body">
+                            <div class="ws-row ws-g-3">
+                                <div class="ws-col-12 ws-col-md-4">
+                                    <div class="ws-form-group">
+                                        <label asp-for="AppliedClassId" class="ws-form-label" style="font-weight:700;">
+                                            Select Class <span style="color:var(--ws-danger);">*</span>
+                                        </label>
+                                        <select asp-for="AppliedClassId" class="ws-form-select" id="AppliedClassId" style="padding:12px 16px;font-size:16px;">
                                             <option value="">Select Class</option>
                                             @if (ViewBag.Classes != null)
                                             {
@@ -324,13 +390,13 @@
                                                 }
                                             }
                                         </select>
-                                        <span asp-validation-for="AppliedClassId" class="text-danger small"></span>
+                                        <span asp-validation-for="AppliedClassId" style="color:var(--ws-danger);font-size:13px;"></span>
                                     </div>
-
-                                    <!-- Section / Group -->
-                                    <div class="col-md-4" id="sectionContainer" style="display:none;">
-                                        <label class="form-label fw-bold">Select Section / Group</label>
-                                        <select asp-for="AppliedStudentGroupId" class="form-select form-select-lg" id="AppliedStudentGroupId">
+                                </div>
+                                <div class="ws-col-12 ws-col-md-4" id="sectionContainer" style="display:none;">
+                                    <div class="ws-form-group">
+                                        <label class="ws-form-label" style="font-weight:700;">Select Section / Group</label>
+                                        <select asp-for="AppliedStudentGroupId" class="ws-form-select" id="AppliedStudentGroupId" style="padding:12px 16px;font-size:16px;">
                                             <option value="">Select Group</option>
                                             @if (ViewBag.StudentGroups != null)
                                             {
@@ -340,33 +406,38 @@
                                                 }
                                             }
                                         </select>
-                                        <span asp-validation-for="AppliedStudentGroupId" class="text-danger small"></span>
+                                        <span asp-validation-for="AppliedStudentGroupId" style="color:var(--ws-danger);font-size:13px;"></span>
                                     </div>
-
-                                <div class="col-md-4">
-                                    <label asp-for="PaymentMethod" class="form-label fw-bold">Payment Method</label>
-                                    <select asp-for="PaymentMethod" class="form-select form-select-lg">
-                                        <option value="">Select</option>
-                                        <option value="Cash">Cash</option>
-                                        <option value="Bank Transfer">Bank Transfer</option>
-                                        <option value="bKash">bKash</option>
-                                        <option value="Nagad">Nagad</option>
-                                        <option value="Rocket">Rocket</option>
-                                    </select>
                                 </div>
-                                <div class="col-md-4">
-                                    <label asp-for="TransactionDetails" class="form-label fw-bold">Transaction Details</label>
-                                    <input asp-for="TransactionDetails" class="form-control form-control-lg" placeholder="Transaction ID / Receipt No." />
+                                <div class="ws-col-12 ws-col-md-4">
+                                    <div class="ws-form-group">
+                                        <label asp-for="PaymentMethod" class="ws-form-label" style="font-weight:700;">Payment Method</label>
+                                        <select asp-for="PaymentMethod" class="ws-form-select" style="padding:12px 16px;font-size:16px;">
+                                            <option value="">Select</option>
+                                            <option value="Cash">Cash</option>
+                                            <option value="Bank Transfer">Bank Transfer</option>
+                                            <option value="bKash">bKash</option>
+                                            <option value="Nagad">Nagad</option>
+                                            <option value="Rocket">Rocket</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="ws-col-12 ws-col-md-4">
+                                    <div class="ws-form-group">
+                                        <label asp-for="TransactionDetails" class="ws-form-label" style="font-weight:700;">Transaction Details</label>
+                                        <input asp-for="TransactionDetails" class="ws-form-input" placeholder="Transaction ID / Receipt No." style="padding:12px 16px;font-size:16px;" />
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="text-center mb-5">
-                        <button type="submit" class="btn btn-primary btn-lg px-5 py-3 shadow-sm rounded-pill fw-bold">
+                    <!-- Submit -->
+                    <div class="ws-text-center ws-mb-6">
+                        <button type="submit" class="ws-btn ws-btn--accent ws-btn--lg" style="padding:16px 48px;border-radius:50px;font-size:17px;">
                             <i class="bi bi-send-fill me-2"></i> Submit Application
                         </button>
-                        <p class="mt-3 text-muted">A confirmation email will be sent upon submission.</p>
+                        <p style="margin-top:12px;color:var(--ws-muted);font-size:14px;">A confirmation email will be sent upon submission.</p>
                     </div>
                 </form>
             </div>
@@ -398,7 +469,6 @@
     }
 
     document.addEventListener("DOMContentLoaded", function () {
-
         const classDropdown = document.getElementById("AppliedClassId");
         const sectionContainer = document.getElementById("sectionContainer");
         const groupSelect = document.getElementById("AppliedStudentGroupId");
@@ -421,7 +491,6 @@
                 }
             }
         });
-
     });
 </script>
 

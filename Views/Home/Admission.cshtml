@@ -32,15 +32,14 @@
     }
 }
 
-<!-- Header Hero -->
-<div class="py-5 text-white" style="background: linear-gradient(135deg, var(--edu-navy), var(--edu-dark));">
-    <div class="container text-center py-4">
-        <h1 class="display-4 fw-bold">@(Model.AdmissionTitle ?? "Admission Information")</h1>
-        <p class="lead text-white-50">@(Model.AdmissionSubtitle ?? "Learn about eligibility criteria, fees, rules, and register today")</p>
+<div class="ws-page-hero">
+    <div class="ws-container">
+        <h1>@(Model.AdmissionTitle ?? "Admission Information")</h1>
+        <p>@(Model.AdmissionSubtitle ?? "Learn about eligibility criteria, fees, rules, and register today")</p>
         @if (Model.AdmissionOpenDate.HasValue || Model.AdmissionCloseDate.HasValue)
         {
-            <div class="mt-3">
-                <span class="badge bg-light text-dark px-3 py-2 fs-6">
+            <div style="margin-top:16px;">
+                <span class="ws-badge ws-badge--light" style="font-size:16px;padding:8px 20px;">
                     @if (Model.AdmissionOpenDate.HasValue)
                     {
                         <text>Opens: @Model.AdmissionOpenDate.Value.ToString("dd MMM, yyyy")</text>
@@ -61,63 +60,63 @@
 
 @if (!isAdmissionOpen)
 {
-    <section class="py-5 bg-white">
-        <div class="container text-center py-5">
-            <i class="bi bi-info-circle text-muted" style="font-size: 4rem;"></i>
-            <h3 class="fw-bold text-dark mt-3">Admission is currently not available</h3>
-            <p class="text-muted">Please check back later or contact the school office for more information.</p>
-            <a href="/" class="btn btn-primary mt-2"><i class="bi bi-house me-1"></i> Back to Home</a>
+    <section class="ws-section">
+        <div class="ws-container ws-text-center" style="padding:80px 0;">
+            <div style="font-size:64px;color:var(--ws-muted);margin-bottom:16px;"><i class="bi bi-info-circle"></i></div>
+            <h3 style="font-weight:700;margin-bottom:8px;">Admission is currently not available</h3>
+            <p style="color:var(--ws-muted);margin-bottom:24px;">Please check back later or contact the school office for more information.</p>
+            <a href="/" class="ws-btn ws-btn--primary"><i class="bi bi-house me-1"></i> Back to Home</a>
         </div>
     </section>
 }
 else
 {
-    <section class="py-5 bg-white">
-        <div class="container py-3">
-            <div class="row g-5">
-                <div class="col-lg-8">
+    <section class="ws-section">
+        <div class="ws-container">
+            <div class="ws-row ws-g-6">
+                <div class="ws-col-12 ws-col-lg-8">
                     @if (Model.ShowAdmissionGuidelines && !string.IsNullOrEmpty(Model.AdmissionGuidelines))
                     {
-                        <h3 class="fw-bold text-dark mb-3"><i class="bi bi-info-circle text-primary me-2"></i> General Guidelines</h3>
-                        <div class="text-muted leading-relaxed admission-content">
+                        <h3 style="font-weight:700;margin-bottom:12px;"><i class="bi bi-info-circle me-2" style="color:var(--ws-secondary);"></i> General Guidelines</h3>
+                        <div style="color:var(--ws-text-light);font-size:15px;line-height:1.8;margin-bottom:32px;">
                             @Html.Raw(Model.AdmissionGuidelines)
                         </div>
                     }
 
                     @if (Model.ShowAdmissionRequirements && !string.IsNullOrEmpty(Model.AdmissionEligibility))
                     {
-                        <h4 class="fw-bold mt-5 text-dark"><i class="bi bi-patch-check text-primary me-2"></i> Eligibility Requirements</h4>
-                        <div class="text-muted admission-content" style="font-size:15px;">
+                        <h4 style="font-weight:700;margin:32px 0 12px;"><i class="bi bi-patch-check me-2" style="color:var(--ws-secondary);"></i> Eligibility Requirements</h4>
+                        <div style="color:var(--ws-text-light);font-size:15px;line-height:1.8;">
                             @Html.Raw(Model.AdmissionEligibility)
                         </div>
                     }
 
                     @if (!string.IsNullOrEmpty(Model.AdmissionRequirements))
                     {
-                        <h4 class="fw-bold mt-4 text-dark"><i class="bi bi-file-earmark-check text-primary me-2"></i> Required Documents</h4>
-                        <div class="text-muted admission-content" style="font-size:15px;">
+                        <h4 style="font-weight:700;margin:32px 0 12px;"><i class="bi bi-file-earmark-check me-2" style="color:var(--ws-secondary);"></i> Required Documents</h4>
+                        <div style="color:var(--ws-text-light);font-size:15px;line-height:1.8;">
                             @Html.Raw(Model.AdmissionRequirements)
                         </div>
                     }
 
                     @if (!string.IsNullOrEmpty(Model.AdmissionProcess))
                     {
-                        <h4 class="fw-bold mt-4 text-dark"><i class="bi bi-list-steps text-primary me-2"></i> Admission Process</h4>
-                        <div class="text-muted admission-content" style="font-size:15px;">
+                        <h4 style="font-weight:700;margin:32px 0 12px;"><i class="bi bi-list-steps me-2" style="color:var(--ws-secondary);"></i> Admission Process</h4>
+                        <div style="color:var(--ws-text-light);font-size:15px;line-height:1.8;">
                             @Html.Raw(Model.AdmissionProcess)
                         </div>
                     }
 
                     @if (Model.ShowAdmissionFees && feeStructure != null && feeStructure.Any())
                     {
-                        <h4 class="fw-bold mt-4 text-dark"><i class="bi bi-cash-stack text-primary me-2"></i> Admission Fees</h4>
+                        <h4 style="font-weight:700;margin:32px 0 12px;"><i class="bi bi-cash-stack me-2" style="color:var(--ws-secondary);"></i> Admission Fees</h4>
                         @if (!string.IsNullOrEmpty(Model.AdmissionFeeNote))
                         {
-                            <p class="text-muted">@Model.AdmissionFeeNote</p>
+                            <p style="color:var(--ws-muted);">@Model.AdmissionFeeNote</p>
                         }
-                        <div class="table-responsive">
-                            <table class="table table-bordered table-striped" style="font-size:14px;">
-                                <thead class="table-dark">
+                        <div style="overflow-x:auto;">
+                            <table class="ws-fee-table">
+                                <thead>
                                     <tr>
                                         <th>Class</th>
                                         <th>Admission Fee</th>
@@ -131,7 +130,7 @@ else
                                     @foreach (var fee in feeStructure.Where(f => f.IsActive).OrderBy(f => f.DisplayOrder))
                                     {
                                         <tr>
-                                            <td>@fee.ClassName</td>
+                                            <td style="font-weight:700;">@fee.ClassName</td>
                                             <td>@(fee.AdmissionFee > 0 ? $"BDT {fee.AdmissionFee:N0}" : "Free")</td>
                                             <td>@(fee.MonthlyFee > 0 ? $"BDT {fee.MonthlyFee:N0}" : "-")</td>
                                             <td>@(fee.SessionFee > 0 ? $"BDT {fee.SessionFee:N0}" : "-")</td>
@@ -146,60 +145,54 @@ else
 
                     @if (Model.ShowAdmissionDownloads && (!string.IsNullOrEmpty(Model.AdmissionCircularPath) || !string.IsNullOrEmpty(Model.AdmissionFormPath)))
                     {
-                        <h4 class="fw-bold mt-4 text-dark"><i class="bi bi-file-earmark-pdf text-primary me-2"></i> Download Forms & Guides</h4>
-                        <p class="text-muted">
-                            If you prefer to fill out a paper form, download the PDF copy, fill it completely, and submit it along with your documents to the admin office.
-                        </p>
-                        <div class="d-flex flex-wrap gap-3">
+                        <h4 style="font-weight:700;margin:32px 0 12px;"><i class="bi bi-file-earmark-pdf me-2" style="color:var(--ws-secondary);"></i> Download Forms & Guides</h4>
+                        <p style="color:var(--ws-muted);">If you prefer to fill out a paper form, download the PDF copy, fill it completely, and submit it along with your documents to the admin office.</p>
+                        <div class="ws-flex ws-flex-wrap ws-gap-3">
                             @if (!string.IsNullOrEmpty(Model.AdmissionCircularPath))
                             {
-                                <a href="@Model.AdmissionCircularPath" class="btn btn-sm btn-outline-danger" target="_blank"><i class="bi bi-file-earmark-pdf-fill me-2"></i> Admission Circular (PDF)</a>
+                                <a href="@Model.AdmissionCircularPath" class="ws-btn ws-btn--danger ws-btn--sm" target="_blank"><i class="bi bi-file-earmark-pdf-fill me-2"></i> Admission Circular (PDF)</a>
                             }
                             @if (!string.IsNullOrEmpty(Model.AdmissionFormPath))
                             {
-                                <a href="@Model.AdmissionFormPath" class="btn btn-sm btn-outline-danger" target="_blank"><i class="bi bi-file-earmark-pdf-fill me-2"></i> Offline Admission Form (PDF)</a>
+                                <a href="@Model.AdmissionFormPath" class="ws-btn ws-btn--danger ws-btn--sm" target="_blank"><i class="bi bi-file-earmark-pdf-fill me-2"></i> Offline Admission Form (PDF)</a>
                             }
                         </div>
                     }
                 </div>
 
-                <!-- Apply CTA Card -->
-                <div class="col-lg-4">
-                    <div class="card border-0 shadow-sm p-4 bg-light rounded text-center" style="border-top: 4px solid var(--edu-gold); position:sticky; top:100px;">
-                        <div class="p-3 bg-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3 shadow-sm" style="width:70px; height:70px; color:var(--edu-gold)">
-                            <i class="bi bi-lightning-charge-fill fs-2"></i>
+                <div class="ws-col-12 ws-col-lg-4">
+                    <div class="ws-card ws-text-center" style="border-top:4px solid var(--ws-accent);background:var(--ws-bg-alt);padding:24px;position:sticky;top:100px;">
+                        <div style="width:70px;height:70px;border-radius:50%;background:var(--ws-card);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;box-shadow:var(--ws-shadow-sm);color:var(--ws-accent);font-size:28px;">
+                            <i class="bi bi-lightning-charge-fill"></i>
                         </div>
-                        <h4 class="fw-bold text-dark mb-2">@(Model.AdmissionCtaTitle ?? "Apply Online Now")</h4>
-                        <p class="text-muted small mb-4">@(Model.AdmissionCtaText ?? "Submit your details, upload documents, and get an immediate application tracking number.")</p>
+                        <h4 style="font-weight:700;margin-bottom:8px;">@(Model.AdmissionCtaTitle ?? "Apply Online Now")</h4>
+                        <p style="font-size:14px;color:var(--ws-muted);margin-bottom:16px;">@(Model.AdmissionCtaText ?? "Submit your details, upload documents, and get an immediate application tracking number.")</p>
 
                         @if (!isWithinDates)
                         {
-                            <div class="alert alert-warning small mb-3">
-                                <i class="bi bi-exclamation-triangle me-1"></i>
-                                Admission is currently closed.
+                            <div class="ws-form-alert ws-form-alert--error" style="margin-top:0;margin-bottom:12px;">
+                                <i class="bi bi-exclamation-triangle me-1"></i> Admission is currently closed.
                             </div>
                         }
 
-                        <div class="d-flex flex-column gap-2">
+                        <div class="ws-flex" style="flex-direction:column;gap:8px;">
                             @if (Model.OnlineAdmissionEnabled && isWithinDates)
                             {
-                                <a href="/Admission/Apply" class="btn btn-edu-gold w-100 py-3"><i class="bi bi-pencil-square me-2"></i> Online Application</a>
+                                <a href="/Admission/Apply" class="ws-btn ws-btn--accent ws-btn--block" style="padding:14px 24px;"><i class="bi bi-pencil-square me-2"></i> Online Application</a>
                             }
                             else if (!Model.OnlineAdmissionEnabled)
                             {
-                                <div class="alert alert-info small mb-0">
-                                    <i class="bi bi-info-circle me-1"></i>
-                                    Online admission is currently disabled. Please visit the school office.
+                                <div class="ws-form-alert ws-form-alert--success" style="margin:0;font-size:13px;">
+                                    <i class="bi bi-info-circle me-1"></i> Online admission is currently disabled. Please visit the school office.
                                 </div>
                             }
                             else
                             {
-                                <div class="alert alert-warning small mb-0">
-                                    <i class="bi bi-exclamation-triangle me-1"></i>
-                                    Admission period has ended.
+                                <div class="ws-form-alert ws-form-alert--error" style="margin:0;font-size:13px;">
+                                    <i class="bi bi-exclamation-triangle me-1"></i> Admission period has ended.
                                 </div>
                             }
-                            <a href="/contact" class="btn btn-outline-secondary w-100 py-2">Query Helpline</a>
+                            <a href="/contact" class="ws-btn ws-btn--outline ws-btn--block">Query Helpline</a>
                         </div>
                     </div>
                 </div>

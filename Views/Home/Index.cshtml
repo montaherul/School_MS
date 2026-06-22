@@ -2,159 +2,139 @@
 @{
     Layout = "~/Views/Shared/_PublicLayout.cshtml";
     ViewData["Title"] = "Welcome to Our School";
-}
-
-@{
     var settings = Model.Settings;
 }
 
-<!-- ── 1. Hero Banner Slider ── -->
+<!-- ── 1. Hero Slider ── -->
 @if (settings.ShowSlider)
 {
-<div id="heroCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel" style="margin-top:-20px;">
-    <div class="carousel-indicators">
-        @for (int i = 0; i < Model.Sliders.Count; i++)
+var totalSlides = Model.Sliders.Count > 0 ? Model.Sliders.Count : 1;
+<div class="ws-hero-slider" id="heroCarousel">
+    <div class="ws-hero-dots" id="heroDots">
+        @for (int i = 0; i < totalSlides; i++)
         {
-            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="@i" class="@(i == 0 ? "active" : "")" aria-current="@(i == 0 ? "true" : "false")"></button>
-        }
-        @if (Model.Sliders.Count == 0)
-        {
-            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active" aria-current="true"></button>
+            <button class="ws-hero-dot @(i == 0 ? "active" : "")" data-index="@i"></button>
         }
     </div>
-    
-    <div class="carousel-inner" style="height: 520px; background-color: var(--edu-dark);">
-        @for (int i = 0; i < Model.Sliders.Count; i++)
-        {
-            var slider = Model.Sliders[i];
-            <div class="carousel-item @(i == 0 ? "active" : "")" style="height: 100%;">
-                <div style="background-image: url('@(!string.IsNullOrWhiteSpace(slider.ImagePath) ? slider.ImagePath : "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=1471&auto=format&fit=cover")'); background-size: cover; background-position: center; width: 100%; height: 100%; position: relative;">
-                    <div style="position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(180deg, rgba(8,28,51,0.4), rgba(8,28,51,0.85));"></div>
-                    <div class="container h-100 d-flex align-items-center" style="position: relative; z-index: 5;">
-                        <div class="text-white animate__animated animate__fadeInUp" style="max-width: 650px;">
-                            <span class="badge bg-warning text-dark mb-3 px-3 py-2 fw-bold text-uppercase fs-6">@slider.Subtitle</span>
-                            <h1 class="display-4 fw-extrabold mb-3 text-white">@slider.Title</h1>
-                            @if (!string.IsNullOrEmpty(slider.ButtonText))
-                            {
-                                <a href="@slider.ButtonUrl" class="btn btn-edu-gold mt-3">@slider.ButtonText <i class="bi bi-arrow-right-short ms-2"></i></a>
-                            }
-                        </div>
-                    </div>
+    @for (int i = 0; i < Model.Sliders.Count; i++)
+    {
+        var slider = Model.Sliders[i];
+        <div class="ws-hero-slide @(i == 0 ? "active" : "")" style="background-image: url('@(!string.IsNullOrWhiteSpace(slider.ImagePath) ? slider.ImagePath : "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=1471&auto=format&fit=cover")');">
+            <div class="ws-container ws-hero-slide__content">
+                <div class="ws-hero-slide__inner">
+                    <span class="ws-hero-slide__badge">@slider.Subtitle</span>
+                    <h1 class="ws-hero-slide__title">@slider.Title</h1>
+                    @if (!string.IsNullOrEmpty(slider.ButtonText))
+                    {
+                        <a href="@slider.ButtonUrl" class="ws-btn ws-btn--accent">@slider.ButtonText <i class="bi bi-arrow-right ms-2"></i></a>
+                    }
                 </div>
             </div>
-        }
-        
-        @if (Model.Sliders.Count == 0)
-        {
-            <div class="carousel-item active" style="height: 100%;">
-                <div style="background-image: url('https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=1471&auto=format&fit=cover'); background-size: cover; background-position: center; width: 100%; height: 100%; position: relative;">
-                    <div style="position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(180deg, rgba(8,28,51,0.4), rgba(8,28,51,0.85));"></div>
-                    <div class="container h-100 d-flex align-items-center" style="position: relative; z-index: 5;">
-                        <div class="text-white animate__animated animate__fadeInUp" style="max-width: 650px;">
-                            <span class="badge bg-warning text-dark mb-3 px-3 py-2 fw-bold text-uppercase fs-6">Gateway to Knowledge</span>
-                            <h1 class="display-4 fw-extrabold mb-3 text-white">Shaping the Future of Education</h1>
-                            <p class="lead mb-4 text-white-50">Welcome to our integrated educational portal. Register today for open admissions and dynamic class rooms.</p>
-                            <a href="/Admission/Apply" class="btn btn-edu-gold">Apply Online Now <i class="bi bi-chevron-right ms-2"></i></a>
-                        </div>
-                    </div>
+        </div>
+    }
+    @if (Model.Sliders.Count == 0)
+    {
+        <div class="ws-hero-slide active" style="background-image: url('https://images.unsplash.com/photo-1546410531-bb4caa6b424d?q=80&w=1471&auto=format&fit=cover');">
+            <div class="ws-container ws-hero-slide__content">
+                <div class="ws-hero-slide__inner">
+                    <span class="ws-hero-slide__badge">Gateway to Knowledge</span>
+                    <h1 class="ws-hero-slide__title">Shaping the Future of Education</h1>
+                    <p class="ws-hero-slide__text">Welcome to our integrated educational portal. Register today for open admissions and dynamic classrooms.</p>
+                    <a href="/Admission/Apply" class="ws-btn ws-btn--accent">Apply Online Now <i class="bi bi-chevron-right ms-2"></i></a>
                 </div>
             </div>
-        }
-    </div>
-    
-    <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
-        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-    </button>
-    <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
-        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-    </button>
+        </div>
+    }
+    <button class="ws-hero-btn ws-hero-btn--prev" onclick="slideHero(-1)" type="button" aria-label="Previous slide"><i class="bi bi-chevron-left"></i></button>
+    <button class="ws-hero-btn ws-hero-btn--next" onclick="slideHero(1)" type="button" aria-label="Next slide"><i class="bi bi-chevron-right"></i></button>
 </div>
 }
 
-<!-- ── 2. Announcement Scrolling Marquee ── -->
-<div class="bg-warning py-2 text-dark border-bottom border-top border-dark" style="position: relative; z-index: 10; font-weight: 700; font-size: 14px;">
-    <div class="container d-flex align-items-center">
-        <span class="text-uppercase bg-danger text-white px-2 py-1 rounded me-3 text-nowrap animate__animated animate__pulse animate__infinite" style="font-size:12px;"><i class="bi bi-megaphone-fill me-1"></i> Latest Alert:</span>
-        <marquee behavior="scroll" direction="left" onmouseover="this.stop();" onmouseout="this.start();">
-            @foreach (var a in Model.Announcements)
-            {
-                <span class="me-5"><i class="bi bi-megaphone-fill mx-2 text-danger fs-5"></i> <strong>@a.Title:</strong> @a.Content</span>
-            }
-            @if (Model.Announcements.Count == 0)
-            {
-                @foreach (var n in Model.LatestNotices)
+<!-- ── 2. Announcement Marquee ── -->
+<div class="ws-announcement">
+    <div class="ws-container ws-flex ws-gap-3">
+        <span class="ws-announcement__label"><i class="bi bi-megaphone-fill"></i> Latest:</span>
+        <div class="ws-announcement__track">
+            <div style="display:inline-block;white-space:nowrap;animation:ws-scroll 30s linear infinite;">
+                @if (Model.Announcements.Count > 0)
                 {
-                    <span class="me-5"><i class="bi bi-dot mx-2 text-primary fs-4"></i> <a href="/notice/details/@n.Id" class="text-dark text-decoration-none">@n.Title (@n.PublishAt.ToString("dd MMM yyyy"))</a></span>
+                    @foreach (var a in Model.Announcements)
+                    {
+                        <span class="ws-announcement__item"><i class="bi bi-megaphone-fill mx-2" style="color:var(--ws-danger);"></i> <strong>@a.Title:</strong> @a.Content</span>
+                    }
                 }
-                @if (Model.LatestNotices.Count == 0)
+                else
                 {
-                    <span>Welcome to our new school portal system! Admissions for the current academic session are now officially open. Submit your applications online!</span>
+                    @foreach (var n in Model.LatestNotices)
+                    {
+                        <span class="ws-announcement__item"><a href="/notice/details/@n.Id"><i class="bi bi-dot mx-2" style="font-size:20px;vertical-align:middle;"></i> @n.Title (@n.PublishAt.ToString("dd MMM yyyy"))</a></span>
+                    }
+                    @if (Model.LatestNotices.Count == 0)
+                    {
+                        <span class="ws-announcement__item">Welcome to our new school portal system! Admissions for the current academic session are now officially open.</span>
+                    }
                 }
-            }
-        </marquee>
+            </div>
+        </div>
     </div>
 </div>
-
-<!-- ── 3. Welcome & Principal Message Section ── -->
+<!-- ── 3. Welcome & Principal Message ── -->
 @if (settings.ShowWelcomeSection || settings.ShowPrincipalMessage)
 {
-<section class="py-5 bg-white" id="welcome">
-    <div class="container py-3">
-        <div class="row g-5 align-items-center">
-            <div class="col-lg-7">
-                <span class="text-warning fw-extrabold text-uppercase letter-spacing-1 d-block mb-2">@(settings.WelcomeTagline ?? "Welcome Address")</span>
-                <h2 class="display-5 fw-bold text-dark mb-4" style="line-height: 1.2;">@(settings.WelcomeHeading ?? "Nurturing Brilliance, Cultivating Leadership")</h2>
-                <p class="lead text-muted mb-4">
+<section class="ws-section">
+    <div class="ws-container">
+        <div class="ws-row ws-g-6" style="align-items:center;">
+            <div class="ws-col-12 ws-col-lg-7">
+                <span class="ws-section__label">@(settings.WelcomeTagline ?? "Welcome Address")</span>
+                <h2 class="ws-section__title" style="font-size:42px;">@(settings.WelcomeHeading ?? "Nurturing Brilliance, Cultivating Leadership")</h2>
+                <p style="font-size:17px;color:var(--ws-text-light);margin-bottom:28px;line-height:1.7;">
                     @(settings.WelcomeText ?? "On behalf of the students, faculty, and administration, we welcome you to the official gateway of our historic institution. We believe in providing an educational foundation that couples rigorous academic challenges with moral values.")
                 </p>
-                <div class="row g-4 mb-4">
-                    <div class="col-sm-6">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="p-3 bg-light rounded-circle text-primary"><i class="bi bi-shield-check fs-3"></i></div>
+                <div class="ws-row ws-g-4" style="margin-bottom:24px;">
+                    <div class="ws-col-12 ws-col-sm-6">
+                        <div class="ws-feature">
+                            <div class="ws-feature__icon"><i class="bi bi-shield-check"></i></div>
                             <div>
-                                <h5 class="fw-bold mb-0">Government EIIN</h5>
-                                <p class="text-muted mb-0 small">Registered Code: @Model.Settings.EIIN</p>
+                                <h5 class="ws-feature__title">Government EIIN</h5>
+                                <p class="ws-feature__text">Registered Code: @Model.Settings.EIIN</p>
                             </div>
                         </div>
                     </div>
-                    <div class="col-sm-6">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="p-3 bg-light rounded-circle text-primary"><i class="bi bi-clock-history fs-3"></i></div>
+                    <div class="ws-col-12 ws-col-sm-6">
+                        <div class="ws-feature">
+                            <div class="ws-feature__icon"><i class="bi bi-clock-history"></i></div>
                             <div>
-                                <h5 class="fw-bold mb-0">Office Hours</h5>
-                                <p class="text-muted mb-0 small">@(settings.OfficeHours ?? "Sat - Thu (8:00 AM - 2:00 PM)")</p>
+                                <h5 class="ws-feature__title">Office Hours</h5>
+                                <p class="ws-feature__text">@(settings.OfficeHours ?? "Sat - Thu (8:00 AM - 2:00 PM)")</p>
                             </div>
                         </div>
                     </div>
                 </div>
-                <div class="d-flex gap-3">
-                    <a href="/about" class="btn btn-edu-navy">Read Full History</a>
-                    <a href="/mission-vision" class="btn btn-outline-secondary">Our Values</a>
+                <div class="ws-flex ws-gap-3 ws-flex-wrap">
+                    <a href="/about" class="ws-btn ws-btn--primary">Read Full History</a>
+                    <a href="/mission-vision" class="ws-btn ws-btn--outline">Our Values</a>
                 </div>
             </div>
-            
-            <div class="col-lg-5">
-                <div class="card border-0 shadow-lg" style="border-radius: 12px; overflow: hidden; border-top: 4px solid var(--edu-gold);">
-                    <div class="card-body p-4 text-center">
-                        <div class="mb-4">
-                            @if (!string.IsNullOrEmpty(Model.Settings.PrincipalImagePath))
-                            {
-                                <img src="@Model.Settings.PrincipalImagePath" class="rounded-circle shadow" style="width: 140px; height: 140px; object-fit: cover; border: 3px solid var(--edu-gold);" alt="Principal picture"/>
-                            }
-                            else
-                            {
-                                <div class="bg-light rounded-circle shadow mx-auto d-flex align-items-center justify-content-center" style="width: 140px; height: 140px; border: 3px solid var(--edu-gold); color:var(--edu-navy)">
-                                    <i class="bi bi-person-fill fs-1"></i>
-                                </div>
-                            }
-                        </div>
-                        <h4 class="fw-bold text-dark mb-1">@Model.Settings.PrincipalName</h4>
-                        <p class="text-warning fw-semibold mb-3">@(Model.Settings.PrincipalDesignation ?? "Head Teacher / Principal")</p>
-                        <p class="text-muted italic small mb-4 px-2" style="font-style: italic;">
-                            "@(Model.Settings.PrincipalMessage?.Length > 200 ? Model.Settings.PrincipalMessage.Substring(0, 197) + "..." : Model.Settings.PrincipalMessage)"
-                        </p>
-                        <a href="/principal-message" class="btn btn-sm btn-edu-navy px-4">Read Full Message</a>
+            <div class="ws-col-12 ws-col-lg-5">
+                <div class="ws-card ws-card--bordered-top ws-text-center" style="padding:32px;">
+                    <div style="margin-bottom:16px;">
+                        @if (!string.IsNullOrEmpty(Model.Settings.PrincipalImagePath))
+                        {
+                            <img src="@Model.Settings.PrincipalImagePath" style="width:140px;height:140px;border-radius:50%;object-fit:cover;border:3px solid var(--ws-accent);box-shadow:var(--ws-shadow-md);display:block;margin:0 auto;" alt="Principal" />
+                        }
+                        else
+                        {
+                            <div style="width:140px;height:140px;border-radius:50%;background:var(--ws-bg-alt);margin:0 auto;display:flex;align-items:center;justify-content:center;border:3px solid var(--ws-accent);color:var(--ws-muted);font-size:48px;">
+                                <i class="bi bi-person-fill"></i>
+                            </div>
+                        }
                     </div>
+                    <h4 style="font-weight:700;margin-bottom:4px;">@Model.Settings.PrincipalName</h4>
+                    <p style="color:var(--ws-accent);font-weight:600;margin-bottom:12px;">@(Model.Settings.PrincipalDesignation ?? "Head Teacher / Principal")</p>
+                    <p style="color:var(--ws-muted);font-style:italic;font-size:14px;margin-bottom:20px;">
+                        "@(Model.Settings.PrincipalMessage?.Length > 200 ? Model.Settings.PrincipalMessage.Substring(0, 197) + "..." : Model.Settings.PrincipalMessage)"
+                    </p>
+                    <a href="/principal-message" class="ws-btn ws-btn--primary ws-btn--sm">Read Full Message</a>
                 </div>
             </div>
         </div>
@@ -162,83 +142,67 @@
 </section>
 }
 
-<!-- ── 4. Notice Board & Events Section ── -->
+<!-- ── 4. Notices & Events ── -->
 @if (settings.ShowNotices || settings.ShowEvents)
 {
-<section class="py-5 bg-light border-top border-bottom">
-    <div class="container py-3">
-        <div class="row g-5">
-            <!-- Notices List -->
-            <div class="col-lg-7">
-                <div class="d-flex justify-content-between align-items-center mb-4">
+<section class="ws-section ws-section--alt">
+    <div class="ws-container">
+        <div class="ws-row ws-g-6">
+            <div class="ws-col-12 ws-col-lg-7">
+                <div class="ws-flex-between ws-flex-wrap ws-mb-6">
                     <div>
-                        <span class="text-primary fw-bold text-uppercase fs-6">Bulletin Board</span>
-                        <h3 class="fw-bold text-dark mb-0">Latest School Notices</h3>
+                        <span class="ws-section__label">Bulletin Board</span>
+                        <h3 style="font-size:28px;font-weight:800;">Latest School Notices</h3>
                     </div>
-                    <a href="/notices" class="btn btn-sm btn-outline-primary px-3 rounded-pill">View All Board <i class="bi bi-arrow-right"></i></a>
+                    <a href="/notices" class="ws-btn ws-btn--outline ws-btn--sm ws-btn--pill">View All <i class="bi bi-arrow-right ms-1"></i></a>
                 </div>
-                
-                <div class="d-flex flex-column gap-3">
+                <div class="ws-flex ws-flex-col ws-gap-3">
                     @foreach (var notice in Model.LatestNotices)
                     {
-                        <div class="card border-0 shadow-sm transition-hover" style="border-radius: 8px; border-left: 4px solid var(--edu-navy);">
-                            <div class="card-body p-4 d-flex justify-content-between align-items-center flex-wrap gap-3">
-                                <div>
-                                    <div class="d-flex align-items-center gap-2 mb-2">
-                                        <span class="badge bg-light text-primary border"><i class="bi bi-bookmark-fill me-1"></i> @notice.AudienceRole</span>
-                                        <span class="text-muted small"><i class="bi bi-calendar-event me-1"></i> @notice.PublishAt.ToString("dd MMM yyyy")</span>
-                                    </div>
-                                    <h5 class="fw-bold mb-1 text-dark">
-                                        <a href="/notice/details/@notice.Id" class="text-dark text-decoration-none hover-primary">@notice.Title</a>
-                                    </h5>
-                                </div>
-                                <a href="/notice/details/@notice.Id" class="btn btn-sm btn-edu-gold px-3"><i class="bi bi-arrow-right"></i></a>
+                        <div class="ws-notice-card">
+                            <div class="ws-notice-card__meta">
+                                <span class="ws-badge ws-badge--light"><i class="bi bi-bookmark-fill me-1"></i> @notice.AudienceRole</span>
+                                <span style="font-size:13px;color:var(--ws-muted);"><i class="bi bi-calendar-event me-1"></i> @notice.PublishAt.ToString("dd MMM yyyy")</span>
+                            </div>
+                            <h5 class="ws-notice-card__title"><a href="/notice/details/@notice.Id">@notice.Title</a></h5>
+                            <p class="ws-notice-card__body">@notice.Body</p>
+                            <div class="ws-notice-card__footer">
+                                <a href="/notice/details/@notice.Id" class="ws-btn ws-btn--accent ws-btn--sm">Read More <i class="bi bi-arrow-right ms-1"></i></a>
                             </div>
                         </div>
                     }
                     @if (Model.LatestNotices.Count == 0)
                     {
-                        <div class="text-center p-5 text-muted bg-white rounded shadow-sm">
-                            <i class="bi bi-journal-x fs-1 mb-3 d-block text-black-50"></i>
-                            No active notices are currently available on the bulletin board. Check back later!
-                        </div>
+                        <div class="ws-empty"><div class="ws-empty__icon"><i class="bi bi-journal-x"></i></div><h5 class="ws-empty__title">No Notices</h5><p class="ws-empty__text">No active notices available currently.</p></div>
                     }
                 </div>
             </div>
-            
-            <!-- Events List -->
-            <div class="col-lg-5">
-                <div class="d-flex justify-content-between align-items-center mb-4">
+            <div class="ws-col-12 ws-col-lg-5">
+                <div class="ws-flex-between ws-flex-wrap ws-mb-6">
                     <div>
-                        <span class="text-primary fw-bold text-uppercase fs-6">Calendar Events</span>
-                        <h3 class="fw-bold text-dark mb-0">Upcoming Events</h3>
+                        <span class="ws-section__label">Calendar Events</span>
+                        <h3 style="font-size:28px;font-weight:800;">Upcoming Events</h3>
                     </div>
-                    <a href="/events" class="btn btn-sm btn-outline-primary px-3 rounded-pill">View Calendar</a>
+                    <a href="/events" class="ws-btn ws-btn--outline ws-btn--sm ws-btn--pill">View All</a>
                 </div>
-                
-                <div class="d-flex flex-column gap-4">
+                <div class="ws-flex ws-flex-col ws-gap-3">
                     @foreach (var ev in Model.UpcomingEvents)
                     {
-                        <div class="d-flex gap-3 align-items-start bg-white p-3 rounded shadow-sm border transition-hover">
-                            <div class="text-center p-3 rounded" style="background-color: var(--edu-light); min-width: 80px; border-top: 3px solid var(--edu-gold);">
-                                <h4 class="fw-bold text-primary mb-0">@ev.EventDate.ToString("dd")</h4>
-                                <span class="text-uppercase small fw-bold text-dark">@ev.EventDate.ToString("MMM")</span>
+                        <div class="ws-event-item">
+                            <div class="ws-event-item__date">
+                                <div class="ws-event-item__day">@ev.EventDate.ToString("dd")</div>
+                                <div class="ws-event-item__month">@ev.EventDate.ToString("MMM")</div>
                             </div>
                             <div>
-                                <span class="badge bg-warning text-dark mb-2" style="font-size:11px;"><i class="bi bi-geo-alt-fill me-1"></i> @ev.EventLocation</span>
-                                <h6 class="fw-bold text-dark mb-1">
-                                    <a href="/event/details/@ev.Id" class="text-dark text-decoration-none hover-primary">@ev.Title</a>
-                                </h6>
-                                <p class="text-muted small mb-0 text-truncate" style="max-width: 280px;">@ev.Description</p>
+                                <span class="ws-badge ws-badge--accent" style="font-size:11px;margin-bottom:8px;"><i class="bi bi-geo-alt-fill me-1"></i> @ev.EventLocation</span>
+                                <h6 style="font-weight:700;margin-bottom:4px;"><a href="/event/details/@ev.Id" style="color:var(--ws-text);">@ev.Title</a></h6>
+                                <p style="font-size:13px;color:var(--ws-muted);margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:280px;">@ev.Description</p>
                             </div>
                         </div>
                     }
                     @if (Model.UpcomingEvents.Count == 0)
                     {
-                        <div class="text-center p-5 text-muted bg-white rounded shadow-sm">
-                            <i class="bi bi-calendar-x fs-1 mb-3 d-block text-black-50"></i>
-                            No upcoming events are listed on the academic calendar at this time.
-                        </div>
+                        <div class="ws-empty"><div class="ws-empty__icon"><i class="bi bi-calendar-x"></i></div><h5 class="ws-empty__title">No Events</h5><p class="ws-empty__text">No upcoming events scheduled at this time.</p></div>
                     }
                 </div>
             </div>
@@ -247,89 +211,73 @@
 </section>
 }
 
-<!-- ── 5. Academic Calendar Widget ── -->
-<section class="py-5 bg-white border-top">
-    <div class="container py-3">
-        <div class="d-flex justify-content-between align-items-center mb-4">
+<!-- ── 5. Academic Calendar ── -->
+<section class="ws-section">
+    <div class="ws-container">
+        <div class="ws-flex-between ws-flex-wrap ws-mb-6">
             <div>
-                <span class="text-warning fw-bold text-uppercase fs-6">Mark Your Dates</span>
-                <h3 class="fw-bold text-dark mb-0">Academic Calendar</h3>
+                <span class="ws-section__label">Mark Your Dates</span>
+                <h3 style="font-size:28px;font-weight:800;">Academic Calendar</h3>
             </div>
-            <a href="/academic-calendar" class="btn btn-sm btn-outline-primary px-3 rounded-pill">View Full Calendar <i class="bi bi-arrow-right"></i></a>
+            <a href="/academic-calendar" class="ws-btn ws-btn--outline ws-btn--sm ws-btn--pill">Full Calendar <i class="bi bi-arrow-right ms-1"></i></a>
         </div>
-        <div class="row g-3">
+        <div class="ws-row ws-g-4">
             @if (Model.UpcomingCalendarEvents.Count > 0)
             {
                 @foreach (var cal in Model.UpcomingCalendarEvents)
                 {
-                    var badgeBg = cal.IsHoliday ? "#dc3545" : cal.IsExamDay ? "#007bff" : "#fd7e14";
-                    var badgeText = cal.IsHoliday ? "Holiday" : cal.IsExamDay ? "Exam" : "Event";
-                    <div class="col-md-4 col-lg">
-                        <div class="card border-0 shadow-sm text-center transition-hover" style="border-radius: 12px; border-top: 3px solid @badgeBg;">
-                            <div class="card-body p-4">
-                                <div class="mb-2">
-                                    <span class="display-6 fw-extrabold" style="color: var(--edu-navy);">@cal.Date.Day</span>
-                                </div>
-                                <div class="text-uppercase fw-bold small mb-1" style="color: var(--edu-gold);">@cal.Date.ToString("MMM yyyy")</div>
-                                <h6 class="fw-bold text-dark mb-2" style="font-size:14px;">@cal.Title</h6>
-                                <span class="badge" style="background:@badgeBg; font-size:11px;">@badgeText@(cal.HolidayType != null ? " - " + cal.HolidayType : "")</span>
-                            </div>
+                    var c = cal.IsHoliday ? "var(--ws-danger)" : cal.IsExamDay ? "var(--ws-secondary)" : "var(--ws-warning)";
+                    var t = cal.IsHoliday ? "Holiday" : cal.IsExamDay ? "Exam" : "Event";
+                    <div class="ws-col-6 ws-col-md-4 ws-col-lg">
+                        <div class="ws-cal-card" style="border-top-color:@c;">
+                            <div class="ws-cal-card__day">@cal.Date.Day</div>
+                            <div class="ws-cal-card__month">@cal.Date.ToString("MMM yyyy")</div>
+                            <h6 class="ws-cal-card__title">@cal.Title</h6>
+                            <span class="ws-badge" style="background:@c;color:#fff;">@t@(cal.HolidayType != null ? " - " + cal.HolidayType : "")</span>
                         </div>
                     </div>
                 }
             }
             else
             {
-                <div class="col-12 text-center p-4 text-muted bg-light rounded">
-                    <i class="bi bi-calendar-check fs-1 mb-2 d-block text-black-50"></i>
-                    No upcoming academic events scheduled. <a href="/academic-calendar">View full calendar</a>.
-                </div>
+                <div class="ws-col-12"><div class="ws-empty"><div class="ws-empty__icon"><i class="bi bi-calendar-check"></i></div><h5 class="ws-empty__title">No Events</h5><p class="ws-empty__text"><a href="/academic-calendar">View full calendar</a></p></div></div>
             }
         </div>
     </div>
 </section>
 
-<!-- ── 6. Dynamic Stats Block Section ── -->
+<!-- ── 6. Statistics ── -->
 @if (settings.ShowStatistics)
 {
-<section class="py-5 text-white" style="background: linear-gradient(135deg, var(--edu-navy), var(--edu-dark)); position: relative;">
-    <div style="position: absolute; top:0; left:0; width:100%; height:100%; background: url('https://www.transparenttextures.com/patterns/black-paper.png'); opacity:0.1;"></div>
-    <div class="container py-4 position-relative">
-        <div class="row g-4 text-center justify-content-center">
-            <div class="col-6 col-md-3">
-                <div class="p-3">
-                    <div class="p-3 bg-warning text-dark rounded-circle mx-auto d-flex align-items-center justify-content-center mb-3 shadow" style="width:70px; height:70px;">
-                        <i class="bi bi-people-fill fs-2"></i>
-                    </div>
-                    <h2 class="display-5 fw-extrabold text-white mb-1">@Model.StudentCount+</h2>
-                    <span class="text-white-50 text-uppercase fw-semibold" style="font-size:13px;">@(settings.StudentLabel ?? "Active Students")</span>
+<section class="ws-section ws-section--dark ws-stats">
+    <div class="ws-container">
+        <div class="ws-row ws-g-4 ws-text-center" style="justify-content:center;">
+            <div class="ws-col-6 ws-col-md-3">
+                <div class="ws-stat">
+                    <div class="ws-stat__icon"><i class="bi bi-people-fill"></i></div>
+                    <div class="ws-stat__number">@Model.StudentCount+</div>
+                    <div class="ws-stat__label">@(settings.StudentLabel ?? "Active Students")</div>
                 </div>
             </div>
-            <div class="col-6 col-md-3">
-                <div class="p-3">
-                    <div class="p-3 bg-warning text-dark rounded-circle mx-auto d-flex align-items-center justify-content-center mb-3 shadow" style="width:70px; height:70px;">
-                        <i class="bi bi-person-workspace fs-2"></i>
-                    </div>
-                    <h2 class="display-5 fw-extrabold text-white mb-1">@Model.TeacherCount+</h2>
-                    <span class="text-white-50 text-uppercase fw-semibold" style="font-size:13px;">@(settings.TeacherLabel ?? "Honorable Teachers")</span>
+            <div class="ws-col-6 ws-col-md-3">
+                <div class="ws-stat">
+                    <div class="ws-stat__icon"><i class="bi bi-person-workspace"></i></div>
+                    <div class="ws-stat__number">@Model.TeacherCount+</div>
+                    <div class="ws-stat__label">@(settings.TeacherLabel ?? "Honorable Teachers")</div>
                 </div>
             </div>
-            <div class="col-6 col-md-3">
-                <div class="p-3">
-                    <div class="p-3 bg-warning text-dark rounded-circle mx-auto d-flex align-items-center justify-content-center mb-3 shadow" style="width:70px; height:70px;">
-                        <i class="bi bi-building fs-2"></i>
-                    </div>
-                    <h2 class="display-5 fw-extrabold text-white mb-1">@Model.ClassCount+</h2>
-                    <span class="text-white-50 text-uppercase fw-semibold" style="font-size:13px;">@(settings.ClassLabel ?? "Classrooms")</span>
+            <div class="ws-col-6 ws-col-md-3">
+                <div class="ws-stat">
+                    <div class="ws-stat__icon"><i class="bi bi-building"></i></div>
+                    <div class="ws-stat__number">@Model.ClassCount+</div>
+                    <div class="ws-stat__label">@(settings.ClassLabel ?? "Classrooms")</div>
                 </div>
             </div>
-            <div class="col-6 col-md-3">
-                <div class="p-3">
-                    <div class="p-3 bg-warning text-dark rounded-circle mx-auto d-flex align-items-center justify-content-center mb-3 shadow" style="width:70px; height:70px;">
-                        <i class="bi bi-mortarboard fs-2"></i>
-                    </div>
-                    <h2 class="display-5 fw-extrabold text-white mb-1">@Model.EmployeeCount+</h2>
-                    <span class="text-white-50 text-uppercase fw-semibold" style="font-size:13px;">@(settings.EmployeeLabel ?? "Staff Members")</span>
+            <div class="ws-col-6 ws-col-md-3">
+                <div class="ws-stat">
+                    <div class="ws-stat__icon"><i class="bi bi-mortarboard"></i></div>
+                    <div class="ws-stat__number">@Model.EmployeeCount+</div>
+                    <div class="ws-stat__label">@(settings.EmployeeLabel ?? "Staff Members")</div>
                 </div>
             </div>
         </div>
@@ -337,106 +285,88 @@
 </section>
 }
 
-<!-- ── 6. Photo Albums Gallery Preview Section ── -->
+<!-- ── 7. Gallery Preview ── -->
 @if (settings.ShowGallery)
 {
-<section class="py-5 bg-white">
-    <div class="container py-3">
-        <div class="d-flex justify-content-between align-items-center mb-5">
+<section class="ws-section">
+    <div class="ws-container">
+        <div class="ws-flex-between ws-flex-wrap ws-mb-6">
             <div>
-                <span class="text-warning fw-bold text-uppercase fs-6">Campus Life</span>
-                <h2 class="fw-bold text-dark mb-0">Our Photo Gallery</h2>
+                <span class="ws-section__label">Campus Life</span>
+                <h2 style="font-size:28px;font-weight:800;">Our Photo Gallery</h2>
             </div>
-            <a href="/gallery" class="btn btn-edu-navy">View All Albums</a>
+            <a href="/gallery" class="ws-btn ws-btn--primary">View All Albums</a>
         </div>
-        
-        <div class="row g-4">
+        <div class="ws-row ws-g-4">
             @foreach (var album in Model.Albums)
             {
-                <div class="col-md-4">
-                    <div class="card border-0 shadow-sm overflow-hidden transition-hover" style="border-radius: 8px;">
-                        <div style="position:relative; height: 240px; overflow:hidden;">
+                <div class="ws-col-12 ws-col-md-4">
+                    <div class="ws-album-card">
+                        <div class="ws-album-card__image">
                             @if (!string.IsNullOrEmpty(album.CoverImagePath))
                             {
-                                <img src="@album.CoverImagePath" class="w-100 h-100" style="object-fit: cover;" alt="album cover"/>
+                                <img src="@album.CoverImagePath" alt="album cover" />
                             }
                             else
                             {
-                                <div class="bg-light w-100 h-100 d-flex align-items-center justify-content-center text-muted">
-                                    <i class="bi bi-image fs-1 text-black-50"></i>
+                                <div style="width:100%;height:100%;background:var(--ws-bg-alt);display:flex;align-items:center;justify-content:center;color:var(--ws-muted);font-size:36px;">
+                                    <i class="bi bi-image"></i>
                                 </div>
                             }
-                            <div style="position:absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(360deg, rgba(0,0,0,0.8), transparent 60%);"></div>
-                            <div class="p-3 text-white" style="position:absolute; bottom:0; left:0; right:0;">
-                                <h5 class="fw-bold mb-1">@album.AlbumName</h5>
-                                <span class="small text-white-50">@album.Description</span>
+                            <div class="ws-album-card__overlay">
+                                <h4>@album.AlbumName</h4>
+                                <span>@album.Description</span>
                             </div>
                         </div>
-                        <div class="card-footer bg-white border-0 text-center p-3">
-                            <a href="/gallery/album/@album.Id" class="btn btn-sm btn-outline-primary w-100 rounded-pill">Open Album</a>
+                        <div class="ws-card__footer ws-text-center">
+                            <a href="/gallery/album/@album.Id" class="ws-btn ws-btn--outline ws-btn--sm ws-btn--pill" style="width:100%;">Open Album</a>
                         </div>
                     </div>
                 </div>
             }
             @if (Model.Albums.Count == 0)
             {
-                <div class="col-12 text-center p-5 text-muted bg-light rounded">
-                    <i class="bi bi-images fs-1 mb-3 d-block text-black-50"></i>
-                    No photo albums have been published to the gallery yet.
-                </div>
+                <div class="ws-col-12"><div class="ws-empty"><div class="ws-empty__icon"><i class="bi bi-images"></i></div><h5 class="ws-empty__title">No Albums</h5><p class="ws-empty__text">No galleries published yet.</p></div></div>
             }
         </div>
     </div>
 </section>
 }
 
-<!-- ── 7. Admission Fee Structures Widget ── -->
+<!-- ── 8. Admission Fees ── -->
 @if (settings.ShowAdmissionFees)
 {
-<section class="py-5 bg-light">
-    <div class="container py-3">
-        <div class="d-flex justify-content-between align-items-center mb-5">
+<section class="ws-section ws-section--alt">
+    <div class="ws-container">
+        <div class="ws-flex-between ws-flex-wrap ws-mb-6">
             <div>
-                <span class="text-warning fw-bold text-uppercase fs-6">Fee Structure</span>
-                <h2 class="fw-bold text-dark mb-0">Admission & Tuition Fees</h2>
+                <span class="ws-section__label">Fee Structure</span>
+                <h2 style="font-size:28px;font-weight:800;">Admission & Tuition Fees</h2>
             </div>
-            <a href="/admission-info" class="btn btn-edu-navy">View All Fees</a>
+            <a href="/admission-info" class="ws-btn ws-btn--primary">View All Fees</a>
         </div>
-        
-        <div class="row g-4">
+        <div class="ws-row ws-g-4">
             @if (Model.AdmissionFees != null && Model.AdmissionFees.Any())
             {
                 @foreach (var fee in Model.AdmissionFees.OrderBy(f => f.DisplayOrder).Take(6))
                 {
-                    <div class="col-md-4">
-                        <div class="card border-0 shadow-sm transition-hover" style="border-radius: 12px; border-top: 4px solid var(--edu-gold);">
-                            <div class="card-body p-4">
-                                <div class="d-flex justify-content-between align-items-start mb-3">
-                                    <h5 class="fw-bold text-dark mb-0">@fee.ClassName</h5>
-                                    <span class="badge bg-warning text-dark">@fee.DisplayOrder</span>
+                    <div class="ws-col-12 ws-col-md-4">
+                        <div class="ws-card ws-card--lift ws-card--bordered-top">
+                            <div class="ws-card__body">
+                                <div class="ws-flex-between ws-mb-4">
+                                    <h5 style="font-weight:700;margin:0;">@fee.ClassName</h5>
+                                    <span class="ws-badge ws-badge--accent">@fee.DisplayOrder</span>
                                 </div>
-                                <div class="mt-3">
-                                    <div class="d-flex justify-content-between mb-2">
-                                        <span class="small text-muted">Admission Fee:</span>
-                                        <span class="fw-bold text-primary">BDT @fee.AdmissionFee.ToString("N0")</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between mb-2">
-                                        <span class="small text-muted">Monthly Fee:</span>
-                                        <span class="fw-bold">BDT @fee.MonthlyFee.ToString("N0")</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between mb-2">
-                                        <span class="small text-muted">Session Fee:</span>
-                                        <span class="fw-bold">BDT @fee.SessionFee.ToString("N0")</span>
-                                    </div>
-                                    <div class="d-flex justify-content-between mb-2">
-                                        <span class="small text-muted">Exam Fee:</span>
-                                        <span class="fw-bold">BDT @fee.ExamFee.ToString("N0")</span>
-                                    </div>
+                                <div class="ws-flex ws-flex-col ws-gap-2">
+                                    <div class="ws-flex-between"><span style="font-size:14px;color:var(--ws-muted);">Admission:</span><span style="font-weight:700;color:var(--ws-secondary);">BDT @fee.AdmissionFee.ToString("N0")</span></div>
+                                    <div class="ws-flex-between"><span style="font-size:14px;color:var(--ws-muted);">Monthly:</span><span style="font-weight:700;">BDT @fee.MonthlyFee.ToString("N0")</span></div>
+                                    <div class="ws-flex-between"><span style="font-size:14px;color:var(--ws-muted);">Session:</span><span style="font-weight:700;">BDT @fee.SessionFee.ToString("N0")</span></div>
+                                    <div class="ws-flex-between"><span style="font-size:14px;color:var(--ws-muted);">Exam:</span><span style="font-weight:700;">BDT @fee.ExamFee.ToString("N0")</span></div>
                                 </div>
-                                <div class="mt-3 pt-3 border-top">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span class="small fw-bold">Total First Year:</span>
-                                        <span class="h5 fw-bold text-success mb-0">BDT @((fee.AdmissionFee + (fee.MonthlyFee * 12) + fee.SessionFee + fee.ExamFee).ToString("N0"))</span>
+                                <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--ws-border-light);">
+                                    <div class="ws-flex-between">
+                                        <span style="font-weight:700;">Total First Year:</span>
+                                        <span style="font-size:22px;font-weight:800;color:var(--ws-success);">BDT @((fee.AdmissionFee + (fee.MonthlyFee * 12) + fee.SessionFee + fee.ExamFee).ToString("N0"))</span>
                                     </div>
                                 </div>
                             </div>
@@ -446,35 +376,29 @@
             }
             else
             {
-                <div class="col-12 text-center p-5 text-muted bg-white rounded shadow-sm">
-                    <i class="bi bi-cash-stack fs-1 mb-3 d-block text-warning"></i>
-                    <h5 class="mb-2">Admission Fee Structures Not Available</h5>
-                    <p>Please contact the admission office for fee information.</p>
-                </div>
+                <div class="ws-col-12"><div class="ws-empty"><div class="ws-empty__icon"><i class="bi bi-cash-stack"></i></div><h5 class="ws-empty__title">No Fee Data</h5><p class="ws-empty__text">Contact the admission office for fee information.</p></div></div>
             }
         </div>
     </div>
 </section>
 }
 
-<!-- ── 8. Admission CTA Banner ── -->
+<!-- ── 9. Admission CTA ── -->
 @if (settings.ShowAdmissionCTA)
 {
-<section class="py-5" style="background-color: var(--edu-light);">
-    <div class="container py-3">
-        <div class="bg-white p-5 shadow rounded-lg" style="border-left: 8px solid var(--edu-gold); border-radius: 12px;">
-            <div class="row g-4 align-items-center">
-                <div class="col-lg-8">
-                    <span class="badge bg-warning text-dark text-uppercase px-3 py-2 mb-3">@(settings.AdmissionCtaTitle ?? "Admission is Ongoing")</span>
-                    <h2 class="fw-bold text-dark mb-2">@(Model.Settings.AdmissionTitle ?? "Apply for Admission")</h2>
-                    <p class="text-muted mb-0 lead" style="font-size:16px;">
-                        @(settings.AdmissionCtaText ?? "Quick and seamless online registration. Connects directly to our centralized admission processing system. Review the requirements and get enrolled.")
-                    </p>
+<section class="ws-cta">
+    <div class="ws-container">
+        <div class="ws-cta__box">
+            <div class="ws-row ws-g-4" style="align-items:center;">
+                <div class="ws-col-12 ws-col-lg-8">
+                    <div class="ws-cta__badge">@(settings.AdmissionCtaTitle ?? "Admission is Ongoing")</div>
+                    <h2 class="ws-cta__title">@(Model.Settings.AdmissionTitle ?? "Apply for Admission")</h2>
+                    <p class="ws-cta__text">@(settings.AdmissionCtaText ?? "Quick and seamless online registration. Connects directly to our centralized admission processing system. Review the requirements and get enrolled.")</p>
                 </div>
-                <div class="col-lg-4 text-lg-end">
-                    <div class="d-flex flex-column gap-2 justify-content-lg-end">
-                        <a href="/Admission/Apply" class="btn btn-edu-gold px-4 py-3"><i class="bi bi-pencil-square me-2"></i> Apply Online Now</a>
-                        <a href="/admission-info" class="btn btn-outline-primary px-4 py-3"><i class="bi bi-info-circle me-2"></i> Admission Info</a>
+                <div class="ws-col-12 ws-col-lg-4 ws-text-left ws-text-md-right">
+                    <div class="ws-flex ws-flex-col ws-gap-2">
+                        <a href="/Admission/Apply" class="ws-btn ws-btn--accent ws-btn--lg"><i class="bi bi-pencil-square me-2"></i> Apply Online Now</a>
+                        <a href="/admission-info" class="ws-btn ws-btn--outline ws-btn--lg"><i class="bi bi-info-circle me-2"></i> Admission Info</a>
                     </div>
                 </div>
             </div>
@@ -483,12 +407,18 @@
 </section>
 }
 
-<style>
-    .transition-hover {
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+<script>
+var currentSlide = 0, totalSlides = @Math.Max(Model.Sliders.Count, 1);
+var slides = document.querySelectorAll('.ws-hero-slide');
+var dots = document.querySelectorAll('.ws-hero-dot');
+if (slides.length > 1) {
+    function slideHero(dir) {
+        slides.forEach(function(s) { s.classList.remove('active'); });
+        dots.forEach(function(d) { d.classList.remove('active'); });
+        currentSlide = (currentSlide + dir + totalSlides) % totalSlides;
+        if (slides[currentSlide]) slides[currentSlide].classList.add('active');
+        if (dots[currentSlide]) dots[currentSlide].classList.add('active');
     }
-    .transition-hover:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 30px rgba(11,37,69,0.12) !important;
-    }
-</style>
+    setInterval(function() { slideHero(1); }, 6000);
+}
+</script>

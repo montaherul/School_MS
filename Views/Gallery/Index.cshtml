@@ -4,63 +4,52 @@
     ViewData["Title"] = "Campus Photo Gallery";
 }
 
-<!-- Header Hero -->
-<div class="py-5 text-white" style="background: linear-gradient(135deg, var(--edu-navy), var(--edu-dark));">
-    <div class="container text-center py-4">
-        <h1 class="display-4 fw-bold">Campus Life & Galleries</h1>
-        <p class="lead text-white-50">Explore photographic collections of academic festivals, sports, and achievements</p>
+<div class="ws-page-hero">
+    <div class="ws-container">
+        <h1>Campus Life & Galleries</h1>
+        <p>Explore photographic collections of academic festivals, sports, and achievements</p>
     </div>
 </div>
 
-<section class="py-5 bg-white">
-    <div class="container py-3">
-        <div class="row g-4">
+<section class="ws-section">
+    <div class="ws-container">
+        <div class="ws-row ws-g-4">
             @foreach (var album in Model)
             {
-                <div class="col-md-4 col-sm-6">
-                    <div class="card border-0 shadow-sm overflow-hidden h-100 transition-hover" style="border-radius: 10px; border-bottom: 4px solid var(--edu-navy);">
-                        <div style="position: relative; height: 250px; overflow: hidden;">
+                <div class="ws-col-12 ws-col-sm-6 ws-col-md-4">
+                    <div class="ws-album-card">
+                        <div class="ws-album-card__image">
                             @if (!string.IsNullOrEmpty(album.CoverImagePath))
                             {
-                                <img src="@album.CoverImagePath" class="w-100 h-100" style="object-fit: cover;" alt="album cover"/>
+                                <img src="@album.CoverImagePath" alt="album cover" />
                             }
                             else
                             {
-                                <div class="bg-light w-100 h-100 d-flex align-items-center justify-content-center text-muted">
-                                    <i class="bi bi-images fs-1 text-black-50"></i>
+                                <div style="width:100%;height:100%;background:var(--ws-bg-alt);display:flex;align-items:center;justify-content:center;color:var(--ws-muted);font-size:36px;">
+                                    <i class="bi bi-images"></i>
                                 </div>
                             }
-                            <div style="position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(360deg, rgba(8,28,51,0.85), transparent 60%);"></div>
-                            
-                            <div class="p-3 text-white" style="position: absolute; bottom: 0; left: 0; right: 0; z-index: 5;">
-                                <h4 class="fw-bold mb-1">@album.AlbumName</h4>
-                                <span class="small text-white-50">@album.Description</span>
+                            <div class="ws-album-card__overlay">
+                                <h4>@album.AlbumName</h4>
+                                <span>@album.Description</span>
                             </div>
                         </div>
-                        <div class="card-footer bg-white border-0 text-center p-3">
-                            <a href="/gallery/album/@album.Id" class="btn btn-edu-gold w-100 py-2"><i class="bi bi-folder-symlink me-2"></i> Open Album Collection</a>
+                        <div class="ws-card__footer ws-text-center">
+                            <a href="/gallery/album/@album.Id" class="ws-btn ws-btn--accent ws-btn--block ws-btn--sm"><i class="bi bi-folder-symlink me-2"></i> Open Album Collection</a>
                         </div>
                     </div>
                 </div>
             }
-
             @if (Model.Count == 0)
             {
-                <div class="col-12 text-center p-5 text-muted bg-light rounded shadow-sm">
-                    <i class="bi bi-images fs-1 mb-3 d-block text-black-50"></i>
-                    No photo albums have been published to the gallery yet.
+                <div class="ws-col-12">
+                    <div class="ws-empty">
+                        <div class="ws-empty__icon"><i class="bi bi-images"></i></div>
+                        <h5 class="ws-empty__title">No Albums Published</h5>
+                        <p class="ws-empty__text">No photo albums have been published to the gallery yet.</p>
+                    </div>
                 </div>
             }
         </div>
     </div>
 </section>
-
-<style>
-    .transition-hover {
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .transition-hover:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 15px 30px rgba(11,37,69,0.12) !important;
-    }
-</style>

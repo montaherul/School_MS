@@ -30,19 +30,15 @@ public class UserController : Controller
         var result = await _userService.GetPagedAsync(pageNumber, pageSize, searchTerm, status, role, userType, ct);
 
         // TABULATOR AJAX REQUEST
-        if (Request.Headers["Accept"].ToString().Contains("application/json")
-            || Request.Headers["X-Requested-With"] == "XMLHttpRequest"
+        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest"
+            || Request.Headers["Accept"].ToString().Contains("application/json")
             || Request.Query.ContainsKey("pageNumber"))
         {
             return Json(new
             {
                 data = result.Items,
-
-                last_page = (int)Math.Ceiling(
-                    result.TotalItems / (double)pageSize),
-
+                last_page = (int)Math.Ceiling(result.TotalItems / (double)pageSize),
                 current_page = pageNumber,
-
                 total_records = result.TotalItems
             });
         }
@@ -156,9 +152,20 @@ public class UserController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id, CancellationToken ct)
     {
-        await _userService.DeleteAsync(id, User.Identity?.Name ?? "system", ct);
-        TempData["SuccessMessage"] = "User deleted successfully.";
-        return RedirectToAction(nameof(Index));
+        var user = await _userService.GetDetailsAsync(id, ct);
+        if (user == null) return NotFound();
+
+        try
+        {
+            await _userService.DeleteAsync(id, User.Identity?.Name ?? "system", ct);
+            TempData["SuccessMessage"] = "User deleted successfully.";
+            return RedirectToAction(nameof(Index));
+        }
+        catch (Exception ex)
+        {
+            ModelState.AddModelError("", ex.Message);
+            return View("Delete", user);
+        }
     }
 
     [RequirePermission("Users.Assign")]
@@ -169,13 +176,13 @@ public class UserController : Controller
         if (user == null) return NotFound();
 
         var roles = await _userService.GetAvailableRolesAsync(ct);
-        var selectedRoleIds = await _userService.GetForEditAsync(id, ct); // To get selected roles
+        var selectedRoleIds = await _userService.GetAssignedRoleIdsAsync(id, ct);
 
         return View(new AssignRolesViewModel
         {
             UserId = user.Id,
             UserName = user.UserName,
-            SelectedRoleIds = selectedRoleIds?.SelectedRoleIds ?? new List<int>(),
+            SelectedRoleIds = selectedRoleIds,
             AvailableRoles = roles.ToList()
         });
     }
@@ -185,9 +192,27 @@ public class UserController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AssignRoles(int id, List<int> selectedRoleIds, CancellationToken ct)
     {
-        await _userService.AssignRolesAsync(id, selectedRoleIds, ct);
-        TempData["SuccessMessage"] = "Roles updated successfully.";
-        return RedirectToAction(nameof(Details), new { id = id });
+        var user = await _userService.GetDetailsAsync(id, ct);
+        if (user == null) return NotFound();
+
+        try
+        {
+            await _userService.AssignRolesAsync(id, selectedRoleIds, ct);
+            TempData["SuccessMessage"] = "Roles updated successfully.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+        catch (Exception ex)
+        {
+            ModelState.AddModelError("", ex.Message);
+            var roles = await _userService.GetAvailableRolesAsync(ct);
+            return View(new AssignRolesViewModel
+            {
+                UserId = id,
+                UserName = user.UserName,
+                SelectedRoleIds = selectedRoleIds,
+                AvailableRoles = roles.ToList()
+            });
+        }
     }
 }
 

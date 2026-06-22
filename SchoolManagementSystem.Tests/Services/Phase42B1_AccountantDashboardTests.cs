@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using SchoolManagementSystem.Controllers.Dashboard;
 using SchoolManagementSystem.Models.DTOs.Fees;
+using SchoolManagementSystem.Models.Entities.Website;
+using SchoolManagementSystem.Repositories.Interfaces.Website;
 using SchoolManagementSystem.Service.Interfaces.Dashboard;
 using System.Security.Claims;
 using Xunit;
@@ -13,7 +15,8 @@ public class Phase42B1_AccountantDashboardTests
 {
     private static DashboardController CreateControllerWithRole(string role, IDashboardService service)
     {
-        var controller = new DashboardController(service);
+        var settingRepoMock = new Mock<ISchoolSettingRepository>();
+        var controller = new DashboardController(service, settingRepoMock.Object);
         var user = new ClaimsPrincipal(new ClaimsIdentity(new[]
         {
             new Claim(ClaimTypes.Role, role),

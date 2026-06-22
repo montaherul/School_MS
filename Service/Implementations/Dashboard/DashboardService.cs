@@ -169,6 +169,43 @@ public class DashboardService : IDashboardService
 
         var latestResults = await _dashboardRepository.GetStudentLatestResultsAsync(student.Id, cancellationToken);
 
+        // Guardian info
+        var studentGuardian = await _uow.Repository<SchoolManagementSystem.Models.Entities.Guardian.StudentGuardian>().Query()
+            .Include(sg => sg.Guardian)
+            .Where(sg => sg.StudentId == student.Id && sg.IsPrimaryGuardian && !sg.IsDeleted)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        // Attendance history (last 10 records)
+        var attendanceHistory = (await _uow.Repository<SchoolManagementSystem.Models.Entities.Attendance.AttendanceRecord>().Query()
+            .AsNoTracking()
+            .Where(a => a.StudentId == student.Id && !a.IsDeleted)
+            .OrderByDescending(a => a.AttendanceDate)
+            .Take(10)
+            .Select(a => new { a.AttendanceDate, Status = a.Status, a.Remarks })
+            .ToListAsync(cancellationToken))
+            .Select(a => new StudentAttendanceDto
+            {
+                AttendanceDate = a.AttendanceDate.ToDateTime(TimeOnly.MinValue),
+                StatusName = a.Status.ToString() ?? "",
+                Remarks = a.Remarks ?? ""
+            })
+            .ToList();
+
+        // Leave applications
+        var leaveCount = await _uow.Repository<SchoolManagementSystem.Models.Entities.Attendance.StudentLeaveApplication>().Query()
+            .CountAsync(l => l.StudentId == student.Id, cancellationToken);
+        var pendingLeaveCount = await _uow.Repository<SchoolManagementSystem.Models.Entities.Attendance.StudentLeaveApplication>().Query()
+            .CountAsync(l => l.StudentId == student.Id && l.ApprovalStatus == SchoolManagementSystem.Models.Entities.Attendance.StudentLeaveApplication.ApprovalStatusEnum.Pending, cancellationToken);
+
+        // Alerts
+        var alerts = new List<string>();
+        var attendancePct = data.totalAttendance == 0 ? 0 : Math.Round((decimal)(data.presentCount + data.lateCount) / data.totalAttendance * 100, 2);
+        if (attendancePct > 0 && attendancePct < 75)
+            alerts.Add($"Low Attendance Alert: Your attendance is {attendancePct}%, below the 75% minimum.");
+        var outstanding = data.totalInvoiced - data.totalPaid;
+        if (outstanding > 0)
+            alerts.Add($"Outstanding Fees: You have an outstanding balance of ৳{outstanding:N2}.");
+
         var routineWidget = await _dashboardRepository.GetStudentRoutineWidgetAsync(student.ClassId, student.SectionId, student.StudentGroupId, cancellationToken);
         var (pendingAssign, submittedAssign, overdueAssign, recentAssign) = await _dashboardRepository.GetStudentAssignmentWidgetAsync(student.Id, student.ClassId, student.SectionId, cancellationToken);
         var (issuedBooks, totalBooks) = await _dashboardRepository.GetStudentLibraryWidgetAsync(student.Id, cancellationToken);
@@ -182,16 +219,26 @@ public class DashboardService : IDashboardService
             ClassName = student.Class?.Name ?? "N/A",
             SectionName = student.Section?.Name ?? "N/A",
             RollNumber = student.RollNumber,
-            AttendancePercentage = data.totalAttendance == 0 ? 0 : Math.Round((decimal)data.presentAttendance / data.totalAttendance * 100, 2),
+            AttendancePercentage = data.totalAttendance == 0 ? 0 : Math.Round((decimal)(data.presentCount + data.lateCount) / data.totalAttendance * 100, 2),
+            PresentCount = data.presentCount,
+            AbsentCount = data.absentCount,
+            LateCount = data.lateCount,
+            LeaveCount = data.leaveCount,
             TotalDue = data.totalInvoiced - data.totalPaid,
             StudentStatus = student.Status.ToString(),
             RecentNotices = data.recentNotices.Select(MapActivity).ToList(),
             UpcomingAssignments = data.upcomingAssignments.Select(MapAssignment).ToList(),
             AttendanceCalendar = calendar.Select(MapCalendar).ToList(),
+            AttendanceHistory = attendanceHistory,
             Results = latestResults,
             UpcomingHolidays = studentHolidays,
             UpcomingExams = studentExams,
             IsResultBlocked = await _reportCardService.IsResultBlockedForStudentAsync(student.Id, cancellationToken),
+            GuardianName = studentGuardian?.Guardian?.FullName ?? "",
+            GuardianCode = studentGuardian?.Guardian?.GuardianCode ?? "",
+            Alerts = alerts,
+            LeaveApplicationCount = leaveCount,
+            PendingLeaveCount = pendingLeaveCount,
 
             // Widget data
             RoutineWidget = routineWidget,
@@ -211,8 +258,28 @@ public class DashboardService : IDashboardService
         var teacher = await _uow.Repository<SchoolManagementSystem.Models.Entities.Teachers.Teacher>().Query()
             .AsNoTracking()
             .Include(t => t.Employee)
-            .FirstOrDefaultAsync(t => t.Employee.UserId == userId && !t.IsDeleted, cancellationToken)
-            ?? throw new InvalidOperationException("Teacher profile not found.");
+            .FirstOrDefaultAsync(t => t.Employee.UserId == userId && !t.IsDeleted, cancellationToken);
+
+        if (teacher == null)
+        {
+            return new TeacherDashboardViewModel
+            {
+                FullName = "Teacher",
+                TeacherNo = "",
+                Designation = "",
+                MyClasses = [],
+                MySubjects = [],
+                TodaySchedule = [],
+                WeeklySchedule = [],
+                RecentAssignments = [],
+                TeacherRecentNotifications = [],
+                LeaveStatus = null,
+                UpcomingHolidays = [],
+                UpcomingExams = [],
+                UpcomingEvents = [],
+                RecentNotices = []
+            };
+        }
 
         var userRoles = await _uow.Repository<SchoolManagementSystem.Models.Entities.Auth.UserRole>().Query()
             .AsNoTracking()

@@ -1,3 +1,4 @@
+using SchoolManagementSystem.Models.DTOs.Attendance;
 using SchoolManagementSystem.Models.DTOs.Calendar;
 using SchoolManagementSystem.Models.DTOs.Dashboard;
 using SchoolManagementSystem.Models.Enums;
@@ -13,6 +14,10 @@ public class StudentDashboardViewModel
     public string SectionName { get; set; } = string.Empty;
     public int RollNumber { get; set; }
     public decimal AttendancePercentage { get; set; }
+    public int PresentCount { get; set; }
+    public int AbsentCount { get; set; }
+    public int LateCount { get; set; }
+    public int LeaveCount { get; set; }
     public decimal TotalDue { get; set; }
     public string StudentStatus { get; set; } = string.Empty;
     public List<RecentActivityItem> RecentNotices { get; set; } = new();
@@ -20,6 +25,7 @@ public class StudentDashboardViewModel
     public List<AssignmentDashboardItem> Assignments { get; set; } = new();
     public List<StudentResultViewModel> Results { get; set; } = new();
     public List<AttendanceCalendarDto> AttendanceCalendar { get; set; } = new();
+    public List<StudentAttendanceDto> AttendanceHistory { get; set; } = new();
 
     // Calendar Widgets
     public List<UpcomingHolidayDto> UpcomingHolidays { get; set; } = new();
@@ -42,6 +48,17 @@ public class StudentDashboardViewModel
     // Notification Center
     public int UnreadNotificationCount { get; set; }
     public List<StudentNotificationItemDto> RecentNotifications { get; set; } = new();
+
+    // Guardian info
+    public string GuardianName { get; set; } = string.Empty;
+    public string GuardianCode { get; set; } = string.Empty;
+
+    // Alerts
+    public List<string> Alerts { get; set; } = new();
+
+    // Leave Applications
+    public int LeaveApplicationCount { get; set; }
+    public int PendingLeaveCount { get; set; }
 
     // Finance Summary (loaded async via AJAX)
     public decimal FinanceTotalInvoiced { get; set; }

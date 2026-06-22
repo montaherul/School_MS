@@ -4,208 +4,267 @@
     bool isStudent = User.IsInRole("Student");
 }
 
-<!-- ===== PROFILE HEADER ===== -->
-<div class="row g-4 mb-4 align-items-center">
-    <div class="col-auto">
-        <div class="profile-pic-container border rounded-circle overflow-hidden shadow-sm"
-             style="width:120px; height:120px; background:#f8f9fa;">
-            @if (!string.IsNullOrEmpty(Model.ProfilePicturePath))
-            {
-                <img src="@Model.ProfilePicturePath" class="w-100 h-100 object-fit-cover" alt="Profile Picture" />
-            }
-            else
-            {
-                <div class="w-100 h-100 d-flex align-items-center justify-content-center text-muted">
-                    <i class="bi bi-person-fill" style="font-size:4rem;"></i>
-                </div>
-            }
+<div class="er-page adm-page">
+    <div class="er-page-header">
+        <div class="adm-header__left">
+            <div class="er-page-header__icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                    <circle cx="12" cy="7" r="4" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="er-page-header__title">@Model.FullName</h1>
+                <p class="er-page-header__sub">Student ID: @Model.StudentNo | Roll: @Model.RollNumber.ToString("D2")</p>
+            </div>
         </div>
-    </div>
-    <div class="col">
-        <h1 class="mb-1 fw-bold">@Model.FullName</h1>
-        <p class="text-muted mb-0 lead">Student ID: @Model.StudentNo</p>
-    </div>
-    @if (!isStudent)
-    {
-        <div class="col-auto">
-            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary px-4 rounded-pill">
-                <i class="bi bi-pencil-square me-2"></i>Edit Profile
+        <div class="er-page-header__right">
+            @if (!isStudent)
+            {
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="er-btn er-btn--primary">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" class="me-2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
+                    Edit Profile
+                </a>
+            }
+            <a href="@Url.Action("Index")" class="er-btn er-btn--secondary">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" class="me-2"><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></svg>
+                Back
             </a>
         </div>
-    }
-</div>
+    </div>
 
-<!-- ===== MAIN CONTENT ===== -->
-<div class="row g-4">
-
-    <!-- LEFT COLUMN -->
-    <div class="col-md-8">
-
-        <!-- Personal Information -->
-        <div class="card border-0 shadow-sm rounded-4 mb-4">
-            <div class="card-header bg-white border-0 p-4 pb-0">
-                <h5 class="fw-bold mb-0">
-                    <span class="badge bg-primary bg-opacity-10 text-primary me-2 p-2 rounded-3">
-                        <i class="bi bi-person-lines-fill"></i>
-                    </span>
-                    Personal Information
-                </h5>
-            </div>
-            <div class="card-body p-4">
-                <div class="row g-3">
-                    <div class="col-sm-6">
-                        <label class="text-muted small text-uppercase fw-bold">Full Name (Bangla)</label>
-                        <p class="mb-0 fw-medium">@(Model.FullNameBangla ?? "N/A")</p>
-                    </div>
-                    <div class="col-sm-6">
-                        <label class="text-muted small text-uppercase fw-bold">Date of Birth</label>
-                        <p class="mb-0 fw-medium">@Model.DateOfBirth.ToString("dd MMM yyyy")</p>
-                    </div>
-                    <div class="col-sm-6">
-                        <label class="text-muted small text-uppercase fw-bold">Gender / Religion</label>
-                        <p class="mb-0 fw-medium">@Model.Gender &bull; @Model.Religion</p>
-                    </div>
-                    <div class="col-sm-6">
-                        <label class="text-muted small text-uppercase fw-bold">Nationality</label>
-                        <p class="mb-0 fw-medium">@Model.Nationality</p>
-                    </div>
-                    <div class="col-sm-6">
-                        <label class="text-muted small text-uppercase fw-bold">Blood Group</label>
-                        <p class="mb-0 fw-medium">@(string.IsNullOrEmpty(Model.BloodGroup) ? "Not Provided" : Model.BloodGroup)</p>
-                    </div>
-                    <div class="col-sm-6">
-                        <label class="text-muted small text-uppercase fw-bold">Birth Certificate No</label>
-                        <p class="mb-0 fw-medium">@Model.BirthCertificateNo</p>
-                    </div>
-                    <div class="col-sm-6">
-                        <label class="text-muted small text-uppercase fw-bold">Mobile Number</label>
-                        <p class="mb-0 fw-medium">
-                            <i class="bi bi-telephone-fill text-muted me-1"></i>@Model.MobileNumber
-                        </p>
-                    </div>
-                    <div class="col-sm-6">
-                        <label class="text-muted small text-uppercase fw-bold">Email Address</label>
-                        <p class="mb-0 fw-medium">@(Model.EmailAddress ?? "N/A")</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Guardian & Parents Info -->
-        <div class="card border-0 shadow-sm rounded-4">
-            <div class="card-header bg-white border-0 p-4 pb-0">
-                <h5 class="fw-bold mb-0">
-                    <span class="badge bg-warning bg-opacity-10 text-warning me-2 p-2 rounded-3">
-                        <i class="bi bi-people-fill"></i>
-                    </span>
-                    Guardian &amp; Parents Info
-                </h5>
-            </div>
-            <div class="card-body p-4">
-                <div class="row g-3">
-                    <div class="col-sm-6">
-                        <p class="text-muted small text-uppercase fw-bold mb-2">Father Details</p>
-                        <label class="text-muted small fw-bold">Father's Name</label>
-                        <p class="mb-1 fw-medium">@Model.FatherName</p>
-                        <label class="text-muted small fw-bold">Father's Occupation</label>
-                        <p class="mb-0 fw-medium">@Model.FatherOccupation</p>
-                    </div>
-                    <div class="col-sm-6">
-                        <p class="text-muted small text-uppercase fw-bold mb-2">Mother Details</p>
-                        <label class="text-muted small fw-bold">Mother's Name</label>
-                        <p class="mb-1 fw-medium">@Model.MotherName</p>
-                        <label class="text-muted small fw-bold">Mother's Occupation</label>
-                        <p class="mb-0 fw-medium">@Model.MotherOccupation</p>
-                    </div>
-                    <div class="col-sm-6">
-                        <label class="text-muted small text-uppercase fw-bold">Active Guardian Name</label>
-                        <p class="mb-0 fw-medium">@(Model.GuardianName ?? "N/A")</p>
-                    </div>
-                    <div class="col-sm-6">
-                        <label class="text-muted small text-uppercase fw-bold">Guardian Relationship</label>
-                        <p class="mb-0 fw-medium">@(Model.GuardianRelationship ?? "N/A")</p>
-                    </div>
-                    <div class="col-sm-6">
-                        <label class="text-muted small text-uppercase fw-bold">Guardian Mobile</label>
-                        <p class="mb-0 fw-medium">@(Model.GuardianMobileNumber ?? Model.FatherOrGuardianMobileNo ?? "N/A")</p>
-                    </div>
-                    <div class="col-sm-6">
-                        <label class="text-muted small text-uppercase fw-bold">Guardian Email</label>
-                        <p class="mb-0 fw-medium">
-                            <i class="bi bi-envelope me-1 text-muted small"></i>
-                            @(Model.GuardianEmail ?? "N/A")
-                        </p>
-                    </div>
-                    <div class="col-sm-6">
-                        <label class="text-muted small text-uppercase fw-bold">Guardian National ID</label>
-                        <p class="mb-0 fw-medium">@(Model.GuardianNationalId ?? "N/A")</p>
-                    </div>
-                    <div class="col-sm-6">
-                        <label class="text-muted small text-uppercase fw-bold">Guardian Address</label>
-                        <p class="mb-0 fw-medium small">@(Model.GuardianAddress ?? "N/A")</p>
-                    </div>
-                    @if (!string.IsNullOrEmpty(Model.GuardianCode))
+    <!-- Profile Hero -->
+    <div class="er-card mb-4">
+        <div class="er-card__body">
+            <div class="d-flex align-items-center gap-4">
+                <div class="rounded-circle overflow-hidden flex-shrink-0" style="width:100px;height:100px;background:var(--er-bg-light, #f0f2f5);">
+                    @if (!string.IsNullOrEmpty(Model.ProfilePicturePath))
                     {
-                        <div class="col-12">
-                            <hr class="my-2 opacity-50" />
-                            <div class="d-flex flex-wrap align-items-center gap-3">
-                                <span class="badge bg-info bg-opacity-10 text-info px-3 py-2 rounded-pill">
-                                    <i class="bi bi-person-badge me-1"></i> @Model.GuardianCode
-                                </span>
-                                <span class="badge @(Model.GuardianUserCreated == true ? "bg-success" : "bg-secondary") bg-opacity-10 px-3 py-2 rounded-pill @(Model.GuardianUserCreated == true ? "text-success" : "text-secondary")">
-                                    <i class="bi @(Model.GuardianUserCreated == true ? "bi-check-circle" : "bi-x-circle") me-1"></i>
-                                    @(Model.GuardianUserCreated == true ? "User Active" : "No User")
-                                </span>
-                                @if (Model.LinkedChildrenCount > 0)
-                                {
-                                    <span class="badge bg-purple bg-opacity-10 text-purple px-3 py-2 rounded-pill" style="background-color:rgba(111,66,193,0.08);color:#6f42c1;">
-                                        <i class="bi bi-people me-1"></i> @Model.LinkedChildrenCount linked children
-                                    </span>
-                                }
-                                @if (Model.GuardianUserCreated == true)
-                                {
-                                    <a href="/Guardian/Dashboard" class="btn btn-sm btn-outline-purple rounded-pill" style="border-color:#6f42c1;color:#6f42c1;" target="_blank">
-                                        <i class="bi bi-box-arrow-up-right me-1"></i> Guardian Dashboard
-                                    </a>
-                                }
-                            </div>
+                        <img src="@Model.ProfilePicturePath" class="w-100 h-100 object-fit-cover" alt="Photo" />
+                    }
+                    else
+                    {
+                        <div class="w-100 h-100 d-flex align-items-center justify-content-center text-muted">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
                         </div>
                     }
                 </div>
+                <div>
+                    <h3 class="fw-bold mb-1">@Model.FullName</h3>
+                    <div class="d-flex flex-wrap gap-2">
+                        <span class="er-badge er-badge--converted">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-1"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18" /></svg>
+                            Class @Model.ClassName
+                        </span>
+                        <span class="er-badge er-badge--neutral">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-1"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M9 3v18" /></svg>
+                            Section @Model.SectionName
+                        </span>
+                        <span class="er-badge er-badge--info">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-1"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                            Roll @Model.RollNumber.ToString("D2")
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- RIGHT COLUMN -->
-    <div class="col-md-4">
-
-        <!-- Academic Info -->
-        <div class="card border-0 shadow-sm rounded-4 mb-4 card-academic">
-            <div class="card-body p-4 text-white">
-                <h5 class="fw-bold mb-3">
-                    <i class="bi bi-mortarboard-fill me-2"></i>Academic Info
-                </h5>
-                <div class="mb-3 p-3 rounded-3 academic-block">
-                    <label class="small text-uppercase fw-bold opacity-75">Current Class</label>
-                    <p class="mb-0 fw-bold fs-4">Class @Model.ClassName</p>
+    <div class="row g-4">
+        <!-- Left Column -->
+        <div class="col-md-8">
+            <!-- Personal Information -->
+            <div class="er-card mb-4">
+                <div class="er-card__header">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="me-2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
+                    Personal Information
                 </div>
-                <div class="row g-2">
-                    <div class="col-6">
-                        <div class="p-3 rounded-3 academic-block">
-                            <label class="small text-uppercase fw-bold opacity-75 d-block">Section</label>
-                            <p class="mb-0 fw-bold">Section @Model.SectionName</p>
+                <div class="er-card__body">
+                    <div class="row g-4">
+                        <div class="col-sm-6">
+                            <label class="er-label">Full Name (Bangla)</label>
+                            <p class="fw-medium mb-0">@(Model.FullNameBangla ?? "N/A")</p>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="er-label">Date of Birth</label>
+                            <p class="fw-medium mb-0">@Model.DateOfBirth.ToString("dd MMM yyyy")</p>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="er-label">Gender / Religion</label>
+                            <p class="fw-medium mb-0">@Model.Gender &bull; @Model.Religion</p>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="er-label">Nationality</label>
+                            <p class="fw-medium mb-0">@Model.Nationality</p>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="er-label">Blood Group</label>
+                            <p class="fw-medium mb-0">@(string.IsNullOrEmpty(Model.BloodGroup) ? "Not Provided" : Model.BloodGroup)</p>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="er-label">Birth Certificate No</label>
+                            <p class="fw-medium mb-0">@(Model.BirthCertificateNo ?? "N/A")</p>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="er-label">Mobile Number</label>
+                            <p class="fw-medium mb-0">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" /></svg>
+                                @Model.MobileNumber
+                            </p>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="er-label">Email Address</label>
+                            <p class="fw-medium mb-0">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1 text-muted"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>
+                                @(Model.EmailAddress ?? "N/A")
+                            </p>
                         </div>
                     </div>
-                    <div class="col-6">
-                        <div class="p-3 rounded-3 academic-block">
-                            <label class="small text-uppercase fw-bold opacity-75 d-block">Roll Number</label>
-                            <p class="mb-0 fw-bold">@Model.RollNumber.ToString("D2")</p>
+                </div>
+            </div>
+
+            <!-- Guardian & Parents Info -->
+            <div class="er-card mb-4">
+                <div class="er-card__header">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="me-2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+                    Guardian &amp; Parents
+                </div>
+                <div class="er-card__body">
+                    <div class="row g-4">
+                        <div class="col-sm-6">
+                            <label class="er-label">Father's Name</label>
+                            <p class="fw-medium mb-1">@Model.FatherName</p>
+                            <label class="er-label">Occupation</label>
+                            <p class="fw-medium mb-0">@(Model.FatherOccupation ?? "N/A")</p>
                         </div>
+                        <div class="col-sm-6">
+                            <label class="er-label">Mother's Name</label>
+                            <p class="fw-medium mb-1">@Model.MotherName</p>
+                            <label class="er-label">Occupation</label>
+                            <p class="fw-medium mb-0">@(Model.MotherOccupation ?? "N/A")</p>
+                        </div>
+                        @if (!string.IsNullOrEmpty(Model.GuardianName) || !string.IsNullOrEmpty(Model.FatherOrGuardianMobileNo))
+                        {
+                            <div class="col-12"><hr class="my-1 opacity-25" /></div>
+                            <div class="col-sm-6">
+                                <label class="er-label">Guardian Name</label>
+                                <p class="fw-medium mb-0">@(Model.GuardianName ?? "N/A")</p>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="er-label">Relationship</label>
+                                <p class="fw-medium mb-0">@(Model.GuardianRelationship ?? "N/A")</p>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="er-label">Guardian Mobile</label>
+                                <p class="fw-medium mb-0">@(Model.GuardianMobileNumber ?? Model.FatherOrGuardianMobileNo ?? "N/A")</p>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="er-label">Guardian Email</label>
+                                <p class="fw-medium mb-0">@(Model.GuardianEmail ?? "N/A")</p>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="er-label">National ID</label>
+                                <p class="fw-medium mb-0">@(Model.GuardianNationalId ?? "N/A")</p>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="er-label">Address</label>
+                                <p class="fw-medium mb-0 small">@(Model.GuardianAddress ?? "N/A")</p>
+                            </div>
+                            @if (!string.IsNullOrEmpty(Model.GuardianCode))
+                            {
+                                <div class="col-12">
+                                    <hr class="my-1 opacity-25" />
+                                    <div class="d-flex flex-wrap align-items-center gap-2">
+                                        <span class="er-badge er-badge--info">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-1"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M9 3v18" /></svg>
+                                            @Model.GuardianCode
+                                        </span>
+                                        <span class="er-badge @(Model.GuardianUserCreated == true ? "er-badge--converted" : "er-badge--rejected")">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-1">@(Model.GuardianUserCreated == true ? "<polyline points=\"20 6 9 17 4 12\" />" : "<line x1=\"18\" y1=\"6\" x2=\"6\" y2=\"18\" /><line x1=\"6\" y1=\"6\" x2=\"18\" y2=\"18\" />")</svg>
+                                            @(Model.GuardianUserCreated == true ? "User Active" : "No User")
+                                        </span>
+                                        @if (Model.LinkedChildrenCount > 0)
+                                        {
+                                            <span class="er-badge er-badge--neutral">
+                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-1"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /></svg>
+                                                @Model.LinkedChildrenCount linked
+                                            </span>
+                                        }
+                                        @if (Model.GuardianUserCreated == true)
+                                        {
+                                            <a href="/Guardian/Dashboard" class="er-btn er-btn--secondary" target="_blank" style="padding:4px 12px;font-size:0.8rem;">
+                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-1"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15 3 21 3 21 9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
+                                                Portal
+                                            </a>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        }
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- Right Column -->
+        <div class="col-md-4">
+            <!-- Academic Info -->
+            <div class="er-card mb-4">
+                <div class="er-card__header">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="me-2"><path d="M22 10v6M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c3 3 9 3 12 0v-5" /></svg>
+                    Academic Info
+                </div>
+                <div class="er-card__body">
+                    <div class="mb-3 p-3 rounded-3" style="background:var(--er-primary-soft, rgba(99,102,241,0.08));">
+                        <label class="er-label small opacity-75">Current Class</label>
+                        <p class="mb-0 fw-bold fs-4" style="color:var(--er-primary, #6366f1);">@Model.ClassName</p>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <div class="p-3 rounded-3" style="background:var(--er-bg-light, #f8f9fa);">
+                                <label class="er-label small opacity-75 d-block">Section</label>
+                                <p class="mb-0 fw-bold">@Model.SectionName</p>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="p-3 rounded-3" style="background:var(--er-bg-light, #f8f9fa);">
+                                <label class="er-label small opacity-75 d-block">Roll Number</label>
+                                <p class="mb-0 fw-bold">@Model.RollNumber.ToString("D2")</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Info -->
+            <div class="er-card">
+                <div class="er-card__header">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="me-2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                    Quick Info
+                </div>
+                <div class="er-card__body">
+                    <div class="d-flex justify-content-between py-2 border-bottom">
+                        <span class="text-muted">Status</span>
+                        <span class="er-badge er-badge--converted">Active</span>
+                    </div>
+                    <div class="d-flex justify-content-between py-2 border-bottom">
+                        <span class="text-muted">Student ID</span>
+                        <span class="fw-medium">@Model.StudentNo</span>
+                    </div>
+                    <div class="d-flex justify-content-between py-2 border-bottom">
+                        <span class="text-muted">Gender</span>
+                        <span class="fw-medium">@Model.Gender</span>
+                    </div>
+                    <div class="d-flex justify-content-between py-2 border-bottom">
+                        <span class="text-muted">Religion</span>
+                        <span class="fw-medium">@Model.Religion</span>
+                    </div>
+                    <div class="d-flex justify-content-between py-2">
+                        <span class="text-muted">Blood Group</span>
+                        <span class="fw-medium">@(string.IsNullOrEmpty(Model.BloodGroup) ? "—" : Model.BloodGroup)</span>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>

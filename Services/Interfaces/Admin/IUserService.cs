@@ -19,6 +19,7 @@ public interface IUserService
     Task UpdateAsync(UserUpsertViewModel model, string updatedBy, CancellationToken ct = default);
     Task DeleteAsync(int id, string updatedBy, CancellationToken ct = default);
     Task AssignRolesAsync(int userId, IEnumerable<int> roleIds, CancellationToken ct = default);
+    Task<List<int>> GetAssignedRoleIdsAsync(int userId, CancellationToken ct = default);
     Task<IEnumerable<RoleOptionVm>> GetAvailableRolesAsync(CancellationToken ct = default);
 }
 

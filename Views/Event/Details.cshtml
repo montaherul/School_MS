@@ -4,76 +4,76 @@
     ViewData["Title"] = Model.Title;
 }
 
-<div class="py-5 text-white" style="background: linear-gradient(135deg, var(--edu-navy), var(--edu-dark));">
-    <div class="container text-center py-4">
-        <span class="badge bg-warning text-dark px-3 py-2 mb-3 text-uppercase fw-bold"><i class="bi bi-calendar3 me-1"></i> School Event</span>
-        <h1 class="display-4 fw-bold">@Model.Title</h1>
-        <p class="lead text-white-50"><i class="bi bi-calendar-event me-2"></i> Date: @Model.EventDate.ToString("dd MMMM yyyy")</p>
+<div class="ws-page-hero">
+    <div class="ws-container">
+        <span class="ws-badge ws-badge--accent" style="margin-bottom:12px;font-size:14px;padding:8px 20px;"><i class="bi bi-calendar3 me-1"></i> School Event</span>
+        <h1>@Model.Title</h1>
+        <p><i class="bi bi-calendar-event me-2"></i> Date: @Model.EventDate.ToString("dd MMMM yyyy")</p>
     </div>
 </div>
 
-<section class="py-5 bg-white">
-    <div class="container py-3">
-        <div class="row justify-content-center">
-            <div class="col-lg-10">
-                <div class="card border-0 shadow-sm overflow-hidden bg-light rounded" style="border-top: 5px solid var(--edu-navy);">
+<section class="ws-section">
+    <div class="ws-container">
+        <div class="ws-row" style="justify-content:center;">
+            <div class="ws-col-12 ws-col-lg-10">
+                <div class="ws-card" style="border-top:5px solid var(--ws-primary);background:var(--ws-bg-alt);overflow:hidden;">
                     @if (!string.IsNullOrEmpty(Model.CoverImagePath))
                     {
-                        <div class="ratio ratio-21x9 shadow-sm" style="max-height: 400px; overflow: hidden;">
-                            <img src="@Model.CoverImagePath" class="w-100 h-100" style="object-fit: cover;" alt="cover"/>
+                        <div style="max-height:400px;overflow:hidden;">
+                            <img src="@Model.CoverImagePath" style="width:100%;height:100%;object-fit:cover;" alt="cover" />
                         </div>
                     }
 
-                    <div class="card-body p-4 p-md-5">
-                        <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-3 flex-wrap gap-2">
-                            <span class="text-muted"><i class="bi bi-geo-alt-fill text-warning me-1"></i> Venue: <strong class="text-dark">@Model.EventLocation</strong></span>
-                            <span class="text-muted"><i class="bi bi-clock-fill text-warning me-1"></i> Status: 
+                    <div style="padding:40px;">
+                        <div class="ws-flex-between ws-flex-wrap" style="margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--ws-border);gap:8px;">
+                            <span style="color:var(--ws-muted);"><i class="bi bi-geo-alt-fill me-1" style="color:var(--ws-accent);"></i> Venue: <strong style="color:var(--ws-text);">@Model.EventLocation</strong></span>
+                            <span style="color:var(--ws-muted);"><i class="bi bi-clock-fill me-1" style="color:var(--ws-accent);"></i> Status:
                                 @if (Model.IsUpcoming && Model.EventDate >= DateTime.UtcNow)
                                 {
-                                    <strong class="text-success text-uppercase">Upcoming</strong>
+                                    <strong style="color:var(--ws-success);text-transform:uppercase;">Upcoming</strong>
                                 }
                                 else
                                 {
-                                    <strong class="text-secondary text-uppercase">Concluded</strong>
+                                    <strong style="color:var(--ws-muted);text-transform:uppercase;">Concluded</strong>
                                 }
                             </span>
                         </div>
 
-                        <!-- Dynamic Countdown Widget if Upcoming -->
+                        <!-- Countdown -->
                         @if (Model.IsUpcoming && Model.EventDate >= DateTime.UtcNow)
                         {
-                            <div class="bg-white p-4 rounded border mb-5 text-center shadow-sm">
-                                <h5 class="fw-bold mb-3 text-uppercase small text-muted"><i class="bi bi-hourglass-split me-2 text-warning"></i> Event Countdown</h5>
-                                <div class="d-flex justify-content-center gap-3 align-items-center countdown-numbers">
-                                    <div class="text-center">
-                                        <h3 class="fw-bold mb-0 text-primary" id="days">00</h3>
-                                        <span class="small text-muted">Days</span>
+                            <div class="ws-countdown" style="margin-bottom:40px;">
+                                <h6 class="ws-countdown__title"><i class="bi bi-hourglass-split me-2" style="color:var(--ws-accent);"></i> Event Countdown</h6>
+                                <div class="ws-countdown__numbers">
+                                    <div class="ws-countdown__item">
+                                        <div class="ws-countdown__value" id="days">00</div>
+                                        <div class="ws-countdown__label">Days</div>
                                     </div>
-                                    <h3 class="fw-bold text-muted mb-0">:</h3>
-                                    <div class="text-center">
-                                        <h3 class="fw-bold mb-0 text-primary" id="hours">00</h3>
-                                        <span class="small text-muted">Hours</span>
+                                    <div class="ws-countdown__sep">:</div>
+                                    <div class="ws-countdown__item">
+                                        <div class="ws-countdown__value" id="hours">00</div>
+                                        <div class="ws-countdown__label">Hours</div>
                                     </div>
-                                    <h3 class="fw-bold text-muted mb-0">:</h3>
-                                    <div class="text-center">
-                                        <h3 class="fw-bold mb-0 text-primary" id="minutes">00</h3>
-                                        <span class="small text-muted">Mins</span>
+                                    <div class="ws-countdown__sep">:</div>
+                                    <div class="ws-countdown__item">
+                                        <div class="ws-countdown__value" id="minutes">00</div>
+                                        <div class="ws-countdown__label">Mins</div>
                                     </div>
-                                    <h3 class="fw-bold text-muted mb-0">:</h3>
-                                    <div class="text-center">
-                                        <h3 class="fw-bold mb-0 text-primary" id="seconds">00</h3>
-                                        <span class="small text-muted">Secs</span>
+                                    <div class="ws-countdown__sep">:</div>
+                                    <div class="ws-countdown__item">
+                                        <div class="ws-countdown__value" id="seconds">00</div>
+                                        <div class="ws-countdown__label">Secs</div>
                                     </div>
                                 </div>
                             </div>
                         }
 
-                        <div class="text-dark fs-5 leading-relaxed mb-5" style="line-height: 1.8;">
+                        <div style="color:var(--ws-text);font-size:1.1rem;line-height:1.8;margin-bottom:40px;">
                             @Html.Raw(Model.Description.Replace("\r\n", "<br/>").Replace("\n", "<br/>"))
                         </div>
 
-                        <div class="mt-5 border-top pt-4 text-center">
-                            <a href="/events" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-2"></i> Back to Events Calendar</a>
+                        <div style="margin-top:40px;padding-top:24px;border-top:1px solid var(--ws-border);text-align:center;">
+                            <a href="/events" class="ws-btn ws-btn--outline"><i class="bi bi-arrow-left me-2"></i> Back to Events Calendar</a>
                         </div>
                     </div>
                 </div>
@@ -86,30 +86,24 @@
 {
     @section Scripts {
         <script>
-            // Count down logic
             const eventTime = new Date('@Model.EventDate.ToString("yyyy-MM-ddTHH:mm:ss")').getTime();
-            
             function updateCountdown() {
                 const now = new Date().getTime();
                 const diff = eventTime - now;
-                
                 if (diff <= 0) {
                     clearInterval(interval);
-                    document.querySelector('.countdown-numbers').innerHTML = '<h4 class="fw-bold text-success mb-0"><i class="bi bi-check-circle me-2"></i>Event In Progress</h4>';
+                    document.querySelector('.ws-countdown__numbers').innerHTML = '<h4 style="font-weight:700;color:var(--ws-success);margin:0;"><i class="bi bi-check-circle me-2"></i>Event In Progress</h4>';
                     return;
                 }
-                
                 const days = Math.floor(diff / (1000 * 60 * 60 * 24));
                 const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
                 const secs = Math.floor((diff % (1000 * 60)) / 1000);
-                
                 document.getElementById('days').innerText = String(days).padStart(2, '0');
                 document.getElementById('hours').innerText = String(hours).padStart(2, '0');
                 document.getElementById('minutes').innerText = String(mins).padStart(2, '0');
                 document.getElementById('seconds').innerText = String(secs).padStart(2, '0');
             }
-            
             const interval = setInterval(updateCountdown, 1000);
             updateCountdown();
         </script>

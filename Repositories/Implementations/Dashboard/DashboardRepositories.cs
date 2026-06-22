@@ -92,10 +92,13 @@ public class DashboardRepository : IDashboardRepository
         return (totalAttendance, presentAttendance, feesCollected, feesTotal, studentsByClass, monthlyCollections, recentActivities, totalStudents, pendingAdmissions);
     }
 
-    public async Task<(int totalAttendance, int presentAttendance, decimal totalInvoiced, decimal totalPaid, List<DashboardActivityDto> recentNotices, List<DashboardAssignmentDto> upcomingAssignments)> GetStudentDashboardDataAsync(int studentId, int classId, int sectionId, CancellationToken ct)
+    public async Task<(int totalAttendance, int presentCount, int absentCount, int lateCount, int leaveCount, decimal totalInvoiced, decimal totalPaid, List<DashboardActivityDto> recentNotices, List<DashboardAssignmentDto> upcomingAssignments)> GetStudentDashboardDataAsync(int studentId, int classId, int sectionId, CancellationToken ct)
     {
         var totalAttendance = await _db.Attendance.Where(a => a.StudentId == studentId && !a.IsDeleted).CountAsync(ct);
-        var presentAttendance = await _db.Attendance.Where(a => a.StudentId == studentId && (a.Status == AttendanceStatus.Present || a.Status == AttendanceStatus.Late) && !a.IsDeleted).CountAsync(ct);
+        var presentCount = await _db.Attendance.Where(a => a.StudentId == studentId && a.Status == AttendanceStatus.Present && !a.IsDeleted).CountAsync(ct);
+        var absentCount = await _db.Attendance.Where(a => a.StudentId == studentId && a.Status == AttendanceStatus.Absent && !a.IsDeleted).CountAsync(ct);
+        var lateCount = await _db.Attendance.Where(a => a.StudentId == studentId && a.Status == AttendanceStatus.Late && !a.IsDeleted).CountAsync(ct);
+        var leaveCount = await _db.Attendance.Where(a => a.StudentId == studentId && a.Status == AttendanceStatus.Leave && !a.IsDeleted).CountAsync(ct);
         var totalInvoiced = await _db.FeeInvoices.Where(f => !f.IsDeleted && f.StudentId == studentId).SumAsync(f => f.TotalAmount, ct);
         var totalPaid = await _db.FeeInvoices.Where(f => !f.IsDeleted && f.StudentId == studentId && f.Status == PaymentStatus.Paid).SumAsync(f => f.PaidAmount, ct);
 
@@ -124,7 +127,7 @@ public class DashboardRepository : IDashboardRepository
             })
             .ToListAsync(ct);
 
-        return (totalAttendance, presentAttendance, totalInvoiced, totalPaid, recentNotices, upcomingAssignments);
+        return (totalAttendance, presentCount, absentCount, lateCount, leaveCount, totalInvoiced, totalPaid, recentNotices, upcomingAssignments);
     }
 
     public async Task<List<DashboardCalendarDto>> GetStudentAttendanceCalendarAsync(int studentId, int year, int month, CancellationToken ct)
@@ -632,7 +635,7 @@ public class DashboardQueryRepository : IDashboardQueryRepository
 
     public Task<(int totalAttendance, int presentAttendance, decimal feesCollected, decimal feesTotal, List<DashboardChartDto> studentsByClass, List<DashboardChartDto> monthlyCollections, List<DashboardActivityDto> recentActivities, int totalStudents, int pendingAdmissions)> GetAdminDashboardDataAsync(CancellationToken ct, int? academicYearId = null) => _repo.GetAdminDashboardDataAsync(ct, academicYearId);
 
-    public Task<(int totalAttendance, int presentAttendance, decimal totalInvoiced, decimal totalPaid, List<DashboardActivityDto> recentNotices, List<DashboardAssignmentDto> upcomingAssignments)> GetStudentDashboardDataAsync(int studentId, int classId, int sectionId, CancellationToken ct) => _repo.GetStudentDashboardDataAsync(studentId, classId, sectionId, ct);
+    public Task<(int totalAttendance, int presentCount, int absentCount, int lateCount, int leaveCount, decimal totalInvoiced, decimal totalPaid, List<DashboardActivityDto> recentNotices, List<DashboardAssignmentDto> upcomingAssignments)> GetStudentDashboardDataAsync(int studentId, int classId, int sectionId, CancellationToken ct) => _repo.GetStudentDashboardDataAsync(studentId, classId, sectionId, ct);
 
     public Task<List<DashboardCalendarDto>> GetStudentAttendanceCalendarAsync(int studentId, int year, int month, CancellationToken ct) => _repo.GetStudentAttendanceCalendarAsync(studentId, year, month, ct);
 

@@ -25,6 +25,7 @@
     <!-- App styles -->
     <link rel="stylesheet" href="~/css/schoolms-universal.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/schoolms-modern.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/responsive.css" asp-append-version="true" />
 </head>
 
 @{
@@ -40,6 +41,13 @@
     bool isAccountant = User.IsInRole("Accountant");
     bool isApplicationAdmin = User.IsInRole("Admin");
     bool isGuardian = User.IsInRole("Guardian");
+    bool guardianPortalEnabled = false;
+    try
+    {
+        var guardianSetting = _db.SchoolSettings.AsNoTracking().FirstOrDefault(s => !s.IsDeleted);
+        guardianPortalEnabled = guardianSetting?.EnableGuardianPortal ?? false;
+    }
+    catch { }
     bool isTeacherLike = User.IsInRole("Teacher") || User.IsInRole("Senior Lecturer") ||
                            User.IsInRole("Lecturer") || User.IsInRole("Assistant Head") ||
                            User.IsInRole("Principal") || User.IsInRole("Office Staff");
@@ -121,7 +129,7 @@
                 </div>
 
                 <nav class="sidebar-nav" id="sidebarNav">
-                    @if (isGuardian)
+                    @if (isGuardian && guardianPortalEnabled)
                     {
                         <span class="nav-section-label"><span class="nav-text">Guardian Portal</span></span>
                         <a href="/Guardian/Portal/Dashboard" data-title="Dashboard"><i class="bi bi-grid-1x2"></i><span class="nav-text">My Dashboard</span></a>
@@ -134,6 +142,12 @@
                         <a href="/Guardian/Portal/Calendar" data-title="Calendar"><i class="bi bi-calendar3"></i><span class="nav-text">Calendar</span></a>
                         <a href="/Guardian/Portal/Notifications" data-title="Notifications"><i class="bi bi-bell"></i><span class="nav-text">Notifications</span></a>
                         <a href="/Guardian/Portal/Profile" data-title="Profile"><i class="bi bi-person-circle"></i><span class="nav-text">My Profile</span></a>
+                    }
+                    else if (isGuardian && !guardianPortalEnabled)
+                    {
+                        <span class="nav-section-label"><span class="nav-text">Guardian Portal</span></span>
+                        <a asp-controller="Dashboard" asp-action="Index" data-title="Dashboard"><i class="bi bi-grid-1x2"></i><span class="nav-text">Dashboard</span></a>
+                        <a href="/Details" data-title="My Profile"><i class="bi bi-person-circle"></i><span class="nav-text">My Profile</span></a>
                     }
                     else if (isStudent)
                     {
@@ -480,14 +494,14 @@
                             <i class="bi bi-search"></i>
                             <input type="text" placeholder="Search anything..." aria-label="Search">
                         </div>
-                        @if (Can("Notifications.View") || isGuardian || isStudent || isTeacherLike)
+                        @if (Can("Notifications.View") || (isGuardian && guardianPortalEnabled) || isStudent || isTeacherLike)
                         {
-                            <a class="topbar-icon-btn" href="@(isGuardian ? "/Guardian/Portal/Notifications" : Url.Action("Index", "Notification"))" title="Notifications">
+                            <a class="topbar-icon-btn" href="@(isGuardian && guardianPortalEnabled ? "/Guardian/Portal/Notifications" : Url.Action("Index", "Notification"))" title="Notifications">
                                 <i class="bi bi-bell"></i>
                                 <span class="notif-dot"></span>
                             </a>
                         }
-                        <a class="topbar-icon-btn" href="@(isGuardian ? "/Guardian/Portal/Profile" : "/Details")" title="My Profile">
+                        <a class="topbar-icon-btn" href="@(isGuardian && guardianPortalEnabled ? "/Guardian/Portal/Profile" : "/Details")" title="My Profile">
                             @if (!string.IsNullOrEmpty(profilePicture))
                             {
                                 <img src="@profilePicture" alt="@userName" />
@@ -521,6 +535,15 @@
     <script src="https://unpkg.com/tabulator-tables@6.3.1/dist/js/tabulator.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <!-- CENTRALIZED RESPONSIVE: Tabulator default config & mobile utilities -->
+    <script>
+        // Apply responsiveLayout collapse to all Tabulator instances by default
+        // Individual grids can still override with explicit responsiveLayout: false
+        if (typeof Tabulator !== 'undefined' && Tabulator.defaultOptions) {
+            Tabulator.defaultOptions.responsiveLayout = "collapse";
+        }
+    </script>
 
     <script>
         (function () {

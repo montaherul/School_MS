@@ -4,6 +4,7 @@ using SchoolManagementSystem.Models.DTOs.Attendance;
 using SchoolManagementSystem.Models.Entities.Student;
 using SchoolManagementSystem.Models.ViewModels.Dashboard;
 using SchoolManagementSystem.Repositories.Guardian;
+using SchoolManagementSystem.Repositories.Interfaces.Website;
 using SchoolManagementSystem.Service.Interfaces.Dashboard;
 using SchoolManagementSystem.Services.Interfaces.Guardian;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
@@ -17,19 +18,28 @@ public class GuardianPortalController : Controller
 {
     private readonly IDashboardService _dashboardService;
     private readonly IGuardianService _guardianService;
+    private readonly ISchoolSettingRepository _settingRepo;
     private readonly IUnitOfWork _uow;
     private readonly ILogger<GuardianPortalController> _logger;
 
     public GuardianPortalController(
         IDashboardService dashboardService,
         IGuardianService guardianService,
+        ISchoolSettingRepository settingRepo,
         IUnitOfWork uow,
         ILogger<GuardianPortalController> logger)
     {
         _dashboardService = dashboardService;
         _guardianService = guardianService;
+        _settingRepo = settingRepo;
         _uow = uow;
         _logger = logger;
+    }
+
+    private async Task<bool> IsGuardianPortalEnabledAsync()
+    {
+        var settings = await _settingRepo.GetCurrentSettingsAsync();
+        return settings?.EnableGuardianPortal == true;
     }
 
     private int CurrentUserId()
@@ -42,6 +52,9 @@ public class GuardianPortalController : Controller
     [HttpGet("Dashboard/{studentId:int?}")]
     public async Task<IActionResult> Dashboard(int? studentId, CancellationToken cancellationToken)
     {
+        if (!await IsGuardianPortalEnabledAsync())
+            return RedirectToAction("Index", "Dashboard");
+
         try
         {
             var userId = CurrentUserId();

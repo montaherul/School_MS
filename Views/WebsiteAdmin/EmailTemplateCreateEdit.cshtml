@@ -5,58 +5,58 @@
     ViewData["Title"] = isEdit ? "Edit Email Template" : "Create Email Template";
 }
 
-<div class="container-fluid py-4">
-    <div class="mb-4">
-        <a href="/Admin/Website" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i> Back to Console</a>
+<div class="adm-page">
+    <div style="margin-bottom:16px;">
+        <a href="/Admin/Website" class="adm-btn adm-btn--ghost"><i style="margin-right:4px;" class="bi bi-arrow-left"></i> Back to Console</a>
     </div>
 
-    <div class="card border-0 shadow-sm">
-        <div class="card-header bg-white py-3">
-            <h5 class="fw-bold mb-0 text-primary"><i class="bi bi-envelope-paper me-2"></i> @(isEdit ? "Update Email Template" : "Create Email Template")</h5>
+    <div style="background:var(--adm-surface);border:1px solid var(--adm-border);border-radius:var(--adm-radius-lg);box-shadow:var(--adm-shadow);overflow:hidden;">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--adm-border);">
+            <h5 style="font-size:16px;font-weight:700;color:var(--adm-primary);margin:0;"><i style="margin-right:8px;" class="bi bi-envelope-paper"></i> @(isEdit ? "Update Email Template" : "Create Email Template")</h5>
         </div>
-        <div class="card-body p-4">
+        <div style="padding:20px;">
             <form action="/Admin/Website/EmailTemplates/CreateEdit/@(isEdit ? Model.Id.ToString() : "")" method="post" id="templateForm">
                 @Html.AntiForgeryToken()
 
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Template Name</label>
-                            <input type="text" name="TemplateName" value="@Model.TemplateName" class="form-control" placeholder="Employee Invitation" required/>
+                <div style="display:flex;flex-wrap:wrap;gap:16px;">
+                    <div style="flex:1 1 calc(50% - 16px);min-width:280px;">
+                        <div style="margin-bottom:12px;">
+                            <label class="adm-form-label">Template Name</label>
+                            <input type="text" name="TemplateName" value="@Model.TemplateName" class="adm-input" placeholder="Employee Invitation" required/>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Email Subject</label>
-                            <input type="text" name="Subject" value="@Model.Subject" class="form-control" placeholder="Welcome to {{SchoolName}}" required/>
+                    <div style="flex:1 1 calc(50% - 16px);min-width:280px;">
+                        <div style="margin-bottom:12px;">
+                            <label class="adm-form-label">Email Subject</label>
+                            <input type="text" name="Subject" value="@Model.Subject" class="adm-input" placeholder="Welcome to {{SchoolName}}" required/>
                         </div>
                     </div>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Available Placeholders (comma separated)</label>
-                    <input type="text" name="Placeholders" value="@Model.Placeholders" class="form-control" placeholder="{{SchoolName}}, {{EmployeeName}}, {{StudentName}}, {{GuardianName}}, {{AttendanceDate}}"/>
-                    <span class="small text-muted">Use these placeholders in subject and body. They will be replaced dynamically.</span>
+                <div style="margin-bottom:12px;">
+                    <label class="adm-form-label">Available Placeholders (comma separated)</label>
+                    <input type="text" name="Placeholders" value="@Model.Placeholders" class="adm-input" placeholder="{{SchoolName}}, {{EmployeeName}}, {{StudentName}}, {{GuardianName}}, {{AttendanceDate}}"/>
+                    <span style="font-size:12px;color:var(--adm-text-3);">Use these placeholders in subject and body. They will be replaced dynamically.</span>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Active Status</label>
-                    <select name="IsActive" class="form-select" style="max-width: 200px;">
+                <div style="margin-bottom:12px;">
+                    <label class="adm-form-label">Active Status</label>
+                    <select name="IsActive" class="adm-select" style="max-width:200px;">
                         <option value="true" selected="@(Model.IsActive)">Active</option>
                         <option value="false" selected="@(!Model.IsActive)">Inactive</option>
                     </select>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Email Body (HTML)</label>
+                <div style="margin-bottom:12px;">
+                    <label class="adm-form-label">Email Body (HTML)</label>
                     <input type="hidden" name="Body" id="hiddenBody" value="@Model.Body"/>
-                    <div id="editor-container" style="height: 400px; background-color: #fff; border-radius:4px;">
+                    <div id="editor-container" style="height:400px;background-color:#fff;border-radius:4px;">
                         @Html.Raw(Model.Body)
                     </div>
                 </div>
 
-                <div class="text-end pt-3 border-top">
-                    <button type="submit" class="btn btn-primary px-5"><i class="bi bi-save me-1"></i> Save Template</button>
+                <div style="text-align:right;padding-top:12px;border-top:1px solid var(--adm-border);">
+                    <button type="submit" class="adm-btn adm-btn--primary"><i style="margin-right:4px;" class="bi bi-save"></i> Save Template</button>
                 </div>
             </form>
         </div>

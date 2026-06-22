@@ -4,64 +4,66 @@
     ViewData["Title"] = "Mission & Vision";
 }
 
-<!-- Header Hero -->
-<div class="py-5 text-white" style="background: linear-gradient(135deg, var(--edu-navy), var(--edu-dark));">
-    <div class="container text-center py-4">
-        <h1 class="display-4 fw-bold">Our Philosophy</h1>
-        <p class="lead text-white-50">Our driving values, core mission, and strategic academic vision</p>
+<div class="ws-page-hero">
+    <div class="ws-container">
+        <h1>Our Philosophy</h1>
+        <p>Our driving values, core mission, and strategic academic vision</p>
     </div>
 </div>
 
-<section class="py-5 bg-white">
-    <div class="container py-3">
-        <div class="row g-5">
+<section class="ws-section">
+    <div class="ws-container">
+        <div class="ws-row ws-g-6">
             <!-- Mission -->
-            <div class="col-md-6">
-                <div class="card border-0 shadow-sm p-5 h-100 bg-light" style="border-left: 6px solid var(--edu-navy); border-radius:10px;">
-                    <div class="p-3 bg-white rounded-circle d-inline-flex align-items-center justify-content-center mb-4 text-primary shadow-sm" style="width:60px; height:60px;">
-                        <i class="bi bi-compass-fill fs-3"></i>
+            <div class="ws-col-12 ws-col-md-6">
+                <div style="padding:40px;background:var(--ws-bg-alt);border-radius:var(--ws-radius-lg);height:100%;border-left:6px solid var(--ws-primary);box-shadow:var(--ws-shadow-sm);">
+                    <div style="width:60px;height:60px;background:var(--ws-card);border-radius:var(--ws-radius-lg);display:flex;align-items:center;justify-content:center;margin-bottom:20px;box-shadow:var(--ws-shadow-sm);color:var(--ws-secondary);font-size:28px;">
+                        <i class="bi bi-compass-fill"></i>
                     </div>
-                    <h3 class="fw-bold text-dark mb-3">Our Core Mission</h3>
-                    <p class="text-muted leading-relaxed" style="font-size:15px; line-height:1.7;">
-                        @Model.Mission
+                    <h3 style="font-weight:700;margin-bottom:16px;">Our Core Mission</h3>
+                    <p style="color:var(--ws-text-light);font-size:15px;line-height:1.7;">
+                        @if (!string.IsNullOrEmpty(Model.Mission))
+                        {
+                            @Model.Mission
+                        }
+                        else
+                        {
+                            <text>To offer a holistic educational foundation that inspires young minds to learn, build character, and excel academically. We foster critical thinking, moral responsibility, and basic life skills, enabling our students to thrive as responsible citizens in Bangladesh and the global arena.</text>
+                        }
                     </p>
-                    @if (string.IsNullOrEmpty(Model.Mission))
-                    {
-                        <p class="text-muted leading-relaxed" style="font-size:15px; line-height:1.7;">
-                            To offer a holistic educational foundation that inspires young minds to learn, build character, and excel academically. We foster critical thinking, moral responsibility, and basic life skills, enabling our students to thrive as responsible citizens in Bangladesh and the global arena.
-                        </p>
-                    }
                 </div>
             </div>
-            
+
             <!-- Vision -->
-            <div class="col-md-6">
-                <div class="card border-0 shadow-sm p-5 h-100 bg-light" style="border-left: 6px solid var(--edu-gold); border-radius:10px;">
-                    <div class="p-3 bg-white rounded-circle d-inline-flex align-items-center justify-content-center mb-4 text-warning shadow-sm" style="width:60px; height:60px;">
-                        <i class="bi bi-eye-fill fs-3"></i>
+            <div class="ws-col-12 ws-col-md-6">
+                <div style="padding:40px;background:var(--ws-bg-alt);border-radius:var(--ws-radius-lg);height:100%;border-left:6px solid var(--ws-accent);box-shadow:var(--ws-shadow-sm);">
+                    <div style="width:60px;height:60px;background:var(--ws-card);border-radius:var(--ws-radius-lg);display:flex;align-items:center;justify-content:center;margin-bottom:20px;box-shadow:var(--ws-shadow-sm);color:var(--ws-accent);font-size:28px;">
+                        <i class="bi bi-eye-fill"></i>
                     </div>
-                    <h3 class="fw-bold text-dark mb-3">Our Strategic Vision</h3>
-                    <p class="text-muted leading-relaxed" style="font-size:15px; line-height:1.7;">
-                        @Model.Vision
+                    <h3 style="font-weight:700;margin-bottom:16px;">Our Strategic Vision</h3>
+                    <p style="color:var(--ws-text-light);font-size:15px;line-height:1.7;">
+                        @if (!string.IsNullOrEmpty(Model.Vision))
+                        {
+                            @Model.Vision
+                        }
+                        else
+                        {
+                            <text>To emerge as a premier benchmark educational center in Bangladesh, noted for its innovative instructional methodologies, multimedia integration, character building, and comprehensive extracurricular success. We aspire to sculpt active learners who lead with intelligence, courage, and integrity.</text>
+                        }
                     </p>
-                    @if (string.IsNullOrEmpty(Model.Vision))
-                    {
-                        <p class="text-muted leading-relaxed" style="font-size:15px; line-height:1.7;">
-                            To emerge as a premier benchmark educational center in Bangladesh, noted for its innovative instructional methodologies, multimedia integration, character building, and comprehensive extracurricular success. We aspire to sculpt active learners who lead with intelligence, courage, and integrity.
-                        </p>
-                    }
                 </div>
             </div>
         </div>
 
-        <div class="mt-5 p-5 bg-white border shadow-sm rounded-lg" style="border-radius: 12px;">
-            <div class="row g-4 align-items-center text-center text-md-start">
-                <div class="col-md-9">
-                    <h4 class="fw-bold text-dark">Join Our Family Today</h4>
-                    <p class="text-muted mb-0">Admissions are open for multiple classes. Enrolling online takes less than five minutes.</p>
+        <!-- CTA -->
+        <div style="margin-top:48px;padding:40px;background:var(--ws-card);border-radius:var(--ws-radius-xl);box-shadow:var(--ws-shadow-md);border:1px solid var(--ws-border-light);">
+            <div class="ws-row ws-g-4" style="align-items:center;">
+                <div class="ws-col-12 ws-col-md-9 ws-text-center ws-text-md-left">
+                    <h4 style="font-weight:700;margin-bottom:4px;">Join Our Family Today</h4>
+                    <p style="color:var(--ws-muted);margin:0;">Admissions are open for multiple classes. Enrolling online takes less than five minutes.</p>
                 </div>
-                <div class="col-md-3 text-md-end">
-                    <a href="/Admission/Apply" class="btn btn-edu-gold">Apply Online Now</a>
+                <div class="ws-col-12 ws-col-md-3 ws-text-center ws-text-md-right">
+                    <a href="/Admission/Apply" class="ws-btn ws-btn--accent">Apply Online Now</a>
                 </div>
             </div>
         </div>

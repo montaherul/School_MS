@@ -19,11 +19,12 @@
     <meta charset="utf-8" />
     <title>Student ID Card</title>
     <base href="@Model.BaseUrl" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;600;700&display=swap" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/css/idcard-print.css" />
 </head>
-<body class="@(Model.IsBulk ? "idcard-bulk" : "idcard-single")">
+<body>
 
     @if (Model.IsBulk)
     {
@@ -74,7 +75,7 @@
                     ValidUntil = validUntil
                 };
 
-                <div class="card-group">
+                <div class="card-pair">
                     <partial name="~/Views/Shared/IdCards/_StudentCardFront.cshtml" model="vm" />
                     <partial name="~/Views/Shared/IdCards/_StudentCardBack.cshtml" model="vm" />
                 </div>

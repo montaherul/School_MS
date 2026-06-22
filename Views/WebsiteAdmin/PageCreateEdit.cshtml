@@ -5,69 +5,69 @@
     ViewData["Title"] = isEdit ? "Modify CMS Page" : "Add CMS Page";
 }
 
-<div class="container-fluid py-4">
-    <div class="mb-4">
-        <a href="/Admin/Website" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i> Cancel</a>
+<div class="adm-page">
+    <div style="margin-bottom:16px;">
+        <a href="/Admin/Website" class="adm-btn adm-btn--ghost"><i class="bi bi-arrow-left" style="margin-right:4px;"></i> Cancel</a>
     </div>
 
-    <div class="card border-0 shadow-sm max-w-900 mx-auto">
-        <div class="card-header bg-white py-3">
-            <h5 class="fw-bold mb-0 text-primary"><i class="bi bi-file-earmark-richtext-fill me-2"></i> @(isEdit ? "Update Custom CMS Page" : "Create New Custom CMS Page")</h5>
+    <div style="max-width:900px;margin:0 auto;background:var(--adm-surface);border:1px solid var(--adm-border);border-radius:var(--adm-radius-lg);box-shadow:var(--adm-shadow);overflow:hidden;">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--adm-border);">
+            <span style="font-size:16px;font-weight:700;color:var(--adm-primary);margin:0;"><i class="bi bi-file-earmark-richtext-fill" style="margin-right:8px;"></i> @(isEdit ? "Update Custom CMS Page" : "Create New Custom CMS Page")</span>
         </div>
-        <div class="card-body p-4">
+        <div style="padding:20px;">
             <form action="/Admin/Website/Pages/CreateEdit/@(isEdit ? Model.Id.ToString() : "")" method="post" id="pageForm">
                 @Html.AntiForgeryToken()
 
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Page Title</label>
-                            <input type="text" name="Title" id="pageTitle" value="@Model.Title" class="form-control" placeholder="Infrastructure & Campus" required/>
+                <div style="display:flex;flex-wrap:wrap;gap:16px;">
+                    <div style="flex:1 1 calc(50% - 16px);min-width:280px;">
+                        <div style="margin-bottom:12px;">
+                            <label class="adm-form-label">Page Title</label>
+                            <input type="text" name="Title" id="pageTitle" value="@Model.Title" class="adm-input" placeholder="Infrastructure & Campus" required/>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Normalized Slug Route Address</label>
-                            <input type="text" name="Slug" id="pageSlug" value="@Model.Slug" class="form-control" placeholder="infrastructure" required/>
-                            <span class="small text-muted">Access URL: <code>/p/&lt;slug&gt;</code></span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Meta SEO Title (Google Results Title)</label>
-                            <input type="text" name="MetaTitle" value="@Model.MetaTitle" class="form-control" placeholder="Infrastructure Details - Gov School"/>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Meta SEO Description (Google Paragraph)</label>
-                            <input type="text" name="MetaDescription" value="@Model.MetaDescription" class="form-control" placeholder="Explore details of our digital classrooms, library, and campus..."/>
+                    <div style="flex:1 1 calc(50% - 16px);min-width:280px;">
+                        <div style="margin-bottom:12px;">
+                            <label class="adm-form-label">Normalized Slug Route Address</label>
+                            <input type="text" name="Slug" id="pageSlug" value="@Model.Slug" class="adm-input" placeholder="infrastructure" required/>
+                            <span style="font-size:12px;color:var(--adm-text-3);">Access URL: <code>/p/&lt;slug&gt;</code></span>
                         </div>
                     </div>
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Publish State Visibility</label>
-                    <select name="IsPublished" class="form-select" style="max-width: 250px;">
+                <div style="display:flex;flex-wrap:wrap;gap:16px;">
+                    <div style="flex:1 1 calc(50% - 16px);min-width:280px;">
+                        <div style="margin-bottom:12px;">
+                            <label class="adm-form-label">Meta SEO Title (Google Results Title)</label>
+                            <input type="text" name="MetaTitle" value="@Model.MetaTitle" class="adm-input" placeholder="Infrastructure Details - Gov School"/>
+                        </div>
+                    </div>
+                    <div style="flex:1 1 calc(50% - 16px);min-width:280px;">
+                        <div style="margin-bottom:12px;">
+                            <label class="adm-form-label">Meta SEO Description (Google Paragraph)</label>
+                            <input type="text" name="MetaDescription" value="@Model.MetaDescription" class="adm-input" placeholder="Explore details of our digital classrooms, library, and campus..."/>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom:12px;">
+                    <label class="adm-form-label">Publish State Visibility</label>
+                    <select name="IsPublished" class="adm-select" style="max-width:250px;">
                         <option value="true" selected="@(Model.IsPublished)">Published (Visible)</option>
                         <option value="false" selected="@(!Model.IsPublished)">Draft (Hidden)</option>
                     </select>
                 </div>
 
                 <!-- Rich WYSIWYG Quill Editor Container -->
-                <div class="mb-4">
-                    <label class="form-label fw-bold">Page HTML Body Content</label>
+                <div style="margin-bottom:16px;">
+                    <label class="adm-form-label">Page HTML Body Content</label>
                     <input type="hidden" name="Content" id="hiddenContent" value="@Model.Content"/>
-                    <div id="editor-container" style="height: 350px; background-color: #fff; border-radius:4px;">
+                    <div id="editor-container" style="height:350px;background-color:#fff;border-radius:4px;">
                         @Html.Raw(Model.Content)
                     </div>
                 </div>
 
-                <div class="text-end pt-3 border-top">
-                    <button type="submit" class="btn btn-primary px-5"><i class="bi bi-save me-1"></i> Save Custom Page</button>
+                <div style="text-align:right;padding-top:12px;border-top:1px solid var(--adm-border);margin-top:12px;">
+                    <button type="submit" class="adm-btn adm-btn--primary" style="padding-left:40px;padding-right:40px;"><i class="bi bi-save" style="margin-right:4px;"></i> Save Custom Page</button>
                 </div>
             </form>
         </div>
@@ -75,13 +75,11 @@
 </div>
 
 @section Scripts {
-    <!-- Quill editor scripts -->
     <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
-            // Setup Quill WYSIWYG
             const quill = new Quill('#editor-container', {
                 theme: 'snow',
                 modules: {
@@ -95,7 +93,6 @@
                 }
             });
 
-            // Automatically generate slug from title on creation
             const titleInput = document.getElementById('pageTitle');
             const slugInput = document.getElementById('pageSlug');
             
@@ -106,15 +103,14 @@
                     const slug = this.value
                         .toLowerCase()
                         .trim()
-                        .replace(/[^\w\s-]/g, '') // remove non-word characters
-                        .replace(/[\s_-]+/g, '-') // replace spaces/hyphens with single hyphen
-                        .replace(/^-+|-+$/g, ''); // remove leading/trailing hyphens
+                        .replace(/[^\w\s-]/g, '')
+                        .replace(/[\s_-]+/g, '-')
+                        .replace(/^-+|-+$/g, '');
                     slugInput.value = slug;
                 });
                 </text>
             }
 
-            // Sync editor contents to hidden field before form submission
             const form = document.getElementById('pageForm');
             form.addEventListener('submit', function() {
                 const html = quill.root.innerHTML;

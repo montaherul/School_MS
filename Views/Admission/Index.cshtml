@@ -359,6 +359,12 @@
         return el;
         }
         },
+        { title: "Transaction ID", field: "transactionDetails", width: 170, minWidth: 140, sorter: false, headerSort: false,
+        formatter: function (c) {
+        var v = c.getValue();
+        return v ? safeSpan(v, 'adm-cell-mono') : safeMuted();
+        }
+        },
         { title: "Status", field: "status", width: 140, minWidth: 140, sorter: false, headerSort: false, formatter: statusFormatter },
         { title: "", field: "id", width: 180, minWidth: 180, sorter: false, headerSort: false, formatter: actionFormatter, cssClass: "adm-col-actions" }
         ];

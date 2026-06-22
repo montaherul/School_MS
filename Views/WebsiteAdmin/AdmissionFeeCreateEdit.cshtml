@@ -4,58 +4,58 @@
     ViewData["Title"] = Model.Id > 0 ? "Edit Fee Structure" : "Add Fee Structure";
 }
 
-<div class="container-fluid py-4">
-    <div class="mb-4">
-        <a href="/Admin/Website" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i> Back to Console</a>
+<div class="adm-page">
+    <div style="margin-bottom:16px;">
+        <a href="/Admin/Website" class="adm-btn adm-btn--ghost"><i style="margin-right:4px;" class="bi bi-arrow-left"></i> Back to Console</a>
     </div>
 
-    <div class="card border-0 shadow-sm">
-        <div class="card-header bg-white py-3">
-            <h5 class="fw-bold mb-0 text-primary">
-                <i class="bi bi-cash-stack me-2"></i>
+    <div style="background:var(--adm-surface);border:1px solid var(--adm-border);border-radius:var(--adm-radius-lg);box-shadow:var(--adm-shadow);overflow:hidden;">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--adm-border);">
+            <h5 style="font-size:16px;font-weight:700;color:var(--adm-primary);margin:0;">
+                <i style="margin-right:8px;" class="bi bi-cash-stack"></i>
                 @(Model.Id > 0 ? "Edit" : "Add") Admission Fee Structure
             </h5>
         </div>
-        <div class="card-body p-4">
+        <div style="padding:20px;">
             <form action="/Admin/Website/AdmissionFees/CreateEdit/@(Model.Id > 0 ? Model.Id.ToString() : "")" method="post">
                 @Html.AntiForgeryToken()
 
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label fw-bold">Class Name</label>
-                        <input type="text" name="ClassName" value="@Model.ClassName" class="form-control" required placeholder="e.g., Class VI"/>
+                <div style="display:flex;flex-wrap:wrap;gap:16px;">
+                    <div style="flex:1 1 calc(33.33% - 16px);min-width:240px;">
+                        <label class="adm-form-label">Class Name</label>
+                        <input type="text" name="ClassName" value="@Model.ClassName" class="adm-input" required placeholder="e.g., Class VI"/>
                     </div>
-                    <div class="col-md-4">
-                        <label class="form-label fw-bold">School Class ID</label>
-                        <input type="number" name="SchoolClassId" value="@Model.SchoolClassId" class="form-control" required/>
+                    <div style="flex:1 1 calc(33.33% - 16px);min-width:240px;">
+                        <label class="adm-form-label">School Class ID</label>
+                        <input type="number" name="SchoolClassId" value="@Model.SchoolClassId" class="adm-input" required/>
                     </div>
-                    <div class="col-md-4">
-                        <label class="form-label fw-bold">Display Order</label>
-                        <input type="number" name="DisplayOrder" value="@Model.DisplayOrder" class="form-control"/>
+                    <div style="flex:1 1 calc(33.33% - 16px);min-width:240px;">
+                        <label class="adm-form-label">Display Order</label>
+                        <input type="number" name="DisplayOrder" value="@Model.DisplayOrder" class="adm-input"/>
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label fw-bold">Admission Fee</label>
-                        <input type="number" name="AdmissionFee" value="@Model.AdmissionFee" class="form-control" step="0.01" min="0"/>
+                    <div style="flex:1 1 calc(16.66% - 16px);min-width:150px;">
+                        <label class="adm-form-label">Admission Fee</label>
+                        <input type="number" name="AdmissionFee" value="@Model.AdmissionFee" class="adm-input" step="0.01" min="0"/>
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label fw-bold">Monthly Fee</label>
-                        <input type="number" name="MonthlyFee" value="@Model.MonthlyFee" class="form-control" step="0.01" min="0"/>
+                    <div style="flex:1 1 calc(16.66% - 16px);min-width:150px;">
+                        <label class="adm-form-label">Monthly Fee</label>
+                        <input type="number" name="MonthlyFee" value="@Model.MonthlyFee" class="adm-input" step="0.01" min="0"/>
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label fw-bold">Session Fee</label>
-                        <input type="number" name="SessionFee" value="@Model.SessionFee" class="form-control" step="0.01" min="0"/>
+                    <div style="flex:1 1 calc(16.66% - 16px);min-width:150px;">
+                        <label class="adm-form-label">Session Fee</label>
+                        <input type="number" name="SessionFee" value="@Model.SessionFee" class="adm-input" step="0.01" min="0"/>
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label fw-bold">Exam Fee</label>
-                        <input type="number" name="ExamFee" value="@Model.ExamFee" class="form-control" step="0.01" min="0"/>
+                    <div style="flex:1 1 calc(16.66% - 16px);min-width:150px;">
+                        <label class="adm-form-label">Exam Fee</label>
+                        <input type="number" name="ExamFee" value="@Model.ExamFee" class="adm-input" step="0.01" min="0"/>
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label fw-bold">Other Fee</label>
-                        <input type="number" name="OtherFee" value="@Model.OtherFee" class="form-control" step="0.01" min="0"/>
+                    <div style="flex:1 1 calc(16.66% - 16px);min-width:150px;">
+                        <label class="adm-form-label">Other Fee</label>
+                        <input type="number" name="OtherFee" value="@Model.OtherFee" class="adm-input" step="0.01" min="0"/>
                     </div>
-                    <div class="col-md-2">
-                        <label class="form-label fw-bold">Status</label>
-                        <div class="form-check form-switch mt-2">
+                    <div style="flex:1 1 calc(16.66% - 16px);min-width:150px;">
+                        <label class="adm-form-label">Status</label>
+                        <div style="display:flex;align-items:center;gap:10px;margin-top:8px;">
                             <input class="form-check-input" type="checkbox" name="IsActive" value="true" @(Model.IsActive ? "checked" : "") id="chkActive"/>
                             <input type="hidden" name="IsActive" value="false"/>
                             <label class="form-check-label" for="chkActive">Active</label>
@@ -63,8 +63,8 @@
                     </div>
                 </div>
 
-                <div class="col-12 text-end pt-4 mt-3 border-top">
-                    <button type="submit" class="btn btn-primary px-4"><i class="bi bi-save me-1"></i> Save Fee Structure</button>
+                <div style="flex:1 1 100%;text-align:right;padding-top:16px;margin-top:16px;border-top:1px solid var(--adm-border);">
+                    <button type="submit" class="adm-btn adm-btn--primary"><i style="margin-right:4px;" class="bi bi-save"></i> Save Fee Structure</button>
                 </div>
             </form>
         </div>

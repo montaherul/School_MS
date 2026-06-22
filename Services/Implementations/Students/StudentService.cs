@@ -117,13 +117,16 @@ public class StudentService : IStudentService
         else if (!string.IsNullOrWhiteSpace(dto.FatherOrGuardianMobileNo))
         {
             var isGuardian = !string.IsNullOrWhiteSpace(dto.GuardianName);
+            var name = isGuardian ? dto.GuardianName?.Trim() : dto.FatherName?.Trim();
+            if (string.IsNullOrWhiteSpace(name))
+                name = isGuardian ? "Guardian" : "Father";
             student.StudentGuardians.Add(new SchoolManagementSystem.Models.Entities.Guardian.StudentGuardian
             {
                 Guardian = new SchoolManagementSystem.Models.Entities.Guardian.Guardian
                 {
-                    FirstName = isGuardian ? dto.GuardianName!.Trim() : dto.FatherName.Trim(),
+                    FirstName = name,
                     LastName = "",
-                    FullName = isGuardian ? dto.GuardianName!.Trim() : dto.FatherName.Trim(),
+                    FullName = name,
                     MobileNumber = dto.FatherOrGuardianMobileNo.Trim(),
                     Occupation = dto.GuardianOccupation?.Trim(),
                     RelationType = isGuardian ? SchoolManagementSystem.Models.Entities.Guardian.GuardianRelationshipType.LegalGuardian : SchoolManagementSystem.Models.Entities.Guardian.GuardianRelationshipType.Father,

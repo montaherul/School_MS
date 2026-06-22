@@ -1,4 +1,3 @@
-using DinkToPdf;
 using iText.Kernel.Colors;
 using iText.Kernel.Font;
 using iText.Kernel.Geom;
@@ -22,6 +21,7 @@ public class PlainPdfGenerator : IPdfGenerator
 {
     private readonly IWebHostEnvironment _env;
     private readonly IViewRendererService _viewRenderer;
+    private readonly PlaywrightPdfEngine _playwright;
 
     private const float MM = 2.83465f;
     private const float CARD_W = 85.6f * MM;
@@ -38,10 +38,11 @@ public class PlainPdfGenerator : IPdfGenerator
     private PdfFont _bold = null!;
     private PdfFont _normal = null!;
 
-    public PlainPdfGenerator(IWebHostEnvironment env, IViewRendererService viewRenderer)
+    public PlainPdfGenerator(IWebHostEnvironment env, IViewRendererService viewRenderer, PlaywrightPdfEngine playwright)
     {
         _env = env;
         _viewRenderer = viewRenderer;
+        _playwright = playwright;
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -184,60 +185,14 @@ public class PlainPdfGenerator : IPdfGenerator
     }
 
     // ─────────────────────────────────────────────────────────────
-    //  ID CARD PDF
-    //  Single:  Exact portrait CR80 PVC page, one side per page
-    //  Bulk:    A4 Landscape, six portrait card pairs per page
+    //  ID CARD PDF — Playwright Chromium (modern CSS support)
+    //  Single:  Exact landscape CR80 PVC page
+    //  Bulk:    A4 Landscape, six landscape card pairs per page
     // ─────────────────────────────────────────────────────────────
-    private static readonly SynchronizedConverter _converter = new(new PdfTools());
 
     private byte[] GenerateIdCardPdf(string html, bool isBulk)
     {
-        var globalSettings = new GlobalSettings
-        {
-            Margins = new MarginSettings { Top = 0, Right = 0, Bottom = 0, Left = 0 },
-            ColorMode = ColorMode.Color,
-            DPI = 300,
-        };
-
-        if (isBulk)
-        {
-            globalSettings.PaperSize = new PechkinPaperSize("297mm", "210mm");
-            globalSettings.Orientation = DinkToPdf.Orientation.Landscape;
-        }
-        else
-        {
-            globalSettings.PaperSize = new PechkinPaperSize("53.98mm", "85.60mm");
-            globalSettings.Orientation = DinkToPdf.Orientation.Portrait;
-        }
-
-        var doc = new HtmlToPdfDocument
-        {
-            GlobalSettings = globalSettings,
-            Objects =
-            {
-                new ObjectSettings
-                {
-                    HtmlContent = html,
-                    PagesCount = true,
-                    WebSettings = new WebSettings
-                    {
-                        DefaultEncoding = "utf-8",
-                        LoadImages = true,
-                        EnableIntelligentShrinking = false,
-                        PrintMediaType = false,
-                        MinimumFontSize = 1,
-                    },
-                    LoadSettings = new LoadSettings
-                    {
-                        BlockLocalFileAccess = false,
-                        JSDelay = 0,
-                    },
-                    FooterSettings = { HtmUrl = string.Empty, FontSize = 0 }
-                }
-            }
-        };
-
-        return _converter.Convert(doc);
+        return _playwright.Convert(html, isBulk);
     }
 
     private string PrepareHtmlForPdf(string rawHtml)
@@ -267,8 +222,9 @@ public class PlainPdfGenerator : IPdfGenerator
             return $"href=\"file:///{wwwRoot}{path}\"";
         });
 
-        // 3. Remove base tag (causes issues with wkhtmltopdf)
-        html = System.Text.RegularExpressions.Regex.Replace(html, @"<base[^>]*/?>", "");
+        // 3. Set base tag for Chromium to resolve relative paths
+        var baseTag = $"<base href=\"file:///{wwwRoot}/\">";
+        html = System.Text.RegularExpressions.Regex.Replace(html, @"<base[^>]*/?>", baseTag);
 
         return html;
     }
@@ -399,42 +355,11 @@ public class PlainPdfGenerator : IPdfGenerator
     }
 
     // ─────────────────────────────────────────────────────────────
-    //  HTML → PDF via DinkToPdf (admit cards, etc.)
+    //  HTML → PDF via Playwright (admit cards, etc.)
     // ─────────────────────────────────────────────────────────────
     public byte[] GenerateFromHtml(string html)
     {
-        var converter = new SynchronizedConverter(new PdfTools());
-        var doc = new HtmlToPdfDocument
-        {
-            GlobalSettings =
-            {
-                PaperSize = new PechkinPaperSize("210mm", "297mm"),
-                Orientation = DinkToPdf.Orientation.Portrait,
-                Margins = new MarginSettings { Top = 0, Right = 0, Bottom = 0, Left = 0 },
-            },
-            Objects =
-            {
-                new ObjectSettings
-                {
-                    HtmlContent = html,
-                    PagesCount = true,
-                    WebSettings = new WebSettings
-                    {
-                        DefaultEncoding = "utf-8",
-                        LoadImages = true,
-                        EnableIntelligentShrinking = false,
-                        PrintMediaType = true,
-                    },
-                    LoadSettings = new LoadSettings
-                    {
-                        BlockLocalFileAccess = false,
-                    },
-                    FooterSettings = { HtmUrl = string.Empty, FontSize = 0 }
-                }
-            }
-        };
-
-        return converter.Convert(doc);
+        return _playwright.Convert(html, false);
     }
 
     // ─────────────────────────────────────────────────────────────

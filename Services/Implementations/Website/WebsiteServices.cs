@@ -148,6 +148,12 @@ public class SchoolWebsiteService : ISchoolWebsiteService
 
             existing.AllowResultWithDue = settings.AllowResultWithDue;
 
+            // Guardian Portal Feature Toggles
+            existing.EnableGuardianPortal = settings.EnableGuardianPortal;
+            existing.EnableGuardianActivation = settings.EnableGuardianActivation;
+            existing.RequireGuardianForAdmission = settings.RequireGuardianForAdmission;
+            existing.EnableGuardianNotifications = settings.EnableGuardianNotifications;
+
             existing.UpdatedAt = DateTime.UtcNow;
             existing.UpdatedBy = "admin";
             _repo.Update(existing);

@@ -3,9 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <title>Employee ID Card</title>
-    
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;600;700&display=swap" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <base href="file:///G:/PROJECT .NET/SchoolMS/full clone/wwwroot/">
     <style>
 *,
 *::before,
@@ -17,18 +15,18 @@
   print-color-adjust: exact;
 }
 
-html,
-body {
-  background: #fff;
-  color: #2D2D2D;
-  font-family: "Segoe UI", "Arial", "Noto Sans Bengali", "Nirmala UI", sans-serif;
+html, body {
+  background: #f8fafc;
+  color: #111827;
+  font-family: "Inter", "Segoe UI", "Arial", "Noto Sans Bengali", "Nirmala UI", sans-serif;
+  font-size: 8px;
 }
 
-@page {
-  margin: 0;
-}
+@page { margin: 0; size: 53.98mm 85.60mm; }
 
-/* ── Page containers ─────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════
+   PAGE CONTAINERS
+   ══════════════════════════════════════════════════════════ */
 
 .page-single {
   width: 53.98mm;
@@ -36,824 +34,741 @@ body {
   overflow: hidden;
   page-break-after: always;
 }
-
-.page-single:last-child {
-  page-break-after: auto;
-}
+.page-single:last-child { page-break-after: auto; }
 
 .page-bulk {
   width: 297mm;
   min-height: 210mm;
-  padding: 6mm 7.5mm;
-  font-size: 0;
-  background: #fff;
+  padding: 4mm 5mm;
+  background: #f8fafc;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3mm;
+  align-content: start;
 }
 
-.card-group {
-  display: inline-block;
-  width: 94mm;
-  height: 99mm;
-  padding: 2mm 0;
-  text-align: center;
-  vertical-align: top;
+.card-pair {
   page-break-inside: avoid;
 }
 
-.card-group .pvc-card {
-  margin: 0 1.2mm;
-}
-
-/* ── Card shell ──────────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════════
+   CARD SHELL
+   ══════════════════════════════════════════════════════════ */
 
 .pvc-card {
-  position: relative;
-  display: inline-block;
-  width: 53.98mm;
+  width: 100%;
+  max-width: 53.98mm;
   height: 85.6mm;
   overflow: hidden;
-  vertical-align: top;
-  background: #fff;
-  border: 0.2mm solid #d1d5db;
-  border-radius: 3mm;
-  box-shadow: 0 0.5mm 1.5mm rgba(15, 23, 42, 0.08);
+  background: #f8fafc;
+  border: 0.2mm solid #cbd5e1;
+  border-radius: 2.5mm;
+  box-shadow: 0 0.3mm 1.5mm rgba(15, 23, 42, 0.12);
+  display: flex;
+  flex-direction: column;
+  position: relative;
 }
 
-/* ── Premium security pattern ────────────────────────────── */
-
-.pvc-card::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  background:
-    radial-gradient(circle at 85% 8%, rgba(216, 162, 22, 0.10), transparent 14mm),
-    radial-gradient(circle at 12% 42%, rgba(30, 52, 125, 0.06), transparent 16mm),
-    repeating-linear-gradient(
-      135deg,
-      rgba(30, 52, 125, 0.02) 0,
-      rgba(30, 52, 125, 0.02) 0.3mm,
-      transparent 0.3mm,
-      transparent 3mm
-    );
-}
-
-/* ── FRONT CARD HEADER ───────────────────────────────────── */
-
-.card-header {
+.pvc-card-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   position: relative;
   z-index: 1;
-  height: 15.5mm;
-  padding: 2mm 2mm 1.2mm;
+}
+
+/* ══════════════════════════════════════════════════════════
+   HEADER — fixed 14mm, premium gradient
+   ══════════════════════════════════════════════════════════ */
+
+.card-header {
+  height: 14mm;
+  padding: 1mm 2mm 0.8mm;
   color: #fff;
-  background: #1E347D;
-  overflow: hidden;
-}
-
-.card-header::after {
-  content: "";
-  position: absolute;
-  right: -6mm;
-  top: -10mm;
-  width: 26mm;
-  height: 26mm;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.card-header .accent-bar {
-  position: absolute;
-  left: 2mm;
-  right: 2mm;
-  bottom: 0;
-  height: 0.5mm;
-  background: #D8A216;
-  border-radius: 0.25mm;
-}
-
-.brand-table {
+  background: linear-gradient(160deg, #0F172A 0%, #1E40AF 100%);
   position: relative;
-  z-index: 2;
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.brand-logo-cell {
-  width: 8.5mm;
-  vertical-align: middle;
-}
-
-.logo-frame {
-  width: 7.5mm;
-  height: 7.5mm;
   overflow: hidden;
-  text-align: center;
-  line-height: 7.5mm;
+  flex-shrink: 0;
+}
+
+/* Wave decoration at header bottom */
+.card-header::after {
+  content: '';
+  position: absolute;
+  bottom: -1.5mm;
+  left: -3mm;
+  right: -3mm;
+  height: 3mm;
+  background: #f8fafc;
+  border-radius: 50% 50% 0 0;
+  z-index: 2;
+}
+
+/* Security pattern in header */
+.card-header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 2.5mm,
+    rgba(255,255,255,0.02) 2.5mm,
+    rgba(255,255,255,0.02) 2.7mm
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Gold accent bar at header bottom wave peak */
+.card-header .h-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0.5mm;
+  height: 0.3mm;
+  z-index: 3;
+  background: linear-gradient(90deg, transparent 5%, #D4AF37 20%, #FCD34D 50%, #D4AF37 80%, transparent 95%);
+}
+
+.h-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 1mm;
+  position: relative;
+  z-index: 1;
+}
+
+.h-logo {
+  width: 6mm;
+  height: 6mm;
+  border-radius: 0.8mm;
   background: #fff;
-  border: 0.3mm solid rgba(255, 255, 255, 0.9);
-  border-radius: 1.5mm;
-  box-shadow: 0 0.4mm 1mm rgba(15, 23, 42, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-shadow: 0 0.2mm 0.6mm rgba(0,0,0,0.2);
+  flex-shrink: 0;
+  margin-top: 0.3mm;
 }
 
-.logo-frame img {
-  width: 6.5mm;
-  height: 6.5mm;
+.h-logo img {
+  width: 4.5mm;
+  height: 4.5mm;
   object-fit: contain;
-  vertical-align: middle;
 }
 
-.logo-frame span {
-  display: block;
-  color: #1E347D;
-  font-size: 5pt;
+.h-logo span {
+  color: #0F172A;
+  font-size: 4.5pt;
+  font-weight: 900;
+}
+
+.h-text-wrap {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1mm;
+}
+
+.h-school-name {
+  font-size: 9px;
   font-weight: 800;
-}
-
-.brand-text-cell {
-  vertical-align: middle;
-  padding-left: 1.5mm;
-}
-
-.school-name {
+  line-height: 1.15;
+  text-transform: uppercase;
+  letter-spacing: 0.1px;
+  word-break: break-word;
+  overflow-wrap: break-word;
   max-height: 5.5mm;
   overflow: hidden;
-  color: #fff;
-  font-size: 6pt;
-  font-weight: 800;
-  line-height: 1.1;
-  text-transform: uppercase;
 }
 
-.school-meta {
-  max-width: 34mm;
-  overflow: hidden;
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 4.2pt;
-  font-weight: 600;
+.h-motto {
+  font-size: 6px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.7);
+  letter-spacing: 0.3px;
   line-height: 1.2;
+  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* ── Card body ───────────────────────────────────────────── */
+.h-meta {
+  font-size: 5px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.5);
+  letter-spacing: 0.2px;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.h-tag {
+  padding: 0.2mm 1.2mm;
+  border: 0.15mm solid rgba(255,255,255,0.25);
+  border-radius: 2mm;
+  color: rgba(255,255,255,0.8);
+  font-size: 6px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  line-height: 1.3;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* ══════════════════════════════════════════════════════════
+   CARD BODY
+   ══════════════════════════════════════════════════════════ */
 
 .card-body {
-  position: relative;
-  z-index: 1;
-  display: block;
-  width: 100%;
-  min-height: 50.6mm;
-  padding: 0 2mm 1mm;
-}
-
-/* Centered photo overlapping header bottom edge */
-.photo-center-wrap {
+  flex: 1;
   display: flex;
-  justify-content: center;
-  margin-top: -10.5mm;
-  margin-bottom: 2mm;
+  flex-direction: column;
+  align-items: center;
+  padding: 1mm 2.5mm 0.5mm;
   position: relative;
-  z-index: 10;
+  overflow: hidden;
 }
 
-/* ── Photo panel (circular) ──────────────────────────────── */
+/* Watermark logo */
+.card-body::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--watermark, none);
+  background-size: 16mm auto;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.04;
+  pointer-events: none;
+}
 
-.photo-frame {
-  width: 20mm;
-  height: 20mm;
+/* Subtle dot grid security pattern */
+.card-body::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, #cbd5e1 0.3px, transparent 0.3px);
+  background-size: 2mm 2mm;
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+/* ══════════════════════════════════════════════════════════
+   PHOTO — 25mm circular with gold ring
+   ══════════════════════════════════════════════════════════ */
+
+.photo-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 0.5mm;
+}
+
+.photo-ring {
+  width: 25mm;
+  height: 25mm;
   border-radius: 50%;
-  border: 1mm solid #ffffff;
-  outline: 0.8mm solid #C47D3A;
   overflow: hidden;
-  background: #e0e0e0;
+  background: linear-gradient(135deg, #e2e8f0, #f1f5f9);
+  border: 0.4mm solid #fff;
+  box-shadow:
+    0 0 0 0.3mm #D4AF37,
+    0 0.4mm 1.5mm rgba(15, 23, 42, 0.12);
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
-.photo-frame img {
+.photo-ring img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
 }
 
-.photo-placeholder {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #64748b;
-  background: #f1f5f9;
-  font-size: 5pt;
-  font-weight: 800;
-}
-
-/* ── Role badge (centered layout) ────────────────────────── */
-
-.role-badge {
-  display: inline-block;
-  margin: 1.5mm auto 0;
-  padding: 0.5mm 3mm;
-  color: #fff;
-  background: #1E347D;
-  border-radius: 6mm;
-  font-size: 5pt;
-  font-weight: 800;
-  letter-spacing: 0.3px;
-  text-transform: uppercase;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 38mm;
-  line-height: 1.3;
-}
-
-.role-badge-gold {
-  background: #B8860B;
-}
-
-.role-badge-green {
-  background: #059669;
-}
-
-.role-badge-purple {
-  background: #7C3AED;
-}
-
-.role-badge-teal {
-  background: #0D9488;
-}
-
-/* ── Name section (centered) ─────────────────────────────── */
-
-.person-name {
-  overflow: visible;
-  color: #1E347D;
-  font-size: 10pt;
-  font-weight: 800;
-  line-height: 1.2;
-  text-transform: uppercase;
-  word-break: break-word;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  text-align: center;
-}
-
-.text-center {
-  text-align: center;
-}
-
-/* ── Info panel ──────────────────────────────────────────── */
-
-.info-divider {
-  width: 40%;
-  height: 0.3mm;
-  margin: 1mm auto 0.6mm;
-  background: #D8A216;
-  border: none;
-}
-
-.info-table {
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: auto;
-}
-
-.info-table tr {
-  height: auto;
-}
-
-.info-table td {
-  overflow: visible;
-  font-size: 5.5pt;
-  line-height: 1.25;
-  text-align: left;
-  vertical-align: middle;
-  padding: 0.15mm 0;
-  word-break: break-word;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-}
-
-.info-table .label-cell {
-  width: 16mm;
-  min-width: 16mm;
-  color: #6B7280;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.info-table .value-cell {
-  color: #2D2D2D;
-  font-weight: 600;
-}
-
-/* ── Card footer (front) ─────────────────────────────────── */
-
-.card-footer {
-  position: relative;
-  z-index: 1;
-  height: 19.5mm;
-  padding: 1.2mm 2mm 1mm;
-  background: #f8fafc;
-  border-top: 0.2mm solid #e5e7eb;
-}
-
-.footer-grid {
-  display: table;
-  width: 100%;
-  height: 100%;
-}
-
-.footer-qr-cell {
-  display: table-cell;
-  width: 20mm;
-  vertical-align: top;
-  text-align: center;
-}
-
-.footer-qr-cell .qr-img {
-  display: inline-block;
-  width: 18mm;
-  height: 18mm;
-  padding: 0.4mm;
-  background: #fff;
-  border: 0.2mm solid #d1d5db;
-  border-radius: 1.2mm;
-}
-
-.footer-qr-text {
-  display: block;
-  margin-top: 0.5mm;
-  color: #1E347D;
-  font-size: 4.2pt;
-  font-weight: 700;
-  line-height: 1.15;
-  text-transform: uppercase;
-}
-
-.footer-info-cell {
-  display: table-cell;
-  vertical-align: middle;
-  padding: 0 1.5mm;
-}
-
-.footer-info-row {
-  color: #2D2D2D;
-  font-size: 5pt;
-  font-weight: 600;
-  line-height: 1.4;
-}
-
-.footer-info-label {
-  display: inline-block;
-  min-width: 12mm;
-  color: #6B7280;
-  font-weight: 700;
-  font-size: 4.5pt;
-  text-transform: uppercase;
-}
-
-.footer-sign-cell {
-  display: table-cell;
-  width: 18mm;
-  vertical-align: middle;
-  text-align: center;
-}
-
-.signature-seal {
-  display: block;
-  max-width: 12mm;
-  max-height: 3mm;
-  object-fit: contain;
-  margin: 0 auto 0.2mm;
-}
-
-.signature-line {
-  width: 14mm;
-  height: 0.3mm;
-  margin: 0 auto;
-  background: #2D2D2D;
-  border-bottom: 0.15mm solid #2D2D2D;
-}
-
-.signature-label {
-  margin-top: 0.3mm;
-  color: #6B7280;
-  font-size: 4.5pt;
-  font-weight: 800;
-  text-transform: uppercase;
-}
-
-/* ── BACK SIDE ───────────────────────────────────────────── */
-
-.back-header {
-  position: relative;
-  z-index: 1;
-  height: 13mm;
-  padding: 1.5mm 2mm 1.2mm;
-  color: #fff;
-  background: #1E347D;
-  overflow: hidden;
-}
-
-.back-header::after {
-  content: "";
-  position: absolute;
-  right: -6mm;
-  top: -8mm;
-  width: 22mm;
-  height: 22mm;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.06);
-}
-
-.back-header .accent-bar {
-  position: absolute;
-  left: 2mm;
-  right: 2mm;
-  bottom: 0;
-  height: 0.4mm;
-  background: #D8A216;
-  border-radius: 0.2mm;
-}
-
-.back-subtitle {
-  max-width: 34mm;
-  overflow: hidden;
-  color: rgba(255, 255, 255, 0.85);
-  font-size: 4.2pt;
-  font-weight: 600;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  letter-spacing: 0.5px;
-}
-
-.logo-frame.small {
-  width: 6mm;
-  height: 6mm;
-  line-height: 6mm;
-}
-
-.logo-frame.small img {
-  width: 5.2mm;
-  height: 5.2mm;
-}
-
-.school-name-sm {
-  max-height: 5mm;
-  overflow: hidden;
-  color: #fff;
-  font-size: 5.5pt;
-  font-weight: 800;
-  line-height: 1.08;
-  text-transform: uppercase;
-}
-
-/* ── Back body ───────────────────────────────────────────── */
-
-.back-body {
-  position: relative;
-  z-index: 1;
-  height: 68.6mm;
-  padding: 1.5mm 2mm;
-  overflow: hidden;
-}
-
-.back-section {
-  margin-bottom: 1mm;
-  padding: 0.8mm 1mm;
-  background: rgba(255, 255, 255, 0.95);
-  border: 0.15mm solid #e5e7eb;
-  border-radius: 1.5mm;
-}
-
-.back-section-title {
-  margin-bottom: 0.4mm;
-  color: #1E347D;
-  font-size: 4.8pt;
-  font-weight: 900;
-  letter-spacing: 0.3px;
-  text-transform: uppercase;
-}
-
-.contact-line {
-  color: #2D2D2D;
-  font-size: 4.5pt;
-  font-weight: 600;
-  line-height: 1.25;
-  padding: 0.1mm 0;
-  word-break: break-word;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-}
-
-.contact-line .contact-label {
-  display: inline-block;
-  min-width: 10mm;
-  color: #6B7280;
-  font-weight: 700;
-  font-size: 4.2pt;
-}
-
-/* ── Guardian info section ────────────────────────────────── */
-
-.guardian-grid {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.guardian-grid td {
-  padding: 0.15mm 0;
-  color: #2D2D2D;
-  font-size: 4.5pt;
-  font-weight: 600;
-  line-height: 1.2;
-  vertical-align: top;
-  word-break: break-word;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-}
-
-.guardian-grid .gl-label {
-  width: 14mm;
-  color: #6B7280;
-  font-weight: 700;
-  font-size: 4.2pt;
-  white-space: nowrap;
-}
-
-/* ── Terms section ───────────────────────────────────────── */
-
-.terms-list {
-  list-style: none;
-}
-
-.terms-list li {
-  position: relative;
-  margin-bottom: 0.2mm;
-  padding-left: 2mm;
-  color: #2D2D2D;
-  font-size: 4.2pt;
-  font-weight: 600;
-  line-height: 1.2;
-}
-
-.terms-list li::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0.4mm;
-  width: 0.8mm;
-  height: 0.8mm;
-  background: #D8A216;
-  border-radius: 50%;
-}
-
-/* ── Attendance QR section (back) ─────────────────────────── */
-
-.qr-section {
-  display: table;
-  width: 100%;
-  margin-top: 0.8mm;
-  padding: 1mm 1.2mm;
-  background: #EFF6FF;
-  border: 0.15mm solid #BFDBFE;
-  border-radius: 1.5mm;
-}
-
-.qr-section-left,
-.qr-section-right {
-  display: table-cell;
-  vertical-align: middle;
-}
-
-.qr-section-left {
-  width: 22mm;
-  text-align: center;
-}
-
-.qr-section-left img {
-  display: inline-block;
-  width: 20mm;
-  height: 20mm;
-  padding: 0.5mm;
-  background: #fff;
-  border: 0.15mm solid #DBEAFE;
-  border-radius: 1.2mm;
-}
-
-.qr-section-right {
-  padding-left: 1.5mm;
-  text-align: left;
-}
-
-.qr-attendance-title {
-  color: #1E347D;
-  font-size: 5pt;
-  font-weight: 900;
-  text-transform: uppercase;
-}
-
-.qr-attendance-id {
-  max-width: 24mm;
-  margin-top: 0.3mm;
-  overflow: hidden;
-  color: #2D2D2D;
-  font-size: 5.2pt;
-  font-weight: 800;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.qr-attendance-sub {
-  margin-top: 0.2mm;
-  color: #6B7280;
-  font-size: 4.2pt;
-  font-weight: 600;
-}
-
-/* ── Back footer ─────────────────────────────────────────── */
-
-.back-footer {
-  position: relative;
-  z-index: 1;
-  height: 4mm;
-  background: #1E347D;
-  text-align: center;
-  line-height: 4mm;
-}
-
-.back-footer span {
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 3.5pt;
-  font-weight: 600;
-  letter-spacing: 0.3px;
-}
-
-/* ── EMPLOYEE CARD VARIATIONS ────────────────────────────── */
-
-.employee-card .card-header {
-  background: #1E347D;
-}
-
-.employee-card .person-name {
-  color: #1E347D;
-}
-
-.employee-card .role-badge {
-  background: #B8860B;
-}
-
-.employee-card .info-divider {
-  background: #D8A216;
-}
-
-.employee-card .back-section-title {
-  color: #1E347D;
-}
-
-.employee-card .qr-attendance-title {
-  color: #1E347D;
-}
-
-.employee-card .back-header {
-  background: #1E347D;
-}
-
-.employee-card .back-footer {
-  background: #1E347D;
-}
-
-.employee-card .footer-qr-text {
-  color: #B8860B;
-}
-
-/* ── STUDENT CARD VARIATIONS ─────────────────────────────── */
-
-.student-card .role-badge {
-  background: #1E347D;
-}
-
-.student-card .footer-qr-text {
-  color: #1E347D;
-}
-
-/* ── Empty state ─────────────────────────────────────────── */
-
 .no-photo {
   width: 100%;
   height: 100%;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: #94A3B8;
-  background: #F1F5F9;
-  font-size: 5pt;
+  color: #94a3b8;
+  background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+  font-size: 3pt;
   font-weight: 700;
   letter-spacing: 0.5px;
 }
 
-/* ── Print-specific overrides ────────────────────────────── */
+.no-photo-icon {
+  font-size: 7pt;
+  margin-bottom: 0.2mm;
+  color: #cbd5e1;
+}
+
+/* ══════════════════════════════════════════════════════════
+   NAME — prominent, centered
+   ══════════════════════════════════════════════════════════ */
+
+.p-name {
+  color: #0F172A;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.1;
+  text-transform: uppercase;
+  text-align: center;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  margin-bottom: 0.2mm;
+  letter-spacing: -0.3px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   BADGE — rounded pill
+   ══════════════════════════════════════════════════════════ */
+
+.b-row {
+  text-align: center;
+  margin-bottom: 0.8mm;
+}
+
+.r-badge {
+  display: inline-block;
+  padding: 0.2mm 1.8mm;
+  color: #fff;
+  background: linear-gradient(135deg, #1E3A8A, #2563EB);
+  border-radius: 2.5mm;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 1.35;
+  white-space: nowrap;
+  box-shadow: 0 0.15mm 0.4mm rgba(30, 58, 138, 0.2);
+}
+
+.r-badge.gold   { background: linear-gradient(135deg, #8B6914, #D4AF37); }
+.r-badge.green  { background: linear-gradient(135deg, #065f46, #0d9488); }
+.r-badge.purple { background: linear-gradient(135deg, #5b21b6, #8b5cf6); }
+.r-badge.teal   { background: linear-gradient(135deg, #0e7490, #06b6d4); }
+.r-badge.slate  { background: linear-gradient(135deg, #334155, #475569); }
+
+/* ══════════════════════════════════════════════════════════
+   2-COLUMN DETAILS GRID — compact, professional
+   ══════════════════════════════════════════════════════════ */
+
+.details-section {
+  width: 100%;
+}
+
+.d-grid {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.d-grid tr td {
+  font-size: 7.5px;
+  line-height: 1.25;
+  vertical-align: middle;
+  padding: 0.15mm 0.3mm;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  border-bottom: 0.05mm solid rgba(203, 213, 225, 0.4);
+}
+
+.d-grid tr:last-child td { border-bottom: none; }
+
+.dl {
+  color: #64748b;
+  font-weight: 600;
+  font-size: 7px;
+  text-transform: uppercase;
+  letter-spacing: 0.15px;
+  white-space: nowrap;
+  width: 32%;
+}
+
+.dv {
+  color: #111827;
+  font-weight: 700;
+  font-size: 7.5px;
+  width: 18%;
+}
+
+/* ══════════════════════════════════════════════════════════
+   FOOTER — compact, dark
+   ══════════════════════════════════════════════════════════ */
+
+.card-footer {
+  height: 5.5mm;
+  padding: 0.4mm 2.5mm;
+  background: linear-gradient(160deg, #0F172A, #1E40AF);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: relative;
+}
+
+.card-footer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 2mm;
+  right: 2mm;
+  height: 0.12mm;
+  background: linear-gradient(90deg, transparent, #D4AF37, transparent);
+}
+
+.f-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.f-right { text-align: center; }
+
+.f-row {
+  color: rgba(255,255,255,0.8);
+  font-size: 7px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.f-row .fl {
+  display: inline-block;
+  min-width: 4.5mm;
+  color: rgba(255,255,255,0.35);
+  font-weight: 700;
+  font-size: 5.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.signature-area {
+  text-align: center;
+}
+
+.seal-img {
+  max-width: 8mm;
+  max-height: 2mm;
+  vertical-align: middle;
+}
+
+.s-line {
+  width: 11mm;
+  height: 0.1mm;
+  margin: 0.03mm auto;
+  background: rgba(255,255,255,0.15);
+}
+
+.s-label {
+  color: rgba(255,255,255,0.35);
+  font-size: 5.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  line-height: 1.2;
+}
+
+/* ══════════════════════════════════════════════════════════
+   BACK SIDE
+   ══════════════════════════════════════════════════════════ */
+
+.b-header {
+  height: 7mm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  background: linear-gradient(160deg, #0F172A, #1E40AF);
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.b-header::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 2mm,
+    rgba(255,255,255,0.015) 2mm,
+    rgba(255,255,255,0.015) 2.2mm
+  );
+  pointer-events: none;
+}
+
+.b-header .h-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 0.2mm;
+  background: linear-gradient(90deg, transparent 5%, #D4AF37 50%, transparent 95%);
+  z-index: 1;
+}
+
+.b-title {
+  font-size: 7px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  position: relative;
+  z-index: 1;
+}
+
+.b-body {
+  flex: 1;
+  padding: 0.8mm 2.5mm 0.3mm;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.sec-title {
+  color: #0F172A;
+  font-size: 6.5px;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+  padding-bottom: 0.1mm;
+  border-bottom: 0.1mm solid #D4AF37;
+  margin-bottom: 0.2mm;
+}
+
+.bg-tbl {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.bg-tbl td {
+  padding: 0.08mm 0.15mm;
+  color: #111827;
+  font-size: 6.5px;
+  font-weight: 600;
+  line-height: 1.2;
+  vertical-align: top;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  border-bottom: 0.04mm solid rgba(203, 213, 225, 0.35);
+}
+
+.bg-tbl .bl {
+  width: 28%;
+  color: #64748b;
+  font-weight: 700;
+  font-size: 5.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.12px;
+  white-space: nowrap;
+}
+
+/*── Section divider ──*/
+.sec-divider {
+  height: 0.08mm;
+  margin: 0.3mm 0;
+  background: linear-gradient(90deg, transparent, #D4AF37, transparent);
+}
+
+/*── Rules ──*/
+.rules-section {
+  margin-top: 0.3mm;
+}
+
+.rules-section .sec-title {
+  font-size: 5.5px;
+  margin-bottom: 0.15mm;
+}
+
+.rules-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.05mm 0.3mm;
+}
+
+.rules-list li {
+  color: #64748b;
+  font-size: 5.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  padding: 0 0 0 1.2mm;
+  position: relative;
+  display: inline-block;
+}
+
+.rules-list li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 0.6mm;
+  height: 0.6mm;
+  background: linear-gradient(135deg, #D4AF37, #FCD34D);
+  border-radius: 50%;
+}
+
+/*── QR section — moved upward ──*/
+.qr-section {
+  margin-top: 0.3mm;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.qr-card {
+  display: flex;
+  align-items: center;
+  gap: 1mm;
+  padding: 0.3mm 1.2mm;
+  background: #fff;
+  border: 0.08mm solid #e2e8f0;
+  border-radius: 0.8mm;
+  box-shadow: 0 0.1mm 0.4mm rgba(15, 23, 42, 0.05);
+}
+
+.qr-img {
+  width: 8mm;
+  height: 8mm;
+  display: block;
+  flex-shrink: 0;
+}
+
+.qr-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.qr-lbl {
+  color: #0F172A;
+  font-size: 5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  line-height: 1.2;
+}
+
+.qr-id {
+  color: #64748b;
+  font-size: 5px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+/*── Back footer ──*/
+.b-footer {
+  height: 2.5mm;
+  text-align: center;
+  line-height: 2.5mm;
+  background: linear-gradient(160deg, #0F172A, #1E40AF);
+  flex-shrink: 0;
+}
+
+.b-footer span {
+  color: rgba(255,255,255,0.3);
+  font-size: 5px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   EMPLOYEE VARIATIONS — darker slate theme
+   ══════════════════════════════════════════════════════════ */
+
+.employee-card .card-header,
+.employee-card .card-footer,
+.employee-card .b-header,
+.employee-card .b-footer {
+  background: linear-gradient(160deg, #0c1422 0%, #0F172A 50%, #162d4a 100%);
+}
+
+.employee-card .r-badge { background: linear-gradient(135deg, #334155, #475569); }
+
+.employee-card .r-badge.gold   { background: linear-gradient(135deg, #7A5C0E, #B8860B); }
+.employee-card .r-badge.green  { background: linear-gradient(135deg, #065f46, #0d9488); }
+.employee-card .r-badge.purple { background: linear-gradient(135deg, #5b21b6, #8b5cf6); }
+.employee-card .r-badge.teal   { background: linear-gradient(135deg, #0e7490, #06b6d4); }
+
+/* ══════════════════════════════════════════════════════════
+   PRINT SAFETY
+   ══════════════════════════════════════════════════════════ */
 
 @media print {
   .pvc-card {
     box-shadow: none;
-    border-color: #bbb;
+    border-color: #94a3b8;
   }
-  .photo-frame {
-    outline: 0.8mm solid #C47D3A;
+  .photo-ring {
+    box-shadow: 0 0 0 0.3mm #D4AF37, 0 0 0.8mm 0.1mm rgba(212,175,55,0.08);
   }
 }
 
 </style>
 </head>
-<body class="idcard-single">
+<body>
 
             <div class="page-single">
                 
 <div class="pvc-card employee-card card-front">
-    <div class="card-header">
-        <table class="brand-table">
-            <tr>
-                <td class="brand-logo-cell">
-                    <div class="logo-frame">
-                            <span>CHA</span>
-                    </div>
-                </td>
-                <td class="brand-text-cell">
-                    <div class="school-name">Chattogram Collegiate School &amp; College</div>
-                    <div class="school-meta">Knowledge. Discipline. Excellence</div>
-                    <div class="school-meta">EIIN 104298 | CHA</div>
-                </td>
-            </tr>
-        </table>
-        <div class="accent-bar"></div>
-    </div>
-
-    <div class="card-body">
-        <div class="photo-center-wrap">
-            <div class="photo-frame">
-                    <div class="no-photo">PHOTO</div>
+    <div class="pvc-card-inner">
+        <div class="card-header">
+            <div class="h-bar"></div>
+            <div class="h-row">
+                <div class="h-logo">
+                        <span>CHA</span>
+                </div>
+                <div class="h-text-wrap">
+                    <div class="h-school-name">Chattogram Collegiate School &amp; College</div>
+                    <div class="h-meta">
+EIIN: 104298 | school-ms-7l3e.onrender.com/                    </div>
+                </div>
+                <div class="h-tag">Staff</div>
             </div>
         </div>
 
-        <div class="person-name text-center">Hasan Mahmud</div>
-        <div class="role-badge text-center role-badge-green">Accountant</div>
-        <div class="info-divider"></div>
-
-        <table class="info-table">
-            <tr>
-                <td class="label-cell">Employee Code</td>
-                <td class="value-cell">EMP-00009</td>
-            </tr>
-            <tr>
-                <td class="label-cell">Department</td>
-                <td class="value-cell">Security &amp; Safety</td>
-            </tr>
-            <tr>
-                <td class="label-cell">Designation</td>
-                <td class="value-cell">Accountant</td>
-            </tr>
-            <tr>
-                <td class="label-cell">Joining Date</td>
-                <td class="value-cell">01 Jan 2025</td>
-            </tr>
-            <tr>
-                <td class="label-cell">Blood Group</td>
-                <td class="value-cell">B&#x2B;</td>
-            </tr>
-            <tr>
-                <td class="label-cell">Mobile Number</td>
-                <td class="value-cell">01711110009</td>
-            </tr>
-            <tr>
-                <td class="label-cell">Email Address</td>
-                <td class="value-cell">info@collegiate-school.edu.bd</td>
-            </tr>
-        </table>
-    </div>
-
-    <div class="card-footer">
-        <div class="footer-grid">
-            <div class="footer-info-cell">
-                <div class="footer-info-row">
-                    <span class="footer-info-label">Issue</span>
-                    <span>21 Jun 2026</span>
-                </div>
-                <div class="footer-info-row">
-                    <span class="footer-info-label">Valid</span>
-                    <span>31 Dec 2027</span>
-                </div>
-                <div class="footer-info-row">
-                    <span class="footer-info-label">Card No</span>
-                    <span>EMP-00009</span>
+        <div class="card-body">
+            <div class="photo-section">
+                <div class="photo-ring">
+                        <div class="no-photo">
+                            <div class="no-photo-icon">&#x1F464;</div>
+                            PHOTO
+                        </div>
                 </div>
             </div>
-            <div class="footer-sign-cell">
-                <div class="signature-line"></div>
-                <div class="signature-label">Authorized Signatory</div>
+
+            <div class="p-name">Ali Hossain</div>
+            <div class="b-row"><span class="r-badge purple">Librarian</span></div>
+
+            <div class="details-section">
+                <table class="d-grid">
+                    <tr><td class="dl">Emp Code</td><td class="dv">EMP-00010</td><td class="dl">Department</td><td class="dv">Information Technology</td></tr>
+                    <tr><td class="dl">Designation</td><td class="dv">Librarian</td><td class="dl">Joining</td><td class="dv">01 Jun 2025</td></tr>
+                    <tr><td class="dl">Blood</td><td class="dv">A&#x2B;</td><td class="dl">Mobile</td><td class="dv">01711110010</td></tr>
+                    <tr><td class="dl">Email</td><td class="dv" colspan="3">info@collegiate-school.edu.bd</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="card-footer">
+            <div class="f-left">
+                <div class="f-row"><span class="fl">Issue</span>22 Jun 2026</div>
+                <div class="f-row"><span class="fl">Valid</span>31 Dec 2027</div>
+            </div>
+            <div class="f-right signature-area">
+                <div class="s-line"></div>
+                <div class="s-label">Authorized</div>
             </div>
         </div>
     </div>
@@ -862,75 +777,49 @@ body {
             </div>
             <div class="page-single">
                 
-<div class="pvc-card employee-card card-back">
-    <div class="back-header">
-        <table class="brand-table">
-            <tr>
-                <td class="brand-logo-cell">
-                    <div class="logo-frame small">
-                            <span>CHA</span>
-                    </div>
-                </td>
-                <td class="brand-text-cell">
-                    <div class="school-name-sm">Chattogram Collegiate School &amp; College</div>
-                    <div class="back-subtitle">EMPLOYEE ID CARD</div>
-                </td>
-            </tr>
-        </table>
-        <div class="accent-bar"></div>
-    </div>
-
-    <div class="back-body">
-        <div class="back-section">
-            <div class="back-section-title">Office Address</div>
-            <div class="contact-line">Ice Factory Road, Double Mooring, Chattogram, Bangladesh</div>
-            <div class="contact-line"><span class="contact-label">Phone</span>&#x2B;880 31 610429</div>
-            <div class="contact-line"><span class="contact-label">Email</span>info@collegiate-school.edu.bd</div>
-            <div class="contact-line"><span class="contact-label">Website</span>school-ms-7l3e.onrender.com/</div>
+<div class="pvc-card employee-card back">
+    <div class="pvc-card-inner">
+        <div class="b-header">
+            <div class="h-bar"></div>
+            <div class="b-title">Important Information</div>
         </div>
 
-        <div class="back-section">
-            <div class="back-section-title">Emergency Contact</div>
-            <table class="guardian-grid">
-                <tr>
-                    <td class="gl-label">Emergency</td>
-                    <td>Mrs. Mahmud: 01711119009</td>
-                </tr>
-                <tr>
-                    <td class="gl-label">Department</td>
-                    <td>Security &amp; Safety</td>
-                </tr>
-                <tr>
-                    <td class="gl-label">Present Address</td>
-                    <td>99, Rampura, Dhaka</td>
-                </tr>
+        <div class="b-body">
+            <div class="sec-title">Office Information</div>
+            <table class="bg-tbl">
+                <tr><td class="bl">Department</td><td>Information Technology</td></tr>
+                <tr><td class="bl">Office Email</td><td>info@collegiate-school.edu.bd</td></tr>
+                <tr><td class="bl">Office Phone</td><td>&#x2B;880 31 610429</td></tr>
+                <tr><td class="bl">Emergency</td><td>Mrs. Hossain: 01711119010</td></tr>
+                <tr><td class="bl">Address</td><td>44, Malibagh, Dhaka</td></tr>
             </table>
-        </div>
 
-        <div class="back-section">
-            <div class="back-section-title">Terms</div>
-            <ul class="terms-list">
-                <li>Display card while on duty</li>
-                <li>Return card upon resignation</li>
-                <li>Unauthorised use prohibited</li>
-                <li>Card is school property</li>
-            </ul>
-        </div>
+            <div class="sec-divider"></div>
 
-        <div class="qr-section">
-            <div class="qr-section-left">
-                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASIAAAEiAQMAAABncE31AAAABlBMVEUbTYz////LJPj&#x2B;AAABGklEQVR4nO2YwQ3DMAhFLWWAjNTVM1IHiJQaMMRNVbmHkKrV4xA5&#x2B;PXyfwCVsn0QS4FCCb4JqoM&#x2B;8Re9sLSY6vmuD8/coLKV0BcBSpnlVdG4gEpVQiyxO3&#x2B;oYVDXKlFqDuoLSmjaTlAXKeGdqWamcf&#x2B;COlGJmMjNpsHchjpPiS6WuOtzUGlKuC9SHfMaFdNOUMlKqC9rP5bFK6gLlDhMBclJQKUrUUPMCdQc8jqBSlVCM2rOPpZtEQGVrUSE1YT8yLsVVK4STxs3HQj9XwGoVCW6qSDmyNrttTNB5SgRmwerDnPoWB1QqUoo8GYiQ&#x2B;Uq0TZulhvt5aBOUSI6k4U7BJWvxL5x69duR4egEpQYBBRK8E1QHfSJn&#x2B;&#x2B;FDz9uQHX5Ao0GAAAAAElFTkSuQmCC" alt="Attendance QR" />
+            <div class="rules-section">
+                <div class="sec-title">Rules</div>
+                <ul class="rules-list">
+                    <li>Display while on duty</li>
+                    <li>Return upon resignation</li>
+                    <li>School property</li>
+                    <li>Report loss immediately</li>
+                </ul>
             </div>
-            <div class="qr-section-right">
-                <div class="qr-attendance-title">Attendance QR</div>
-                <div class="qr-attendance-id">EMP-00009</div>
-                <div class="qr-attendance-sub">Employee Attendance Access</div>
+
+            <div class="qr-section">
+                <div class="qr-card">
+                        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASIAAAEiAQMAAABncE31AAAABlBMVEUbTYz////LJPj&#x2B;AAABJklEQVR4nO2YwQ2DMAxFLTEAI3V1RmKASjR2EidQRHvAkVo9H1CavF6&#x2B;&#x2B;baDbF/EIlAowTuBO6gTf1ELpcSU1qukvfTI8YCKVsJ&#x2B;bOukq2c6S6vuACpUCU2JnhVAV5owqLFKmDugxitRLAI1UIlamdJOydBV/YK6UQnvyM0iV30b6j4lWojMhx2oWCW6aUjmp6Rt9wlUtBI5NDlLXdk/zzwEdasS26J5sXtXPtORyHioeCXMDmaM9Kj34NKWoWKV8LPsDkuO3QegopXw6OtRLU9QkUq0SbRZpH4EggpWoruB2STqV2CoeCX8y0NrDW&#x2B;VCSpYifKB/6wjQw1RIjfowyQKFaOEV6Z9hqDilfCOXKeh0pH37oAKUOJDQKEE7wTuoE78fC18ARJoA0nfV7F7AAAAAElFTkSuQmCC" alt="QR" class="qr-img" />
+                    <div class="qr-info">
+                        <div class="qr-lbl">SCAN FOR VERIFICATION</div>
+                        <div class="qr-id">EMP-00010</div>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div class="back-footer">
-        <span>Chattogram Collegiate School &amp; College &mdash; Knowledge. Discipline. Excellence</span>
+        <div class="b-footer">
+            <span>Chattogram Collegiate School &amp; College — Knowledge. Discipline. Excellence</span>
+        </div>
     </div>
 </div>
 

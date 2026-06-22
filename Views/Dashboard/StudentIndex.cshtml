@@ -5,6 +5,8 @@
     ViewData["Title"] = "Student Portal";
 }
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
 <div class="adm-page">
 
     <!-- HERO -->
@@ -69,6 +71,12 @@
                             Roll: @Model.RollNumber
                         </span>
 
+                        @if (!string.IsNullOrEmpty(Model.GuardianName))
+                        {
+                            <span>•</span>
+                            <span><i class="bi bi-shield-check"></i> Guardian: @Model.GuardianName</span>
+                        }
+
                     </div>
 
                 </div>
@@ -79,10 +87,24 @@
 
     </div>
 
+    <!-- ALERTS -->
+    @if (Model.Alerts.Any())
+    {
+        <div style="margin-bottom:28px;">
+            @foreach (var alert in Model.Alerts)
+            {
+                <div style="background:#fff5f5;border-left:5px solid #ef4444;border-radius:8px;padding:16px 20px;margin-bottom:12px;display:flex;align-items:center;gap:16px;color:#b91c1c;font-size:14px;font-weight:500;box-shadow:0 2px 8px rgba(239,68,68,0.08);">
+                    <i class="bi bi-exclamation-triangle-fill" style="font-size:20px;color:#ef4444;"></i>
+                    <div>@alert</div>
+                </div>
+            }
+        </div>
+    }
+
     <!-- STATS -->
     <div class="dash-stats">
 
-        <!-- Attendance -->
+        <!-- Attendance % -->
         <div class="dash-stat-card">
 
             <div class="dash-stat-card__icon dash-stat-card__icon--success">
@@ -100,7 +122,7 @@
                 </div>
 
                 <div style="font-size:12px;color:var(--adm-text-3);">
-                    Total Attendance
+                    Present: @Model.PresentCount &bull; Absent: @Model.AbsentCount &bull; Late: @Model.LateCount &bull; Leave: @Model.LeaveCount
                 </div>
 
             </div>
@@ -176,6 +198,31 @@
 
                 <div style="font-size:12px;color:var(--adm-text-3);">
                     Pending Tasks
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Leave -->
+        <div class="dash-stat-card">
+
+            <div class="dash-stat-card__icon dash-stat-card__icon--warning">
+                <i class="bi bi-calendar2-x"></i>
+            </div>
+
+            <div class="dash-stat-card__body">
+
+                <div class="dash-stat-card__label">
+                    Leave Applications
+                </div>
+
+                <div class="dash-stat-card__value">
+                    @Model.LeaveApplicationCount
+                </div>
+
+                <div style="font-size:12px;color:var(--adm-text-3);">
+                    @Model.PendingLeaveCount pending
                 </div>
 
             </div>
@@ -293,6 +340,79 @@
                         }
                     </div>
                 }
+            </div>
+        </div>
+    </div>
+
+    <!-- ATTENDANCE CHART -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="adm-table-card" style="border-radius:var(--adm-radius-lg); overflow:hidden; border:1px solid var(--adm-border);">
+                <div style="padding:20px 24px; background:var(--adm-bg-sub); border-bottom:1px solid var(--adm-border);">
+                    <h5 class="dash-section__title" style="margin:0;">
+                        <i class="bi bi-pie-chart me-2"></i> Attendance Breakdown
+                    </h5>
+                </div>
+                <div class="p-4" style="text-align:center;">
+                    <div style="position:relative;width:220px;height:220px;margin:0 auto;">
+                        <canvas id="studentAttChart" width="220" height="220"></canvas>
+                        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;">
+                            <span style="font-size:32px;font-weight:800;color:#0f172a;line-height:1;">@Model.AttendancePercentage%</span>
+                            <span style="font-size:11px;color:#6b7280;margin-top:4px;">attendance</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="adm-table-card" style="border-radius:var(--adm-radius-lg); overflow:hidden; border:1px solid var(--adm-border);">
+                <div style="padding:20px 24px; background:var(--adm-bg-sub); border-bottom:1px solid var(--adm-border);">
+                    <h5 class="dash-section__title" style="margin:0;">
+                        <i class="bi bi-list-check me-2"></i> Recent Attendance History
+                    </h5>
+                    <span style="font-size:12px;color:var(--adm-text-3);">Last 10 records</span>
+                </div>
+                <div style="overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;font-size:14px;">
+                        <thead>
+                            <tr>
+                                <th style="padding:12px 18px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--adm-text-3);background:var(--adm-bg-sub);border-bottom:1px solid var(--adm-border);">#</th>
+                                <th style="padding:12px 18px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--adm-text-3);background:var(--adm-bg-sub);border-bottom:1px solid var(--adm-border);">Date</th>
+                                <th style="padding:12px 18px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--adm-text-3);background:var(--adm-bg-sub);border-bottom:1px solid var(--adm-border);">Status</th>
+                                <th style="padding:12px 18px;text-align:left;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--adm-text-3);background:var(--adm-bg-sub);border-bottom:1px solid var(--adm-border);">Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.AttendanceHistory.Any())
+                            {
+                                for (var i = 0; i < Model.AttendanceHistory.Count; i++)
+                                {
+                                    var h = Model.AttendanceHistory[i];
+                                    <tr style="border-bottom:1px solid var(--adm-border);">
+                                        <td style="padding:12px 18px;color:var(--adm-text-3);font-size:13px;">@(i + 1)</td>
+                                        <td style="padding:12px 18px;font-weight:600;">@h.AttendanceDate.ToString("dd MMM yyyy")</td>
+                                        <td style="padding:12px 18px;">
+                                            <span style="display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:100px;font-size:12px;font-weight:600;background:@(h.StatusName == "Present" ? "#dcfce7" : h.StatusName == "Absent" ? "#fee2e2" : h.StatusName == "Late" ? "#fef9c3" : "#ede9fe");color:@(h.StatusName == "Present" ? "#15803d" : h.StatusName == "Absent" ? "#b91c1c" : h.StatusName == "Late" ? "#a16207" : "#6d28d9");">
+                                                <i class="bi @(h.StatusName == "Present" ? "bi-check-circle-fill" : h.StatusName == "Absent" ? "bi-x-circle-fill" : h.StatusName == "Late" ? "bi-clock-fill" : "bi-calendar-event-fill")"></i>
+                                                @h.StatusName
+                                            </span>
+                                        </td>
+                                        <td style="padding:12px 18px;color:var(--adm-text-3);">@(string.IsNullOrWhiteSpace(h.Remarks) ? "—" : h.Remarks)</td>
+                                    </tr>
+                                }
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td colspan="4" style="text-align:center;padding:48px 24px;color:var(--adm-text-3);font-size:14px;">
+                                        <i class="bi bi-calendar-x" style="font-size:40px;opacity:.35;display:block;margin-bottom:12px;"></i>
+                                        No recent attendance records found.
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -1028,6 +1148,49 @@
 
             ]
 
+        });
+
+        // Attendance doughnut chart
+        document.addEventListener('DOMContentLoaded', function() {
+            var ctx = document.getElementById('studentAttChart');
+            if (!ctx) return;
+            var p = @Model.PresentCount;
+            var ab = @Model.AbsentCount;
+            var l = @Model.LateCount;
+            var lv = @Model.LeaveCount;
+            var total = p + ab + l + lv;
+
+            if (total === 0) {
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['No Data'],
+                        datasets: [{ data: [1], backgroundColor: ['#e2e8f0'], borderWidth: 0 }]
+                    },
+                    options: { cutout: '72%', plugins: { legend: { display: false }, tooltip: { enabled: false } } }
+                });
+            } else {
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Present', 'Absent', 'Late', 'Leave'],
+                        datasets: [{
+                            data: [p, ab, l, lv],
+                            backgroundColor: ['#22c55e', '#ef4444', '#eab308', '#8b5cf6'],
+                            borderWidth: 0,
+                            hoverOffset: 6
+                        }]
+                    },
+                    options: {
+                        cutout: '72%',
+                        responsive: false,
+                        plugins: {
+                            legend: { display: true, position: 'bottom', labels: { usePointStyle: true, padding: 16, font: { size: 11 } } },
+                            tooltip: { callbacks: { label: function(ctx) { return ' ' + ctx.label + ': ' + ctx.parsed + ' days'; } } }
+                        }
+                    }
+                });
+            }
         });
 
     </script>

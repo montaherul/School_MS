@@ -12,16 +12,6 @@
     var shortName = !string.IsNullOrEmpty(Model.SchoolNameEn) && Model.SchoolNameEn.Length >= 3
         ? Model.SchoolNameEn[..Math.Min(3, Model.SchoolNameEn.IndexOf(' ') > 0 ? Model.SchoolNameEn.IndexOf(' ') : 3)].ToUpperInvariant()
         : "SCA";
-
-    string GetThemeAccent(string designation)
-    {
-        var d = (designation ?? "").ToLowerInvariant();
-        if (d.Contains("principal") || d.Contains("head master")) return "#B8860B";
-        if (d.Contains("teacher") || d.Contains("professor") || d.Contains("lecturer")) return "#D4AF37";
-        if (d.Contains("accountant") || d.Contains("accounts") || d.Contains("finance")) return "#059669";
-        if (d.Contains("librarian") || d.Contains("library")) return "#8B5CF6";
-        return "#16A34A";
-    }
 }
 <!DOCTYPE html>
 <html>
@@ -29,11 +19,12 @@
     <meta charset="utf-8" />
     <title>Employee ID Card</title>
     <base href="@Model.BaseUrl" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&family=Montserrat:wght@500;600;700&display=swap" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/css/idcard-print.css" />
 </head>
-<body class="@(Model.IsBulk ? "idcard-bulk" : "idcard-single")">
+<body>
 
     @if (Model.IsBulk)
     {
@@ -61,13 +52,8 @@
                     MobileNumber = employee.Phone ?? "---",
                     BloodGroup = IdCardImageHelper.GetBloodWithColor(employee.BloodGroup),
                     DateOfBirth = dob,
-                    BadgeLabel = employee.IsTeachingStaff ? "Teacher" : "Staff",
-                    SignatureLabel = "Authorized",
-                    NIDNumber = employee.NIDNumber ?? "",
                     JoiningDate = joiningDate,
-                    EmploymentStatus = employee.Status ?? employee.EmployeeType ?? "Active",
                     CardNumber = employee.EmployeeCardNumber ?? employee.EmployeeCode ?? "---",
-                    ThemeAccent = GetThemeAccent(employee.Designation ?? ""),
                     EmployeePhotoDataUri = imgToDataUri(employee.ProfilePicturePath),
                     SchoolName = Model.SchoolNameEn,
                     SchoolShortName = shortName,
@@ -85,7 +71,7 @@
                     ValidUntil = validUntil
                 };
 
-                <div class="card-group">
+                <div class="card-pair">
                     <partial name="~/Views/Shared/IdCards/_EmployeeCardFront.cshtml" model="vm" />
                     <partial name="~/Views/Shared/IdCards/_EmployeeCardBack.cshtml" model="vm" />
                 </div>
@@ -117,13 +103,8 @@
                 MobileNumber = employee.Phone ?? "---",
                 BloodGroup = IdCardImageHelper.GetBloodWithColor(employee.BloodGroup),
                 DateOfBirth = dob,
-                BadgeLabel = employee.IsTeachingStaff ? "Teacher" : "Staff",
-                SignatureLabel = "Authorized",
-                NIDNumber = employee.NIDNumber ?? "",
                 JoiningDate = joiningDate,
-                EmploymentStatus = employee.Status ?? employee.EmployeeType ?? "Active",
                 CardNumber = employee.EmployeeCardNumber ?? employee.EmployeeCode ?? "---",
-                ThemeAccent = GetThemeAccent(employee.Designation ?? ""),
                 EmployeePhotoDataUri = imgToDataUri(employee.ProfilePicturePath),
                 SchoolName = Model.SchoolNameEn,
                 SchoolShortName = shortName,

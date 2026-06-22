@@ -184,6 +184,12 @@ public class SchoolSetting : BaseEntity
     // Result Access
     public bool AllowResultWithDue { get; set; } = true;
 
+    // Guardian Portal Feature Toggles
+    public bool EnableGuardianPortal { get; set; } = false;
+    public bool EnableGuardianActivation { get; set; } = false;
+    public bool RequireGuardianForAdmission { get; set; } = false;
+    public bool EnableGuardianNotifications { get; set; } = false;
+
     [MaxLength(200)]
     public string? AdmissionTitle { get; set; }
 

@@ -4,66 +4,73 @@
     ViewData["Title"] = "About Our School";
 }
 
-<!-- Header Hero -->
-<div class="py-5 text-white" style="background: linear-gradient(135deg, var(--edu-navy), var(--edu-dark));">
-    <div class="container text-center py-4">
-        <h1 class="display-4 fw-bold">About Our School</h1>
-        <p class="lead text-white-50">Discover our legacy, academic standards, and future visions</p>
+<div class="ws-page-hero">
+    <div class="ws-container">
+        <h1>About Our School</h1>
+        <p>Discover our legacy, academic standards, and future visions</p>
     </div>
 </div>
 
-<section class="py-5 bg-white">
-    <div class="container py-3">
-        <div class="row g-5">
-            <div class="col-lg-8">
-                <h2 class="fw-bold text-dark mb-3">Welcome to @Model.SchoolName</h2>
-                <hr class="border-warning border-3 opacity-100 mb-4" style="width: 60px; height: 4px;"/>
-                
-                <p class="lead text-muted mb-4">
+<section class="ws-section">
+    <div class="ws-container">
+        <div class="ws-row ws-g-6">
+            <div class="ws-col-12 ws-col-lg-8">
+                <h2 style="font-size:var(--ws-text-4xl);font-weight:800;margin-bottom:16px;">Welcome to @Model.SchoolName</h2>
+                <div style="width:64px;height:4px;background:var(--ws-accent);border-radius:2px;margin-bottom:24px;"></div>
+                <p style="font-size:1.1rem;color:var(--ws-text-light);margin-bottom:24px;line-height:1.7;">
                     Founded with a passion to deliver high-quality, moral, and standard education, @Model.SchoolName has been a hallmark of learning for years, fostering academic excellence and social responsibility in Bangladesh.
                 </p>
-                
-                <h4 class="fw-bold mt-5 text-dark"><i class="bi bi-award text-warning me-2"></i> Our Historic Achievements</h4>
-                <p class="text-muted">
-                    We consistently achieve top standings in public board examinations (JSC, SSC) within the region. Our student debate club, sports team, and science Olympiad cohorts hold multiple national championship trophies.
-                </p>
 
-                <h4 class="fw-bold mt-4 text-dark"><i class="bi bi-briefcase text-warning me-2"></i> Modern Infrastructure & Facilities</h4>
-                <p class="text-muted">
-                    Equipped with state-of-the-art physics, chemistry, and biology labs, a rich multimedia library containing over 5,000 reference books, computerized smart classrooms, and an expansive playground.
-                </p>
+                <div class="ws-feature" style="margin-top:40px;">
+                    <div class="ws-feature__icon" style="color:var(--ws-accent);"><i class="bi bi-award"></i></div>
+                    <div>
+                        <h4 class="ws-feature__title" style="font-size:1.3rem;">Our Historic Achievements</h4>
+                        <p class="ws-feature__text">We consistently achieve top standings in public board examinations (JSC, SSC) within the region. Our student debate club, sports team, and science Olympiad cohorts hold multiple national championship trophies.</p>
+                    </div>
+                </div>
 
-                <h4 class="fw-bold mt-4 text-dark"><i class="bi bi-palette text-warning me-2"></i> Extracurricular Activities</h4>
-                <p class="text-muted">
-                    Beyond standard textbooks, we host dynamic science fairs, cultural programs, physical education boot camps, and volunteer scouts camps. This ensures a holistic character growth program.
-                </p>
+                <div class="ws-feature" style="margin-top:24px;">
+                    <div class="ws-feature__icon" style="color:var(--ws-accent);"><i class="bi bi-briefcase"></i></div>
+                    <div>
+                        <h4 class="ws-feature__title" style="font-size:1.3rem;">Modern Infrastructure & Facilities</h4>
+                        <p class="ws-feature__text">Equipped with state-of-the-art physics, chemistry, and biology labs, a rich multimedia library containing over 5,000 reference books, computerized smart classrooms, and an expansive playground.</p>
+                    </div>
+                </div>
+
+                <div class="ws-feature" style="margin-top:24px;">
+                    <div class="ws-feature__icon" style="color:var(--ws-accent);"><i class="bi bi-palette"></i></div>
+                    <div>
+                        <h4 class="ws-feature__title" style="font-size:1.3rem;">Extracurricular Activities</h4>
+                        <p class="ws-feature__text">Beyond standard textbooks, we host dynamic science fairs, cultural programs, physical education boot camps, and volunteer scouts camps. This ensures a holistic character growth program.</p>
+                    </div>
+                </div>
             </div>
-            
-            <div class="col-lg-4">
-                <div class="card border-0 shadow-sm p-4 bg-light rounded" style="border-top: 4px solid var(--edu-gold);">
-                    <h4 class="fw-bold text-dark mb-3">At a Glance</h4>
-                    <ul class="list-unstyled mb-0 d-flex flex-column gap-3" style="font-size:15px;">
-                        <li class="d-flex justify-content-between border-bottom pb-2">
-                            <span class="text-muted">Establishment:</span>
-                            <span class="fw-bold text-dark">@(Model.EstablishedYear?.ToString() ?? "2005")</span>
-                        </li>
-                        <li class="d-flex justify-content-between border-bottom pb-2">
-                            <span class="text-muted">Government EIIN:</span>
-                            <span class="fw-bold text-dark">@Model.EIIN</span>
-                        </li>
-                        <li class="d-flex justify-content-between border-bottom pb-2">
-                            <span class="text-muted">Institution Level:</span>
-                            <span class="fw-bold text-dark">Secondary (VI - X)</span>
-                        </li>
-                        <li class="d-flex justify-content-between border-bottom pb-2">
-                            <span class="text-muted">Medium:</span>
-                            <span class="fw-bold text-dark">Bangla</span>
-                        </li>
-                        <li class="d-flex justify-content-between">
-                            <span class="text-muted">Location:</span>
-                            <span class="fw-bold text-dark text-end" style="max-width:180px;">@Model.Address</span>
-                        </li>
-                    </ul>
+
+            <div class="ws-col-12 ws-col-lg-4">
+                <div class="ws-card" style="border-top:4px solid var(--ws-accent);background:var(--ws-bg-alt);padding:24px;">
+                    <h4 style="font-weight:700;margin-bottom:16px;">At a Glance</h4>
+                    <div class="ws-flex" style="flex-direction:column;gap:12px;">
+                        <div class="ws-flex-between" style="padding-bottom:8px;border-bottom:1px solid var(--ws-border);">
+                            <span style="color:var(--ws-muted);">Establishment:</span>
+                            <span style="font-weight:700;">@(Model.EstablishedYear?.ToString() ?? "2005")</span>
+                        </div>
+                        <div class="ws-flex-between" style="padding-bottom:8px;border-bottom:1px solid var(--ws-border);">
+                            <span style="color:var(--ws-muted);">Government EIIN:</span>
+                            <span style="font-weight:700;">@Model.EIIN</span>
+                        </div>
+                        <div class="ws-flex-between" style="padding-bottom:8px;border-bottom:1px solid var(--ws-border);">
+                            <span style="color:var(--ws-muted);">Institution Level:</span>
+                            <span style="font-weight:700;">Secondary (VI - X)</span>
+                        </div>
+                        <div class="ws-flex-between" style="padding-bottom:8px;border-bottom:1px solid var(--ws-border);">
+                            <span style="color:var(--ws-muted);">Medium:</span>
+                            <span style="font-weight:700;">Bangla</span>
+                        </div>
+                        <div class="ws-flex-between">
+                            <span style="color:var(--ws-muted);">Location:</span>
+                            <span style="font-weight:700;text-align:right;max-width:180px;">@Model.Address</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

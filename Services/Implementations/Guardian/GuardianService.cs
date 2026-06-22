@@ -11,6 +11,7 @@ using SchoolManagementSystem.Models.Entities.Attendance;
 using SchoolManagementSystem.Models.Entities.Result;
 using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Repositories.Guardian;
+using SchoolManagementSystem.Repositories.Interfaces.Website;
 using SchoolManagementSystem.Services.Interfaces.Guardian;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 
@@ -20,13 +21,15 @@ public class GuardianService : IGuardianService
 {
     private readonly IUnitOfWork _uow;
     private readonly IGuardianRepository _guardianRepo;
+    private readonly ISchoolSettingRepository _settingRepo;
     private readonly IPasswordHashService _passwordHashService;
     private readonly ILogger<GuardianService> _logger;
 
-    public GuardianService(IUnitOfWork uow, IGuardianRepository guardianRepo, IPasswordHashService passwordHashService, ILogger<GuardianService> logger)
+    public GuardianService(IUnitOfWork uow, IGuardianRepository guardianRepo, ISchoolSettingRepository settingRepo, IPasswordHashService passwordHashService, ILogger<GuardianService> logger)
     {
         _uow = uow;
         _guardianRepo = guardianRepo;
+        _settingRepo = settingRepo;
         _passwordHashService = passwordHashService;
         _logger = logger;
     }
@@ -345,8 +348,15 @@ public class GuardianService : IGuardianService
     // =====================================================================
     // Notification helpers
     // =====================================================================
+    private async Task<bool> AreNotificationsEnabledAsync()
+    {
+        var settings = await _settingRepo.GetCurrentSettingsAsync();
+        return settings?.EnableGuardianNotifications == true;
+    }
+
     public async Task CreateNotificationAsync(int guardianId, string title, string message, string? category = null, CancellationToken ct = default)
     {
+        if (!await AreNotificationsEnabledAsync()) return;
         await _uow.Repository<GuardianNotification>().AddAsync(new GuardianNotification
         {
             GuardianId = guardianId,
@@ -360,6 +370,7 @@ public class GuardianService : IGuardianService
 
     public async Task CreateAttendanceNotificationAsync(int studentId, string studentName, string status, DateTime date, CancellationToken ct = default)
     {
+        if (!await AreNotificationsEnabledAsync()) return;
         var mappings = await _uow.Repository<StudentGuardian>().Query()
             .Where(sg => sg.StudentId == studentId && !sg.IsDeleted && sg.ReceivesAttendanceNotifications)
             .ToListAsync(ct);
@@ -380,6 +391,7 @@ public class GuardianService : IGuardianService
 
     public async Task CreateFeeDueNotificationAsync(int studentId, string studentName, decimal amount, CancellationToken ct = default)
     {
+        if (!await AreNotificationsEnabledAsync()) return;
         var mappings = await _uow.Repository<StudentGuardian>().Query()
             .Where(sg => sg.StudentId == studentId && !sg.IsDeleted && sg.ReceivesFeeNotifications)
             .ToListAsync(ct);
@@ -406,6 +418,7 @@ public class GuardianService : IGuardianService
 
     public async Task CreateResultPublishedNotificationAsync(int studentId, string studentName, string examName, CancellationToken ct = default)
     {
+        if (!await AreNotificationsEnabledAsync()) return;
         var mappings = await _uow.Repository<StudentGuardian>().Query()
             .Where(sg => sg.StudentId == studentId && !sg.IsDeleted && sg.ReceivesResultNotifications)
             .ToListAsync(ct);

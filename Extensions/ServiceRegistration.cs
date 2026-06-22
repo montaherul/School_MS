@@ -221,6 +221,7 @@ public static class ServiceRegistration
         services.AddScoped<IFileStorageService, LocalFileStorageService>();
         services.AddScoped<IEmailSender, SmtpEmailSender>();
         services.AddScoped<IEmailService, EmailService>();
+        services.AddSingleton<PlaywrightPdfEngine>();
         services.AddScoped<IPdfGenerator, PlainPdfGenerator>();
         services.AddScoped<IViewRendererService, ViewRendererService>();
 

@@ -60,7 +60,7 @@ public class UserService : IUserService
                 u.UserRoles.Any(ur => ur.Role != null && ur.Role.Name == role));
         }
 
-        // USER TYPE FILTER (pre-filter via role check for Student type)
+        // USER TYPE FILTER
         if (!string.IsNullOrWhiteSpace(userType))
         {
             if (userType == "Student")
@@ -68,6 +68,19 @@ public class UserService : IUserService
                 query = query.Where(u =>
                     u.UserRoles.Any(ur => ur.Role != null && ur.Role.Name == "Student"));
             }
+            else if (userType == "Employee")
+            {
+                query = query.Where(u => u.EmployeeId != null);
+            }
+            else if (userType == "Guardian")
+            {
+                var guardianUserIds = await _unitOfWork.Repository<GdnEntity>().Query().AsNoTracking()
+                    .Where(g => g.UserId != null && !g.IsDeleted)
+                    .Select(g => g.UserId!.Value)
+                    .ToListAsync(ct);
+                query = query.Where(u => guardianUserIds.Contains(u.Id));
+            }
+            // "System" type = users with no link to Employee, Guardian, or Student role
         }
 
         var totalCount = await query.CountAsync(ct);
@@ -135,8 +148,7 @@ public class UserService : IUserService
                     u.UserRoles.Where(ur => ur.Role != null)
                                .Select(ur => ur.Role!.Name)
                                .Distinct()
-                               .OrderBy(name => name)),
-                TotalRecords = totalCount
+                               .OrderBy(name => name))
             };
         }).ToList();
 
@@ -229,9 +241,15 @@ public class UserService : IUserService
 
     public async Task<int> CreateAsync(UserUpsertViewModel model, string createdBy, CancellationToken ct = default)
     {
+        if (string.IsNullOrWhiteSpace(model.Password))
+            throw new InvalidOperationException("Password is required when creating a new user.");
+
         var repo = _unitOfWork.Repository<ApplicationUser>();
         if (await repo.AnyAsync(u => u.UserName == model.UserName.Trim() && !u.IsDeleted, ct))
             throw new InvalidOperationException("Username is already taken.");
+
+        if (await repo.AnyAsync(u => u.Email == model.Email.Trim() && !u.IsDeleted, ct))
+            throw new InvalidOperationException("Email is already in use by another user.");
 
         var user = new ApplicationUser
         {
@@ -239,7 +257,7 @@ public class UserService : IUserService
             Email = model.Email.Trim(),
             PhoneNumber = model.PhoneNumber?.Trim(),
             Status = model.Status,
-            PasswordHash = _passwordHashService.HashPassword(model.Password ?? ""),
+            PasswordHash = _passwordHashService.HashPassword(model.Password),
             IsEmailConfirmed = model.Status == AccountStatus.Active,
             CreatedBy = createdBy,
             CreatedAt = DateTime.UtcNow
@@ -248,7 +266,7 @@ public class UserService : IUserService
         await repo.AddAsync(user, ct);
         await _unitOfWork.SaveChangesAsync(ct);
 
-        if (model.SelectedRoleIds != null)
+        if (model.SelectedRoleIds != null && model.SelectedRoleIds.Count > 0)
             await AssignRolesAsync(user.Id, model.SelectedRoleIds, ct);
 
         return user.Id;
@@ -262,6 +280,9 @@ public class UserService : IUserService
 
         if (await repo.AnyAsync(u => u.Id != model.Id && u.UserName == model.UserName.Trim() && !u.IsDeleted, ct))
             throw new InvalidOperationException("Username is already taken.");
+
+        if (await repo.AnyAsync(u => u.Id != model.Id && u.Email == model.Email.Trim() && !u.IsDeleted, ct))
+            throw new InvalidOperationException("Email is already in use by another user.");
 
         user.UserName = model.UserName.Trim();
         user.Email = model.Email.Trim();
@@ -296,14 +317,29 @@ public class UserService : IUserService
     {
         var urRepo = _unitOfWork.Repository<UserRole>();
         var existing = await urRepo.ListAsync(ur => ur.UserId == userId);
-        foreach (var ex in existing) urRepo.Remove(ex);
+        var existingIds = existing.Select(e => e.RoleId).ToHashSet();
+        var incomingIds = roleIds.Distinct().ToHashSet();
 
-        foreach (var roleId in roleIds.Distinct())
+        // Remove roles no longer selected
+        foreach (var ex in existing.Where(e => !incomingIds.Contains(e.RoleId)))
+            urRepo.Remove(ex);
+
+        // Add new roles not previously assigned
+        foreach (var roleId in incomingIds.Where(id => !existingIds.Contains(id)))
         {
             await urRepo.AddAsync(new UserRole { UserId = userId, RoleId = roleId }, ct);
         }
 
-        await _unitOfWork.SaveChangesAsync(ct);
+        if (existing.Any(e => !incomingIds.Contains(e.RoleId)) || incomingIds.Any(id => !existingIds.Contains(id)))
+            await _unitOfWork.SaveChangesAsync(ct);
+    }
+
+    public async Task<List<int>> GetAssignedRoleIdsAsync(int userId, CancellationToken ct = default)
+    {
+        return await _unitOfWork.Repository<UserRole>().Query().AsNoTracking()
+            .Where(ur => ur.UserId == userId)
+            .Select(ur => ur.RoleId)
+            .ToListAsync(ct);
     }
 
     public async Task<IEnumerable<RoleOptionVm>> GetAvailableRolesAsync(CancellationToken ct = default)
