@@ -4,92 +4,95 @@
     ViewData["Title"] = "Delete User";
     var statusBadge = Model.Status switch
     {
-        SchoolManagementSystem.Models.Enums.AccountStatus.Active => "bg-success",
-        SchoolManagementSystem.Models.Enums.AccountStatus.Inactive => "bg-danger",
-        SchoolManagementSystem.Models.Enums.AccountStatus.Locked => "bg-dark",
-        SchoolManagementSystem.Models.Enums.AccountStatus.Pending => "bg-warning text-dark",
-        _ => "bg-secondary"
+        SchoolManagementSystem.Models.Enums.AccountStatus.Active => "adm-badge--success",
+        SchoolManagementSystem.Models.Enums.AccountStatus.Inactive => "adm-badge--danger",
+        SchoolManagementSystem.Models.Enums.AccountStatus.Locked => "adm-badge--info",
+        SchoolManagementSystem.Models.Enums.AccountStatus.Pending => "adm-badge--warning",
+        _ => "adm-badge--neutral"
     };
 }
 
-<div class="page-title d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h1 class="mb-1">
-            <i class="bi bi-exclamation-triangle me-2 text-danger"></i>@ViewData["Title"]
-        </h1>
-        <p class="text-muted mb-0">
-            This action cannot be undone.
-        </p>
-    </div>
-    <a asp-action="Index" class="btn btn-outline-secondary shadow-sm">
-        <i class="bi bi-arrow-left me-1"></i>Back to List
-    </a>
-</div>
-
-<div class="alert alert-danger d-flex align-items-center mb-4 shadow-sm" role="alert">
-    <i class="bi bi-exclamation-triangle-fill me-3 fs-4"></i>
-    <div>
-        <strong>Warning:</strong> Deleting this user will revoke all access immediately.
-        The user record will be soft-deleted and the account will be set to inactive.
-    </div>
-</div>
-
-<div class="card shadow-sm mb-4">
-    <div class="card-body">
-        <h5 class="card-title mb-3">User Information</h5>
-        <table class="table table-borderless mb-0">
-            <tbody>
-                <tr>
-                    <td class="text-muted fw-semibold" style="width:180px">Username</td>
-                    <td>@Model.UserName</td>
-                </tr>
-                <tr>
-                    <td class="text-muted fw-semibold">Email</td>
-                    <td>@Model.Email</td>
-                </tr>
-                <tr>
-                    <td class="text-muted fw-semibold">Status</td>
-                    <td>
-                        <span class="badge @statusBadge">@Model.StatusText</span>
-                    </td>
-                </tr>
-                <tr>
-                    <td class="text-muted fw-semibold">Roles</td>
-                    <td>
-                        @if (Model.Roles.Count == 0)
-                        {
-                            <span class="text-muted">None</span>
-                        }
-                        else
-                        {
-                            @foreach (var role in Model.Roles)
-                            {
-                                <span class="badge border bg-light text-dark me-1">@role</span>
-                            }
-                        }
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</div>
-
-<div class="card shadow-sm border-danger">
-    <div class="card-body">
-        <form asp-action="DeleteConfirmed" method="post">
-            @Html.AntiForgeryToken()
-            <input type="hidden" name="id" value="@Model.Id" />
-            <p class="mb-3">
-                Are you sure you want to delete user <strong>@Model.UserName</strong>?
-            </p>
-            <div class="d-flex gap-2">
-                <button class="btn btn-danger shadow-sm" type="submit">
-                    <i class="bi bi-trash me-1"></i>Delete
-                </button>
-                <a asp-action="Index" class="btn btn-outline-secondary shadow-sm">
-                    <i class="bi bi-x me-1"></i>Cancel
-                </a>
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap" style="background:var(--adm-rejected-bg);color:var(--adm-rejected)">
+                <i class="bi bi-exclamation-triangle"></i>
             </div>
-        </form>
+            <div>
+                <h1 class="adm-header__title">Delete User</h1>
+                <p class="adm-header__sub">This action cannot be undone.</p>
+            </div>
+        </div>
+        <a asp-action="Index" class="adm-btn adm-btn--ghost">
+            <i class="bi bi-arrow-left"></i> Back to List
+        </a>
+    </div>
+
+    <div class="adm-alert" style="background:var(--adm-rejected-bg);color:var(--adm-rejected);border:1px solid rgba(220,38,38,0.15);margin-bottom:20px;display:flex;align-items:center;gap:10px">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <div>
+            <strong>Warning:</strong> Deleting this user will revoke all access immediately.
+            The user record will be soft-deleted and the account will be set to inactive.
+        </div>
+    </div>
+
+    <div class="adm-table-card" style="margin-bottom:20px">
+        <div class="adm-table-card__body">
+            <h5 style="font-weight:700;color:var(--adm-text);margin-bottom:16px">User Information</h5>
+            <table style="width:100%;border-collapse:collapse">
+                <tbody>
+                    <tr>
+                        <td style="padding:10px 0;color:var(--adm-text-3);font-weight:600;width:180px">Username</td>
+                        <td style="padding:10px 0;color:var(--adm-text);font-weight:500">@Model.UserName</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:10px 0;color:var(--adm-text-3);font-weight:600">Email</td>
+                        <td style="padding:10px 0;color:var(--adm-text)">@Model.Email</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:10px 0;color:var(--adm-text-3);font-weight:600">Status</td>
+                        <td style="padding:10px 0">
+                            <span class="adm-badge @statusBadge">@Model.StatusText</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:10px 0;color:var(--adm-text-3);font-weight:600">Roles</td>
+                        <td style="padding:10px 0">
+                            @if (Model.Roles.Count == 0)
+                            {
+                                <span style="color:var(--adm-text-3)">None</span>
+                            }
+                            else
+                            {
+                                @foreach (var role in Model.Roles)
+                                {
+                                    <span class="adm-badge adm-badge--neutral" style="margin-right:4px">@role</span>
+                                }
+                            }
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="adm-table-card" style="border:1px solid var(--adm-rejected)">
+        <div class="adm-table-card__body">
+            <form asp-action="DeleteConfirmed" method="post">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@Model.Id" />
+                <p style="color:var(--adm-text);margin-bottom:16px">
+                    Are you sure you want to delete user <strong>@Model.UserName</strong>?
+                </p>
+                <div style="display:flex;gap:10px">
+                    <button class="adm-btn" style="background:var(--adm-rejected);color:#fff;border:none" type="submit">
+                        <i class="bi bi-trash"></i> Delete
+                    </button>
+                    <a asp-action="Index" class="adm-btn adm-btn--ghost">
+                        <i class="bi bi-x"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
     </div>
 </div>

@@ -100,10 +100,17 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
 
     public async Task SubmitMarksBatchAsync(MarkBatchDto dto)
     {
+        await SubmitMarksBatchTrackedAsync(dto);
+    }
+
+    public async Task<BatchSaveResultDto> SubmitMarksBatchTrackedAsync(MarkBatchDto dto)
+    {
+        var result = new BatchSaveResultDto();
+
         var exam = await _examRepository.GetByIdAsync(dto.ExamId);
         if (exam == null)
             throw new InvalidOperationException("Exam not found.");
-        if (exam.Status == ResultWorkflowStatus.Published || exam.Status == ResultWorkflowStatus.Locked || exam.Status == ResultWorkflowStatus.Unpublished)
+        if (exam.Status == ResultWorkflowStatus.Published || exam.Status == ResultWorkflowStatus.Locked || exam.Status == ResultWorkflowStatus.Unpublished || exam.IsLocked)
             throw new InvalidOperationException($"Cannot modify marks — exam is {exam.Status}.");
 
         var gradingRules = await _gradingRepository.ListAsync();
@@ -135,7 +142,10 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
                 .FirstOrDefault();
 
             if (existingMark != null && (existingMark.IsLocked || existingMark.Status == ResultWorkflowStatus.Approved))
+            {
+                result.SkippedStudentIds.Add(markDto.StudentId);
                 continue;
+            }
 
             ApplyComponentValues(dto, markDto, configuredComponents,
                 out var componentValuesJson, out var totalMarks);
@@ -193,9 +203,12 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
                 existingMark.Status = targetStatus;
                 _markRepository.Update(existingMark);
             }
+
+            result.SavedCount++;
         }
 
         await _unitOfWork.SaveChangesAsync();
+        return result;
     }
 
     public async Task<byte[]> GenerateImportTemplateAsync(int examId, int subjectId, int classId, int sectionId)
@@ -332,8 +345,9 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
             {
                 ExamId = examId, SubjectId = subjectId, TeacherId = teacherId, Marks = marks
             };
-            await SubmitMarksBatchAsync(dto);
-            result.SuccessCount = marks.Count;
+            var batchResult = await SubmitMarksBatchTrackedAsync(dto);
+            result.SuccessCount = batchResult.SavedCount;
+            result.SkippedCount = batchResult.SkippedStudentIds.Count;
         }
 
         return result;
@@ -542,6 +556,45 @@ public class MarkEntryService : BaseService<MarkEntry>, IMarkEntryService
             entry.IsLocked = false;
             entry.LockedAt = null;
             entry.Status = ResultWorkflowStatus.Submitted;
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task LockMarksForClassAsync(int examId, int subjectId, int classId)
+    {
+        var entries = await _unitOfWork.Repository<MarkEntry>().Query()
+            .Where(m => m.ExamId == examId && m.SubjectId == subjectId && m.ClassId == classId && !m.IsDeleted)
+            .ToListAsync();
+
+        foreach (var entry in entries)
+        {
+            if (!entry.IsLocked)
+            {
+                await _auditLogger.LogMarkChangeAsync(examId, entry.StudentId, subjectId,
+                    entry.MarksObtained, entry.MarksObtained, entry.EnteredByTeacherId, "Marks locked");
+            }
+            entry.IsLocked = true;
+            entry.LockedAt = DateTime.UtcNow;
+            entry.Status = ResultWorkflowStatus.Locked;
+        }
+
+        await _unitOfWork.SaveChangesAsync();
+    }
+
+    public async Task UnlockMarksForClassAsync(int examId, int subjectId, int classId)
+    {
+        var entries = await _unitOfWork.Repository<MarkEntry>().Query()
+            .Where(m => m.ExamId == examId && m.SubjectId == subjectId && m.ClassId == classId && !m.IsDeleted && m.IsLocked)
+            .ToListAsync();
+
+        foreach (var entry in entries)
+        {
+            await _auditLogger.LogMarkChangeAsync(examId, entry.StudentId, subjectId,
+                entry.MarksObtained, entry.MarksObtained, entry.EnteredByTeacherId, "Marks unlocked");
+            entry.IsLocked = false;
+            entry.Status = ResultWorkflowStatus.Submitted;
+            entry.LockedAt = null;
         }
 
         await _unitOfWork.SaveChangesAsync();

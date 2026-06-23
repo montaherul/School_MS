@@ -117,6 +117,18 @@ public class PromotionService : IPromotionService
 
         var rules = await GetPromotionRulesAsync(classId);
 
+        // Resolve next class using SchoolClass.SortOrder
+        var currentClass = await _uow.Repository<SchoolClass>().GetByIdAsync(classId);
+        var nextClassId = classId + 1; // fallback
+        if (currentClass != null)
+        {
+            var nextClass = await _uow.Repository<SchoolClass>().FirstOrDefaultAsync(c => c.SortOrder == currentClass.SortOrder + 1 && !c.IsDeleted);
+            if (nextClass != null)
+            {
+                nextClassId = nextClass.Id;
+            }
+        }
+
         var result = new PromotionResult
         {
             ClassId = classId,
@@ -139,8 +151,6 @@ public class PromotionService : IPromotionService
                     _ => PromotionStatus.Pending
                 };
 
-                var nextClassId = classId + 1;
-
                 var promotionHistory = new PromotionHistory
                 {
                     StudentId = student.Id,
@@ -154,6 +164,13 @@ public class PromotionService : IPromotionService
                 };
 
                 await _promotionHistoryRepository.AddAsync(promotionHistory);
+
+                // Update student's class assignment to the promoted class
+                if (status == PromotionStatus.Promoted && nextClassId != classId)
+                {
+                    student.ClassId = nextClassId;
+                    _studentRepository.Update(student);
+                }
 
                 if (finalResult != null)
                 {
@@ -235,6 +252,13 @@ public class PromotionService : IPromotionService
                 };
 
                 await _promotionHistoryRepository.AddAsync(promotionHistory);
+
+                // Update student's class assignment to the target class
+                if (request.ToClassId != request.FromClassId)
+                {
+                    student.ClassId = request.ToClassId;
+                    _studentRepository.Update(student);
+                }
 
                 if (finalResult != null)
                 {
@@ -407,6 +431,13 @@ public class PromotionService : IPromotionService
             };
 
             await _promotionHistoryRepository.AddAsync(reversal);
+
+            // Restore student's original class assignment
+            if (promotion.FromClassId != student.ClassId)
+            {
+                student.ClassId = promotion.FromClassId;
+                _studentRepository.Update(student);
+            }
 
             var finalResult = await _finalResultRepository.FirstOrDefaultAsync(fr =>
                 fr.StudentId == promotion.StudentId && fr.AcademicYearId == promotion.AcademicYearId);

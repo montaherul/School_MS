@@ -25,6 +25,12 @@ public interface IMeritCalculationService
     Task RecalculateMeritPositionsAsync(int examId);
 
     /// <summary>
+    /// Calculate all 4 FinalResult positions (School, Class, Section, Group)
+    /// for an academic year using configurable ranking rules.
+    /// </summary>
+    Task CalculateFinalResultPositionsAsync(int academicYearId, CancellationToken ct = default);
+
+    /// <summary>
     /// Gets merit list for a specific category
     /// </summary>
     Task<IEnumerable<MeritListItem>> GetMeritListAsync(int examId, MeritCategory category);

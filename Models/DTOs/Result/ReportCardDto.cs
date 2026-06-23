@@ -59,6 +59,7 @@ public class ReportCardSummaryDto
     public int Position { get; set; }
     public int ClassPosition { get; set; }
     public int? GroupPosition { get; set; }
+    public int SectionPosition { get; set; }
     public bool IsPassed { get; set; }
     public int FailedSubjectCount { get; set; }
     public int PassedSubjectCount { get; set; }

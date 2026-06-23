@@ -8,6 +8,9 @@
     var selectedStatus = Model.SelectedStatus;
 }
 
+<link href="https://unpkg.com/tabulator-tables@6.2.5/dist/css/tabulator_bootstrap5.min.css" rel="stylesheet">
+<script src="https://unpkg.com/tabulator-tables@6.2.5/dist/js/tabulator.min.js"></script>
+
 <div class="adm-page er-page">
 
     <div class="er-page-header">
@@ -37,10 +40,10 @@
     </div>
 
     <div class="er-filters mb-4">
-        <form method="get" action="@Url.Action("AllResults")" class="er-filters__row">
+        <div class="er-filters__row">
             <div class="er-filters__group">
                 <label class="er-filters__label">Exam</label>
-                <select name="examId" class="er-filters__select">
+                <select id="filterExam" class="er-filters__select">
                     <option value="">All Exams</option>
                     @if (exams != null)
                     {
@@ -53,7 +56,7 @@
             </div>
             <div class="er-filters__group">
                 <label class="er-filters__label">Class</label>
-                <select name="classId" class="er-filters__select">
+                <select id="filterClass" class="er-filters__select">
                     <option value="">All Classes</option>
                     @if (classes != null)
                     {
@@ -66,220 +69,308 @@
             </div>
             <div class="er-filters__group">
                 <label class="er-filters__label">Status</label>
-                <select name="status" class="er-filters__select">
+                <select id="filterStatus" class="er-filters__select">
                     <option value="">All Status</option>
-                    <option value="published" selected="@(selectedStatus == "published")">Published</option>
-                    <option value="approved" selected="@(selectedStatus == "approved")">Approved</option>
-                    <option value="reviewed" selected="@(selectedStatus == "reviewed")">Reviewed</option>
-                    <option value="submitted" selected="@(selectedStatus == "submitted")">Submitted</option>
-                    <option value="draft" selected="@(selectedStatus == "draft")">Draft</option>
+                    <option value="5" selected="@(selectedStatus == "published")">Published</option>
+                    <option value="4" selected="@(selectedStatus == "approved")">Approved</option>
+                    <option value="3" selected="@(selectedStatus == "reviewed")">Reviewed</option>
+                    <option value="2" selected="@(selectedStatus == "submitted")">Submitted</option>
+                    <option value="1" selected="@(selectedStatus == "draft")">Draft</option>
                 </select>
             </div>
+            <div class="er-filters__group">
+                <label class="er-filters__label">Search</label>
+                <input type="text" id="filterSearch" class="er-filters__select" placeholder="Name / ID / Roll..." style="min-width:180px;">
+            </div>
             <div class="er-filters__group--actions">
-                <button type="submit" class="er-btn er-btn--primary adm-btn--sm">
+                <button id="btnFilter" class="er-btn er-btn--primary adm-btn--sm">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
                     Filter
                 </button>
-                <a href="@Url.Action("AllResults", "AdminResult")" class="er-btn er-btn--secondary adm-btn--sm">
+                <button id="btnClear" class="er-btn er-btn--secondary adm-btn--sm">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
                     Clear
-                </a>
+                </button>
             </div>
-        </form>
+        </div>
     </div>
 
-    @if (Model.Results != null && Model.Results.Any())
-    {
-        <div class="er-card" style="border-radius: var(--adm-radius-lg); border-top: 1px solid var(--adm-border);">
-            <div class="er-card__body--flush">
-                <div class="table-responsive">
-                    <table class="er-table" id="resultsTable">
-                        <thead>
-                            <tr>
-                                <th class="ps-4">Student</th>
-                                <th>Class</th>
-                                <th>Roll</th>
-                                <th>Exam</th>
-                                <th>GPA</th>
-                                <th>Grade</th>
-                                <th>Total</th>
-                                <th>Position</th>
-                                <th>Status</th>
-                                <th>Result Date</th>
-                                <th class="text-end pe-4">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var r in Model.Results)
-                            {
-                                <tr>
-                                    <td class="ps-4">
-                                        <div class="d-flex align-items-center gap-3">
-                                            <div class="flex-shrink-0" style="width:36px;height:36px;border-radius:50%;background:var(--adm-primary-bg);display:flex;align-items:center;justify-content:center;color:var(--adm-primary);">
-                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg>
-                                            </div>
-                                            <div>
-                                                <span class="adm-cell-name">@r.StudentName</span>
-                                                <div style="font-size:12px;color:var(--adm-text-3);">@r.SectionName@(string.IsNullOrEmpty(r.GroupName) ? "" : $" ({r.GroupName})")</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td><span class="er-badge er-badge--neutral">@r.ClassName</span></td>
-                                    <td class="fw-bold">@r.RollNumber</td>
-                                    <td>
-                                        <div class="fw-semibold small">@r.ExamName</div>
-                                        <small style="font-size:12px;color:var(--adm-text-3);">@r.Term</small>
-                                    </td>
-                                    <td>
-                                        <span class="er-badge @(r.Gpa >= 3.5m ? "er-badge--success" : r.Gpa >= 2.0m ? "er-badge--warning" : "er-badge--danger")">
-                                            @r.Gpa.ToString("F2")
-                                        </span>
-                                    </td>
-                                    <td><span class="er-badge er-badge--primary">@r.Grade</span></td>
-                                    <td>
-                                        <span class="fw-semibold">@r.TotalMarks.ToString("F0")</span>
-                                        <small style="font-size:12px;color:var(--adm-text-3);">/ @r.TotalFullMarks.ToString("F0")</small>
-                                    </td>
-                                    <td>
-                                        <div class="fw-bold">#@r.ClassPosition</div>
-                                        @if (r.GroupPosition.HasValue)
-                                        {
-                                            <small style="font-size:12px;color:var(--adm-text-3);">Grp: #@r.GroupPosition</small>
-                                        }
-                                    </td>
-                                    <td>
-                                        @if (r.IsPassed)
-                                        {
-                                            <span class="er-badge er-badge--success">Passed</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="er-badge er-badge--danger">Failed</span>
-                                        }
-                                        <br>
-                                        <small style="font-size:12px;color:var(--adm-text-3);">@r.PassedSubjectCount / @r.FailedSubjectCount</small>
-                                    </td>
-                                    <td>
-                                        <small style="font-size:12px;color:var(--adm-text-3);">@(r.PublishedAt?.ToString("dd MMM yyyy") ?? "-")</small>
-                                    </td>
-                                    <td class="text-end pe-4">
-                                        <div class="actions-cell">
-                                            <a href="@Url.Action("TabulationSheet", "AdminResult", new { examId = r.ExamId })"
-                                               class="er-action er-action--edit" title="Tabulation Sheet">
-                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18M3 15h18M9 3v18" /></svg>
-                                            </a>
-                                            <button class="er-action er-action--view" onclick="viewDetailedResult(@r.StudentId)" title="Detailed Result">
-                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
-                                            </button>
-                                            <button class="er-action" style="color:var(--adm-pending);" onclick="printResult(@r.StudentId)" title="Print Result">
-                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 6 2 18 2 18 9" /><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect x="6" y="14" width="12" height="8" /></svg>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <div style="padding:12px 22px;border-top:1px solid var(--adm-border);background:var(--adm-surface-2);border-radius:0 0 var(--adm-radius-lg) var(--adm-radius-lg);">
-                <div class="d-flex justify-content-between align-items-center">
-                    <small style="font-size:12px;color:var(--adm-text-3);">
-                        Showing @Model.Results.Count() results
-                        @if (selectedExamId.HasValue || selectedClassId.HasValue || !string.IsNullOrEmpty(selectedStatus))
-                        {
-                            <span>(filtered)</span>
-                        }
-                    </small>
-                </div>
-            </div>
+    <div class="er-card" style="border-radius: var(--adm-radius-lg); border-top: 1px solid var(--adm-border);">
+        <div class="er-card__body--flush">
+            <div id="resultsGrid"></div>
         </div>
-    }
-    else
-    {
-        <div class="er-card" style="border-radius: var(--adm-radius-lg);">
-            <div class="er-card__body">
-                <div class="er-empty">
-                    <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
-                        <line x1="18" y1="20" x2="18" y2="10" />
-                        <line x1="12" y1="20" x2="12" y2="4" />
-                        <line x1="6" y1="20" x2="6" y2="14" />
-                    </svg>
-                    <h3 class="er-empty__title">No Results Found</h3>
-                    <p class="er-empty__desc">
-                        @if (selectedExamId.HasValue || selectedClassId.HasValue || !string.IsNullOrEmpty(selectedStatus))
-                        {
-                            <span>No results match the selected filters.</span>
-                        }
-                        else
-                        {
-                            <span>No results have been calculated yet.</span>
-                        }
-                    </p>
-                    <div class="er-empty__action">
-                        @if (selectedExamId.HasValue || selectedClassId.HasValue || !string.IsNullOrEmpty(selectedStatus))
-                        {
-                            <a href="@Url.Action("AllResults", "AdminResult")" class="er-btn er-btn--secondary me-2">Clear Filters</a>
-                        }
-                        <a href="@Url.Action("Dashboard", "AdminResult")" class="er-btn er-btn--primary">Go to Dashboard</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    }
+    </div>
 </div>
 
 <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer" style="z-index:1080;"></div>
 
 @section Scripts {
     <script>
-        $(document).ready(function () {
-            if ($.fn.DataTable) {
-                $('#resultsTable').DataTable({
-                    "pageLength": 25,
-                    "order": [[3, "desc"], [9, "desc"]],
-                    "columnDefs": [
-                        { "orderable": false, "targets": [10] }
-                    ],
-                    "language": {
-                        "search": "Search:",
-                        "lengthMenu": "Show _MENU_ entries",
-                        "info": "Showing _START_ to _END_ of _TOTAL_ results",
-                        "infoEmpty": "Showing 0 results",
-                        "infoFiltered": "(filtered from _MAX_ total results)"
-                    }
-                });
+        (function () {
+            'use strict';
+
+            var LIST_URL = '@Url.Action("GetResultListJson", "AdminResult")';
+
+            function readFilters() {
+                return {
+                    examId: document.getElementById('filterExam').value.trim(),
+                    classId: document.getElementById('filterClass').value.trim(),
+                    status: document.getElementById('filterStatus').value.trim(),
+                    searchTerm: document.getElementById('filterSearch').value.trim()
+                };
             }
-        });
 
-        function showToast(message, type) {
-            var bg = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : 'bg-warning';
-            var container = document.getElementById('toastContainer');
-            if (!container) return;
-            var toast = document.createElement('div');
-            toast.className = 'toast align-items-center text-white border-0 ' + bg;
-            toast.setAttribute('role', 'alert');
-            toast.innerHTML = '<div class="d-flex"><div class="toast-body">' + message + '</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>';
-            container.appendChild(toast);
-            var bs = new bootstrap.Toast(toast, { delay: 4000 });
-            bs.show();
-            toast.addEventListener('hidden.bs.toast', function () { toast.remove(); });
-        }
+            function buildListUrl() {
+                var f = readFilters();
+                var qs = [];
+                if (f.examId) qs.push('examId=' + encodeURIComponent(f.examId));
+                if (f.classId) qs.push('classId=' + encodeURIComponent(f.classId));
+                if (f.status) qs.push('status=' + encodeURIComponent(f.status));
+                if (f.searchTerm) qs.push('searchTerm=' + encodeURIComponent(f.searchTerm));
+                return LIST_URL + (qs.length ? '?' + qs.join('&') : '');
+            }
 
-        function viewDetailedResult(studentId) {
-            showToast('Detailed result view for student #' + studentId + ' — coming soon', 'info');
-        }
+            function badgeHtml(value, type) {
+                if (type === 'gpa') {
+                    var cls = value >= 3.5 ? 'er-badge--success' : value >= 2.0 ? 'er-badge--warning' : 'er-badge--danger';
+                    return '<span class="er-badge ' + cls + '">' + Number(value).toFixed(2) + '</span>';
+                }
+                if (type === 'passed') {
+                    return value
+                        ? '<span class="er-badge er-badge--success">Passed</span>'
+                        : '<span class="er-badge er-badge--danger">Failed</span>';
+                }
+                return value;
+            }
 
-        function printResult(studentId) {
-            showToast('Print result for student #' + studentId + ' — coming soon', 'info');
-        }
+            var table = new Tabulator('#resultsGrid', {
+                height: 'calc(100vh - 380px)',
+                layout: 'fitColumns',
+                pagination: true,
+                paginationMode: 'remote',
+                ajaxURL: buildListUrl(),
+                paginationSize: 20,
+                paginationSizeSelector: [10, 15, 20, 25, 50, 100],
+                ajaxConfig: {
+                    method: 'GET',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                },
+                ajaxResponse: function (url, params, response) {
+                    if (!response || typeof response !== 'object') {
+                        return { last_page: 1, data: [] };
+                    }
+                    var rows = Array.isArray(response.data) ? response.data : [];
+                    var lastPage = (typeof response.last_page === 'number' && response.last_page >= 1)
+                        ? response.last_page : 1;
+                    return { last_page: lastPage, data: rows };
+                },
+                ajaxError: function (error) {
+                    console.error('[AllResults] AJAX error:', error);
+                },
+                columns: [
+                    {
+                        title: 'Student',
+                        field: 'studentName',
+                        width: 220,
+                        formatter: function (cell) {
+                            var d = cell.getData();
+                            var label = d.sectionName || '';
+                            if (d.groupName) label = label ? label + ' (' + d.groupName + ')' : d.groupName;
+                            return '<div class="d-flex align-items-center gap-3">'
+                                + '<div style="width:36px;height:36px;border-radius:50%;background:var(--adm-primary-bg);display:flex;align-items:center;justify-content:center;color:var(--adm-primary);">'
+                                + '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg></div>'
+                                + '<div><span class="adm-cell-name">' + d.studentName + '</span>'
+                                + (label ? '<div style="font-size:12px;color:var(--adm-text-3);">' + label + '</div>' : '')
+                                + '</div></div>';
+                        }
+                    },
+                    {
+                        title: 'Class',
+                        field: 'className',
+                        width: 100,
+                        formatter: function (cell) {
+                            return '<span class="er-badge er-badge--neutral">' + cell.getValue() + '</span>';
+                        }
+                    },
+                    {
+                        title: 'Roll',
+                        field: 'rollNumber',
+                        width: 80,
+                        hozAlign: 'center',
+                        formatter: function (cell) {
+                            return '<span class="fw-bold">' + cell.getValue() + '</span>';
+                        }
+                    },
+                    {
+                        title: 'Exam',
+                        field: 'examName',
+                        width: 150,
+                        formatter: function (cell) {
+                            var d = cell.getData();
+                            return '<div class="fw-semibold small">' + cell.getValue() + '</div>'
+                                + '<small style="font-size:12px;color:var(--adm-text-3);">' + (d.term || '') + '</small>';
+                        }
+                    },
+                    {
+                        title: 'GPA',
+                        field: 'gpa',
+                        width: 90,
+                        hozAlign: 'center',
+                        formatter: function (cell) { return badgeHtml(cell.getValue(), 'gpa'); }
+                    },
+                    {
+                        title: 'Grade',
+                        field: 'grade',
+                        width: 80,
+                        hozAlign: 'center',
+                        formatter: function (cell) {
+                            return '<span class="er-badge er-badge--primary">' + cell.getValue() + '</span>';
+                        }
+                    },
+                    {
+                        title: 'Total',
+                        field: 'totalMarks',
+                        width: 110,
+                        hozAlign: 'center',
+                        formatter: function (cell) {
+                            var d = cell.getData();
+                            return '<span class="fw-semibold">' + Number(cell.getValue()).toFixed(0) + '</span>'
+                                + '<small style="font-size:12px;color:var(--adm-text-3);"> / ' + Number(d.totalFullMarks).toFixed(0) + '</small>';
+                        }
+                    },
+                    {
+                        title: 'Position',
+                        field: 'classPosition',
+                        width: 90,
+                        hozAlign: 'center',
+                        formatter: function (cell) {
+                            var d = cell.getData();
+                            var html = '<div class="fw-bold">#' + cell.getValue() + '</div>';
+                            if (d.groupPosition != null) {
+                                html += '<small style="font-size:12px;color:var(--adm-text-3);">Grp: #' + d.groupPosition + '</small>';
+                            }
+                            return html;
+                        }
+                    },
+                    {
+                        title: 'Status',
+                        field: 'isPassed',
+                        width: 100,
+                        hozAlign: 'center',
+                        formatter: function (cell) {
+                            var d = cell.getData();
+                            return badgeHtml(cell.getValue(), 'passed')
+                                + '<br><small style="font-size:12px;color:var(--adm-text-3);">' + d.passedSubjectCount + ' / ' + d.failedSubjectCount + '</small>';
+                        }
+                    },
+                    {
+                        title: 'Date',
+                        field: 'publishedAt',
+                        width: 110,
+                        hozAlign: 'center',
+                        formatter: function (cell) {
+                            var val = cell.getValue();
+                            if (!val) return '<small style="font-size:12px;color:var(--adm-text-3);">-</small>';
+                            var d = new Date(val);
+                            return '<small style="font-size:12px;color:var(--adm-text-3);">' + d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) + '</small>';
+                        }
+                    },
+                    {
+                        title: 'Actions',
+                        field: 'examId',
+                        width: 120,
+                        hozAlign: 'center',
+                        headerSort: false,
+                        formatter: function (cell) {
+                            var d = cell.getData();
+                            var tabUrl = '@Url.Action("TabulationSheet", "AdminResult")?examId=' + d.examId;
+                            return '<div class="actions-cell d-flex justify-content-center gap-2">'
+                                + '<a href="' + tabUrl + '" class="er-action er-action--edit" title="Tabulation Sheet">'
+                                + '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2" /><path d="M3 9h18M3 15h18M9 3v18" /></svg></a>'
+                                + '<button class="er-action er-action--view" onclick="viewDetailedResult(' + d.studentId + ')" title="Detailed Result">'
+                                + '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg></button>'
+                                + '<button class="er-action" style="color:var(--adm-pending);" onclick="printResult(' + d.studentId + ')" title="Print Result">'
+                                + '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 6 2 18 2 18 9" /><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /><rect x="6" y="14" width="12" height="8" /></svg></button>'
+                                + '</div>';
+                        }
+                    }
+                ]
+            });
 
-        function exportToExcel() {
-            showToast('Excel export feature coming soon!', 'info');
-        }
+            function reloadTable() {
+                var url = buildListUrl();
+                table.setData(url);
+            }
 
-        function exportToPDF() {
-            showToast('PDF export feature coming soon!', 'info');
-        }
+            document.getElementById('btnFilter').addEventListener('click', function () {
+                reloadTable();
+            });
+
+            document.getElementById('btnClear').addEventListener('click', function () {
+                document.getElementById('filterExam').value = '';
+                document.getElementById('filterClass').value = '';
+                document.getElementById('filterStatus').value = '';
+                document.getElementById('filterSearch').value = '';
+                reloadTable();
+            });
+
+            document.getElementById('filterSearch').addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') reloadTable();
+            });
+
+            function showToast(message, type) {
+                var bg = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : 'bg-warning';
+                var container = document.getElementById('toastContainer');
+                if (!container) return;
+                var toast = document.createElement('div');
+                toast.className = 'toast align-items-center text-white border-0 ' + bg;
+                toast.setAttribute('role', 'alert');
+                toast.innerHTML = '<div class="d-flex"><div class="toast-body">' + message + '</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>';
+                container.appendChild(toast);
+                var bs = new bootstrap.Toast(toast, { delay: 4000 });
+                bs.show();
+                toast.addEventListener('hidden.bs.toast', function () { toast.remove(); });
+            }
+
+            window.viewDetailedResult = function (studentId) {
+                showToast('Detailed result view for student #' + studentId + ' — coming soon', 'info');
+            };
+
+            window.printResult = function (studentId) {
+                showToast('Print result for student #' + studentId + ' — coming soon', 'info');
+            };
+
+            window.exportToExcel = function () {
+                table.download("xlsx", "results.xlsx", { sheetName: "Results" });
+            };
+
+            window.exportToPDF = function () {
+                table.download("pdf", "results.pdf", { orientation: "landscape", title: "Results List" });
+            };
+        })();
     </script>
+
+    <style>
+        #resultsGrid .tabulator { border: none !important; border-radius: 0; }
+        #resultsGrid .tabulator-header { background: var(--adm-bg-2, #f8f9fa); border-bottom: 1px solid var(--adm-border, #e2e8f0); }
+        #resultsGrid .tabulator-col { background: transparent; font-weight: 700; color: #475569; padding: 12px 10px; }
+        #resultsGrid .tabulator-col-title { white-space: nowrap; }
+        #resultsGrid .tabulator-row { border-bottom: 1px solid #f1f5f9; transition: background .15s; }
+        #resultsGrid .tabulator-row:hover { background: #f8fafc !important; }
+        #resultsGrid .tabulator-cell { padding: 11px 10px; vertical-align: middle; }
+        #resultsGrid .tabulator-footer { background: var(--adm-bg-2, #f8f9fa); border-top: 1px solid #e2e8f0; padding: 8px 12px; }
+        #resultsGrid .tabulator-placeholder { min-height: 200px; display: flex; align-items: center; justify-content: center; }
+        #resultsGrid .adm-cell-name { font-weight: 600; color: #1e293b; }
+        #resultsGrid .er-badge { display: inline-block; padding: 2px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+        #resultsGrid .er-badge--success { background: #dcfce7; color: #166534; }
+        #resultsGrid .er-badge--danger { background: #fee2e2; color: #991b1b; }
+        #resultsGrid .er-badge--warning { background: #fef3c7; color: #92400e; }
+        #resultsGrid .er-badge--primary { background: #dbeafe; color: #1e40af; }
+        #resultsGrid .er-badge--neutral { background: #f1f5f9; color: #475569; }
+        #resultsGrid .er-action { background: none; border: none; padding: 4px 6px; cursor: pointer; border-radius: 6px; transition: background .15s; display: inline-flex; align-items: center; justify-content: center; }
+        #resultsGrid .er-action:hover { background: #e2e8f0; }
+        #resultsGrid .er-action--edit { color: #2563eb; }
+        #resultsGrid .er-action--view { color: #059669; }
+        #resultsGrid .actions-cell { display: flex; gap: 4px; }
+    </style>
 }

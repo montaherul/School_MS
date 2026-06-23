@@ -6,148 +6,132 @@
     var rolesSelected = Model.SelectedRoleIds ?? [];
 }
 
-<div class="page-title d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h1 class="mb-1">
-            <i class="bi @(Model.Id > 0 ? "bi-pencil-square" : "bi-person-plus") me-2"></i>@ViewData["Title"]
-        </h1>
-        <p class="text-muted mb-0">
-            @(Model.Id > 0 ? "Update user account details and roles" : "Register a new system user")
-        </p>
-    </div>
-    <a asp-action="Index" class="btn btn-outline-secondary shadow-sm">
-        <i class="bi bi-arrow-left me-1"></i>Back
-    </a>
-</div>
-
-<div class="card shadow-sm">
-    <div class="card-body">
-        <form asp-action="@actionName" method="post">
-            @Html.AntiForgeryToken()
-
-            @if (Model.Id > 0)
-            {
-                <input type="hidden" asp-for="Id" />
-            }
-
-            <h5 class="card-title mb-3">
-                <i class="bi bi-info-circle me-1"></i>Account Information
-            </h5>
-
-            <div class="row g-3 mb-4">
-                <div class="col-md-6">
-                    <label asp-for="UserName" class="form-label fw-semibold"></label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-white"><i class="bi bi-person"></i></span>
-                        <input asp-for="UserName" class="form-control" placeholder="Enter username" />
-                    </div>
-                    <span asp-validation-for="UserName" class="text-danger small"></span>
-                </div>
-
-                <div class="col-md-6">
-                    <label asp-for="Email" class="form-label fw-semibold"></label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-white"><i class="bi bi-envelope"></i></span>
-                        <input asp-for="Email" class="form-control" placeholder="Enter email address" />
-                    </div>
-                    <span asp-validation-for="Email" class="text-danger small"></span>
-                </div>
-
-                <div class="col-md-6">
-                    <label asp-for="PhoneNumber" class="form-label fw-semibold"></label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-white"><i class="bi bi-telephone"></i></span>
-                        <input asp-for="PhoneNumber" class="form-control" placeholder="Enter phone number" />
-                    </div>
-                    <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
-                </div>
-
-                <div class="col-md-6">
-                    <label asp-for="Status" class="form-label fw-semibold"></label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-white"><i class="bi bi-toggle-on"></i></span>
-                        <select asp-for="Status" class="form-select"
-                                asp-items="Html.GetEnumSelectList<SchoolManagementSystem.Models.Enums.AccountStatus>()"></select>
-                    </div>
-                    <span asp-validation-for="Status" class="text-danger small"></span>
-                </div>
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi @(Model.Id > 0 ? "bi-pencil-square" : "bi-person-plus")"></i>
             </div>
+            <div>
+                <h1 class="adm-header__title">@ViewData["Title"]</h1>
+                <p class="adm-header__sub">@(Model.Id > 0 ? "Update user account details and roles" : "Register a new system user")</p>
+            </div>
+        </div>
+        <a asp-action="Index" class="adm-btn adm-btn--ghost">
+            <i class="bi bi-arrow-left"></i>
+            Back
+        </a>
+    </div>
 
-            <h5 class="card-title mb-3">
-                <i class="bi bi-shield me-1"></i>Role Assignments
-            </h5>
+    <div class="adm-table-card">
+        <div class="adm-table-card__body">
+            <form asp-action="@actionName" method="post">
+                @Html.AntiForgeryToken()
 
-            <div class="row mb-4">
-                <div class="col-12">
-                    <div class="border rounded p-3 bg-light">
+                @if (Model.Id > 0)
+                {
+                    <input type="hidden" asp-for="Id" />
+                }
+
+                <h5 style="font-weight:700;color:var(--adm-text);margin-bottom:16px">
+                    <i class="bi bi-info-circle me-1"></i>Account Information
+                </h5>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px">
+                    <div class="adm-form-group">
+                        <label asp-for="UserName" class="adm-form-label"></label>
+                        <input asp-for="UserName" class="adm-input" placeholder="Enter username" />
+                        <span asp-validation-for="UserName" class="adm-alert--error" style="font-size:12px;color:var(--adm-rejected)"></span>
+                    </div>
+
+                    <div class="adm-form-group">
+                        <label asp-for="Email" class="adm-form-label"></label>
+                        <input asp-for="Email" class="adm-input" placeholder="Enter email address" />
+                        <span asp-validation-for="Email" class="adm-alert--error" style="font-size:12px;color:var(--adm-rejected)"></span>
+                    </div>
+
+                    <div class="adm-form-group">
+                        <label asp-for="PhoneNumber" class="adm-form-label"></label>
+                        <input asp-for="PhoneNumber" class="adm-input" placeholder="Enter phone number" />
+                        <span asp-validation-for="PhoneNumber" class="adm-alert--error" style="font-size:12px;color:var(--adm-rejected)"></span>
+                    </div>
+
+                    <div class="adm-form-group">
+                        <label asp-for="Status" class="adm-form-label"></label>
+                        <select asp-for="Status" class="adm-select"
+                                asp-items="Html.GetEnumSelectList<SchoolManagementSystem.Models.Enums.AccountStatus>()"></select>
+                        <span asp-validation-for="Status" class="adm-alert--error" style="font-size:12px;color:var(--adm-rejected)"></span>
+                    </div>
+                </div>
+
+                <h5 style="font-weight:700;color:var(--adm-text);margin-bottom:16px">
+                    <i class="bi bi-shield me-1"></i>Role Assignments
+                </h5>
+
+                <div style="margin-bottom:24px">
+                    <div style="border:1px solid var(--adm-border);border-radius:var(--adm-radius);padding:16px;background:var(--adm-surface-2)">
                         @foreach (var role in Model.AvailableRoles)
                         {
                             var isChecked = rolesSelected.Contains(role.Id);
-                            <div class="form-check form-check-inline me-4 mb-2">
-                                <input class="form-check-input"
-                                       type="checkbox"
+                            <div style="display:inline-flex;align-items:center;gap:6px;margin:6px 16px 6px 0">
+                                <input type="checkbox"
                                        name="SelectedRoleIds"
                                        value="@role.Id"
                                        id="role_@role.Id"
-                                       checked="@(isChecked ? "checked" : null)" />
-                                <label class="form-check-label fw-semibold" for="role_@role.Id">
+                                       checked="@(isChecked ? "checked" : null)"
+                                       style="accent-color:var(--adm-primary)" />
+                                <label for="role_@role.Id" style="font-weight:600;font-size:13px;color:var(--adm-text);cursor:pointer">
                                     @role.Name
                                 </label>
                                 @if (!string.IsNullOrWhiteSpace(role.Description))
                                 {
-                                    <div class="text-muted small ms-4 ps-1">@role.Description</div>
+                                    <span style="font-size:11px;color:var(--adm-text-3)">— @role.Description</span>
                                 }
                             </div>
                         }
                     </div>
                 </div>
-            </div>
 
-            <h5 class="card-title mb-3">
-                <i class="bi bi-key me-1"></i>Password
-                @if (Model.Id > 0)
-                {
-                    <span class="text-muted small fw-normal ms-2">
-                        Leave empty to keep the current password.
-                    </span>
-                }
-            </h5>
+                <h5 style="font-weight:700;color:var(--adm-text);margin-bottom:16px">
+                    <i class="bi bi-key me-1"></i>Password
+                    @if (Model.Id > 0)
+                    {
+                        <span style="font-size:12px;color:var(--adm-text-3);font-weight:400;margin-left:8px">
+                            Leave empty to keep the current password.
+                        </span>
+                    }
+                </h5>
 
-            <div class="row g-3 mb-4">
-                <div class="col-md-6">
-                    <label asp-for="Password" class="form-label fw-semibold"></label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-white"><i class="bi bi-lock"></i></span>
-                        <input asp-for="Password" class="form-control"
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px">
+                    <div class="adm-form-group">
+                        <label asp-for="Password" class="adm-form-label"></label>
+                        <input asp-for="Password" class="adm-input"
                                autocomplete="new-password"
                                placeholder="@(Model.Id > 0 ? "New password (optional)" : "Password")" />
+                        <span asp-validation-for="Password" style="font-size:12px;color:var(--adm-rejected)"></span>
                     </div>
-                    <span asp-validation-for="Password" class="text-danger small"></span>
-                </div>
 
-                <div class="col-md-6">
-                    <label asp-for="ConfirmPassword" class="form-label fw-semibold"></label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-white"><i class="bi bi-lock-fill"></i></span>
-                        <input asp-for="ConfirmPassword" class="form-control"
+                    <div class="adm-form-group">
+                        <label asp-for="ConfirmPassword" class="adm-form-label"></label>
+                        <input asp-for="ConfirmPassword" class="adm-input"
                                autocomplete="new-password"
                                placeholder="Confirm password" />
+                        <span asp-validation-for="ConfirmPassword" style="font-size:12px;color:var(--adm-rejected)"></span>
                     </div>
-                    <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
                 </div>
-            </div>
 
-            <hr class="my-4" />
-
-            <div class="d-flex gap-2">
-                <button class="btn btn-primary shadow-sm px-4" type="submit">
-                    <i class="bi bi-check-lg me-1"></i>Save
-                </button>
-                <a asp-action="Index" class="btn btn-outline-secondary shadow-sm">
-                    <i class="bi bi-x me-1"></i>Cancel
-                </a>
-            </div>
-        </form>
+                <div style="border-top:1px solid var(--adm-border);padding-top:16px;display:flex;gap:10px">
+                    <button class="adm-btn adm-btn--primary" type="submit">
+                        <i class="bi bi-check-lg"></i>
+                        Save
+                    </button>
+                    <a asp-action="Index" class="adm-btn adm-btn--ghost">
+                        <i class="bi bi-x"></i>
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 

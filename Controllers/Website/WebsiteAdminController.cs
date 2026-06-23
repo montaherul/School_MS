@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Helpers.Files;
 using SchoolManagementSystem.Models.Entities.Website;
 using SchoolManagementSystem.Models.Entities.Communication;
@@ -56,6 +57,7 @@ public class WebsiteAdminController : Controller
     }
 
     [HttpGet("")]
+    [RequirePermission("Website.View")]
     public IActionResult Index()
     {
         return View();
@@ -63,6 +65,7 @@ public class WebsiteAdminController : Controller
 
     // ── School Settings ──
     [HttpGet("Settings")]
+    [RequirePermission("Website.View")]
     public async Task<IActionResult> Settings(CancellationToken ct)
     {
         var settings = await _settingsService.GetSettingsAsync(ct);
@@ -70,6 +73,7 @@ public class WebsiteAdminController : Controller
     }
 
     [HttpPost("Settings")]
+    [RequirePermission("Website.Edit")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Settings(SchoolSetting model, IFormFile? logoFile, IFormFile? faviconFile, IFormFile? principalFile, IFormFile? signatureFile, IFormFile? loginLogoFile, IFormFile? footerLogoFile, IFormFile? bannerFile, IFormFile? ogImageFile, IFormFile? admissionCircularFile, IFormFile? admissionFormFile, IFormFile? admissionOgImageFile, CancellationToken ct)
     {
@@ -131,6 +135,7 @@ public class WebsiteAdminController : Controller
 
     // ── Hero Sliders ──
     [HttpGet("Sliders/List")]
+    [RequirePermission("Website.View")]
     public async Task<IActionResult> SlidersList(CancellationToken ct)
     {
         var list = await _sliderService.GetAllSlidersAsync(ct);
@@ -138,6 +143,7 @@ public class WebsiteAdminController : Controller
     }
 
     [HttpGet("Sliders/CreateEdit/{id?}")]
+    [RequirePermission("Website.View")]
     public async Task<IActionResult> SliderCreateEdit(int? id, CancellationToken ct)
     {
         if (id.HasValue && id > 0)
@@ -150,6 +156,7 @@ public class WebsiteAdminController : Controller
     }
 
     [HttpPost("Sliders/CreateEdit/{id?}")]
+    [RequirePermission("Website.Edit")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> SliderCreateEdit(int? id, Slider model, IFormFile? imageFile, CancellationToken ct)
     {
@@ -179,6 +186,7 @@ public class WebsiteAdminController : Controller
     }
 
     [HttpPost("Sliders/Delete/{id}")]
+    [RequirePermission("Website.Edit")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> SliderDelete(int id, CancellationToken ct)
     {
@@ -188,6 +196,7 @@ public class WebsiteAdminController : Controller
 
     // ── Notices ──
     [HttpGet("Notices/List")]
+    [RequirePermission("Website.Notices")]
     public async Task<IActionResult> NoticesList(string? search, int page = 1, int size = 10, CancellationToken ct = default)
     {
         if (size <= 0) size = 10;
@@ -196,6 +205,7 @@ public class WebsiteAdminController : Controller
     }
 
     [HttpGet("Notices/CreateEdit/{id?}")]
+    [RequirePermission("Website.Notices")]
     public async Task<IActionResult> NoticeCreateEdit(int? id, CancellationToken ct)
     {
         if (id.HasValue && id > 0)
@@ -208,6 +218,7 @@ public class WebsiteAdminController : Controller
     }
 
     [HttpPost("Notices/CreateEdit/{id?}")]
+    [RequirePermission("Website.Notices")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> NoticeCreateEdit(int? id, Notice model, IFormFile? attachmentFile, CancellationToken ct)
     {
@@ -232,6 +243,7 @@ public class WebsiteAdminController : Controller
     }
 
     [HttpPost("Notices/Delete/{id}")]
+    [RequirePermission("Website.Notices")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> NoticeDelete(int id, CancellationToken ct)
     {
@@ -241,6 +253,7 @@ public class WebsiteAdminController : Controller
 
     // ── Events ──
     [HttpGet("Events/List")]
+    [RequirePermission("Website.Events")]
     public async Task<IActionResult> EventsList(CancellationToken ct)
     {
         var events = await _eventService.GetAllEventsAsync(ct);
@@ -248,6 +261,7 @@ public class WebsiteAdminController : Controller
     }
 
     [HttpGet("Events/CreateEdit/{id?}")]
+    [RequirePermission("Website.Events")]
     public async Task<IActionResult> EventCreateEdit(int? id, CancellationToken ct)
     {
         if (id.HasValue && id > 0)
@@ -260,6 +274,7 @@ public class WebsiteAdminController : Controller
     }
 
     [HttpPost("Events/CreateEdit/{id?}")]
+    [RequirePermission("Website.Events")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EventCreateEdit(int? id, Event model, IFormFile? coverFile, CancellationToken ct)
     {
@@ -284,6 +299,7 @@ public class WebsiteAdminController : Controller
     }
 
     [HttpPost("Events/Delete/{id}")]
+    [RequirePermission("Website.Events")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EventDelete(int id, CancellationToken ct)
     {
@@ -293,6 +309,7 @@ public class WebsiteAdminController : Controller
 
     // ── Galleries ──
     [HttpGet("Galleries/List")]
+    [RequirePermission("Website.Gallery")]
     public async Task<IActionResult> GalleriesList(CancellationToken ct)
     {
         var list = await _galleryService.GetAllAlbumsAsync(ct);
@@ -300,6 +317,7 @@ public class WebsiteAdminController : Controller
     }
 
     [HttpGet("Galleries/CreateEdit/{id?}")]
+    [RequirePermission("Website.Gallery")]
     public async Task<IActionResult> GalleryCreateEdit(int? id, CancellationToken ct)
     {
         if (id.HasValue && id > 0)
@@ -312,6 +330,7 @@ public class WebsiteAdminController : Controller
     }
 
     [HttpPost("Galleries/CreateEdit/{id?}")]
+    [RequirePermission("Website.Gallery")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> GalleryCreateEdit(int? id, Gallery model, IFormFile? coverFile, CancellationToken ct)
     {
@@ -336,6 +355,7 @@ public class WebsiteAdminController : Controller
     }
 
     [HttpPost("Galleries/Delete/{id}")]
+    [RequirePermission("Website.Gallery")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> GalleryDelete(int id, CancellationToken ct)
     {
@@ -344,6 +364,7 @@ public class WebsiteAdminController : Controller
     }
 
     [HttpPost("Galleries/UploadImages/{galleryId}")]
+    [RequirePermission("Website.Gallery")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> GalleryUploadImages(int galleryId, IFormFile[] files, CancellationToken ct)
     {
@@ -366,6 +387,7 @@ public class WebsiteAdminController : Controller
     }
 
     [HttpPost("Galleries/DeleteImage/{id}")]
+    [RequirePermission("Website.Gallery")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> GalleryDeleteImage(int id, CancellationToken ct)
     {
@@ -375,6 +397,7 @@ public class WebsiteAdminController : Controller
 
     // ── Contact Messages ──
     [HttpGet("Messages/List")]
+    [RequirePermission("Website.View")]
     public async Task<IActionResult> MessagesList(CancellationToken ct)
     {
         var list = await _contactService.GetMessagesAsync(ct);
@@ -382,6 +405,7 @@ public class WebsiteAdminController : Controller
     }
 
     [HttpGet("Messages/Details/{id}")]
+    [RequirePermission("Website.View")]
     public async Task<IActionResult> MessageDetails(int id, CancellationToken ct)
     {
         var message = await _contactService.GetMessageByIdAsync(id, ct);
@@ -390,6 +414,7 @@ public class WebsiteAdminController : Controller
     }
 
     [HttpPost("Messages/MarkRead/{id}")]
+    [RequirePermission("Website.View")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> MessageMarkRead(int id, CancellationToken ct)
     {
@@ -398,6 +423,7 @@ public class WebsiteAdminController : Controller
     }
 
     [HttpPost("Messages/Delete/{id}")]
+    [RequirePermission("Website.View")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> MessageDelete(int id, CancellationToken ct)
     {
@@ -426,6 +452,7 @@ public class WebsiteAdminController : Controller
     }
 
     [HttpPost("EmailTemplates/CreateEdit/{id?}")]
+    [RequirePermission("Website.EmailTemplates")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EmailTemplateCreateEdit(int? id, EmailTemplate model, CancellationToken ct)
     {
@@ -445,6 +472,7 @@ public class WebsiteAdminController : Controller
     }
 
     [HttpPost("EmailTemplates/Delete/{id}")]
+    [RequirePermission("Website.EmailTemplates")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EmailTemplateDelete(int id, CancellationToken ct)
     {
@@ -454,6 +482,7 @@ public class WebsiteAdminController : Controller
 
     // ── Website Pages ──
     [HttpGet("Pages/List")]
+    [RequirePermission("Website.Pages")]
     public async Task<IActionResult> PagesList(CancellationToken ct)
     {
         var list = await _pageService.GetAllPagesAsync(ct);
@@ -461,6 +490,7 @@ public class WebsiteAdminController : Controller
     }
 
     [HttpGet("Pages/CreateEdit/{id?}")]
+    [RequirePermission("Website.Pages")]
     public async Task<IActionResult> PageCreateEdit(int? id, CancellationToken ct)
     {
         if (id.HasValue && id > 0)
@@ -473,6 +503,7 @@ public class WebsiteAdminController : Controller
     }
 
     [HttpPost("Pages/CreateEdit/{id?}")]
+    [RequirePermission("Website.Pages")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> PageCreateEdit(int? id, WebsitePage model, CancellationToken ct)
     {
@@ -492,6 +523,7 @@ public class WebsiteAdminController : Controller
     }
 
     [HttpPost("Pages/Delete/{id}")]
+    [RequirePermission("Website.Pages")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> PageDelete(int id, CancellationToken ct)
     {
@@ -501,6 +533,7 @@ public class WebsiteAdminController : Controller
 
     // ── Admission Fee Structures ──
     [HttpGet("AdmissionFees/List")]
+    [RequirePermission("Website.AdmissionFees")]
     public async Task<IActionResult> AdmissionFeesList(CancellationToken ct)
     {
         var list = await _feeService.GetAllAsync(ct);
@@ -508,6 +541,7 @@ public class WebsiteAdminController : Controller
     }
 
     [HttpGet("AdmissionFees/CreateEdit/{id?}")]
+    [RequirePermission("Website.AdmissionFees")]
     public async Task<IActionResult> AdmissionFeeCreateEdit(int? id, CancellationToken ct)
     {
         if (id.HasValue && id > 0)
@@ -520,6 +554,7 @@ public class WebsiteAdminController : Controller
     }
 
     [HttpPost("AdmissionFees/CreateEdit/{id?}")]
+    [RequirePermission("Website.AdmissionFees")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AdmissionFeeCreateEdit(int? id, AdmissionFeeStructure model, CancellationToken ct)
     {
@@ -546,6 +581,7 @@ public class WebsiteAdminController : Controller
     }
 
     [HttpPost("AdmissionFees/Delete/{id}")]
+    [RequirePermission("Website.AdmissionFees")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AdmissionFeeDelete(int id, CancellationToken ct)
     {
@@ -555,6 +591,7 @@ public class WebsiteAdminController : Controller
 
     // ── Announcements ──
     [HttpGet("Announcements/List")]
+    [RequirePermission("Website.View")]
     public async Task<IActionResult> AnnouncementsList(CancellationToken ct)
     {
         var list = await _announcementService.GetAllAnnouncementsAsync(ct);
@@ -562,6 +599,7 @@ public class WebsiteAdminController : Controller
     }
 
     [HttpGet("Announcements/CreateEdit/{id?}")]
+    [RequirePermission("Website.Edit")]
     public async Task<IActionResult> AnnouncementCreateEdit(int? id, CancellationToken ct)
     {
         if (id.HasValue && id > 0)
@@ -574,6 +612,7 @@ public class WebsiteAdminController : Controller
     }
 
     [HttpPost("Announcements/CreateEdit/{id?}")]
+    [RequirePermission("Website.Edit")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AnnouncementCreateEdit(int? id, Announcement model, CancellationToken ct)
     {
@@ -592,6 +631,7 @@ public class WebsiteAdminController : Controller
     }
 
     [HttpPost("Announcements/Delete/{id}")]
+    [RequirePermission("Website.Edit")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AnnouncementDelete(int id, CancellationToken ct)
     {

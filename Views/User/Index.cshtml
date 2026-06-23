@@ -4,69 +4,43 @@
     ViewData["Title"] = "Users";
 }
 
-<div class="page-title d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h1 class="mb-1">
-            <i class="bi bi-person-gear me-2"></i>Users
-        </h1>
-
-        <p class="text-muted mb-0">
-            Manage system users, roles, account statuses and permissions
-        </p>
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-person-gear"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Users</h1>
+                <p class="adm-header__sub">Manage system users, roles, account statuses and permissions</p>
+            </div>
+        </div>
+        <a asp-action="Create" class="adm-btn adm-btn--primary">
+            <i class="bi bi-plus-circle"></i>
+            Create User
+        </a>
     </div>
 
-    <a asp-action="Create" class="btn btn-primary shadow-sm">
-        <i class="bi bi-plus-circle me-1"></i>
-        Create User
-    </a>
-</div>
+    @if (TempData["SuccessMessage"] is string message)
+    {
+        <div class="adm-alert" style="background:var(--adm-success-bg);color:var(--adm-success);border:1px solid rgba(5,150,105,0.15);margin-bottom:20px;display:flex;align-items:center;gap:8px">
+            <i class="bi bi-check-circle-fill"></i> @message
+        </div>
+    }
 
-@if (TempData["SuccessMessage"] is string message)
-{
-    <div class="alert alert-success alert-dismissible fade show mb-4">
-        <i class="bi bi-check-circle-fill me-2"></i>
-        @message
-
-        <button type="button"
-                class="btn-close"
-                data-bs-dismiss="alert">
-        </button>
-    </div>
-}
-
-<!-- FILTER CARD -->
-<div class="card shadow-sm mb-4">
-    <div class="card-body">
-
-        <div class="row g-3">
-
-            <!-- SEARCH -->
-            <div class="col-md-4">
-                <label class="form-label fw-semibold">Search</label>
-
-                <div class="input-group">
-                    <span class="input-group-text bg-white">
-                        <i class="bi bi-search text-muted"></i>
-                    </span>
-
-                    <input type="text"
-                           id="userInput"
-                           class="form-control"
-                           placeholder="Username, Email or Phone">
-
-                    <button class="btn btn-primary"
-                            type="button"
-                            id="userSearchBtn">
-                        Search
-                    </button>
+    <div class="adm-filters">
+        <div class="adm-filters__row">
+            <div class="adm-filters__field adm-filters__field--search">
+                <label class="adm-label">Search</label>
+                <div class="adm-input-wrap">
+                    <i class="bi bi-search adm-input-wrap__icon"></i>
+                    <input type="text" id="userInput" class="adm-input" placeholder="Username, Email or Phone">
+                    <button class="adm-input-wrap__btn" type="button" id="userSearchBtn">Search</button>
                 </div>
             </div>
-
-            <!-- STATUS -->
-            <div class="col-md-2">
-                <label class="form-label fw-semibold">Status</label>
-
-                <select id="statusFilter" class="form-select">
+            <div class="adm-filters__field">
+                <label class="adm-label">Status</label>
+                <select id="statusFilter" class="adm-select">
                     <option value="">All Status</option>
                     <option value="1">Active</option>
                     <option value="2">Inactive</option>
@@ -74,12 +48,9 @@
                     <option value="4">Pending</option>
                 </select>
             </div>
-
-            <!-- ROLE -->
-            <div class="col-md-2">
-                <label class="form-label fw-semibold">Role</label>
-
-                <select id="roleFilter" class="form-select">
+            <div class="adm-filters__field">
+                <label class="adm-label">Role</label>
+                <select id="roleFilter" class="adm-select">
                     <option value="">All Roles</option>
                     <option value="Super Admin">Super Admin</option>
                     <option value="Admin">Admin</option>
@@ -97,12 +68,9 @@
                     <option value="Guardian">Guardian</option>
                 </select>
             </div>
-
-            <!-- USER TYPE -->
-            <div class="col-md-2">
-                <label class="form-label fw-semibold">Type</label>
-
-                <select id="userTypeFilter" class="form-select">
+            <div class="adm-filters__field">
+                <label class="adm-label">Type</label>
+                <select id="userTypeFilter" class="adm-select">
                     <option value="">All Types</option>
                     <option value="Employee">Employee</option>
                     <option value="Guardian">Guardian</option>
@@ -110,377 +78,179 @@
                     <option value="System">System</option>
                 </select>
             </div>
-
-            <!-- PAGE SIZE -->
-            <div class="col-md-1">
-                <label class="form-label fw-semibold">Size</label>
-
-                <select id="pageSizeFilter" class="form-select">
+            <div class="adm-filters__field adm-filters__field--actions">
+                <label class="adm-label">Size</label>
+                <select id="pageSizeFilter" class="adm-select">
                     <option value="10">10</option>
                     <option value="20">20</option>
                     <option value="50">50</option>
                     <option value="100">100</option>
                 </select>
             </div>
-
-            <!-- REFRESH -->
-            <div class="col-md-1 d-flex align-items-end">
-                <button class="btn btn-outline-secondary w-100"
-                        id="refreshUsersBtn">
-
-                    <i class="bi bi-arrow-clockwise me-1"></i>
+            <div class="adm-filters__field adm-filters__field--actions" style="padding-bottom:1px">
+                <label class="adm-label">&nbsp;</label>
+                <button class="adm-btn adm-btn--ghost" id="refreshUsersBtn" title="Reset filters">
+                    <i class="bi bi-arrow-clockwise"></i>
                 </button>
             </div>
+        </div>
+    </div>
 
+    <div class="adm-table-card" style="margin-top:20px">
+        <div class="adm-table-card__body">
+            <div id="user-table"></div>
         </div>
     </div>
 </div>
 
-<!-- TABLE -->
-<div class="card shadow-sm">
-    <div class="card-body p-0">
-        <div id="user-table"></div>
-    </div>
-</div>
-
 @section Scripts {
-
     <script>
+        function getAvatarHtml(src, name, type) {
+            if (src) {
+                var bgClass = 'entity-avatar--primary';
+                if (type === 'Guardian') bgClass = 'entity-avatar--success';
+                else if (type === 'Student') bgClass = 'entity-avatar--warning';
+                else if (type === 'System') bgClass = 'entity-avatar--purple';
+                return '<div class="entity-avatar ' + bgClass + '"><img src="' + src + '" alt="" /></div>';
+            }
+            var initials = (name || 'U').substring(0, 2).toUpperCase();
+            var bgClass = 'entity-avatar--primary';
+            if (type === 'Guardian') bgClass = 'entity-avatar--success';
+            else if (type === 'Student') bgClass = 'entity-avatar--warning';
+            else if (type === 'System') bgClass = 'entity-avatar--purple';
+            return '<div class="entity-avatar ' + bgClass + '"><span class="entity-avatar__initials">' + initials + '</span></div>';
+        }
 
-        let table = new Tabulator("#user-table", {
+        function getStatusHtml(value) {
+            var statusText = "Unknown";
+            var badgeClass = "adm-badge--neutral";
+            if (value == 1) { statusText = "Active"; badgeClass = "adm-badge--success"; }
+            else if (value == 2) { statusText = "Inactive"; badgeClass = "adm-badge--danger"; }
+            else if (value == 3) { statusText = "Locked"; badgeClass = "adm-badge--info"; }
+            else if (value == 4) { statusText = "Pending"; badgeClass = "adm-badge--warning"; }
+            return '<span class="adm-badge ' + badgeClass + '">' + statusText + '</span>';
+        }
 
+        function getUserTypeHtml(type) {
+            var cls = "adm-badge--neutral";
+            if (type === "Employee") cls = "adm-badge--primary";
+            else if (type === "Guardian") cls = "adm-badge--success";
+            else if (type === "Student") cls = "adm-badge--warning";
+            else if (type === "System") cls = "adm-badge--info";
+            return '<span class="adm-badge ' + cls + '">' + type + '</span>';
+        }
+
+        var table = new Tabulator("#user-table", {
             height: "650px",
-
             layout: "fitColumns",
-
-            placeholder: "No users found",
-
+            placeholder: "<div class='dash-empty'><i class='bi bi-people fs-1'></i><div class='dash-empty__title'>No Users Found</div><div class='dash-empty__sub'>Try adjusting your search or filters.</div></div>",
             pagination: true,
-
             paginationMode: "remote",
-
             paginationSize: 10,
-
             paginationSizeSelector: [10, 20, 50, 100],
-
             ajaxURL: "/User/Index",
-
             ajaxConfig: "GET",
-
-            paginationDataSent: {
-                page: "pageNumber",
-                size: "pageSize"
-            },
-
-            paginationDataReceived: {
-                last_page: "last_page",
-                data: "data",
-                current_page: "current_page",
-                total_records: "total_records"
-            },
-
+            paginationDataSent: { page: "pageNumber", size: "pageSize" },
+            paginationDataReceived: { last_page: "last_page", data: "data", current_page: "current_page", total_records: "total_records" },
             ajaxParams: function () {
-
                 return {
-
                     searchTerm: $("#userInput").val(),
-
                     status: $("#statusFilter").val(),
-
                     role: $("#roleFilter").val(),
-
                     userType: $("#userTypeFilter").val()
                 };
             },
-
             ajaxResponse: function (url, params, response) {
-
-                return {
-                    data: response.data,
-                    last_page: response.last_page,
-                    current_page: response.current_page,
-                    total_records: response.total_records
-                };
+                return { data: response.data, last_page: response.last_page, current_page: response.current_page, total_records: response.total_records };
             },
-
             columns: [
-
                 {
                     title: "User",
                     field: "userName",
                     widthGrow: 2,
-
+                    minWidth: 240,
+                    responsive: 0,
+                    cssClass: "adm-col-entity",
                     formatter: function (cell) {
-
-                        let value = cell.getValue();
-
-                        return `
-                                <div class="d-flex align-items-center">
-
-                                    <div class="avatar-sm
-                                                bg-primary-soft
-                                                text-primary
-                                                rounded-circle
-                                                d-flex
-                                                align-items-center
-                                                justify-content-center
-                                                me-2"
-
-                                        style="
-                                            width:32px;
-                                            height:32px;
-                                            font-size:12px;
-                                            font-weight:700;
-                                        ">
-
-                                        ${value.substring(0, 2).toUpperCase()}
-
-                                    </div>
-
-                                    <div class="fw-bold">
-                                        ${value}
-                                    </div>
-
-                                </div>
-                            `;
+                        var d = cell.getData();
+                        var avatar = getAvatarHtml(d.profilePicturePath, d.userName, d.userType);
+                        var name = '<span class="entity-cell__name">' + (d.userName || '-') + '</span>';
+                        var email = '<span class="entity-cell__meta">' + (d.email || '') + '</span>';
+                        return '<div class="entity-cell">' + avatar + '<div class="entity-cell__identity">' + name + email + '</div></div>';
                     }
                 },
-
-                {
-                    title: "Email",
-                    field: "email",
-                    widthGrow: 2
-                },
-
                 {
                     title: "Phone",
                     field: "phoneNumber",
                     widthGrow: 1.5,
-
                     formatter: function (cell) {
-
-                        return cell.getValue()
-                            || '<span class="text-muted">N/A</span>';
+                        return cell.getValue() || '<span class="text-muted">&mdash;</span>';
                     }
                 },
-
                 {
                     title: "Type",
                     field: "userType",
                     width: 120,
-
-                    formatter: function (cell) {
-                        let type = cell.getValue();
-                        let badgeClass = "bg-secondary";
-
-                        if (type === "Employee") badgeClass = "bg-primary";
-                        else if (type === "Guardian") badgeClass = "bg-success";
-                        else if (type === "Student") badgeClass = "bg-warning text-dark";
-                        else if (type === "System") badgeClass = "bg-dark";
-
-                        return `<span class="badge ${badgeClass}">${type}</span>`;
-                    }
+                    formatter: function (cell) { return getUserTypeHtml(cell.getValue()); }
                 },
-
                 {
                     title: "Linked Entity",
                     field: "linkedEntityName",
                     widthGrow: 1.5,
-
                     formatter: function (cell) {
-                        let val = cell.getValue();
-                        return val || '<span class="text-muted">—</span>';
+                        var val = cell.getValue();
+                        return val && val !== '—' ? '<span class="fw-medium">' + val + '</span>' : '<span class="text-muted">&mdash;</span>';
                     }
                 },
-
                 {
                     title: "Status",
                     field: "status",
-                    width: 140,
-
-                    formatter: function (cell) {
-
-                        let status = cell.getValue();
-
-                        let statusText = "Unknown";
-
-                        let badgeClass = "bg-secondary";
-
-                        if (status == 1) {
-
-                            statusText = "Active";
-                            badgeClass = "bg-success";
-                        }
-
-                        else if (status == 2) {
-
-                            statusText = "Inactive";
-                            badgeClass = "bg-danger";
-                        }
-
-                        else if (status == 3) {
-
-                            statusText = "Locked";
-                            badgeClass = "bg-dark";
-                        }
-
-                        else if (status == 4) {
-
-                            statusText = "Pending";
-                            badgeClass = "bg-warning text-dark";
-                        }
-
-                        return `
-                    <span class="badge ${badgeClass}">
-                        ${statusText}
-                    </span>
-                `;
-                    }
+                    width: 120,
+                    cssClass: "adm-col-status",
+                    formatter: function (cell) { return getStatusHtml(cell.getValue()); }
                 },
-
                 {
                     title: "Roles",
                     field: "rolesText",
                     widthGrow: 2,
-
                     formatter: function (cell) {
-
-                        let roles = cell.getValue();
-
-                        if (!roles)
-                            return '<span class="text-muted">No Roles</span>';
-
-                        return roles
-                            .split(', ')
-                            .map(r =>
-                                `<span class="badge border bg-light text-dark me-1">${r}</span>`
-                            )
-                            .join('');
+                        var roles = cell.getValue();
+                        if (!roles) return '<span class="text-muted">No Roles</span>';
+                        return roles.split(', ').map(function (r) {
+                            return '<span class="adm-badge adm-badge--neutral" style="margin:1px 3px">' + r + '</span>';
+                        }).join('');
                     }
                 },
-
                 {
                     title: "Actions",
                     field: "id",
-
-                    width: 180,
-
-                    hozAlign: "right",
-
+                    width: 200,
+                    hozAlign: "center",
                     headerSort: false,
-
+                    cssClass: "adm-col-actions",
                     formatter: function (cell) {
-
-                        let id = cell.getValue();
-
-                        return `
-                                <div class="btn-group btn-group-sm">
-
-                                    <a href="/User/Details/${id}"
-                                       class="btn btn-outline-secondary"
-                                       title="View">
-
-                                       <i class="bi bi-eye"></i>
-                                    </a>
-
-                                    <a href="/User/Edit/${id}"
-                                       class="btn btn-outline-primary"
-                                       title="Edit">
-
-                                       <i class="bi bi-pencil"></i>
-                                    </a>
-
-                                    <a href="/User/Delete/${id}"
-                                       class="btn btn-outline-danger"
-                                       title="Delete">
-
-                                       <i class="bi bi-trash"></i>
-                                    </a>
-
-                                </div>
-                            `;
+                        var id = cell.getValue();
+                        return '<div class="action-group">' +
+                            '<a href="/User/Details/' + id + '" class="action-btn action-btn--view" title="View"><i class="bi bi-eye"></i></a>' +
+                            '<a href="/User/Edit/' + id + '" class="action-btn action-btn--edit" title="Edit"><i class="bi bi-pencil"></i></a>' +
+                            '<a href="/User/AssignRoles/' + id + '" class="action-btn action-btn--success" title="Assign Roles"><i class="bi bi-shield-lock"></i></a>' +
+                            '<a href="/User/Delete/' + id + '" class="action-btn action-btn--delete" title="Delete"><i class="bi bi-trash"></i></a>' +
+                            '</div>';
                     }
                 }
             ]
         });
 
-        // SEARCH
-        $("#userSearchBtn").click(function () {
-
-            table.setData();
-        });
-
-        // ENTER SEARCH
-        $("#userInput").keypress(function (e) {
-
-            if (e.which === 13) {
-
-                table.setData();
-            }
-        });
-
-        // FILTERS
-        $("#statusFilter, #roleFilter, #userTypeFilter").change(function () {
-
-            table.setData();
-        });
-
-        // PAGE SIZE
-        $("#pageSizeFilter").change(function () {
-
-            table.setPageSize($(this).val());
-        });
-
-        // REFRESH
+        $("#userSearchBtn").click(function () { table.setData(); });
+        $("#userInput").keypress(function (e) { if (e.which === 13) table.setData(); });
+        $("#statusFilter, #roleFilter, #userTypeFilter").change(function () { table.setData(); });
+        $("#pageSizeFilter").change(function () { table.setPageSize($(this).val()); });
         $("#refreshUsersBtn").click(function () {
-
             $("#userInput").val('');
-
             $("#statusFilter").val('');
-
             $("#roleFilter").val('');
-
             $("#userTypeFilter").val('');
-
             table.setData();
         });
-
     </script>
-
-    <style>
-
-        .bg-primary-soft {
-            background-color: rgba(26, 86, 219, 0.1);
-        }
-
-        .tabulator {
-            border: none !important;
-        }
-
-            .tabulator .tabulator-header {
-                background-color: #f8f9fa;
-                border-bottom: 1px solid #e2e8f0;
-            }
-
-                .tabulator .tabulator-header .tabulator-col {
-                    background-color: #f8f9fa;
-                    font-weight: 700;
-                    color: #475569;
-                    padding: 12px 8px;
-                }
-
-        .tabulator-row {
-            border-bottom: 1px solid #f1f5f9;
-        }
-
-            .tabulator-row:hover {
-                background-color: #f8fafc !important;
-            }
-
-        .tabulator-cell {
-            padding: 12px 8px !important;
-            vertical-align: middle;
-        }
-    </style>
-
 }

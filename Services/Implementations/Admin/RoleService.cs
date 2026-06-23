@@ -9,10 +9,17 @@ namespace SchoolManagementSystem.Services.Implementations.Admin;
 public class RoleService : IRoleService
 {
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IPermissionCacheService _permissionCache;
 
-    public RoleService(IUnitOfWork unitOfWork) { _unitOfWork = unitOfWork; }
+    private static readonly string[] SystemRoles = ["Super Admin", "Admin", "Guardian", "Student", "Teacher", "Senior Lecturer", "Lecturer", "Principal", "Accountant", "Exam Controller"];
 
-    public async Task<PagedResult<dynamic>> GetPagedAsync(int page, int pageSize, string? search, CancellationToken ct = default)
+    public RoleService(IUnitOfWork unitOfWork, IPermissionCacheService permissionCache)
+    {
+        _unitOfWork = unitOfWork;
+        _permissionCache = permissionCache;
+    }
+
+    public async Task<PagedResult<dynamic>> GetPagedAsync(int page, int pageSize, string? search, string? sortColumn = null, string? sortDirection = null, CancellationToken ct = default)
     {
         var query = _unitOfWork.Repository<Role>().Query().AsNoTracking().Where(r => !r.IsDeleted);
 
@@ -23,7 +30,16 @@ public class RoleService : IRoleService
         }
 
         var totalCount = await query.CountAsync(ct);
-        var items = await query.OrderBy(r => r.Name)
+
+        var isDesc = string.Equals(sortDirection, "desc", StringComparison.OrdinalIgnoreCase);
+        query = sortColumn?.ToLower() switch
+        {
+            "name" => isDesc ? query.OrderByDescending(r => r.Name) : query.OrderBy(r => r.Name),
+            "description" => isDesc ? query.OrderByDescending(r => r.Description ?? "") : query.OrderBy(r => r.Description ?? ""),
+            _ => isDesc ? query.OrderByDescending(r => r.Id) : query.OrderBy(r => r.Id)
+        };
+
+        var items = await query
             .Skip((page - 1) * pageSize).Take(pageSize)
             .Select(r => new
             {
@@ -63,6 +79,7 @@ public class RoleService : IRoleService
         }
 
         await _unitOfWork.SaveChangesAsync(ct);
+        _permissionCache.InvalidateRolePermissions(roleId);
         return true;
     }
 
@@ -71,6 +88,30 @@ public class RoleService : IRoleService
         return await _unitOfWork.Repository<Permission>().Query()
             .OrderBy(p => p.Module).ThenBy(p => p.Action)
             .ToListAsync(ct);
+    }
+
+    public async Task DeleteAsync(int id)
+    {
+        var role = await _unitOfWork.Repository<Role>().GetByIdAsync(id)
+            ?? throw new ArgumentException("Role not found.");
+
+        if (SystemRoles.Contains(role.Name))
+            throw new InvalidOperationException($"Cannot delete system role '{role.Name}'.");
+
+        role.IsDeleted = true;
+
+        var userRoles = await _unitOfWork.Repository<UserRole>().Query()
+            .Where(ur => ur.RoleId == id).ToListAsync();
+        foreach (var ur in userRoles)
+            _unitOfWork.Repository<UserRole>().Remove(ur);
+
+        var rolePermissions = await _unitOfWork.Repository<RolePermission>().Query()
+            .Where(rp => rp.RoleId == id).ToListAsync();
+        foreach (var rp in rolePermissions)
+            _unitOfWork.Repository<RolePermission>().Remove(rp);
+
+        await _unitOfWork.SaveChangesAsync();
+        _permissionCache.InvalidateRolePermissions(id);
     }
 }
 

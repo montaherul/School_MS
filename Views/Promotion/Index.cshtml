@@ -1,0 +1,277 @@
+@{
+    ViewData["Title"] = "Promotion Dashboard";
+    var academicYears = ViewBag.AcademicYears as List<SchoolManagementSystem.Models.Entities.Academic.AcademicYear> ?? new();
+    var selectedYearId = (int)ViewBag.SelectedYearId;
+    var activeYear = ViewBag.ActiveYear as SchoolManagementSystem.Models.Entities.Academic.AcademicYear;
+    var promotions = ViewBag.Promotions as List<object> ?? new();
+}
+
+<div class="adm-page er-page">
+
+    <div class="er-page-header">
+        <div class="er-page-header__left">
+            <div class="er-page-header__icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="17 1 21 5 17 9" />
+                    <path d="M3 11V9a4 4 0 0 1 4-4h14" />
+                    <polyline points="7 23 3 19 7 15" />
+                    <path d="M21 13v2a4 4 0 0 1-4 4H3" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="er-page-header__title">Promotion Management</h1>
+                <p class="er-page-header__sub">
+                    @if (activeYear != null)
+                    {
+                        <span>Academic Year: @activeYear.Name (@activeYear.StartsOn.Year - @activeYear.EndsOn.Year)</span>
+                    }
+                    else
+                    {
+                        <span style="color:var(--adm-pending);">No active academic year configured</span>
+                    }
+                </p>
+            </div>
+        </div>
+        <div class="er-page-header__right">
+            <a href="@Url.Action("Policies", "Promotion", new { academicYearId = selectedYearId })" class="er-btn er-btn--secondary">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                Policies
+            </a>
+            <a href="@Url.Action("RollGeneration", "Promotion")" class="er-btn er-btn--primary">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                Roll Generation
+            </a>
+        </div>
+    </div>
+
+    <div class="adm-filters mb-4">
+        <form method="get" action="@Url.Action("Index")" class="adm-filters__row" style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;">
+            <div class="adm-filters__field">
+                <label class="er-label">Academic Year</label>
+                <select name="academicYearId" class="er-filters__select">
+                    @foreach (var y in academicYears)
+                    {
+                        <!option value="@y.Id" selected="@(y.Id == selectedYearId)">@y.Name</!option>
+                    }
+                </select>
+            </div>
+            <div class="adm-filters__field">
+                <button type="submit" class="er-btn er-btn--primary adm-btn--sm">Apply</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="er-stats">
+        <div class="er-stat">
+            <div class="er-stat__icon er-stat__icon--primary">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+            </div>
+            <div class="er-stat__body">
+                <span class="er-stat__label">Total Classes</span>
+                <span class="er-stat__value">@promotions.Count</span>
+            </div>
+        </div>
+        <div class="er-stat">
+            <div class="er-stat__icon er-stat__icon--success">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
+            </div>
+            <div class="er-stat__body">
+                <span class="er-stat__label">Total Promoted</span>
+                <span class="er-stat__value">@promotions.Sum(p => ((dynamic)p).PromotedCount)</span>
+            </div>
+        </div>
+        <div class="er-stat">
+            <div class="er-stat__icon er-stat__icon--warning">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>
+            </div>
+            <div class="er-stat__body">
+                <span class="er-stat__label">Total Repeat</span>
+                <span class="er-stat__value">@promotions.Sum(p => ((dynamic)p).RepeatCount)</span>
+            </div>
+        </div>
+        <div class="er-stat">
+            <div class="er-stat__icon er-stat__icon--info">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+            </div>
+            <div class="er-stat__body">
+                <span class="er-stat__label">Policies Configured</span>
+                <span class="er-stat__value">@promotions.Count(p => ((dynamic)p).HasPolicy)</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="dash-section">
+        <div class="dash-section__header">
+            <h2 class="dash-section__title">Class-wise Promotion Status</h2>
+        </div>
+        <div class="er-card" style="border-radius:var(--adm-radius-lg);border-top:1px solid var(--adm-border);">
+            <div class="er-card__body">
+                <div class="table-responsive" style="border-radius:var(--adm-radius-lg);min-width:unset;">
+                    <table class="dash-table" id="promotionTable">
+                        <thead>
+                            <tr>
+                                <th>Class</th>
+                                <th>Total Students</th>
+                                <th>Promoted</th>
+                                <th>Repeat</th>
+                                <th>Failed</th>
+                                <th>Policy</th>
+                                <th>Last Execution</th>
+                                <th style="text-align:right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (dynamic p in promotions)
+                            {
+                                <tr>
+                                    <td><span class="adm-cell-name">@p.ClassName</span></td>
+                                    <td>@p.TotalStudents</td>
+                                    <td>
+                                        <span class="er-badge er-badge--converted">@p.PromotedCount</span>
+                                    </td>
+                                    <td>
+                                        <span class="er-badge er-badge--pending">@p.RepeatCount</span>
+                                    </td>
+                                    <td>
+                                        <span class="er-badge er-badge--rejected">@p.FailedCount</span>
+                                    </td>
+                                    <td>
+                                        @if (p.HasPolicy)
+                                        {
+                                            <span class="er-badge er-badge--approved">@p.PolicyName</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="er-badge er-badge--neutral">No Policy</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (p.HasExecution)
+                                        {
+                                            <span class="adm-cell-dob">@p.ExecutionDate</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="adm-cell-dob">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <div class="actions-cell">
+                                            <a href="@Url.Action("Evaluate", "Promotion", new { classId = p.ClassId, academicYearId = selectedYearId })"
+                                               class="er-action er-action--edit" title="Evaluate">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
+                                            </a>
+                                            <a href="@Url.Action("History", "Promotion", new { classId = p.ClassId, academicYearId = selectedYearId })"
+                                               class="er-action er-action--convert" title="History">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="dash-section">
+        <div class="dash-section__header">
+            <h2 class="dash-section__title">Quick Actions</h2>
+        </div>
+        <div class="dash-actions">
+            <a href="@Url.Action("Policies", "Promotion", new { academicYearId = selectedYearId })" class="dash-action-card">
+                <div class="dash-action-card__icon" style="background:var(--adm-primary-bg);color:var(--adm-primary);">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                </div>
+                <div class="dash-action-card__body">
+                    <span class="dash-action-card__title">Promotion Policies</span>
+                    <span class="dash-action-card__sub">Configure promotion rules</span>
+                </div>
+                <svg class="dash-action-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
+            </a>
+            <a href="@Url.Action("RollGeneration", "Promotion")" class="dash-action-card">
+                <div class="dash-action-card__icon" style="background:var(--adm-success-bg);color:var(--adm-success);">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="2" width="16" height="20" rx="2" /><line x1="8" y1="6" x2="16" y2="6" /><line x1="8" y1="10" x2="16" y2="10" /></svg>
+                </div>
+                <div class="dash-action-card__body">
+                    <span class="dash-action-card__title">Roll Generation</span>
+                    <span class="dash-action-card__sub">Assign roll numbers</span>
+                </div>
+                <svg class="dash-action-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
+            </a>
+            <a href="@Url.Action("GroupAssignment", "Promotion")" class="dash-action-card">
+                <div class="dash-action-card__icon" style="background:var(--adm-pending-bg);color:var(--adm-pending);">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+                </div>
+                <div class="dash-action-card__body">
+                    <span class="dash-action-card__title">Group Assignment</span>
+                    <span class="dash-action-card__sub">Assign groups after promotion</span>
+                </div>
+                <svg class="dash-action-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
+            </a>
+            <a href="@Url.Action("History", "Promotion", new { academicYearId = selectedYearId })" class="dash-action-card">
+                <div class="dash-action-card__icon" style="background:var(--adm-converted-bg);color:var(--adm-converted);">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+                </div>
+                <div class="dash-action-card__body">
+                    <span class="dash-action-card__title">Promotion History</span>
+                    <span class="dash-action-card__sub">View past promotions</span>
+                </div>
+                <svg class="dash-action-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="er-skeleton-overlay" id="loadingOverlay" style="display:none;">
+    <div class="er-skeleton-spinner">
+        <div class="er-skeleton-spinner__ring"></div>
+        <span class="er-skeleton-spinner__text">Processing...</span>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (typeof $ !== 'undefined' && $.fn.DataTable) {
+                $('#promotionTable').DataTable({
+                    responsive: true,
+                    pageLength: 25,
+                    order: [[0, 'asc']],
+                    language: { emptyTable: "No class promotion data found" }
+                });
+            }
+        });
+
+        @if (TempData["Success"] != null)
+        {
+            <text>showToast('@TempData["Success"]', 'success');</text>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <text>showToast('@TempData["Error"]', 'error');</text>
+        }
+
+        function showToast(message, type) {
+            var iconSvg = '';
+            var headerClass = '';
+            if (type === 'success') {
+                iconSvg = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>';
+                headerClass = 'toast-header--success';
+            } else {
+                iconSvg = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>';
+                headerClass = 'toast-header--info';
+            }
+            var id = 'toast-' + Date.now();
+            var html = '<div id="' + id + '" class="toast" role="alert"><div class="toast-header ' + headerClass + '">' + iconSvg + '<strong class="me-auto">' + (type === 'success' ? 'Success' : 'Error') + '</strong><button type="button" class="btn-close" data-bs-dismiss="toast"></button></div><div class="toast-body" style="font-size:13px;">' + message + '</div></div>';
+            var container = document.getElementById('toastContainer') || document.body;
+            container.insertAdjacentHTML('beforeend', html);
+            var el = document.getElementById(id);
+            var toast = new bootstrap.Toast(el, { autohide: true, delay: 4000 });
+            toast.show();
+            el.addEventListener('hidden.bs.toast', function () { el.remove(); });
+        }
+    </script>
+}

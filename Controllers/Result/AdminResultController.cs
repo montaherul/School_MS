@@ -219,7 +219,6 @@ public class AdminResultController : Controller
     [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
     public async Task<IActionResult> AllResults(int? examId, int? classId, string? status, CancellationToken ct)
     {
-        var results = await _publicationService.GetAllResultsAsync(examId, classId, status);
         var rawClasses = await _examService.GetClassesAsync(ct);
         var classes = rawClasses.Select(c => new IdNamePairDto
         {
@@ -228,7 +227,6 @@ public class AdminResultController : Controller
         }).ToList();
         var model = new AllResultsPageViewModel
         {
-            Results = results,
             Exams = await _examService.GetExamsAsync(0),
             Classes = classes,
             SelectedExamId = examId,
@@ -236,6 +234,32 @@ public class AdminResultController : Controller
             SelectedStatus = status
         };
         return View(model);
+    }
+
+    [HttpGet]
+    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    public async Task<IActionResult> GetResultListJson(
+        int page = 1,
+        int size = 20,
+        int? examId = null,
+        int? classId = null,
+        int? sectionId = null,
+        int? studentGroupId = null,
+        int? status = null,
+        string? searchTerm = null,
+        int? academicYearId = null,
+        CancellationToken ct = default)
+    {
+        var (items, totalCount) = await _studentExamResultRepository.GetResultListAsync(
+            examId, classId, sectionId, studentGroupId, status,
+            searchTerm, page, size, ct, academicYearId);
+
+        return Json(new
+        {
+            data = items,
+            last_page = size > 0 ? (int)Math.Ceiling((double)totalCount / size) : 1,
+            total_records = totalCount
+        });
     }
 
     [HttpGet]

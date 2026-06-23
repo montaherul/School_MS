@@ -3,7 +3,6 @@
 }
 
 <div class="adm-page">
-    <!-- Page Header -->
     <div class="adm-header">
         <div class="adm-header__left">
             <div class="adm-header__icon-wrap">
@@ -20,7 +19,6 @@
         </a>
     </div>
 
-    <!-- Filters -->
     <div class="adm-filters">
         <div class="adm-filters__row">
             <div class="adm-filters__field adm-filters__field--search">
@@ -73,7 +71,6 @@
         <div id="filterBadges" class="adm-filter-badges"></div>
     </div>
 
-    <!-- Status Tabs -->
     <div class="adm-tabs" id="statusTabs" role="tablist">
         <button class="adm-tab adm-tab--active" id="tab-all" data-status="" type="button" role="tab">
             <span class="adm-tab__text">All</span>
@@ -96,14 +93,12 @@
         </button>
     </div>
 
-    <!-- Table Card — Tabulator handles its own pagination footer -->
     <div class="adm-table-card">
         <div class="adm-table-card__body">
             <div id="loadingOverlay" class="adm-loading adm-loading--hidden">
                 <div class="adm-loading__spinner"></div>
                 <span class="adm-loading__text">Loading admissions...</span>
             </div>
-
             <div class="table-shell">
                 <div class="table-responsive">
                     <div id="admissionTable" class="table-fixed"></div>
@@ -117,7 +112,6 @@
     </div>
 </div>
 
-<!-- Convert-to-Student Modal -->
 <div class="adm-modal-backdrop" id="approveModal" style="display:none;">
     <div class="adm-modal" role="dialog" aria-labelledby="approveModalLabel">
         <div class="adm-modal__header">
@@ -166,448 +160,405 @@
 @Html.AntiForgeryToken()
 
 @section Scripts {
-    <!-- xlsx, jsPDF — page-specific, keep these -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
 
-    <!-- your page script below -->
-
     <script>
-        // ── State ────────────────────────────────────
-        let currentClassId = '';
-        let currentSearchTerm = '';
-        let currentStatus = '';
-        let currentTotalRecords = 0;
-        let currentPageSize = 10;
-        let table = null;
-        let currentClassIdForSection = 0;
-        let loadedSectionData = [];
+        var currentClassId = '';
+        var currentSearchTerm = '';
+        var currentStatus = '';
+        var currentTotalRecords = 0;
+        var currentPageSize = 10;
+        var table = null;
+        var currentClassIdForSection = 0;
+        var loadedSectionData = [];
 
-        // ── CSRF ─────────────────────────────────────
         $.ajaxSetup({
-        beforeSend: function (xhr) {
-        xhr.setRequestHeader(
-        'RequestVerificationToken',
-        $('input[name="__RequestVerificationToken"]').val()
-        );
-        }
+            beforeSend: function (xhr) {
+                xhr.setRequestHeader('RequestVerificationToken', $('input[name="__RequestVerificationToken"]').val());
+            }
         });
 
-        // ── XSS-Safe Helpers ─────────────────────────
         function safeSpan(text, className) {
-        var el = document.createElement('span');
-        if (className) el.className = className;
-        el.textContent = text;
-        return el;
+            var el = document.createElement('span');
+            if (className) el.className = className;
+            el.textContent = text;
+            return el;
         }
 
         function safeMuted() {
-        var el = document.createElement('span');
-        el.className = 'text-muted small';
-        el.textContent = '\u2014';
-        return el;
+            var el = document.createElement('span');
+            el.className = 'text-muted small';
+            el.textContent = '\u2014';
+            return el;
         }
 
-        // ── Formatters (DOM-based, no innerHTML) ──────
         function statusFormatter(cell) {
-        const value = cell.getValue();
-        const map = {
-        'Pending': ['adm-status adm-status--pending', 'Pending'],
-        'Approved': ['adm-status adm-status--approved', 'Approved'],
-        'Converted': ['adm-status adm-status--converted', 'Converted'],
-        'Rejected': ['adm-status adm-status--rejected', 'Rejected']
-        };
-        const entry = map[value];
-        if (entry) {
-        var el = document.createElement('span');
-        el.className = entry[0];
-        el.textContent = entry[1];
-        return el;
-        }
-        return safeSpan(value, 'adm-status adm-status--neutral');
+            var value = cell.getValue();
+            var map = {
+                'Pending': ['adm-status adm-status--pending', 'Pending'],
+                'Approved': ['adm-status adm-status--approved', 'Approved'],
+                'Converted': ['adm-status adm-status--converted', 'Converted'],
+                'Rejected': ['adm-status adm-status--rejected', 'Rejected']
+            };
+            var entry = map[value];
+            if (entry) {
+                var el = document.createElement('span');
+                el.className = entry[0];
+                el.textContent = entry[1];
+                return el;
+            }
+            return safeSpan(value, 'adm-status adm-status--neutral');
         }
 
         function photoFormatter(cell) {
-        var src = cell.getValue();
-        if (!src) src = '/images/default-user.png';
-        var wrapper = document.createElement('div');
-        wrapper.className = 'adm-avatar';
-        var img = document.createElement('img');
-        img.setAttribute('src', src);
-        img.setAttribute('alt', '');
-        img.addEventListener('error', function () { this.setAttribute('src', '/images/default-user.png'); });
-        wrapper.appendChild(img);
-        return wrapper;
+            var src = cell.getValue();
+            if (!src) src = '/images/default-user.png';
+            var wrapper = document.createElement('div');
+            wrapper.className = 'entity-avatar entity-avatar--primary';
+            var img = document.createElement('img');
+            img.setAttribute('src', src);
+            img.setAttribute('alt', '');
+            img.addEventListener('error', function () { this.setAttribute('src', '/images/default-user.png'); });
+            wrapper.appendChild(img);
+            return wrapper;
         }
 
         function actionFormatter(cell) {
-        var row = cell.getRow().getData();
-        var wrapper = document.createElement('div');
-        wrapper.className = 'actions-cell';
-        if (row.status === 'Pending') {
-        // Details link
-        var a1 = document.createElement('a');
-        a1.className = 'adm-action adm-action--view';
-        a1.setAttribute('href', '/Admission/Details/' + row.id);
-        a1.setAttribute('title', 'Details');
-        a1.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
-        wrapper.appendChild(a1);
-        // Edit link
-        var a2 = document.createElement('a');
-        a2.className = 'adm-action adm-action--edit';
-        a2.setAttribute('href', '/Admission/CreateEdit/' + row.id);
-        a2.setAttribute('title', 'Edit');
-        a2.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
-        wrapper.appendChild(a2);
-        // Convert button
-        var b1 = document.createElement('button');
-        b1.type = 'button';
-        b1.className = 'adm-action adm-action--convert';
-        b1.setAttribute('title', 'Convert');
-        b1.dataset.id = row.id;
-        b1.dataset.classId = row.appliedClassId;
-        b1.addEventListener('click', function () { openApproveModal(this.dataset.id, this.dataset.classId); });
-        b1.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
-        wrapper.appendChild(b1);
-        // Reject button
-        var b2 = document.createElement('button');
-        b2.type = 'button';
-        b2.className = 'adm-action adm-action--reject';
-        b2.setAttribute('title', 'Reject');
-        b2.dataset.id = row.id;
-        b2.addEventListener('click', function () { rejectItem(this.dataset.id); });
-        b2.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
-        wrapper.appendChild(b2);
-        } else {
-        var done = document.createElement('span');
-        done.className = 'adm-actions--done';
-        done.textContent = 'Done';
-        wrapper.appendChild(done);
-        }
-        return wrapper;
+            var row = cell.getRow().getData();
+            var wrapper = document.createElement('div');
+            wrapper.className = 'action-group';
+            if (row.status === 'Pending') {
+                var a1 = document.createElement('a');
+                a1.className = 'action-btn action-btn--view';
+                a1.setAttribute('href', '/Admission/Details/' + row.id);
+                a1.setAttribute('title', 'Details');
+                a1.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
+                wrapper.appendChild(a1);
+
+                var a2 = document.createElement('a');
+                a2.className = 'action-btn action-btn--edit';
+                a2.setAttribute('href', '/Admission/CreateEdit/' + row.id);
+                a2.setAttribute('title', 'Edit');
+                a2.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
+                wrapper.appendChild(a2);
+
+                var b1 = document.createElement('button');
+                b1.type = 'button';
+                b1.className = 'action-btn action-btn--success';
+                b1.setAttribute('title', 'Convert');
+                b1.dataset.id = row.id;
+                b1.dataset.classId = row.appliedClassId;
+                b1.addEventListener('click', function () { openApproveModal(this.dataset.id, this.dataset.classId); });
+                b1.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
+                wrapper.appendChild(b1);
+
+                var b2 = document.createElement('button');
+                b2.type = 'button';
+                b2.className = 'action-btn action-btn--delete';
+                b2.setAttribute('title', 'Reject');
+                b2.dataset.id = row.id;
+                b2.addEventListener('click', function () { rejectItem(this.dataset.id); });
+                b2.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
+                wrapper.appendChild(b2);
+            } else {
+                var done = document.createElement('span');
+                done.className = 'adm-actions--done';
+                done.textContent = 'Done';
+                wrapper.appendChild(done);
+            }
+            return wrapper;
         }
 
-        // ── Column Definitions ───────────────────────
-        const columnDefs = [
-        { title: "", field: "profilePicturePath", width: 56, minWidth: 56, sorter: false, headerSort: false, formatter: photoFormatter, cssClass: "adm-col-photo" },
-        {
-        title: "App No", field: "applicationNo", width: 160, minWidth: 160, sorter: false, headerSort: false,
-        formatter: function (c) { return safeSpan(c.getValue(), 'adm-cell-mono'); }
-        },
-        {
-        title: "Applicant Name", field: "applicantName", width: 240, minWidth: 240, sorter: false, headerSort: false,
-        formatter: function (c) { return safeSpan(c.getValue(), 'adm-cell-name'); }
-        },
-        {
-        title: "নাম (বাংলা)", field: "applicantNameBangla", width: 200, minWidth: 140, sorter: false, headerSort: false,
-        formatter: function (c) {
-        var v = c.getValue();
-        if (!v) return safeMuted();
-        var el = document.createElement('span');
-        el.className = 'adm-cell-bangla';
-        el.setAttribute('lang', 'bn');
-        el.textContent = v;
-        return el;
+        function entityFormatter(cell) {
+            var d = cell.getRow().getData();
+            var src = d.profilePicturePath || '/images/default-user.png';
+            var name = d.applicantName || '-';
+            var appNo = d.applicationNo || '-';
+
+            var wrapper = document.createElement('div');
+            wrapper.className = 'entity-cell';
+
+            var avatar = document.createElement('div');
+            avatar.className = 'entity-avatar entity-avatar--primary';
+            var img = document.createElement('img');
+            img.setAttribute('src', src);
+            img.setAttribute('alt', '');
+            img.addEventListener('error', function () { this.setAttribute('src', '/images/default-user.png'); });
+            avatar.appendChild(img);
+
+            var identity = document.createElement('div');
+            identity.className = 'entity-cell__identity';
+
+            var nameEl = document.createElement('div');
+            nameEl.className = 'entity-cell__name';
+            nameEl.textContent = name;
+
+            var codeEl = document.createElement('div');
+            codeEl.className = 'entity-cell__code';
+            codeEl.textContent = appNo;
+
+            identity.appendChild(nameEl);
+            identity.appendChild(codeEl);
+            wrapper.appendChild(avatar);
+            wrapper.appendChild(identity);
+
+            return wrapper;
         }
-        },
-        {
-        title: "Age / DOB", field: "dateOfBirth", width: 140, minWidth: 140, sorter: false, headerSort: false,
-        formatter: function (c) {
-        var el = document.createElement('span');
-        el.className = 'adm-cell-dob';
-        var strong = document.createElement('strong');
-        strong.textContent = c.getRow().getData().age;
-        el.appendChild(strong);
-        el.appendChild(document.createTextNode(' yrs\n'));
-        var dateSpan = document.createElement('span');
-        dateSpan.className = 'adm-cell-dob__date';
-        dateSpan.textContent = new Date(c.getValue()).toLocaleDateString('en-BD');
-        el.appendChild(dateSpan);
-        return el;
-        }
-        },
-        {
-        title: "Gender", field: "gender", width: 100, minWidth: 100, sorter: false, headerSort: false,
-        formatter: function (c) { return safeSpan(c.getValue(), 'adm-cell-gender'); }
-        },
-        { title: "Class", field: "className", width: 160, minWidth: 160, sorter: false, headerSort: false },
-        {
-        title: "Phone", field: "applicantMobileNumber", width: 160, minWidth: 160, sorter: false, headerSort: false,
-        formatter: function (c) { return safeSpan(c.getValue(), 'adm-cell-phone'); }
-        },
-        {
-        title: "Guardian", field: "guardianName", width: 160, minWidth: 120, sorter: false, headerSort: false,
-        formatter: function (c) {
-        var v = c.getValue();
-        return v ? safeSpan(v, 'fw-medium') : safeMuted();
-        }
-        },
-        { title: "G. Phone", field: "guardianMobileNumber", width: 140, minWidth: 120, sorter: false, headerSort: false,
-        formatter: function (c) { return c.getValue() ? safeSpan(c.getValue(), 'adm-cell-phone') : safeMuted(); }
-        },
-        { title: "G. Email", field: "guardianEmail", width: 180, minWidth: 140, sorter: false, headerSort: false,
-        formatter: function (c) { return c.getValue() ? safeSpan(c.getValue(), 'small') : safeMuted(); }
-        },
-        { title: "Linked ID", field: "linkedGuardianId", width: 110, minWidth: 90, sorter: false, headerSort: false,
-        formatter: function (c) {
-        var v = c.getValue();
-        if (!v) return safeMuted();
-        var el = document.createElement('span');
-        el.className = 'badge bg-info bg-opacity-10 text-info';
-        el.textContent = '#' + v;
-        return el;
-        }
-        },
-        { title: "Transaction ID", field: "transactionDetails", width: 170, minWidth: 140, sorter: false, headerSort: false,
-        formatter: function (c) {
-        var v = c.getValue();
-        return v ? safeSpan(v, 'adm-cell-mono') : safeMuted();
-        }
-        },
-        { title: "Status", field: "status", width: 140, minWidth: 140, sorter: false, headerSort: false, formatter: statusFormatter },
-        { title: "", field: "id", width: 180, minWidth: 180, sorter: false, headerSort: false, formatter: actionFormatter, cssClass: "adm-col-actions" }
+
+        var columnDefs = [
+            { title: "", field: "profilePicturePath", width: 80, minWidth: 80, sorter: false, headerSort: false, formatter: entityFormatter, cssClass: "adm-col-entity" },
+            {
+                title: "App No", field: "applicationNo", width: 150, minWidth: 120, sorter: false, headerSort: false,
+                formatter: function (c) { return safeSpan(c.getValue(), 'entity-cell__code'); }
+            },
+            {
+                title: "Applicant Name", field: "applicantName", width: 220, minWidth: 160, sorter: false, headerSort: false,
+                formatter: function (c) { return safeSpan(c.getValue(), 'entity-cell__name'); }
+            },
+            {
+                title: "নাম (বাংলা)", field: "applicantNameBangla", width: 180, minWidth: 120, sorter: false, headerSort: false,
+                formatter: function (c) {
+                    var v = c.getValue();
+                    if (!v) return safeMuted();
+                    var el = document.createElement('span');
+                    el.className = 'adm-cell-bangla';
+                    el.setAttribute('lang', 'bn');
+                    el.textContent = v;
+                    return el;
+                }
+            },
+            {
+                title: "Age / DOB", field: "dateOfBirth", width: 130, minWidth: 110, sorter: false, headerSort: false,
+                formatter: function (c) {
+                    var el = document.createElement('span');
+                    el.className = 'adm-cell-dob';
+                    var strong = document.createElement('strong');
+                    strong.textContent = c.getRow().getData().age;
+                    el.appendChild(strong);
+                    el.appendChild(document.createTextNode(' yrs\n'));
+                    var dateSpan = document.createElement('span');
+                    dateSpan.className = 'adm-cell-dob__date';
+                    dateSpan.textContent = new Date(c.getValue()).toLocaleDateString('en-BD');
+                    el.appendChild(dateSpan);
+                    return el;
+                }
+            },
+            { title: "Gender", field: "gender", width: 90, minWidth: 80, sorter: false, headerSort: false, formatter: function (c) { return safeSpan(c.getValue(), 'adm-cell-gender'); } },
+            { title: "Class", field: "className", width: 140, minWidth: 120, sorter: false, headerSort: false },
+            {
+                title: "Phone", field: "applicantMobileNumber", width: 140, minWidth: 120, sorter: false, headerSort: false,
+                formatter: function (c) { return safeSpan(c.getValue(), 'adm-cell-phone'); }
+            },
+            {
+                title: "Guardian", field: "guardianName", width: 140, minWidth: 100, sorter: false, headerSort: false,
+                formatter: function (c) { var v = c.getValue(); return v ? safeSpan(v, 'fw-medium') : safeMuted(); }
+            },
+            {
+                title: "G. Phone", field: "guardianMobileNumber", width: 130, minWidth: 100, sorter: false, headerSort: false,
+                formatter: function (c) { return c.getValue() ? safeSpan(c.getValue(), 'adm-cell-phone') : safeMuted(); }
+            },
+            { title: "G. Email", field: "guardianEmail", width: 160, minWidth: 120, sorter: false, headerSort: false, formatter: function (c) { return c.getValue() ? safeSpan(c.getValue(), 'small') : safeMuted(); } },
+            {
+                title: "Linked ID", field: "linkedGuardianId", width: 100, minWidth: 80, sorter: false, headerSort: false,
+                formatter: function (c) {
+                    var v = c.getValue();
+                    if (!v) return safeMuted();
+                    var el = document.createElement('span');
+                    el.className = 'badge bg-info bg-opacity-10 text-info';
+                    el.textContent = '#' + v;
+                    return el;
+                }
+            },
+            { title: "Transaction ID", field: "transactionDetails", width: 150, minWidth: 120, sorter: false, headerSort: false, formatter: function (c) { var v = c.getValue(); return v ? safeSpan(v, 'adm-cell-mono') : safeMuted(); } },
+            { title: "Status", field: "status", width: 120, minWidth: 120, sorter: false, headerSort: false, formatter: statusFormatter, cssClass: "adm-col-status" },
+            { title: "", field: "id", width: 180, minWidth: 180, sorter: false, headerSort: false, formatter: actionFormatter, cssClass: "adm-col-actions" }
         ];
 
-        // ── Init Table ───────────────────────────────
         function initTable() {
-        table = new Tabulator("#admissionTable", {
-        ajaxURL: "/Admission/Index",
-        ajaxParams: function () {
-        return {
-        pageSize: 10,
-        search: currentSearchTerm,
-        classId: currentClassId,
-        status: currentStatus
-        };
-        },
-        // ← ADD THIS BLOCK
-        paginationDataReceived: {
-        "last_page": "last_page",
-        "last_row": "total_records",
-        "data": "data"
-        },
-        tableBuilt: function () {
-        attachPaginationFooter();
-        updateTableInfo(0, 0, currentTotalRecords);
-        },
-        ajaxResponse: function (url, params, response) {
-        var total = response.total_records || 0;
-        var pageSize = params.pageSize || 10;
-        currentPageSize = pageSize;
-        var lastPage = total > 0 ? Math.ceil(total / pageSize) : 1;
-        var currentPage = params.page || 1;
-        var startRow = total === 0 ? 0 : ((currentPage - 1) * pageSize) + 1;
-        var endRow = total === 0 ? 0 : Math.min(currentPage * pageSize, total);
-
-        currentTotalRecords = total;
-        updateTabCounts(response.counts || {});
-        updateFilterBadges();
-        updateTableInfo(startRow, endRow, total);
-
-        return {
-        data: response.data || [],
-        last_page: lastPage,
-        total_records: total
-        };
-        },
-        columns: columnDefs,
-        layout: "fitDataTable",
-        responsiveLayout: false,
-
-        pagination: true,
-        paginationMode: "remote",
-        paginationSize: 15,
-        paginationSizeSelector: [15,25,50,100],
-
-        paginationDataSent: {
-        page: "page",
-        size: "pageSize"
-        },
-
-        paginationInitialPage: 1,
-
-        // FIX HERE
-        paginationCounter: false
-        });
+            table = new Tabulator("#admissionTable", {
+                ajaxURL: "/Admission/Index",
+                ajaxParams: function () {
+                    return { pageSize: 10, search: currentSearchTerm, classId: currentClassId, status: currentStatus };
+                },
+                paginationDataReceived: { "last_page": "last_page", "last_row": "total_records", "data": "data" },
+                tableBuilt: function () { attachPaginationFooter(); updateTableInfo(0, 0, currentTotalRecords); },
+                ajaxResponse: function (url, params, response) {
+                    var total = response.total_records || 0;
+                    var pageSize = params.pageSize || 10;
+                    currentPageSize = pageSize;
+                    var lastPage = total > 0 ? Math.ceil(total / pageSize) : 1;
+                    var currentPage = params.page || 1;
+                    var startRow = total === 0 ? 0 : ((currentPage - 1) * pageSize) + 1;
+                    var endRow = total === 0 ? 0 : Math.min(currentPage * pageSize, total);
+                    currentTotalRecords = total;
+                    updateTabCounts(response.counts || {});
+                    updateFilterBadges();
+                    updateTableInfo(startRow, endRow, total);
+                    return { data: response.data || [], last_page: lastPage, total_records: total };
+                },
+                columns: columnDefs,
+                layout: "fitDataTable",
+                responsiveLayout: false,
+                pagination: true,
+                paginationMode: "remote",
+                paginationSize: 15,
+                paginationSizeSelector: [15,25,50,100],
+                paginationDataSent: { page: "page", size: "pageSize" },
+                paginationInitialPage: 1,
+                paginationCounter: false
+            });
         }
 
         function attachPaginationFooter() {
-        var footer = document.querySelector('#admissionTable .tabulator-footer');
-        var wrapper = document.getElementById('paginationWrapper');
-        if (!footer || !wrapper) return;
-        if (footer.parentElement !== wrapper) {
-        wrapper.innerHTML = '';
-        wrapper.appendChild(footer);
-        footer.classList.add('table-pagination');
-        }
+            var footer = document.querySelector('#admissionTable .tabulator-footer');
+            var wrapper = document.getElementById('paginationWrapper');
+            if (!footer || !wrapper) return;
+            if (footer.parentElement !== wrapper) {
+                wrapper.innerHTML = '';
+                wrapper.appendChild(footer);
+                footer.classList.add('table-pagination');
+            }
         }
 
         function updateTableInfo(startRow, endRow, totalRows) {
-        var info = document.getElementById('tableInfo');
-        if (!info) return;
-        if (!totalRows) {
-        info.textContent = 'No admissions found';
-        return;
-        }
-        info.innerHTML = 'Showing <strong>' + startRow + '</strong> to <strong>' + endRow + '</strong> of <strong>' + totalRows + '</strong> admissions';
+            var info = document.getElementById('tableInfo');
+            if (!info) return;
+            if (!totalRows) { info.textContent = 'No admissions found'; return; }
+            info.innerHTML = 'Showing <strong>' + startRow + '</strong> to <strong>' + endRow + '</strong> of <strong>' + totalRows + '</strong> admissions';
         }
 
-        // ── Reload ───────────────────────────────────
         function reloadTable() {
-        if (!table) return;
-        showLoadingOverlay(true);
-        table.setPage(1).then(function () {
-        table.replaceData().then(function () {
-        showLoadingOverlay(false);
-        }).catch(function () {
-        showLoadingOverlay(false);
-        });
-        });
+            if (!table) return;
+            showLoadingOverlay(true);
+            table.setPage(1).then(function () {
+                table.replaceData().then(function () { showLoadingOverlay(false); }).catch(function () { showLoadingOverlay(false); });
+            });
         }
 
         function showLoadingOverlay(show) {
-        var el = document.getElementById('loadingOverlay');
-        if (show) {
-        el.classList.remove('adm-loading--hidden');
-        el.classList.add('adm-loading--visible');
-        } else {
-        el.classList.remove('adm-loading--visible');
-        el.classList.add('adm-loading--hidden');
-        }
+            var el = document.getElementById('loadingOverlay');
+            if (show) { el.classList.remove('adm-loading--hidden'); el.classList.add('adm-loading--visible'); }
+            else { el.classList.remove('adm-loading--visible'); el.classList.add('adm-loading--hidden'); }
         }
 
-        // ── Tab Counts ───────────────────────────────
         function updateTabCounts(counts) {
-        var pending = counts.pending || counts.Pending || 0;
-        var converted = counts.converted || counts.Converted || 0;
-        var rejected = counts.rejected || counts.Rejected || 0;
-        var total = pending + converted + rejected;
-
-        document.getElementById('count-all').textContent = total;
-        document.getElementById('count-pending').textContent = pending;
-        document.getElementById('count-converted').textContent = converted;
-        document.getElementById('count-rejected').textContent = rejected;
+            var pending = counts.pending || counts.Pending || 0;
+            var converted = counts.converted || counts.Converted || 0;
+            var rejected = counts.rejected || counts.Rejected || 0;
+            var total = pending + converted + rejected;
+            document.getElementById('count-all').textContent = total;
+            document.getElementById('count-pending').textContent = pending;
+            document.getElementById('count-converted').textContent = converted;
+            document.getElementById('count-rejected').textContent = rejected;
         }
 
-        // ── Filter Badges ────────────────────────────
         function updateFilterBadges() {
-        var container = document.getElementById('filterBadges');
-        container.innerHTML = '';
-        if (currentStatus) {
-        var b = document.createElement('span');
-        b.className = 'adm-badge adm-badge--primary';
-        b.textContent = 'Status: ' + currentStatus;
-        container.appendChild(b);
-        }
-        if (currentClassId) {
-        var b = document.createElement('span');
-        b.className = 'adm-badge adm-badge--neutral';
-        b.textContent = 'Class: ' + $('#classFilter option:selected').text();
-        container.appendChild(b);
-        }
-        if (currentSearchTerm) {
-        var b = document.createElement('span');
-        b.className = 'adm-badge adm-badge--info';
-        b.textContent = 'Search: "' + currentSearchTerm + '"';
-        container.appendChild(b);
-        }
+            var container = document.getElementById('filterBadges');
+            container.innerHTML = '';
+            if (currentStatus) {
+                var b = document.createElement('span');
+                b.className = 'adm-badge adm-badge--primary';
+                b.textContent = 'Status: ' + currentStatus;
+                container.appendChild(b);
+            }
+            if (currentClassId) {
+                var b = document.createElement('span');
+                b.className = 'adm-badge adm-badge--neutral';
+                b.textContent = 'Class: ' + $('#classFilter option:selected').text();
+                container.appendChild(b);
+            }
+            if (currentSearchTerm) {
+                var b = document.createElement('span');
+                b.className = 'adm-badge adm-badge--info';
+                b.textContent = 'Search: "' + currentSearchTerm + '"';
+                container.appendChild(b);
+            }
         }
 
-        // ── Export Helpers ───────────────────────────
         function fetchAllFilteredRows() {
-        return $.ajax({
-        url: '/Admission/Index',
-        type: 'GET',
-        data: {
-        page: 1, pageSize: 99999,
-        search: currentSearchTerm,
-        classId: currentClassId,
-        status: currentStatus
-        }
-        }).then(function (res) {
-        return res.data || [];
-        });
+            return $.ajax({
+                url: '/Admission/Index', type: 'GET',
+                data: { page: 1, pageSize: 99999, search: currentSearchTerm, classId: currentClassId, status: currentStatus }
+            }).then(function (res) { return res.data || []; });
         }
 
         function buildExportRows(rows) {
-        var headers = ['App No', 'Applicant Name', 'নাম (বাংলা)', 'Age', 'DOB', 'Gender', 'Class', 'Phone', 'Status'];
-        var body = rows.map(function (r) {
-        var dob = r.dateOfBirth ? new Date(r.dateOfBirth).toLocaleDateString('en-BD') : '';
-        return [r.applicationNo || '', r.applicantName || '', r.applicantNameBangla || '', r.age || '', dob, r.gender || '', r.className || '', r.applicantMobileNumber || '', r.status || ''];
-        });
-        return { headers: headers, body: body };
+            var headers = ['App No', 'Applicant Name', 'নাম (বাংলা)', 'Age', 'DOB', 'Gender', 'Class', 'Phone', 'Status'];
+            var body = rows.map(function (r) {
+                var dob = r.dateOfBirth ? new Date(r.dateOfBirth).toLocaleDateString('en-BD') : '';
+                return [r.applicationNo || '', r.applicantName || '', r.applicantNameBangla || '', r.age || '', dob, r.gender || '', r.className || '', r.applicantMobileNumber || '', r.status || ''];
+            });
+            return { headers: headers, body: body };
         }
 
         function getExportTitle() {
-        var parts = ['Admissions'];
-        if (currentStatus) parts.push(currentStatus);
-        if (currentClassId) parts.push($('#classFilter option:selected').text());
-        if (currentSearchTerm) parts.push('"' + currentSearchTerm + '"');
-        return parts.join(' - ');
+            var parts = ['Admissions'];
+            if (currentStatus) parts.push(currentStatus);
+            if (currentClassId) parts.push($('#classFilter option:selected').text());
+            if (currentSearchTerm) parts.push('"' + currentSearchTerm + '"');
+            return parts.join(' - ');
         }
 
         function exportToExcel() {
-        $('#exportExcel').prop('disabled', true);
-        fetchAllFilteredRows().then(function (rows) {
-        var result = buildExportRows(rows);
-        var wsData = [result.headers].concat(result.body);
-        var wb = XLSX.utils.book_new();
-        var ws = XLSX.utils.aoa_to_sheet(wsData);
-        ws['!cols'] = [10, 30, 22, 8, 14, 10, 16, 18, 12].map(function (w) { return { wch: w }; });
-        XLSX.utils.book_append_sheet(wb, ws, getExportTitle().substring(0, 31));
-        XLSX.writeFile(wb, 'admissions_' + Date.now() + '.xlsx');
-        }).fail(function () { alert('Failed to fetch data for export.'); })
-        .always(function () { $('#exportExcel').prop('disabled', false); });
+            $('#exportExcel').prop('disabled', true);
+            fetchAllFilteredRows().then(function (rows) {
+                var result = buildExportRows(rows);
+                var wsData = [result.headers].concat(result.body);
+                var wb = XLSX.utils.book_new();
+                var ws = XLSX.utils.aoa_to_sheet(wsData);
+                ws['!cols'] = [10, 30, 22, 8, 14, 10, 16, 18, 12].map(function (w) { return { wch: w }; });
+                XLSX.utils.book_append_sheet(wb, ws, getExportTitle().substring(0, 31));
+                XLSX.writeFile(wb, 'admissions_' + Date.now() + '.xlsx');
+            }).fail(function () { alert('Failed to fetch data for export.'); })
+            .always(function () { $('#exportExcel').prop('disabled', false); });
         }
 
         function exportToPdf() {
-        $('#exportPdf').prop('disabled', true);
-        fetchAllFilteredRows().then(function (rows) {
-        var jsPDF = window.jspdf.jsPDF;
-        var doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
-        doc.setFontSize(14); doc.setFont('helvetica', 'bold');
-        doc.text(getExportTitle(), 14, 15);
-        doc.setFontSize(9); doc.setFont('helvetica', 'normal');
-        doc.text('Generated: ' + new Date().toLocaleString('en-BD') + '   Records: ' + rows.length, 14, 22);
-        var result = buildExportRows(rows);
-        doc.autoTable({
-        head: [result.headers], body: result.body, startY: 27, theme: 'grid',
-        styles: { fontSize: 8, cellPadding: 2 },
-        headStyles: { fillColor: [15, 118, 110], textColor: 255, fontStyle: 'bold' },
-        alternateRowStyles: { fillColor: [240, 253, 250] },
-        columnStyles: { 0: { cellWidth: 22 }, 1: { cellWidth: 40 }, 2: { cellWidth: 30 }, 3: { cellWidth: 12 }, 4: { cellWidth: 22 }, 5: { cellWidth: 18 }, 6: { cellWidth: 18 }, 7: { cellWidth: 28 }, 8: { cellWidth: 20 } }
-        });
-        var pc = doc.internal.getNumberOfPages();
-        for (var i = 1; i <= pc; i++) {
-        doc.setPage(i); doc.setFontSize(8);
-        doc.text('Page ' + i + ' of ' + pc, doc.internal.pageSize.getWidth() - 30, doc.internal.pageSize.getHeight() - 5);
-        }
-        doc.save('admissions_' + Date.now() + '.pdf');
-        }).fail(function () { alert('Failed to fetch data for export.'); })
-        .always(function () { $('#exportPdf').prop('disabled', false); });
+            $('#exportPdf').prop('disabled', true);
+            fetchAllFilteredRows().then(function (rows) {
+                var jsPDF = window.jspdf.jsPDF;
+                var doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+                doc.setFontSize(14); doc.setFont('helvetica', 'bold');
+                doc.text(getExportTitle(), 14, 15);
+                doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+                doc.text('Generated: ' + new Date().toLocaleString('en-BD') + '   Records: ' + rows.length, 14, 22);
+                var result = buildExportRows(rows);
+                doc.autoTable({
+                    head: [result.headers], body: result.body, startY: 27, theme: 'grid',
+                    styles: { fontSize: 8, cellPadding: 2 },
+                    headStyles: { fillColor: [15, 118, 110], textColor: 255, fontStyle: 'bold' },
+                    alternateRowStyles: { fillColor: [240, 253, 250] },
+                    columnStyles: { 0: { cellWidth: 22 }, 1: { cellWidth: 40 }, 2: { cellWidth: 30 }, 3: { cellWidth: 12 }, 4: { cellWidth: 22 }, 5: { cellWidth: 18 }, 6: { cellWidth: 18 }, 7: { cellWidth: 28 }, 8: { cellWidth: 20 } }
+                });
+                var pc = doc.internal.getNumberOfPages();
+                for (var i = 1; i <= pc; i++) {
+                    doc.setPage(i); doc.setFontSize(8);
+                    doc.text('Page ' + i + ' of ' + pc, doc.internal.pageSize.getWidth() - 30, doc.internal.pageSize.getHeight() - 5);
+                }
+                doc.save('admissions_' + Date.now() + '.pdf');
+            }).fail(function () { alert('Failed to fetch data for export.'); })
+            .always(function () { $('#exportPdf').prop('disabled', false); });
         }
 
-        // ── Approve Modal ────────────────────────────
         function openApproveModal(applicationId, classId) {
-        document.getElementById('approveApplicationId').value = applicationId;
-        var errEl = document.getElementById('approveError');
-        errEl.style.display = 'none'; errEl.textContent = '';
-        currentClassIdForSection = classId;
-        document.getElementById('sectionSelect').innerHTML = '<option value="">Loading sections...</option>';
-        document.getElementById('approveModal').style.display = 'flex';
-        document.body.style.overflow = 'hidden';
-        loadSectionsDropdown();
+            document.getElementById('approveApplicationId').value = applicationId;
+            var errEl = document.getElementById('approveError');
+            errEl.style.display = 'none'; errEl.textContent = '';
+            currentClassIdForSection = classId;
+            document.getElementById('sectionSelect').innerHTML = '<option value="">Loading sections...</option>';
+            document.getElementById('approveModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            loadSectionsDropdown();
         }
 
         function closeApproveModal() {
-        document.getElementById('approveModal').style.display = 'none';
-        document.body.style.overflow = '';
+            document.getElementById('approveModal').style.display = 'none';
+            document.body.style.overflow = '';
         }
 
-        document.addEventListener('click', function (e) {
-        if (e.target.id === 'approveModal') closeApproveModal();
-        });
+        document.addEventListener('click', function (e) { if (e.target.id === 'approveModal') closeApproveModal(); });
 
         function getIsGroupBased(classId) {
             var opt = document.querySelector('#classFilter option[value="' + classId + '"]');
@@ -615,158 +566,147 @@
         }
 
         function loadSectionsDropdown() {
-        var classId = currentClassIdForSection;
-        var sel = document.getElementById('sectionSelect');
-        sel.innerHTML = '<option value="">Loading sections...</option>';
-        document.getElementById('sectionCapacityInfo').style.display = 'none';
-        document.getElementById('addSectionBtn').style.display = getIsGroupBased(classId) ? 'flex' : 'none';
+            var classId = currentClassIdForSection;
+            var sel = document.getElementById('sectionSelect');
+            sel.innerHTML = '<option value="">Loading sections...</option>';
+            document.getElementById('sectionCapacityInfo').style.display = 'none';
+            document.getElementById('addSectionBtn').style.display = getIsGroupBased(classId) ? 'flex' : 'none';
 
-        $.get('/Admission/GetClassSections?classId=' + classId, function (data) {
-        loadedSectionData = data;
-        sel.innerHTML = '';
-        if (!data || data.length === 0) { sel.innerHTML = '<option value="">No sections available</option>'; return; }
+            $.get('/Admission/GetClassSections?classId=' + classId, function (data) {
+                loadedSectionData = data;
+                sel.innerHTML = '';
+                if (!data || data.length === 0) { sel.innerHTML = '<option value="">No sections available</option>'; return; }
 
-        var isGrouped = data.some(function (s) { return s.groupName && s.groupName !== ''; });
-        if (isGrouped) {
-        sel.innerHTML = '<option value="">-- Select Group / Section --</option>';
-        var groups = {};
-        data.forEach(function (s) {
-        if (!groups[s.groupName]) groups[s.groupName] = [];
-        groups[s.groupName].push(s);
-        });
-        Object.keys(groups).forEach(function (gn) {
-        var og = document.createElement('optgroup'); og.label = gn;
-        groups[gn].forEach(function (s) {
-        var o = document.createElement('option'); o.value = s.id; o.textContent = s.displayName;
-        if (s.isFull) { o.disabled = true; o.style.color = '#dc3545'; }
-        og.appendChild(o);
-        });
-        sel.appendChild(og);
-        });
-        } else {
-        sel.innerHTML = '<option value="">-- Select Section --</option>';
-        data.forEach(function (s) {
-        var o = document.createElement('option'); o.value = s.id; o.textContent = s.displayName;
-        if (s.isFull) { o.disabled = true; o.style.color = '#dc3545'; }
-        sel.appendChild(o);
-        });
-        }
+                var isGrouped = data.some(function (s) { return s.groupName && s.groupName !== ''; });
+                if (isGrouped) {
+                    sel.innerHTML = '<option value="">-- Select Group / Section --</option>';
+                    var groups = {};
+                    data.forEach(function (s) {
+                        if (!groups[s.groupName]) groups[s.groupName] = [];
+                        groups[s.groupName].push(s);
+                    });
+                    Object.keys(groups).forEach(function (gn) {
+                        var og = document.createElement('optgroup'); og.label = gn;
+                        groups[gn].forEach(function (s) {
+                            var o = document.createElement('option'); o.value = s.id; o.textContent = s.displayName;
+                            if (s.isFull) { o.disabled = true; o.style.color = '#dc3545'; }
+                            og.appendChild(o);
+                        });
+                        sel.appendChild(og);
+                    });
+                } else {
+                    sel.innerHTML = '<option value="">-- Select Section --</option>';
+                    data.forEach(function (s) {
+                        var o = document.createElement('option'); o.value = s.id; o.textContent = s.displayName;
+                        if (s.isFull) { o.disabled = true; o.style.color = '#dc3545'; }
+                        sel.appendChild(o);
+                    });
+                }
 
-        $(sel).off('change.capacity').on('change.capacity', function () {
-        var sec = data.find(function (s) { return s.id == $(this).val(); });
-        if (sec) {
-        var free = sec.capacity - sec.studentCount;
-        document.getElementById('capacityInfoText').textContent =
-        sec.studentCount + ' / ' + sec.capacity + ' students assigned — ' + free + ' spot(s) remaining.';
-        document.getElementById('sectionCapacityInfo').style.display = 'flex';
-        } else {
-        document.getElementById('sectionCapacityInfo').style.display = 'none';
-        }
-        });
-        }).fail(function () { sel.innerHTML = '<option value="">Failed to load sections</option>'; });
+                $(sel).off('change.capacity').on('change.capacity', function () {
+                    var sec = data.find(function (s) { return s.id == $(this).val(); });
+                    if (sec) {
+                        var free = sec.capacity - sec.studentCount;
+                        document.getElementById('capacityInfoText').textContent = sec.studentCount + ' / ' + sec.capacity + ' students assigned — ' + free + ' spot(s) remaining.';
+                        document.getElementById('sectionCapacityInfo').style.display = 'flex';
+                    } else {
+                        document.getElementById('sectionCapacityInfo').style.display = 'none';
+                    }
+                });
+            }).fail(function () { sel.innerHTML = '<option value="">Failed to load sections</option>'; });
         }
 
         function confirmApprove() {
-        var sectionId = document.getElementById('sectionSelect').value;
-        if (!sectionId) {
-        var errEl = document.getElementById('approveError');
-        errEl.textContent = 'Please select a section.'; errEl.style.display = 'block'; return;
-        }
-        var applicationId = document.getElementById('approveApplicationId').value;
-        var btn = document.getElementById('confirmApproveBtn');
-        btn.disabled = true;
-        btn.innerHTML = '<span class="adm-btn__spinner"></span> Converting...';
+            var sectionId = document.getElementById('sectionSelect').value;
+            if (!sectionId) {
+                var errEl = document.getElementById('approveError');
+                errEl.textContent = 'Please select a section.'; errEl.style.display = 'block'; return;
+            }
+            var applicationId = document.getElementById('approveApplicationId').value;
+            var btn = document.getElementById('confirmApproveBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="adm-btn__spinner"></span> Converting...';
 
-        $.ajax({
-        url: '/Admission/Approve', type: 'POST', contentType: 'application/json',
-        data: JSON.stringify({ id: parseInt(applicationId), sectionId: parseInt(sectionId) }),
-        success: function (res) {
-        btn.disabled = false;
-        btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Convert to Student';
-        if (res.success) { closeApproveModal(); alert(res.message || 'Student created successfully!'); reloadTable(); }
-        else { var e = document.getElementById('approveError'); e.textContent = res.message || 'Failed to convert.'; e.style.display = 'block'; }
-        },
-        error: function (xhr) {
-        btn.disabled = false;
-        btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Convert to Student';
-        var msg = 'Error: ' + xhr.status;
-        try { msg = JSON.parse(xhr.responseText).message || msg; } catch (e) { }
-        var el = document.getElementById('approveError'); el.textContent = msg; el.style.display = 'block';
-        }
-        });
+            $.ajax({
+                url: '/Admission/Approve', type: 'POST', contentType: 'application/json',
+                data: JSON.stringify({ id: parseInt(applicationId), sectionId: parseInt(sectionId) }),
+                success: function (res) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Convert to Student';
+                    if (res.success) { closeApproveModal(); alert(res.message || 'Student created successfully!'); reloadTable(); }
+                    else { var errEl = document.getElementById('approveError'); errEl.textContent = res.message || 'Conversion failed.'; errEl.style.display = 'block'; }
+                },
+                error: function () {
+                    btn.disabled = false;
+                    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Convert to Student';
+                    var errEl = document.getElementById('approveError');
+                    errEl.textContent = 'Network error. Please try again.'; errEl.style.display = 'block';
+                }
+            });
         }
 
         function rejectItem(id) {
-        if (!confirm('Are you sure you want to reject this admission?')) return;
-        $.post('/Admission/Reject/' + id, function (res) {
-        if (res.success) { alert(res.message || 'Admission rejected'); reloadTable(); }
-        else { alert('Error: ' + (res.message || 'Unknown error')); }
-        }).fail(function () { alert('Network error while rejecting admission'); });
+            if (!confirm('Reject this application? This action cannot be undone.')) return;
+            $.ajax({
+                url: '/Admission/Reject/' + id, type: 'POST',
+                success: function (res) { if (res.success) reloadTable(); else alert(res.message || 'Rejection failed.'); },
+                error: function () { alert('Network error.'); }
+            });
         }
 
         function promptCreateSection() {
-        var groups = {};
-        loadedSectionData.forEach(function (s) { if (s.groupName && !groups[s.groupName]) groups[s.groupName] = s.parentSectionId; });
-        var groupNames = Object.keys(groups);
-        if (groupNames.length === 0) { alert('No groups found. Please create a group in Section Management first.'); return; }
-        var groupList = groupNames.map(function (g, i) { return (i + 1) + '. ' + g; }).join('\n');
-        var pick = prompt('Which group?\n' + groupList + '\n\nEnter group number:');
-        if (!pick || isNaN(pick) || pick < 1 || pick > groupNames.length) return;
-        var chosenGroupName = groupNames[parseInt(pick) - 1];
-        var parentId = groups[chosenGroupName];
-        var subName = prompt('Sub-section name for ' + chosenGroupName + ' (e.g. "C"):');
-        if (!subName || subName.trim() === '') return;
-        $.post('/Admission/CreateSectionAjax',
-        { schoolClassId: currentClassIdForSection, name: chosenGroupName + ' ' + subName.trim(), parentSectionId: parentId },
-        function (res) {
-        if (res.success) { loadSectionsDropdown(); alert('Sub-section created.'); }
-        else { alert(res.message || 'Failed to create section.'); }
-        }
-        ).fail(function () { alert('An error occurred.'); });
+            var name = prompt('Enter new section name:');
+            if (name && name.trim()) {
+                $.ajax({
+                    url: '/Admission/CreateSectionAjax', type: 'POST',
+                    data: { schoolClassId: currentClassIdForSection, name: name.trim() },
+                    success: function (res) { if (res.success) loadSectionsDropdown(); else alert(res.message); },
+                    error: function () { alert('Failed to create section.'); }
+                });
+            }
         }
 
-        // ── Event Listeners ──────────────────────────
         $(document).ready(function () {
-        initTable();
+            initTable();
 
-        $('#searchBtn').click(function () {
-        currentSearchTerm = $('#searchInput').val().trim();
-        reloadTable();
-        });
-        $('#searchInput').keypress(function (e) {
-        if (e.which === 13) { e.preventDefault(); $('#searchBtn').click(); }
-        });
+            $('#searchBtn').click(function () {
+                currentSearchTerm = $('#searchInput').val();
+                reloadTable();
+            });
 
-        $('#classFilter').change(function () {
-        currentClassId = $(this).val() || '';
-        reloadTable();
-        });
+            $('#searchInput').keypress(function (e) { if (e.which === 13) $('#searchBtn').click(); });
 
-        $('#statusFilter').change(function () {
-        currentStatus = $(this).val() || '';
-        syncTabsToStatus(currentStatus);
-        reloadTable();
-        });
+            $('#classFilter').change(function () {
+                currentClassId = $(this).val();
+                reloadTable();
+            });
 
-        $('#statusTabs .adm-tab').click(function () {
-        $('#statusTabs .adm-tab').removeClass('adm-tab--active');
-        $(this).addClass('adm-tab--active');
-        currentStatus = $(this).data('status') || '';
-        $('#statusFilter').val(currentStatus);
-        reloadTable();
-        });
+            $('#statusFilter').change(function () {
+                currentStatus = $(this).val();
+                $('.adm-tab').removeClass('adm-tab--active');
+                var tabId = currentStatus ? 'tab-' + currentStatus.toLowerCase() : 'tab-all';
+                $('#' + tabId).addClass('adm-tab--active');
+                reloadTable();
+            });
 
-        $('#refreshBtn').click(function () { reloadTable(); });
-        $('#exportExcel').click(function () { exportToExcel(); });
-        $('#exportPdf').click(function () { exportToPdf(); });
-        });
+            $('.adm-tab').click(function () {
+                $('.adm-tab').removeClass('adm-tab--active');
+                $(this).addClass('adm-tab--active');
+                currentStatus = $(this).data('status') || '';
+                $('#statusFilter').val(currentStatus);
+                reloadTable();
+            });
 
-        function syncTabsToStatus(status) {
-        $('#statusTabs .adm-tab').removeClass('adm-tab--active');
-        var match = $('#statusTabs .adm-tab[data-status="' + status + '"]');
-        if (match.length) match.addClass('adm-tab--active');
-        else $('#tab-all').addClass('adm-tab--active');
-        }
+            $('#refreshBtn').click(function () {
+                $('#searchInput').val(''); $('#classFilter').val(''); $('#statusFilter').val('');
+                currentSearchTerm = ''; currentClassId = ''; currentStatus = '';
+                $('.adm-tab').removeClass('adm-tab--active');
+                $('#tab-all').addClass('adm-tab--active');
+                reloadTable();
+            });
+
+            $('#exportExcel').click(exportToExcel);
+            $('#exportPdf').click(exportToPdf);
+        });
     </script>
-
 }

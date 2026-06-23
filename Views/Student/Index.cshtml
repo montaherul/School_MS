@@ -7,97 +7,49 @@
 
 <div class="adm-page">
 
-    <!-- ALERTS -->
     @if (TempData["SuccessMessage"] != null)
     {
         <div class="adm-alert adm-alert--success mb-3">
-
             <i class="bi bi-check-circle-fill me-2"></i>
-
             @TempData["SuccessMessage"]
-
         </div>
     }
 
     @if (TempData["ErrorMessage"] != null)
     {
         <div class="adm-alert adm-alert--error mb-3">
-
             <i class="bi bi-exclamation-triangle-fill me-2"></i>
-
             @TempData["ErrorMessage"]
-
         </div>
     }
 
-    <!-- HEADER -->
     <div class="adm-header">
-
         <div class="adm-header__left">
-
             <div class="adm-header__icon-wrap">
-
                 <i class="bi bi-person-lines-fill"></i>
-
             </div>
-
             <div>
-
-                <h1 class="adm-header__title">
-                    Student Management
-                </h1>
-
-                <p class="adm-header__sub">
-                    Manage students, academic records and sections
-                </p>
-
+                <h1 class="adm-header__title">Student Management</h1>
+                <p class="adm-header__sub">Manage students, academic records and sections</p>
             </div>
-
         </div>
-
-        <a href="/Student/CreateEdit"
-           class="adm-btn adm-btn--primary">
-
+        <a href="/Student/CreateEdit" class="adm-btn adm-btn--primary">
             <i class="bi bi-person-plus-fill"></i>
-
             <span>Add Student</span>
-
         </a>
-
     </div>
 
-    <!-- FILTERS -->
     <div class="adm-filters mb-3">
-
         <div class="adm-filters__row">
-
-            <!-- SEARCH -->
             <div class="adm-filters__field adm-filters__field--search">
-
-                <label class="adm-label">
-                    Search
-                </label>
-
+                <label class="adm-label">Search</label>
                 <div class="adm-input-wrap">
-
                     <i class="bi bi-search adm-input-wrap__icon"></i>
-
-                    <input type="text"
-                           id="table-search"
-                           class="adm-input"
-                           placeholder="Search by student name, ID or mobile..." />
-
+                    <input type="text" id="table-search" class="adm-input" placeholder="Search by student name, ID or mobile..." />
                 </div>
-
             </div>
-
-            <!-- CLASS -->
             <div class="adm-filters__field">
-
-                <label class="adm-label">
-                    Class
-                </label>
-
+                <label class="adm-label">Class</label>
                 <select id="classFilter" class="adm-select">
                     <option value="">All Classes</option>
                     @if (Model.Classes != null)
@@ -108,131 +60,56 @@
                         }
                     }
                 </select>
-
             </div>
-
-            <!-- SECTION -->
             <div class="adm-filters__field">
-
-                <label class="adm-label">
-                    Section
-                </label>
-
-                <select id="sectionFilter"
-                        class="adm-select">
-
-                    <option value="">
-                        All Sections
-                    </option>
-
+                <label class="adm-label">Section</label>
+                <select id="sectionFilter" class="adm-select">
+                    <option value="">All Sections</option>
                 </select>
-
             </div>
-
-            <!-- RESET -->
             <div class="adm-filters__field adm-filters__field--actions">
-
-                <label class="adm-label">
-                    Action
-                </label>
-
-                <button id="btn-reset"
-                        class="adm-btn adm-btn--ghost">
-
-                    Reset Filters
-
-                </button>
-
+                <label class="adm-label">Action</label>
+                <button id="btn-reset" class="adm-btn adm-btn--ghost">Reset Filters</button>
             </div>
-
         </div>
-
     </div>
 
-    <!-- TABLE -->
     <div class="adm-table-card">
-
         <div class="adm-table-card__body">
-
             <div id="data-table"></div>
-
         </div>
-
     </div>
 
 </div>
 
 <div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer" style="z-index:1060;"></div>
 
-<!-- DELETE MODAL -->
-<div class="adm-modal-backdrop d-none"
-     id="deleteModalBackdrop">
-
+<div class="adm-modal-backdrop d-none" id="deleteModalBackdrop">
     <div class="adm-modal">
-
         <div class="adm-modal__header">
-
             <div class="adm-modal__header-left">
-
                 <div class="adm-modal__header-icon adm-modal__header-icon--danger">
-
                     <i class="bi bi-trash"></i>
-
                 </div>
-
                 <div>
-
-                    <h5 class="adm-modal__title">
-                        Confirm Delete
-                    </h5>
-
-                    <p class="adm-modal__subtitle">
-                        This action cannot be undone
-                    </p>
-
+                    <h5 class="adm-modal__title">Confirm Delete</h5>
+                    <p class="adm-modal__subtitle">This action cannot be undone</p>
                 </div>
-
             </div>
-
-            <button type="button"
-                    class="adm-modal__close"
-                    id="closeDeleteModal">
-
+            <button type="button" class="adm-modal__close" id="closeDeleteModal">
                 <i class="bi bi-x-lg"></i>
-
             </button>
-
         </div>
-
         <div class="adm-modal__body">
-
-            Are you sure you want to delete
-            <strong id="deleteName"></strong>?
-
+            Are you sure you want to delete <strong id="deleteName"></strong>?
         </div>
-
         <div class="adm-modal__footer">
-
-            <button class="adm-btn adm-btn--ghost"
-                    id="cancelDeleteBtn">
-
-                Cancel
-
+            <button class="adm-btn adm-btn--ghost" id="cancelDeleteBtn">Cancel</button>
+            <button class="adm-btn adm-btn--danger" id="confirmDeleteBtn">
+                <i class="bi bi-trash"></i> Delete
             </button>
-
-            <button class="adm-btn adm-btn--danger"
-                    id="confirmDeleteBtn">
-
-                <i class="bi bi-trash"></i>
-
-                Delete
-
-            </button>
-
         </div>
-
     </div>
-
 </div>
 
 @section Scripts {
@@ -271,16 +148,29 @@
         document.getElementById('closeDeleteModal').addEventListener('click', closeDeleteModal);
         document.getElementById('cancelDeleteBtn').addEventListener('click', closeDeleteModal);
 
-        // TABULATOR
+        function getAvatarHtml(src, name) {
+            if (src) {
+                return '<div class="entity-avatar entity-avatar--primary"><img src="' + src + '" alt="" /></div>';
+            }
+            var initials = (name || 'S').substring(0, 2).toUpperCase();
+            return '<div class="entity-avatar entity-avatar--primary"><span class="entity-avatar__initials">' + initials + '</span></div>';
+        }
+
+        function getStatusHtml(value) {
+            var cls = value === "Active" ? "adm-status--approved" : "adm-status--neutral";
+            return '<span class="adm-status ' + cls + '">' + value + '</span>';
+        }
+
         const table = new Tabulator("#data-table", {
             height: "calc(100vh - 250px)",
             layout: "fitColumns",
             responsiveLayout: "collapse",
             pagination: true,
             paginationMode: "remote",
+            paginationSize: 15,
+            paginationSizeSelector: [15,25,50,100],
             ajaxURL: '@Url.Action("GetList", "Student")',
-            paginationSize: 10,
-            ajaxParams: function() { return getFilters(); },
+            ajaxParams: function () { return getFilters(); },
             ajaxResponse: function (url, params, response) {
                 if (response.error) {
                     console.error("Student list error:", response.error);
@@ -295,12 +185,7 @@
                 console.error("Student list AJAX error:", textStatus, errorThrown);
                 showToast("Failed to load student data: " + textStatus, 'error');
             },
-            placeholder: `
-                <div class='dash-empty'>
-                    <i class='bi bi-people fs-1'></i>
-                    <div class='dash-empty__title'>No Students Found</div>
-                    <div class='dash-empty__sub'>Try adjusting your filters or search.</div>
-                </div>`,
+            placeholder: "<div class='dash-empty'><i class='bi bi-people fs-1'></i><div class='dash-empty__title'>No Students Found</div><div class='dash-empty__sub'>Try adjusting your filters or search.</div></div>",
             columns: [
                 {
                     formatter: function (cell) {
@@ -308,10 +193,10 @@
                     },
                     width: 50, hozAlign: "center", headerSort: false,
                     cellClick: function (e, cell) {
-                        const row = cell.getRow();
-                        const data = row.getData();
-                        const element = row.getElement();
-                        const existing = element.querySelector('.student-row-details');
+                        var row = cell.getRow();
+                        var data = row.getData();
+                        var element = row.getElement();
+                        var existing = element.querySelector('.student-row-details');
 
                         if (existing) {
                             existing.remove();
@@ -319,84 +204,50 @@
                             return;
                         }
 
-                        const details = document.createElement('div');
+                        var details = document.createElement('div');
                         details.className = 'student-row-details';
-                        details.innerHTML = `
-                            <div class="adm-table-card m-3">
-                                <div class="p-4">
-                                    <div class="row g-4">
-                                        <div class="col-lg-4">
-                                            <div class="d-flex gap-3">
-                                                <div class="adm-avatar adm-avatar--xl">
-                                                    <img src="${data.profilePicturePath || '/images/default-user.png'}" />
-                                                </div>
-                                                <div>
-                                                    <h5 class="fw-bold mb-1">${data.fullName}</h5>
-                                                    <div class="adm-cell-mono mb-2">${data.studentNo}</div>
-                                                    <span class="adm-status adm-status--approved">${data.className} - ${data.sectionName}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="col-lg-4">
-                                            <h6 class="fw-bold mb-3">Family Information</h6>
-                                            <div class="small">
-                                                <div><strong>Father:</strong> ${data.fatherName || 'N/A'}</div>
-                                                <div><strong>Mother:</strong> ${data.motherName || 'N/A'}</div>
-                                                <div><strong>Guardian Mobile:</strong> ${data.fatherOrGuardianMobileNo || 'N/A'}</div>
-                                            </div>
-                                        </div>
-                                        <div class="col-lg-4">
-                                            <h6 class="fw-bold mb-3">Contact Information</h6>
-                                            <div class="small">
-                                                <div><strong>Mobile:</strong> ${data.mobileNumber || 'N/A'}</div>
-                                                <div><strong>Email:</strong> ${data.emailAddress || 'N/A'}</div>
-                                                <div><strong>Blood Group:</strong> ${data.bloodGroup || 'N/A'}</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>`;
+                        details.innerHTML = '<div class="adm-table-card m-3"><div class="p-4"><div class="row g-4"><div class="col-lg-4"><div class="d-flex gap-3"><div class="entity-avatar entity-avatar--primary"><img src="' + (data.profilePicturePath || '/images/default-user.png') + '" /></div><div><h5 class="fw-bold mb-1">' + data.fullName + '</h5><div class="entity-cell__code mb-2">' + data.studentNo + '</div><span class="adm-status adm-status--approved">' + data.className + ' - ' + data.sectionName + '</span></div></div></div><div class="col-lg-4"><h6 class="fw-bold mb-3">Family Information</h6><div class="small"><div><strong>Father:</strong> ' + (data.fatherName || 'N/A') + '</div><div><strong>Mother:</strong> ' + (data.motherName || 'N/A') + '</div><div><strong>Guardian Mobile:</strong> ' + (data.fatherOrGuardianMobileNo || 'N/A') + '</div></div></div><div class="col-lg-4"><h6 class="fw-bold mb-3">Contact Information</h6><div class="small"><div><strong>Mobile:</strong> ' + (data.mobileNumber || 'N/A') + '</div><div><strong>Email:</strong> ' + (data.emailAddress || 'N/A') + '</div><div><strong>Blood Group:</strong> ' + (data.bloodGroup || 'N/A') + '</div></div></div></div></div></div>';
                         element.appendChild(details);
                         cell.getElement().querySelector('i').classList.replace('bi-plus-circle', 'bi-dash-circle');
                     }
                 },
                 {
-                    title: "Photo", field: "profilePicturePath", width: 70, hozAlign: "center",
+                    title: "Photo", field: "profilePicturePath", width: 80, hozAlign: "center", headerSort: false,
                     formatter: function (cell) {
-                        return `<div class="adm-avatar"><img src="${cell.getValue() || '/images/default-user.png'}" /></div>`;
+                        return getAvatarHtml(cell.getValue(), cell.getRow().getData().fullName);
                     }
                 },
-                { 
-                    title: "Student No", field: "studentNo", 
-                    formatter: (cell) => `<span class="adm-cell-mono">${cell.getValue()}</span>` 
+                {
+                    title: "Student No", field: "studentNo", width: 140,
+                    formatter: function (cell) { return '<span class="entity-cell__code">' + cell.getValue() + '</span>'; }
                 },
-                { 
-                    title: "Name", field: "fullName", 
-                    formatter: (cell) => `<span class="adm-cell-name">${cell.getValue()}</span>` 
+                {
+                    title: "Name", field: "fullName", widthGrow: 2, minWidth: 200,
+                    formatter: function (cell) {
+                        var d = cell.getData();
+                        var avatar = getAvatarHtml(d.profilePicturePath, d.fullName);
+                        var name = '<span class="entity-cell__name">' + (d.fullName || '-') + '</span>';
+                        var code = '<span class="entity-cell__code">' + (d.studentNo || '-') + '</span>';
+                        return '<div class="entity-cell">' + avatar + '<div class="entity-cell__identity">' + name + code + '</div></div>';
+                    }
                 },
-                { title: "Class", field: "className" },
-                { title: "Section", field: "sectionName" },
+                { title: "Class", field: "className", minWidth: 120 },
+                { title: "Section", field: "sectionName", minWidth: 120 },
                 { title: "Roll", field: "rollNumber", width: 80 },
                 {
-                    title: "Status", field: "status", hozAlign: "center",
-                    formatter: function (cell) {
-                        const val = cell.getValue();
-                        const cls = val === "Active" ? "adm-status--approved" : "adm-status--neutral";
-                        return `<span class="adm-status ${cls}">${val}</span>`;
-                    }
+                    title: "Status", field: "status", hozAlign: "center", cssClass: "adm-col-status",
+                    formatter: function (cell) { return getStatusHtml(cell.getValue()); }
                 },
                 {
-                    title: "Actions", width: 150, hozAlign: "center", headerSort: false,
+                    title: "Actions", hozAlign: "center", headerSort: false,
+                    cssClass: "adm-col-actions", width: 160, minWidth: 160,
                     formatter: function (cell) {
-                        const d = cell.getRow().getData();
-                        return `
-                            <div class="actions-cell">
-                                <a href="/Student/Details/${d.studentNo}" class="adm-action"><i class="bi bi-eye"></i></a>
-                                <a href="/Student/CreateEdit/${d.id}" class="adm-action adm-action--edit"><i class="bi bi-pencil"></i></a>
-                                <button class="adm-action adm-action--reject delete-btn" data-id="${d.id}" data-name="${d.fullName}">
-                                    <i class="bi bi-trash"></i>
-                                </button>
-                            </div>`;
+                        var d = cell.getRow().getData();
+                        return '<div class="action-group">' +
+                            '<a href="/Student/Details/' + d.studentNo + '" class="action-btn action-btn--view" title="View"><i class="bi bi-eye"></i></a>' +
+                            '<a href="/Student/CreateEdit/' + d.id + '" class="action-btn action-btn--edit" title="Edit"><i class="bi bi-pencil"></i></a>' +
+                            '<button class="action-btn action-btn--delete delete-btn" data-id="' + d.id + '" data-name="' + d.fullName + '" title="Delete"><i class="bi bi-trash"></i></button>' +
+                            '</div>';
                     }
                 }
             ]
@@ -410,23 +261,19 @@
             };
         }
 
-        function reloadTable() {
-            table.setData();
-        }
+        function reloadTable() { table.setData(); }
 
-        // Event Listeners
-        searchInput.addEventListener('keyup', (e) => { if (e.key === "Enter") reloadTable(); });
-        
-        classFilter.addEventListener('change', async function() {
-            const classId = this.value;
+        searchInput.addEventListener('keyup', function (e) { if (e.key === "Enter") reloadTable(); });
+
+        classFilter.addEventListener('change', async function () {
+            var classId = this.value;
             sectionFilter.innerHTML = '<option value="">All Sections</option>';
-            
             if (classId) {
                 try {
-                    const res = await fetch('@Url.Action("GetSectionsByClass", "Section")?classId=' + classId);
-                    const sections = await res.json();
-                    sections.forEach(s => {
-                        sectionFilter.innerHTML += `<option value="${s.id}">${s.name}</option>`;
+                    var res = await fetch('@Url.Action("GetSectionsByClass", "Section")?classId=' + classId);
+                    var sections = await res.json();
+                    sections.forEach(function (s) {
+                        sectionFilter.innerHTML += '<option value="' + s.id + '">' + s.name + '</option>';
                     });
                 } catch (e) { console.error("Error loading sections:", e); }
             }
@@ -435,26 +282,25 @@
 
         sectionFilter.addEventListener('change', reloadTable);
 
-        document.getElementById('btn-reset').addEventListener('click', () => {
+        document.getElementById('btn-reset').addEventListener('click', function () {
             searchInput.value = "";
             classFilter.value = "";
             sectionFilter.innerHTML = '<option value="">All Sections</option>';
             reloadTable();
         });
 
-        // Delete Logic
-        document.addEventListener('click', (e) => {
-            const btn = e.target.closest('.delete-btn');
+        document.addEventListener('click', function (e) {
+            var btn = e.target.closest('.delete-btn');
             if (btn) openDeleteModal(btn.dataset.name, btn.dataset.id);
         });
 
-        document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
+        document.getElementById('confirmDeleteBtn').addEventListener('click', async function () {
             if (!pendingDeleteId) return;
-            const res = await fetch('@Url.Action("DeleteConfirmed", "Student")/' + pendingDeleteId, {
+            var res = await fetch('@Url.Action("DeleteConfirmed", "Student")/' + pendingDeleteId, {
                 method: "POST",
                 headers: { "RequestVerificationToken": document.querySelector('input[name="__RequestVerificationToken"]').value }
             });
-            const data = await res.json();
+            var data = await res.json();
             closeDeleteModal();
             if (data.success) reloadTable();
             else showToast(data.message, 'error');

@@ -81,6 +81,13 @@ public class TranscriptService : ITranscriptService
             FinalGPA = (finalResult?.FinalGpa) ?? (examResults.Any() ? examResults.Average(r => r.Gpa) : 0),
             FinalGrade = finalResult?.FinalGrade ?? "",
             MeritPosition = finalResult?.FinalPosition ?? 0,
+            FinalClassPosition = finalResult?.FinalClassPosition ?? 0,
+            FinalSectionPosition = finalResult?.FinalSectionPosition ?? 0,
+            FinalGroupPosition = finalResult?.FinalGroupPosition ?? 0,
+            WeightedTotalMarks = finalResult?.WeightedTotalMarks ?? 0,
+            TotalPassedSubjects = finalResult?.TotalPassedSubjects ?? 0,
+            TotalFailedSubjects = finalResult?.TotalFailedSubjects ?? 0,
+            AttendancePercentage = finalResult?.AttendancePercentage ?? 0,
             ExamResults = examResults.Select(r => new StudentExamResultDto
             {
                 ExamId = r.ExamId,

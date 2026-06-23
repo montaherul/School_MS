@@ -5,6 +5,7 @@ CREATE OR ALTER PROCEDURE [dbo].[sp_GetResultList]
     @StudentGroupId INT = NULL,
     @Status INT = NULL,
     @SearchTerm NVARCHAR(100) = NULL,
+    @AcademicYearId INT = NULL,
     @PageNumber INT = 1,
     @PageSize INT = 20
 AS
@@ -13,8 +14,7 @@ BEGIN
 
     DECLARE @Offset INT = (@PageNumber - 1) * @PageSize;
 
-    -- TotalCount is now computed via window function in main query
-
+    -- Result Set 1: Paged Data
     SELECT 
         ser.Id,
         ser.ExamId,
@@ -41,8 +41,7 @@ BEGIN
         ser.FailedSubjectCount,
         ser.PassedSubjectCount,
         ser.Status,
-        ser.PublishedAt,
-        COUNT(*) OVER () AS TotalCount
+        ser.PublishedAt
     FROM StudentExamResults ser
     INNER JOIN Students s ON ser.StudentId = s.Id
     INNER JOIN Exams e ON ser.ExamId = e.Id
@@ -55,8 +54,26 @@ BEGIN
       AND (@SectionId IS NULL OR s.SectionId = @SectionId)
       AND (@StudentGroupId IS NULL OR s.StudentGroupId = @StudentGroupId)
       AND (@Status IS NULL OR ser.Status = @Status)
+      AND (@AcademicYearId IS NULL OR e.AcademicYearId = @AcademicYearId)
       AND (@SearchTerm IS NULL OR s.FullName LIKE '%' + @SearchTerm + '%' OR s.StudentNo LIKE '%' + @SearchTerm + '%' OR s.RollNumber LIKE '%' + @SearchTerm + '%')
     ORDER BY s.ClassId, s.RollNumber, ser.Id
     OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
+
+    -- Result Set 2: Total Record Count
+    SELECT COUNT(*) AS TotalCount
+    FROM StudentExamResults ser
+    INNER JOIN Students s ON ser.StudentId = s.Id
+    INNER JOIN Exams e ON ser.ExamId = e.Id
+    INNER JOIN Classes cl ON s.ClassId = cl.Id
+    LEFT JOIN Sections sec ON s.SectionId = sec.Id
+    LEFT JOIN StudentGroups sg ON s.StudentGroupId = sg.Id
+    WHERE ser.IsDeleted = 0
+      AND (@ExamId IS NULL OR ser.ExamId = @ExamId)
+      AND (@ClassId IS NULL OR s.ClassId = @ClassId)
+      AND (@SectionId IS NULL OR s.SectionId = @SectionId)
+      AND (@StudentGroupId IS NULL OR s.StudentGroupId = @StudentGroupId)
+      AND (@Status IS NULL OR ser.Status = @Status)
+      AND (@AcademicYearId IS NULL OR e.AcademicYearId = @AcademicYearId)
+      AND (@SearchTerm IS NULL OR s.FullName LIKE '%' + @SearchTerm + '%' OR s.StudentNo LIKE '%' + @SearchTerm + '%' OR s.RollNumber LIKE '%' + @SearchTerm + '%');
 END;
 GO

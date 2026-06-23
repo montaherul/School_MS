@@ -75,12 +75,12 @@ html, body {
    ══════════════════════════════════════════════════════════ */
 
 .idcard-header {
-  padding: 1.2mm 2mm 1mm;
+  padding: 0.7mm 1.8mm 0.5mm;
   color: #fff;
   background: linear-gradient(135deg, #0d1b4b 0%, #1e3278 100%);
   display: flex;
   align-items: center;
-  gap: 1.2mm;
+  gap: 1mm;
   position: relative;
   overflow: hidden;
   flex-shrink: 0;
@@ -99,8 +99,8 @@ html, body {
 }
 
 .idcard-logo-box {
-  width: 8mm;
-  height: 8mm;
+  width: 7mm;
+  height: 7mm;
   background: #e8b84b;
   border-radius: 1.2mm;
   display: flex;
@@ -112,8 +112,8 @@ html, body {
 }
 
 .idcard-logo-box img {
-  width: 5.5mm;
-  height: 5.5mm;
+  width: 5mm;
+  height: 5mm;
   object-fit: contain;
 }
 
@@ -129,9 +129,9 @@ html, body {
 }
 
 .idcard-school-name {
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 800;
-  line-height: 1.2;
+  line-height: 1.15;
   letter-spacing: 0.1px;
   word-break: break-word;
   overflow-wrap: break-word;
@@ -139,11 +139,11 @@ html, body {
 }
 
 .idcard-school-sub {
-  font-size: 5.5px;
+  font-size: 5px;
   font-weight: 500;
   color: rgba(255,255,255,0.55);
   letter-spacing: 0.15px;
-  line-height: 1.2;
+  line-height: 1.15;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -152,9 +152,9 @@ html, body {
 .idcard-type-badge {
   background: #e8b84b;
   color: #0d1b4b;
-  font-size: 6px;
+  font-size: 5.5px;
   font-weight: 700;
-  padding: 0.3mm 1.5mm;
+  padding: 0.2mm 1.2mm;
   border-radius: 2mm;
   letter-spacing: 0.6px;
   text-transform: uppercase;
@@ -168,11 +168,11 @@ html, body {
 
 .idcard-identity {
   background: linear-gradient(180deg, #1e3278 0%, #0d1b4b 100%);
-  padding: 1.5mm 2mm 1mm;
+  padding: 1mm 2mm 0.6mm;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.6mm;
+  gap: 0.4mm;
   position: relative;
   overflow: hidden;
   flex-shrink: 0;
@@ -203,8 +203,8 @@ html, body {
 }
 
 .idcard-photo-ring {
-  width: 22mm;
-  height: 22mm;
+  width: 20mm;
+  height: 20mm;
   border-radius: 50%;
   background: linear-gradient(135deg, #e8b84b, #f5d07a);
   padding: 0.35mm;
@@ -231,7 +231,7 @@ html, body {
 }
 
 .idcard-photo-placeholder {
-  font-size: 7px;
+  font-size: 6.5px;
   color: rgba(255,255,255,0.4);
   font-weight: 700;
   text-align: center;
@@ -239,7 +239,7 @@ html, body {
 }
 
 .idcard-name {
-  font-size: 17px;
+  font-size: 14px;
   font-weight: 800;
   color: #fff;
   letter-spacing: 0.3px;
@@ -253,9 +253,9 @@ html, body {
 .idcard-role-pill {
   background: #e8b84b;
   color: #0d1b4b;
-  font-size: 8px;
+  font-size: 7px;
   font-weight: 700;
-  padding: 0.2mm 2mm;
+  padding: 0.15mm 1.8mm;
   border-radius: 2.5mm;
   letter-spacing: 0.3px;
   text-align: center;
@@ -268,7 +268,7 @@ html, body {
 
 .idcard-data {
   flex: 1;
-  padding: 1mm 2mm 0.5mm;
+  padding: 0.6mm 1.8mm 0.3mm;
   display: flex;
   flex-direction: column;
   position: relative;
@@ -296,7 +296,7 @@ html, body {
 }
 
 .idcard-grid td {
-  padding: 0.3mm 0.8mm;
+  padding: 0.5mm 0.8mm;
   border-bottom: 0.08mm solid #dde3f0;
   border-right: 0.08mm solid #dde3f0;
   vertical-align: middle;
@@ -322,16 +322,16 @@ html, body {
   color: #6b7a99;
   text-transform: uppercase;
   letter-spacing: 0.3px;
-  line-height: 1.2;
-  width: 32%;
+  line-height: 1.3;
+  width: 30%;
 }
 
 .idcard-cell-value {
-  font-size: 7px;
+  font-size: 6.5px;
   font-weight: 700;
   color: #0d1b4b;
-  line-height: 1.2;
-  width: 18%;
+  line-height: 1.3;
+  width: 20%;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -339,7 +339,7 @@ html, body {
    ══════════════════════════════════════════════════════════ */
 
 .idcard-footer {
-  padding: 0.5mm 2mm;
+  padding: 0.4mm 1.8mm;
   background: linear-gradient(90deg, #0d1b4b 0%, #1e3278 100%);
   flex-shrink: 0;
   display: flex;
@@ -371,16 +371,16 @@ html, body {
 }
 
 .idcard-validity-label {
-  font-size: 5px;
+  font-size: 4.5px;
   color: rgba(255,255,255,0.4);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.4px;
-  min-width: 4.5mm;
+  min-width: 4mm;
 }
 
 .idcard-validity-value {
-  font-size: 6px;
+  font-size: 5.5px;
   color: #fff;
   font-weight: 600;
 }
@@ -390,20 +390,20 @@ html, body {
 }
 
 .idcard-signature-seal {
-  max-width: 7mm;
-  max-height: 1.8mm;
+  max-width: 6.5mm;
+  max-height: 1.5mm;
   vertical-align: middle;
 }
 
 .idcard-signature-line {
-  width: 10mm;
+  width: 9mm;
   height: 0.08mm;
   margin: 0.02mm auto;
   background: rgba(255,255,255,0.12);
 }
 
 .idcard-signature-label {
-  font-size: 5px;
+  font-size: 4.5px;
   color: rgba(255,255,255,0.35);
   font-weight: 700;
   text-transform: uppercase;
@@ -416,7 +416,7 @@ html, body {
    ══════════════════════════════════════════════════════════ */
 
 .idcard-back-header {
-  padding: 0.6mm 2mm;
+  padding: 0.4mm 1.8mm;
   background: linear-gradient(135deg, #0d1b4b 0%, #1e3278 100%);
   text-align: center;
   position: relative;
@@ -438,7 +438,7 @@ html, body {
 }
 
 .idcard-back-title {
-  font-size: 6.5px;
+  font-size: 6px;
   font-weight: 800;
   color: #fff;
   letter-spacing: 0.8px;
@@ -449,43 +449,43 @@ html, body {
 
 .idcard-back-body {
   flex: 1;
-  padding: 0.6mm 2mm 0.3mm;
+  padding: 0.4mm 1.8mm 0.2mm;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: 0.5mm;
+  gap: 0.35mm;
 }
 
 .idcard-back-section-title {
-  font-size: 5.5px;
+  font-size: 5px;
   font-weight: 700;
   color: #0d1b4b;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  padding-bottom: 0.1mm;
+  padding-bottom: 0.05mm;
   border-bottom: 0.12mm solid #e8b84b;
-  margin-bottom: 0.15mm;
+  margin-bottom: 0.05mm;
 }
 
 .idcard-back-info-row {
   display: flex;
   align-items: baseline;
-  gap: 0.5mm;
-  padding: 0.05mm 0;
+  gap: 0.4mm;
+  padding: 0.02mm 0;
 }
 
 .idcard-back-info-label {
-  font-size: 5px;
+  font-size: 4.5px;
   color: #6b7a99;
   font-weight: 600;
-  min-width: 10.5mm;
+  min-width: 9mm;
   flex-shrink: 0;
   text-transform: uppercase;
   letter-spacing: 0.1px;
 }
 
 .idcard-back-info-value {
-  font-size: 6px;
+  font-size: 5.5px;
   color: #0d1b4b;
   font-weight: 600;
   line-height: 1.2;
@@ -497,16 +497,16 @@ html, body {
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.05mm;
+  gap: 0.02mm;
 }
 
 .idcard-back-rules li {
-  font-size: 5.5px;
+  font-size: 5px;
   color: #0d1b4b;
   font-weight: 400;
-  padding-left: 1.2mm;
+  padding-left: 1mm;
   position: relative;
-  line-height: 1.3;
+  line-height: 1.2;
 }
 
 .idcard-back-rules li::before {
@@ -515,26 +515,40 @@ html, body {
   left: 0;
   color: #e8b84b;
   font-weight: 700;
-  font-size: 8px;
+  font-size: 7px;
   top: -0.5px;
 }
 
-/* QR row */
+/* Bottom row: rules + QR side by side */
+.idcard-back-bottom {
+  display: flex;
+  gap: 0.8mm;
+  align-items: stretch;
+  margin-top: auto;
+  margin-bottom: 0;
+}
+
+.idcard-back-bottom-rules {
+  flex: 1;
+  min-width: 0;
+}
+
+/* QR block */
 .idcard-back-qr {
   display: flex;
   align-items: center;
-  gap: 1mm;
+  gap: 0.6mm;
   background: #f4f6fb;
   border-radius: 1mm;
-  padding: 0.3mm 1mm;
+  padding: 0.2mm 0.6mm;
   border: 0.08mm solid #dde3f0;
-  margin-top: auto;
-  margin-bottom: 0.1mm;
+  flex-shrink: 0;
+  max-width: 26mm;
 }
 
 .idcard-back-qr-box {
-  width: 7mm;
-  height: 7mm;
+  width: 6mm;
+  height: 6mm;
   flex-shrink: 0;
   border-radius: 0.6mm;
   overflow: hidden;
@@ -553,20 +567,20 @@ html, body {
 }
 
 .idcard-back-qr-title {
-  font-size: 6px;
+  font-size: 5.5px;
   font-weight: 700;
   color: #0d1b4b;
   letter-spacing: 0.3px;
 }
 
 .idcard-back-qr-sub {
-  font-size: 5px;
+  font-size: 4.5px;
   color: #6b7a99;
   font-weight: 400;
 }
 
 .idcard-back-qr-id {
-  font-size: 6px;
+  font-size: 5.5px;
   font-weight: 700;
   color: #0d1b4b;
   letter-spacing: 0.2px;
@@ -574,7 +588,7 @@ html, body {
 
 /* Back footer */
 .idcard-back-footer {
-  padding: 0.3mm 2mm;
+  padding: 0.2mm 1.8mm;
   text-align: center;
   background: linear-gradient(90deg, #0d1b4b 0%, #1e3278 100%);
   flex-shrink: 0;
@@ -582,7 +596,7 @@ html, body {
 
 .idcard-back-footer span {
   color: rgba(255,255,255,0.25);
-  font-size: 4.5px;
+  font-size: 4px;
   font-weight: 600;
   letter-spacing: 0.2px;
 }

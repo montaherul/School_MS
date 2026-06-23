@@ -249,9 +249,23 @@ public class FinalResult : BaseEntity
     public int SectionId { get; set; }
     public int? StudentGroupId { get; set; }
 
+    /// <summary>Weighted GPA calculated using ResultPolicy exam weights.</summary>
     public decimal FinalGpa { get; set; } = 0;
+
+    /// <summary>Weighted total marks calculated using ResultPolicy exam weights.</summary>
+    public decimal WeightedTotalMarks { get; set; } = 0;
+
+    /// <summary>School-wide rank.</summary>
     public int FinalPosition { get; set; } = 0;
+
+    /// <summary>Class-level rank.</summary>
     public int FinalClassPosition { get; set; } = 0;
+
+    /// <summary>Section-level rank.</summary>
+    public int FinalSectionPosition { get; set; } = 0;
+
+    /// <summary>Group-level rank (for class 9-10 groups: Science, Business Studies, Humanities).</summary>
+    public int FinalGroupPosition { get; set; } = 0;
 
     [MaxLength(10)]
     public string FinalGrade { get; set; } = string.Empty;
@@ -259,6 +273,15 @@ public class FinalResult : BaseEntity
     public PromotionStatus PromotionStatus { get; set; } = PromotionStatus.Pending;
     public bool IsPassed { get; set; } = false;
     public int TotalFailedSubjects { get; set; } = 0;
+
+    /// <summary>Number of passed subjects across all exams in the year.</summary>
+    public int TotalPassedSubjects { get; set; } = 0;
+
+    /// <summary>Attendance percentage for the academic year (0-100).</summary>
+    public decimal AttendancePercentage { get; set; } = 0;
+
+    /// <summary>Roll number assigned by roll generation engine.</summary>
+    public int? GeneratedRollNumber { get; set; }
 
     [MaxLength(500)]
     public string? PromotionRemarks { get; set; }
@@ -440,4 +463,240 @@ public class ClassPromotionRule : BaseEntity
 
     // Navigation
     public virtual Academic.SchoolClass Class { get; set; } = null!;
+}
+
+/// <summary>
+/// Result Policy: Admin-configurable academic year result aggregation weights.
+/// Defines how exam types contribute to the weighted GPA (e.g., Half Yearly 40% + Annual 60%).
+/// </summary>
+public class ResultPolicy : BaseEntity
+{
+    public int AcademicYearId { get; set; }
+    public int? SchoolClassId { get; set; }
+
+    [MaxLength(100)]
+    public string Name { get; set; } = string.Empty;
+
+    [MaxLength(500)]
+    public string? Description { get; set; }
+
+    public bool IsDefault { get; set; } = false;
+    public bool IsActive { get; set; } = true;
+
+    // Navigation
+    public virtual Academic.AcademicYear AcademicYear { get; set; } = null!;
+    public virtual Academic.SchoolClass? SchoolClass { get; set; }
+    public virtual ICollection<ResultPolicyExamWeight> ExamWeights { get; set; } = [];
+}
+
+/// <summary>
+/// Result Policy Exam Weight: Individual exam type weight within a ResultPolicy.
+/// System validates that total weights = 100%.
+/// </summary>
+public class ResultPolicyExamWeight : BaseEntity
+{
+    public int ResultPolicyId { get; set; }
+
+    public int ExamTypeId { get; set; }
+
+    public decimal WeightPercentage { get; set; }
+
+    public int DisplayOrder { get; set; } = 0;
+    public bool IsActive { get; set; } = true;
+
+    // Navigation
+    public virtual ResultPolicy ResultPolicy { get; set; } = null!;
+    public virtual Exam.ExamType ExamType { get; set; } = null!;
+}
+
+/// <summary>
+/// Ranking Rule: Configurable ranking order per class/academic year.
+/// Admin can reorder tie-breaking criteria.
+/// </summary>
+public class RankingRule : BaseEntity
+{
+    public int AcademicYearId { get; set; }
+    public int? SchoolClassId { get; set; }
+
+    [MaxLength(100)]
+    public string Name { get; set; } = string.Empty;
+
+    /// <summary>
+    /// JSON array of RankingTieBreaker values in priority order.
+    /// Example: ["GpaDesc","MarksDesc","PassedSubjectsDesc","AttendanceDesc","RollAsc"]
+    /// </summary>
+    [MaxLength(2000)]
+    public string TieBreakersJson { get; set; } = "[]";
+
+    public bool IsDefault { get; set; } = false;
+    public bool IsActive { get; set; } = true;
+
+    // Navigation
+    public virtual Academic.AcademicYear AcademicYear { get; set; } = null!;
+    public virtual Academic.SchoolClass? SchoolClass { get; set; }
+}
+
+/// <summary>
+/// Promotion Policy: Admin-configurable promotion rules per class.
+/// Supports multiple promotion methods and combined rules.
+/// </summary>
+public class PromotionPolicy : BaseEntity
+{
+    public int AcademicYearId { get; set; }
+    public int SchoolClassId { get; set; }
+
+    [MaxLength(100)]
+    public string Name { get; set; } = string.Empty;
+
+    public PromotionMethod PrimaryMethod { get; set; } = PromotionMethod.GpaBased;
+
+    /// <summary>
+    /// Minimum GPA for promotion (used when PrimaryMethod = GpaBased)
+    /// </summary>
+    public decimal MinimumGpa { get; set; } = 1.00m;
+
+    /// <summary>
+    /// Maximum rank position for promotion (used when PrimaryMethod = PositionBased)
+    /// </summary>
+    public int? MaxPositionForPromotion { get; set; }
+
+    /// <summary>
+    /// Top percentage to promote (e.g., 80 means top 80%). Used when PrimaryMethod = PositionBased.
+    /// </summary>
+    public decimal? TopPercentagePromote { get; set; }
+
+    /// <summary>
+    /// Minimum attendance percentage for promotion
+    /// </summary>
+    public decimal? MinimumAttendancePercentage { get; set; }
+
+    /// <summary>
+    /// Minimum passed subjects count for promotion
+    /// </summary>
+    public int? MinimumPassedSubjects { get; set; }
+
+    /// <summary>
+    /// Whether to use combined rules (AND logic)
+    /// </summary>
+    public bool UseCombinedRules { get; set; } = false;
+
+    /// <summary>
+    /// JSON array of subject names that are critical - student must pass these
+    /// </summary>
+    [MaxLength(2000)]
+    public string? CriticalSubjectsJson { get; set; }
+
+    /// <summary>
+    /// Max critical subject failures allowed
+    /// </summary>
+    public int MaxCriticalSubjectFailures { get; set; } = 0;
+
+    public bool IsActive { get; set; } = true;
+
+    // Navigation
+    public virtual Academic.AcademicYear AcademicYear { get; set; } = null!;
+    public virtual Academic.SchoolClass SchoolClass { get; set; } = null!;
+    public virtual ICollection<PromotionPolicyRule> Rules { get; set; } = [];
+}
+
+/// <summary>
+/// Promotion Policy Rule: Individual rule criteria within a PromotionPolicy.
+/// Supports complex AND/OR combined promotion logic.
+/// </summary>
+public class PromotionPolicyRule : BaseEntity
+{
+    public int PromotionPolicyId { get; set; }
+
+    [MaxLength(100)]
+    public string CriterionType { get; set; } = string.Empty; // Gpa, Marks, Position, Attendance, PassedSubjects
+
+    [MaxLength(100)]
+    public string Operator { get; set; } = string.Empty; // GreaterThan, LessThan, Equals, GreaterThanOrEqual
+
+    public decimal ThresholdValue { get; set; }
+
+    [MaxLength(100)]
+    public string LogicalOperator { get; set; } = "AND"; // AND, OR
+
+    public bool IsInverse { get; set; } = false; // true = "Fail if criterion met"
+
+    public int DisplayOrder { get; set; } = 0;
+    public bool IsActive { get; set; } = true;
+
+    // Navigation
+    public virtual PromotionPolicy PromotionPolicy { get; set; } = null!;
+}
+
+/// <summary>
+/// Promotion Execution: Records actual promotion execution with details.
+/// Created when admin approves promotion.
+/// </summary>
+public class PromotionExecution : BaseEntity
+{
+    public int AcademicYearId { get; set; }
+    public int SchoolClassId { get; set; }
+    public int? PromotionPolicyId { get; set; }
+
+    public int TotalStudents { get; set; }
+    public int PromotedCount { get; set; }
+    public int RepeatCount { get; set; }
+    public int FailedCount { get; set; }
+
+    [MaxLength(500)]
+    public string? Notes { get; set; }
+
+    public int ExecutedByUserId { get; set; }
+    public DateTime ExecutedAt { get; set; } = DateTime.Now;
+
+    public bool IsApproved { get; set; } = false;
+    public int? ApprovedByUserId { get; set; }
+    public DateTime? ApprovedAt { get; set; }
+
+    // Navigation
+    public virtual Academic.AcademicYear AcademicYear { get; set; } = null!;
+    public virtual Academic.SchoolClass SchoolClass { get; set; } = null!;
+    public virtual PromotionPolicy? PromotionPolicy { get; set; }
+}
+
+/// <summary>
+/// Roll Generation Configuration: Per-class roll number assignment strategy.
+/// </summary>
+public class RollGenerationConfig : BaseEntity
+{
+    public int AcademicYearId { get; set; }
+    public int SchoolClassId { get; set; }
+
+    public RollGenerationStrategy Strategy { get; set; } = RollGenerationStrategy.MeritBased;
+
+    public bool IsActive { get; set; } = true;
+
+    // Navigation
+    public virtual Academic.AcademicYear AcademicYear { get; set; } = null!;
+    public virtual Academic.SchoolClass SchoolClass { get; set; } = null!;
+}
+
+/// <summary>
+/// Group Promotion Configuration: How students are assigned to groups for next class.
+/// </summary>
+public class GroupPromotionConfig : BaseEntity
+{
+    public int AcademicYearId { get; set; }
+    public int FromClassId { get; set; }
+    public int ToClassId { get; set; }
+
+    public GroupAssignmentMethod AssignmentMethod { get; set; } = GroupAssignmentMethod.MeritBased;
+
+    /// <summary>
+    /// JSON config for method-specific settings.
+    /// For SubjectGpaBased: {"Science": 4.0, "BusinessStudies": 3.0, "Humanities": 2.0}
+    /// </summary>
+    [MaxLength(2000)]
+    public string? ConfigurationJson { get; set; }
+
+    public bool IsActive { get; set; } = true;
+
+    // Navigation
+    public virtual Academic.AcademicYear AcademicYear { get; set; } = null!;
+    public virtual Academic.SchoolClass FromClass { get; set; } = null!;
+    public virtual Academic.SchoolClass ToClass { get; set; } = null!;
 }

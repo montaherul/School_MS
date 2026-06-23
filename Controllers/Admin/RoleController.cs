@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SchoolManagementSystem.Controllers.Common;
+using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Models.Entities.Auth;
 using SchoolManagementSystem.Services.Interfaces.Admin;
 using SchoolManagementSystem.Services.Interfaces.Base;
@@ -8,6 +9,7 @@ using SchoolManagementSystem.Services.Interfaces.Base;
 namespace SchoolManagementSystem.Controllers.Admin;
 
 [Authorize(Roles = "Admin,Super Admin")]
+[RequirePermission("Roles.View")]
 public class RoleController : GenericCrudController<Role>
 {
     private readonly IRoleService _roleService;
@@ -19,7 +21,9 @@ public class RoleController : GenericCrudController<Role>
 
     public override async Task<IActionResult> Index(int page = 1, int pageSize = 10, string? search = null, CancellationToken ct = default)
     {
-        var result = await _roleService.GetPagedAsync(page, pageSize, search, ct);
+        var sortColumn = Request.Query["sort[0][column]"].FirstOrDefault();
+        var sortDirection = Request.Query["sort[0][dir]"].FirstOrDefault();
+        var result = await _roleService.GetPagedAsync(page, pageSize, search, sortColumn, sortDirection, ct);
 
         if (Request.Headers["Accept"].ToString().Contains("application/json") || Request.Headers["X-Requested-With"] == "XMLHttpRequest" || Request.Query.ContainsKey("page"))
         {
@@ -45,10 +49,35 @@ public class RoleController : GenericCrudController<Role>
 
     [HttpPost("{id}/Permissions")]
     [Authorize(Roles = "Admin,Super Admin")]
+    [RequirePermission("Roles.AssignPermissions")]
     public async Task<IActionResult> AssignPermissions(int id, [FromBody] List<int> permissionIds, CancellationToken ct)
     {
-        var result = await _roleService.AssignPermissionsToRoleAsync(id, permissionIds, ct);
-        return Ok(new { success = result });
+        try
+        {
+            var result = await _roleService.AssignPermissionsToRoleAsync(id, permissionIds, ct);
+            return Ok(new { success = result });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public override async Task<IActionResult> DeleteConfirmed(int id, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await _roleService.DeleteAsync(id);
+            TempData["SuccessMessage"] = "Role deleted successfully.";
+            return RedirectToAction(nameof(Index));
+        }
+        catch (Exception ex)
+        {
+            TempData["ErrorMessage"] = ex.Message;
+            return RedirectToAction(nameof(Index));
+        }
     }
 }
 

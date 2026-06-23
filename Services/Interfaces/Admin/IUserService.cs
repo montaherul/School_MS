@@ -12,13 +12,15 @@ public interface IUserService
       int? status = null,
       string? role = null,
       string? userType = null,
+      string? sortColumn = null,
+      string? sortDirection = null,
       CancellationToken ct = default);
     Task<UserUpsertViewModel?> GetForEditAsync(int id, CancellationToken ct = default);
     Task<UserDetailsViewModel?> GetDetailsAsync(int id, CancellationToken ct = default);
     Task<int> CreateAsync(UserUpsertViewModel model, string createdBy, CancellationToken ct = default);
     Task UpdateAsync(UserUpsertViewModel model, string updatedBy, CancellationToken ct = default);
     Task DeleteAsync(int id, string updatedBy, CancellationToken ct = default);
-    Task AssignRolesAsync(int userId, IEnumerable<int> roleIds, CancellationToken ct = default);
+    Task AssignRolesAsync(int userId, IEnumerable<int> roleIds, int? performedByUserId = null, CancellationToken ct = default);
     Task<List<int>> GetAssignedRoleIdsAsync(int userId, CancellationToken ct = default);
     Task<IEnumerable<RoleOptionVm>> GetAvailableRolesAsync(CancellationToken ct = default);
 }

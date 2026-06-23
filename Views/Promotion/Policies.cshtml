@@ -1,0 +1,163 @@
+@model List<SchoolManagementSystem.Models.Entities.Result.PromotionPolicy>
+@{
+    ViewData["Title"] = "Promotion Policies";
+    var academicYears = ViewBag.AcademicYears as List<SchoolManagementSystem.Models.Entities.Academic.AcademicYear> ?? new();
+    var selectedYearId = (int)ViewBag.SelectedYearId;
+    var classes = ViewBag.Classes as List<SchoolManagementSystem.Models.Entities.Academic.SchoolClass> ?? new();
+}
+
+<div class="adm-page er-page">
+    <div class="er-page-header">
+        <div class="er-page-header__left">
+            <div class="er-page-header__icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                    <polyline points="14 2 14 8 20 8" />
+                    <line x1="16" y1="13" x2="8" y2="13" />
+                    <line x1="16" y1="17" x2="8" y2="17" />
+                    <polyline points="10 9 9 9 8 9" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="er-page-header__title">Promotion Policies</h1>
+                <p class="er-page-header__sub">Configure promotion rules per class and academic year</p>
+            </div>
+        </div>
+        <div class="er-page-header__right">
+            <a href="@Url.Action("Index", "Promotion", new { academicYearId = selectedYearId })" class="er-btn er-btn--secondary">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></svg>
+                Back
+            </a>
+            <a href="@Url.Action("PolicyCreate", "Promotion", new { academicYearId = selectedYearId })" class="er-btn er-btn--primary">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                Create Policy
+            </a>
+        </div>
+    </div>
+
+    <div class="adm-filters mb-4">
+        <form method="get" action="@Url.Action("Policies")" class="adm-filters__row" style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;">
+            <div class="adm-filters__field">
+                <label class="er-label">Academic Year</label>
+                <select name="academicYearId" class="er-filters__select">
+                    @foreach (var y in academicYears)
+                    {
+                        <!option value="@y.Id" selected="@(y.Id == selectedYearId)">@y.Name</!option>
+                    }
+                </select>
+            </div>
+            <div class="adm-filters__field">
+                <button type="submit" class="er-btn er-btn--primary adm-btn--sm">Apply</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="dash-section">
+        <div class="dash-section__header">
+            <h2 class="dash-section__title">Configured Policies</h2>
+            <span class="dash-count-badge">@Model.Count Policies</span>
+        </div>
+        <div class="er-card" style="border-radius:var(--adm-radius-lg);border-top:1px solid var(--adm-border);">
+            <div class="er-card__body">
+                @if (Model.Any())
+                {
+                    <div class="table-responsive" style="border-radius:var(--adm-radius-lg);min-width:unset;">
+                        <table class="dash-table" id="policiesTable">
+                            <thead>
+                                <tr>
+                                    <th>Policy Name</th>
+                                    <th>Class</th>
+                                    <th>Primary Method</th>
+                                    <th>Min GPA</th>
+                                    <th>Max Position</th>
+                                    <th>Min Attendance</th>
+                                    <th>Combined Rules</th>
+                                    <th>Status</th>
+                                    <th style="text-align:right;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var p in Model)
+                                {
+                                    var cls = classes.FirstOrDefault(c => c.Id == p.SchoolClassId);
+                                    <tr>
+                                        <td><span class="adm-cell-name">@p.Name</span></td>
+                                        <td>@(cls?.Name ?? "")</td>
+                                        <td><span class="er-badge er-badge--neutral">@p.PrimaryMethod</span></td>
+                                        <td>@p.MinimumGpa.ToString("F2")</td>
+                                        <td>@(p.MaxPositionForPromotion?.ToString() ?? "-")</td>
+                                        <td>@(p.MinimumAttendancePercentage?.ToString("F1") + "%" ?? "-")</td>
+                                        <td>
+                                            @if (p.UseCombinedRules)
+                                            {
+                                                <span class="er-badge er-badge--approved">Yes</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="er-badge er-badge--neutral">No</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (p.IsActive)
+                                            {
+                                                <span class="er-badge er-badge--converted">Active</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="er-badge er-badge--rejected">Inactive</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            <div class="actions-cell">
+                                                <a href="@Url.Action("PolicyEdit", "Promotion", new { id = p.Id })"
+                                                   class="er-action er-action--edit" title="Edit">
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
+                                                </a>
+                                                <form asp-action="PolicyDelete" asp-controller="Promotion" method="post" style="display:inline;">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="id" value="@p.Id" />
+                                                    <input type="hidden" name="academicYearId" value="@selectedYearId" />
+                                                    <button type="submit" class="er-action er-action--delete" title="Delete"
+                                                            onclick="return confirm('Are you sure you want to delete this policy?')">
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <div class="er-empty">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                        <h3 class="er-empty__title">No Policies Configured</h3>
+                        <p class="er-empty__desc">Create a promotion policy to define how students are promoted or repeated.</p>
+                        <a href="@Url.Action("PolicyCreate", "Promotion", new { academicYearId = selectedYearId })" class="er-btn er-btn--primary">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                            Create First Policy
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (typeof $ !== 'undefined' && $.fn.DataTable) {
+                $('#policiesTable').DataTable({
+                    responsive: true,
+                    pageLength: 25,
+                    order: [[0, 'asc']],
+                    language: { emptyTable: "No promotion policies found" }
+                });
+            }
+        });
+    </script>
+}

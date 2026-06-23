@@ -29,6 +29,8 @@ public class UserService : IUserService
        int? status = null,
        string? role = null,
        string? userType = null,
+       string? sortColumn = null,
+       string? sortDirection = null,
        CancellationToken ct = default)
     {
         var query = _unitOfWork
@@ -85,9 +87,19 @@ public class UserService : IUserService
 
         var totalCount = await query.CountAsync(ct);
 
+        // Dynamic sort
+        var isDesc = string.Equals(sortDirection, "desc", StringComparison.OrdinalIgnoreCase);
+        query = sortColumn?.ToLower() switch
+        {
+            "username" => isDesc ? query.OrderByDescending(u => u.UserName) : query.OrderBy(u => u.UserName),
+            "email" => isDesc ? query.OrderByDescending(u => u.Email) : query.OrderBy(u => u.Email),
+            "phonenumber" => isDesc ? query.OrderByDescending(u => u.PhoneNumber ?? "") : query.OrderBy(u => u.PhoneNumber ?? ""),
+            "status" => isDesc ? query.OrderByDescending(u => u.Status) : query.OrderBy(u => u.Status),
+            _ => isDesc ? query.OrderByDescending(u => u.Id) : query.OrderBy(u => u.Id)
+        };
+
         var users = await query
             .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
-            .OrderByDescending(u => u.Id)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(ct);
@@ -97,12 +109,12 @@ public class UserService : IUserService
 
         var employeeMap = await _unitOfWork.Repository<EmpEntity>().Query().AsNoTracking()
             .Where(e => e.UserId.HasValue && userIds.Contains(e.UserId.Value) && !e.IsDeleted)
-            .Select(e => new { e.UserId, e.FullName, e.IsTeachingStaff })
+            .Select(e => new { e.UserId, e.FullName, e.IsTeachingStaff, e.ProfilePicturePath })
             .ToDictionaryAsync(e => e.UserId!.Value, ct);
 
         var guardianMap = await _unitOfWork.Repository<GdnEntity>().Query().AsNoTracking()
             .Where(g => g.UserId.HasValue && userIds.Contains(g.UserId.Value) && !g.IsDeleted)
-            .Select(g => new { g.UserId, g.FullName })
+            .Select(g => new { g.UserId, g.FullName, PhotoPath = g.PhotoPath ?? "" })
             .ToDictionaryAsync(g => g.UserId!.Value, ct);
 
         var items = users.Select(u =>
@@ -110,17 +122,20 @@ public class UserService : IUserService
             string userType;
             string linkedEntityName;
             bool? isTeachingStaff = null;
+            string? profilePicturePath = null;
 
             if (employeeMap.TryGetValue(u.Id, out var emp))
             {
                 userType = "Employee";
                 linkedEntityName = emp.FullName;
                 isTeachingStaff = emp.IsTeachingStaff;
+                profilePicturePath = emp.ProfilePicturePath;
             }
             else if (guardianMap.TryGetValue(u.Id, out var gdn))
             {
                 userType = "Guardian";
                 linkedEntityName = gdn.FullName;
+                profilePicturePath = gdn.PhotoPath;
             }
             else if (u.UserRoles.Any(ur => ur.Role != null && ur.Role.Name == "Student"))
             {
@@ -144,6 +159,7 @@ public class UserService : IUserService
                 UserType = userType,
                 LinkedEntityName = linkedEntityName,
                 IsTeachingStaff = isTeachingStaff,
+                ProfilePicturePath = profilePicturePath,
                 RolesText = string.Join(", ",
                     u.UserRoles.Where(ur => ur.Role != null)
                                .Select(ur => ur.Role!.Name)
@@ -244,6 +260,8 @@ public class UserService : IUserService
         if (string.IsNullOrWhiteSpace(model.Password))
             throw new InvalidOperationException("Password is required when creating a new user.");
 
+        ValidatePasswordComplexity(model.Password);
+
         var repo = _unitOfWork.Repository<ApplicationUser>();
         if (await repo.AnyAsync(u => u.UserName == model.UserName.Trim() && !u.IsDeleted, ct))
             throw new InvalidOperationException("Username is already taken.");
@@ -267,7 +285,7 @@ public class UserService : IUserService
         await _unitOfWork.SaveChangesAsync(ct);
 
         if (model.SelectedRoleIds != null && model.SelectedRoleIds.Count > 0)
-            await AssignRolesAsync(user.Id, model.SelectedRoleIds, ct);
+            await AssignRolesAsync(user.Id, model.SelectedRoleIds, null, ct);
 
         return user.Id;
     }
@@ -292,12 +310,15 @@ public class UserService : IUserService
         user.UpdatedAt = DateTime.UtcNow;
 
         if (!string.IsNullOrWhiteSpace(model.Password))
+        {
+            ValidatePasswordComplexity(model.Password);
             user.PasswordHash = _passwordHashService.HashPassword(model.Password);
+        }
 
         await _unitOfWork.SaveChangesAsync(ct);
 
         if (model.SelectedRoleIds != null)
-            await AssignRolesAsync(user.Id, model.SelectedRoleIds, ct);
+            await AssignRolesAsync(user.Id, model.SelectedRoleIds, null, ct);
     }
 
     public async Task DeleteAsync(int id, string updatedBy, CancellationToken ct = default)
@@ -313,8 +334,39 @@ public class UserService : IUserService
         await _unitOfWork.SaveChangesAsync(ct);
     }
 
-    public async Task AssignRolesAsync(int userId, IEnumerable<int> roleIds, CancellationToken ct = default)
+    public async Task AssignRolesAsync(int userId, IEnumerable<int> roleIds, int? performedByUserId = null, CancellationToken ct = default)
     {
+        if (performedByUserId.HasValue)
+        {
+            var performerRoleNames = await _unitOfWork.Repository<UserRole>().Query().AsNoTracking()
+                .Where(ur => ur.UserId == performedByUserId.Value && ur.Role != null)
+                .Select(ur => ur.Role!.Name)
+                .ToListAsync(ct);
+            var isSuperAdmin = performerRoleNames.Any(r => r == "Super Admin");
+
+            if (!isSuperAdmin)
+            {
+                var targetRoleNames = await _unitOfWork.Repository<Role>().Query().AsNoTracking()
+                    .Where(r => roleIds.Contains(r.Id))
+                    .Select(r => r.Name)
+                    .ToListAsync(ct);
+                if (targetRoleNames.Any(r => r == "Super Admin" || r == "Admin"))
+                    throw new InvalidOperationException("Only Super Admin can assign Super Admin or Admin roles.");
+
+                if (userId == performedByUserId.Value)
+                    throw new InvalidOperationException("Cannot modify your own roles.");
+            }
+        }
+        else
+        {
+            var targetRoleNames = await _unitOfWork.Repository<Role>().Query().AsNoTracking()
+                .Where(r => roleIds.Contains(r.Id))
+                .Select(r => r.Name)
+                .ToListAsync(ct);
+            if (targetRoleNames.Any(r => r == "Super Admin"))
+                throw new InvalidOperationException("Only Super Admin can assign Super Admin role.");
+        }
+
         var urRepo = _unitOfWork.Repository<UserRole>();
         var existing = await urRepo.ListAsync(ur => ur.UserId == userId);
         var existingIds = existing.Select(e => e.RoleId).ToHashSet();
@@ -350,6 +402,18 @@ public class UserService : IUserService
             .OrderBy(r => r.Name)
             .Select(r => new RoleOptionVm { Id = r.Id, Name = r.Name, Description = r.Description })
             .ToListAsync(ct);
+    }
+
+    private static void ValidatePasswordComplexity(string password)
+    {
+        if (password.Length < 8)
+            throw new InvalidOperationException("Password must be at least 8 characters long.");
+        if (!password.Any(char.IsUpper))
+            throw new InvalidOperationException("Password must contain at least one uppercase letter.");
+        if (!password.Any(char.IsLower))
+            throw new InvalidOperationException("Password must contain at least one lowercase letter.");
+        if (!password.Any(char.IsDigit))
+            throw new InvalidOperationException("Password must contain at least one digit.");
     }
 }
 

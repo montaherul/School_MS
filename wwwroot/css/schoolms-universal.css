@@ -1841,8 +1841,234 @@ body {
 }
 
 /* ─────────────────────────────────────────────────────────────────
-   21. UTILITY
-   ───────────────────────────────────────────────────────────────── */
+    21. ENTERPRISE PEOPLE LISTING DESIGN SYSTEM
+    ───────────────────────────────────────────────────────────────── */
+
+/* ── Entity Avatar — 56×56 circular, white border, shadow ── */
+.entity-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    border: 2px solid #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    background: var(--adm-surface-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+    .entity-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+.entity-avatar__initials {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--adm-text-2);
+    line-height: 1;
+    text-transform: uppercase;
+    user-select: none;
+}
+
+.entity-avatar--primary {
+    background: linear-gradient(135deg, var(--adm-primary), var(--adm-primary-l));
+}
+
+    .entity-avatar--primary .entity-avatar__initials {
+        color: #fff;
+    }
+
+.entity-avatar--success {
+    background: linear-gradient(135deg, var(--adm-success), #10B981);
+}
+
+    .entity-avatar--success .entity-avatar__initials {
+        color: #fff;
+    }
+
+.entity-avatar--warning {
+    background: linear-gradient(135deg, var(--adm-pending), #F59E0B);
+}
+
+    .entity-avatar--warning .entity-avatar__initials {
+        color: #fff;
+    }
+
+.entity-avatar--info {
+    background: linear-gradient(135deg, var(--adm-converted), #0EA5E9);
+}
+
+    .entity-avatar--info .entity-avatar__initials {
+        color: #fff;
+    }
+
+.entity-avatar--purple {
+    background: linear-gradient(135deg, #7C3AED, #A78BFA);
+}
+
+    .entity-avatar--purple .entity-avatar__initials {
+        color: #fff;
+    }
+
+/* ── Entity Cell — Avatar + Identity Block ── */
+.entity-cell {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 4px 0;
+    min-height: 64px;
+}
+
+.entity-cell__identity {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+}
+
+.entity-cell__name {
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--adm-text);
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.entity-cell__code {
+    font-family: 'SF Mono', 'Cascadia Code', 'Consolas', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--adm-primary);
+    letter-spacing: 0.01em;
+    line-height: 1.3;
+}
+
+.entity-cell__meta {
+    font-size: 12px;
+    color: var(--adm-text-3);
+    line-height: 1.3;
+}
+
+.entity-cell__badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 1px 7px;
+    border-radius: 100px;
+    margin-top: 2px;
+    white-space: nowrap;
+}
+
+.entity-cell__badge--teaching {
+    background: var(--adm-primary-bg);
+    color: var(--adm-primary);
+}
+
+.entity-cell__badge--staff {
+    background: var(--adm-surface-2);
+    color: var(--adm-text-2);
+    border: 1px solid var(--adm-border);
+}
+
+/* ── Action Group ── */
+.action-group {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    flex-wrap: nowrap;
+    min-width: max-content;
+}
+
+.action-btn {
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--adm-radius-sm);
+    border: 1px solid var(--adm-border);
+    background: var(--adm-surface);
+    color: var(--adm-text-3);
+    cursor: pointer;
+    transition: all var(--adm-transition);
+    text-decoration: none;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+    .action-btn:hover {
+        background: var(--adm-primary-bg);
+        color: var(--adm-primary);
+        border-color: var(--adm-primary);
+    }
+
+    .action-btn--view:hover {
+        background: var(--adm-converted-bg);
+        color: var(--adm-converted);
+        border-color: var(--adm-converted);
+    }
+
+    .action-btn--edit:hover {
+        background: var(--adm-primary-bg);
+        color: var(--adm-primary);
+        border-color: var(--adm-primary);
+    }
+
+    .action-btn--delete:hover {
+        background: var(--adm-rejected-bg);
+        color: var(--adm-rejected);
+        border-color: var(--adm-rejected);
+    }
+
+    .action-btn--success:hover {
+        background: var(--adm-success-bg);
+        color: var(--adm-success);
+        border-color: var(--adm-success);
+    }
+
+    .action-btn--warning:hover {
+        background: var(--adm-pending-bg);
+        color: var(--adm-pending);
+        border-color: var(--adm-pending);
+    }
+
+/* ── Tabulator Row Height Override ── */
+.tabulator .tabulator-row {
+    min-height: 72px !important;
+}
+
+    .tabulator .tabulator-row .tabulator-cell {
+        padding: 8px 12px !important;
+        vertical-align: middle;
+    }
+
+/* ── Entity Column Widths ── */
+.adm-col-entity {
+    min-width: 260px !important;
+}
+
+.adm-col-status {
+    min-width: 120px !important;
+    text-align: center !important;
+}
+
+.adm-col-actions {
+    min-width: 160px !important;
+    text-align: center !important;
+}
+
+/* ── Utility ── */
 .table-responsive-wrap {
     width: 100%;
     overflow-x: auto;

@@ -195,6 +195,11 @@
                         <a asp-controller="MeritList" asp-action="Index" data-title="Merit List"><i class="bi bi-trophy"></i><span class="nav-text">Merit List</span></a>
                         <a asp-controller="AdminResult" asp-action="ResultPublishing" data-title="Publish Results"><i class="bi bi-megaphone"></i><span class="nav-text">Publish Results</span></a>
 
+                        <span class="nav-section-label"><span class="nav-text">Promotion</span></span>
+                        <a asp-controller="Promotion" asp-action="Index" data-title="Promotion Dashboard"><i class="bi bi-arrow-up-circle"></i><span class="nav-text">Promotion</span></a>
+                        <a asp-controller="Promotion" asp-action="Policies" data-title="Promotion Policies"><i class="bi bi-shield-check"></i><span class="nav-text">Promotion Policies</span></a>
+                        <a asp-controller="Promotion" asp-action="RollGeneration" data-title="Roll Generation"><i class="bi bi-list-ol"></i><span class="nav-text">Roll Generation</span></a>
+
                         <span class="nav-section-label"><span class="nav-text">Reports</span></span>
                         <a asp-controller="AdminResult" asp-action="SubjectAnalysis" data-title="Subject Analysis"><i class="bi bi-file-earmark-bar-graph"></i><span class="nav-text">Subject Analysis</span></a>
                         <a asp-controller="Transcript" asp-action="Index" data-title="Transcript"><i class="bi bi-file-text"></i><span class="nav-text">Transcript</span></a>
@@ -279,6 +284,8 @@
                                 <a asp-controller="AdminResult" asp-action="AllSubjects" data-title="All Subjects"><i class="bi bi-book"></i><span class="nav-text">All Subjects</span></a>
                                 <a href="/ResultManagement/ReEvaluationDashboard" data-title="Re-evaluations"><i class="bi bi-search"></i><span class="nav-text">Re-evaluations</span></a>
                                 <a href="/Admin/ExamRoutine" data-title="Exam Routine"><i class="bi bi-calendar-event"></i><span class="nav-text">Exam Routine</span></a>
+                                <a asp-controller="Promotion" asp-action="Index" data-title="Promotion"><i class="bi bi-arrow-up-circle"></i><span class="nav-text">Promotion</span></a>
+                                <a asp-controller="Promotion" asp-action="Policies" data-title="Promotion Policies"><i class="bi bi-shield-check"></i><span class="nav-text">Promotion Policies</span></a>
                             }
                             else if (isTeacherLike)
                             {
@@ -396,7 +403,7 @@
                             {
                                 <a asp-controller="Communication" asp-action="Index" data-title="Communication"><i class="bi bi-megaphone"></i><span class="nav-text">Communication</span></a>
                             }
-                            @if (IsAdmin())
+                            @if (IsAdmin() || Can("Website.View"))
                             {
                                 <a href="/Admin/Website" data-title="Public Website"><i class="bi bi-globe"></i><span class="nav-text">Public Website</span></a>
                             }

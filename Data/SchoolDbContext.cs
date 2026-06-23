@@ -170,6 +170,16 @@ public class SchoolDbContext : DbContext
     public DbSet<ClassPromotionRule> ClassPromotionRules => Set<ClassPromotionRule>();
     public DbSet<ResultLock> ResultLocks => Set<ResultLock>();
     public DbSet<PromotionHistory> PromotionHistories => Set<PromotionHistory>();
+
+    // Phase 5: Dynamic Result Policy & Promotion Engine DbSets
+    public DbSet<ResultPolicy> ResultPolicies => Set<ResultPolicy>();
+    public DbSet<ResultPolicyExamWeight> ResultPolicyExamWeights => Set<ResultPolicyExamWeight>();
+    public DbSet<RankingRule> RankingRules => Set<RankingRule>();
+    public DbSet<PromotionPolicy> PromotionPolicies => Set<PromotionPolicy>();
+    public DbSet<PromotionPolicyRule> PromotionPolicyRules => Set<PromotionPolicyRule>();
+    public DbSet<PromotionExecution> PromotionExecutions => Set<PromotionExecution>();
+    public DbSet<RollGenerationConfig> RollGenerationConfigs => Set<RollGenerationConfig>();
+    public DbSet<GroupPromotionConfig> GroupPromotionConfigs => Set<GroupPromotionConfig>();
     public DbSet<AcademicCalendar> AcademicCalendars { get; set; }
     public DbSet<AcademicCalendarEvent> AcademicCalendarEvents { get; set; }
     public DbSet<HolidayMaster> HolidayMasters { get; set; }
@@ -304,6 +314,82 @@ public class SchoolDbContext : DbContext
         // Result Indexes
         modelBuilder.Entity<ResultLock>().HasIndex(x => x.ExamId);
         modelBuilder.Entity<PromotionHistory>().HasIndex(x => new { x.StudentId, x.AcademicYearId }).IsUnique();
+
+        // Phase 5: Result Policy & Promotion Engine Indexes
+        modelBuilder.Entity<ResultPolicy>().HasIndex(x => new { x.AcademicYearId, x.SchoolClassId }).IsUnique().HasFilter("[IsDeleted] = 0");
+        modelBuilder.Entity<ResultPolicyExamWeight>().HasIndex(x => new { x.ResultPolicyId, x.ExamTypeId }).IsUnique().HasFilter("[IsDeleted] = 0");
+        modelBuilder.Entity<RankingRule>().HasIndex(x => new { x.AcademicYearId, x.SchoolClassId }).IsUnique().HasFilter("[IsDeleted] = 0");
+        modelBuilder.Entity<PromotionPolicy>().HasIndex(x => new { x.AcademicYearId, x.SchoolClassId }).IsUnique().HasFilter("[IsDeleted] = 0");
+        modelBuilder.Entity<PromotionExecution>().HasIndex(x => new { x.AcademicYearId, x.SchoolClassId }).IsUnique().HasFilter("[IsDeleted] = 0");
+        modelBuilder.Entity<RollGenerationConfig>().HasIndex(x => new { x.AcademicYearId, x.SchoolClassId }).IsUnique().HasFilter("[IsDeleted] = 0");
+        modelBuilder.Entity<GroupPromotionConfig>().HasIndex(x => new { x.AcademicYearId, x.FromClassId }).IsUnique().HasFilter("[IsDeleted] = 0");
+
+        // ResultPolicy FK
+        modelBuilder.Entity<ResultPolicy>()
+            .HasOne(p => p.AcademicYear).WithMany()
+            .HasForeignKey(p => p.AcademicYearId).OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<ResultPolicy>()
+            .HasOne(p => p.SchoolClass).WithMany()
+            .HasForeignKey(p => p.SchoolClassId).OnDelete(DeleteBehavior.Restrict);
+
+        // ResultPolicyExamWeight FK
+        modelBuilder.Entity<ResultPolicyExamWeight>()
+            .HasOne(w => w.ResultPolicy).WithMany(p => p.ExamWeights)
+            .HasForeignKey(w => w.ResultPolicyId).OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<ResultPolicyExamWeight>()
+            .HasOne(w => w.ExamType).WithMany()
+            .HasForeignKey(w => w.ExamTypeId).OnDelete(DeleteBehavior.Restrict);
+
+        // RankingRule FK
+        modelBuilder.Entity<RankingRule>()
+            .HasOne(r => r.AcademicYear).WithMany()
+            .HasForeignKey(r => r.AcademicYearId).OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<RankingRule>()
+            .HasOne(r => r.SchoolClass).WithMany()
+            .HasForeignKey(r => r.SchoolClassId).OnDelete(DeleteBehavior.Restrict);
+
+        // PromotionPolicy FK
+        modelBuilder.Entity<PromotionPolicy>()
+            .HasOne(p => p.AcademicYear).WithMany()
+            .HasForeignKey(p => p.AcademicYearId).OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<PromotionPolicy>()
+            .HasOne(p => p.SchoolClass).WithMany()
+            .HasForeignKey(p => p.SchoolClassId).OnDelete(DeleteBehavior.Restrict);
+
+        // PromotionPolicyRule FK
+        modelBuilder.Entity<PromotionPolicyRule>()
+            .HasOne(r => r.PromotionPolicy).WithMany(p => p.Rules)
+            .HasForeignKey(r => r.PromotionPolicyId).OnDelete(DeleteBehavior.Cascade);
+
+        // PromotionExecution FK
+        modelBuilder.Entity<PromotionExecution>()
+            .HasOne(e => e.AcademicYear).WithMany()
+            .HasForeignKey(e => e.AcademicYearId).OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<PromotionExecution>()
+            .HasOne(e => e.SchoolClass).WithMany()
+            .HasForeignKey(e => e.SchoolClassId).OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<PromotionExecution>()
+            .HasOne(e => e.PromotionPolicy).WithMany()
+            .HasForeignKey(e => e.PromotionPolicyId).OnDelete(DeleteBehavior.Restrict);
+
+        // RollGenerationConfig FK
+        modelBuilder.Entity<RollGenerationConfig>()
+            .HasOne(c => c.AcademicYear).WithMany()
+            .HasForeignKey(c => c.AcademicYearId).OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<RollGenerationConfig>()
+            .HasOne(c => c.SchoolClass).WithMany()
+            .HasForeignKey(c => c.SchoolClassId).OnDelete(DeleteBehavior.Restrict);
+
+        // GroupPromotionConfig FK
+        modelBuilder.Entity<GroupPromotionConfig>()
+            .HasOne(c => c.AcademicYear).WithMany()
+            .HasForeignKey(c => c.AcademicYearId).OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<GroupPromotionConfig>()
+            .HasOne(c => c.FromClass).WithMany()
+            .HasForeignKey(c => c.FromClassId).OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<GroupPromotionConfig>()
+            .HasOne(c => c.ToClass).WithMany()
+            .HasForeignKey(c => c.ToClassId).OnDelete(DeleteBehavior.Restrict);
 
         // Student Group Indexes
         modelBuilder.Entity<StudentGroupAssignment>().HasIndex(x => new { x.StudentId, x.SchoolClassId, x.AcademicYearId }).IsUnique();

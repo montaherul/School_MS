@@ -4,6 +4,7 @@ using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Models.ViewModels.User;
 using SchoolManagementSystem.Services.Interfaces.Admin;
+using System.Security.Claims;
 
 namespace SchoolManagementSystem.Controllers.Admin;
 
@@ -27,7 +28,11 @@ public class UserController : Controller
      string? userType = null,
      CancellationToken ct = default)
     {
-        var result = await _userService.GetPagedAsync(pageNumber, pageSize, searchTerm, status, role, userType, ct);
+        // Tabulator sort params: sort[0][column]=UserName&sort[0][dir]=asc
+        var sortColumn = Request.Query["sort[0][column]"].FirstOrDefault();
+        var sortDirection = Request.Query["sort[0][dir]"].FirstOrDefault();
+
+        var result = await _userService.GetPagedAsync(pageNumber, pageSize, searchTerm, status, role, userType, sortColumn, sortDirection, ct);
 
         // TABULATOR AJAX REQUEST
         if (Request.Headers["X-Requested-With"] == "XMLHttpRequest"
@@ -197,7 +202,8 @@ public class UserController : Controller
 
         try
         {
-            await _userService.AssignRolesAsync(id, selectedRoleIds, ct);
+            var performedByUserId = int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var uid) ? uid : (int?)null;
+            await _userService.AssignRolesAsync(id, selectedRoleIds, performedByUserId, ct);
             TempData["SuccessMessage"] = "Roles updated successfully.";
             return RedirectToAction(nameof(Details), new { id });
         }

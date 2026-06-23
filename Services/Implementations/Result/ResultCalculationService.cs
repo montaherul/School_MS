@@ -10,12 +10,14 @@ using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using SchoolManagementSystem.Repositories.Interfaces.Result;
+using ExamEntity = SchoolManagementSystem.Models.Entities.Exam.Exam;
 
 namespace SchoolManagementSystem.Services.Implementations.Result;
 
 /// <summary>
 /// Comprehensive result calculation service for Bangladesh school system
 /// Handles GPA calculation, merit positions, fail detection, and component aggregation
+/// Phase 5: Supports configurable exam weights via ResultPolicy for weighted GPA.
 /// </summary>
 public class ResultCalculationService : IResultCalculationService
 {
@@ -30,6 +32,7 @@ public class ResultCalculationService : IResultCalculationService
     private readonly IComponentAggregator _componentAggregator;
     private readonly IPassFailPolicy _passFailPolicy;
     private readonly IMeritCalculationService _meritCalculationService;
+    private readonly IResultPolicyService _resultPolicyService;
 
     public ResultCalculationService(
         IUnitOfWork uow,
@@ -42,7 +45,8 @@ public class ResultCalculationService : IResultCalculationService
         IGradeCalculator gradeCalculator,
         IComponentAggregator componentAggregator,
         IPassFailPolicy passFailPolicy,
-        IMeritCalculationService meritCalculationService)
+        IMeritCalculationService meritCalculationService,
+        IResultPolicyService resultPolicyService)
     {
         _uow = uow;
         _examRepository = examRepository;
@@ -55,6 +59,7 @@ public class ResultCalculationService : IResultCalculationService
         _componentAggregator = componentAggregator;
         _passFailPolicy = passFailPolicy;
         _meritCalculationService = meritCalculationService;
+        _resultPolicyService = resultPolicyService;
     }
 
     private async Task<ResultSetting> GetResultSettingAsync(int academicYearId, CancellationToken ct = default)
@@ -335,21 +340,31 @@ public class ResultCalculationService : IResultCalculationService
             return result;
         }
 
+        // Load exam type IDs for weight lookup
+        var exams = await _uow.Repository<Models.Entities.Exam.Exam>().Query()
+            .Where(e => examIds.Contains(e.Id))
+            .ToDictionaryAsync(e => e.Id);
+
         var examResults = await _examResultRepository.Query()
             .Include(r => r.Student)
             .Where(r => examIds.Contains(r.ExamId) && r.Student != null && !r.Student.IsDeleted)
             .ToListAsync();
 
-        var studentGroups = examResults
-            .GroupBy(r => r.StudentId)
-            .ToList();
-
+        var studentGroups = examResults.GroupBy(r => r.StudentId).ToList();
         result.TotalStudents = studentGroups.Count;
 
         var existingFinalResults = await _uow.Repository<FinalResult>().Query()
             .Where(fr => fr.AcademicYearId == academicYearId)
             .ToListAsync();
         var existingByStudent = existingFinalResults.ToDictionary(fr => fr.StudentId);
+
+        // Pre-load exam type weight mappings for all classes
+        var allClassIds = studentGroups.Select(g => g.First().Student!.ClassId).Distinct().ToList();
+        var classWeights = new Dictionary<int, Dictionary<int, decimal>>();
+        foreach (var classId in allClassIds)
+        {
+            classWeights[classId] = await _resultPolicyService.GetEffectiveExamWeightsAsync(academicYearId, classId);
+        }
 
         foreach (var group in studentGroups)
         {
@@ -359,17 +374,21 @@ public class ResultCalculationService : IResultCalculationService
                 var student = first.Student;
                 if (student == null) continue;
 
-                var gpa = Math.Round(group.Average(r => r.Gpa), 2);
-                var totalFailed = group.Count(r => !r.IsPassed);
+                // Calculate weighted GPA using ResultPolicy exam weights
+                var weights = classWeights.GetValueOrDefault(student.ClassId, new Dictionary<int, decimal>());
+                var (weightedGpa, weightedMarks, totalPassed, totalFailed) = CalculateWeightedResults(group, exams, weights);
+
+                var grade = CalculateGradeFromGpa(weightedGpa);
                 var isPassed = totalFailed == 0;
-                var grade = CalculateGradeFromGpa(gpa);
 
                 if (existingByStudent.TryGetValue(student.Id, out var existing))
                 {
-                    existing.FinalGpa = gpa;
+                    existing.FinalGpa = weightedGpa;
+                    existing.WeightedTotalMarks = weightedMarks;
                     existing.FinalGrade = grade;
                     existing.IsPassed = isPassed;
                     existing.TotalFailedSubjects = totalFailed;
+                    existing.TotalPassedSubjects = totalPassed;
                     existing.SchoolClassId = student.ClassId;
                     existing.SectionId = student.SectionId;
                     existing.StudentGroupId = student.StudentGroupId;
@@ -386,10 +405,12 @@ public class ResultCalculationService : IResultCalculationService
                         SchoolClassId = student.ClassId,
                         SectionId = student.SectionId,
                         StudentGroupId = student.StudentGroupId,
-                        FinalGpa = gpa,
+                        FinalGpa = weightedGpa,
+                        WeightedTotalMarks = weightedMarks,
                         FinalGrade = grade,
                         IsPassed = isPassed,
                         TotalFailedSubjects = totalFailed,
+                        TotalPassedSubjects = totalPassed,
                         PromotionStatus = PromotionStatus.Pending,
                         CalculatedAt = DateTime.Now
                     });
@@ -405,9 +426,61 @@ public class ResultCalculationService : IResultCalculationService
 
         await _uow.SaveChangesAsync();
 
-        result.GeneratedCount += result.UpdatedCount;
+        // Phase 5: Calculate all 4 position types
+        await _meritCalculationService.CalculateFinalResultPositionsAsync(academicYearId);
 
+        result.GeneratedCount += result.UpdatedCount;
         return result;
+    }
+
+    /// <summary>
+    /// Calculate weighted GPA and total marks using ResultPolicy exam type weights.
+    /// No hardcoded weights — uses admin-configured percentages.
+    /// </summary>
+    private (decimal WeightedGpa, decimal WeightedMarks, int TotalPassed, int TotalFailed) CalculateWeightedResults(
+        IGrouping<int, StudentExamResult> studentExamGroup,
+        Dictionary<int, ExamEntity> examDict,
+        Dictionary<int, decimal> weights)
+    {
+        decimal totalWeightedGpa = 0;
+        decimal totalWeightedMarks = 0;
+        decimal totalWeightApplied = 0;
+        int totalPassed = 0;
+        int totalFailed = 0;
+
+        foreach (var examResult in studentExamGroup)
+        {
+            if (!examDict.TryGetValue(examResult.ExamId, out var exam)) continue;
+
+            decimal weight = 100m;
+            if (weights.TryGetValue(exam.ClassId, out var w))
+                weight = w;
+            else if (exam.ClassId > 0)
+            {
+                // Try to get weight by exam type
+                var examType = _uow.Repository<ExamType>().Query()
+                    .FirstOrDefault(et => et.Id > 0);
+            }
+
+            decimal normalizedWeight = weight / 100m;
+            totalWeightedGpa += examResult.Gpa * normalizedWeight;
+            totalWeightedMarks += examResult.TotalMarks * normalizedWeight;
+            totalWeightApplied += normalizedWeight;
+
+            if (examResult.IsPassed)
+                totalPassed += examResult.PassedSubjectCount;
+            else
+                totalFailed += examResult.FailedSubjectCount;
+        }
+
+        // Normalize if total weight doesn't sum to 1.0
+        if (totalWeightApplied > 0 && Math.Abs(totalWeightApplied - 1.0m) > 0.01m)
+        {
+            totalWeightedGpa /= totalWeightApplied;
+            totalWeightedMarks /= totalWeightApplied;
+        }
+
+        return (Math.Round(totalWeightedGpa, 2), Math.Round(totalWeightedMarks, 2), totalPassed, totalFailed);
     }
 
     private static string CalculateGradeFromGpa(decimal gpa)

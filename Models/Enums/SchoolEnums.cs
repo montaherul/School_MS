@@ -42,3 +42,9 @@ public enum AttendanceSessionStatus { Draft = 1, Submitted = 2, Locked = 3, Revi
 public enum FeeFrequency { Once = 0, Monthly = 1, Quarterly = 2, HalfYearly = 3, Yearly = 4 }
 public enum FeeDiscountType { Percentage = 0, Fixed = 1 }
 public enum FeeLedgerType { Invoice = 1, Payment = 2, Discount = 3, Waiver = 4, Refund = 5, Adjustment = 6, LateFee = 7 }
+
+// Phase 5: Promotion & Ranking Engine Enums
+public enum PromotionMethod { GpaBased = 1, MarksBased = 2, PositionBased = 3, AttendanceBased = 4, PassedSubjectsBased = 5, CombinedRule = 6 }
+public enum RollGenerationStrategy { MeritBased = 1, Alphabetical = 2, PreviousRoll = 3, Manual = 4 }
+public enum RankingTieBreaker { GpaDesc = 1, MarksDesc = 2, PassedSubjectsDesc = 3, AttendanceDesc = 4, RollAsc = 5, NameAsc = 6 }
+public enum GroupAssignmentMethod { StudentChoice = 1, MeritBased = 2, SubjectGpaBased = 3, AdminAssignment = 4 }

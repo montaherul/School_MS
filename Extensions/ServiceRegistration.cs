@@ -205,6 +205,11 @@ public static class ServiceRegistration
         services.AddScoped<IStudentSubjectFilterService, StudentSubjectFilterService>();
         services.AddScoped<ITranscriptService, TranscriptService>();
 
+        // Phase 5: Dynamic Result Policy & Promotion Engine Services
+        services.AddScoped<IResultPolicyService, ResultPolicyService>();
+        services.AddScoped<IPromotionPolicyService, PromotionPolicyService>();
+        services.AddScoped<IRollGenerationService, RollGenerationService>();
+
         // Register Public Website Services
         services.AddScoped<ISchoolWebsiteService, SchoolWebsiteService>();
         services.AddScoped<ISliderService, SliderService>();
@@ -221,7 +226,9 @@ public static class ServiceRegistration
         services.AddScoped<IFileStorageService, LocalFileStorageService>();
         services.AddScoped<IEmailSender, SmtpEmailSender>();
         services.AddScoped<IEmailService, EmailService>();
+        services.AddMemoryCache();
         services.AddSingleton<PlaywrightPdfEngine>();
+        services.AddSingleton<IPermissionCacheService, PermissionCacheService>();
         services.AddScoped<IPdfGenerator, PlainPdfGenerator>();
         services.AddScoped<IViewRendererService, ViewRendererService>();
 

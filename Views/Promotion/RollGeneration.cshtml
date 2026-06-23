@@ -1,0 +1,150 @@
+@{
+    ViewData["Title"] = "Roll Generation";
+    var academicYears = ViewBag.AcademicYears as List<SchoolManagementSystem.Models.Entities.Academic.AcademicYear> ?? new();
+    var selectedYearId = (int)ViewBag.SelectedYearId;
+    var classes = ViewBag.Classes as List<SchoolManagementSystem.Models.Entities.Academic.SchoolClass> ?? new();
+    var selectedClassId = ViewBag.SelectedClassId as int?;
+    var results = ViewBag.Results as List<SchoolManagementSystem.Services.Interfaces.Result.RollGenerationResult> ?? new();
+}
+
+<div class="adm-page er-page">
+    <div class="er-page-header">
+        <div class="er-page-header__left">
+            <div class="er-page-header__icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="4" y="2" width="16" height="20" rx="2" />
+                    <line x1="8" y1="6" x2="16" y2="6" />
+                    <line x1="8" y1="10" x2="16" y2="10" />
+                    <line x1="8" y1="14" x2="12" y2="14" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="er-page-header__title">Roll Number Generation</h1>
+                <p class="er-page-header__sub">Assign roll numbers to students using configurable strategies</p>
+            </div>
+        </div>
+        <div class="er-page-header__right">
+            <a href="@Url.Action("Index", "Promotion", new { academicYearId = selectedYearId })" class="er-btn er-btn--secondary">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></svg>
+                Back
+            </a>
+        </div>
+    </div>
+
+    <div class="er-card" style="border-radius:var(--adm-radius-lg);border-top:1px solid var(--adm-border);max-width:700px;margin-bottom:24px;">
+        <div class="er-card__body" style="padding:28px;">
+            <form asp-action="RollGeneration" asp-controller="Promotion" method="post" id="rollForm">
+                @Html.AntiForgeryToken()
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="er-label">Academic Year <span style="color:var(--adm-rejected);">*</span></label>
+                        <select name="academicYearId" class="er-filters__select" required>
+                            @foreach (var y in academicYears)
+                            {
+                                <!option value="@y.Id" selected="@(y.Id == selectedYearId)">@y.Name</!option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="er-label">Class <span style="color:var(--adm-rejected);">*</span></label>
+                        <select name="classId" class="er-filters__select" required>
+                            <option value="">Select Class</option>
+                            @foreach (var c in classes)
+                            {
+                                <!option value="@c.Id" selected="@(c.Id == selectedClassId)">@c.Name</!option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="er-label">Strategy <span style="color:var(--adm-rejected);">*</span></label>
+                        <select name="strategy" class="er-filters__select" required>
+                            <option value="MeritBased">Merit Based (GPA Descending)</option>
+                            <option value="Alphabetical">Alphabetical (Name A-Z)</option>
+                            <option value="PreviousRoll">Keep Previous Roll Numbers</option>
+                            <option value="Manual">Manual (No Changes)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="margin-top:8px;">
+                    <button type="submit" class="er-btn er-btn--primary" id="generateBtn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12" /></svg>
+                        Generate Roll Numbers
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (results.Any())
+    {
+        <div class="dash-section">
+            <div class="dash-section__header">
+                <h2 class="dash-section__title">Generated Roll Numbers</h2>
+                <span class="dash-count-badge">@results.Count Students</span>
+            </div>
+            <div class="er-card" style="border-radius:var(--adm-radius-lg);border-top:1px solid var(--adm-border);">
+                <div class="er-card__body">
+                    <div class="table-responsive" style="border-radius:var(--adm-radius-lg);min-width:unset;">
+                        <table class="dash-table" id="rollTable">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Student Name</th>
+                                    <th>Old Roll</th>
+                                    <th>New Roll</th>
+                                    <th>Strategy</th>
+                                    <th>Changed</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{ var idx = 0; }
+                                @foreach (var r in results.OrderBy(x => x.NewRoll))
+                                {
+                                    idx++;
+                                    var changed = r.OldRoll != r.NewRoll;
+                                    <tr>
+                                        <td>@idx</td>
+                                        <td><span class="adm-cell-name">@r.StudentName</span></td>
+                                        <td>@r.OldRoll</td>
+                                        <td><strong>@r.NewRoll</strong></td>
+                                        <td><span class="er-badge er-badge--neutral">@r.Strategy</span></td>
+                                        <td>
+                                            @if (changed)
+                                            {
+                                                <span class="er-badge er-badge--converted">Updated</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="er-badge er-badge--neutral">Unchanged</span>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (typeof $ !== 'undefined' && $.fn.DataTable && $('#rollTable').length) {
+                $('#rollTable').DataTable({
+                    responsive: true,
+                    pageLength: 50,
+                    order: [[0, 'asc']],
+                    language: { emptyTable: "No roll generation results" }
+                });
+            }
+        });
+    </script>
+}

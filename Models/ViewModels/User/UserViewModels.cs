@@ -28,6 +28,9 @@ public class UserListItemVm
     
     /// <summary>Whether the linked employee is a teaching staff member.</summary>
     public bool? IsTeachingStaff { get; set; }
+
+    /// <summary>Profile picture path from linked entity.</summary>
+    public string? ProfilePicturePath { get; set; }
 }
 
 public class UserIndexViewModel
@@ -60,7 +63,8 @@ public class UserUpsertViewModel
 
     [DataType(DataType.Password)]
     [Display(Name = "Password")]
-    [StringLength(100, MinimumLength = 6, ErrorMessage = "Password must be at least 6 characters")]
+    [StringLength(100, MinimumLength = 8, ErrorMessage = "Password must be at least 8 characters")]
+    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$", ErrorMessage = "Password must include uppercase, lowercase, and a digit.")]
     public string? Password { get; set; }
 
     [DataType(DataType.Password)]

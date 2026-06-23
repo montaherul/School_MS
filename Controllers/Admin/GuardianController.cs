@@ -30,6 +30,7 @@ public class GuardianController : Controller
     }
 
     [HttpGet("search")]
+    [Authorize]
     public async Task<IActionResult> Search(string term)
     {
         var (items, _) = await _guardianService.GetGuardianListAsync(term, null, 1, 10);

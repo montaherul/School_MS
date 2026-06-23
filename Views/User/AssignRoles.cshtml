@@ -4,39 +4,51 @@
     ViewData["Title"] = "Assign Roles";
 }
 
-<div class="page-title">
-    <h1>@ViewData["Title"]</h1>
-    <div class="d-flex gap-2">
-        <a asp-action="Details" asp-route-id="@Model.UserId" class="btn btn-outline-secondary">Back to details</a>
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-shield"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Assign Roles</h1>
+                <p class="adm-header__sub">Assign roles for <strong>@Model.UserName</strong></p>
+            </div>
+        </div>
+        <a asp-action="Details" asp-route-id="@Model.UserId" class="adm-btn adm-btn--ghost">
+            <i class="bi bi-arrow-left"></i> Back to details
+        </a>
     </div>
-</div>
 
-<div class="panel">
-    <div class="mb-3 text-muted">
-        Assign roles for <b>@Model.UserName</b>
-    </div>
+    <div class="adm-table-card">
+        <div class="adm-table-card__body">
+            <form asp-action="AssignRoles" asp-route-id="@Model.UserId" method="post">
+                @Html.AntiForgeryToken()
 
-    <form asp-action="AssignRoles" asp-route-id="@Model.UserId" method="post">
-        @Html.AntiForgeryToken()
-
-        <div class="border rounded p-3">
-            @foreach (var role in Model.AvailableRoles)
-            {
-                var isChecked = Model.SelectedRoleIds.Contains(role.Id);
-                <div class="form-check mb-2">
-                    <input class="form-check-input"
-                           type="checkbox"
-                           name="selectedRoleIds"
-                           value="@role.Id"
-                           checked="@(isChecked ? "checked" : null)" />
-                    <label class="form-check-label">@role.Name</label>
+                <div style="border:1px solid var(--adm-border);border-radius:var(--adm-radius);padding:16px;background:var(--adm-surface-2)">
+                    @foreach (var role in Model.AvailableRoles)
+                    {
+                        var isChecked = Model.SelectedRoleIds.Contains(role.Id);
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+                            <input type="checkbox"
+                                   name="selectedRoleIds"
+                                   value="@role.Id"
+                                   checked="@(isChecked ? "checked" : null)"
+                                   style="accent-color:var(--adm-primary);width:16px;height:16px" />
+                            <label style="font-weight:600;font-size:13px;color:var(--adm-text);cursor:pointer">@role.Name</label>
+                        </div>
+                    }
                 </div>
-            }
-        </div>
 
-        <div class="mt-4">
-            <button class="btn btn-primary" type="submit">Save roles</button>
-            <a asp-action="Details" asp-route-id="@Model.UserId" class="btn btn-outline-secondary">Cancel</a>
+                <div style="margin-top:20px;display:flex;gap:10px">
+                    <button class="adm-btn adm-btn--primary" type="submit">
+                        <i class="bi bi-check-lg"></i> Save roles
+                    </button>
+                    <a asp-action="Details" asp-route-id="@Model.UserId" class="adm-btn adm-btn--ghost">
+                        <i class="bi bi-x"></i> Cancel
+                    </a>
+                </div>
+            </form>
         </div>
-    </form>
+    </div>
 </div>

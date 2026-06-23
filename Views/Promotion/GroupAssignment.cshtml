@@ -1,0 +1,156 @@
+@{
+    ViewData["Title"] = "Group Assignment";
+    var academicYears = ViewBag.AcademicYears as List<SchoolManagementSystem.Models.Entities.Academic.AcademicYear> ?? new();
+    var selectedYearId = (int)ViewBag.SelectedYearId;
+    var classes = ViewBag.Classes as List<SchoolManagementSystem.Models.Entities.Academic.SchoolClass> ?? new();
+    var selectedFromClassId = ViewBag.SelectedFromClassId as int?;
+    var selectedToClassId = ViewBag.SelectedToClassId as int?;
+    var results = ViewBag.Results as List<SchoolManagementSystem.Services.Interfaces.Result.GroupAssignmentResult> ?? new();
+}
+
+<div class="adm-page er-page">
+    <div class="er-page-header">
+        <div class="er-page-header__left">
+            <div class="er-page-header__icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="er-page-header__title">Group Assignment</h1>
+                <p class="er-page-header__sub">Assign student groups after promotion</p>
+            </div>
+        </div>
+        <div class="er-page-header__right">
+            <a href="@Url.Action("Index", "Promotion", new { academicYearId = selectedYearId })" class="er-btn er-btn--secondary">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></svg>
+                Back
+            </a>
+        </div>
+    </div>
+
+    <div class="er-card" style="border-radius:var(--adm-radius-lg);border-top:1px solid var(--adm-border);max-width:800px;margin-bottom:24px;">
+        <div class="er-card__body" style="padding:28px;">
+            <form asp-action="GroupAssignment" asp-controller="Promotion" method="post" id="groupForm">
+                @Html.AntiForgeryToken()
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label class="er-label">Academic Year <span style="color:var(--adm-rejected);">*</span></label>
+                        <select name="academicYearId" class="er-filters__select" required>
+                            @foreach (var y in academicYears)
+                            {
+                                <!option value="@y.Id" selected="@(y.Id == selectedYearId)">@y.Name</!option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="er-label">From Class <span style="color:var(--adm-rejected);">*</span></label>
+                        <select name="fromClassId" class="er-filters__select" required>
+                            <option value="">Select Class</option>
+                            @foreach (var c in classes)
+                            {
+                                <!option value="@c.Id" selected="@(c.Id == selectedFromClassId)">@c.Name</!option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="er-label">To Class <span style="color:var(--adm-rejected);">*</span></label>
+                        <select name="toClassId" class="er-filters__select" required>
+                            <option value="">Select Class</option>
+                            @foreach (var c in classes)
+                            {
+                                <!option value="@c.Id" selected="@(c.Id == selectedToClassId)">@c.Name</!option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="er-label">Assignment Method <span style="color:var(--adm-rejected);">*</span></label>
+                        <select name="method" class="er-filters__select" required>
+                            <option value="MeritBased">Merit Based (GPA Ranking)</option>
+                            <option value="SubjectGpaBased">Subject GPA Based</option>
+                            <option value="StudentChoice">Student Choice</option>
+                            <option value="AdminAssignment">Admin Assignment</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="margin-top:8px;">
+                    <button type="submit" class="er-btn er-btn--primary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12" /></svg>
+                        Assign Groups
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    @if (results.Any())
+    {
+        <div class="dash-section">
+            <div class="dash-section__header">
+                <h2 class="dash-section__title">Group Assignment Results</h2>
+                <span class="dash-count-badge">@results.Count Students</span>
+            </div>
+            <div class="er-card" style="border-radius:var(--adm-radius-lg);border-top:1px solid var(--adm-border);">
+                <div class="er-card__body">
+                    <div class="table-responsive" style="border-radius:var(--adm-radius-lg);min-width:unset;">
+                        <table class="dash-table" id="groupTable">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Student Name</th>
+                                    <th>Assigned Group</th>
+                                    <th>Method</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{ var idx = 0; }
+                                @foreach (var r in results)
+                                {
+                                    idx++;
+                                    <tr>
+                                        <td>@idx</td>
+                                        <td><span class="adm-cell-name">@r.StudentName</span></td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(r.AssignedGroupName))
+                                            {
+                                                <span class="er-badge er-badge--approved">@r.AssignedGroupName</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="er-badge er-badge--neutral">Unassigned</span>
+                                            }
+                                        </td>
+                                        <td><span class="er-badge er-badge--neutral">@r.Method</span></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (typeof $ !== 'undefined' && $.fn.DataTable && $('#groupTable').length) {
+                $('#groupTable').DataTable({
+                    responsive: true,
+                    pageLength: 50,
+                    order: [[0, 'asc']],
+                    language: { emptyTable: "No group assignment results" }
+                });
+            }
+        });
+    </script>
+}

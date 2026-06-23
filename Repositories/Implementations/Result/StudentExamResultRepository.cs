@@ -20,7 +20,7 @@ public class StudentExamResultRepository : BaseRepository<StudentExamResult>, IS
 
     public async Task<(List<ResultListItemDto> Items, int TotalCount)> GetResultListAsync(
         int? examId, int? classId, int? sectionId, int? studentGroupId, int? status,
-        string? searchTerm, int pageNumber, int pageSize, CancellationToken ct)
+        string? searchTerm, int pageNumber, int pageSize, CancellationToken ct, int? academicYearId = null)
     {
         var items = new List<ResultListItemDto>();
         var connection = _db.Database.GetDbConnection();
@@ -34,51 +34,53 @@ public class StudentExamResultRepository : BaseRepository<StudentExamResult>, IS
         AddParameter(command, "@StudentGroupId", studentGroupId);
         AddParameter(command, "@Status", status);
         AddParameter(command, "@SearchTerm", searchTerm);
+        AddParameter(command, "@AcademicYearId", academicYearId);
         AddParameter(command, "@PageNumber", pageNumber);
         AddParameter(command, "@PageSize", pageSize);
 
-        var totalCount = 0;
         await using var reader = await command.ExecuteReaderAsync(ct);
-        if (await reader.ReadAsync(ct))
+
+        // Result Set 1: Paged Data
+        while (await reader.ReadAsync(ct))
+        {
+            items.Add(new ResultListItemDto
+            {
+                Id = GetInt32(reader, "Id"),
+                ExamId = GetInt32(reader, "ExamId"),
+                ExamName = GetString(reader, "ExamName"),
+                Term = GetString(reader, "Term"),
+                StudentId = GetInt32(reader, "StudentId"),
+                StudentName = GetString(reader, "StudentName"),
+                StudentNo = GetString(reader, "StudentNo"),
+                RollNumber = GetString(reader, "RollNumber"),
+                ClassId = GetInt32(reader, "ClassId"),
+                ClassName = GetString(reader, "ClassName"),
+                SectionId = GetNullableInt32(reader, "SectionId"),
+                SectionName = GetString(reader, "SectionName"),
+                StudentGroupId = GetNullableInt32(reader, "StudentGroupId"),
+                GroupName = GetString(reader, "GroupName"),
+                TotalMarks = GetDecimal(reader, "TotalMarks"),
+                TotalFullMarks = GetDecimal(reader, "TotalFullMarks"),
+                Gpa = GetDecimal(reader, "Gpa"),
+                Grade = GetString(reader, "Grade"),
+                Position = GetInt32(reader, "Position"),
+                ClassPosition = GetInt32(reader, "ClassPosition"),
+                GroupPosition = GetNullableInt32(reader, "GroupPosition"),
+                IsPassed = GetBoolean(reader, "IsPassed"),
+                FailedSubjectCount = GetInt32(reader, "FailedSubjectCount"),
+                PassedSubjectCount = GetInt32(reader, "PassedSubjectCount"),
+                Status = GetInt32(reader, "Status"),
+                PublishedAt = GetNullableDateTime(reader, "PublishedAt")
+            });
+        }
+
+        // Result Set 2: Total Record Count
+        var totalCount = 0;
+        if (await reader.NextResultAsync(ct) && await reader.ReadAsync(ct))
         {
             totalCount = reader.IsDBNull(0) ? 0 : reader.GetInt32(0);
         }
 
-        if (await reader.NextResultAsync(ct))
-        {
-            while (await reader.ReadAsync(ct))
-            {
-                items.Add(new ResultListItemDto
-                {
-                    Id = GetInt32(reader, "Id"),
-                    ExamId = GetInt32(reader, "ExamId"),
-                    ExamName = GetString(reader, "ExamName"),
-                    Term = GetString(reader, "Term"),
-                    StudentId = GetInt32(reader, "StudentId"),
-                    StudentName = GetString(reader, "StudentName"),
-                    StudentNo = GetString(reader, "StudentNo"),
-                    RollNumber = GetString(reader, "RollNumber"),
-                    ClassId = GetInt32(reader, "ClassId"),
-                    ClassName = GetString(reader, "ClassName"),
-                    SectionId = GetNullableInt32(reader, "SectionId"),
-                    SectionName = GetString(reader, "SectionName"),
-                    StudentGroupId = GetNullableInt32(reader, "StudentGroupId"),
-                    GroupName = GetString(reader, "GroupName"),
-                    TotalMarks = GetDecimal(reader, "TotalMarks"),
-                    TotalFullMarks = GetDecimal(reader, "TotalFullMarks"),
-                    Gpa = GetDecimal(reader, "Gpa"),
-                    Grade = GetString(reader, "Grade"),
-                    Position = GetInt32(reader, "Position"),
-                    ClassPosition = GetInt32(reader, "ClassPosition"),
-                    GroupPosition = GetNullableInt32(reader, "GroupPosition"),
-                    IsPassed = GetBoolean(reader, "IsPassed"),
-                    FailedSubjectCount = GetInt32(reader, "FailedSubjectCount"),
-                    PassedSubjectCount = GetInt32(reader, "PassedSubjectCount"),
-                    Status = GetInt32(reader, "Status"),
-                    PublishedAt = GetNullableDateTime(reader, "PublishedAt")
-                });
-            }
-        }
         return (items, totalCount);
     }
 

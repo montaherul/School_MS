@@ -39,3 +39,31 @@ public class StudentResultSubjectDto
     public decimal GradePoint { get; set; }
     public bool IsPassed { get; set; }
 }
+
+/// <summary>
+/// Phase 5: Comprehensive final result DTO for student/academic year summary
+/// </summary>
+public class StudentFinalResultDto
+{
+    public int StudentId { get; set; }
+    public string StudentName { get; set; } = string.Empty;
+    public int AcademicYearId { get; set; }
+    public string AcademicYearName { get; set; } = string.Empty;
+
+    public decimal FinalGpa { get; set; }
+    public decimal WeightedTotalMarks { get; set; }
+    public string FinalGrade { get; set; } = string.Empty;
+
+    // All 4 position types
+    public int FinalPosition { get; set; }
+    public int FinalClassPosition { get; set; }
+    public int FinalSectionPosition { get; set; }
+    public int FinalGroupPosition { get; set; }
+
+    public int TotalPassedSubjects { get; set; }
+    public int TotalFailedSubjects { get; set; }
+    public decimal AttendancePercentage { get; set; }
+    public bool IsPassed { get; set; }
+    public int PromotionStatus { get; set; }
+    public string? PromotionRemarks { get; set; }
+}

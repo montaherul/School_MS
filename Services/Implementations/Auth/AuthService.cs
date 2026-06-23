@@ -141,6 +141,16 @@ public class AuthService : IAuthService
         token.Used = true;
         token.UpdatedAt = DateTime.UtcNow;
         token.UpdatedBy = "system";
+
+        var remainingTokens = await _unitOfWork.Repository<PasswordResetToken>().Query()
+            .Where(t => t.UserId == user.Id && !t.Used)
+            .ToListAsync(ct);
+        foreach (var remaining in remainingTokens)
+        {
+            remaining.Used = true;
+            _unitOfWork.Repository<PasswordResetToken>().Update(remaining);
+        }
+
         await _unitOfWork.SaveChangesAsync(ct);
         return (true, "Password reset successful.");
     }

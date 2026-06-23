@@ -168,8 +168,8 @@ public class MarksController : Controller
             }
 
             foreach (var m in dto.Marks) m.Status = ResultWorkflowStatus.Submitted;
-            await _markEntryService.SubmitMarksBatchAsync(dto);
-            return Json(new { success = true });
+            var result = await _markEntryService.SubmitMarksBatchTrackedAsync(dto);
+            return Json(new { success = true, savedCount = result.SavedCount, skippedStudentIds = result.SkippedStudentIds });
         }
         catch (Exception ex)
         {
@@ -396,7 +396,10 @@ public class MarksController : Controller
     {
         try
         {
-            await _markEntryService.LockMarksAsync(examId, subjectId, classId, sectionId);
+            if (sectionId <= 0)
+                await _markEntryService.LockMarksForClassAsync(examId, subjectId, classId);
+            else
+                await _markEntryService.LockMarksAsync(examId, subjectId, classId, sectionId);
             return Json(new { success = true });
         }
         catch (Exception ex)
@@ -411,7 +414,10 @@ public class MarksController : Controller
     {
         try
         {
-            await _markEntryService.UnlockMarksAsync(examId, subjectId, classId, sectionId);
+            if (sectionId <= 0)
+                await _markEntryService.UnlockMarksForClassAsync(examId, subjectId, classId);
+            else
+                await _markEntryService.UnlockMarksAsync(examId, subjectId, classId, sectionId);
             return Json(new { success = true });
         }
         catch (Exception ex)

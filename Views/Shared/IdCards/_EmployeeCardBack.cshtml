@@ -1,9 +1,12 @@
 @model SchoolManagementSystem.Models.ViewModels.IdCard.EmployeeIdCardViewModel
 @{
     var dept = !string.IsNullOrWhiteSpace(Model.Department) ? Model.Department : "---";
+    var designation = !string.IsNullOrWhiteSpace(Model.Designation) ? Model.Designation : "---";
     var email = !string.IsNullOrWhiteSpace(Model.SchoolEmail) ? Model.SchoolEmail : "---";
     var phone = !string.IsNullOrWhiteSpace(Model.SchoolPhone) ? Model.SchoolPhone : "---";
     var emergency = !string.IsNullOrWhiteSpace(Model.EmergencyContact) ? Model.EmergencyContact : "---";
+    var blood = !string.IsNullOrWhiteSpace(Model.BloodGroup) ? Model.BloodGroup : "N/A";
+    var joining = !string.IsNullOrWhiteSpace(Model.JoiningDate) ? Model.JoiningDate : "---";
     var address = !string.IsNullOrWhiteSpace(Model.PresentAddress) ? Model.PresentAddress : "---";
     var idDisplay = !string.IsNullOrWhiteSpace(Model.EmployeeIdNo) ? Model.EmployeeIdNo : "N/A";
     var motto = !string.IsNullOrWhiteSpace(Model.SchoolMotto) ? Model.SchoolMotto : "Knowledge. Discipline. Excellence";
@@ -22,6 +25,18 @@
                 <span class="idcard-back-info-value">@dept</span>
             </div>
             <div class="idcard-back-info-row">
+                <span class="idcard-back-info-label">Designation</span>
+                <span class="idcard-back-info-value">@designation</span>
+            </div>
+            <div class="idcard-back-info-row">
+                <span class="idcard-back-info-label">Joining</span>
+                <span class="idcard-back-info-value">@joining</span>
+            </div>
+            <div class="idcard-back-info-row">
+                <span class="idcard-back-info-label">Blood</span>
+                <span class="idcard-back-info-value">@blood</span>
+            </div>
+            <div class="idcard-back-info-row">
                 <span class="idcard-back-info-label">Office Email</span>
                 <span class="idcard-back-info-value">@email</span>
             </div>
@@ -38,25 +53,28 @@
                 <span class="idcard-back-info-value">@address</span>
             </div>
 
-            <div class="idcard-back-section-title">Rules</div>
-            <ul class="idcard-back-rules">
-                <li>Display while on duty</li>
-                <li>Return upon resignation</li>
-                <li>School property</li>
-                <li>Report loss immediately</li>
-            </ul>
-
-            <div class="idcard-back-qr">
-                <div class="idcard-back-qr-box">
-                    @if (!string.IsNullOrEmpty(Model.QrCodeDataUri))
-                    {
-                        <img src="@Model.QrCodeDataUri" alt="QR" />
-                    }
+            <div class="idcard-back-bottom">
+                <div class="idcard-back-bottom-rules">
+                    <div class="idcard-back-section-title">Rules</div>
+                    <ul class="idcard-back-rules">
+                        <li>Display while on duty</li>
+                        <li>Return upon resignation</li>
+                        <li>School property</li>
+                        <li>Report loss immediately</li>
+                    </ul>
                 </div>
-                <div class="idcard-back-qr-text">
-                    <div class="idcard-back-qr-title">SCAN FOR VERIFICATION</div>
-                    <div class="idcard-back-qr-sub">Secure identity</div>
-                    <div class="idcard-back-qr-id">@idDisplay</div>
+                <div class="idcard-back-qr">
+                    <div class="idcard-back-qr-box">
+                        @if (!string.IsNullOrEmpty(Model.QrCodeDataUri))
+                        {
+                            <img src="@Model.QrCodeDataUri" alt="QR" />
+                        }
+                    </div>
+                    <div class="idcard-back-qr-text">
+                        <div class="idcard-back-qr-title">SCAN</div>
+                        <div class="idcard-back-qr-sub">Verify identity</div>
+                        <div class="idcard-back-qr-id">@idDisplay</div>
+                    </div>
                 </div>
             </div>
         </div>

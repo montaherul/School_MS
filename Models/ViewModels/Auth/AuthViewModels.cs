@@ -34,7 +34,8 @@ public class ResetPasswordViewModel
 
     [Required]
     [DataType(DataType.Password)]
-    [StringLength(128, MinimumLength = 6, ErrorMessage = "Password must be at least 6 characters.")]
+    [StringLength(128, MinimumLength = 8, ErrorMessage = "Password must be at least 8 characters.")]
+    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$", ErrorMessage = "Password must include uppercase, lowercase, and a digit.")]
     [Display(Name = "New Password")]
     public string NewPassword { get; set; } = string.Empty;
 

@@ -295,7 +295,8 @@ public class Phase36A_ResultEngineFixTests
             Mock.Of<IGradeCalculator>(MockBehavior.Loose),
             Mock.Of<IComponentAggregator>(MockBehavior.Loose),
             Mock.Of<IPassFailPolicy>(MockBehavior.Loose),
-            Mock.Of<IMeritCalculationService>(MockBehavior.Loose));
+            Mock.Of<IMeritCalculationService>(MockBehavior.Loose),
+            Mock.Of<IResultPolicyService>(MockBehavior.Loose));
 
         await service.CalculateExamResultsAsync(1);
 
@@ -325,7 +326,8 @@ public class Phase36A_ResultEngineFixTests
             Mock.Of<IGradeCalculator>(MockBehavior.Loose),
             Mock.Of<IComponentAggregator>(MockBehavior.Loose),
             Mock.Of<IPassFailPolicy>(MockBehavior.Loose),
-            Mock.Of<IMeritCalculationService>(MockBehavior.Loose));
+            Mock.Of<IMeritCalculationService>(MockBehavior.Loose),
+            Mock.Of<IResultPolicyService>(MockBehavior.Loose));
 
         var result = await service.CanCalculateResultsAsync(1);
         Assert.False(result);

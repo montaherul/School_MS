@@ -4,136 +4,139 @@
     ViewData["Title"] = "User Details";
     var statusBadge = Model.Status switch
     {
-        SchoolManagementSystem.Models.Enums.AccountStatus.Active => "bg-success",
-        SchoolManagementSystem.Models.Enums.AccountStatus.Inactive => "bg-danger",
-        SchoolManagementSystem.Models.Enums.AccountStatus.Locked => "bg-dark",
-        SchoolManagementSystem.Models.Enums.AccountStatus.Pending => "bg-warning text-dark",
-        _ => "bg-secondary"
+        SchoolManagementSystem.Models.Enums.AccountStatus.Active => "adm-badge--success",
+        SchoolManagementSystem.Models.Enums.AccountStatus.Inactive => "adm-badge--danger",
+        SchoolManagementSystem.Models.Enums.AccountStatus.Locked => "adm-badge--info",
+        SchoolManagementSystem.Models.Enums.AccountStatus.Pending => "adm-badge--warning",
+        _ => "adm-badge--neutral"
     };
     var typeBadge = Model.UserType switch
     {
-        "Employee" => "bg-primary",
-        "Guardian" => "bg-success",
-        "Student" => "bg-warning text-dark",
-        _ => "bg-dark"
+        "Employee" => "adm-badge--primary",
+        "Guardian" => "adm-badge--success",
+        "Student" => "adm-badge--warning",
+        _ => "adm-badge--neutral"
     };
 }
 
-<div class="page-title d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h1 class="mb-1">
-            <i class="bi bi-person-gear me-2"></i>@ViewData["Title"]
-        </h1>
-        <p class="text-muted mb-0">
-            @Model.UserName
-        </p>
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-person-gear"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">User Details</h1>
+                <p class="adm-header__sub">@Model.UserName</p>
+            </div>
+        </div>
+        <div style="display:flex;gap:8px">
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="adm-btn adm-btn--primary">
+                <i class="bi bi-pencil"></i> Edit
+            </a>
+            <a asp-action="AssignRoles" asp-route-id="@Model.Id" class="adm-btn adm-btn--ghost">
+                <i class="bi bi-shield"></i> Roles
+            </a>
+            <a asp-action="Index" class="adm-btn adm-btn--ghost">
+                <i class="bi bi-arrow-left"></i> Back
+            </a>
+        </div>
     </div>
-    <div class="d-flex gap-2">
-        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary shadow-sm">
-            <i class="bi bi-pencil me-1"></i>Edit
-        </a>
-        <a asp-action="AssignRoles" asp-route-id="@Model.Id" class="btn btn-outline-secondary shadow-sm">
-            <i class="bi bi-shield me-1"></i>Roles
-        </a>
-        <a asp-action="Index" class="btn btn-outline-secondary shadow-sm">
-            <i class="bi bi-arrow-left me-1"></i>Back
-        </a>
-    </div>
-</div>
 
-<div class="card shadow-sm">
-    <div class="card-body">
-        <div class="row">
-            <div class="col-md-8">
-                <table class="table table-borderless mb-0">
-                    <tbody>
-                        <tr>
-                            <td class="text-muted fw-semibold" style="width:180px">Username</td>
-                            <td>@Model.UserName</td>
-                        </tr>
-                        <tr>
-                            <td class="text-muted fw-semibold">Email</td>
-                            <td>
-                                <a href="mailto:@Model.Email">@Model.Email</a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="text-muted fw-semibold">Phone</td>
-                            <td>
-                                @if (!string.IsNullOrEmpty(Model.PhoneNumber))
-                                {
-                                    <a href="tel:@Model.PhoneNumber">@Model.PhoneNumber</a>
-                                }
-                                else
-                                {
-                                    <span class="text-muted">—</span>
-                                }
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="text-muted fw-semibold">Status</td>
-                            <td>
-                                <span class="badge @statusBadge">@Model.StatusText</span>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="text-muted fw-semibold">Type</td>
-                            <td>
-                                <span class="badge @typeBadge">@Model.UserType</span>
-                                @if (Model.LinkedEntityName != "—")
-                                {
-                                    <span class="ms-2 text-muted small">(@Model.LinkedEntityName)</span>
-                                }
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="text-muted fw-semibold">Roles</td>
-                            <td>
-                                @if (Model.Roles.Count == 0)
-                                {
-                                    <span class="text-muted">No roles assigned</span>
-                                }
-                                else
-                                {
-                                    @foreach (var role in Model.Roles)
-                                    {
-                                        <span class="badge border bg-light text-dark me-1">@role</span>
-                                    }
-                                }
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="text-muted fw-semibold">Last Login</td>
-                            <td>
-                                @if (Model.LastLoginAt.HasValue)
-                                {
-                                    @Model.LastLoginAt.Value.ToString("yyyy-MM-dd HH:mm")
-                                }
-                                else
-                                {
-                                    <span class="text-muted">Never</span>
-                                }
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="text-muted fw-semibold">Created</td>
-                            <td>@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
-                        </tr>
-                        @if (Model.UpdatedAt.HasValue)
-                        {
+    <div class="adm-table-card">
+        <div class="adm-table-card__body">
+            <div style="display:grid;grid-template-columns:2fr 1fr;gap:32px">
+                <div>
+                    <table style="width:100%;border-collapse:collapse">
+                        <tbody>
                             <tr>
-                                <td class="text-muted fw-semibold">Last Updated</td>
-                                <td>
-                                    @Model.UpdatedAt.Value.ToString("yyyy-MM-dd HH:mm")
-                                    @if (!string.IsNullOrEmpty(Model.UpdatedBy))
+                                <td style="padding:10px 0;color:var(--adm-text-3);font-weight:600;width:180px">Username</td>
+                                <td style="padding:10px 0;color:var(--adm-text);font-weight:500">@Model.UserName</td>
+                            </tr>
+                            <tr>
+                                <td style="padding:10px 0;color:var(--adm-text-3);font-weight:600">Email</td>
+                                <td style="padding:10px 0">
+                                    <a href="mailto:@Model.Email" style="color:var(--adm-primary);text-decoration:none;font-weight:500">@Model.Email</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding:10px 0;color:var(--adm-text-3);font-weight:600">Phone</td>
+                                <td style="padding:10px 0">
+                                    @if (!string.IsNullOrEmpty(Model.PhoneNumber))
                                     {
-                                        <span class="text-muted small ms-1">by @Model.UpdatedBy</span>
+                                        <a href="tel:@Model.PhoneNumber" style="color:var(--adm-primary);text-decoration:none;font-weight:500">@Model.PhoneNumber</a>
+                                    }
+                                    else
+                                    {
+                                        <span style="color:var(--adm-text-3)">—</span>
                                     }
                                 </td>
                             </tr>
-                        }
-                    </tbody>
-                </table>
+                            <tr>
+                                <td style="padding:10px 0;color:var(--adm-text-3);font-weight:600">Status</td>
+                                <td style="padding:10px 0">
+                                    <span class="adm-badge @statusBadge">@Model.StatusText</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding:10px 0;color:var(--adm-text-3);font-weight:600">Type</td>
+                                <td style="padding:10px 0">
+                                    <span class="adm-badge @typeBadge">@Model.UserType</span>
+                                    @if (Model.LinkedEntityName != "—")
+                                    {
+                                        <span style="font-size:12px;color:var(--adm-text-3);margin-left:8px">(@Model.LinkedEntityName)</span>
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding:10px 0;color:var(--adm-text-3);font-weight:600">Roles</td>
+                                <td style="padding:10px 0">
+                                    @if (Model.Roles.Count == 0)
+                                    {
+                                        <span style="color:var(--adm-text-3)">No roles assigned</span>
+                                    }
+                                    else
+                                    {
+                                        @foreach (var role in Model.Roles)
+                                        {
+                                            <span class="adm-badge adm-badge--neutral" style="margin-right:4px">@role</span>
+                                        }
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding:10px 0;color:var(--adm-text-3);font-weight:600">Last Login</td>
+                                <td style="padding:10px 0;color:var(--adm-text)">
+                                    @if (Model.LastLoginAt.HasValue)
+                                    {
+                                        @Model.LastLoginAt.Value.ToString("yyyy-MM-dd HH:mm")
+                                    }
+                                    else
+                                    {
+                                        <span style="color:var(--adm-text-3)">Never</span>
+                                    }
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding:10px 0;color:var(--adm-text-3);font-weight:600">Created</td>
+                                <td style="padding:10px 0;color:var(--adm-text)">@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                            </tr>
+                            @if (Model.UpdatedAt.HasValue)
+                            {
+                                <tr>
+                                    <td style="padding:10px 0;color:var(--adm-text-3);font-weight:600">Last Updated</td>
+                                    <td style="padding:10px 0;color:var(--adm-text)">
+                                        @Model.UpdatedAt.Value.ToString("yyyy-MM-dd HH:mm")
+                                        @if (!string.IsNullOrEmpty(Model.UpdatedBy))
+                                        {
+                                            <span style="font-size:12px;color:var(--adm-text-3);margin-left:4px">by @Model.UpdatedBy</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>

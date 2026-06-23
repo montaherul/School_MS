@@ -256,6 +256,9 @@ await using (var scope = app.Services.CreateAsyncScope())
     // RBAC: ensure Exam Controller role exists and has the required permissions
     await ExamControllerRbacSeeder.SeedAsync(db);
 
+    // RBAC: ensure Website admin permissions exist and are granted to admin roles
+    await WebsiteRbacSeeder.SeedAsync(db);
+
     // RBAC safety net: ensure Guardian role is permanently restricted to the
     // 9 portal permissions (run after all seeders so it can correct any
     // drift introduced by historical or future migrations).
@@ -269,82 +272,6 @@ await using (var scope = app.Services.CreateAsyncScope())
 
 
 
-
-// DEBUG: ID card generation test (remove after verification)
-app.MapGet("/debug/gen-student/{id:int}", async (int id, HttpContext ctx) =>
-{
-    var ss = ctx.RequestServices.GetRequiredService<SchoolManagementSystem.Services.Interfaces.Students.IStudentService>();
-    var ws = ctx.RequestServices.GetRequiredService<SchoolManagementSystem.Services.Interfaces.Website.ISchoolWebsiteService>();
-    var pg = ctx.RequestServices.GetRequiredService<SchoolManagementSystem.Helpers.Pdf.IPdfGenerator>();
-    var uow = ctx.RequestServices.GetRequiredService<SchoolManagementSystem.UnitOfWork.Interfaces.IUnitOfWork>();
-
-    var dto = await ss.GetForEditAsync(id, ctx.RequestAborted);
-    if (dto == null) return Results.NotFound("Student not found");
-
-    var school = await ws.GetSettingsAsync(ctx.RequestAborted);
-    var academicYear = await uow.Repository<SchoolManagementSystem.Models.Entities.Academic.AcademicYear>().Query()
-        .Where(y => y.IsActive).Select(y => y.Name).FirstOrDefaultAsync(ctx.RequestAborted)
-        ?? $"Academic Year {DateTime.Today.Year}";
-
-    var vm = new SchoolManagementSystem.Models.ViewModels.Student.IdCardPrintViewModel
-    {
-        Students = [dto],
-        SchoolLogoPath = school.LogoPath ?? "",
-        SchoolSealPath = school.PrincipalSignaturePath ?? "",
-        SchoolNameEn = school.SchoolName,
-        SchoolNameBn = school.BanglaName ?? "",
-        SchoolEIIN = school.EIIN,
-        SchoolWebsite = school.Website,
-        SchoolMotto = school.SchoolMotto ?? "",
-        AcademicYear = academicYear,
-        SchoolAddress = school.Address,
-        SchoolPhone = school.Phone,
-        SchoolEmail = school.Email,
-        PrincipalName = school.PrincipalName ?? "",
-        PrincipalSignaturePath = school.PrincipalSignaturePath ?? "",
-        FooterText = school.FooterText
-    };
-
-    var pdf = pg.GenerateStudentIdCardPdf(vm);
-    return Results.File(pdf, "application/pdf", $"debug_student_{id}.pdf");
-});
-
-app.MapGet("/debug/gen-employee/{id:int}", async (int id, HttpContext ctx) =>
-{
-    var es = ctx.RequestServices.GetRequiredService<SchoolManagementSystem.Services.Interfaces.Employee.IEmployeeService>();
-    var ws = ctx.RequestServices.GetRequiredService<SchoolManagementSystem.Services.Interfaces.Website.ISchoolWebsiteService>();
-    var pg = ctx.RequestServices.GetRequiredService<SchoolManagementSystem.Helpers.Pdf.IPdfGenerator>();
-    var uow = ctx.RequestServices.GetRequiredService<SchoolManagementSystem.UnitOfWork.Interfaces.IUnitOfWork>();
-
-    var emp = await es.GetDetailsAsync(id, ctx.RequestAborted);
-    if (emp == null) return Results.NotFound("Employee not found");
-
-    var school = await ws.GetSettingsAsync(ctx.RequestAborted);
-    var academicYear = await uow.Repository<SchoolManagementSystem.Models.Entities.Academic.AcademicYear>().Query()
-        .Where(y => y.IsActive).Select(y => y.Name).FirstOrDefaultAsync(ctx.RequestAborted)
-        ?? $"Academic Year {DateTime.Today.Year}";
-
-    var vm = new SchoolManagementSystem.Models.ViewModels.Employee.EmployeeIdCardPrintViewModel
-    {
-        Employees = [emp],
-        SchoolLogoPath = school.LogoPath ?? "",
-        SchoolSealPath = school.PrincipalSignaturePath ?? "",
-        SchoolNameEn = school.SchoolName,
-        SchoolEIIN = school.EIIN,
-        SchoolWebsite = school.Website,
-        SchoolMotto = school.SchoolMotto ?? "",
-        AcademicYear = academicYear,
-        SchoolAddress = school.Address,
-        SchoolPhone = school.Phone,
-        SchoolEmail = school.Email,
-        PrincipalName = school.PrincipalName ?? "",
-        PrincipalSignaturePath = school.PrincipalSignaturePath ?? "",
-        FooterText = school.FooterText
-    };
-
-    var pdf = pg.GenerateEmployeeIdCardPdf(vm);
-    return Results.File(pdf, "application/pdf", $"debug_employee_{id}.pdf");
-});
 
 app.Run();
 

@@ -1,0 +1,431 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using SchoolManagementSystem.Data;
+using SchoolManagementSystem.Models.Entities.Academic;
+using SchoolManagementSystem.Models.Entities.Result;
+using SchoolManagementSystem.Models.Enums;
+using SchoolManagementSystem.Services.Interfaces.Result;
+using SchoolManagementSystem.UnitOfWork.Interfaces;
+using System.Security.Claims;
+
+namespace SchoolManagementSystem.Controllers.Result;
+
+[Authorize]
+public class PromotionController : Controller
+{
+    private readonly IPromotionService _promotionService;
+    private readonly IPromotionPolicyService _promotionPolicyService;
+    private readonly IRollGenerationService _rollGenerationService;
+    private readonly IUnitOfWork _uow;
+
+    public PromotionController(
+        IPromotionService promotionService,
+        IPromotionPolicyService promotionPolicyService,
+        IRollGenerationService rollGenerationService,
+        IUnitOfWork uow)
+    {
+        _promotionService = promotionService;
+        _promotionPolicyService = promotionPolicyService;
+        _rollGenerationService = rollGenerationService;
+        _uow = uow;
+    }
+
+    [HttpGet]
+    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    public async Task<IActionResult> Index(int? academicYearId, CancellationToken ct = default)
+    {
+        var academicYears = await _uow.Repository<AcademicYear>().ListAsync(x => !x.IsDeleted, ct);
+        var activeYear = academicYears.FirstOrDefault(x => x.IsActive);
+        var yearId = academicYearId ?? activeYear?.Id ?? 0;
+
+        var classes = await _uow.Repository<SchoolClass>().ListAsync(x => !x.IsDeleted && x.IsActive, ct);
+        var classesSorted = classes.OrderBy(c => c.SortOrder).ToList();
+
+        var promotions = new List<object>();
+        foreach (var cls in classesSorted)
+        {
+            var policies = await _promotionPolicyService.GetAllPromotionPoliciesAsync(yearId, ct);
+            var classPolicy = policies.FirstOrDefault(p => p.SchoolClassId == cls.Id);
+
+            var execution = yearId > 0 ? await _uow.Repository<PromotionExecution>().Query()
+                .Where(e => e.AcademicYearId == yearId && e.SchoolClassId == cls.Id && !e.IsDeleted)
+                .OrderByDescending(e => e.ExecutedAt)
+                .FirstOrDefaultAsync(ct) : null;
+
+            promotions.Add(new
+            {
+                ClassId = cls.Id,
+                ClassName = cls.Name,
+                TotalStudents = execution?.TotalStudents ?? 0,
+                PromotedCount = execution?.PromotedCount ?? 0,
+                RepeatCount = execution?.RepeatCount ?? 0,
+                FailedCount = execution?.FailedCount ?? 0,
+                HasPolicy = classPolicy != null,
+                PolicyName = classPolicy?.Name ?? "",
+                HasExecution = execution != null,
+                ExecutionDate = execution?.ExecutedAt.ToString("dd MMM yyyy") ?? ""
+            });
+        }
+
+        ViewBag.AcademicYears = academicYears;
+        ViewBag.SelectedYearId = yearId;
+        ViewBag.ActiveYear = activeYear;
+        ViewBag.Promotions = promotions;
+        ViewBag.Classes = classesSorted;
+
+        return View();
+    }
+
+    [HttpGet]
+    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    public async Task<IActionResult> Evaluate(int classId, int academicYearId, CancellationToken ct = default)
+    {
+        var results = await _promotionPolicyService.EvaluateClassPromotionAsync(classId, academicYearId, ct);
+        var cls = await _uow.Repository<SchoolClass>().GetByIdAsync(classId);
+        var year = await _uow.Repository<AcademicYear>().GetByIdAsync(academicYearId);
+        var policy = await _promotionPolicyService.GetPromotionPolicyAsync(academicYearId, classId, ct);
+
+        ViewBag.Class = cls;
+        ViewBag.AcademicYear = year;
+        ViewBag.Policy = policy;
+        ViewBag.ClassId = classId;
+        ViewBag.AcademicYearId = academicYearId;
+
+        return View(results);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    public async Task<IActionResult> Execute(int classId, int academicYearId, CancellationToken ct = default)
+    {
+        try
+        {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+            var result = await _promotionPolicyService.ExecutePromotionAsync(classId, academicYearId, userId, ct);
+            TempData["Success"] = $"Promotion executed successfully. Promoted: {result.PromotedCount}, Repeat: {result.RepeatCount}, Failed: {result.FailedCount}";
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = $"Error executing promotion: {ex.Message}";
+        }
+        return RedirectToAction(nameof(Index), new { academicYearId });
+    }
+
+    [HttpGet]
+    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    public async Task<IActionResult> History(int? studentId, int? classId, int? academicYearId, CancellationToken ct = default)
+    {
+        var academicYears = await _uow.Repository<AcademicYear>().ListAsync(x => !x.IsDeleted, ct);
+        var activeYear = academicYears.FirstOrDefault(x => x.IsActive);
+        var yearId = academicYearId ?? activeYear?.Id ?? 0;
+
+        var classes = await _uow.Repository<SchoolClass>().ListAsync(x => !x.IsDeleted && x.IsActive, ct);
+
+        List<PromotionHistory> history = new();
+
+        if (studentId.HasValue)
+        {
+            history = await _uow.Repository<PromotionHistory>().Query()
+                .Include(h => h.Student)
+                .Include(h => h.FromClass)
+                .Include(h => h.ToClass)
+                .Include(h => h.AcademicYear)
+                .Where(h => h.StudentId == studentId.Value && !h.IsDeleted)
+                .OrderByDescending(h => h.PromotedAt)
+                .ToListAsync(ct);
+        }
+        else if (classId.HasValue && yearId > 0)
+        {
+            history = await _uow.Repository<PromotionHistory>().Query()
+                .Include(h => h.Student)
+                .Include(h => h.FromClass)
+                .Include(h => h.ToClass)
+                .Include(h => h.AcademicYear)
+                .Where(h => h.AcademicYearId == yearId
+                    && (h.FromClassId == classId.Value || h.ToClassId == classId.Value)
+                    && !h.IsDeleted)
+                .OrderByDescending(h => h.PromotedAt)
+                .ToListAsync(ct);
+        }
+        else if (yearId > 0)
+        {
+            history = await _uow.Repository<PromotionHistory>().Query()
+                .Include(h => h.Student)
+                .Include(h => h.FromClass)
+                .Include(h => h.ToClass)
+                .Include(h => h.AcademicYear)
+                .Where(h => h.AcademicYearId == yearId && !h.IsDeleted)
+                .OrderByDescending(h => h.PromotedAt)
+                .Take(200)
+                .ToListAsync(ct);
+        }
+
+        ViewBag.AcademicYears = academicYears;
+        ViewBag.SelectedYearId = yearId;
+        ViewBag.Classes = classes;
+        ViewBag.SelectedClassId = classId;
+        ViewBag.SelectedStudentId = studentId;
+
+        return View(history);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    public async Task<IActionResult> Reverse(int promotionHistoryId, string reason, int? academicYearId, CancellationToken ct = default)
+    {
+        try
+        {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+            await _promotionService.ReversePromotionAsync(promotionHistoryId, userId, reason);
+            TempData["Success"] = "Promotion reversed successfully.";
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = $"Error reversing promotion: {ex.Message}";
+        }
+        return RedirectToAction(nameof(History), new { academicYearId });
+    }
+
+    [HttpGet]
+    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    public async Task<IActionResult> Policies(int? academicYearId, CancellationToken ct = default)
+    {
+        var academicYears = await _uow.Repository<AcademicYear>().ListAsync(x => !x.IsDeleted, ct);
+        var activeYear = academicYears.FirstOrDefault(x => x.IsActive);
+        var yearId = academicYearId ?? activeYear?.Id ?? 0;
+
+        var policies = yearId > 0
+            ? await _promotionPolicyService.GetAllPromotionPoliciesAsync(yearId, ct)
+            : new List<PromotionPolicy>();
+
+        var classes = await _uow.Repository<SchoolClass>().ListAsync(x => !x.IsDeleted && x.IsActive, ct);
+
+        ViewBag.AcademicYears = academicYears;
+        ViewBag.SelectedYearId = yearId;
+        ViewBag.Classes = classes;
+
+        return View(policies);
+    }
+
+    [HttpGet]
+    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    public async Task<IActionResult> PolicyCreate(int? academicYearId, CancellationToken ct = default)
+    {
+        var academicYears = await _uow.Repository<AcademicYear>().ListAsync(x => !x.IsDeleted, ct);
+        var activeYear = academicYears.FirstOrDefault(x => x.IsActive);
+        var classes = await _uow.Repository<SchoolClass>().ListAsync(x => !x.IsDeleted && x.IsActive, ct);
+
+        ViewBag.AcademicYears = academicYears;
+        ViewBag.SelectedYearId = academicYearId ?? activeYear?.Id ?? 0;
+        ViewBag.Classes = classes;
+
+        return View("PolicyForm");
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    public async Task<IActionResult> PolicyCreate(PromotionPolicy policy, string? criticalSubjects, CancellationToken ct = default)
+    {
+        try
+        {
+            policy.CriticalSubjectsJson = !string.IsNullOrEmpty(criticalSubjects)
+                ? System.Text.Json.JsonSerializer.Serialize(criticalSubjects.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToList())
+                : null;
+
+            await _promotionPolicyService.CreatePromotionPolicyAsync(policy, [], ct);
+            TempData["Success"] = "Promotion policy created successfully.";
+            return RedirectToAction(nameof(Policies), new { academicYearId = policy.AcademicYearId });
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = $"Error creating policy: {ex.Message}";
+            var academicYears = await _uow.Repository<AcademicYear>().ListAsync(x => !x.IsDeleted, ct);
+            var classes = await _uow.Repository<SchoolClass>().ListAsync(x => !x.IsDeleted && x.IsActive, ct);
+            ViewBag.AcademicYears = academicYears;
+            ViewBag.SelectedYearId = policy.AcademicYearId;
+            ViewBag.Classes = classes;
+            return View("PolicyForm", policy);
+        }
+    }
+
+    [HttpGet]
+    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    public async Task<IActionResult> PolicyEdit(int id, CancellationToken ct = default)
+    {
+        var policy = await _uow.Repository<PromotionPolicy>().Query()
+            .Include(p => p.Rules)
+            .FirstOrDefaultAsync(p => p.Id == id && !p.IsDeleted, ct);
+
+        if (policy == null) return NotFound();
+
+        var academicYears = await _uow.Repository<AcademicYear>().ListAsync(x => !x.IsDeleted, ct);
+        var classes = await _uow.Repository<SchoolClass>().ListAsync(x => !x.IsDeleted && x.IsActive, ct);
+
+        ViewBag.AcademicYears = academicYears;
+        ViewBag.SelectedYearId = policy.AcademicYearId;
+        ViewBag.Classes = classes;
+        ViewBag.IsEdit = true;
+
+        return View("PolicyForm", policy);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    public async Task<IActionResult> PolicyEdit(PromotionPolicy policy, string? criticalSubjects, CancellationToken ct = default)
+    {
+        try
+        {
+            policy.CriticalSubjectsJson = !string.IsNullOrEmpty(criticalSubjects)
+                ? System.Text.Json.JsonSerializer.Serialize(criticalSubjects.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToList())
+                : null;
+
+            await _promotionPolicyService.UpdatePromotionPolicyAsync(policy, [], ct);
+            TempData["Success"] = "Promotion policy updated successfully.";
+            return RedirectToAction(nameof(Policies), new { academicYearId = policy.AcademicYearId });
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = $"Error updating policy: {ex.Message}";
+            var academicYears = await _uow.Repository<AcademicYear>().ListAsync(x => !x.IsDeleted, ct);
+            var classes = await _uow.Repository<SchoolClass>().ListAsync(x => !x.IsDeleted && x.IsActive, ct);
+            ViewBag.AcademicYears = academicYears;
+            ViewBag.SelectedYearId = policy.AcademicYearId;
+            ViewBag.Classes = classes;
+            ViewBag.IsEdit = true;
+            return View("PolicyForm", policy);
+        }
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    public async Task<IActionResult> PolicyDelete(int id, int academicYearId, CancellationToken ct = default)
+    {
+        try
+        {
+            await _promotionPolicyService.DeletePromotionPolicyAsync(id, ct);
+            TempData["Success"] = "Promotion policy deleted.";
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = $"Error deleting policy: {ex.Message}";
+        }
+        return RedirectToAction(nameof(Policies), new { academicYearId });
+    }
+
+    [HttpGet]
+    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    public async Task<IActionResult> RollGeneration(int? academicYearId, int? classId, CancellationToken ct = default)
+    {
+        var academicYears = await _uow.Repository<AcademicYear>().ListAsync(x => !x.IsDeleted, ct);
+        var activeYear = academicYears.FirstOrDefault(x => x.IsActive);
+        var yearId = academicYearId ?? activeYear?.Id ?? 0;
+
+        var classes = await _uow.Repository<SchoolClass>().ListAsync(x => !x.IsDeleted && x.IsActive, ct);
+
+        ViewBag.AcademicYears = academicYears;
+        ViewBag.SelectedYearId = yearId;
+        ViewBag.Classes = classes;
+        ViewBag.SelectedClassId = classId;
+        ViewBag.Results = new List<SchoolManagementSystem.Services.Interfaces.Result.RollGenerationResult>();
+
+        return View();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    public async Task<IActionResult> RollGeneration(int academicYearId, int classId, RollGenerationStrategy strategy, CancellationToken ct = default)
+    {
+        try
+        {
+            await _rollGenerationService.SaveConfigAsync(academicYearId, classId, strategy, ct);
+            var results = await _rollGenerationService.GenerateRollsAsync(academicYearId, classId, ct);
+
+            var academicYears = await _uow.Repository<AcademicYear>().ListAsync(x => !x.IsDeleted, ct);
+            var classes = await _uow.Repository<SchoolClass>().ListAsync(x => !x.IsDeleted && x.IsActive, ct);
+
+            ViewBag.AcademicYears = academicYears;
+            ViewBag.SelectedYearId = academicYearId;
+            ViewBag.Classes = classes;
+            ViewBag.SelectedClassId = classId;
+            ViewBag.Results = results;
+            TempData["Success"] = $"Roll numbers generated successfully for {results.Count} students.";
+
+            return View();
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = $"Error generating rolls: {ex.Message}";
+            return RedirectToAction(nameof(RollGeneration), new { academicYearId, classId });
+        }
+    }
+
+    [HttpGet]
+    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    public async Task<IActionResult> GroupAssignment(int? fromClassId, int? toClassId, int? academicYearId, CancellationToken ct = default)
+    {
+        var academicYears = await _uow.Repository<AcademicYear>().ListAsync(x => !x.IsDeleted, ct);
+        var activeYear = academicYears.FirstOrDefault(x => x.IsActive);
+        var yearId = academicYearId ?? activeYear?.Id ?? 0;
+
+        var classes = await _uow.Repository<SchoolClass>().ListAsync(x => !x.IsDeleted && x.IsActive, ct);
+
+        ViewBag.AcademicYears = academicYears;
+        ViewBag.SelectedYearId = yearId;
+        ViewBag.Classes = classes;
+        ViewBag.SelectedFromClassId = fromClassId;
+        ViewBag.SelectedToClassId = toClassId;
+        ViewBag.Results = new List<SchoolManagementSystem.Services.Interfaces.Result.GroupAssignmentResult>();
+
+        return View();
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    public async Task<IActionResult> GroupAssignment(int fromClassId, int toClassId, int academicYearId, GroupAssignmentMethod method, CancellationToken ct = default)
+    {
+        try
+        {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
+            var results = await _promotionPolicyService.AssignGroupsAsync(fromClassId, toClassId, academicYearId, userId, ct);
+
+            var academicYears = await _uow.Repository<AcademicYear>().ListAsync(x => !x.IsDeleted, ct);
+            var classes = await _uow.Repository<SchoolClass>().ListAsync(x => !x.IsDeleted && x.IsActive, ct);
+
+            ViewBag.AcademicYears = academicYears;
+            ViewBag.SelectedYearId = academicYearId;
+            ViewBag.Classes = classes;
+            ViewBag.SelectedFromClassId = fromClassId;
+            ViewBag.SelectedToClassId = toClassId;
+            ViewBag.Results = results;
+            TempData["Success"] = $"Groups assigned for {results.Count} students.";
+
+            return View();
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = $"Error assigning groups: {ex.Message}";
+            return RedirectToAction(nameof(GroupAssignment), new { fromClassId, toClassId, academicYearId });
+        }
+    }
+
+    [HttpGet]
+    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    public async Task<IActionResult> GetClassStudentsJson(int classId, int academicYearId, CancellationToken ct)
+    {
+        var students = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query()
+            .Where(s => s.ClassId == classId && !s.IsDeleted)
+            .Select(s => new { s.Id, s.FullName, s.RollNumber })
+            .OrderBy(s => s.RollNumber)
+            .ToListAsync(ct);
+
+        return Json(new { data = students });
+    }
+}

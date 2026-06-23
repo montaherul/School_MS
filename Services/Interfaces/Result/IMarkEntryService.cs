@@ -15,5 +15,8 @@ public interface IMarkEntryService : IBaseService<MarkEntry>
 
     Task LockMarksAsync(int examId, int subjectId, int classId, int sectionId);
     Task UnlockMarksAsync(int examId, int subjectId, int classId, int sectionId);
+    Task LockMarksForClassAsync(int examId, int subjectId, int classId);
+    Task UnlockMarksForClassAsync(int examId, int subjectId, int classId);
+    Task<BatchSaveResultDto> SubmitMarksBatchTrackedAsync(MarkBatchDto dto);
     Task<EntryStatusSummaryDto> GetEntryStatusAsync(int examId, int? classId = null);
 }

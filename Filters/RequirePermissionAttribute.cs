@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.EntityFrameworkCore;
-using SchoolManagementSystem.Data;
+using SchoolManagementSystem.Services.Interfaces.Admin;
 
 namespace SchoolManagementSystem.Filters;
 
@@ -28,14 +27,20 @@ public class RequirePermissionAttribute : Attribute, IAsyncAuthorizationFilter
             return;
         }
 
-        var db = context.HttpContext.RequestServices.GetRequiredService<SchoolDbContext>();
         var roles = context.HttpContext.User.Claims
             .Where(x => x.Type == System.Security.Claims.ClaimTypes.Role)
             .Select(x => x.Value)
+            .Distinct()
             .ToArray();
 
-        var allowed = await db.RolePermissions
-            .AnyAsync(rp => rp.Permission != null && rp.Role != null && rp.Permission.Code == _permissionCode && roles.Contains(rp.Role.Name));
+        if (roles.Length == 0)
+        {
+            context.Result = new ForbidResult();
+            return;
+        }
+
+        var cacheService = context.HttpContext.RequestServices.GetRequiredService<IPermissionCacheService>();
+        var allowed = await cacheService.HasPermissionAsync(roles, _permissionCode, context.HttpContext.RequestAborted);
 
         if (!allowed)
         {

@@ -100,8 +100,15 @@ public class ImportResultDto
 {
     public int TotalRows { get; set; }
     public int SuccessCount { get; set; }
+    public int SkippedCount { get; set; }
     public int ErrorCount { get; set; }
     public List<ImportErrorItemDto> Errors { get; set; } = [];
+}
+
+public class BatchSaveResultDto
+{
+    public int SavedCount { get; set; }
+    public List<int> SkippedStudentIds { get; set; } = [];
 }
 
 public class ImportErrorItemDto
@@ -193,6 +200,15 @@ public class StudentTranscriptDto
     public decimal FinalGPA { get; set; }
     public string FinalGrade { get; set; } = string.Empty;
     public int MeritPosition { get; set; }
+
+    // Phase 5: All 4 position types
+    public int FinalClassPosition { get; set; }
+    public int FinalSectionPosition { get; set; }
+    public int FinalGroupPosition { get; set; }
+    public decimal WeightedTotalMarks { get; set; }
+    public int TotalPassedSubjects { get; set; }
+    public int TotalFailedSubjects { get; set; }
+    public decimal AttendancePercentage { get; set; }
 
     public List<StudentExamResultDto> ExamResults { get; set; } = [];
     public List<SubjectTranscriptDto> SubjectWiseResults { get; set; } = [];
@@ -390,10 +406,17 @@ public class FinalResultDto
     public int AcademicYearId { get; set; }
     public int StudentId { get; set; }
     public decimal FinalGpa { get; set; }
+    public decimal WeightedTotalMarks { get; set; }
     public int FinalPosition { get; set; }
+    public int FinalClassPosition { get; set; }
+    public int FinalSectionPosition { get; set; }
+    public int FinalGroupPosition { get; set; }
+    public string FinalGrade { get; set; } = string.Empty;
+    public int TotalPassedSubjects { get; set; }
+    public int TotalFailedSubjects { get; set; }
+    public decimal AttendancePercentage { get; set; }
     public PromotionStatus PromotionStatus { get; set; }
     public bool IsPassed { get; set; }
-    public int TotalFailedSubjects { get; set; }
     public string? PromotionRemarks { get; set; }
 }
 
