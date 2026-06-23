@@ -6,216 +6,45 @@
     var designations = ViewBag.Designations as IEnumerable<DesignationDto> ?? Enumerable.Empty<DesignationDto>();
 }
 
-<style>
-    .ea-page {
-        display: grid;
-        gap: 18px;
-    }
+@Html.AntiForgeryToken()
 
-    .ea-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 16px;
-    }
-
-    .ea-title {
-        margin: 0;
-        font-size: 26px;
-        font-weight: 800;
-        color: #111827;
-    }
-
-    .ea-subtitle {
-        margin: 4px 0 0;
-        color: #64748b;
-        font-size: 14px;
-    }
-
-    .ea-panel,
-    .ea-grid-wrap {
-        background: #fff;
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        box-shadow: 0 10px 28px rgba(15, 23, 42, .06);
-    }
-
-    .ea-panel {
-        padding: 18px;
-    }
-
-    .ea-toolbar {
-        position: sticky;
-        top: 70px;
-        z-index: 5;
-        display: flex;
-        justify-content: space-between;
-        gap: 12px;
-        flex-wrap: wrap;
-        padding: 12px 14px;
-        border-bottom: 1px solid #e5e7eb;
-        background: rgba(255, 255, 255, .96);
-        backdrop-filter: blur(12px);
-    }
-
-    .ea-summary {
-        display: grid;
-        grid-template-columns: repeat(5, minmax(140px, 1fr));
-        gap: 12px;
-    }
-
-    .ea-card {
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        background: #fff;
-        padding: 14px;
-    }
-
-    .ea-card__label {
-        display: block;
-        color: #64748b;
-        font-size: 12px;
-        font-weight: 700;
-        text-transform: uppercase;
-    }
-
-    .ea-card__value {
-        display: block;
-        margin-top: 6px;
-        font-size: 24px;
-        font-weight: 800;
-        color: #111827;
-    }
-
-    .ea-status-badge {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 76px;
-        border-radius: 999px;
-        padding: 5px 10px;
-        font-size: 12px;
-        font-weight: 800;
-        border: 1px solid transparent;
-    }
-
-    .ea-status-Present {
-        color: #047857;
-        background: #d1fae5;
-        border-color: #a7f3d0;
-    }
-
-    .ea-status-Absent {
-        color: #b91c1c;
-        background: #fee2e2;
-        border-color: #fecaca;
-    }
-
-    .ea-status-Late {
-        color: #92400e;
-        background: #fef3c7;
-        border-color: #fde68a;
-    }
-
-    .ea-status-Leave {
-        color: #1d4ed8;
-        background: #dbeafe;
-        border-color: #bfdbfe;
-    }
-
-    .ea-toast-stack {
-        position: fixed;
-        top: 84px;
-        right: 18px;
-        z-index: 1090;
-        display: grid;
-        gap: 10px;
-        width: min(360px, calc(100vw - 28px));
-    }
-
-    .ea-toast {
-        border-radius: 8px;
-        padding: 12px 14px;
-        color: #fff;
-        box-shadow: 0 18px 36px rgba(15, 23, 42, .18);
-    }
-
-    .ea-toast.success { background: #047857; }
-    .ea-toast.error { background: #b91c1c; }
-    .ea-toast.info { background: #2563eb; }
-
-    #employeeAttendanceTable .tabulator-row.tabulator-selected {
-        background: #eff6ff;
-    }
-
-    @@media (max-width: 991px) {
-        .ea-summary {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-
-        .ea-header,
-        .ea-toolbar {
-            align-items: stretch;
-            flex-direction: column;
-        }
-
-        .ea-toolbar .btn,
-        .ea-header .btn {
-            width: 100%;
-        }
-    }
-
-    @@media (max-width: 575px) {
-        .ea-summary {
-            grid-template-columns: 1fr;
-        }
-
-        .ea-title {
-            font-size: 22px;
-        }
-    }
-</style>
-
-<div class="ea-page">
-    <div class="ea-header">
-        <div>
-            <h1 class="ea-title">Employee Attendance</h1>
-            <p class="ea-subtitle">Bulk mark, edit, save, and review employee attendance without page reloads.</p>
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap"><i class="bi bi-person-badge-fill"></i></div>
+            <div>
+                <h1 class="adm-header__title">Employee Attendance</h1>
+                <p class="adm-header__sub">Bulk mark, edit, save, and review employee attendance without page reloads.</p>
+            </div>
         </div>
-        <button type="button" class="btn btn-outline-secondary" id="btnExport">
-            <i class="bi bi-download me-1"></i> Export CSV
-        </button>
+        <button type="button" class="adm-btn adm-btn--ghost" id="btnExport"><i class="bi bi-download"></i> Export CSV</button>
     </div>
 
-    <div class="ea-panel">
-        <div class="row g-3 align-items-end">
-            <div class="col-lg-2 col-md-4">
-                <label class="form-label fw-semibold">Attendance Date</label>
-                <input type="date" id="filterDate" class="form-control" value="@today" />
+    <div class="adm-filters">
+        <div class="adm-filters__row">
+            <div class="adm-filters__field">
+                <span class="adm-label">Attendance Date</span>
+                <input type="date" id="filterDate" class="adm-input" value="@today" style="padding:8px 12px" />
             </div>
-            <div class="col-lg-2 col-md-4">
-                <label class="form-label fw-semibold">Department</label>
-                <select id="filterDepartment" class="form-select">
+            <div class="adm-filters__field">
+                <span class="adm-label">Department</span>
+                <select id="filterDepartment" class="adm-select">
                     <option value="">All departments</option>
                     @foreach (var item in departments)
-                    {
-                        <option value="@item.Id">@item.Name</option>
-                    }
+                    { <option value="@item.Id">@item.Name</option> }
                 </select>
             </div>
-            <div class="col-lg-2 col-md-4">
-                <label class="form-label fw-semibold">Designation</label>
-                <select id="filterDesignation" class="form-select">
+            <div class="adm-filters__field">
+                <span class="adm-label">Designation</span>
+                <select id="filterDesignation" class="adm-select">
                     <option value="">All designations</option>
                     @foreach (var item in designations)
-                    {
-                        <option value="@item.Id">@item.Name</option>
-                    }
+                    { <option value="@item.Id">@item.Name</option> }
                 </select>
             </div>
-            <div class="col-lg-2 col-md-4">
-                <label class="form-label fw-semibold">Employee Type</label>
-                <select id="filterEmployeeType" class="form-select">
+            <div class="adm-filters__field">
+                <span class="adm-label">Employee Type</span>
+                <select id="filterEmployeeType" class="adm-select">
                     <option value="">All types</option>
                     <option value="Full-Time">Full-Time</option>
                     <option value="Part-Time">Part-Time</option>
@@ -223,141 +52,101 @@
                     <option value="Temporary">Temporary</option>
                 </select>
             </div>
-            <div class="col-lg-2 col-md-4">
-                <label class="form-label fw-semibold">Staff Type</label>
-                <select id="filterTeaching" class="form-select">
+            <div class="adm-filters__field">
+                <span class="adm-label">Staff Type</span>
+                <select id="filterTeaching" class="adm-select">
                     <option value="">All staff</option>
                     <option value="true">Teaching</option>
                     <option value="false">Non-Teaching</option>
                 </select>
             </div>
-            <div class="col-lg-2 col-md-4 d-grid">
-                <button type="button" class="btn btn-primary" id="btnLoad">
-                    <i class="bi bi-search me-1"></i> Load Employees
-                </button>
+            <div class="adm-filters__field adm-filters__field--actions">
+                <span class="adm-label">&nbsp;</span>
+                <button type="button" class="adm-btn adm-btn--primary" id="btnLoad"><i class="bi bi-search"></i> Load Employees</button>
             </div>
         </div>
     </div>
 
-    <div class="ea-summary">
-        <div class="ea-card">
-            <span class="ea-card__label">Total Employees</span>
-            <span class="ea-card__value" id="sumTotal">0</span>
-        </div>
-        <div class="ea-card">
-            <span class="ea-card__label">Present</span>
-            <span class="ea-card__value text-success" id="sumPresent">0</span>
-        </div>
-        <div class="ea-card">
-            <span class="ea-card__label">Absent</span>
-            <span class="ea-card__value text-danger" id="sumAbsent">0</span>
-        </div>
-        <div class="ea-card">
-            <span class="ea-card__label">Late</span>
-            <span class="ea-card__value text-warning" id="sumLate">0</span>
-        </div>
-        <div class="ea-card">
-            <span class="ea-card__label">Leave</span>
-            <span class="ea-card__value text-primary" id="sumLeave">0</span>
-        </div>
+    <div class="er-stats">
+        <div class="er-stat"><div class="er-stat__icon er-stat__icon--primary"><i class="bi bi-people"></i></div><div class="er-stat__body"><span class="er-stat__label">Total Employees</span><span class="er-stat__value" id="sumTotal">0</span></div></div>
+        <div class="er-stat"><div class="er-stat__icon er-stat__icon--success"><i class="bi bi-check-circle"></i></div><div class="er-stat__body"><span class="er-stat__label">Present</span><span class="er-stat__value" id="sumPresent">0</span></div></div>
+        <div class="er-stat"><div class="er-stat__icon er-stat__icon--danger"><i class="bi bi-x-circle"></i></div><div class="er-stat__body"><span class="er-stat__label">Absent</span><span class="er-stat__value" id="sumAbsent">0</span></div></div>
+        <div class="er-stat"><div class="er-stat__icon er-stat__icon--warning"><i class="bi bi-clock"></i></div><div class="er-stat__body"><span class="er-stat__label">Late</span><span class="er-stat__value" id="sumLate">0</span></div></div>
+        <div class="er-stat"><div class="er-stat__icon er-stat__icon--info"><i class="bi bi-calendar-check"></i></div><div class="er-stat__body"><span class="er-stat__label">Leave</span><span class="er-stat__value" id="sumLeave">0</span></div></div>
     </div>
 
-    <div class="ea-grid-wrap">
-        <div class="ea-toolbar">
-            <div class="d-flex gap-2 flex-wrap">
-                <button type="button" class="btn btn-success btn-sm" id="btnMarkAllPresent">
-                    <i class="bi bi-check2-circle me-1"></i> Mark All Present
-                </button>
-                <button type="button" class="btn btn-outline-danger btn-sm" id="btnSelectedAbsent">
-                    <i class="bi bi-x-circle me-1"></i> Mark Selected Absent
-                </button>
-                <button type="button" class="btn btn-outline-primary btn-sm" id="btnApplyLeave">
-                    <i class="bi bi-calendar2-check me-1"></i> Apply Leave
-                </button>
-                <button type="button" class="btn btn-outline-secondary btn-sm" id="btnResetSelection">
-                    <i class="bi bi-arrow-counterclockwise me-1"></i> Reset Selection
-                </button>
+    <div class="adm-table-card">
+        <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:12px 16px;background:var(--adm-surface-2);border-bottom:1px solid var(--adm-border)">
+            <div class="adm-btn-group">
+                <button type="button" class="adm-btn adm-btn--success" id="btnMarkAllPresent" style="padding:6px 14px;font-size:12px"><i class="bi bi-check2-circle"></i> Mark All Present</button>
+                <button type="button" class="adm-btn adm-btn--danger" id="btnSelectedAbsent" style="padding:6px 14px;font-size:12px"><i class="bi bi-x-circle"></i> Mark Selected Absent</button>
+                <button type="button" class="adm-btn adm-btn--ghost" id="btnApplyLeave" style="padding:6px 14px;font-size:12px"><i class="bi bi-calendar2-check"></i> Apply Leave</button>
+                <button type="button" class="adm-btn adm-btn--ghost" id="btnResetSelection" style="padding:6px 14px;font-size:12px"><i class="bi bi-arrow-counterclockwise"></i> Reset Selection</button>
             </div>
-            <div class="d-flex gap-2 flex-wrap">
-                <button type="button" class="btn btn-outline-secondary btn-sm" id="btnReset">
-                    <i class="bi bi-sliders me-1"></i> Reset
-                </button>
-                <button type="button" class="btn btn-primary btn-sm" id="btnSave">
-                    <i class="bi bi-cloud-arrow-up me-1"></i> Save Attendance
-                </button>
+            <div class="adm-btn-group">
+                <button type="button" class="adm-btn adm-btn--ghost" id="btnReset" style="padding:6px 14px;font-size:12px"><i class="bi bi-sliders"></i> Reset</button>
+                <button type="button" class="adm-btn adm-btn--primary" id="btnSave" style="padding:6px 14px;font-size:12px"><i class="bi bi-cloud-arrow-up"></i> Save Attendance</button>
             </div>
         </div>
-        <div id="employeeAttendanceTable"></div>
+        <div class="adm-table-card__body"><div id="employeeAttendanceTable"></div></div>
     </div>
 </div>
 
-<div class="modal fade" id="historyModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-scrollable">
-        <div class="modal-content">
-            <div class="modal-header">
+<div class="adm-modal-backdrop" id="historyModal" style="display:none">
+    <div class="adm-modal" style="max-width:860px">
+        <div class="adm-modal__header">
+            <div class="adm-modal__header-left">
+                <div class="adm-modal__header-icon adm-modal__header-icon--success"><i class="bi bi-clock-history"></i></div>
                 <div>
-                    <h5 class="modal-title fw-bold" id="historyTitle">Attendance History</h5>
-                    <div class="text-muted small" id="historySubtitle"></div>
+                    <h3 class="adm-modal__title" id="historyTitle">Attendance History</h3>
+                    <p class="adm-modal__subtitle" id="historySubtitle"></p>
                 </div>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <div class="row g-3 mb-3 align-items-end">
-                    <div class="col-sm-3">
-                        <label class="form-label fw-semibold">Year</label>
-                        <input type="number" id="historyYear" class="form-control" min="2020" max="2100" value="@DateTime.Today.Year" />
+            <button type="button" class="adm-modal__close" onclick="document.getElementById('historyModal').style.display='none'"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <div class="adm-modal__body">
+            <div class="adm-filters" style="margin-bottom:16px;padding:12px 16px">
+                <div class="adm-filters__row">
+                    <div class="adm-filters__field">
+                        <span class="adm-label">Year</span>
+                        <input type="number" id="historyYear" class="adm-input" min="2020" max="2100" value="@DateTime.Today.Year" style="padding:7px 12px" />
                     </div>
-                    <div class="col-sm-3">
-                        <label class="form-label fw-semibold">Month</label>
-                        <select id="historyMonth" class="form-select">
+                    <div class="adm-filters__field">
+                        <span class="adm-label">Month</span>
+                        <select id="historyMonth" class="adm-select">
                             @for (var m = 1; m <= 12; m++)
                             {
                                 <option value="@m" selected="@(m == DateTime.Today.Month)">@System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(m)</option>
                             }
                         </select>
                     </div>
-                    <div class="col-sm-3 d-grid">
-                        <button type="button" id="btnReloadHistory" class="btn btn-outline-primary">
-                            <i class="bi bi-arrow-repeat me-1"></i> Reload
-                        </button>
+                    <div class="adm-filters__field adm-filters__field--actions">
+                        <span class="adm-label">&nbsp;</span>
+                        <button type="button" id="btnReloadHistory" class="adm-btn adm-btn--primary" style="padding:7px 14px;font-size:12px"><i class="bi bi-arrow-repeat"></i> Reload</button>
                     </div>
                 </div>
-                <div class="ea-summary mb-3">
-                    <div class="ea-card">
-                        <span class="ea-card__label">Attendance %</span>
-                        <span class="ea-card__value" id="histPercent">0%</span>
-                    </div>
-                    <div class="ea-card">
-                        <span class="ea-card__label">Recorded Days</span>
-                        <span class="ea-card__value" id="histRecorded">0</span>
-                    </div>
-                    <div class="ea-card">
-                        <span class="ea-card__label">Present</span>
-                        <span class="ea-card__value text-success" id="histPresent">0</span>
-                    </div>
-                    <div class="ea-card">
-                        <span class="ea-card__label">Late</span>
-                        <span class="ea-card__value text-warning" id="histLate">0</span>
-                    </div>
-                    <div class="ea-card">
-                        <span class="ea-card__label">Absent / Leave</span>
-                        <span class="ea-card__value text-danger" id="histAbsentLeave">0</span>
-                    </div>
-                </div>
-                <div id="historyTable"></div>
             </div>
+            <div class="er-stats" style="margin-bottom:16px">
+                <div class="er-stat"><div class="er-stat__body"><span class="er-stat__label">Attendance %</span><span class="er-stat__value" id="histPercent">0%</span></div></div>
+                <div class="er-stat"><div class="er-stat__body"><span class="er-stat__label">Recorded Days</span><span class="er-stat__value" id="histRecorded">0</span></div></div>
+                <div class="er-stat"><div class="er-stat__body"><span class="er-stat__label">Present</span><span class="er-stat__value" id="histPresent">0</span></div></div>
+                <div class="er-stat"><div class="er-stat__body"><span class="er-stat__label">Late</span><span class="er-stat__value" id="histLate">0</span></div></div>
+                <div class="er-stat"><div class="er-stat__body"><span class="er-stat__label">Absent / Leave</span><span class="er-stat__value" id="histAbsentLeave">0</span></div></div>
+            </div>
+            <div id="historyTable"></div>
+        </div>
+        <div class="adm-modal__footer">
+            <button type="button" class="adm-btn adm-btn--ghost" onclick="document.getElementById('historyModal').style.display='none'">Close</button>
         </div>
     </div>
 </div>
 
-<div class="ea-toast-stack" id="toastStack"></div>
+<div id="toastStack" style="display:none"></div>
 
-@Html.AntiForgeryToken()
 @section Scripts {
     <script>
         (function () {
             'use strict';
-
             var LOAD_URL = '@Url.Action("LoadAttendance", "EmployeeAttendance")';
             var SAVE_URL = '@Url.Action("SaveAttendance", "EmployeeAttendance")';
             var HISTORY_URL = '@Url.Action("AttendanceHistory", "EmployeeAttendance")';
@@ -365,39 +154,33 @@
             var currentEmployeeId = null;
             var currentEmployeeName = '';
             var totalEmployees = 0;
-
             var statusOptions = ['Present', 'Absent', 'Late', 'Leave'];
             var statusToValue = { Present: 1, Absent: 2, Late: 3, Leave: 4 };
 
             function el(id) { return document.getElementById(id); }
 
             function showToast(message, type) {
-                var toast = document.createElement('div');
-                toast.className = 'ea-toast ' + (type || 'info');
-                toast.textContent = message;
-                el('toastStack').appendChild(toast);
-                setTimeout(function () { toast.remove(); }, 4200);
+                var t = document.createElement('div');
+                t.className = 'er-alert er-alert--' + (type === 'error' ? 'danger' : type === 'success' ? 'success' : 'info');
+                t.style.position = 'fixed'; t.style.top = '84px'; t.style.right = '18px'; t.style.zIndex = '1090'; t.style.maxWidth = '360px';
+                t.textContent = message;
+                document.body.appendChild(t);
+                setTimeout(function() { t.remove(); }, 4200);
             }
 
-          function filters() {
-            var params = {
-                page: 1,
-                size: 2000,
-                attendanceDate: el('filterDate').value
-            };
+            function filters() {
+                var params = { page: 1, size: 2000, attendanceDate: el('filterDate').value };
+                var dept = el('filterDepartment').value;
+                var desig = el('filterDesignation').value;
+                var empType = el('filterEmployeeType').value;
+                var teaching = el('filterTeaching').value;
+                if (dept) params.departmentId = dept;
+                if (desig) params.designationId = desig;
+                if (empType) params.employeeType = empType;
+                if (teaching) params.isTeachingStaff = teaching;
+                return params;
+            }
 
-            var dept = el('filterDepartment').value;
-            var desig = el('filterDesignation').value;
-            var empType = el('filterEmployeeType').value;
-            var teaching = el('filterTeaching').value;
-
-            if (dept) params.departmentId = dept;
-            if (desig) params.designationId = desig;
-            if (empType) params.employeeType = empType;
-            if (teaching) params.isTeachingStaff = teaching;
-
-            return params;
-        }
             function updateSummary(summary) {
                 if (!summary) return;
                 totalEmployees = summary.totalEmployees || 0;
@@ -411,9 +194,7 @@
             function updateVisibleSummary() {
                 var rows = table.getData();
                 var counts = { Present: 0, Absent: 0, Late: 0, Leave: 0 };
-                rows.forEach(function (row) {
-                    counts[row.statusName] = (counts[row.statusName] || 0) + 1;
-                });
+                rows.forEach(function(row) { counts[row.statusName] = (counts[row.statusName] || 0) + 1; });
                 el('sumTotal').textContent = totalEmployees || rows.length;
                 el('sumPresent').textContent = counts.Present || 0;
                 el('sumAbsent').textContent = counts.Absent || 0;
@@ -422,15 +203,12 @@
             }
 
             function statusFormatter(cell) {
-                var value = cell.getValue() || 'Present';
-                return '<span class="ea-status-badge ea-status-' + value + '">' + value + '</span>';
+                var v = cell.getValue() || 'Present';
+                var cls = v === 'Present' ? 'adm-status--approved' : v === 'Absent' ? 'adm-status--rejected' : v === 'Late' ? 'adm-badge--warning' : 'adm-badge--info';
+                return '<span class="adm-status ' + cls + '">' + v + '</span>';
             }
 
-            function timeFormatter(cell) {
-                var value = cell.getValue();
-                if (!value) return '';
-                return String(value).substring(0, 5);
-            }
+            function timeFormatter(cell) { var v = cell.getValue(); if (!v) return ''; return String(v).substring(0, 5); }
 
             function normalizeTime(value) {
                 if (!value) return null;
@@ -442,41 +220,25 @@
             }
 
             function setRowsStatus(rows, status) {
-                rows.forEach(function (row) {
-                    row.update({ statusName: status, status: statusToValue[status] });
-                });
+                rows.forEach(function(row) { row.update({ statusName: status, status: statusToValue[status] }); });
                 updateVisibleSummary();
             }
 
             function loadGrid() {
-    var url = LOAD_URL + '?' + new URLSearchParams(filters()).toString();
-    fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-        .then(function (res) {
-            if (!res.ok) throw new Error('Failed to load attendance data.');
-            return res.json();
-        })
-        .then(function (response) {
-            if (response.error) {
-                showToast(response.error, 'error');
-                return;
+                var url = LOAD_URL + '?' + new URLSearchParams(filters()).toString();
+                fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                    .then(function(res) { if (!res.ok) throw new Error('Failed to load attendance data.'); return res.json(); })
+                    .then(function(response) {
+                        if (response.error) { showToast(response.error, 'error'); return; }
+                        var rows = response && Array.isArray(response.data) ? response.data : [];
+                        updateSummary(response.summary);
+                        if (!response.summary || !(response.summary.totalEmployees > 0)) {
+                            updateSummary({ totalEmployees: response.total_records || rows.length, present: rows.filter(function(r) { return r.statusName === 'Present'; }).length, absent: rows.filter(function(r) { return r.statusName === 'Absent'; }).length, late: rows.filter(function(r) { return r.statusName === 'Late'; }).length, leave: rows.filter(function(r) { return r.statusName === 'Leave'; }).length });
+                        }
+                        table.setData(rows);
+                    })
+                    .catch(function(err) { showToast('Attendance data could not be loaded. ' + err.message, 'error'); });
             }
-            var rows = response && Array.isArray(response.data) ? response.data : [];
-            updateSummary(response.summary);
-            if (!response.summary || !(response.summary.totalEmployees > 0)) {
-                updateSummary({
-                    totalEmployees: response.total_records || rows.length,
-                    present: rows.filter(function (r) { return r.statusName === 'Present'; }).length,
-                    absent: rows.filter(function (r) { return r.statusName === 'Absent'; }).length,
-                    late: rows.filter(function (r) { return r.statusName === 'Late'; }).length,
-                    leave: rows.filter(function (r) { return r.statusName === 'Leave'; }).length
-                });
-            }
-            table.setData(rows);
-        })
-        .catch(function (err) {
-            showToast('Attendance data could not be loaded. ' + err.message, 'error');
-        });
-}
 
             var table = new Tabulator('#employeeAttendanceTable', {
                 height: 'calc(100vh - 430px)',
@@ -492,65 +254,36 @@
                 columns: [
                     { formatter: 'rowSelection', titleFormatter: 'rowSelection', hozAlign: 'center', headerSort: false, width: 52 },
                     { title: 'Employee Code', field: 'employeeCode', minWidth: 130 },
-                    {
-                        title: 'Employee Name', field: 'employeeName', minWidth: 210,
-                        formatter: function (cell) {
+                    { title: 'Employee Name', field: 'employeeName', minWidth: 210,
+                        formatter: function(cell) {
                             var data = cell.getRow().getData();
                             var staff = data.isTeachingStaff ? 'Teaching' : 'Non-Teaching';
-                            return '<div class="fw-semibold">' + cell.getValue() + '</div>' +
-                                '<div class="text-muted small">' + staff + ' / ' + (data.employeeType || '') + '</div>';
+                            return '<div style="font-weight:600">' + cell.getValue() + '</div><div style="color:var(--adm-text-3);font-size:12px">' + staff + ' / ' + (data.employeeType || '') + '</div>';
                         }
                     },
                     { title: 'Department', field: 'department', minWidth: 150 },
                     { title: 'Designation', field: 'designation', minWidth: 150,
-                        formatter: function (cell) {
+                        formatter: function(cell) {
                             var des = cell.getValue();
-                            if (!des) return '<span class="text-muted">-</span>';
-                            return '<span class="designation-badge" style="background:' + getDesignationColor(des) + ';color:#fff;padding:2px 10px;border-radius:12px;display:inline-block;font-size:11px;font-weight:600;white-space:nowrap;">' + des + '</span>';
+                            if (!des) return '<span style="color:var(--adm-text-3)">-</span>';
+                            return '<span class="adm-badge adm-badge--primary" style="background:' + getDesignationColor(des) + ';color:#fff;border:none">' + des + '</span>';
                         }
                     },
-                    {
-                        title: 'Attendance Status', field: 'statusName',
-                        editor: 'list', editorParams: { values: statusOptions },
-                        formatter: statusFormatter, minWidth: 170
-                    },
-                    {
-                        title: 'Check In Time', field: 'checkInTime',
-                        editor: 'input', formatter: timeFormatter,
-                        validator: ['regex:^$|^([01][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$'],
-                        minWidth: 130
-                    },
-                    {
-                        title: 'Check Out Time', field: 'checkOutTime',
-                        editor: 'input', formatter: timeFormatter,
-                        validator: ['regex:^$|^([01][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$'],
-                        minWidth: 130
-                    },
+                    { title: 'Attendance Status', field: 'statusName', editor: 'list', editorParams: { values: statusOptions }, formatter: statusFormatter, minWidth: 170 },
+                    { title: 'Check In Time', field: 'checkInTime', editor: 'input', formatter: timeFormatter, validator: ['regex:^$|^([01][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$'], minWidth: 130 },
+                    { title: 'Check Out Time', field: 'checkOutTime', editor: 'input', formatter: timeFormatter, validator: ['regex:^$|^([01][0-9]|2[0-3]):[0-5][0-9](:[0-5][0-9])?$'], minWidth: 130 },
                     { title: 'Remarks', field: 'remarks', editor: 'input', minWidth: 190 },
-                    {
-                        title: '', field: 'actions', hozAlign: 'right', headerSort: false, width: 96,
-                        formatter: function () {
-                            return '<button type="button" class="btn btn-sm btn-outline-primary">History</button>';
-                        },
-                        cellClick: function (e, cell) {
-                            var data = cell.getRow().getData();
-                            openHistory(data.employeeId, data.employeeName);
-                        }
+                    { title: '', field: 'actions', hozAlign: 'right', headerSort: false, width: 96,
+                        formatter: function() { return '<button type="button" class="adm-btn adm-btn--ghost" style="padding:4px 10px;font-size:11px">History</button>'; },
+                        cellClick: function(e, cell) { var d = cell.getRow().getData(); openHistory(d.employeeId, d.employeeName); }
                     }
                 ]
             });
 
             var historyTable = new Tabulator('#historyTable', {
-                height: 360,
-                layout: 'fitColumns',
-                placeholder: 'No attendance history found.',
+                height: 360, layout: 'fitColumns', placeholder: 'No attendance history found.',
                 columns: [
-                    {
-                        title: 'Date', field: 'attendanceDate', minWidth: 130,
-                        formatter: function (cell) {
-                            return String(cell.getValue()).substring(0, 10);
-                        }
-                    },
+                    { title: 'Date', field: 'attendanceDate', minWidth: 130, formatter: function(c) { return String(c.getValue()).substring(0, 10); } },
                     { title: 'Status', field: 'statusName', formatter: statusFormatter, minWidth: 130 },
                     { title: 'Check In', field: 'checkInTime', formatter: timeFormatter, minWidth: 110 },
                     { title: 'Check Out', field: 'checkOutTime', formatter: timeFormatter, minWidth: 110 },
@@ -558,30 +291,20 @@
                 ]
             });
 
-            var historyModal = new bootstrap.Modal(el('historyModal'));
-
             function openHistory(employeeId, employeeName) {
-                currentEmployeeId = employeeId;
-                currentEmployeeName = employeeName;
+                currentEmployeeId = employeeId; currentEmployeeName = employeeName;
                 el('historyTitle').textContent = employeeName;
                 el('historySubtitle').textContent = 'Monthly attendance history and performance summary';
                 loadHistory();
-                historyModal.show();
+                document.getElementById('historyModal').style.display = 'flex';
             }
 
             function loadHistory() {
                 if (!currentEmployeeId) return;
-                var qs = new URLSearchParams({
-                    employeeId: currentEmployeeId,
-                    year: el('historyYear').value,
-                    month: el('historyMonth').value
-                });
+                var qs = new URLSearchParams({ employeeId: currentEmployeeId, year: el('historyYear').value, month: el('historyMonth').value });
                 fetch(HISTORY_URL + '?' + qs.toString(), { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-                    .then(function (res) {
-                        if (!res.ok) throw new Error('History load failed.');
-                        return res.json();
-                    })
-                    .then(function (res) {
+                    .then(function(res) { if (!res.ok) throw new Error('History load failed.'); return res.json(); })
+                    .then(function(res) {
                         var summary = res.summary || {};
                         historyTable.setData(res.data || []);
                         el('histPercent').textContent = (summary.attendancePercentage || 0) + '%';
@@ -590,91 +313,36 @@
                         el('histLate').textContent = summary.late || 0;
                         el('histAbsentLeave').textContent = (summary.absent || 0) + (summary.leave || 0);
                     })
-                    .catch(function (err) {
-                        showToast(err.message, 'error');
-                    });
+                    .catch(function(err) { showToast(err.message, 'error'); });
             }
 
             function saveAttendance() {
                 var rows = table.getData('active');
                 if (!rows.length) rows = table.getData();
-                if (!rows.length) {
-                    showToast('Load employees before saving attendance.', 'error');
-                    return;
-                }
+                if (!rows.length) { showToast('Load employees before saving attendance.', 'error'); return; }
                 var payload;
                 try {
                     payload = {
                         attendanceDate: el('filterDate').value,
-                        attendances: rows.map(function (row) {
-                            return {
-                                id: row.id || 0,
-                                employeeId: row.employeeId,
-                                status: statusToValue[row.statusName] || 1,
-                                statusName: row.statusName || 'Present',
-                                checkInTime: normalizeTime(row.checkInTime),
-                                checkOutTime: normalizeTime(row.checkOutTime),
-                                remarks: row.remarks || ''
-                            };
+                        attendances: rows.map(function(row) {
+                            return { id: row.id || 0, employeeId: row.employeeId, status: statusToValue[row.statusName] || 1, statusName: row.statusName || 'Present', checkInTime: normalizeTime(row.checkInTime), checkOutTime: normalizeTime(row.checkOutTime), remarks: row.remarks || '' };
                         })
                     };
-                } catch (err) {
-                    showToast(err.message, 'error');
-                    return;
-                }
-                fetch(SAVE_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'RequestVerificationToken': token
-                    },
-                    body: JSON.stringify(payload)
-                })
-                    .then(function (res) {
-                        return res.json().then(function (body) {
-                            if (!res.ok || !body.success) throw new Error(body.message || 'Attendance save failed.');
-                            return body;
-                        });
-                    })
-                    .then(function (body) {
-                        showToast(body.message, 'success');
-                        loadGrid();
-                    })
-                    .catch(function (err) {
-                        showToast(err.message, 'error');
-                    });
+                } catch (err) { showToast(err.message, 'error'); return; }
+                fetch(SAVE_URL, { method: 'POST', headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token }, body: JSON.stringify(payload) })
+                    .then(function(res) { return res.json().then(function(body) { if (!res.ok || !body.success) throw new Error(body.message || 'Attendance save failed.'); return body; }); })
+                    .then(function(body) { showToast(body.message, 'success'); loadGrid(); })
+                    .catch(function(err) { showToast(err.message, 'error'); });
             }
 
             el('btnLoad').addEventListener('click', loadGrid);
             el('btnSave').addEventListener('click', saveAttendance);
-            el('btnExport').addEventListener('click', function () {
-                table.download('csv', 'employee-attendance-' + el('filterDate').value + '.csv');
-            });
-            el('btnMarkAllPresent').addEventListener('click', function () {
-                setRowsStatus(table.getRows(), 'Present');
-            });
-            el('btnSelectedAbsent').addEventListener('click', function () {
-                var rows = table.getSelectedRows();
-                if (!rows.length) return showToast('Select at least one employee.', 'error');
-                setRowsStatus(rows, 'Absent');
-            });
-            el('btnApplyLeave').addEventListener('click', function () {
-                var rows = table.getSelectedRows();
-                if (!rows.length) return showToast('Select at least one employee.', 'error');
-                setRowsStatus(rows, 'Leave');
-            });
-            el('btnResetSelection').addEventListener('click', function () {
-                table.deselectRow();
-                showToast('Selection cleared.', 'info');
-            });
-            el('btnReset').addEventListener('click', function () {
-                el('filterDate').value = '@today';
-                el('filterDepartment').value = '';
-                el('filterDesignation').value = '';
-                el('filterEmployeeType').value = '';
-                el('filterTeaching').value = '';
-                loadGrid();
-            });
+            el('btnExport').addEventListener('click', function() { table.download('csv', 'employee-attendance-' + el('filterDate').value + '.csv'); });
+            el('btnMarkAllPresent').addEventListener('click', function() { setRowsStatus(table.getRows(), 'Present'); });
+            el('btnSelectedAbsent').addEventListener('click', function() { var rows = table.getSelectedRows(); if (!rows.length) return showToast('Select at least one employee.', 'error'); setRowsStatus(rows, 'Absent'); });
+            el('btnApplyLeave').addEventListener('click', function() { var rows = table.getSelectedRows(); if (!rows.length) return showToast('Select at least one employee.', 'error'); setRowsStatus(rows, 'Leave'); });
+            el('btnResetSelection').addEventListener('click', function() { table.deselectRow(); showToast('Selection cleared.', 'info'); });
+            el('btnReset').addEventListener('click', function() { el('filterDate').value = '@today'; el('filterDepartment').value = ''; el('filterDesignation').value = ''; el('filterEmployeeType').value = ''; el('filterTeaching').value = ''; loadGrid(); });
             el('btnReloadHistory').addEventListener('click', loadHistory);
 
             function getDesignationColor(designation) {
@@ -695,7 +363,6 @@
             }
 
             loadGrid();
-
         })();
     </script>
 }

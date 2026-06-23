@@ -3,137 +3,131 @@
     ViewData["Title"] = "Configure Class Subject Splits";
 }
 
-<div class="container py-4">
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap" style="background: linear-gradient(135deg, #0F766E, #14B8A6); box-shadow: 0 4px 12px rgba(15,118,110,0.3);">
+                <i class="bi bi-gear-fill"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Configure Subject Mapping</h1>
+                <p class="adm-header__sub">Edit mark splits, attributes, and configuration for this class-subject mapping</p>
+            </div>
+        </div>
+        <a href="/ClassSubjectMapping/Index" class="adm-btn adm-btn--ghost">
+            <i class="bi bi-arrow-left"></i> <span>Back to List</span>
+        </a>
+    </div>
+
     <div class="row justify-content-center">
         <div class="col-xl-9 col-lg-11">
-            
-            <div class="d-flex align-items-center mb-4">
-                <a href="/ClassSubjectMapping/Index" class="btn btn-outline-secondary btn-sm me-3 border-2 rounded-pill px-3">
-                    <i class="bi bi-arrow-left me-1"></i> Back
-                </a>
-                <h2 class="mb-0 fw-bold text-dark">
-                    <i class="bi bi-gear-fill me-2 text-primary"></i>Configure Class Subject
-                </h2>
-            </div>
-
-            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
-                <div class="card-header bg-gradient bg-primary py-3 px-4 text-white">
-                    <p class="mb-0 text-white-50 small">Class Subject Configuration</p>
-                    <h5 class="mb-0 fw-semibold text-white">Mark &amp; Attributes Configuration</h5>
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary bg-opacity-10">
+                    <h5 class="mb-0"><i class="bi bi-gear-fill me-2"></i>Mark & Attributes Configuration</h5>
                 </div>
-                <div class="card-body p-4 bg-light-subtle">
-                    
+                <div class="card-body p-4">
                     <form asp-action="Edit" method="post" id="editForm">
                         <input type="hidden" asp-for="Id" />
                         <input type="hidden" asp-for="SchoolClassId" />
                         <input type="hidden" asp-for="SubjectId" />
                         <input type="hidden" asp-for="StudentGroupId" />
 
-                        <!-- Section 1: Subject Profile Details (Read Only) -->
-                        <h6 class="text-uppercase text-secondary fw-bold small tracking-wider mb-3">
+                        <h6 class="text-uppercase text-secondary fw-bold small mb-3">
                             <i class="bi bi-info-circle-fill me-2 text-primary"></i>Subject Profile
                         </h6>
-                        <div class="row g-3 mb-4 p-3 bg-white rounded-3 border">
+                        <div class="row g-3 mb-4 p-3 bg-light rounded-3 border">
                             <div class="col-md-3">
                                 <label class="form-label text-muted small fw-semibold mb-1">Stream Group</label>
-                                <div class="fw-semibold text-muted fs-6">@(Model.GroupName == "General" || string.IsNullOrEmpty(Model.GroupName) ? "General" : Model.GroupName == "BusinessStudies" ? "Business Studies" : Model.GroupName)</div>
+                                <div class="fw-semibold fs-6">@(Model.GroupName == "General" || string.IsNullOrEmpty(Model.GroupName) ? "General" : Model.GroupName == "BusinessStudies" ? "Business Studies" : Model.GroupName)</div>
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label text-muted small fw-semibold mb-1">Subject Attributes</label>
                                 <div>
                                     @if (Model.IsReligionSubject)
                                     {
-                                        <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill small">@Model.ReligionType</span>
+                                        <span class="adm-badge adm-badge--warning">@Model.ReligionType</span>
                                     }
                                     @if (Model.IsOptional)
                                     {
-                                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle rounded-pill small">Optional</span>
+                                        <span class="adm-badge adm-badge--info">Optional</span>
                                     }
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Section 2: Global Configuration -->
-                        <h6 class="text-uppercase text-secondary fw-bold small tracking-wider mb-3">
-                            <i class="bi bi-sliders me-2 text-primary"></i>1. Total Marks &amp; Pass Score
+                        <h6 class="text-uppercase text-secondary fw-bold small mb-3">
+                            <i class="bi bi-sliders me-2 text-primary"></i>1. Total Marks & Pass Score
                         </h6>
                         <div class="row g-3 mb-4">
                             <div class="col-md-6">
-                                <label asp-for="FullMarks" class="form-label fw-bold text-muted">Full Marks <span class="text-danger">*</span></label>
-                                <input asp-for="FullMarks" class="form-control rounded-3 border-2" type="number" step="0.5" id="txtFullMarks" required />
+                                <label asp-for="FullMarks" class="form-label fw-bold">Full Marks <span class="text-danger">*</span></label>
+                                <input asp-for="FullMarks" class="form-control" type="number" step="0.5" id="txtFullMarks" required />
                                 <span asp-validation-for="FullMarks" class="text-danger small"></span>
                             </div>
                             <div class="col-md-6">
-                                <label asp-for="PassMarks" class="form-label fw-bold text-muted">Pass Marks <span class="text-danger">*</span></label>
-                                <input asp-for="PassMarks" class="form-control rounded-3 border-2" type="number" step="0.5" id="txtPassMarks" required />
+                                <label asp-for="PassMarks" class="form-label fw-bold">Pass Marks <span class="text-danger">*</span></label>
+                                <input asp-for="PassMarks" class="form-control" type="number" step="0.5" id="txtPassMarks" required />
                                 <span asp-validation-for="PassMarks" class="text-danger small"></span>
                             </div>
                             <div class="col-md-4">
-                                <label asp-for="DisplayOrder" class="form-label fw-bold text-muted">Display Order</label>
-                                <input asp-for="DisplayOrder" class="form-control rounded-3 border-2" type="number" step="1" />
+                                <label asp-for="DisplayOrder" class="form-label fw-bold">Display Order</label>
+                                <input asp-for="DisplayOrder" class="form-control" type="number" step="1" />
                                 <span asp-validation-for="DisplayOrder" class="text-danger small"></span>
                             </div>
                         </div>
 
-                        <!-- Section 3: Individual Attributes -->
-                        <h6 class="text-uppercase text-secondary fw-bold small tracking-wider mb-3">
+                        <h6 class="text-uppercase text-secondary fw-bold small mb-3">
                             <i class="bi bi-tag-fill me-2 text-primary"></i>2. Subject Specifications
                         </h6>
                         <div class="row g-3 mb-4">
                             <div class="col-md-6 col-lg-3">
-                                <div class="p-3 bg-white rounded-3 border">
+                                <div class="p-3 bg-light rounded-3">
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" asp-for="IsOptional" id="chkIsOptional" />
-                                        <label class="form-check-label fw-semibold text-dark" for="chkIsOptional">Is Optional Subject</label>
+                                        <label class="form-check-label fw-semibold" for="chkIsOptional">Is Optional Subject</label>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-6 col-lg-3">
-                                <div class="p-3 bg-white rounded-3 border">
+                                <div class="p-3 bg-light rounded-3">
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" asp-for="IsReligionSubject" id="chkIsReligion" />
-                                        <label class="form-check-label fw-semibold text-dark" for="chkIsReligion">Is Religion Specific</label>
+                                        <label class="form-check-label fw-semibold" for="chkIsReligion">Is Religion Specific</label>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-6 col-lg-3">
-                                <div class="p-3 bg-white rounded-3 border">
+                                <div class="p-3 bg-light rounded-3">
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" asp-for="IsActive" id="chkIsActive" />
-                                        <label class="form-check-label fw-semibold text-dark" for="chkIsActive">Mapping Status Active</label>
+                                        <label class="form-check-label fw-semibold" for="chkIsActive">Mapping Active</label>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Dynamic Religion select -->
                         <div class="row g-3 mb-4" id="religionPanel" style="display: none;">
                             <div class="col-md-12">
-                                <div class="alert alert-info border-0 rounded-3 shadow-sm py-3 px-4 d-flex align-items-center">
+                                <div class="alert alert-info border-0 py-3 px-4 d-flex align-items-center">
                                     <i class="bi bi-info-circle-fill me-3 fs-4 text-info"></i>
                                     <div>
-                                        <label asp-for="ReligionType" class="form-label fw-bold mb-1 text-dark">Religion Type</label>
-                                        <select asp-for="ReligionType" class="form-select rounded-3 border-0 bg-white" id="ddlReligionType">
+                                        <label asp-for="ReligionType" class="form-label fw-bold mb-1">Religion Type</label>
+                                        <select asp-for="ReligionType" class="form-select bg-white" id="ddlReligionType">
                                             <option value="">-- Choose Religion --</option>
-                                            <option value="Islam">Islam &amp; Moral Education</option>
-                                            <option value="Hindu">Hindu Religion &amp; Moral Education</option>
-                                            <option value="Buddhist">Buddhist Religion &amp; Moral Education</option>
-                                            <option value="Christian">Christian Religion &amp; Moral Education</option>
+                                            <option value="Islam">Islam & Moral Education</option>
+                                            <option value="Hindu">Hindu Religion & Moral Education</option>
+                                            <option value="Buddhist">Buddhist Religion & Moral Education</option>
+                                            <option value="Christian">Christian Religion & Moral Education</option>
                                         </select>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Submit Section -->
-                        <hr class="my-4 border-2 opacity-50" />
-                        <div class="d-flex justify-content-end gap-3">
-                            <a href="/ClassSubjectMapping/Index" class="btn btn-outline-secondary px-4 py-2 border-2 rounded-pill fw-semibold">
-                                <i class="bi bi-x-circle me-1"></i> Cancel
-                            </a>
-                            <button type="submit" class="btn btn-primary px-5 py-2 rounded-pill fw-semibold shadow-sm bg-gradient">
-                                <i class="bi bi-save me-1"></i> Update Configuration
-                            </button>
+                        <hr class="my-4" />
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="/ClassSubjectMapping/Index" class="adm-btn adm-btn--ghost"><i class="bi bi-x-circle"></i> Cancel</a>
+                            <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-save"></i> Update Configuration</button>
                         </div>
                     </form>
                 </div>
@@ -155,7 +149,6 @@
                     $('#ddlReligionType').val('');
                 }
             }
-
             $('#chkIsReligion').on('change', toggleReligion);
             toggleReligion();
         });

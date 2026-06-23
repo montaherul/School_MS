@@ -4,215 +4,67 @@
     var today = DateTime.Today;
 }
 
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
-<style>
-    .ad-page {
-        display: grid;
-        gap: 18px;
-    }
-
-    .ad-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 16px;
-    }
-
-    .ad-title {
-        margin: 0;
-        font-size: 26px;
-        font-weight: 800;
-        color: #111827;
-    }
-
-    .ad-subtitle {
-        margin: 4px 0 0;
-        color: #64748b;
-        font-size: 14px;
-    }
-
-    .ad-panel {
-        background: #fff;
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        padding: 18px;
-        box-shadow: 0 10px 28px rgba(15, 23, 42, .06);
-    }
-
-    .ad-summary {
-        display: grid;
-        grid-template-columns: repeat(4, minmax(180px, 1fr));
-        gap: 12px;
-    }
-
-    .ad-card {
-        border: 1px solid #e5e7eb;
-        border-radius: 8px;
-        background: #fff;
-        padding: 14px;
-    }
-
-    .ad-card__label {
-        display: block;
-        color: #64748b;
-        font-size: 12px;
-        font-weight: 700;
-        text-transform: uppercase;
-    }
-
-    .ad-card__value {
-        display: block;
-        margin-top: 6px;
-        font-size: 28px;
-        font-weight: 800;
-        color: #111827;
-    }
-
-    .ad-card--success .ad-card__value { color: #16a34a; }
-    .ad-card--danger  .ad-card__value { color: #dc2626; }
-    .ad-card--warning .ad-card__value { color: #d97706; }
-    .ad-card--info    .ad-card__value { color: #2563eb; }
-
-    .ad-charts {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 18px;
-    }
-
-    .ad-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: #eef2ff;
-        color: #3730a3;
-        padding: 4px 10px;
-        border-radius: 999px;
-        font-weight: 700;
-        font-size: 12px;
-    }
-
-    .ad-actions {
-        display: flex;
-        gap: 8px;
-        flex-wrap: wrap;
-    }
-
-    .ad-actions a {
-        padding: 8px 14px;
-        border-radius: 6px;
-        background: #2563eb;
-        color: #fff;
-        text-decoration: none;
-        font-weight: 700;
-        font-size: 13px;
-    }
-
-    .ad-actions a:hover { background: #1d4ed8; }
-    .ad-actions a.alt { background: #64748b; }
-    .ad-actions a.alt:hover { background: #475569; }
-
-    .ad-footer {
-        color: #94a3b8;
-        font-size: 12px;
-        text-align: right;
-    }
-</style>
-
-<div class="ad-page">
-    <div class="ad-header">
-        <div>
-            <h1 class="ad-title">Attendance Dashboard</h1>
-            <p class="ad-subtitle">Snapshot for @today.ToString("dddd, dd MMM yyyy")</p>
+<div class="er-page">
+    <div class="er-page-header">
+        <div class="er-page-header__left">
+            <div class="er-page-header__icon"><i class="bi bi-bar-chart-fill"></i></div>
+            <div>
+                <h1 class="er-page-header__title">Attendance Dashboard</h1>
+                <p class="er-page-header__sub">Snapshot for @today.ToString("dddd, dd MMM yyyy")</p>
+            </div>
         </div>
-        <div class="ad-actions">
-            <a href="@Url.Action("Index", "StudentAttendance")">Mark Attendance</a>
-            <a href="@Url.Action("Index", "AttendanceSession")" class="alt">Sessions</a>
-            <a href="@Url.Action("Index", "EmployeeAttendance")" class="alt">Employees</a>
+        <div class="er-page-header__right">
+            <a href="@Url.Action("Index", "StudentAttendance")" class="adm-btn adm-btn--primary" style="padding:8px 14px;font-size:12px">Mark Attendance</a>
+            <a href="@Url.Action("Index", "AttendanceSession")" class="adm-btn adm-btn--ghost" style="padding:8px 14px;font-size:12px">Sessions</a>
+            <a href="@Url.Action("Index", "EmployeeAttendance")" class="adm-btn adm-btn--ghost" style="padding:8px 14px;font-size:12px">Employees</a>
         </div>
     </div>
 
-    <div class="ad-panel">
-        <div class="ad-summary">
-            <div class="ad-card ad-card--success">
-                <span class="ad-card__label">Students Present</span>
-                <span class="ad-card__value">@Model.TotalPresentStudents</span>
+    <div class="er-stats">
+        <div class="er-stat"><div class="er-stat__icon er-stat__icon--success"><i class="bi bi-people-fill"></i></div><div class="er-stat__body"><span class="er-stat__label">Students Present</span><span class="er-stat__value">@Model.TotalPresentStudents</span></div></div>
+        <div class="er-stat"><div class="er-stat__icon er-stat__icon--danger"><i class="bi bi-person-x-fill"></i></div><div class="er-stat__body"><span class="er-stat__label">Students Absent</span><span class="er-stat__value">@Model.TotalAbsentStudents</span></div></div>
+        <div class="er-stat"><div class="er-stat__icon er-stat__icon--info"><i class="bi bi-percent"></i></div><div class="er-stat__body"><span class="er-stat__label">Students %</span><span class="er-stat__value">@Model.StudentAttendancePercentage%</span></div></div>
+        <div class="er-stat"><div class="er-stat__icon er-stat__icon--warning"><i class="bi bi-file-earmark-text"></i></div><div class="er-stat__body"><span class="er-stat__label">Pending Leaves</span><span class="er-stat__value">@Model.PendingLeaveRequests</span></div></div>
+    </div>
+
+    <div class="er-dash-grid">
+        <div class="er-card">
+            <div class="er-card__header"><h3 class="er-card__title"><i class="bi bi-mortarboard-fill" style="color:var(--er-success)"></i> Student Attendance (Today)</h3></div>
+            <div class="er-card__body" style="text-align:center"><canvas id="studentChart" height="160"></canvas></div>
+        </div>
+        <div class="er-card">
+            <div class="er-card__header"><h3 class="er-card__title"><i class="bi bi-person-badge-fill" style="color:var(--er-primary)"></i> Employee Attendance (Today)</h3></div>
+            <div class="er-card__body" style="text-align:center"><canvas id="employeeChart" height="160"></canvas></div>
+        </div>
+    </div>
+
+    <div class="er-card">
+        <div class="er-card__header"><h3 class="er-card__title"><i class="bi bi-link-45deg"></i> Quick Links</h3></div>
+        <div class="er-card__body">
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+                <span class="er-badge er-badge--info" style="font-size:13px;padding:5px 12px"><i class="bi bi-mortarboard"></i> Students: @Model.TotalPresentStudents present / @Model.TotalAbsentStudents absent</span>
+                <span class="er-badge er-badge--primary" style="font-size:13px;padding:5px 12px"><i class="bi bi-person-badge"></i> Employees: @Model.TotalPresentEmployees present / @Model.TotalAbsentEmployees absent</span>
             </div>
-            <div class="ad-card ad-card--danger">
-                <span class="ad-card__label">Students Absent</span>
-                <span class="ad-card__value">@Model.TotalAbsentStudents</span>
-            </div>
-            <div class="ad-card ad-card--info">
-                <span class="ad-card__label">Students %</span>
-                <span class="ad-card__value">@Model.StudentAttendancePercentage%</span>
-            </div>
-            <div class="ad-card ad-card--warning">
-                <span class="ad-card__label">Pending Leaves</span>
-                <span class="ad-card__value">@Model.PendingLeaveRequests</span>
+            <div style="display:flex;gap:12px;flex-wrap:wrap">
+                <a href="@Url.Action("Dashboard", "AttendanceReport")" class="adm-btn adm-btn--primary" style="padding:6px 14px;font-size:12px">Full Analytics Report</a>
+                <a href="@Url.Action("Index", "AttendanceSetting")" class="adm-btn adm-btn--ghost" style="padding:6px 14px;font-size:12px">Attendance Settings</a>
+                <a href="@Url.Action("Index", "Leave")" class="adm-btn adm-btn--ghost" style="padding:6px 14px;font-size:12px">Leave Management</a>
             </div>
         </div>
     </div>
 
-    <div class="ad-charts">
-        <div class="ad-panel">
-            <h3 style="margin-top:0">Student Attendance (Today)</h3>
-            <canvas id="studentChart" height="160"></canvas>
-        </div>
-        <div class="ad-panel">
-            <h3 style="margin-top:0">Employee Attendance (Today)</h3>
-            <canvas id="employeeChart" height="160"></canvas>
-        </div>
-    </div>
-
-    <div class="ad-panel">
-        <h3 style="margin-top:0">Quick Links</h3>
-        <p>
-            <span class="ad-pill">Students: @Model.TotalPresentStudents present / @Model.TotalAbsentStudents absent</span>
-            <span class="ad-pill">Employees: @Model.TotalPresentEmployees present / @Model.TotalAbsentEmployees absent</span>
-        </p>
-        <p>
-            <a href="@Url.Action("Dashboard", "AttendanceReport")">Full Analytics Report</a> &middot;
-            <a href="@Url.Action("Index", "AttendanceSetting")">Attendance Settings</a> &middot;
-            <a href="@Url.Action("Index", "Leave")">Leave Management</a>
-        </p>
-    </div>
-
-    <div class="ad-footer">
-        Generated @DateTime.Now.ToString("yyyy-MM-dd HH:mm")
-    </div>
+    <div style="text-align:right;font-size:12px;color:var(--er-text-3);margin-top:8px">Generated @DateTime.Now.ToString("yyyy-MM-dd HH:mm")</div>
 </div>
 
 @section Scripts {
     <script>
         (function () {
             const studentCtx = document.getElementById('studentChart').getContext('2d');
-            new Chart(studentCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Present', 'Absent'],
-                    datasets: [{
-                        data: [@Model.TotalPresentStudents, @Model.TotalAbsentStudents],
-                        backgroundColor: ['#16a34a', '#dc2626'],
-                        borderWidth: 1
-                    }]
-                },
-                options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
-            });
-
+            new Chart(studentCtx, { type: 'doughnut', data: { labels: ['Present', 'Absent'], datasets: [{ data: [@Model.TotalPresentStudents, @Model.TotalAbsentStudents], backgroundColor: ['#16a34a', '#dc2626'], borderWidth: 1 }] }, options: { responsive: true, plugins: { legend: { position: 'bottom' } } } });
             const empCtx = document.getElementById('employeeChart').getContext('2d');
-            new Chart(empCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Present', 'Absent'],
-                    datasets: [{
-                        data: [@Model.TotalPresentEmployees, @Model.TotalAbsentEmployees],
-                        backgroundColor: ['#2563eb', '#d97706'],
-                        borderWidth: 1
-                    }]
-                },
-                options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
-            });
+            new Chart(empCtx, { type: 'doughnut', data: { labels: ['Present', 'Absent'], datasets: [{ data: [@Model.TotalPresentEmployees, @Model.TotalAbsentEmployees], backgroundColor: ['#2563eb', '#d97706'], borderWidth: 1 }] }, options: { responsive: true, plugins: { legend: { position: 'bottom' } } } });
         })();
     </script>
 }

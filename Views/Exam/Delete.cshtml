@@ -20,46 +20,46 @@
         </div>
     </div>
 
-    <div class="er-card er-card--elevated" style="border-color:var(--er-danger);">
+    <div class="er-card er-card--elevated er-card--danger-border">
         <div class="er-card__body">
-            <div class="er-alert er-alert--danger" style="margin-bottom:24px;">
+            <div class="er-alert er-alert--danger mb-4">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                 <div>
-                    <strong style="font-size:15px;">This action cannot be undone.</strong>
-                    <p style="margin:4px 0 0;font-size:13px;">All associated data including schedules and results will be permanently removed.</p>
+                    <strong class="er-text-md">This action cannot be undone.</strong>
+                    <p class="er-text-sm mt-1">All associated data including schedules and results will be permanently removed.</p>
                 </div>
             </div>
 
             <table class="er-table">
                 <tbody>
                     <tr>
-                        <td style="width:180px;font-weight:600;color:var(--er-text-2);padding:10px 0;">Exam Name</td>
-                        <td style="padding:10px 0;">@exam.Name</td>
+                        <th class="er-cell-label">Exam Name</th>
+                        <td>@exam.Name</td>
                     </tr>
                     <tr>
-                        <td style="font-weight:600;color:var(--er-text-2);padding:10px 0;">Term</td>
-                        <td style="padding:10px 0;"><span class="er-badge er-badge--neutral">@exam.Term</span></td>
+                        <th class="er-cell-label">Term</th>
+                        <td><span class="er-badge er-badge--neutral">@exam.Term</span></td>
                     </tr>
                     <tr>
-                        <td style="font-weight:600;color:var(--er-text-2);padding:10px 0;">Academic Year</td>
-                        <td style="padding:10px 0;">@exam.AcademicYearName</td>
+                        <th class="er-cell-label">Academic Year</th>
+                        <td>@exam.AcademicYearName</td>
                     </tr>
                     <tr>
-                        <td style="font-weight:600;color:var(--er-text-2);padding:10px 0;">Duration</td>
-                        <td style="padding:10px 0;">@exam.StartsOn.ToString("d") – @exam.EndsOn.ToString("d")</td>
+                        <th class="er-cell-label">Duration</th>
+                        <td>@exam.StartsOn.ToString("d") – @exam.EndsOn.ToString("d")</td>
                     </tr>
                     <tr>
-                        <td style="font-weight:600;color:var(--er-text-2);padding:10px 0;">Subjects</td>
-                        <td style="padding:10px 0;">@exam.SubjectCount subject(s)</td>
+                        <th class="er-cell-label">Subjects</th>
+                        <td>@exam.SubjectCount subject(s)</td>
                     </tr>
                     <tr>
-                        <td style="font-weight:600;color:var(--er-text-2);padding:10px 0;">Student Results</td>
-                        <td style="padding:10px 0;">@exam.StudentResultCount result(s)</td>
+                        <th class="er-cell-label">Student Results</th>
+                        <td>@exam.StudentResultCount result(s)</td>
                     </tr>
                 </tbody>
             </table>
 
-            <form method="post" action="@Url.Action("DeleteConfirmed", "Exam", new { id = exam.Id })" style="margin-top:24px;display:flex;gap:12px;">
+            <form method="post" action="@Url.Action("DeleteConfirmed", "Exam", new { id = exam.Id })" class="mt-4 d-flex gap-3">
                 @Html.AntiForgeryToken()
                 <button type="submit" class="er-btn er-btn--danger">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>

@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Helpers.Security;
 using SchoolManagementSystem.Models.DTOs.Attendance;
@@ -24,14 +25,16 @@ public class GuardianService : IGuardianService
     private readonly ISchoolSettingRepository _settingRepo;
     private readonly IPasswordHashService _passwordHashService;
     private readonly ILogger<GuardianService> _logger;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public GuardianService(IUnitOfWork uow, IGuardianRepository guardianRepo, ISchoolSettingRepository settingRepo, IPasswordHashService passwordHashService, ILogger<GuardianService> logger)
+    public GuardianService(IUnitOfWork uow, IGuardianRepository guardianRepo, ISchoolSettingRepository settingRepo, IPasswordHashService passwordHashService, ILogger<GuardianService> logger, IHttpContextAccessor httpContextAccessor)
     {
         _uow = uow;
         _guardianRepo = guardianRepo;
         _settingRepo = settingRepo;
         _passwordHashService = passwordHashService;
         _logger = logger;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     public async Task UpdateGuardianProfileAsync(int userId, GuardianProfileUpdateDto dto, CancellationToken ct = default)
@@ -124,6 +127,8 @@ public class GuardianService : IGuardianService
         await _guardianRepo.AddAsync(guardian);
         await _uow.SaveChangesAsync();
 
+        await LogAuditAsync("Guardian", "Guardian.Create", guardian.Id.ToString(), $"Created guardian: {guardian.FullName} ({guardian.GuardianCode})");
+
         return guardian.Id;
     }
 
@@ -147,6 +152,8 @@ public class GuardianService : IGuardianService
 
         _guardianRepo.Update(guardian);
         await _uow.SaveChangesAsync();
+
+        await LogAuditAsync("Guardian", "Guardian.Update", dto.Id.ToString(), $"Updated guardian: {guardian.FullName} ({guardian.GuardianCode})");
     }
 
     public async Task DeleteGuardianAsync(int id)
@@ -156,6 +163,8 @@ public class GuardianService : IGuardianService
         {
             _guardianRepo.Remove(guardian);
             await _uow.SaveChangesAsync();
+
+            await LogAuditAsync("Guardian", "Guardian.Delete", id.ToString(), $"Deleted guardian: {guardian.FullName} ({guardian.GuardianCode})");
         }
     }
 
@@ -168,6 +177,10 @@ public class GuardianService : IGuardianService
         guardian.PortalAccessEnabled = active;
         _guardianRepo.Update(guardian);
         await _uow.SaveChangesAsync();
+
+        var statusAction = active ? "Guardian.Activate" : "Guardian.Deactivate";
+        var statusText = active ? "Activated" : "Deactivated";
+        await LogAuditAsync("Guardian", statusAction, id.ToString(), $"{statusText} guardian: {guardian.FullName} ({guardian.GuardianCode})");
     }
 
     public async Task LinkStudentAsync(int guardianId, int studentId, string relation)
@@ -633,5 +646,26 @@ public class GuardianService : IGuardianService
     private static string BuildFullName(string firstName, string lastName)
     {
         return string.Join(' ', new[] { firstName, lastName }.Where(x => !string.IsNullOrWhiteSpace(x))).Trim();
+    }
+
+    private async Task LogAuditAsync(string module, string action, string entityId, string details, CancellationToken ct = default)
+    {
+        var httpContext = _httpContextAccessor?.HttpContext;
+        var userIdStr = httpContext?.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        int? userId = userIdStr != null && int.TryParse(userIdStr, out var uid) ? uid : null;
+
+        var log = new AuditLog
+        {
+            UserId = userId,
+            Module = module,
+            Action = action,
+            IpAddress = httpContext?.Connection?.RemoteIpAddress?.ToString(),
+            Details = details.Length > 1000 ? details[..1000] : details,
+            CreatedBy = httpContext?.User?.Identity?.Name ?? "system",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _uow.Repository<AuditLog>().AddAsync(log, ct);
+        await _uow.SaveChangesAsync(ct);
     }
 }

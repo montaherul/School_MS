@@ -3,37 +3,44 @@
     ViewData["Title"] = "Exam Results Management";
 }
 
-<div class="container-fluid py-4">
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card shadow-sm border-0 bg-gradient-primary text-white">
-                <div class="card-body p-4">
-                    <h2 class="mb-1">Result Management Dashboard</h2>
-                    <p class="mb-0">Manage exams, review results, and publish performance reports.</p>
-                </div>
+<div class="adm-page er-page">
+    <div class="er-page-header">
+        <div class="er-page-header__left">
+            <div class="er-page-header__icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="20" x2="18" y2="10" />
+                    <line x1="12" y1="20" x2="12" y2="4" />
+                    <line x1="6" y1="20" x2="6" y2="14" />
+                </svg>
             </div>
+            <div>
+                <h1 class="er-page-header__title">Result Management Dashboard</h1>
+                <p class="er-page-header__sub">Manage exams, review results, and publish performance reports.</p>
+            </div>
+        </div>
+        <div class="er-page-header__right">
+            <a href="/AdminResult/Dashboard" class="er-btn er-btn--ghost">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></svg>
+                Result Dashboard
+            </a>
+            <a href="/Exam/Create" class="er-btn er-btn--primary">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                New Exam
+            </a>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-md-8">
-            <div class="card shadow-sm border-0 mb-4">
-                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0 text-primary fw-bold">Active Exams</h5>
-                    <div class="d-flex gap-2">
-                        <a href="/AdminResult/Dashboard" class="btn btn-sm btn-outline-primary">
-                            <i class="fas fa-chart-line me-1"></i> Result Dashboard
-                        </a>
-                        <a href="/Exam/Create" class="btn btn-sm btn-primary">
-                            <i class="fas fa-plus me-1"></i> New Exam
-                        </a>
-                    </div>
+    <div class="dash-main-grid">
+        <div class="dash-panel" style="grid-column:span 2;">
+            <div class="er-card">
+                <div class="er-card__header">
+                    <h3 class="er-card__title">Active Exams</h3>
                 </div>
-                <div class="card-body p-0">
+                <div class="er-card__body--flush">
                     @Html.AntiForgeryToken()
-                    <div class="table-responsive">
-                        <table class="table table-hover align-middle mb-0">
-                            <thead class="bg-light text-muted small text-uppercase">
+                    <div class="er-table-wrap">
+                        <table class="dash-table">
+                            <thead>
                                 <tr>
                                     <th class="ps-4">Exam Name</th>
                                     <th>Term</th>
@@ -49,61 +56,55 @@
                                         <td class="ps-4 fw-bold">@exam.Name</td>
                                         <td>@exam.Term</td>
                                         <td>
-                                            <span class="small text-muted">@exam.StartsOn.ToShortDateString() - @exam.EndsOn.ToShortDateString()</span>
+                                            <span class="adm-cell-dob">@exam.StartsOn.ToShortDateString() - @exam.EndsOn.ToShortDateString()</span>
                                         </td>
                                         <td>
                                             @if (exam.Status == SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Published)
                                             {
-                                                <span class="badge rounded-pill bg-success">Published</span>
+                                                <span class="adm-badge adm-badge--success">Published</span>
                                             }
                                             else if (exam.Status == SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Submitted)
                                             {
-                                                <span class="badge rounded-pill bg-warning text-dark">Submitted</span>
+                                                <span class="adm-badge adm-badge--warning">Submitted</span>
                                             }
                                             else if (exam.Status == SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Reviewed)
                                             {
-                                                <span class="badge rounded-pill bg-primary text-white">Reviewed</span>
+                                                <span class="adm-badge adm-badge--info">Reviewed</span>
                                             }
                                             else if (exam.Status == SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Approved)
                                             {
-                                                <span class="badge rounded-pill bg-success">Approved</span>
+                                                <span class="adm-badge adm-badge--success">Approved</span>
                                             }
                                             else if (exam.Status == SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Locked)
                                             {
-                                                <span class="badge rounded-pill bg-dark">Locked</span>
+                                                <span class="adm-badge adm-badge--neutral">Locked</span>
                                             }
                                             else if (exam.Status == SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Unpublished)
                                             {
-                                                <span class="badge rounded-pill bg-danger">Unpublished</span>
+                                                <span class="adm-badge adm-badge--danger">Unpublished</span>
                                             }
                                             else
                                             {
-                                                <span class="badge rounded-pill bg-info text-dark">Draft</span>
+                                                <span class="adm-badge adm-badge--info">Draft</span>
                                             }
                                         </td>
                                         <td class="text-end pe-4">
-                                            <div class="btn-group">
-                                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                                                    Manage
+                                            <div class="actions-cell" style="justify-content:flex-end;">
+                                                @if (exam.Status != SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Published)
+                                                {
+                                                    <button class="er-action er-action--convert" onclick="publishResult(@exam.Id)" title="Publish Results">
+                                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="16 16 12 12 8 16" /><line x1="12" y1="12" x2="12" y2="21" /></svg>
+                                                    </button>
+                                                }
+                                                <a href="/AdminResult/AllResults?examId=@exam.Id" class="er-action er-action--view" title="View Results">
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
+                                                </a>
+                                                <button class="er-action" style="color:var(--adm-pending);" onclick="recalculateRanking(@exam.Id)" title="Recalculate Rank">
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10" /><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" /></svg>
                                                 </button>
-                                                <ul class="dropdown-menu">
-                                                    @if (exam.Status != SchoolManagementSystem.Models.Enums.ResultWorkflowStatus.Published)
-                                                    {
-                                                        <li><a class="dropdown-item fw-bold text-primary" href="#" onclick="publishResult(@exam.Id)">
-                                                            <i class="fas fa-bullhorn me-2"></i>Publish Results
-                                                        </a></li>
-                                                    }
-                                                    <li><a class="dropdown-item" href="/AdminResult/AllResults?examId=@exam.Id">
-                                                        <i class="fas fa-eye me-2"></i>View Results
-                                                    </a></li>
-                                                    <li><a class="dropdown-item" href="#" onclick="recalculateRanking(@exam.Id)">
-                                                        <i class="fas fa-sync me-2"></i>Recalculate Rank
-                                                    </a></li>
-                                                    <li><hr class="dropdown-divider"></li>
-                                                    <li><a class="dropdown-item text-danger" href="#">
-                                                        <i class="fas fa-trash me-2"></i>Delete Exam
-                                                    </a></li>
-                                                </ul>
+                                                <button class="er-action" style="color:var(--adm-rejected);" title="Delete Exam">
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /></svg>
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>
@@ -115,68 +116,81 @@
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="card shadow-sm border-0 mb-4">
-                <div class="card-header bg-white py-3">
-                    <h5 class="mb-0 text-primary fw-bold">Admin Actions</h5>
+        <div class="dash-panel">
+            <div class="er-card">
+                <div class="er-card__header">
+                    <h3 class="er-card__title">Admin Actions</h3>
                 </div>
-                <div class="card-body">
-                    <div class="d-grid gap-3">
-                        <a href="/AdminResult/AllResults" class="btn btn-outline-success d-flex align-items-center justify-content-between p-3">
-                            <span><i class="fas fa-list-check me-2"></i> All Student Results</span>
-                            <i class="fas fa-chevron-right small opacity-50"></i>
+                <div class="er-card__body">
+                    <div class="dash-actions" style="flex-direction:column;">
+                        <a href="/AdminResult/AllResults" class="dash-action-card">
+                            <div class="dash-action-card__icon" style="background:var(--adm-success-bg);color:var(--adm-success);">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>
+                            </div>
+                            <div class="dash-action-card__body">
+                                <span class="dash-action-card__title">All Student Results</span>
+                            </div>
+                            <svg class="dash-action-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
                         </a>
-                        <a asp-action="ReEvaluationDashboard" class="btn btn-outline-primary d-flex align-items-center justify-content-between p-3">
-                            <span><i class="fas fa-search-plus me-2"></i> Re-evaluation Requests</span>
-                            <span class="badge bg-danger rounded-pill">View</span>
+                        <a asp-action="ReEvaluationDashboard" class="dash-action-card">
+                            <div class="dash-action-card__icon" style="background:var(--adm-primary-bg);color:var(--adm-primary);">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+                            </div>
+                            <div class="dash-action-card__body">
+                                <span class="dash-action-card__title">Re-evaluation Requests</span>
+                            </div>
+                            <svg class="dash-action-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
                         </a>
-                        <a href="/AdminResult/AllSubjects" class="btn btn-outline-info d-flex align-items-center justify-content-between p-3">
-                            <span><i class="fas fa-book me-2"></i> Subject Wise Stats</span>
-                            <i class="fas fa-chevron-right small opacity-50"></i>
+                        <a href="/AdminResult/AllSubjects" class="dash-action-card">
+                            <div class="dash-action-card__icon" style="background:var(--adm-converted-bg);color:var(--adm-converted);">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>
+                            </div>
+                            <div class="dash-action-card__body">
+                                <span class="dash-action-card__title">Subject Wise Stats</span>
+                            </div>
+                            <svg class="dash-action-card__arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6" /></svg>
                         </a>
                     </div>
                 </div>
             </div>
 
-            <div class="card shadow-sm border-0 bg-dark text-white overflow-hidden" style="min-height: 200px;">
-                <div class="card-body p-4 position-relative">
-                    <h5 class="fw-bold mb-3">Overall Pass Rate</h5>
-                    <div class="display-4 fw-bold">87.5%</div>
-                    <p class="small text-white-50">Combined stats for Midterm 2026</p>
-                    <div class="progress mt-3 bg-white-25" style="height: 8px;">
-                        <div class="progress-bar bg-success" style="width: 87.5%"></div>
+            <div class="er-card" style="margin-top:16px;background:linear-gradient(135deg,#1e293b,#0f172a);border-color:#334155;">
+                <div class="er-card__body" style="color:#fff;">
+                    <h5 class="fw-bold mb-3" style="color:#fff;">Overall Pass Rate</h5>
+                    <div style="font-size:32px;font-weight:800;">87.5%</div>
+                    <p style="font-size:13px;color:rgba(255,255,255,0.5);margin:2px 0 12px;">Combined stats for Midterm 2026</p>
+                    <div style="height:8px;background:rgba(255,255,255,0.15);border-radius:99px;overflow:hidden;">
+                        <div style="height:100%;width:87.5%;border-radius:99px;background:var(--adm-success);"></div>
                     </div>
-                    <i class="fas fa-chart-pie position-absolute end-0 bottom-0 m-4 opacity-25" style="font-size: 5rem;"></i>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<style>
-    .bg-gradient-primary {
-        background: linear-gradient(45deg, #4e73df 0%, #224abe 100%);
-    }
-    .bg-white-25 {
-        background-color: rgba(255, 255, 255, 0.1);
-    }
-</style>
+    <partial name="_ExamResultUx" />
 
-<partial name="_ExamResultUx" />
-
-<div class="modal fade" id="confirmModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h6 class="modal-title" id="confirmModalTitle">Confirm Action</h6>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+    <div class="adm-modal-backdrop" id="confirmModal" style="display:none;">
+        <div class="adm-modal" role="dialog">
+            <div class="adm-modal__header">
+                <div class="adm-modal__header-left">
+                    <div class="adm-modal__header-icon" style="background:var(--adm-pending-bg);color:var(--adm-pending);">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+                    </div>
+                    <div>
+                        <h3 class="adm-modal__title">Confirm Action</h3>
+                        <p class="adm-modal__subtitle" id="confirmModalBody">Are you sure?</p>
+                    </div>
+                </div>
+                <button type="button" class="adm-modal__close" onclick="closeConfirmModal()" aria-label="Close">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                </button>
             </div>
-            <div class="modal-body">
-                <p id="confirmModalBody">Are you sure?</p>
+            <div class="adm-modal__body" style="padding-top:4px;">
+                <p style="font-size:14px;color:var(--adm-text-2);" id="confirmModalMessage">Are you sure?</p>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-sm btn-primary" id="confirmModalBtn">Confirm</button>
+            <div class="adm-modal__footer">
+                <button type="button" class="er-btn er-btn--secondary" onclick="closeConfirmModal()">Cancel</button>
+                <button type="button" class="er-btn er-btn--primary" id="confirmModalBtn">Confirm</button>
             </div>
         </div>
     </div>
@@ -186,18 +200,34 @@
     var pendingConfirmAction = null;
 
     function showConfirm(message, callback) {
-        document.getElementById('confirmModalBody').textContent = message;
+        document.getElementById('confirmModalMessage').textContent = message;
         pendingConfirmAction = callback;
-        var modal = new bootstrap.Modal(document.getElementById('confirmModal'));
-        modal.show();
+        document.getElementById('confirmModal').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeConfirmModal() {
+        document.getElementById('confirmModal').style.display = 'none';
+        document.body.style.overflow = '';
+        pendingConfirmAction = null;
     }
 
     document.getElementById('confirmModalBtn').addEventListener('click', function () {
         if (pendingConfirmAction) {
             var fn = pendingConfirmAction;
             pendingConfirmAction = null;
-            bootstrap.Modal.getInstance(document.getElementById('confirmModal')).hide();
             fn();
+        }
+    });
+
+    document.getElementById('confirmModal').addEventListener('click', function (e) {
+        if (e.target === this) closeConfirmModal();
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') {
+            var modal = document.getElementById('confirmModal');
+            if (modal.style.display === 'flex') closeConfirmModal();
         }
     });
 
@@ -213,6 +243,7 @@
             })
             .then(async r => {
                 const data = await r.json();
+                closeConfirmModal();
                 if (r.ok && data.success) {
                     if (typeof showExamToast === 'function') showExamToast('Results published successfully!', 'success');
                     window.location.reload();
@@ -222,6 +253,7 @@
             })
             .catch(err => {
                 console.error('Publish error:', err);
+                closeConfirmModal();
                 if (typeof showExamToast === 'function') showExamToast('Network error or server unavailable', 'error');
             });
         });
@@ -237,6 +269,7 @@
                 },
                 body: '{}'
             }).then(r => {
+                closeConfirmModal();
                 if(r.ok) {
                     if (typeof showExamToast === 'function') showExamToast('Ranking updated!', 'success');
                     location.reload();

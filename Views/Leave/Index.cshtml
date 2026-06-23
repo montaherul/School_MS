@@ -2,13 +2,22 @@
     ViewData["Title"] = "Leave Applications";
 }
 
-<div class="card shadow mb-4">
-    <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-        <h6 class="m-0 font-weight-bold text-primary">Pending Leave Applications</h6>
-        <a asp-action="Apply" class="btn btn-sm btn-primary">Apply Leave</a>
+@Html.AntiForgeryToken()
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap"><i class="bi bi-file-earmark-text-fill"></i></div>
+            <div>
+                <h1 class="adm-header__title">Leave Applications</h1>
+                <p class="adm-header__sub">Manage and approve pending leave requests from employees.</p>
+            </div>
+        </div>
+        <a asp-action="Apply" class="adm-btn adm-btn--primary"><i class="bi bi-plus-circle"></i> Apply Leave</a>
     </div>
-    <div class="card-body">
-        <div id="leave-table"></div>
+
+    <div class="adm-table-card" style="border-top:1px solid var(--adm-border);border-radius:var(--adm-radius-lg)">
+        <div class="adm-table-card__body"><div id="leave-table"></div></div>
     </div>
 </div>
 
@@ -16,7 +25,6 @@
     <script>
         $(document).ready(function () {
             var token = $('input[name="__RequestVerificationToken"]').val();
-
             var table = new Tabulator("#leave-table", {
                 layout: "fitColumns",
                 pagination: true,
@@ -25,13 +33,8 @@
                 paginationSizeSelector: [15,25,50,100],
                 ajaxURL: "/Leave/GetPendingData",
                 ajaxResponse: function(url, params, response) {
-                    console.log("Leave API Payload:", response);
                     const rows = Array.isArray(response.data) ? response.data : [];
-                    return {
-                        last_page: response.last_page || 1,
-                        total_records: response.total_records || rows.length,
-                        data: rows
-                    };
+                    return { last_page: response.last_page || 1, total_records: response.total_records || rows.length, data: rows };
                 },
                 columns: [
                     { title: "Employee", field: "employeeName" },
@@ -41,10 +44,9 @@
                     { title: "Days", field: "totalDays" },
                     { title: "Reason", field: "reason" },
                     { title: "Status", field: "approvalStatus" },
-                    { title: "Actions", formatter: function(cell, formatterParams, onRendered) {
+                    { title: "Actions", formatter: function(cell, fp, onR) {
                         var id = cell.getRow().getData().id;
-                        return `<button class="btn btn-success btn-sm btn-approve" data-id="${id}">Approve</button>
-                                <button class="btn btn-danger btn-sm btn-reject" data-id="${id}">Reject</button>`;
+                        return '<button class="adm-btn adm-btn--success btn-approve" style="padding:4px 10px;font-size:11px;margin-right:4px" data-id="' + id + '">Approve</button><button class="adm-btn adm-btn--danger btn-reject" style="padding:4px 10px;font-size:11px" data-id="' + id + '">Reject</button>';
                     }}
                 ]
             });
@@ -53,12 +55,7 @@
                 var id = $(this).data('id');
                 if (confirm("Are you sure you want to approve this leave?")) {
                     $.post('/Leave/Approve', { id: id, remarks: 'Approved', __RequestVerificationToken: token }, function(res) {
-                        if (res.success) {
-                            toastr.success("Leave approved.");
-                            table.setData();
-                        } else {
-                            toastr.error(res.message);
-                        }
+                        if (res.success) { toastr.success("Leave approved."); table.setData(); } else { toastr.error(res.message); }
                     });
                 }
             });
@@ -67,16 +64,10 @@
                 var id = $(this).data('id');
                 if (confirm("Are you sure you want to reject this leave?")) {
                     $.post('/Leave/Reject', { id: id, remarks: 'Rejected', __RequestVerificationToken: token }, function(res) {
-                        if (res.success) {
-                            toastr.success("Leave rejected.");
-                            table.setData();
-                        } else {
-                            toastr.error(res.message);
-                        }
+                        if (res.success) { toastr.success("Leave rejected."); table.setData(); } else { toastr.error(res.message); }
                     });
                 }
             });
         });
     </script>
 }
-@Html.AntiForgeryToken()

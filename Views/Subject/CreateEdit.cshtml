@@ -3,60 +3,57 @@
     ViewData["Title"] = Model.IsEditMode ? "Edit Subject" : "Add Subject"; 
 }
 
-<div class="container-fluid py-4">
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap" style="background: linear-gradient(135deg, #7C3AED, #A78BFA); box-shadow: 0 4px 12px rgba(124,58,237,0.3);">
+                <i class="bi bi-book"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">@(Model.IsEditMode ? "Edit Subject" : "Add Subject")</h1>
+                <p class="adm-header__sub">@(Model.IsEditMode ? "Modify subject specifications and metadata" : "Create a new curriculum subject")</p>
+            </div>
+        </div>
+        <a href="/Subject/Index" class="adm-btn adm-btn--ghost">
+            <i class="bi bi-arrow-left"></i> <span>Back to List</span>
+        </a>
+    </div>
+
     <div class="row justify-content-center">
         <div class="col-xl-8 col-lg-10">
-            <div class="d-flex align-items-center justify-content-between mb-4">
-                <div class="d-flex align-items-center">
-                    <a href="/Subject/Index" class="btn btn-outline-secondary btn-sm me-3 border-2 rounded-pill px-3">
-                        <i class="bi bi-arrow-left me-1"></i> Back to List
-                    </a>
-                    <h2 class="mb-0 fw-bold text-dark">
-                        <i class="bi bi-journal-bookmark-fill me-2 text-primary"></i>
-                        @(Model.IsEditMode ? "Modify Subject Profile" : "Create Master Subject")
-                    </h2>
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary bg-opacity-10">
+                    <h5 class="mb-0"><i class="bi bi-journal-bookmark-fill me-2"></i>@(Model.IsEditMode ? "Modify Subject Profile" : "Create Master Subject")</h5>
                 </div>
-                <div>
-                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 rounded-pill">NCTB Curriculum Compliant</span>
-                </div>
-            </div>
-
-            <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
-                <div class="card-header bg-gradient bg-primary py-3 px-4 text-white">
-                    <p class="mb-0 text-white-50 small">Subject Master Registry</p>
-                    <h5 class="mb-0 fw-semibold text-white">Subject Specifications & Metadata</h5>
-                </div>
-                <div class="card-body p-4 bg-light-subtle">
+                <div class="card-body p-4">
                     <form asp-action="CreateEdit" method="post">
                         <input type="hidden" asp-for="Id" />
 
-                        <!-- Section: Core Identity -->
-                        <h6 class="text-uppercase text-secondary fw-bold small tracking-wider mb-3"><i class="bi bi-card-text me-2 text-primary"></i>Core Identity</h6>
+                        <h6 class="text-uppercase text-secondary fw-bold small mb-3"><i class="bi bi-card-text me-2 text-primary"></i>Core Identity</h6>
                         <div class="row g-3 mb-4">
                             <div class="col-md-4">
-                                <label asp-for="Code" class="form-label fw-semibold text-muted">Subject Code <span class="text-danger">*</span></label>
-                                <input asp-for="Code" class="form-control rounded-3 border-2" placeholder="e.g. PHY101" style="text-transform: uppercase;" required />
+                                <label asp-for="Code" class="form-label fw-semibold">Subject Code <span class="text-danger">*</span></label>
+                                <input asp-for="Code" class="form-control" placeholder="e.g. PHY101" style="text-transform: uppercase;" required />
                                 <span asp-validation-for="Code" class="text-danger small"></span>
                                 <div class="form-text small">Unique code (e.g. BAN101)</div>
                             </div>
                             <div class="col-md-4">
-                                <label asp-for="Name" class="form-label fw-semibold text-muted">English Name (NameEn) <span class="text-danger">*</span></label>
-                                <input asp-for="Name" class="form-control rounded-3 border-2" placeholder="e.g. Physics" required />
+                                <label asp-for="Name" class="form-label fw-semibold">English Name <span class="text-danger">*</span></label>
+                                <input asp-for="Name" class="form-control" placeholder="e.g. Physics" required />
                                 <span asp-validation-for="Name" class="text-danger small"></span>
                             </div>
                             <div class="col-md-4">
-                                <label asp-for="NameBn" class="form-label fw-semibold text-muted">Bangla Name (NameBn) <span class="text-danger">*</span></label>
-                                <input asp-for="NameBn" class="form-control rounded-3 border-2" placeholder="e.g. পদার্থবিজ্ঞান" required />
+                                <label asp-for="NameBn" class="form-label fw-semibold">Bangla Name <span class="text-danger">*</span></label>
+                                <input asp-for="NameBn" class="form-control" placeholder="e.g. পদার্থবিজ্ঞান" required />
                                 <span asp-validation-for="NameBn" class="text-danger small"></span>
                             </div>
                         </div>
 
-                        <!-- Section: Stream & Classification -->
-                        <h6 class="text-uppercase text-secondary fw-bold small tracking-wider mb-3"><i class="bi bi-tags me-2 text-primary"></i>Classification & Stream</h6>
+                        <h6 class="text-uppercase text-secondary fw-bold small mb-3"><i class="bi bi-tags me-2 text-primary"></i>Classification & Stream</h6>
                         <div class="row g-3 mb-4">
                             <div class="col-md-6">
-                                <label asp-for="SubjectGroup" class="form-label fw-semibold text-muted">Academic Stream / Group</label>
-                                <select asp-for="SubjectGroup" class="form-select rounded-3 border-2" required>
+                                <label asp-for="SubjectGroup" class="form-label fw-semibold">Academic Stream / Group</label>
+                                <select asp-for="SubjectGroup" class="form-select" required>
                                     <option value="">-- Select Subject Group --</option>
                                     <option value="General">General (Common Education)</option>
                                     <option value="Science">Science Group</option>
@@ -66,25 +63,23 @@
                                     <option value="Optional">Optional / Fourth Subject</option>
                                 </select>
                                 <span asp-validation-for="SubjectGroup" class="text-danger small"></span>
-                                <div class="form-text small">Applies to Secondary level Class 9 & 10</div>
                             </div>
                             <div class="col-md-6">
-                                <label asp-for="IsReligionSubject" class="form-label fw-semibold text-muted d-block">Religion Mapping</label>
+                                <label class="form-label fw-semibold d-block">Religion Mapping</label>
                                 <div class="form-check form-switch pt-2">
                                     <input class="form-check-input" type="checkbox" role="switch" asp-for="IsReligionSubject" id="chkIsReligion" />
-                                    <label class="form-check-label fw-semibold text-muted" for="chkIsReligion">Is this a Religion-specific Subject?</label>
+                                    <label class="form-check-label" for="chkIsReligion">Is this a Religion-specific Subject?</label>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Dynamic Religion Selection -->
-                        <div class="row g-3 mb-4 id-religion-panel" id="religionSelectionPanel" style="display: none;">
+                        <div class="row g-3 mb-4" id="religionSelectionPanel" style="display: none;">
                             <div class="col-md-12">
-                                <div class="alert alert-info border-0 rounded-3 shadow-sm py-3 px-4 d-flex align-items-center">
+                                <div class="alert alert-info border-0 py-3 px-4 d-flex align-items-center">
                                     <i class="bi bi-info-circle-fill me-3 fs-4 text-info"></i>
                                     <div>
-                                        <label asp-for="ReligionType" class="form-label fw-bold mb-1 text-dark">Religion Type <span class="text-danger">*</span></label>
-                                        <select asp-for="ReligionType" class="form-select rounded-3 border-0 bg-white" id="ddlReligionType">
+                                        <label asp-for="ReligionType" class="form-label fw-bold mb-1">Religion Type <span class="text-danger">*</span></label>
+                                        <select asp-for="ReligionType" class="form-select bg-white" id="ddlReligionType">
                                             <option value="">-- Choose Religion --</option>
                                             <option value="Islam">Islam & Moral Education</option>
                                             <option value="Hindu">Hindu Religion & Moral Education</option>
@@ -97,47 +92,38 @@
                             </div>
                         </div>
 
-                        <!-- Section: Characteristics & Type -->
-                        <h6 class="text-uppercase text-secondary fw-bold small tracking-wider mb-3"><i class="bi bi-toggle-on me-2 text-primary"></i>Subject Attributes & Rules</h6>
+                        <h6 class="text-uppercase text-secondary fw-bold small mb-3"><i class="bi bi-toggle-on me-2 text-primary"></i>Subject Attributes</h6>
                         <div class="row g-3 mb-4">
                             <div class="col-md-4">
-                                <div class="p-3 bg-white border border-light rounded-3 shadow-sm">
+                                <div class="p-3 bg-light rounded-3">
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" asp-for="IsOptional" id="chkIsOptional" />
-                                        <label class="form-check-label fw-semibold text-dark" for="chkIsOptional">Is Optional Subject</label>
-                                        <div class="form-text small">Student-selectable optional/fourth subject</div>
+                                        <label class="form-check-label fw-semibold" for="chkIsOptional">Is Optional Subject</label>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-4">
-                                <div class="p-3 bg-white border border-light rounded-3 shadow-sm">
+                                <div class="p-3 bg-light rounded-3">
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" asp-for="IsPractical" id="chkIsPractical" />
-                                        <label class="form-check-label fw-semibold text-dark" for="chkIsPractical">Includes Practical / Lab</label>
-                                        <div class="form-text small">Has written + practical mark splits</div>
+                                        <label class="form-check-label fw-semibold" for="chkIsPractical">Includes Practical / Lab</label>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-4">
-                                <div class="p-3 bg-white border border-light rounded-3 shadow-sm">
+                                <div class="p-3 bg-light rounded-3">
                                     <div class="form-check">
                                         <input class="form-check-input" type="checkbox" asp-for="IsActive" id="chkIsActive" />
-                                        <label class="form-check-label fw-semibold text-dark" for="chkIsActive">Subject Status Active</label>
-                                        <div class="form-text small">Controls listing and mappings availability</div>
+                                        <label class="form-check-label fw-semibold" for="chkIsActive">Active</label>
                                     </div>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Action Buttons -->
-                        <hr class="my-4 border-2 opacity-50" />
-                        <div class="d-flex justify-content-end gap-3">
-                            <a href="/Subject/Index" class="btn btn-outline-secondary px-4 py-2 border-2 rounded-pill fw-semibold">
-                                <i class="bi bi-x-circle me-1"></i> Cancel
-                            </a>
-                            <button type="submit" class="btn btn-primary px-5 py-2 rounded-pill fw-semibold shadow-sm bg-gradient">
-                                <i class="bi bi-save me-1"></i> Save Subject Specification
-                            </button>
+                        <hr class="my-4" />
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="/Subject/Index" class="adm-btn adm-btn--ghost"><i class="bi bi-x-circle"></i> Cancel</a>
+                            <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-save"></i> Save Subject</button>
                         </div>
                     </form>
                 </div>
@@ -151,7 +137,6 @@
     
     <script>
         $(document).ready(function() {
-            // Function to toggle religion panel visibility based on checkbox status
             function toggleReligionPanel() {
                 if ($('#chkIsReligion').is(':checked')) {
                     $('#religionSelectionPanel').slideDown(300);
@@ -161,13 +146,7 @@
                     $('#ddlReligionType').prop('required', false).val('');
                 }
             }
-
-            // Bind change event
-            $('#chkIsReligion').on('change', function() {
-                toggleReligionPanel();
-            });
-
-            // Initialize on page load
+            $('#chkIsReligion').on('change', toggleReligionPanel);
             toggleReligionPanel();
         });
     </script>

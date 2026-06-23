@@ -4,12 +4,25 @@
     var types = ViewBag.HolidayTypes as string[];
 }
 
-<div class="container-fluid py-3">
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap" style="background: linear-gradient(135deg, #DC2626, #F87171); box-shadow: 0 4px 12px rgba(220,38,38,0.3);">
+                <i class="bi bi-calendar-plus"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Create Holiday</h1>
+                <p class="adm-header__sub">Add a new holiday to the master list</p>
+            </div>
+        </div>
+        <a asp-action="Index" class="adm-btn adm-btn--ghost"><i class="bi bi-arrow-left"></i> Back to List</a>
+    </div>
+
     <div class="row justify-content-center">
         <div class="col-lg-8">
-            <div class="card shadow-sm border-0">
+            <div class="card shadow-sm">
                 <div class="card-header bg-white border-bottom py-3">
-                    <h5 class="mb-0 fw-bold"><i class="bi bi-calendar-plus me-2 text-danger"></i>Create Holiday</h5>
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-calendar-plus me-2 text-danger"></i>Holiday Details</h5>
                 </div>
                 <div class="card-body">
                     <form asp-action="Create" method="post">
@@ -75,8 +88,8 @@
                             </div>
                         </div>
                         <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
-                            <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
-                            <button type="submit" class="btn btn-danger"><i class="bi bi-check-lg me-1"></i> Save</button>
+                            <a asp-action="Index" class="adm-btn adm-btn--ghost">Cancel</a>
+                            <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-check-lg"></i> Save</button>
                         </div>
                     </form>
                 </div>

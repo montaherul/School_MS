@@ -217,7 +217,7 @@ public class EmployeeController : Controller
     }
 
     [HttpGet]
-    [AllowAnonymous]
+    [RequirePermission("Users.View")]
     [Route("Employee/Verify/{id}")]
     public async Task<IActionResult> Verify(int id, CancellationToken ct)
     {

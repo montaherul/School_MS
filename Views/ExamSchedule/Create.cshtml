@@ -6,7 +6,7 @@
     var groups = ViewBag.Groups as IEnumerable<SchoolManagementSystem.Models.Entities.Academic.StudentGroup>;
 }
 
-<div class="adm-page">
+<div class="adm-page er-page">
     <div class="adm-header">
         <div class="adm-header__left">
             <div class="adm-header__icon-wrap">
@@ -26,93 +26,95 @@
         </div>
     </div>
 
-    <div class="adm-table-card" style="border-radius: var(--adm-radius-lg); padding: 30px; border: 1px solid var(--adm-border);">
-        <form method="post" action="@Url.Action("Create")">
-            @Html.AntiForgeryToken()
-            @Html.ValidationSummary(true, "", new { @class = "text-danger mb-4" })
+    <div class="er-card">
+        <div class="er-card__body">
+            <form method="post" action="@Url.Action("Create")">
+                @Html.AntiForgeryToken()
+                @Html.ValidationSummary(true, "", new { @class = "text-danger mb-4" })
 
-            <div class="row g-4">
-                <div class="col-md-6">
-                    <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Select Exam</label>
-                    <select name="ExamId" class="form-select adm-select" required>
-                        <option value="">-- Choose Exam --</option>
-                        @if (exams != null)
-                        {
-                            foreach (var e in exams)
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <label class="form-label">Select Exam</label>
+                        <select name="ExamId" class="form-select adm-select" required>
+                            <option value="">-- Choose Exam --</option>
+                            @if (exams != null)
                             {
-                                <option value="@e.Id">@e.Name</option>
+                                foreach (var e in exams)
+                                {
+                                    <option value="@e.Id">@e.Name</option>
+                                }
                             }
-                        }
-                    </select>
-                </div>
+                        </select>
+                    </div>
 
-                <div class="col-md-6">
-                    <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Select Class</label>
-                    <select name="ClassId" id="classSelect" class="form-select adm-select" required>
-                        <option value="">-- Choose Class --</option>
-                        @if (classes != null)
-                        {
-                            foreach (var c in classes)
+                    <div class="col-md-6">
+                        <label class="form-label">Select Class</label>
+                        <select name="ClassId" id="classSelect" class="form-select adm-select" required>
+                            <option value="">-- Choose Class --</option>
+                            @if (classes != null)
                             {
-                                <option value="@c.Id">@c.Name</option>
+                                foreach (var c in classes)
+                                {
+                                    <option value="@c.Id">@c.Name</option>
+                                }
                             }
-                        }
-                    </select>
-                </div>
+                        </select>
+                    </div>
 
-                <div class="col-md-6">
-                    <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Select Subject</label>
-                    <select name="SubjectId" id="subjectSelect" class="form-select adm-select" required>
-                        <option value="">-- Choose Class First --</option>
-                    </select>
-                </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Select Subject</label>
+                        <select name="SubjectId" id="subjectSelect" class="form-select adm-select" required>
+                            <option value="">-- Choose Class First --</option>
+                        </select>
+                    </div>
 
-                <div class="col-md-6" id="groupField" style="display:none;">
-                    <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Student Group</label>
-                    <select name="StudentGroupId" class="form-select adm-select">
-                        <option value="">-- Select Group --</option>
-                        @if (groups != null)
-                        {
-                            foreach (var g in groups)
+                    <div class="col-md-6" id="groupField" style="display:none;">
+                        <label class="form-label">Student Group</label>
+                        <select name="StudentGroupId" class="form-select adm-select">
+                            <option value="">-- Select Group --</option>
+                            @if (groups != null)
                             {
-                                <option value="@g.Id">@g.Name</option>
+                                foreach (var g in groups)
+                                {
+                                    <option value="@g.Id">@g.Name</option>
+                                }
                             }
-                        }
-                    </select>
-                </div>
+                        </select>
+                    </div>
 
-                <div class="col-md-4">
-                    <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Exam Date</label>
-                    <input type="date" name="ExamDate" class="form-control adm-select" required />
-                </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Exam Date</label>
+                        <input type="date" name="ExamDate" class="form-control" required />
+                    </div>
 
-                <div class="col-md-4">
-                    <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Starts At</label>
-                    <input type="time" name="StartsAt" class="form-control adm-select" required />
-                </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Starts At</label>
+                        <input type="time" name="StartsAt" class="form-control" required />
+                    </div>
 
-                <div class="col-md-4">
-                    <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Ends At</label>
-                    <input type="time" name="EndsAt" class="form-control adm-select" required />
-                </div>
+                    <div class="col-md-4">
+                        <label class="form-label">Ends At</label>
+                        <input type="time" name="EndsAt" class="form-control" required />
+                    </div>
 
-                <div class="col-md-6">
-                    <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Room Number</label>
-                    <input type="text" name="RoomNo" class="form-control adm-select" placeholder="e.g. 302, Hall A" required />
-                </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Room Number</label>
+                        <input type="text" name="RoomNo" class="form-control" placeholder="e.g. 302, Hall A" required />
+                    </div>
 
-                <div class="col-md-6">
-                    <label class="form-label" style="font-weight: 500; color: var(--adm-text-1);">Special Instructions</label>
-                    <input type="text" name="Instructions" class="form-control adm-select" placeholder="e.g. Bring scientific calculator" />
-                </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Special Instructions</label>
+                        <input type="text" name="Instructions" class="form-control" placeholder="e.g. Bring scientific calculator" />
+                    </div>
 
-                <div class="col-12 mt-5">
-                    <button type="submit" class="adm-btn adm-btn--primary px-5">
-                        Save Schedule
-                    </button>
+                    <div class="col-12">
+                        <button type="submit" class="adm-btn adm-btn--primary">
+                            Save Schedule
+                        </button>
+                    </div>
                 </div>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 </div>
 

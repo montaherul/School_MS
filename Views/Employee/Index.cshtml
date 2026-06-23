@@ -95,14 +95,6 @@
             const staffTypeInput = document.getElementById('filter-stafftype');
             const statusInput = document.getElementById('filter-status');
 
-            function getAvatarHtml(src, name) {
-                if (src) {
-                    return '<div class="entity-avatar entity-avatar--primary"><img src="' + src + '" alt="" /></div>';
-                }
-                var initials = (name || 'E').substring(0, 2).toUpperCase();
-                return '<div class="entity-avatar entity-avatar--primary"><span class="entity-avatar__initials">' + initials + '</span></div>';
-            }
-
             function getDesignationBadge(des) {
                 if (!des) return '<span class="text-muted">&mdash;</span>';
                 var colorMap = {
@@ -120,13 +112,6 @@
                 return '<span class="status-badge" style="background:' + color + ';color:#fff;padding:2px 10px;border-radius:12px;display:inline-block;font-size:11px;font-weight:600;white-space:nowrap;">' + des + '</span>';
             }
 
-            function getStatusHtml(value) {
-                var cls = "adm-status--pending";
-                if (value === "Active") cls = "adm-status--approved";
-                else if (value === "Inactive" || value === "Resigned" || value === "Retired") cls = "adm-status--rejected";
-                return '<span class="adm-status ' + cls + '">' + (value || "Unknown") + '</span>';
-            }
-
             function getStaffBadge(isTeaching) {
                 return isTeaching
                     ? '<span class="entity-cell__badge entity-cell__badge--teaching">Teaching</span>'
@@ -139,11 +124,9 @@
                 pagination: true,
                 paginationMode: "remote",
                 paginationSize: 15,
-                paginationSizeSelector: [15,25,50,100],
-                layout: "fitColumns",
-                responsiveLayout: "collapse",
-                responsiveLayoutCollapseStartOpen: false,
-                columnMinWidth: 100,
+                paginationSizeSelector: [15, 25, 50, 100],
+                layout: "fitDataTable",
+                responsiveLayout: false,
                 movableColumns: true,
                 placeholder: "<div class='dash-empty'><i class='bi bi-people fs-1'></i><div class='dash-empty__title'>No Employees Found</div><div class='dash-empty__sub'>Try adjusting your search query or filters.</div></div>",
                 ajaxParams: function () { return getFilters(); },
@@ -151,33 +134,32 @@
                     {
                         title: "Employee",
                         field: "fullName",
-                        widthGrow: 2,
+                        width: 280,
                         minWidth: 280,
-                        responsive: 0,
                         cssClass: "adm-col-entity",
                         formatter: function (cell) {
                             var d = cell.getData();
-                            var avatar = getAvatarHtml(d.profilePicturePath, d.fullName);
-                            var name = '<span class="entity-cell__name">' + (d.fullName || '-') + '</span>';
-                            var code = '<span class="entity-cell__code">' + (d.employeeCode || '-') + '</span>';
-                            var badge = getStaffBadge(d.isTeachingStaff);
-                            return '<div class="entity-cell">' + avatar + '<div class="entity-cell__identity">' + name + code + '<div>' + badge + '</div></div></div>';
+                            var meta = getStaffBadge(d.isTeachingStaff);
+                            return '<div class="entity-cell">' + renderAvatar(d.profilePicturePath, d.fullName) + '<div class="entity-cell__identity"><span class="entity-cell__name">' + (d.fullName || '-') + '</span><span class="entity-cell__code">' + (d.employeeCode || '-') + '</span><div>' + meta + '</div></div></div>';
                         }
                     },
                     {
                         title: "Designation",
                         field: "designation",
+                        width: 150,
                         minWidth: 150,
                         formatter: function (cell) { return getDesignationBadge(cell.getValue()); }
                     },
                     {
                         title: "Department",
                         field: "department",
+                        width: 150,
                         minWidth: 150
                     },
                     {
                         title: "Phone",
                         field: "phone",
+                        width: 140,
                         minWidth: 140,
                         formatter: function (cell) {
                             var v = cell.getValue();
@@ -187,9 +169,10 @@
                     {
                         title: "Status",
                         field: "status",
+                        width: 100,
                         hozAlign: "center",
                         cssClass: "adm-col-status",
-                        formatter: function (cell) { return getStatusHtml(cell.getValue()); }
+                        formatter: function (cell) { return renderStatusBadge(cell.getValue()); }
                     },
                     {
                         title: "Actions",
@@ -200,11 +183,10 @@
                         minWidth: 160,
                         formatter: function (cell) {
                             var d = cell.getData();
-                            var baseUrl = "@Url.Action("Details")";
-                            return '<div class="action-group">' +
-                                '<a href="' + baseUrl + '/' + d.id + '" class="action-btn action-btn--view" title="View"><i class="bi bi-eye"></i></a>' +
-                                '<a href="@Url.Action("Edit")/' + d.id + '" class="action-btn action-btn--edit" title="Edit"><i class="bi bi-pencil"></i></a>' +
-                                '</div>';
+                            return buildActionGroup([
+                                { url: "@Url.Action("Details")/" + d.id, className: 'action-btn--view', icon: 'eye', title: 'View' },
+                                { url: "@Url.Action("Edit")/" + d.id, className: 'action-btn--edit', icon: 'pencil', title: 'Edit' }
+                            ]);
                         }
                     }
                 ]

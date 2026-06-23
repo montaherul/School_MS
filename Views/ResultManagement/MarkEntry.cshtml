@@ -3,15 +3,16 @@
     ViewData["Title"] = "Mark Entry";
 }
 
-<div class="container-fluid py-4">
-    <div class="card shadow">
-        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-            <h4 class="mb-0">Mark Entry: @Model.ExamName - @Model.SubjectName (@Model.ClassName)</h4>
-            <button class="btn btn-light btn-sm" onclick="saveAllMarks()">
-                <i class="fas fa-save"></i> Save All Marks
+<div class="adm-page er-page">
+    <div class="er-card">
+        <div class="er-card__header">
+            <h3 class="er-card__title">Mark Entry: @Model.ExamName - @Model.SubjectName (@Model.ClassName)</h3>
+            <button class="er-btn er-btn--primary" onclick="saveAllMarks()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" /><polyline points="17 21 17 13 7 13 7 21" /><polyline points="7 3 7 8 15 8" /></svg>
+                Save All Marks
             </button>
         </div>
-        <div class="card-body">
+        <div class="er-card__body">
             <div id="mark-entry-table"></div>
         </div>
     </div>
@@ -26,10 +27,8 @@
         const subjectId = @Model.SubjectId;
         const examId = @Model.ExamId;
 
-        // Component column definitions (field names match JSON camelCase from server)
         const componentColumns = @Html.Raw(Json.Serialize(ViewBag.ComponentColumns ?? new List<object>()));
 
-        // Build Tabulator columns
         const columns = [
             { title: "Roll", field: "rollNumber", width: 80, headerSort: true },
             { title: "Student Name", field: "studentName", width: 250 },
@@ -48,9 +47,9 @@
             { title: "Grade", field: "grade", width: 80 },
             { title: "Status", field: "status", width: 100, formatter: function(cell) {
                 const row = cell.getRow().getData();
-                if (row.isLocked) return '<span class="badge bg-dark">Locked</span>';
-                if (row.marksObtained != null && row.marksObtained > 0) return '<span class="badge bg-info">Entered</span>';
-                return '<span class="badge bg-warning">Draft</span>';
+                if (row.isLocked) return '<span class="adm-badge adm-badge--neutral">Locked</span>';
+                if (row.marksObtained != null && row.marksObtained > 0) return '<span class="adm-badge adm-badge--info">Entered</span>';
+                return '<span class="adm-badge adm-badge--warning">Draft</span>';
             }}
         ];
 

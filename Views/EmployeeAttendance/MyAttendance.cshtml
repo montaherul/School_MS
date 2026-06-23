@@ -10,83 +10,77 @@
     var years = Enumerable.Range(now.Year - 3, 5).ToList();
 }
 
-<section class="container-fluid py-3">
-    <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap mb-3">
-        <div>
-            <h1 class="h3 fw-bold mb-1">My Attendance</h1>
-            <div class="text-muted">@Model.EmployeeName (@Model.EmployeeCode)</div>
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap"><i class="bi bi-person-check-fill"></i></div>
+            <div>
+                <h1 class="adm-header__title">My Attendance</h1>
+                <p class="adm-header__sub">@Model.EmployeeName (@Model.EmployeeCode)</p>
+            </div>
         </div>
-        <div class="d-flex gap-2">
-            <select id="selMonth" class="form-select">
+        <div class="adm-btn-group">
+            <select id="selMonth" class="adm-select" style="width:auto;min-width:140px">
                 @foreach (var month in months)
                 {
                     <option value="@month.Value" selected="@(month.Value == now.Month)">@month.Name</option>
                 }
             </select>
-            <select id="selYear" class="form-select">
+            <select id="selYear" class="adm-select" style="width:auto;min-width:100px">
                 @foreach (var year in years)
                 {
                     <option value="@year" selected="@(year == now.Year)">@year</option>
                 }
             </select>
-            <button type="button" id="btnRefresh" class="btn btn-primary">Refresh</button>
+            <button type="button" id="btnRefresh" class="adm-btn adm-btn--primary"><i class="bi bi-arrow-repeat"></i> Refresh</button>
         </div>
     </div>
 
-    <div class="row g-3 mb-3">
-        <div class="col-md-2"><div class="border rounded p-3 bg-white"><div class="text-muted small">Attendance %</div><div id="pct" class="h3 mb-0">@Model.AttendancePercentage%</div></div></div>
-        <div class="col-md-2"><div class="border rounded p-3 bg-white"><div class="text-muted small">Recorded Days</div><div id="recorded" class="h3 mb-0">@Model.RecordedDays</div></div></div>
-        <div class="col-md-2"><div class="border rounded p-3 bg-white"><div class="text-muted small">Present</div><div id="present" class="h3 mb-0 text-success">@Model.Present</div></div></div>
-        <div class="col-md-2"><div class="border rounded p-3 bg-white"><div class="text-muted small">Late</div><div id="late" class="h3 mb-0 text-warning">@Model.Late</div></div></div>
-        <div class="col-md-2"><div class="border rounded p-3 bg-white"><div class="text-muted small">Absent</div><div id="absent" class="h3 mb-0 text-danger">@Model.Absent</div></div></div>
-        <div class="col-md-2"><div class="border rounded p-3 bg-white"><div class="text-muted small">Leave</div><div id="leave" class="h3 mb-0 text-primary">@Model.Leave</div></div></div>
+    <div class="er-stats">
+        <div class="er-stat"><div class="er-stat__icon er-stat__icon--primary"><i class="bi bi-percent"></i></div><div class="er-stat__body"><span class="er-stat__label">Attendance %</span><span class="er-stat__value" id="pct">@Model.AttendancePercentage%</span></div></div>
+        <div class="er-stat"><div class="er-stat__icon er-stat__icon--info"><i class="bi bi-calendar3"></i></div><div class="er-stat__body"><span class="er-stat__label">Recorded Days</span><span class="er-stat__value" id="recorded">@Model.RecordedDays</span></div></div>
+        <div class="er-stat"><div class="er-stat__icon er-stat__icon--success"><i class="bi bi-check-circle"></i></div><div class="er-stat__body"><span class="er-stat__label">Present</span><span class="er-stat__value" id="present">@Model.Present</span></div></div>
+        <div class="er-stat"><div class="er-stat__icon er-stat__icon--warning"><i class="bi bi-clock"></i></div><div class="er-stat__body"><span class="er-stat__label">Late</span><span class="er-stat__value" id="late">@Model.Late</span></div></div>
+        <div class="er-stat"><div class="er-stat__icon er-stat__icon--danger"><i class="bi bi-x-circle"></i></div><div class="er-stat__body"><span class="er-stat__label">Absent</span><span class="er-stat__value" id="absent">@Model.Absent</span></div></div>
+        <div class="er-stat"><div class="er-stat__icon er-stat__icon--info"><i class="bi bi-calendar-check"></i></div><div class="er-stat__body"><span class="er-stat__label">Leave</span><span class="er-stat__value" id="leave">@Model.Leave</span></div></div>
     </div>
 
-    <div class="border rounded bg-white">
-        <div class="p-3 border-bottom fw-semibold">Attendance Calendar</div>
-        <div class="table-responsive">
-            <table class="table table-hover mb-0">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Status</th>
-                        <th>Check In</th>
-                        <th>Check Out</th>
-                        <th>Remarks</th>
-                    </tr>
-                </thead>
-                <tbody id="historyBody"></tbody>
-            </table>
+    <div class="er-card">
+        <div class="er-card__header"><h3 class="er-card__title"><i class="bi bi-calendar-week"></i> Attendance Calendar</h3></div>
+        <div class="er-card__body er-card__body--flush">
+            <div class="er-table-wrap">
+                <table class="er-table">
+                    <thead>
+                        <tr><th>Date</th><th>Status</th><th>Check In</th><th>Check Out</th><th>Remarks</th></tr>
+                    </thead>
+                    <tbody id="historyBody"></tbody>
+                </table>
+            </div>
         </div>
     </div>
-</section>
+</div>
 
 @section Scripts {
 <script>
     async function loadMyAttendance() {
         const year = document.getElementById('selYear').value;
         const month = document.getElementById('selMonth').value;
-        const response = await fetch(`/EmployeeAttendance/GetMyAttendanceData?year=${year}&month=${month}`, {
-            headers: { 'X-Requested-With': 'XMLHttpRequest' },
-            credentials: 'same-origin'
-        });
+        const response = await fetch('/EmployeeAttendance/GetMyAttendanceData?year=' + year + '&month=' + month, { headers: { 'X-Requested-With': 'XMLHttpRequest' }, credentials: 'same-origin' });
         const data = await response.json();
         if (!data.success) return;
-
         const s = data.summary;
-        document.getElementById('pct').textContent = `${Number(s.attendancePercentage || 0).toFixed(1)}%`;
+        document.getElementById('pct').textContent = Number(s.attendancePercentage || 0).toFixed(1) + '%';
         document.getElementById('recorded').textContent = s.recordedDays || 0;
         document.getElementById('present').textContent = s.present || 0;
         document.getElementById('late').textContent = s.late || 0;
         document.getElementById('absent').textContent = s.absent || 0;
         document.getElementById('leave').textContent = s.leave || 0;
-
         const rows = data.history || [];
+        var cls = function(s) { return s === 'Present' ? 'adm-status--approved' : s === 'Absent' ? 'adm-status--rejected' : s === 'Late' ? 'adm-badge--warning' : 'adm-badge--info'; };
         document.getElementById('historyBody').innerHTML = rows.length
-            ? rows.map(row => `<tr><td>${row.formattedDate}</td><td>${row.statusName}</td><td>${row.checkInTime || ''}</td><td>${row.checkOutTime || ''}</td><td>${row.remarks || ''}</td></tr>`).join('')
-            : '<tr><td colspan="5" class="text-center text-muted py-4">No attendance records found.</td></tr>';
+            ? rows.map(function(r) { return '<tr><td>' + r.formattedDate + '</td><td><span class="adm-status ' + cls(r.statusName) + '">' + r.statusName + '</span></td><td>' + (r.checkInTime || '') + '</td><td>' + (r.checkOutTime || '') + '</td><td>' + (r.remarks || '') + '</td></tr>'; }).join('')
+            : '<tr><td colspan="5" style="text-align:center;color:var(--adm-text-3);padding:24px">No attendance records found.</td></tr>';
     }
-
     document.getElementById('btnRefresh').addEventListener('click', loadMyAttendance);
     document.getElementById('selMonth').addEventListener('change', loadMyAttendance);
     document.getElementById('selYear').addEventListener('change', loadMyAttendance);

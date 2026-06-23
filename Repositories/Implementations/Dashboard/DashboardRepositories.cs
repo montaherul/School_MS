@@ -39,44 +39,45 @@ public class DashboardRepository : IDashboardRepository
         }
 
         var studentQuery = _db.Students.Where(s => !s.IsDeleted);
-        var totalStudents = await studentQuery.CountAsync(ct);
 
         var admissionQuery = _db.Admissions.Where(a => a.Status == AdmissionStatus.Pending && !a.IsDeleted);
         if (yearStart.HasValue && yearEnd.HasValue)
             admissionQuery = admissionQuery.Where(a => a.CreatedAt >= yearStart.Value && a.CreatedAt <= yearEnd.Value);
-        var pendingAdmissions = await admissionQuery.CountAsync(ct);
 
         var attendanceQuery = _db.Attendance.Where(a => !a.IsDeleted);
         if (yearStart.HasValue && yearEnd.HasValue)
             attendanceQuery = attendanceQuery.Where(a => a.CreatedAt >= yearStart.Value && a.CreatedAt <= yearEnd.Value);
-        var totalAttendance = await attendanceQuery.CountAsync(ct);
-        var presentAttendance = await attendanceQuery.Where(a => a.Status == AttendanceStatus.Present || a.Status == AttendanceStatus.Late).CountAsync(ct);
 
         var feeQuery = _db.FeeInvoices.Where(f => !f.IsDeleted);
         if (academicYearId.HasValue)
             feeQuery = feeQuery.Where(f => f.AcademicYearId == academicYearId.Value);
-        var feesCollected = await feeQuery.Where(f => f.Status == PaymentStatus.Paid).SumAsync(f => f.PaidAmount, ct);
-        var feesTotal = await feeQuery.SumAsync(f => f.TotalAmount, ct);
 
         var studentsByClassQuery = _db.Students.Where(s => !s.IsDeleted);
         if (yearStart.HasValue && yearEnd.HasValue)
             studentsByClassQuery = studentsByClassQuery.Where(s => s.CreatedAt >= yearStart.Value && s.CreatedAt <= yearEnd.Value);
-        var studentsByClass = await studentsByClassQuery
-            .GroupBy(s => s.ClassId)
-            .Select(g => new DashboardChartDto { Label = g.Key.ToString(), Value = g.Count() })
-            .ToListAsync(ct);
 
         var monthlyFeeQuery = _db.FeeInvoices.Where(f => !f.IsDeleted && f.Status == PaymentStatus.Paid && f.UpdatedAt.HasValue);
         if (academicYearId.HasValue)
             monthlyFeeQuery = monthlyFeeQuery.Where(f => f.AcademicYearId == academicYearId.Value);
-        var monthlyCollections = await monthlyFeeQuery
-            .GroupBy(f => f.UpdatedAt.Value.Month)
-            .Select(g => new DashboardChartDto { Label = g.Key.ToString(), Value = (int)g.Sum(f => f.PaidAmount) })
-            .ToListAsync(ct);
 
         var activitiesQuery = _db.ActivityLogs.Where(l => !l.IsDeleted);
         if (yearStart.HasValue && yearEnd.HasValue)
             activitiesQuery = activitiesQuery.Where(l => l.CreatedAt >= yearStart.Value && l.CreatedAt <= yearEnd.Value);
+
+        var totalStudents = await studentQuery.CountAsync(ct);
+        var pendingAdmissions = await admissionQuery.CountAsync(ct);
+        var totalAttendance = await attendanceQuery.CountAsync(ct);
+        var presentAttendance = await attendanceQuery.Where(a => a.Status == AttendanceStatus.Present || a.Status == AttendanceStatus.Late).CountAsync(ct);
+        var feesCollected = await feeQuery.Where(f => f.Status == PaymentStatus.Paid).SumAsync(f => f.PaidAmount, ct);
+        var feesTotal = await feeQuery.SumAsync(f => f.TotalAmount, ct);
+        var studentsByClass = await studentsByClassQuery
+            .GroupBy(s => s.ClassId)
+            .Select(g => new DashboardChartDto { Label = g.Key.ToString(), Value = g.Count() })
+            .ToListAsync(ct);
+        var monthlyCollections = await monthlyFeeQuery
+            .GroupBy(f => f.UpdatedAt.Value.Month)
+            .Select(g => new DashboardChartDto { Label = g.Key.ToString(), Value = (int)g.Sum(f => f.PaidAmount) })
+            .ToListAsync(ct);
         var recentActivities = await activitiesQuery
             .OrderByDescending(l => l.CreatedAt)
             .Take(10)

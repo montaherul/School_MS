@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Models.DTOs.Common;
 using SchoolManagementSystem.Models.Entities.Auth;
@@ -10,13 +11,15 @@ public class RoleService : IRoleService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IPermissionCacheService _permissionCache;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
     private static readonly string[] SystemRoles = ["Super Admin", "Admin", "Guardian", "Student", "Teacher", "Senior Lecturer", "Lecturer", "Principal", "Accountant", "Exam Controller"];
 
-    public RoleService(IUnitOfWork unitOfWork, IPermissionCacheService permissionCache)
+    public RoleService(IUnitOfWork unitOfWork, IPermissionCacheService permissionCache, IHttpContextAccessor httpContextAccessor)
     {
         _unitOfWork = unitOfWork;
         _permissionCache = permissionCache;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     public async Task<PagedResult<dynamic>> GetPagedAsync(int page, int pageSize, string? search, string? sortColumn = null, string? sortDirection = null, CancellationToken ct = default)
@@ -80,6 +83,9 @@ public class RoleService : IRoleService
 
         await _unitOfWork.SaveChangesAsync(ct);
         _permissionCache.InvalidateRolePermissions(roleId);
+
+        await LogAuditAsync("Role", "Role.PermissionsAssign", roleId.ToString(), $"Assigned {permissionIds.Count} permissions to role ID {roleId}", ct);
+
         return true;
     }
 
@@ -112,6 +118,29 @@ public class RoleService : IRoleService
 
         await _unitOfWork.SaveChangesAsync();
         _permissionCache.InvalidateRolePermissions(id);
+
+        await LogAuditAsync("Role", "Role.Delete", id.ToString(), $"Deleted role: {role.Name}", CancellationToken.None);
+    }
+
+    private async Task LogAuditAsync(string module, string action, string entityId, string details, CancellationToken ct = default)
+    {
+        var httpContext = _httpContextAccessor?.HttpContext;
+        var userIdStr = httpContext?.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        int? userId = userIdStr != null && int.TryParse(userIdStr, out var uid) ? uid : null;
+
+        var log = new AuditLog
+        {
+            UserId = userId,
+            Module = module,
+            Action = action,
+            IpAddress = httpContext?.Connection?.RemoteIpAddress?.ToString(),
+            Details = details.Length > 1000 ? details[..1000] : details,
+            CreatedBy = httpContext?.User?.Identity?.Name ?? "system",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _unitOfWork.Repository<AuditLog>().AddAsync(log, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
     }
 }
 

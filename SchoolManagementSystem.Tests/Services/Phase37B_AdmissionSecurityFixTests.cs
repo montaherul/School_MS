@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using Xunit;
 using Moq;
 using SchoolManagementSystem.Models.Entities.Admission;
@@ -39,6 +40,7 @@ public class Phase37B_AdmissionSecurityFixTests
     private readonly Mock<IGuardianService> _guardianServiceMock = new(MockBehavior.Loose);
     private readonly Mock<ILogger<AdmissionService>> _loggerMock = new(MockBehavior.Loose);
     private readonly Mock<ISchoolSettingRepository> _settingRepoMock = new(MockBehavior.Loose);
+    private readonly Mock<IHttpContextAccessor> _httpMock = new(MockBehavior.Loose);
 
     private AdmissionService CreateService()
     {
@@ -48,7 +50,8 @@ public class Phase37B_AdmissionSecurityFixTests
             _userRepoMock.Object, _roleRepoMock.Object,
             _userRoleRepoMock.Object, _classRepoMock.Object,
             _studentRepoMock.Object, _sectionRepoMock.Object,
-            _guardianServiceMock.Object, _settingRepoMock.Object, _loggerMock.Object);
+            _guardianServiceMock.Object, _settingRepoMock.Object, _loggerMock.Object,
+            _httpMock.Object);
     }
 
     // ─── P6: Status Transition Guards ────────────────────────────

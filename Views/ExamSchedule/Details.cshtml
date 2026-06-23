@@ -29,25 +29,25 @@
 
     <div class="er-card">
         <div class="er-card__body">
-            <table class="table table-bordered" style="font-size:14px;">
+            <table class="er-table">
                 <tbody>
-                    <tr><th style="width:200px;background:#f8f9fa;">Exam</th><td>@(Model.Exam?.Name ?? "N/A")</td></tr>
-                    <tr><th style="background:#f8f9fa;">Subject</th><td>@(Model.Subject?.Name ?? "N/A") (@(Model.Subject?.Code ?? ""))</td></tr>
-                    <tr><th style="background:#f8f9fa;">Class</th><td>@(Model.Class?.Name ?? "N/A")</td></tr>
-                    <tr><th style="background:#f8f9fa;">Section</th><td>@(Model.Section?.Name ?? "All Sections")</td></tr>
-                    <tr><th style="background:#f8f9fa;">Student Group</th><td>@(Model.StudentGroup?.Name ?? "N/A")</td></tr>
-                    <tr><th style="background:#f8f9fa;">Exam Date</th><td>@Model.ExamDate.ToString("dddd, dd MMMM yyyy")</td></tr>
-                    <tr><th style="background:#f8f9fa;">Start Time</th><td>@Model.StartsAt.ToString("hh:mm tt")</td></tr>
-                    <tr><th style="background:#f8f9fa;">End Time</th><td>@Model.EndsAt.ToString("hh:mm tt")</td></tr>
-                    <tr><th style="background:#f8f9fa;">Duration</th><td>@((Model.EndsAt - Model.StartsAt).ToString())</td></tr>
-                    <tr><th style="background:#f8f9fa;">Room</th><td>@Model.RoomNo</td></tr>
-                    <tr><th style="background:#f8f9fa;">Instructions</th><td>@(string.IsNullOrEmpty(Model.Instructions) ? "Standard Rules Apply" : Model.Instructions)</td></tr>
-                    <tr><th style="background:#f8f9fa;">Created By</th><td>@Model.CreatedBy</td></tr>
-                    <tr><th style="background:#f8f9fa;">Created At</th><td>@Model.CreatedAt.ToString("dd MMM yyyy hh:mm tt")</td></tr>
+                    <tr><th class="er-cell-label">Exam</th><td>@(Model.Exam?.Name ?? "N/A")</td></tr>
+                    <tr><th class="er-cell-label">Subject</th><td>@(Model.Subject?.Name ?? "N/A") (@(Model.Subject?.Code ?? ""))</td></tr>
+                    <tr><th class="er-cell-label">Class</th><td>@(Model.Class?.Name ?? "N/A")</td></tr>
+                    <tr><th class="er-cell-label">Section</th><td>@(Model.Section?.Name ?? "All Sections")</td></tr>
+                    <tr><th class="er-cell-label">Student Group</th><td>@(Model.StudentGroup?.Name ?? "N/A")</td></tr>
+                    <tr><th class="er-cell-label">Exam Date</th><td>@Model.ExamDate.ToString("dddd, dd MMMM yyyy")</td></tr>
+                    <tr><th class="er-cell-label">Start Time</th><td>@Model.StartsAt.ToString("hh:mm tt")</td></tr>
+                    <tr><th class="er-cell-label">End Time</th><td>@Model.EndsAt.ToString("hh:mm tt")</td></tr>
+                    <tr><th class="er-cell-label">Duration</th><td>@((Model.EndsAt - Model.StartsAt).ToString())</td></tr>
+                    <tr><th class="er-cell-label">Room</th><td>@Model.RoomNo</td></tr>
+                    <tr><th class="er-cell-label">Instructions</th><td>@(string.IsNullOrEmpty(Model.Instructions) ? "Standard Rules Apply" : Model.Instructions)</td></tr>
+                    <tr><th class="er-cell-label">Created By</th><td>@Model.CreatedBy</td></tr>
+                    <tr><th class="er-cell-label">Created At</th><td>@Model.CreatedAt.ToString("dd MMM yyyy hh:mm tt")</td></tr>
                     @if (!string.IsNullOrEmpty(Model.UpdatedBy))
                     {
-                        <tr><th style="background:#f8f9fa;">Updated By</th><td>@Model.UpdatedBy</td></tr>
-                        <tr><th style="background:#f8f9fa;">Updated At</th><td>@Model.UpdatedAt?.ToString("dd MMM yyyy hh:mm tt")</td></tr>
+                        <tr><th class="er-cell-label">Updated By</th><td>@Model.UpdatedBy</td></tr>
+                        <tr><th class="er-cell-label">Updated At</th><td>@Model.UpdatedAt?.ToString("dd MMM yyyy hh:mm tt")</td></tr>
                     }
                 </tbody>
             </table>

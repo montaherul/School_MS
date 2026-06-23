@@ -2,239 +2,193 @@
     ViewData["Title"] = "Class-Subject Mapping Matrix";
 }
 
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm rounded-3 py-3 px-4 mb-4" role="alert">
-        <div class="d-flex align-items-center">
-            <i class="bi bi-check-circle-fill me-3 fs-4 text-success"></i>
-            <div>
-                <h6 class="mb-0 fw-bold">Success</h6>
-                <p class="mb-0 small text-muted">@TempData["SuccessMessage"]</p>
-            </div>
-        </div>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" style="top: 50%; transform: translateY(-50%);"></button>
-    </div>
-}
+@Html.AntiForgeryToken()
 
-<div class="container-fluid py-4">
-    <!-- Header -->
-    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-3 mb-4">
-        <div>
-            <h2 class="mb-1 fw-bold text-dark">
-                <i class="bi bi-diagram-3-fill me-2 text-primary"></i>Class-Subject Mapping Matrix
-            </h2>
-            <p class="text-muted mb-0 small">Map NCTB curriculum subjects to school classes and streaming paths, defining passing marks and distribution splits</p>
+<div class="adm-page">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="adm-alert adm-alert--success mb-3">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap" style="background: linear-gradient(135deg, #0F766E, #14B8A6); box-shadow: 0 4px 12px rgba(15,118,110,0.3);">
+                <i class="bi bi-diagram-3-fill"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Class-Subject Mapping</h1>
+                <p class="adm-header__sub">Map curriculum subjects to classes, define passing marks and distribution splits</p>
+            </div>
         </div>
         <div class="d-flex gap-2">
-            <a href="/Subject/Index" class="btn btn-outline-secondary px-3 py-2 rounded-pill fw-semibold">
-                <i class="bi bi-journals me-1"></i> Subjects Registry
+            <a href="/Subject/Index" class="adm-btn adm-btn--ghost">
+                <i class="bi bi-journals"></i> <span>Subjects</span>
             </a>
-            <a href="/ClassSubjectMapping/Assign" class="btn btn-primary px-4 py-2 rounded-pill fw-semibold shadow-sm bg-gradient">
-                <i class="bi bi-plus-circle me-2"></i>Map Subjects to Class
+            <a href="/ClassSubjectMapping/Assign" class="adm-btn adm-btn--primary">
+                <i class="bi bi-plus-circle"></i> <span>Map Subjects</span>
             </a>
         </div>
     </div>
 
-    <!-- Filters Panel -->
-    <div class="card border-0 shadow-sm rounded-4 mb-4">
-        <div class="card-body p-4 bg-light-subtle">
-            <div class="row g-3">
-                <div class="col-md-3">
-                    <label class="form-label small fw-bold text-muted">Academic Class</label>
-                    <select id="class-filter" class="form-select bg-light border-0">
-                        <option value="">-- All Classes --</option>
-                        @if (ViewBag.Classes != null)
+    <div class="adm-filters mb-3">
+        <div class="adm-filters__row">
+            <div class="adm-filters__field">
+                <label class="adm-label">Class</label>
+                <select id="class-filter" class="adm-select">
+                    <option value="">All Classes</option>
+                    @if (ViewBag.Classes != null)
+                    {
+                        foreach (var cls in ViewBag.Classes)
                         {
-                            foreach (var cls in ViewBag.Classes)
-                            {
-                                <option value="@cls.Id">@cls.Name</option>
-                            }
+                            <option value="@cls.Id">@cls.Name</option>
                         }
-                    </select>
+                    }
+                </select>
+            </div>
+            <div class="adm-filters__field">
+                <label class="adm-label">Group</label>
+                <select id="group-filter" class="adm-select">
+                    <option value="">All Groups</option>
+                    <option value="General">General (General Education)</option>
+                    <option value="Science">Science Group</option>
+                    <option value="BusinessStudies">Business Studies Group</option>
+                    <option value="Humanities">Humanities Group</option>
+                </select>
+            </div>
+            <div class="adm-filters__field adm-filters__field--search">
+                <label class="adm-label">Search</label>
+                <div class="adm-input-wrap">
+                    <i class="bi bi-search adm-input-wrap__icon"></i>
+                    <input type="text" id="search-input" class="adm-input" placeholder="Search by code, subject name..." />
                 </div>
-                <div class="col-md-3">
-                    <label class="form-label small fw-bold text-muted">Curriculum Stream / Group</label>
-                    <select id="group-filter" class="form-select bg-light border-0">
-                        <option value="">-- All Groups --</option>
-                        <option value="General">General (General Education)</option>
-                        <option value="Science">Science Group</option>
-                        <option value="BusinessStudies">Business Studies Group</option>
-                        <option value="Humanities">Humanities Group</option>
-                    </select>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label small fw-bold text-muted">Keyword Search</label>
-                    <div class="input-group">
-                        <span class="input-group-text bg-light border-0"><i class="bi bi-search text-muted"></i></span>
-                        <input type="text" id="search-input" class="form-control bg-light border-0" placeholder="Search by Code, Subject name..." />
-                    </div>
-                </div>
-                <div class="col-md-2 d-flex align-items-end">
-                    <button type="button" id="reset-filters" class="btn btn-outline-secondary w-100 rounded-pill fw-semibold py-2">
-                        <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
-                    </button>
-                </div>
+            </div>
+            <div class="adm-filters__field adm-filters__field--actions">
+                <label class="adm-label">Action</label>
+                <button type="button" id="reset-filters" class="adm-btn adm-btn--ghost">Reset</button>
             </div>
         </div>
     </div>
 
-    <!-- Data Grid -->
-    <div class="card border-0 shadow-lg rounded-4 overflow-hidden">
-        <div class="card-header bg-white py-3 border-0">
-            <div class="d-flex justify-content-between align-items-center">
-                <h5 class="mb-0 fw-bold text-dark">Subject Curriculum Mappings</h5>
-                <span class="badge bg-light text-muted border border-light-subtle px-3 py-2 rounded-pill">Remote Loading Matrix</span>
-            </div>
-        </div>
-        <div class="card-body p-0">
+    <div class="adm-table-card">
+        <div class="adm-table-card__body">
             <div id="mapping-table"></div>
         </div>
     </div>
 </div>
 
-<!-- Confirm Unmap Modal -->
-<div class="modal fade" id="unmapModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg rounded-4">
-            <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title text-danger fw-bold">
-                    <i class="bi bi-exclamation-triangle-fill me-2 fs-4"></i>Confirm Unmapping
-                </h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<div class="adm-modal-backdrop d-none" id="unmapModalBackdrop">
+    <div class="adm-modal">
+        <div class="adm-modal__header">
+            <div class="adm-modal__header-left">
+                <div class="adm-modal__header-icon adm-modal__header-icon--danger">
+                    <i class="bi bi-trash"></i>
+                </div>
+                <div>
+                    <h5 class="adm-modal__title">Confirm Unmapping</h5>
+                    <p class="adm-modal__subtitle">This action cannot be undone</p>
+                </div>
             </div>
-            <div class="modal-body p-4 text-center">
-                <i class="bi bi-trash3 text-danger fs-1 mb-3 d-block"></i>
-                <p class="mb-1 fw-semibold text-dark">Are you absolutely sure you want to unmap this subject from the class?</p>
-                <h5 class="text-danger fw-bold mb-3" id="unmapDetails"></h5>
-                <p class="text-muted small">This action soft-deletes the subject configuration mapping. Student marks sheets and class grade sheets registered under this mapping scope will be temporarily inaccessible.</p>
-            </div>
-            <div class="modal-footer border-0 pt-0 justify-content-center gap-2">
-                <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger px-4 rounded-pill fw-semibold" id="confirmUnmapBtn">
-                    <i class="bi bi-trash3-fill me-1"></i>Unmap Subject
-                </button>
-            </div>
+            <button type="button" class="adm-modal__close" id="closeUnmapModal">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <div class="adm-modal__body">
+            <p class="mb-1 fw-semibold">Are you sure you want to unmap this subject?</p>
+            <h5 class="text-danger fw-bold mb-3" id="unmapDetails"></h5>
+            <p class="text-muted small">This action soft-deletes the subject configuration mapping.</p>
+        </div>
+        <div class="adm-modal__footer">
+            <button class="adm-btn adm-btn--ghost" id="cancelUnmapBtn">Cancel</button>
+            <button class="adm-btn adm-btn--danger" id="confirmUnmapBtn">
+                <i class="bi bi-trash"></i> Unmap Subject
+            </button>
         </div>
     </div>
 </div>
 
 @section Scripts {
-    <link href="https://unpkg.com/tabulator-tables@6.2.5/dist/css/tabulator_bootstrap5.min.css" rel="stylesheet">
-    <script src="https://unpkg.com/tabulator-tables@6.2.5/dist/js/tabulator.min.js"></script>
-
     <script>
         let pendingUnmapId = null;
-        const unmapModal = new bootstrap.Modal(document.getElementById('unmapModal'));
+        const unmapModal = document.getElementById('unmapModalBackdrop');
+
+        function openUnmapModal(details, id) {
+            pendingUnmapId = id;
+            document.getElementById('unmapDetails').textContent = details;
+            unmapModal.classList.remove('d-none');
+        }
+
+        function closeUnmapModal() {
+            unmapModal.classList.add('d-none');
+            pendingUnmapId = null;
+        }
+
+        document.getElementById('closeUnmapModal').addEventListener('click', closeUnmapModal);
+        document.getElementById('cancelUnmapBtn').addEventListener('click', closeUnmapModal);
 
         const columns = [
             { title: "Id", field: "id", visible: false },
-            { title: "Class", field: "schoolClassName", minWidth: 100, width: 140, cssClass: "fw-bold text-dark" },
-            { title: "Code", field: "subjectCode", minWidth: 80, width: 110, cssClass: "fw-semibold text-primary" },
+            { title: "Class", field: "schoolClassName", minWidth: 120, cssClass: "entity-cell__name" },
+            { title: "Code", field: "subjectCode", minWidth: 100, cssClass: "adm-cell-mono" },
             { title: "Subject (English)", field: "subjectNameEn", minWidth: 150 },
             { title: "Subject (Bangla)", field: "subjectNameBn", minWidth: 150, cssClass: "text-muted" },
-            { 
-                title: "Stream Group", 
-                field: "groupName", 
-                minWidth: 120,
+            {
+                title: "Group", field: "groupName", minWidth: 120,
                 formatter: function(cell) {
                     const val = cell.getValue();
-                    if (!val || val === 'General') return `<span class="badge bg-light text-muted border border-light-subtle rounded-pill">General</span>`;
-                    if (val === 'BusinessStudies') return `<span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill">Business Studies</span>`;
-                    return `<span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill">${val}</span>`;
+                    if (!val || val === 'General') return `<span class="adm-badge adm-badge--neutral">General</span>`;
+                    return `<span class="adm-badge adm-badge--info">${val}</span>`;
                 }
             },
             {
-                title: "Religion Mapping",
-                field: "isReligionSubject",
-                width: 130,
+                title: "Religion", field: "isReligionSubject", width: 120,
                 formatter: function(cell) {
-                    const isRel = cell.getValue();
-                    const rowData = cell.getRow().getData();
-                    if (isRel) {
-                        return `<span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill">${rowData.religionType || 'Religion'}</span>`;
-                    }
-                    return `<span class="text-muted small">-</span>`;
+                    if (!cell.getValue()) return '<span class="text-muted small">-</span>';
+                    return `<span class="adm-badge adm-badge--warning">${cell.getRow().getData().religionType || 'Religion'}</span>`;
                 }
             },
-            { title: "Full", field: "fullMarks", width: 80, hozAlign: "center", cssClass: "fw-semibold" },
-            { title: "Pass", field: "passMarks", width: 80, hozAlign: "center", cssClass: "text-danger fw-semibold" },
-            { 
-                title: "Breakdown (W/M/C/P)", 
-                field: "id", 
-                minWidth: 160,
+            { title: "Full", field: "fullMarks", width: 70, hozAlign: "center", cssClass: "fw-semibold" },
+            { title: "Pass", field: "passMarks", width: 70, hozAlign: "center", cssClass: "text-danger fw-semibold" },
+            {
+                title: "Breakdown", field: "id", minWidth: 160,
                 formatter: function(cell) {
                     const row = cell.getRow().getData();
                     const w = row.writtenMarks ?? 0;
                     const m = row.mcqMarks ?? 0;
                     const c = row.cqMarks ?? 0;
                     const p = row.practicalMarks ?? 0;
-                    
                     if (w === 0 && m === 0 && c === 0 && p === 0) {
-                        return `<span class="text-muted small">No split configured</span>`;
+                        return '<span class="text-muted small">No split</span>';
                     }
-                    return `
-                        <div class="d-flex gap-1 small">
-                            <span class="badge bg-light text-dark border px-1" title="Written">W:${w}</span>
-                            <span class="badge bg-light text-dark border px-1" title="MCQ">M:${m}</span>
-                            <span class="badge bg-light text-dark border px-1" title="CQ">C:${c}</span>
-                            <span class="badge bg-light text-dark border px-1" title="Practical">P:${p}</span>
-                        </div>
-                    `;
+                    return `<div class="d-flex gap-1 small"><span class="adm-badge adm-badge--neutral">W:${w}</span><span class="adm-badge adm-badge--neutral">M:${m}</span><span class="adm-badge adm-badge--neutral">C:${c}</span><span class="adm-badge adm-badge--neutral">P:${p}</span></div>`;
                 }
             },
             {
-                title: "Optional",
-                field: "isOptional",
-                width: 90,
-                hozAlign: "center",
-                formatter: "tickCross"
+                title: "Optional", field: "isOptional", width: 90, hozAlign: "center", formatter: "tickCross"
             },
             {
-                title: "Status",
-                field: "isActive",
-                width: 100,
-                hozAlign: "center",
+                title: "Status", field: "isActive", width: 100, hozAlign: "center",
                 formatter: function(cell) {
-                    return cell.getValue() 
-                        ? `<span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">Active</span>`
-                        : `<span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill">Inactive</span>`;
+                    return cell.getValue()
+                        ? '<span class="adm-status adm-status--approved">Active</span>'
+                        : '<span class="adm-status adm-status--rejected">Inactive</span>';
                 }
             },
             {
-                title: "Actions",
-                field: "id",
-                hozAlign: "center",
-                headerSort: false,
-                width: 120,
-                formatter: function () {
-                    return `
-                        <div class="d-flex justify-content-center gap-1">
-                            <button class="btn btn-warning btn-sm btn-action edit-btn rounded-circle" title="Configure Splits">
-                                <i class="bi bi-pencil-fill text-white"></i>
-                            </button>
-                            <button class="btn btn-danger btn-sm btn-action delete-btn rounded-circle" title="Unmap Subject">
-                                <i class="bi bi-trash-fill text-white"></i>
-                            </button>
-                        </div>
-                    `;
-                },
-                cellClick: function (e, cell) {
-                    const data = cell.getRow().getData();
-                    if (e.target.closest('.edit-btn')) {
-                        window.location.href = '/ClassSubjectMapping/Edit/' + data.id;
-                    }
-                    if (e.target.closest('.delete-btn')) {
-                        pendingUnmapId = data.id;
-                        const groupDisplay = !data.groupName || data.groupName === 'General' ? 'General' : data.groupName === 'BusinessStudies' ? 'Business Studies' : data.groupName;
-                        document.getElementById('unmapDetails').textContent = `${data.subjectNameEn} for Class: ${data.schoolClassName} (${groupDisplay})`;
-                        unmapModal.show();
-                    }
+                title: "Actions", field: "id", hozAlign: "center", headerSort: false, width: 120,
+                formatter: function(cell) {
+                    var d = cell.getRow().getData();
+                    return buildActionGroup([
+                        { url: '/ClassSubjectMapping/Edit/' + d.id, className: 'action-btn--edit', icon: 'pencil', title: 'Edit' },
+                        { className: 'action-btn--delete', icon: 'trash', title: 'Unmap', onClick: 'openUnmapModal("' + (d.subjectNameEn + ' - ' + d.schoolClassName).replace(/"/g, '&quot;') + '", ' + d.id + ')' }
+                    ]);
                 }
             }
         ];
 
         const table = new Tabulator("#mapping-table", {
-            height: "55vh",
+            height: "calc(100vh - 280px)",
             layout: "fitColumns",
             pagination: true,
             paginationMode: "remote",
@@ -249,19 +203,13 @@
                 };
             },
             ajaxResponse: function (url, params, response) {
-                return {
-                    data: response.data,
-                    last_page: response.last_page
-                };
+                return { data: response.data, last_page: response.last_page };
             },
             columns: columns,
-            placeholder: "<div class='p-5 text-center text-muted'><i class='bi bi-diagram-3 fs-1 d-block mb-3 text-muted opacity-50'></i>No curriculum mappings found</div>"
+            placeholder: "<div class='dash-empty'><i class='bi bi-diagram-3 fs-1'></i><div class='dash-empty__title'>No Mappings Found</div><div class='dash-empty__sub'>Try adjusting your filters or create a new mapping.</div></div>"
         });
 
-        // Trigger filters
-        function triggerFilters() {
-            table.setData();
-        }
+        function triggerFilters() { table.setData(); }
 
         let debounceTimer;
         document.getElementById('search-input').addEventListener('input', function() {
@@ -279,10 +227,8 @@
             triggerFilters();
         });
 
-        // Confirm unmap click
         document.getElementById('confirmUnmapBtn').addEventListener('click', function () {
             if (!pendingUnmapId) return;
-
             fetch('/ClassSubjectMapping/DeleteAjax', {
                 method: 'POST',
                 headers: {
@@ -293,17 +239,11 @@
             })
             .then(res => res.json())
             .then(data => {
-                unmapModal.hide();
-                if (data.success) {
-                    table.replaceData();
-                } else {
-                    alert("Failed to unmap subject: " + (data.message || "Reference constraints found."));
-                }
+                closeUnmapModal();
+                if (data.success) { table.replaceData(); }
+                else { alert("Failed to unmap: " + (data.message || "Reference constraints found.")); }
             })
-            .catch(err => {
-                console.error(err);
-                alert("An error occurred while unmapping.");
-            });
+            .catch(err => { console.error(err); alert("An error occurred while unmapping."); });
         });
     </script>
 }

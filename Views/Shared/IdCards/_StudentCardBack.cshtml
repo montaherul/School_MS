@@ -6,98 +6,48 @@
     var emergency = !string.IsNullOrWhiteSpace(Model.EmergencyContact) ? Model.EmergencyContact : "---";
     var address = !string.IsNullOrWhiteSpace(Model.PresentAddress) ? Model.PresentAddress : "---";
     var idDisplay = !string.IsNullOrWhiteSpace(Model.StudentIdNo) ? Model.StudentIdNo : "N/A";
-    var cls = !string.IsNullOrWhiteSpace(Model.ClassName) ? Model.ClassName : "---";
-    var sec = !string.IsNullOrWhiteSpace(Model.SectionName) ? Model.SectionName : "---";
-    var roll = !string.IsNullOrWhiteSpace(Model.RollNumber) ? Model.RollNumber : "---";
-    var group = !string.IsNullOrWhiteSpace(Model.GroupName) ? Model.GroupName : "---";
-    var blood = !string.IsNullOrWhiteSpace(Model.BloodGroup) ? Model.BloodGroup : "N/A";
-    var session = !string.IsNullOrWhiteSpace(Model.AcademicYear) ? Model.AcademicYear : "---";
-    var motto = !string.IsNullOrWhiteSpace(Model.SchoolMotto) ? Model.SchoolMotto : "Knowledge. Discipline. Excellence";
+    var motto = !string.IsNullOrWhiteSpace(Model.SchoolMotto) ? Model.SchoolMotto : "";
 }
 
-<div class="idcard idcard-back">
-    <div class="idcard-inner">
-        <div class="idcard-back-header">
-            <div class="idcard-back-title">Important Information</div>
-        </div>
+<div class="id-card-print back">
+    <div class="section-title-bar">IMPORTANT INFORMATION</div>
 
-        <div class="idcard-back-body">
-            <div class="idcard-back-section-title">Guardian Information</div>
-            <div class="idcard-back-info-row">
-                <span class="idcard-back-info-label">Father</span>
-                <span class="idcard-back-info-value">@fatherName</span>
-            </div>
-            <div class="idcard-back-info-row">
-                <span class="idcard-back-info-label">Mother</span>
-                <span class="idcard-back-info-value">@motherName</span>
-            </div>
-            <div class="idcard-back-info-row">
-                <span class="idcard-back-info-label">Guardian Mob</span>
-                <span class="idcard-back-info-value">@guardianMobile</span>
-            </div>
-            <div class="idcard-back-info-row">
-                <span class="idcard-back-info-label">Emergency</span>
-                <span class="idcard-back-info-value">@emergency</span>
-            </div>
-            <div class="idcard-back-info-row">
-                <span class="idcard-back-info-label">Address</span>
-                <span class="idcard-back-info-value">@address</span>
-            </div>
-
-            <div class="idcard-back-section-title">Academic Information</div>
-            <div class="idcard-back-info-row">
-                <span class="idcard-back-info-label">Student ID</span>
-                <span class="idcard-back-info-value">@idDisplay</span>
-            </div>
-            <div class="idcard-back-info-row">
-                <span class="idcard-back-info-label">Class</span>
-                <span class="idcard-back-info-value">@cls – @sec</span>
-            </div>
-            <div class="idcard-back-info-row">
-                <span class="idcard-back-info-label">Roll</span>
-                <span class="idcard-back-info-value">@roll</span>
-            </div>
-            <div class="idcard-back-info-row">
-                <span class="idcard-back-info-label">Group</span>
-                <span class="idcard-back-info-value">@group</span>
-            </div>
-            <div class="idcard-back-info-row">
-                <span class="idcard-back-info-label">Blood</span>
-                <span class="idcard-back-info-value">@blood</span>
-            </div>
-            <div class="idcard-back-info-row">
-                <span class="idcard-back-info-label">Session</span>
-                <span class="idcard-back-info-value">@session</span>
-            </div>
-
-            <div class="idcard-back-bottom">
-                <div class="idcard-back-bottom-rules">
-                    <div class="idcard-back-section-title">Rules</div>
-                    <ul class="idcard-back-rules">
-                        <li>Carry card daily</li>
-                        <li>Mandatory during exams</li>
-                        <li>Non-transferable</li>
-                        <li>Report loss immediately</li>
-                    </ul>
-                </div>
-                <div class="idcard-back-qr">
-                    <div class="idcard-back-qr-box">
-                        @if (!string.IsNullOrEmpty(Model.QrCodeDataUri))
-                        {
-                            <img src="@Model.QrCodeDataUri" alt="QR" />
-                        }
-                    </div>
-                    <div class="idcard-back-qr-text">
-                        <div class="idcard-back-qr-title">SCAN</div>
-                        <div class="idcard-back-qr-sub">Verify identity</div>
-                        <div class="idcard-back-qr-id">@idDisplay</div>
-                    </div>
-                </div>
+    <div class="back-body">
+        <div class="info-group">
+            <h3>GUARDIAN INFORMATION</h3>
+            <div class="grid-info-back">
+                <span class="lbl">FATHER</span><span class="val">@fatherName</span>
+                <span class="lbl">MOTHER</span><span class="val">@motherName</span>
+                <span class="lbl">GUARDIAN MOB</span><span class="val">@guardianMobile</span>
+                <span class="lbl">EMERGENCY</span><span class="val">@emergency</span>
+                <span class="lbl">ADDRESS</span><span class="val">@address</span>
             </div>
         </div>
 
-        <div class="idcard-back-footer">
-            <span>@Model.SchoolName — @motto</span>
+        <div class="back-bottom-row">
+            <div class="rules-box">
+                <h3>RULES</h3>
+                <ul>
+                    <li>Carry card daily</li>
+                    <li>Mandatory during exams</li>
+                    <li>Non-transferable</li>
+                    <li>Report loss immediately</li>
+                </ul>
+            </div>
+
+            <div class="qr-box">
+                @if (!string.IsNullOrEmpty(Model.QrCodeDataUri))
+                {
+                    <img class="qr-img" src="@Model.QrCodeDataUri" alt="QR" />
+                }
+                <div class="qr-text">
+                    <strong>SCAN</strong>
+                    <span>Verify identity</span>
+                    <small>@idDisplay</small>
+                </div>
+            </div>
         </div>
     </div>
+
+    <div class="card-footer-back">@Model.SchoolName — @motto</div>
 </div>

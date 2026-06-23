@@ -3,79 +3,80 @@
     ViewData["Title"] = "Teacher Marks Entry";
 }
 
-<div class="container-fluid py-4">
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card shadow-sm border-0">
-                <div class="card-body p-4">
-                    <h3 class="mb-1 text-primary">Marks Entry Portal</h3>
-                    <p class="text-muted">Select an exam, class, and subject to begin entering student marks.</p>
-                </div>
+<div class="adm-page er-page">
+    <div class="er-page-header">
+        <div class="er-page-header__left">
+            <div class="er-page-header__icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 20h9" />
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+                </svg>
+            </div>
+            <div>
+                <h1 class="er-page-header__title">Marks Entry Portal</h1>
+                <p class="er-page-header__sub">Select an exam, class, and subject to begin entering student marks.</p>
             </div>
         </div>
     </div>
 
-    <div class="row">
-        <div class="col-lg-10 mx-auto">
-            <div class="card shadow-sm border-0">
-                <div class="card-body p-5">
-                    <form id="selectionForm" class="row g-4">
-                        <div class="col-md-2">
-                            <label class="form-label fw-bold">Select Exam</label>
-                            <select id="examId" class="form-select form-select-lg border-2" required>
-                                <option value="">-- Select Exam --</option>
-                                @foreach (var exam in Model.Exams)
-                                {
-                                    <option value="@exam.Id">@exam.Name</option>
-                                }
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label fw-bold">Select Class</label>
-                            <select id="classId" class="form-select form-select-lg border-2" required>
-                                <option value="">-- Select Class --</option>
-                                @{
-                                    var classes = Model.Assignments
-                                        .Select(a => new { a.ClassId, a.ClassName, a.IsGroupBased })
-                                        .DistinctBy(c => c.ClassId);
-                                }
-                                @foreach (var cls in classes)
-                                {
-                                    <option value="@cls.ClassId" data-is-group-based="@(cls.IsGroupBased.ToString().ToLower())">@cls.ClassName</option>
-                                }
-                            </select>
-                        </div>
-                        <div class="col-md-2 d-none" id="groupContainer">
-                            <label class="form-label fw-bold">Select Group</label>
-                            <select id="groupId" class="form-select form-select-lg border-2">
-                                <option value="">-- Select Group --</option>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label fw-bold">Select Section</label>
-                            <select id="sectionId" class="form-select form-select-lg border-2" required disabled>
-                                <option value="">-- Select Section --</option>
-                            </select>
-                        </div>
-                        <div class="col-md-2">
-                            <label class="form-label fw-bold">Select Subject</label>
-                            <select id="subjectId" class="form-select form-select-lg border-2" required disabled>
-                                <option value="">-- Select Subject --</option>
-                            </select>
-                        </div>
-                        <div class="col-12 text-center mt-5">
-                            <button type="button" class="btn btn-primary btn-lg px-5 shadow" onclick="goToEntry()">
-                                <i class="fas fa-edit me-2"></i> Open Mark Entry Sheet
-                            </button>
-                        </div>
-                    </form>
+    <div class="er-card" style="max-width:900px;margin:0 auto;">
+        <div class="er-card__body">
+            <form id="selectionForm">
+                <div class="adm-filters__row">
+                    <div class="adm-filters__field">
+                        <label class="adm-label fw-bold">Select Exam</label>
+                        <select id="examId" class="adm-select" required>
+                            <option value="">-- Select Exam --</option>
+                            @foreach (var exam in Model.Exams)
+                            {
+                                <option value="@exam.Id">@exam.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="adm-filters__field">
+                        <label class="adm-label fw-bold">Select Class</label>
+                        <select id="classId" class="adm-select" required>
+                            <option value="">-- Select Class --</option>
+                            @{
+                                var classes = Model.Assignments
+                                    .Select(a => new { a.ClassId, a.ClassName, a.IsGroupBased })
+                                    .DistinctBy(c => c.ClassId);
+                            }
+                            @foreach (var cls in classes)
+                            {
+                                <option value="@cls.ClassId" data-is-group-based="@(cls.IsGroupBased.ToString().ToLower())">@cls.ClassName</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="adm-filters__field" id="groupContainer" style="display:none;">
+                        <label class="adm-label fw-bold">Select Group</label>
+                        <select id="groupId" class="adm-select">
+                            <option value="">-- Select Group --</option>
+                        </select>
+                    </div>
+                    <div class="adm-filters__field">
+                        <label class="adm-label fw-bold">Select Section</label>
+                        <select id="sectionId" class="adm-select" required disabled>
+                            <option value="">-- Select Section --</option>
+                        </select>
+                    </div>
+                    <div class="adm-filters__field">
+                        <label class="adm-label fw-bold">Select Subject</label>
+                        <select id="subjectId" class="adm-select" required disabled>
+                            <option value="">-- Select Subject --</option>
+                        </select>
+                    </div>
                 </div>
-            </div>
+                <div style="text-align:center;margin-top:28px;">
+                    <button type="button" class="er-btn er-btn--primary er-btn--lg" onclick="goToEntry()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 20h9" /><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" /></svg>
+                        Open Mark Entry Sheet
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
-
-<div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer" style="z-index:1080;"></div>
 
 <script src="~/js/teacherAssignment.js"></script>
 <script>
@@ -90,20 +91,6 @@
         });
     });
 
-    function showToast(message, type) {
-        var bg = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : 'bg-warning';
-        var container = document.getElementById('toastContainer');
-        if (!container) return;
-        var toast = document.createElement('div');
-        toast.className = 'toast align-items-center text-white border-0 ' + bg;
-        toast.setAttribute('role', 'alert');
-        toast.innerHTML = '<div class="d-flex"><div class="toast-body">' + message + '</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>';
-        container.appendChild(toast);
-        var bs = new bootstrap.Toast(toast, { delay: 4000 });
-        bs.show();
-        toast.addEventListener('hidden.bs.toast', function () { toast.remove(); });
-    }
-
     function goToEntry() {
         const examId = document.getElementById('examId').value;
         const classId = document.getElementById('classId').value;
@@ -111,7 +98,7 @@
         const subjectId = document.getElementById('subjectId').value;
 
         if (!examId || !classId || !sectionId || !subjectId) {
-            showToast('Please select all fields.', 'warning');
+            toastr.warning('Please select all fields.');
             return;
         }
 

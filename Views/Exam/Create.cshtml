@@ -71,19 +71,19 @@
             <div class="wizard-panel active" id="stepPanel1">
                 <div class="er-card">
                     <div class="er-card__body">
-                        <h3 style="font-size:18px;font-weight:700;margin-bottom:24px;color:var(--adm-text);">
-                            <i class="bi bi-info-circle me-2" style="color:var(--adm-primary);"></i>Exam Information
+                        <h3 class="er-card__title mb-4">
+                            <i class="bi bi-info-circle me-2"></i>Exam Information
                         </h3>
                         <div class="row g-4">
                             <div class="col-md-6">
-                                <label class="er-label" for="examName">Exam Name <span style="color:var(--adm-rejected);">*</span></label>
+                                <label class="er-label" for="examName">Exam Name <span class="er-required">*</span></label>
                                 <div class="er-input-wrap">
                                     <input class="er-input" id="examName" name="Name" type="text" placeholder="e.g. Half Yearly Examination 2026" required />
                                 </div>
                                 <div class="field-error" id="errName"></div>
                             </div>
                             <div class="col-md-6">
-                                <label class="er-label" for="examTerm">Exam Term <span style="color:var(--adm-rejected);">*</span></label>
+                                <label class="er-label" for="examTerm">Exam Term <span class="er-required">*</span></label>
                                 <select class="er-select" id="examTerm" name="Term" required>
                                     <option value="">Select Term</option>
                                     <option value="HalfYearly">Half Yearly</option>
@@ -98,21 +98,21 @@
                                 <div class="field-error" id="errTerm"></div>
                             </div>
                             <div class="col-md-6">
-                                <label class="er-label" for="examAcademicYear">Academic Year <span style="color:var(--adm-rejected);">*</span></label>
+                                <label class="er-label" for="examAcademicYear">Academic Year <span class="er-required">*</span></label>
                                 <select class="er-select" id="examAcademicYear" name="AcademicYearId" required>
                                     <option value="">Loading...</option>
                                 </select>
                                 <div class="field-error" id="errYear"></div>
                             </div>
                             <div class="col-md-3">
-                                <label class="er-label" for="examStartsOn">Starts On <span style="color:var(--adm-rejected);">*</span></label>
+                                <label class="er-label" for="examStartsOn">Starts On <span class="er-required">*</span></label>
                                 <div class="er-input-wrap">
                                     <input class="er-input" id="examStartsOn" name="StartsOn" type="date" required />
                                 </div>
                                 <div class="field-error" id="errStarts"></div>
                             </div>
                             <div class="col-md-3">
-                                <label class="er-label" for="examEndsOn">Ends On <span style="color:var(--adm-rejected);">*</span></label>
+                                <label class="er-label" for="examEndsOn">Ends On <span class="er-required">*</span></label>
                                 <div class="er-input-wrap">
                                     <input class="er-input" id="examEndsOn" name="EndsOn" type="date" required />
                                 </div>
@@ -120,7 +120,7 @@
                             </div>
                             <div class="col-12">
                                 <label class="er-label" for="examDescription">Description / Remarks</label>
-                                <textarea class="er-input" id="examDescription" rows="3" placeholder="Optional notes about this exam..." style="resize:vertical;min-height:80px;"></textarea>
+                                <textarea class="er-input" id="examDescription" rows="3" placeholder="Optional notes about this exam..."></textarea>
                             </div>
                         </div>
                     </div>
@@ -131,19 +131,21 @@
             <div class="wizard-panel" id="stepPanel2">
                 <div class="er-card">
                     <div class="er-card__body">
-                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
-                            <h3 style="font-size:18px;font-weight:700;margin:0;color:var(--adm-text);">
-                                <i class="bi bi-building me-2" style="color:var(--adm-primary);"></i>Select Classes
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <h3 class="er-card__title">
+                                <i class="bi bi-building me-2"></i>Select Classes
                             </h3>
-                            <div>
-                                <button type="button" class="er-btn er-btn--secondary" onclick="toggleAllClasses(true)" style="font-size:12px;padding:5px 12px;">Select All</button>
-                                <button type="button" class="er-btn er-btn--secondary" onclick="toggleAllClasses(false)" style="font-size:12px;padding:5px 12px;">Deselect All</button>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="er-btn er-btn--secondary er-btn--sm" onclick="toggleAllClasses(true)">Select All</button>
+                                <button type="button" class="er-btn er-btn--secondary er-btn--sm" onclick="toggleAllClasses(false)">Deselect All</button>
                             </div>
                         </div>
                         <div class="field-error" id="errClasses"></div>
                         <div class="row g-3" id="classesContainer">
-                            <div class="col-12 text-center" style="padding:40px 0;color:var(--adm-text-3);">
-                                <div class="adm-loading adm-loading--visible"><div class="adm-loading__spinner"></div><span class="adm-loading__text">Loading classes...</span></div>
+                            <div class="col-12">
+                                <div class="er-empty">
+                                    <div class="adm-loading adm-loading--visible"><div class="adm-loading__spinner"></div><span class="adm-loading__text">Loading classes...</span></div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -154,18 +156,18 @@
             <div class="wizard-panel" id="stepPanel3">
                 <div class="er-card">
                     <div class="er-card__body">
-                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
-                            <h3 style="font-size:18px;font-weight:700;margin:0;color:var(--adm-text);">
-                                <i class="bi bi-layers me-2" style="color:var(--adm-primary);"></i>Select Sections
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <h3 class="er-card__title">
+                                <i class="bi bi-layers me-2"></i>Select Sections
                             </h3>
-                            <div>
-                                <button type="button" class="er-btn er-btn--secondary" onclick="toggleAllSections(true)" style="font-size:12px;padding:5px 12px;">Select All</button>
-                                <button type="button" class="er-btn er-btn--secondary" onclick="toggleAllSections(false)" style="font-size:12px;padding:5px 12px;">Deselect All</button>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="er-btn er-btn--secondary er-btn--sm" onclick="toggleAllSections(true)">Select All</button>
+                                <button type="button" class="er-btn er-btn--secondary er-btn--sm" onclick="toggleAllSections(false)">Deselect All</button>
                             </div>
                         </div>
                         <div class="field-error" id="errSections"></div>
                         <div id="sectionsContainer">
-                            <div class="text-center" style="padding:40px 0;color:var(--adm-text-3);">
+                            <div class="er-empty">
                                 <i class="bi bi-arrow-left-circle me-2"></i>Select at least one class in Step 2 first.
                             </div>
                         </div>
@@ -177,18 +179,18 @@
             <div class="wizard-panel" id="stepPanel4">
                 <div class="er-card">
                     <div class="er-card__body">
-                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
-                            <h3 style="font-size:18px;font-weight:700;margin:0;color:var(--adm-text);">
-                                <i class="bi bi-people me-2" style="color:var(--adm-primary);"></i>Select Groups
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <h3 class="er-card__title">
+                                <i class="bi bi-people me-2"></i>Select Groups
                             </h3>
-                            <div>
-                                <button type="button" class="er-btn er-btn--secondary" onclick="toggleAllGroups(true)" style="font-size:12px;padding:5px 12px;">Select All</button>
-                                <button type="button" class="er-btn er-btn--secondary" onclick="toggleAllGroups(false)" style="font-size:12px;padding:5px 12px;">Deselect All</button>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="er-btn er-btn--secondary er-btn--sm" onclick="toggleAllGroups(true)">Select All</button>
+                                <button type="button" class="er-btn er-btn--secondary er-btn--sm" onclick="toggleAllGroups(false)">Deselect All</button>
                             </div>
                         </div>
                         <div class="field-error" id="errGroups"></div>
                         <div id="groupsContainer">
-                            <div class="text-center" style="padding:40px 0;color:var(--adm-text-3);">
+                            <div class="er-empty">
                                 <i class="bi bi-info-circle me-2"></i>Groups (Arts, Commerce, Science) are available for group-based classes.
                             </div>
                         </div>
@@ -200,18 +202,18 @@
             <div class="wizard-panel" id="stepPanel5">
                 <div class="er-card">
                     <div class="er-card__body">
-                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
-                            <h3 style="font-size:18px;font-weight:700;margin:0;color:var(--adm-text);">
-                                <i class="bi bi-book me-2" style="color:var(--adm-primary);"></i>Select Subjects
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                            <h3 class="er-card__title">
+                                <i class="bi bi-book me-2"></i>Select Subjects
                             </h3>
-                            <div>
-                                <button type="button" class="er-btn er-btn--secondary" onclick="toggleAllSubjects(true)" style="font-size:12px;padding:5px 12px;">Select All</button>
-                                <button type="button" class="er-btn er-btn--secondary" onclick="toggleAllSubjects(false)" style="font-size:12px;padding:5px 12px;">Deselect All</button>
+                            <div class="d-flex gap-2">
+                                <button type="button" class="er-btn er-btn--secondary er-btn--sm" onclick="toggleAllSubjects(true)">Select All</button>
+                                <button type="button" class="er-btn er-btn--secondary er-btn--sm" onclick="toggleAllSubjects(false)">Deselect All</button>
                             </div>
                         </div>
                         <div class="field-error" id="errSubjects"></div>
                         <div id="subjectsContainer">
-                            <div class="text-center" style="padding:40px 0;color:var(--adm-text-3);">
+                            <div class="er-empty">
                                 <i class="bi bi-arrow-left-circle me-2"></i>Select classes first.
                             </div>
                         </div>
@@ -223,14 +225,14 @@
             <div class="wizard-panel" id="stepPanel6">
                 <div class="er-card">
                     <div class="er-card__body">
-                        <h3 style="font-size:18px;font-weight:700;margin-bottom:20px;color:var(--adm-text);">
-                            <i class="bi bi-sliders me-2" style="color:var(--adm-primary);"></i>Marks Review
+                        <h3 class="er-card__title mb-3">
+                            <i class="bi bi-sliders me-2"></i>Marks Review
                         </h3>
-                        <p style="font-size:13px;color:var(--adm-text-3);margin-bottom:16px;">
+                        <p class="er-text-sm er-text-muted mb-3">
                             Full Marks and Pass Marks are pre-configured from subject mappings and can be adjusted if needed.
                         </p>
                         <div id="marksContainer">
-                            <div class="text-center" style="padding:40px 0;color:var(--adm-text-3);">
+                            <div class="er-empty">
                                 <i class="bi bi-arrow-left-circle me-2"></i>Select subjects first in Step 5.
                             </div>
                         </div>
@@ -242,11 +244,11 @@
             <div class="wizard-panel" id="stepPanel7">
                 <div class="er-card">
                     <div class="er-card__body">
-                        <h3 style="font-size:18px;font-weight:700;margin-bottom:24px;color:var(--adm-text);">
-                            <i class="bi bi-check2-circle me-2" style="color:var(--adm-success);"></i>Review &amp; Submit
+                        <h3 class="er-card__title mb-3">
+                            <i class="bi bi-check2-circle me-2"></i>Review &amp; Submit
                         </h3>
-                        <div id="reviewContent" style="min-height:200px;">
-                            <div class="text-center" style="padding:40px 0;color:var(--adm-text-3);">Loading review...</div>
+                        <div id="reviewContent">
+                            <div class="er-empty">Loading review...</div>
                         </div>
                     </div>
                 </div>
@@ -275,9 +277,7 @@
 </div>
 
 <style>
-    @@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap');
-
-    .bangla { font-family: 'Noto Sans Bengali', 'Hind Siliguri', sans-serif; }
+    .bangla { font-family: 'Hind Siliguri', 'Noto Sans Bengali', sans-serif; }
     .wizard-progress { margin-bottom: 28px; }
     .wizard-progress__bar { height: 4px; background: var(--adm-surface-2); border-radius: 4px; margin-bottom: 16px; position: relative; overflow: hidden; }
     .wizard-progress__fill { height: 100%; background: linear-gradient(90deg, var(--adm-primary), var(--adm-primary-l)); border-radius: 4px; transition: width 0.4s var(--ease); width: calc(100% / 7); }

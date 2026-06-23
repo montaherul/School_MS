@@ -20,7 +20,7 @@
 
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="adm-alert" style="background:var(--adm-success-bg);color:var(--adm-success);border:1px solid rgba(5,150,105,0.15);margin-bottom:20px;display:flex;align-items:center;gap:8px">
+        <div class="adm-alert adm-alert--success">
             <i class="bi bi-check-circle-fill"></i> @TempData["SuccessMessage"]
         </div>
     }
@@ -59,29 +59,23 @@
             paginationMode: "remote",
             ajaxURL: "/Role/Index",
             paginationSize: 15,
-            paginationSizeSelector: [15,25,50,100],
+            paginationSizeSelector: [15, 25, 50, 100],
             paginationDataSent: { "page": "page", "size": "pageSize" },
-            ajaxResponse: function(url, params, response) {
+            ajaxResponse: function (url, params, response) {
                 return { data: response.data, last_page: response.last_page };
             },
             placeholder: "<div class='dash-empty'><i class='bi bi-shield-lock fs-1'></i><div class='dash-empty__title'>No Roles Found</div><div class='dash-empty__sub'>Create a role to get started.</div></div>",
             columns: [
                 {
-                    title: "Role Name",
+                    title: "Role",
                     field: "name",
-                    widthGrow: 1.5,
-                    minWidth: 180,
-                    formatter: function(cell) {
-                        return '<div class="entity-cell__name" style="color:var(--adm-primary)">' + cell.getValue() + '</div>';
-                    }
-                },
-                {
-                    title: "Description",
-                    field: "description",
-                    widthGrow: 3,
-                    minWidth: 200,
-                    formatter: function(cell) {
-                        return cell.getValue() || '<span class="text-muted" style="font-style:italic">No description</span>';
+                    widthGrow: 2,
+                    minWidth: 240,
+                    responsive: 0,
+                    cssClass: "adm-col-entity",
+                    formatter: function (cell) {
+                        var d = cell.getData();
+                        return '<div class="entity-cell"><div class="entity-avatar entity-avatar--primary"><span class="entity-avatar__initials" style="font-size:14px">' + (d.name || 'R').substring(0, 2).toUpperCase() + '</span></div><div class="entity-cell__identity"><span class="entity-cell__name">' + (d.name || '-') + '</span><span class="entity-cell__meta">' + (d.description || 'No description') + '</span></div></div>';
                     }
                 },
                 {
@@ -89,7 +83,7 @@
                     field: "permissionCount",
                     width: 140,
                     hozAlign: "center",
-                    formatter: function(cell) {
+                    formatter: function (cell) {
                         return '<span class="adm-badge adm-badge--primary">' + cell.getValue() + ' Rules</span>';
                     }
                 },
@@ -98,7 +92,7 @@
                     field: "userCount",
                     width: 140,
                     hozAlign: "center",
-                    formatter: function(cell) {
+                    formatter: function (cell) {
                         return '<span class="adm-badge adm-badge--info">' + cell.getValue() + ' Users</span>';
                     }
                 },
@@ -109,14 +103,14 @@
                     headerSort: false,
                     width: 200,
                     cssClass: "adm-col-actions",
-                    formatter: function(cell) {
+                    formatter: function (cell) {
                         var id = cell.getValue();
-                        return '<div class="action-group">' +
-                            '<a href="/Role/Details/' + id + '" class="action-btn action-btn--view" title="View"><i class="bi bi-eye"></i></a>' +
-                            '<a href="/Role/Edit/' + id + '" class="action-btn action-btn--edit" title="Edit"><i class="bi bi-pencil"></i></a>' +
-                            '<button class="action-btn action-btn--success" onclick="managePermissions(' + id + ')" title="Manage Permissions"><i class="bi bi-shield-lock"></i></button>' +
-                            '<a href="/Role/Delete/' + id + '" class="action-btn action-btn--delete" title="Delete"><i class="bi bi-trash"></i></a>' +
-                            '</div>';
+                        return buildActionGroup([
+                            { url: '/Role/Details/' + id, className: 'action-btn--view', icon: 'eye', title: 'View' },
+                            { url: '/Role/Edit/' + id, className: 'action-btn--edit', icon: 'pencil', title: 'Edit' },
+                            { className: 'action-btn--success', icon: 'shield-lock', title: 'Manage Permissions', onClick: 'managePermissions(' + id + ')' },
+                            { url: '/Role/Delete/' + id, className: 'action-btn--delete', icon: 'trash', title: 'Delete' }
+                        ]);
                     }
                 }
             ]
@@ -125,11 +119,11 @@
         var searchInput = document.getElementById("table-search");
         var clearBtn = document.getElementById("clear-search");
 
-        searchInput.addEventListener("keyup", function() {
+        searchInput.addEventListener("keyup", function () {
             table.setFilter("name", "like", searchInput.value);
         });
 
-        clearBtn.addEventListener("click", function() {
+        clearBtn.addEventListener("click", function () {
             searchInput.value = "";
             table.setFilter("name", "like", "");
         });
@@ -153,8 +147,8 @@
             const roleResp = await fetch('/Role/' + roleId + '/Permissions');
             const rolePerms = await roleResp.json();
 
-            document.querySelectorAll('.perm-check').forEach(function(el) { el.checked = false; });
-            rolePerms.forEach(function(pid) {
+            document.querySelectorAll('.perm-check').forEach(function (el) { el.checked = false; });
+            rolePerms.forEach(function (pid) {
                 var el = document.getElementById('perm-' + pid);
                 if (el) el.checked = true;
             });
@@ -172,7 +166,7 @@
             container.innerHTML = '';
 
             const grouped = {};
-            allPermissions.forEach(function(p) {
+            allPermissions.forEach(function (p) {
                 if (!grouped[p.module]) grouped[p.module] = [];
                 grouped[p.module].push(p);
             });
@@ -181,7 +175,7 @@
                 var html = '<div style="margin-bottom:16px">' +
                     '<h6 style="border-bottom:1px solid var(--adm-border);padding-bottom:6px;color:var(--adm-primary);font-weight:700">' + module + '</h6>' +
                     '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">';
-                grouped[module].forEach(function(p) {
+                grouped[module].forEach(function (p) {
                     html += '<div style="display:flex;align-items:center;gap:6px">' +
                         '<input class="perm-check" type="checkbox" value="' + p.id + '" id="perm-' + p.id + '" style="accent-color:var(--adm-primary)">' +
                         '<label for="perm-' + p.id + '" style="font-size:12px;color:var(--adm-text);cursor:pointer">' + p.action + '</label>' +
@@ -194,13 +188,15 @@
 
         async function savePermissions() {
             const selected = [];
-            document.querySelectorAll('.perm-check:checked').forEach(function(el) {
+            document.querySelectorAll('.perm-check:checked').forEach(function (el) {
                 selected.push(parseInt(el.value));
             });
 
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
             const resp = await fetch('/Role/' + currentRoleId + '/Permissions', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
                 body: JSON.stringify(selected)
             });
 

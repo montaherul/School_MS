@@ -23,7 +23,7 @@
 
     @if (TempData["SuccessMessage"] is string message)
     {
-        <div class="adm-alert" style="background:var(--adm-success-bg);color:var(--adm-success);border:1px solid rgba(5,150,105,0.15);margin-bottom:20px;display:flex;align-items:center;gap:8px">
+        <div class="adm-alert adm-alert--success">
             <i class="bi bi-check-circle-fill"></i> @message
         </div>
     }
@@ -105,41 +105,6 @@
 
 @section Scripts {
     <script>
-        function getAvatarHtml(src, name, type) {
-            if (src) {
-                var bgClass = 'entity-avatar--primary';
-                if (type === 'Guardian') bgClass = 'entity-avatar--success';
-                else if (type === 'Student') bgClass = 'entity-avatar--warning';
-                else if (type === 'System') bgClass = 'entity-avatar--purple';
-                return '<div class="entity-avatar ' + bgClass + '"><img src="' + src + '" alt="" /></div>';
-            }
-            var initials = (name || 'U').substring(0, 2).toUpperCase();
-            var bgClass = 'entity-avatar--primary';
-            if (type === 'Guardian') bgClass = 'entity-avatar--success';
-            else if (type === 'Student') bgClass = 'entity-avatar--warning';
-            else if (type === 'System') bgClass = 'entity-avatar--purple';
-            return '<div class="entity-avatar ' + bgClass + '"><span class="entity-avatar__initials">' + initials + '</span></div>';
-        }
-
-        function getStatusHtml(value) {
-            var statusText = "Unknown";
-            var badgeClass = "adm-badge--neutral";
-            if (value == 1) { statusText = "Active"; badgeClass = "adm-badge--success"; }
-            else if (value == 2) { statusText = "Inactive"; badgeClass = "adm-badge--danger"; }
-            else if (value == 3) { statusText = "Locked"; badgeClass = "adm-badge--info"; }
-            else if (value == 4) { statusText = "Pending"; badgeClass = "adm-badge--warning"; }
-            return '<span class="adm-badge ' + badgeClass + '">' + statusText + '</span>';
-        }
-
-        function getUserTypeHtml(type) {
-            var cls = "adm-badge--neutral";
-            if (type === "Employee") cls = "adm-badge--primary";
-            else if (type === "Guardian") cls = "adm-badge--success";
-            else if (type === "Student") cls = "adm-badge--warning";
-            else if (type === "System") cls = "adm-badge--info";
-            return '<span class="adm-badge ' + cls + '">' + type + '</span>';
-        }
-
         var table = new Tabulator("#user-table", {
             height: "650px",
             layout: "fitColumns",
@@ -172,11 +137,7 @@
                     responsive: 0,
                     cssClass: "adm-col-entity",
                     formatter: function (cell) {
-                        var d = cell.getData();
-                        var avatar = getAvatarHtml(d.profilePicturePath, d.userName, d.userType);
-                        var name = '<span class="entity-cell__name">' + (d.userName || '-') + '</span>';
-                        var email = '<span class="entity-cell__meta">' + (d.email || '') + '</span>';
-                        return '<div class="entity-cell">' + avatar + '<div class="entity-cell__identity">' + name + email + '</div></div>';
+                        return renderPersonCell(cell.getData(), { nameField: 'userName', metaField: 'email', avatarField: 'profilePicturePath' });
                     }
                 },
                 {
@@ -191,7 +152,15 @@
                     title: "Type",
                     field: "userType",
                     width: 120,
-                    formatter: function (cell) { return getUserTypeHtml(cell.getValue()); }
+                    formatter: function (cell) {
+                        var type = cell.getValue();
+                        var cls = "adm-badge--neutral";
+                        if (type === "Employee") cls = "adm-badge--primary";
+                        else if (type === "Guardian") cls = "adm-badge--success";
+                        else if (type === "Student") cls = "adm-badge--warning";
+                        else if (type === "System") cls = "adm-badge--info";
+                        return '<span class="adm-badge ' + cls + '">' + type + '</span>';
+                    }
                 },
                 {
                     title: "Linked Entity",
@@ -207,7 +176,7 @@
                     field: "status",
                     width: 120,
                     cssClass: "adm-col-status",
-                    formatter: function (cell) { return getStatusHtml(cell.getValue()); }
+                    formatter: function (cell) { return renderUserStatusBadge(cell.getValue()); }
                 },
                 {
                     title: "Roles",
@@ -230,12 +199,12 @@
                     cssClass: "adm-col-actions",
                     formatter: function (cell) {
                         var id = cell.getValue();
-                        return '<div class="action-group">' +
-                            '<a href="/User/Details/' + id + '" class="action-btn action-btn--view" title="View"><i class="bi bi-eye"></i></a>' +
-                            '<a href="/User/Edit/' + id + '" class="action-btn action-btn--edit" title="Edit"><i class="bi bi-pencil"></i></a>' +
-                            '<a href="/User/AssignRoles/' + id + '" class="action-btn action-btn--success" title="Assign Roles"><i class="bi bi-shield-lock"></i></a>' +
-                            '<a href="/User/Delete/' + id + '" class="action-btn action-btn--delete" title="Delete"><i class="bi bi-trash"></i></a>' +
-                            '</div>';
+                        return buildActionGroup([
+                            { url: '/User/Details/' + id, className: 'action-btn--view', icon: 'eye', title: 'View' },
+                            { url: '/User/Edit/' + id, className: 'action-btn--edit', icon: 'pencil', title: 'Edit' },
+                            { url: '/User/AssignRoles/' + id, className: 'action-btn--success', icon: 'shield-lock', title: 'Assign Roles' },
+                            { url: '/User/Delete/' + id, className: 'action-btn--delete', icon: 'trash', title: 'Delete' }
+                        ]);
                     }
                 }
             ]

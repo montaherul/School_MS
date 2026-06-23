@@ -4,18 +4,46 @@
     var title = ViewData["Title"] ?? "Delete";
 }
 
-<div class="page-title">
-    <h1>@title</h1>
-    <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
-</div>
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div>
+                <h1 class="adm-header__title">@title</h1>
+                <p class="adm-header__sub">Confirm deletion for this record</p>
+            </div>
+        </div>
+    </div>
 
-<div class="panel">
-    <p>Confirm deletion for this record.</p>
-    <partial name="_ObjectDetails" model="Model" />
-    <form asp-action="DeleteConfirmed" method="post" class="mt-3">
-        @Html.AntiForgeryToken()
-        <input type="hidden" name="id" value="@id" />
-        <button class="btn btn-danger" type="submit">Delete</button>
-        <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
-    </form>
+    <div style="max-width:520px;">
+        <div class="adm-modal" style="max-width:100%;animation:none;box-shadow:var(--adm-shadow);">
+            <div class="adm-modal__header">
+                <div class="adm-modal__header-left">
+                    <div class="adm-modal__header-icon" style="background:var(--adm-rejected-bg);color:var(--adm-rejected);">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="adm-modal__title">@title</h2>
+                        <p class="adm-modal__subtitle">This action cannot be undone.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="adm-modal__body">
+                <partial name="_ObjectDetails" model="Model" />
+            </div>
+            <div class="adm-modal__footer">
+                <form asp-action="DeleteConfirmed" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@id" />
+                    <div style="display:flex;gap:8px;">
+                        <a asp-action="Index" class="adm-btn adm-btn--ghost">Cancel</a>
+                        <button class="adm-btn adm-btn--danger" type="submit">Delete</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>

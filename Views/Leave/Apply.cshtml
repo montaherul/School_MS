@@ -4,55 +4,60 @@
     ViewData["Title"] = "Apply for Leave";
 }
 
-<div class="card shadow mb-4">
-    <div class="card-header py-3">
-        <h6 class="m-0 font-weight-bold text-primary">Leave Application Form</h6>
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap"><i class="bi bi-file-earmark-plus-fill"></i></div>
+            <div>
+                <h1 class="adm-header__title">Apply for Leave</h1>
+                <p class="adm-header__sub">Submit a new leave application for review.</p>
+            </div>
+        </div>
     </div>
-    <div class="card-body">
-        <form asp-action="Apply" method="post" enctype="multipart/form-data">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label asp-for="LeaveTypeId" class="form-label"></label>
-                    <select asp-for="LeaveTypeId" asp-items="Model.LeaveTypes" class="form-control">
-                        <option value="">-- Select Leave Type --</option>
-                    </select>
-                    <span asp-validation-for="LeaveTypeId" class="text-danger"></span>
+    <div class="er-card" style="max-width:800px">
+        <div class="er-card__header"><h3 class="er-card__title"><i class="bi bi-pencil-square"></i> Leave Application Form</h3></div>
+        <div class="er-card__body">
+            <form asp-action="Apply" method="post" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="er-alert er-alert--danger" style="display:block"></div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                    <div>
+                        <label asp-for="LeaveTypeId" class="er-label"></label>
+                        <select asp-for="LeaveTypeId" asp-items="Model.LeaveTypes" class="er-select">
+                            <option value="">-- Select Leave Type --</option>
+                        </select>
+                        <span asp-validation-for="LeaveTypeId" class="er-error" style="display:block"></span>
+                    </div>
+                    <div>
+                        <label asp-for="Attachment" class="er-label"></label>
+                        <input asp-for="Attachment" type="file" class="er-input" />
+                        <span asp-validation-for="Attachment" class="er-error" style="display:block"></span>
+                    </div>
+                    <div>
+                        <label asp-for="FromDate" class="er-label"></label>
+                        <input asp-for="FromDate" type="date" class="er-input" />
+                        <span asp-validation-for="FromDate" class="er-error" style="display:block"></span>
+                    </div>
+                    <div>
+                        <label asp-for="ToDate" class="er-label"></label>
+                        <input asp-for="ToDate" type="date" class="er-input" />
+                        <span asp-validation-for="ToDate" class="er-error" style="display:block"></span>
+                    </div>
                 </div>
-                
-                <div class="col-md-6 mb-3">
-                    <label asp-for="Attachment" class="form-label"></label>
-                    <input asp-for="Attachment" type="file" class="form-control" />
-                    <span asp-validation-for="Attachment" class="text-danger"></span>
-                </div>
-            </div>
 
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label asp-for="FromDate" class="form-label"></label>
-                    <input asp-for="FromDate" type="date" class="form-control" />
-                    <span asp-validation-for="FromDate" class="text-danger"></span>
+                <div style="margin-top:16px">
+                    <label asp-for="Reason" class="er-label"></label>
+                    <textarea asp-for="Reason" class="er-textarea" rows="4"></textarea>
+                    <span asp-validation-for="Reason" class="er-error" style="display:block"></span>
                 </div>
 
-                <div class="col-md-6 mb-3">
-                    <label asp-for="ToDate" class="form-label"></label>
-                    <input asp-for="ToDate" type="date" class="form-control" />
-                    <span asp-validation-for="ToDate" class="text-danger"></span>
+                <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:20px;padding-top:16px;border-top:1px solid var(--er-border)">
+                    <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-check-lg"></i> Submit Application</button>
+                    <a asp-action="Index" class="adm-btn adm-btn--ghost">Cancel</a>
                 </div>
-            </div>
-
-            <div class="mb-3">
-                <label asp-for="Reason" class="form-label"></label>
-                <textarea asp-for="Reason" class="form-control" rows="4"></textarea>
-                <span asp-validation-for="Reason" class="text-danger"></span>
-            </div>
-
-            <div class="mt-4">
-                <button type="submit" class="btn btn-primary">Submit Application</button>
-                <a asp-action="Index" class="btn btn-secondary">Cancel</a>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 </div>
 

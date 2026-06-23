@@ -4,124 +4,94 @@
     var years = ViewBag.AcademicYears as List<SchoolManagementSystem.Models.Entities.Academic.AcademicYear>;
 }
 
-<style>
-    .form-card {
-        background: #fff;
-        border: 1px solid #e5e7eb;
-        border-radius: 12px;
-        box-shadow: 0 4px 24px rgba(15,23,42,.06);
-    }
-    .form-card-header {
-        padding: 18px 24px;
-        border-bottom: 1px solid #f1f5f9;
-        background: linear-gradient(135deg,#f8fafc 0%,#f1f5f9 100%);
-    }
-</style>
-
-<div class="container-fluid py-3">
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="form-card">
-                <div class="form-card-header">
-                    <h5 class="mb-0 fw-bold"><i class="bi bi-calendar-plus me-2 text-primary"></i>Add Calendar Entry</h5>
-                    <p class="text-muted small mb-0 mt-1">Configure daily calendar details, exam days, and holidays.</p>
-                </div>
-                <div class="p-4">
-                    <form asp-action="Create" method="post">
-                        @Html.AntiForgeryToken()
-
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Academic Year</label>
-                                <select asp-for="AcademicYearId" class="form-select" required>
-                                    <option value="">Select Academic Year</option>
-                                    @if (years != null)
-                                    {
-                                        foreach (var y in years)
-                                        {
-                                            <option value="@y.Id">@y.Name</option>
-                                        }
-                                    }
-                                </select>
-                                <span asp-validation-for="AcademicYearId" class="text-danger small"></span>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Date</label>
-                                <input asp-for="Date" type="date" class="form-control" required />
-                                <span asp-validation-for="Date" class="text-danger small"></span>
-                            </div>
-
-                            <div class="col-12">
-                                <label class="form-label fw-semibold">Title</label>
-                                <input asp-for="Title" class="form-control" placeholder="e.g. Independence Day, Final Examination, Sports Day" required />
-                                <span asp-validation-for="Title" class="text-danger small"></span>
-                            </div>
-
-                            <div class="col-12">
-                                <label class="form-label fw-semibold">Description</label>
-                                <textarea asp-for="Description" class="form-control" rows="3" placeholder="Optional details..."></textarea>
-                                <span asp-validation-for="Description" class="text-danger small"></span>
-                            </div>
-
-                            <div class="col-12">
-                                <div class="border rounded p-3 bg-light">
-                                    <label class="form-label fw-bold mb-2"><i class="bi bi-gear me-1"></i>Day Type Flags</label>
-                                    <div class="row g-3">
-                                        <div class="col-sm-6">
-                                            <div class="form-check form-switch">
-                                                <input class="form-check-input" type="checkbox" asp-for="IsWorkingDay" checked id="IsWorkingDay" />
-                                                <label class="form-check-label fw-semibold" for="IsWorkingDay">Is Working Day</label>
-                                                <div class="text-muted small">Checked if students/staff attend today.</div>
-                                            </div>
-                                        </div>
-                                        <div class="col-sm-6">
-                                            <div class="form-check form-switch">
-                                                <input class="form-check-input" type="checkbox" asp-for="IsHoliday" id="IsHoliday" />
-                                                <label class="form-check-label fw-semibold" for="IsHoliday">Is Holiday</label>
-                                                <div class="text-muted small">No attendance is permitted on holidays.</div>
-                                            </div>
-                                        </div>
-                                        <div class="col-sm-6">
-                                            <div class="form-check form-switch">
-                                                <input class="form-check-input" type="checkbox" asp-for="IsExamDay" id="IsExamDay" />
-                                                <label class="form-check-label fw-semibold" for="IsExamDay">Is Exam Day</label>
-                                                <div class="text-muted small">Special tag for examinations.</div>
-                                            </div>
-                                        </div>
-                                        <div class="col-sm-6">
-                                            <div class="form-check form-switch">
-                                                <input class="form-check-input" type="checkbox" asp-for="IsEventDay" id="IsEventDay" />
-                                                <label class="form-check-label fw-semibold" for="IsEventDay">Is Event Day</label>
-                                                <div class="text-muted small">Special tag for festivals/events.</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-md-6" id="holidayTypeContainer" style="display: none;">
-                                <label class="form-label fw-semibold">Holiday Type</label>
-                                <input asp-for="HolidayType" class="form-control" placeholder="e.g. National, Religious, Public" />
-                                <span asp-validation-for="HolidayType" class="text-danger small"></span>
-                            </div>
-
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Remarks</label>
-                                <input asp-for="Remarks" class="form-control" placeholder="Optional comments..." />
-                                <span asp-validation-for="Remarks" class="text-danger small"></span>
-                            </div>
-                        </div>
-
-                        <div class="d-flex justify-content-end gap-2 mt-4 pt-3 border-top">
-                            <a asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
-                            <button type="submit" class="btn btn-primary">
-                                <i class="bi bi-check-lg me-1"></i> Save Entry
-                            </button>
-                        </div>
-                    </form>
-                </div>
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap"><i class="bi bi-calendar-plus"></i></div>
+            <div>
+                <h1 class="adm-header__title">Add Calendar Entry</h1>
+                <p class="adm-header__sub">Configure daily calendar details, exam days, and holidays.</p>
             </div>
+        </div>
+    </div>
+
+    <div class="er-card" style="max-width:800px">
+        <div class="er-card__header"><h3 class="er-card__title"><i class="bi bi-calendar-plus"></i> Calendar Entry Details</h3></div>
+        <div class="er-card__body">
+            <form asp-action="Create" method="post">
+                @Html.AntiForgeryToken()
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                    <div>
+                        <label class="er-label">Academic Year</label>
+                        <select asp-for="AcademicYearId" class="er-select" required>
+                            <option value="">Select Academic Year</option>
+                            @if (years != null)
+                            {
+                                foreach (var y in years)
+                                { <option value="@y.Id">@y.Name</option> }
+                            }
+                        </select>
+                        <span asp-validation-for="AcademicYearId" class="er-error" style="display:block"></span>
+                    </div>
+                    <div>
+                        <label class="er-label">Date</label>
+                        <input asp-for="Date" type="date" class="er-input" required />
+                        <span asp-validation-for="Date" class="er-error" style="display:block"></span>
+                    </div>
+                </div>
+
+                <div style="margin-top:16px">
+                    <label class="er-label">Title</label>
+                    <input asp-for="Title" class="er-input" placeholder="e.g. Independence Day, Final Examination, Sports Day" required />
+                    <span asp-validation-for="Title" class="er-error" style="display:block"></span>
+                </div>
+
+                <div style="margin-top:16px">
+                    <label class="er-label">Description</label>
+                    <textarea asp-for="Description" class="er-textarea" rows="3" placeholder="Optional details..."></textarea>
+                    <span asp-validation-for="Description" class="er-error" style="display:block"></span>
+                </div>
+
+                <div style="margin-top:16px;padding:16px;border:1px solid var(--er-border);border-radius:var(--er-radius);background:var(--er-surface-2)">
+                    <label class="er-label" style="margin-bottom:12px"><i class="bi bi-gear"></i> Day Type Flags</label>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+                        <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+                            <input class="form-check-input" type="checkbox" asp-for="IsWorkingDay" checked id="IsWorkingDay" style="width:18px;height:18px;accent-color:var(--er-primary)" />
+                            <div><div style="font-weight:600;color:var(--er-text)">Is Working Day</div><div style="font-size:12px;color:var(--er-text-3)">Checked if students/staff attend today.</div></div>
+                        </label>
+                        <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+                            <input class="form-check-input" type="checkbox" asp-for="IsHoliday" id="IsHoliday" style="width:18px;height:18px;accent-color:var(--er-primary)" />
+                            <div><div style="font-weight:600;color:var(--er-text)">Is Holiday</div><div style="font-size:12px;color:var(--er-text-3)">No attendance is permitted on holidays.</div></div>
+                        </label>
+                        <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+                            <input class="form-check-input" type="checkbox" asp-for="IsExamDay" id="IsExamDay" style="width:18px;height:18px;accent-color:var(--er-primary)" />
+                            <div><div style="font-weight:600;color:var(--er-text)">Is Exam Day</div><div style="font-size:12px;color:var(--er-text-3)">Special tag for examinations.</div></div>
+                        </label>
+                        <label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+                            <input class="form-check-input" type="checkbox" asp-for="IsEventDay" id="IsEventDay" style="width:18px;height:18px;accent-color:var(--er-primary)" />
+                            <div><div style="font-weight:600;color:var(--er-text)">Is Event Day</div><div style="font-size:12px;color:var(--er-text-3)">Special tag for festivals/events.</div></div>
+                        </label>
+                    </div>
+                </div>
+
+                <div id="holidayTypeContainer" style="display:none;margin-top:16px">
+                    <label class="er-label">Holiday Type</label>
+                    <input asp-for="HolidayType" class="er-input" placeholder="e.g. National, Religious, Public" />
+                    <span asp-validation-for="HolidayType" class="er-error" style="display:block"></span>
+                </div>
+
+                <div style="margin-top:16px">
+                    <label class="er-label">Remarks</label>
+                    <input asp-for="Remarks" class="er-input" placeholder="Optional comments..." />
+                    <span asp-validation-for="Remarks" class="er-error" style="display:block"></span>
+                </div>
+
+                <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:20px;padding-top:16px;border-top:1px solid var(--er-border)">
+                    <a asp-action="Index" class="adm-btn adm-btn--ghost">Cancel</a>
+                    <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-check-lg"></i> Save Entry</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -133,23 +103,12 @@
         const holidayTypeContainer = document.getElementById('holidayTypeContainer');
 
         function toggleHolidayFields() {
-            if (isHolidayCheckbox.checked) {
-                holidayTypeContainer.style.display = 'block';
-                isWorkingDayCheckbox.checked = false;
-            } else {
-                holidayTypeContainer.style.display = 'none';
-            }
+            if (isHolidayCheckbox.checked) { holidayTypeContainer.style.display = 'block'; isWorkingDayCheckbox.checked = false; }
+            else { holidayTypeContainer.style.display = 'none'; }
         }
 
         isHolidayCheckbox.addEventListener('change', toggleHolidayFields);
-        isWorkingDayCheckbox.addEventListener('change', function() {
-            if (this.checked) {
-                isHolidayCheckbox.checked = false;
-                holidayTypeContainer.style.display = 'none';
-            }
-        });
-
-        // Initialize state
+        isWorkingDayCheckbox.addEventListener('change', function() { if (this.checked) { isHolidayCheckbox.checked = false; holidayTypeContainer.style.display = 'none'; } });
         toggleHolidayFields();
     </script>
 }

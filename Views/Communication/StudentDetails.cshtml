@@ -23,7 +23,7 @@
             <hr />
 
             <div class="notice-body mb-4">
-                @Html.Raw(Model.Body)
+                @Html.Raw(System.Web.HttpUtility.HtmlEncode(Model.Body).Replace("\n", "<br/>"))
             </div>
 
             @if (!string.IsNullOrEmpty(Model.AttachmentPath))

@@ -3,24 +3,56 @@
     ViewData["Title"] = $"Delete {Model.ModuleName}";
 }
 
-<div class="page-title">
-    <h1>@ViewData["Title"]</h1>
-    <a asp-controller="@Model.ControllerName" asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
-</div>
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div>
+                <h1 class="adm-header__title">@ViewData["Title"]</h1>
+                <p class="adm-header__sub">Confirm deletion for this @Model.ModuleName record</p>
+            </div>
+        </div>
+    </div>
 
-<div class="panel">
-    <p>Confirm delete for this @Model.ModuleName record.</p>
-    <dl class="row">
-        @foreach (var field in Model.Fields.Take(6))
-        {
-            <dt class="col-sm-3">@field.Label</dt>
-            <dd class="col-sm-9">@field.Value</dd>
-        }
-    </dl>
-    <form asp-controller="@Model.ControllerName" asp-action="DeleteConfirmed" method="post">
-        @Html.AntiForgeryToken()
-        <input type="hidden" name="id" value="@Model.Id" />
-        <button class="btn btn-danger" type="submit">Delete</button>
-        <a asp-controller="@Model.ControllerName" asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
-    </form>
+    <div style="max-width:520px;">
+        <div class="adm-modal" style="max-width:100%;animation:none;box-shadow:var(--adm-shadow);">
+            <div class="adm-modal__header">
+                <div class="adm-modal__header-left">
+                    <div class="adm-modal__header-icon" style="background:var(--adm-rejected-bg);color:var(--adm-rejected);">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <line x1="12" y1="8" x2="12" y2="12"></line>
+                            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="adm-modal__title">@ViewData["Title"]</h2>
+                        <p class="adm-modal__subtitle">This action cannot be undone.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="adm-modal__body">
+                <table class="dash-table">
+                    <tbody>
+                        @foreach (var field in Model.Fields.Take(6))
+                        {
+                            <tr>
+                                <th style="width:35%;padding:10px 14px;font-size:12px;font-weight:650;color:var(--adm-text-3);text-transform:uppercase;letter-spacing:0.04em;white-space:nowrap;vertical-align:top;border-bottom:1px solid var(--adm-border);">@field.Label</th>
+                                <td style="padding:10px 14px;border-bottom:1px solid var(--adm-border);">@field.Value</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="adm-modal__footer">
+                <form asp-controller="@Model.ControllerName" asp-action="DeleteConfirmed" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <div style="display:flex;gap:8px;">
+                        <a asp-controller="@Model.ControllerName" asp-action="Index" class="adm-btn adm-btn--ghost">Cancel</a>
+                        <button class="adm-btn adm-btn--danger" type="submit">Delete</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>

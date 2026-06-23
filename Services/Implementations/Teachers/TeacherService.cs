@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Helpers.Security;
 using SchoolManagementSystem.Models.DTOs.Common;
@@ -24,6 +25,7 @@ public class TeacherService : ITeacherService
     private readonly IUserRoleRepository _userRoleRepository;
     private readonly IPasswordHashService _passwordHashService;
     private readonly IEmailService _emailService;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
     public TeacherService(
         IUnitOfWork unitOfWork,
@@ -32,7 +34,8 @@ public class TeacherService : ITeacherService
         IRoleRepository roleRepository,
         IUserRoleRepository userRoleRepository,
         IPasswordHashService passwordHashService,
-        IEmailService emailService)
+        IEmailService emailService,
+        IHttpContextAccessor httpContextAccessor)
     {
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
         _teacherRepository = teacherRepository ?? throw new ArgumentNullException(nameof(teacherRepository));
@@ -41,6 +44,7 @@ public class TeacherService : ITeacherService
         _userRoleRepository = userRoleRepository;
         _passwordHashService = passwordHashService ?? throw new ArgumentNullException(nameof(passwordHashService));
         _emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
+        _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
     }
 
     public async Task<int> CreateAsync(TeacherUpsertDto dto, string createdBy, CancellationToken ct = default)
@@ -64,6 +68,8 @@ public class TeacherService : ITeacherService
         teacher.UpdatedAt = DateTime.UtcNow;
 
         await _unitOfWork.SaveChangesAsync(ct);
+
+        await LogAuditAsync("Teacher", "Teacher.Update", teacher.Id.ToString(), $"Updated teacher: {teacher.FullName} ({teacher.TeacherNo})", ct);
     }
 
     public async Task DeleteAsync(int id, string updatedBy, CancellationToken ct = default)
@@ -104,6 +110,8 @@ public class TeacherService : ITeacherService
         teacher.UpdatedBy = updatedBy; 
         teacher.UpdatedAt = DateTime.UtcNow;
         await _unitOfWork.SaveChangesAsync(ct);
+
+        await LogAuditAsync("Teacher", "Teacher.Deactivate", id.ToString(), $"Deactivated teacher: {teacher.FullName} ({teacher.TeacherNo})", ct);
     }
 
     public async Task ActivateAsync(int id, string updatedBy, CancellationToken ct = default)
@@ -113,6 +121,8 @@ public class TeacherService : ITeacherService
         teacher.UpdatedBy = updatedBy; 
         teacher.UpdatedAt = DateTime.UtcNow;
         await _unitOfWork.SaveChangesAsync(ct);
+
+        await LogAuditAsync("Teacher", "Teacher.Activate", id.ToString(), $"Activated teacher: {teacher.FullName} ({teacher.TeacherNo})", ct);
     }
 
     public async Task<TeacherUpsertDto?> GetByUserIdAsync(int userId, CancellationToken ct = default)
@@ -165,5 +175,26 @@ public class TeacherService : ITeacherService
     }
 
     private string GenerateRandomPassword() => Guid.NewGuid().ToString("N").Substring(0, 8);
+
+    private async Task LogAuditAsync(string module, string action, string entityId, string details, CancellationToken ct = default)
+    {
+        var httpContext = _httpContextAccessor?.HttpContext;
+        var userIdStr = httpContext?.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        int? userId = userIdStr != null && int.TryParse(userIdStr, out var uid) ? uid : null;
+
+        var log = new AuditLog
+        {
+            UserId = userId,
+            Module = module,
+            Action = action,
+            IpAddress = httpContext?.Connection?.RemoteIpAddress?.ToString(),
+            Details = details.Length > 1000 ? details[..1000] : details,
+            CreatedBy = httpContext?.User?.Identity?.Name ?? "system",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _unitOfWork.Repository<AuditLog>().AddAsync(log, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
+    }
 }
 

@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Models.DTOs.Common;
 using SchoolManagementSystem.Models.DTOs.Student;
 using SchoolManagementSystem.Models.Entities.Academic;
+using SchoolManagementSystem.Models.Entities.Auth;
 using SchoolManagementSystem.Models.Entities.Student;
 using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Services.Interfaces.Students;
@@ -18,17 +20,20 @@ public class StudentService : IStudentService
     private readonly IStudentRepository _studentRepository;
     private readonly ISectionRepository _sectionRepository;
     private readonly ISchoolClassRepository _classRepository;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
     public StudentService(
         IUnitOfWork unitOfWork, 
         IStudentRepository studentRepository,
         ISectionRepository sectionRepository,
-        ISchoolClassRepository classRepository) 
+        ISchoolClassRepository classRepository,
+        IHttpContextAccessor httpContextAccessor) 
     { 
         _unitOfWork = unitOfWork;
         _studentRepository = studentRepository;
         _sectionRepository = sectionRepository;
         _classRepository = classRepository;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     public async Task<int> CreateAsync(StudentUpsertDto dto, string createdBy, CancellationToken cancellationToken = default)
@@ -165,6 +170,8 @@ public class StudentService : IStudentService
             }
         }
 
+        await LogAuditAsync("Student", "Student.Create", student.Id.ToString(), $"Created student: {student.FullName} ({student.StudentNo})", cancellationToken);
+
         return student.Id;
     }
 
@@ -275,6 +282,8 @@ public class StudentService : IStudentService
             assignmentRepo.Remove(existingAssignment);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
+
+        await LogAuditAsync("Student", "Student.Update", student.Id.ToString(), $"Updated student: {student.FullName} ({student.StudentNo})", cancellationToken);
     }
 
     public async Task<StudentUpsertDto?> GetForEditAsync(int id, CancellationToken cancellationToken = default)
@@ -301,6 +310,8 @@ public class StudentService : IStudentService
         student.UpdatedBy = updatedBy;
         student.UpdatedAt = DateTime.UtcNow;
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await LogAuditAsync("Student", "Student.Delete", id.ToString(), $"Deleted student: {student.FullName} ({student.StudentNo})", cancellationToken);
     }
 
     public async Task<StudentUpsertDto?> GetByUserIdAsync(int userId, CancellationToken cancellationToken = default)
@@ -363,6 +374,27 @@ public class StudentService : IStudentService
         var year = DateTime.UtcNow.Year;
         var count = await _studentRepository.CountAsync(s => !s.IsDeleted && s.CreatedAt.Year == year, cancellationToken) + 1;
         return $"STU-{year}{count:D3}";
+    }
+
+    private async Task LogAuditAsync(string module, string action, string entityId, string details, CancellationToken ct = default)
+    {
+        var httpContext = _httpContextAccessor?.HttpContext;
+        var userIdStr = httpContext?.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        int? userId = userIdStr != null && int.TryParse(userIdStr, out var uid) ? uid : null;
+
+        var log = new AuditLog
+        {
+            UserId = userId,
+            Module = module,
+            Action = action,
+            IpAddress = httpContext?.Connection?.RemoteIpAddress?.ToString(),
+            Details = details.Length > 1000 ? details[..1000] : details,
+            CreatedBy = httpContext?.User?.Identity?.Name ?? "system",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _unitOfWork.Repository<AuditLog>().AddAsync(log, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
     }
 }
 

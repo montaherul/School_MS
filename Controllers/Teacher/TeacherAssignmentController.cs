@@ -35,6 +35,7 @@ public class TeacherAssignmentController : Controller
             // New JSON endpoints for Bangladesh curriculum filtering
         // Get classes assigned to teacher
         [HttpGet("GetAssignedClasses/{teacherId}")]
+        [RequirePermission("Teachers.View")]
         public async Task<IActionResult> GetAssignedClasses(int teacherId, CancellationToken ct)
         {
             var classes = await _service.GetClassesByTeacherIdAsync(teacherId, ct);
@@ -43,6 +44,7 @@ public class TeacherAssignmentController : Controller
 
         // Get groups assigned to teacher for a class
         [HttpGet("GetAssignedGroups/{teacherId}/{classId}")]
+        [RequirePermission("Teachers.View")]
         public async Task<IActionResult> GetAssignedGroups(int teacherId, int classId, CancellationToken ct)
         {
             var groups = await _service.GetTeacherAssignedGroupsAsync(teacherId, classId, ct);
@@ -51,6 +53,7 @@ public class TeacherAssignmentController : Controller
 
         // Get sections assigned to teacher for a class, optionally filtered by group
         [HttpGet("GetAssignedSections/{teacherId}/{classId}")]
+        [RequirePermission("Teachers.View")]
         public async Task<IActionResult> GetAssignedSections(int teacherId, int classId, int? groupId, CancellationToken ct)
         {
             var sections = await _service.GetTeacherAssignedSectionsAsync(teacherId, classId, groupId, ct);
@@ -59,12 +62,14 @@ public class TeacherAssignmentController : Controller
 
         // Get subjects assigned to teacher for a class, optionally filtered by group and section
         [HttpGet("GetAssignedSubjects/{teacherId}/{classId}")]
+        [RequirePermission("Teachers.View")]
         public async Task<IActionResult> GetAssignedSubjects(int teacherId, int classId, int? groupId, int? sectionId, CancellationToken ct)
         {
             var subjects = await _service.GetTeacherAssignedSubjectsAsync(teacherId, classId, groupId, sectionId, ct);
             return Json(subjects.Select(s => new { subjectId = s.Id, subjectName = s.Name }));
         }
     [HttpGet("GetByTeacher/{teacherId}")]
+    [RequirePermission("Teachers.View")]
     public async Task<IActionResult> GetByTeacher(int teacherId, int? classId, int? groupId, int? sectionId, int? subjectId, CancellationToken ct)
     {
         var classAssignments  = await _service.GetTeacherClassAssignmentsAsync(teacherId, ct);

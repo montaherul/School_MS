@@ -381,8 +381,7 @@
     </div>
 </div>
 
-<!-- ── Toast Container ── -->
-<div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer" style="z-index:1060;"></div>
+<!-- ── Toast notifications use toastr (global) ── -->
 
 <!-- ── Confirm Action Modal ── -->
 <div class="adm-modal-backdrop" id="confirmModal" style="display:none;">
@@ -479,38 +478,9 @@
         // 1. TOAST HELPERS
         // ─────────────────────────────────────────────────────────────
         function showToast(message, type) {
-            var iconSvg = '';
-            var headerClass = '';
-            if (type === 'success') {
-                iconSvg = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" /><polyline points="22 4 12 14.01 9 11.01" /></svg>';
-                headerClass = 'toast-header--success';
-            } else if (type === 'warning') {
-                iconSvg = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>';
-                headerClass = 'toast-header--warning';
-            } else {
-                iconSvg = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" /></svg>';
-                headerClass = 'toast-header--info';
-            }
-
-            var id = 'toast-' + Date.now();
-            var html =
-                '<div id="' + id + '" class="toast" role="alert" aria-live="assertive" aria-atomic="true">' +
-                '  <div class="toast-header ' + headerClass + '">' +
-                '    ' + iconSvg +
-                '    <strong class="me-auto">' + (type === 'success' ? 'Success' : type === 'warning' ? 'Notice' : 'Info') + '</strong>' +
-                '    <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>' +
-                '  </div>' +
-                '  <div class="toast-body" style="font-size:13px;color:var(--adm-text-2);">' + message + '</div>' +
-                '</div>';
-
-            var container = document.getElementById('toastContainer');
-            container.insertAdjacentHTML('beforeend', html);
-
-            var el = document.getElementById(id);
-            var toast = new bootstrap.Toast(el, { autohide: true, delay: 4000 });
-            toast.show();
-
-            el.addEventListener('hidden.bs.toast', function () { el.remove(); });
+            if (type === 'success') toastr.success(message);
+            else if (type === 'warning') toastr.warning(message);
+            else toastr.info(message);
         }
 
         // ─────────────────────────────────────────────────────────────
@@ -818,170 +788,25 @@
     </script>
 
     <style>
-        /* ── Performance Trend Row ── */
-        .dash-trend-row {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
-            margin-bottom: 24px;
-        }
-
-        .dash-trend-card {
-            background: var(--adm-surface);
-            border: 1px solid var(--adm-border);
-            border-radius: var(--adm-radius-lg);
-            padding: 18px 20px;
-            box-shadow: var(--adm-shadow-sm);
-        }
-
-        .dash-trend-label {
-            display: block;
-            font-size: 12px;
-            font-weight: 600;
-            color: var(--adm-text-3);
-            text-transform: uppercase;
-            letter-spacing: 0.04em;
-            margin-bottom: 4px;
-        }
-
-        .dash-trend-value {
-            display: block;
-            font-size: 22px;
-            font-weight: 700;
-            color: var(--adm-text);
-            margin-bottom: 10px;
-        }
-
-        .dash-trend-bar-wrap {
-            height: 6px;
-            background: var(--adm-surface-2);
-            border-radius: 99px;
-            overflow: hidden;
-        }
-
-        .dash-trend-bar {
-            height: 100%;
-            border-radius: 99px;
-            background: linear-gradient(90deg, var(--adm-primary), var(--adm-primary-l));
-            transition: width 0.6s cubic-bezier(0.16,1,0.3,1);
-        }
-
-        .dash-trend-bar--gpa {
-            background: linear-gradient(90deg, var(--adm-converted), #38BDF8);
-        }
-
-        .dash-trend-bar--students {
-            background: linear-gradient(90deg, var(--adm-pending), #FBBF24);
-        }
-
-        /* ── Chart Row / Cards ── */
-        .dash-chart-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin-bottom: 16px;
-        }
-
-        .dash-chart-card {
-            background: var(--adm-surface);
-            border: 1px solid var(--adm-border);
-            border-radius: var(--adm-radius-lg);
-            box-shadow: var(--adm-shadow-sm);
-            overflow: hidden;
-        }
-
-        .dash-chart-card__header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px 20px 8px;
-        }
-
-        .dash-chart-card__title {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--adm-text);
-            margin: 0;
-        }
-
-        .dash-chart-card__badge {
-            font-size: 11px;
-            font-weight: 600;
-            color: var(--adm-text-3);
-            background: var(--adm-surface-2);
-            padding: 3px 10px;
-            border-radius: 99px;
-        }
-
-        .dash-chart-card__body {
-            padding: 8px 20px 16px;
-        }
-
-        .dash-chart-card__body--center {
-            display: flex;
-            justify-content: center;
-        }
-
-        /* ── Loading Overlay ── */
-        .er-skeleton-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(20,24,20,0.55);
-            backdrop-filter: blur(4px);
-            z-index: 1070;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .er-skeleton-spinner {
-            background: var(--adm-surface);
-            border-radius: var(--adm-radius-lg);
-            padding: 32px 40px;
-            box-shadow: var(--adm-shadow-lg);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .er-skeleton-spinner__ring {
-            width: 36px;
-            height: 36px;
-            border: 3px solid var(--adm-border);
-            border-top-color: var(--adm-primary);
-            border-radius: 50%;
-            animation: adm-spin 0.7s linear infinite;
-        }
-
-        .er-skeleton-spinner__text {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--adm-text-2);
-        }
-
-        /* ── Toast header variants ── */
-        .toast-header--success {
-            color: var(--adm-success) !important;
-        }
-
-        .toast-header--warning {
-            color: var(--adm-pending) !important;
-        }
-
-        .toast-header--info {
-            color: var(--adm-converted) !important;
-        }
-
-        /* ── Responsive ── */
-        @@media (max-width: 900px) {
-            .dash-chart-row {
-                grid-template-columns: 1fr;
-            }
-
-            .dash-trend-row {
-                grid-template-columns: 1fr;
-            }
-        }
+        .dash-trend-row { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:24px; }
+        .dash-trend-card { background:var(--adm-surface); border:1px solid var(--adm-border); border-radius:var(--adm-radius-lg); padding:18px 20px; box-shadow:var(--adm-shadow-sm); }
+        .dash-trend-label { display:block; font-size:12px; font-weight:600; color:var(--adm-text-3); text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px; }
+        .dash-trend-value { display:block; font-size:22px; font-weight:700; color:var(--adm-text); margin-bottom:10px; }
+        .dash-trend-bar-wrap { height:6px; background:var(--adm-surface-2); border-radius:99px; overflow:hidden; }
+        .dash-trend-bar { height:100%; border-radius:99px; background:linear-gradient(90deg,var(--adm-primary),var(--adm-primary-l)); transition:width 0.6s cubic-bezier(0.16,1,0.3,1); }
+        .dash-trend-bar--gpa { background:linear-gradient(90deg,var(--adm-converted),#38BDF8); }
+        .dash-trend-bar--students { background:linear-gradient(90deg,var(--adm-pending),#FBBF24); }
+        .dash-chart-row { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:16px; }
+        .dash-chart-card { background:var(--adm-surface); border:1px solid var(--adm-border); border-radius:var(--adm-radius-lg); box-shadow:var(--adm-shadow-sm); overflow:hidden; }
+        .dash-chart-card__header { display:flex; align-items:center; justify-content:space-between; padding:16px 20px 8px; }
+        .dash-chart-card__title { font-size:14px; font-weight:700; color:var(--adm-text); margin:0; }
+        .dash-chart-card__badge { font-size:11px; font-weight:600; color:var(--adm-text-3); background:var(--adm-surface-2); padding:3px 10px; border-radius:99px; }
+        .dash-chart-card__body { padding:8px 20px 16px; }
+        .dash-chart-card__body--center { display:flex; justify-content:center; }
+        .er-skeleton-overlay { position:fixed; inset:0; background:rgba(20,24,20,0.55); backdrop-filter:blur(4px); z-index:1070; display:flex; align-items:center; justify-content:center; }
+        .er-skeleton-spinner { background:var(--adm-surface); border-radius:var(--adm-radius-lg); padding:32px 40px; box-shadow:var(--adm-shadow-lg); display:flex; flex-direction:column; align-items:center; gap:14px; }
+        .er-skeleton-spinner__ring { width:36px; height:36px; border:3px solid var(--adm-border); border-top-color:var(--adm-primary); border-radius:50%; animation:adm-spin 0.7s linear infinite; }
+        .er-skeleton-spinner__text { font-size:14px; font-weight:600; color:var(--adm-text-2); }
+        @@media (max-width:900px) { .dash-chart-row { grid-template-columns:1fr; } .dash-trend-row { grid-template-columns:1fr; } }
     </style>
 }

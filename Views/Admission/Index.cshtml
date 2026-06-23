@@ -194,117 +194,26 @@
             return el;
         }
 
-        function statusFormatter(cell) {
-            var value = cell.getValue();
-            var map = {
-                'Pending': ['adm-status adm-status--pending', 'Pending'],
-                'Approved': ['adm-status adm-status--approved', 'Approved'],
-                'Converted': ['adm-status adm-status--converted', 'Converted'],
-                'Rejected': ['adm-status adm-status--rejected', 'Rejected']
-            };
-            var entry = map[value];
-            if (entry) {
-                var el = document.createElement('span');
-                el.className = entry[0];
-                el.textContent = entry[1];
-                return el;
-            }
-            return safeSpan(value, 'adm-status adm-status--neutral');
-        }
-
-        function photoFormatter(cell) {
-            var src = cell.getValue();
-            if (!src) src = '/images/default-user.png';
-            var wrapper = document.createElement('div');
-            wrapper.className = 'entity-avatar entity-avatar--primary';
-            var img = document.createElement('img');
-            img.setAttribute('src', src);
-            img.setAttribute('alt', '');
-            img.addEventListener('error', function () { this.setAttribute('src', '/images/default-user.png'); });
-            wrapper.appendChild(img);
-            return wrapper;
+         function statusFormatter(cell) {
+            return renderStatusBadge(cell.getValue());
         }
 
         function actionFormatter(cell) {
             var row = cell.getRow().getData();
-            var wrapper = document.createElement('div');
-            wrapper.className = 'action-group';
             if (row.status === 'Pending') {
-                var a1 = document.createElement('a');
-                a1.className = 'action-btn action-btn--view';
-                a1.setAttribute('href', '/Admission/Details/' + row.id);
-                a1.setAttribute('title', 'Details');
-                a1.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>';
-                wrapper.appendChild(a1);
-
-                var a2 = document.createElement('a');
-                a2.className = 'action-btn action-btn--edit';
-                a2.setAttribute('href', '/Admission/CreateEdit/' + row.id);
-                a2.setAttribute('title', 'Edit');
-                a2.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
-                wrapper.appendChild(a2);
-
-                var b1 = document.createElement('button');
-                b1.type = 'button';
-                b1.className = 'action-btn action-btn--success';
-                b1.setAttribute('title', 'Convert');
-                b1.dataset.id = row.id;
-                b1.dataset.classId = row.appliedClassId;
-                b1.addEventListener('click', function () { openApproveModal(this.dataset.id, this.dataset.classId); });
-                b1.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
-                wrapper.appendChild(b1);
-
-                var b2 = document.createElement('button');
-                b2.type = 'button';
-                b2.className = 'action-btn action-btn--delete';
-                b2.setAttribute('title', 'Reject');
-                b2.dataset.id = row.id;
-                b2.addEventListener('click', function () { rejectItem(this.dataset.id); });
-                b2.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
-                wrapper.appendChild(b2);
-            } else {
-                var done = document.createElement('span');
-                done.className = 'adm-actions--done';
-                done.textContent = 'Done';
-                wrapper.appendChild(done);
+                return buildActionGroup([
+                    { url: '/Admission/Details/' + row.id, className: 'action-btn--view', icon: 'eye', title: 'Details' },
+                    { url: '/Admission/CreateEdit/' + row.id, className: 'action-btn--edit', icon: 'pencil', title: 'Edit' },
+                    { className: 'action-btn--success', icon: 'check-lg', title: 'Convert', onClick: 'openApproveModal(' + row.id + ', ' + row.appliedClassId + ')' },
+                    { className: 'action-btn--delete', icon: 'x-lg', title: 'Reject', onClick: 'rejectItem(' + row.id + ')' }
+                ]);
             }
-            return wrapper;
+            return '<span class="adm-actions--done">Done</span>';
         }
 
         function entityFormatter(cell) {
             var d = cell.getRow().getData();
-            var src = d.profilePicturePath || '/images/default-user.png';
-            var name = d.applicantName || '-';
-            var appNo = d.applicationNo || '-';
-
-            var wrapper = document.createElement('div');
-            wrapper.className = 'entity-cell';
-
-            var avatar = document.createElement('div');
-            avatar.className = 'entity-avatar entity-avatar--primary';
-            var img = document.createElement('img');
-            img.setAttribute('src', src);
-            img.setAttribute('alt', '');
-            img.addEventListener('error', function () { this.setAttribute('src', '/images/default-user.png'); });
-            avatar.appendChild(img);
-
-            var identity = document.createElement('div');
-            identity.className = 'entity-cell__identity';
-
-            var nameEl = document.createElement('div');
-            nameEl.className = 'entity-cell__name';
-            nameEl.textContent = name;
-
-            var codeEl = document.createElement('div');
-            codeEl.className = 'entity-cell__code';
-            codeEl.textContent = appNo;
-
-            identity.appendChild(nameEl);
-            identity.appendChild(codeEl);
-            wrapper.appendChild(avatar);
-            wrapper.appendChild(identity);
-
-            return wrapper;
+            return renderPersonCell(d, { nameField: 'applicantName', codeField: 'applicationNo', avatarField: 'profilePicturePath' });
         }
 
         var columnDefs = [

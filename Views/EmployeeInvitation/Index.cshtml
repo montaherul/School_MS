@@ -60,10 +60,6 @@
     <script>
         var table;
 
-        function getAntiForgeryToken() {
-            return $('input[name="__RequestVerificationToken"]').val();
-        }
-
         function initTable() {
             table = new Tabulator("#invitationTable", {
                 ajaxURL: "/EmployeeInvitation/Index",
@@ -73,7 +69,7 @@
                 paginationSizeSelector: [15,25,50,100],
                 ajaxParams: function () {
                     return {
-                        search: $("#invitationSearch").val()
+                        search: document.getElementById("invitationSearch").value
                     };
                 },
                 ajaxResponse: function (url, params, response) {
@@ -82,14 +78,15 @@
                         last_page: response.last_page || 1
                     };
                 },
-                layout: "fitColumns",
+                layout: "fitDataTable",
+                responsiveLayout: false,
                 placeholder: "No invitations found",
                 columns: [
-                    { title: "Invitation Code", field: "invitationCode", width: 170 },
-                    { title: "Full Name", field: "fullName", widthGrow: 2 },
-                    { title: "Email", field: "email", widthGrow: 2 },
-                    { title: "Department", field: "departmentName" },
-                    { title: "Designation", field: "designationName",
+                    { title: "Invitation Code", field: "invitationCode", width: 170, minWidth: 120 },
+                    { title: "Full Name", field: "fullName", width: 200, minWidth: 160 },
+                    { title: "Email", field: "email", width: 200, minWidth: 160 },
+                    { title: "Department", field: "departmentName", width: 150, minWidth: 120 },
+                    { title: "Designation", field: "designationName", width: 160, minWidth: 130,
                         formatter: function (cell) {
                             var des = cell.getValue();
                             if (!des) return '<span class="text-muted">-</span>';
@@ -98,7 +95,9 @@
                     },
                     { 
                         title: "Status", 
-                        field: "invitationStatus", 
+                        field: "invitationStatus",
+                        width: 100,
+                        minWidth: 90,
                         formatter: function(cell) {
                             var val = cell.getValue();
                             var cls = "success";
@@ -110,7 +109,9 @@
                     },
                     { 
                         title: "Sent At", 
-                        field: "sentAt", 
+                        field: "sentAt",
+                        width: 180,
+                        minWidth: 140,
                         formatter: function(cell) {
                             var value = cell.getValue();
                             return value ? new Date(value).toLocaleString() : "-";
@@ -118,7 +119,9 @@
                     },
                     { 
                         title: "Completed At", 
-                        field: "completedAt", 
+                        field: "completedAt",
+                        width: 180,
+                        minWidth: 140,
                         formatter: function(cell) {
                             var value = cell.getValue();
                             return value ? new Date(value).toLocaleString() : "-";
@@ -127,6 +130,8 @@
                     {
                         title: "Actions",
                         headerSort: false,
+                        width: 120,
+                        minWidth: 100,
                         formatter: function(cell) {
                             var id = cell.getData().id;
                             var status = cell.getData().invitationStatus;
@@ -139,31 +144,43 @@
             });
         }
 
-        function resendInvite(id) {
-            if (confirm("Resend invitation email?")) {
-                $.post("/EmployeeInvitation/Resend", {
-                    id: id,
-                    __RequestVerificationToken: getAntiForgeryToken()
-                }, function(res) {
-                    if (res.success) table.setData();
-                    alert(res.message);
-                }).fail(function(xhr) {
-                    alert(xhr.responseJSON?.message || "Failed to resend invitation.");
+        async function resendInvite(id) {
+            if (!confirm("Resend invitation email?")) return;
+            try {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                const res = await fetch('/EmployeeInvitation/Resend', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify({ id: id })
                 });
+                const data = await res.json();
+                if (data.success) table.setData();
+                alert(data.message);
+            } catch(e) {
+                alert("Failed to resend invitation.");
             }
         }
 
-        function cancelInvite(id) {
-            if (confirm("Cancel this invitation?")) {
-                $.post("/EmployeeInvitation/Cancel", {
-                    id: id,
-                    __RequestVerificationToken: getAntiForgeryToken()
-                }, function(res) {
-                    if (res.success) table.setData();
-                    alert(res.message);
-                }).fail(function(xhr) {
-                    alert(xhr.responseJSON?.message || "Failed to cancel invitation.");
+        async function cancelInvite(id) {
+            if (!confirm("Cancel this invitation?")) return;
+            try {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                const res = await fetch('/EmployeeInvitation/Cancel', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify({ id: id })
                 });
+                const data = await res.json();
+                if (data.success) table.setData();
+                alert(data.message);
+            } catch(e) {
+                alert("Failed to cancel invitation.");
             }
         }
 
@@ -184,13 +201,13 @@
             return "#1B4D8C";
         }
 
-        $(document).ready(function() {
+        document.addEventListener("DOMContentLoaded", function() {
             initTable();
-            $("#btnSearch").click(function() {
+            document.getElementById("btnSearch").addEventListener("click", function() {
                 table.setData();
             });
-            $("#invitationSearch").keypress(function(e) {
-                if (e.which === 13) $("#btnSearch").click();
+            document.getElementById("invitationSearch").addEventListener("keypress", function(e) {
+                if (e.key === "Enter") document.getElementById("btnSearch").click();
             });
         });
     </script>

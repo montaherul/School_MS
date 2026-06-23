@@ -3,66 +3,76 @@
     ViewData["Title"] = "My Academic Results";
 }
 
-<div class="container-fluid py-4">
-    <div class="row mb-4">
-        <div class="col-12">
-            <div class="card shadow-sm border-0 bg-gradient-info text-white">
-                <div class="card-body p-4">
-                    <h2 class="mb-1">Student Result Portal</h2>
-                    <p class="mb-0">Welcome back, @Model.StudentName. View your published exam results below.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
+<div class="adm-page er-page">
     @if (!Model.ExamResults.Any())
     {
-        <div class="text-center py-5">
-            <div class="mb-3">
-                <i class="fas fa-file-invoice text-muted opacity-25" style="font-size: 5rem;"></i>
+        <div class="er-card" style="border-radius:var(--adm-radius-lg);border-top:1px solid var(--adm-border);">
+            <div class="er-empty">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                    <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                <p class="er-empty__title">No results published yet.</p>
+                <p class="er-empty__desc">Results will appear here once they are officially released by the school administration.</p>
             </div>
-            <h4 class="text-muted">No results published yet.</h4>
-            <p class="text-muted">Results will appear here once they are officially released by the school administration.</p>
         </div>
     }
     else
     {
-        <div class="row row-cols-1 row-cols-md-2 g-4">
+        <div class="er-page-header">
+            <div class="er-page-header__left">
+                <div class="er-page-header__icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="20" x2="18" y2="10" />
+                        <line x1="12" y1="20" x2="12" y2="4" />
+                        <line x1="6" y1="20" x2="6" y2="14" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="er-page-header__title">Student Result Portal</h1>
+                    <p class="er-page-header__sub">Welcome back, @Model.StudentName. View your published exam results below.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="dash-main-grid">
             @foreach (var result in Model.ExamResults)
             {
-                <div class="col">
-                    <div class="card shadow-sm border-0 h-100 result-card">
-                        <div class="card-body p-4">
-                            <div class="d-flex justify-content-between align-items-start mb-3">
+                <div class="dash-panel">
+                    <div class="er-card">
+                        <div class="er-card__body">
+                            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px;">
                                 <div>
-                                    <h4 class="fw-bold mb-1">@result.ExamName</h4>
-                                    <span class="badge bg-light text-primary border border-primary">GPA: @result.Gpa.ToString("F2")</span>
+                                    <h4 class="fw-bold" style="margin:0 0 4px;">@result.ExamName</h4>
+                                    <span class="adm-badge adm-badge--primary">GPA: @result.Gpa.ToString("F2")</span>
                                 </div>
-                                <div class="text-end">
-                                    <div class="small text-muted mb-1">Class Position</div>
-                                    <div class="h3 fw-bold text-primary mb-0">#@result.Position</div>
+                                <div style="text-align:right;">
+                                    <div style="font-size:12px;color:var(--adm-text-3);margin-bottom:2px;">Class Position</div>
+                                    <div style="font-size:24px;font-weight:800;color:var(--adm-primary);">#@result.Position</div>
                                 </div>
                             </div>
-
-                            <hr class="my-4 opacity-10">
-
-                            <div class="row g-3 mb-4">
-                                <div class="col-6">
-                                    <div class="small text-muted mb-1">Total Marks</div>
+                            <hr style="border:none;border-top:1px solid var(--adm-border);margin:12px 0;">
+                            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+                                <div>
+                                    <div style="font-size:12px;color:var(--adm-text-3);margin-bottom:2px;">Total Marks</div>
                                     <div class="fw-bold">@result.TotalMarks.ToString("F1")</div>
                                 </div>
-                                <div class="col-6">
-                                    <div class="small text-muted mb-1">Status</div>
-                                    <div class="fw-bold text-success">PASSED</div>
+                                <div>
+                                    <div style="font-size:12px;color:var(--adm-text-3);margin-bottom:2px;">Status</div>
+                                    <div class="fw-bold" style="color:var(--adm-success);">PASSED</div>
                                 </div>
                             </div>
-
-                            <div class="d-grid gap-2">
-                                <a href="/ResultManagement/DownloadReportCard?examId=@result.ExamId&studentId=@Model.StudentId" class="btn btn-primary shadow-sm">
-                                    <i class="fas fa-download me-2"></i> Download Report Card (PDF)
+                            <div style="display:flex;flex-direction:column;gap:8px;">
+                                <a href="/ResultManagement/DownloadReportCard?examId=@result.ExamId&studentId=@Model.StudentId" class="er-btn er-btn--primary" style="text-align:center;">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+                                    Download Report Card (PDF)
                                 </a>
-                                <a asp-action="RequestReEvaluation" asp-route-examId="@result.ExamId" class="btn btn-outline-secondary">
-                                    <i class="fas fa-redo me-2"></i> Request Re-evaluation
+                                <a asp-action="RequestReEvaluation" asp-route-examId="@result.ExamId" class="er-btn er-btn--ghost" style="text-align:center;">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10" /><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" /></svg>
+                                    Request Re-evaluation
                                 </a>
                             </div>
                         </div>
@@ -70,55 +80,36 @@
                 </div>
             }
         </div>
-    }
-</div>
-<div class="row g-4 mt-2">
-    <div class="col-12">
-        <div class="card border-0 shadow-sm rounded-4">
 
-            <div class="card-header bg-white border-0 p-4 pb-0">
-                <h5 class="fw-bold">
-                    <i class="bi bi-mortarboard-fill text-success me-2"></i>
+        <div class="er-card" style="margin-top:20px;">
+            <div class="er-card__header">
+                <h3 class="er-card__title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="color:var(--adm-success);"><path d="M22 10v6M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c3 3 9 3 12 0v-5" /></svg>
                     All Subject Results
-                </h5>
+                </h3>
             </div>
-
-            <div class="card-body p-4">
-
+            <div class="er-card__body">
                 @if (Model.ExamResults != null && Model.ExamResults.Any())
                 {
                     @foreach (var result in Model.ExamResults)
                     {
-                        <div class="mb-5">
-
-                            <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div style="margin-bottom:24px;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
                                 <div>
-                                    <h4 class="fw-bold mb-1">
-                                        @result.ExamName
-                                    </h4>
-
-                                    <span class="badge bg-primary">
-                                        GPA: @result.Gpa.ToString("F2")
-                                    </span>
+                                    <h4 class="fw-bold" style="margin:0 0 4px;">@result.ExamName</h4>
+                                    <span class="adm-badge adm-badge--primary">GPA: @result.Gpa.ToString("F2")</span>
                                 </div>
-
-                                <div class="text-end">
-                                    <div class="small text-muted">
-                                        Position
-                                    </div>
-
-                                    <div class="fw-bold text-success">
-                                        #@result.Position
-                                    </div>
+                                <div style="text-align:right;">
+                                    <div style="font-size:12px;color:var(--adm-text-3);">Position</div>
+                                    <div class="fw-bold" style="color:var(--adm-success);">#@result.Position</div>
                                 </div>
                             </div>
 
                             @if (result.Subjects != null && result.Subjects.Any())
                             {
-                                <div class="table-responsive">
-                                    <table class="table table-hover align-middle">
-
-                                        <thead class="table-light">
+                                <div class="er-table-wrap">
+                                    <table class="dash-table">
+                                        <thead>
                                             <tr>
                                                 <th>Subject</th>
                                                 <th>Marks</th>
@@ -127,88 +118,42 @@
                                                 <th>Status</th>
                                             </tr>
                                         </thead>
-
                                         <tbody>
-
                                             @foreach (var subject in result.Subjects)
                                             {
                                                 <tr>
-
-                                                    <td class="fw-semibold">
-                                                        @subject.SubjectName
-                                                    </td>
-
+                                                    <td class="fw-semibold">@subject.SubjectName</td>
+                                                    <td>@subject.ObtainedMarks / @subject.FullMarks</td>
+                                                    <td><span class="adm-badge adm-badge--primary">@subject.Grade</span></td>
+                                                    <td>@subject.GPA</td>
                                                     <td>
-                                                        @subject.ObtainedMarks / @subject.FullMarks
-                                                    </td>
-
-                                                    <td>
-                                                        <span class="badge bg-primary">
-                                                            @subject.Grade
-                                                        </span>
-                                                    </td>
-
-                                                    <td>
-                                                        @subject.GPA
-                                                    </td>
-
-                                                    <td>
-
                                                         @if (subject.IsPassed)
                                                         {
-                                                            <span class="badge bg-success">
-                                                                Passed
-                                                            </span>
+                                                            <span class="adm-badge adm-badge--success">Passed</span>
                                                         }
                                                         else
                                                         {
-                                                            <span class="badge bg-danger">
-                                                                Failed
-                                                            </span>
+                                                            <span class="adm-badge adm-badge--danger">Failed</span>
                                                         }
-
                                                     </td>
-
                                                 </tr>
                                             }
-
                                         </tbody>
-
                                     </table>
                                 </div>
                             }
                             else
                             {
-                                <div class="alert alert-warning">
-                                    No subject results found for this exam.
-                                </div>
+                                <div class="adm-alert" style="padding:12px 16px;">No subject results found for this exam.</div>
                             }
-
                         </div>
                     }
                 }
                 else
                 {
-                    <div class="alert alert-warning mb-0">
-                        No results available yet.
-                    </div>
+                    <div class="adm-alert" style="padding:12px 16px;">No results available yet.</div>
                 }
-
             </div>
-
         </div>
-    </div>
+    }
 </div>
-
-<style>
-    .bg-gradient-info {
-        background: linear-gradient(45deg, #36b9cc 0%, #1a8a99 100%);
-    }
-    .result-card {
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    .result-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
-    }
-</style>

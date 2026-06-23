@@ -4,102 +4,35 @@
     ViewData["Title"] = "Attendance Dashboard";
 }
 
-<div class="d-sm-flex align-items-center justify-content-between mb-4">
-    <h1 class="h3 mb-0 text-gray-800">Attendance Dashboard</h1>
-</div>
-
-<div class="row">
-    <!-- Student Present Card -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-primary shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                            Students Present Today</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalPresentStudents</div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-user-graduate fa-2x text-gray-300"></i>
-                    </div>
-                </div>
+<div class="er-page">
+    <div class="er-page-header">
+        <div class="er-page-header__left">
+            <div class="er-page-header__icon"><i class="bi bi-bar-chart-fill"></i></div>
+            <div>
+                <h1 class="er-page-header__title">Attendance Dashboard</h1>
+                <p class="er-page-header__sub">Key attendance metrics at a glance.</p>
             </div>
         </div>
     </div>
 
-    <!-- Student Absent Card -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-danger shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
-                            Students Absent Today</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalAbsentStudents</div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-user-times fa-2x text-gray-300"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="er-stats">
+        <div class="er-stat"><div class="er-stat__icon er-stat__icon--success"><i class="bi bi-people-fill"></i></div><div class="er-stat__body"><span class="er-stat__label">Students Present Today</span><span class="er-stat__value">@Model.TotalPresentStudents</span></div></div>
+        <div class="er-stat"><div class="er-stat__icon er-stat__icon--danger"><i class="bi bi-person-x-fill"></i></div><div class="er-stat__body"><span class="er-stat__label">Students Absent Today</span><span class="er-stat__value">@Model.TotalAbsentStudents</span></div></div>
+        <div class="er-stat"><div class="er-stat__icon er-stat__icon--primary"><i class="bi bi-person-badge"></i></div><div class="er-stat__body"><span class="er-stat__label">Employees Present Today</span><span class="er-stat__value">@Model.TotalPresentEmployees</span></div></div>
+        <div class="er-stat"><div class="er-stat__icon er-stat__icon--warning"><i class="bi bi-file-earmark-text"></i></div><div class="er-stat__body"><span class="er-stat__label">Pending Leave Requests</span><span class="er-stat__value">@Model.PendingLeaveRequests</span></div></div>
     </div>
 
-    <!-- Employee Present Card -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-success shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                            Employees Present Today</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.TotalPresentEmployees</div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-chalkboard-teacher fa-2x text-gray-300"></i>
-                    </div>
-                </div>
+    <div class="er-dash-grid">
+        <div class="er-card er-card--elevated">
+            <div class="er-card__header"><h3 class="er-card__title"><i class="bi bi-mortarboard-fill" style="color:var(--er-success)"></i> Student Attendance Rate</h3></div>
+            <div class="er-card__body" style="text-align:center;padding:32px">
+                <div style="font-size:48px;font-weight:800;color:var(--er-success);letter-spacing:-0.03em">@Model.StudentAttendancePercentage%</div>
             </div>
         </div>
-    </div>
-
-    <!-- Pending Leave Card -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-left-warning shadow h-100 py-2">
-            <div class="card-body">
-                <div class="row no-gutters align-items-center">
-                    <div class="col mr-2">
-                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                            Pending Leave Requests</div>
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.PendingLeaveRequests</div>
-                    </div>
-                    <div class="col-auto">
-                        <i class="fas fa-file-alt fa-2x text-gray-300"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row">
-    <div class="col-lg-6">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Student Attendance Rate</h6>
-            </div>
-            <div class="card-body text-center">
-                <h2 class="text-success font-weight-bold">@Model.StudentAttendancePercentage%</h2>
-            </div>
-        </div>
-    </div>
-    <div class="col-lg-6">
-        <div class="card shadow mb-4">
-            <div class="card-header py-3">
-                <h6 class="m-0 font-weight-bold text-primary">Employee Attendance Rate</h6>
-            </div>
-            <div class="card-body text-center">
-                <h2 class="text-success font-weight-bold">@Model.EmployeeAttendancePercentage%</h2>
+        <div class="er-card er-card--elevated">
+            <div class="er-card__header"><h3 class="er-card__title"><i class="bi bi-person-badge-fill" style="color:var(--er-primary)"></i> Employee Attendance Rate</h3></div>
+            <div class="er-card__body" style="text-align:center;padding:32px">
+                <div style="font-size:48px;font-weight:800;color:var(--er-primary);letter-spacing:-0.03em">@Model.EmployeeAttendancePercentage%</div>
             </div>
         </div>
     </div>

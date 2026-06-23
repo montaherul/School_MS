@@ -9,78 +9,51 @@
     var joining = !string.IsNullOrWhiteSpace(Model.JoiningDate) ? Model.JoiningDate : "---";
     var address = !string.IsNullOrWhiteSpace(Model.PresentAddress) ? Model.PresentAddress : "---";
     var idDisplay = !string.IsNullOrWhiteSpace(Model.EmployeeIdNo) ? Model.EmployeeIdNo : "N/A";
-    var motto = !string.IsNullOrWhiteSpace(Model.SchoolMotto) ? Model.SchoolMotto : "Knowledge. Discipline. Excellence";
+    var motto = !string.IsNullOrWhiteSpace(Model.SchoolMotto) ? Model.SchoolMotto : "";
 }
 
-<div class="idcard idcard-employee idcard-back">
-    <div class="idcard-inner">
-        <div class="idcard-back-header">
-            <div class="idcard-back-title">Important Information</div>
-        </div>
+<div class="id-card-print back employee">
+    <div class="section-title-bar">IMPORTANT INFORMATION</div>
 
-        <div class="idcard-back-body">
-            <div class="idcard-back-section-title">Office Information</div>
-            <div class="idcard-back-info-row">
-                <span class="idcard-back-info-label">Department</span>
-                <span class="idcard-back-info-value">@dept</span>
-            </div>
-            <div class="idcard-back-info-row">
-                <span class="idcard-back-info-label">Designation</span>
-                <span class="idcard-back-info-value">@designation</span>
-            </div>
-            <div class="idcard-back-info-row">
-                <span class="idcard-back-info-label">Joining</span>
-                <span class="idcard-back-info-value">@joining</span>
-            </div>
-            <div class="idcard-back-info-row">
-                <span class="idcard-back-info-label">Blood</span>
-                <span class="idcard-back-info-value">@blood</span>
-            </div>
-            <div class="idcard-back-info-row">
-                <span class="idcard-back-info-label">Office Email</span>
-                <span class="idcard-back-info-value">@email</span>
-            </div>
-            <div class="idcard-back-info-row">
-                <span class="idcard-back-info-label">Office Phone</span>
-                <span class="idcard-back-info-value">@phone</span>
-            </div>
-            <div class="idcard-back-info-row">
-                <span class="idcard-back-info-label">Emergency</span>
-                <span class="idcard-back-info-value">@emergency</span>
-            </div>
-            <div class="idcard-back-info-row">
-                <span class="idcard-back-info-label">Address</span>
-                <span class="idcard-back-info-value">@address</span>
-            </div>
-
-            <div class="idcard-back-bottom">
-                <div class="idcard-back-bottom-rules">
-                    <div class="idcard-back-section-title">Rules</div>
-                    <ul class="idcard-back-rules">
-                        <li>Display while on duty</li>
-                        <li>Return upon resignation</li>
-                        <li>School property</li>
-                        <li>Report loss immediately</li>
-                    </ul>
-                </div>
-                <div class="idcard-back-qr">
-                    <div class="idcard-back-qr-box">
-                        @if (!string.IsNullOrEmpty(Model.QrCodeDataUri))
-                        {
-                            <img src="@Model.QrCodeDataUri" alt="QR" />
-                        }
-                    </div>
-                    <div class="idcard-back-qr-text">
-                        <div class="idcard-back-qr-title">SCAN</div>
-                        <div class="idcard-back-qr-sub">Verify identity</div>
-                        <div class="idcard-back-qr-id">@idDisplay</div>
-                    </div>
-                </div>
+    <div class="back-body">
+        <div class="info-group">
+            <h3>OFFICE INFORMATION</h3>
+            <div class="grid-info-back">
+                <span class="lbl">DEPARTMENT</span><span class="val">@dept</span>
+                <span class="lbl">DESIGNATION</span><span class="val">@designation</span>
+                <span class="lbl">JOINING</span><span class="val">@joining</span>
+                <span class="lbl">BLOOD</span><span class="val">@blood</span>
+                <span class="lbl">OFFICE EMAIL</span><span class="val">@email</span>
+                <span class="lbl">OFFICE PHONE</span><span class="val">@phone</span>
+                <span class="lbl">EMERGENCY</span><span class="val">@emergency</span>
+                <span class="lbl">ADDRESS</span><span class="val">@address</span>
             </div>
         </div>
 
-        <div class="idcard-back-footer">
-            <span>@Model.SchoolName — @motto</span>
+        <div class="back-bottom-row">
+            <div class="rules-box">
+                <h3>RULES</h3>
+                <ul>
+                    <li>Display while on duty</li>
+                    <li>Return upon resignation</li>
+                    <li>School property</li>
+                    <li>Report loss immediately</li>
+                </ul>
+            </div>
+
+            <div class="qr-box">
+                @if (!string.IsNullOrEmpty(Model.QrCodeDataUri))
+                {
+                    <img class="qr-img" src="@Model.QrCodeDataUri" alt="QR" />
+                }
+                <div class="qr-text">
+                    <strong>SCAN</strong>
+                    <span>Verify identity</span>
+                    <small>@idDisplay</small>
+                </div>
+            </div>
         </div>
     </div>
+
+    <div class="card-footer-back">@Model.SchoolName — @motto</div>
 </div>

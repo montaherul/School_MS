@@ -41,7 +41,7 @@
                             <h5 class="card-title fw-bold mb-2">@notice.Title</h5>
 
                             <p class="card-text text-muted" style="flex:1; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;">
-                                @Html.Raw(notice.Body.Length > 250 ? notice.Body.Substring(0, 250) + "..." : notice.Body)
+                                @Html.Raw(System.Web.HttpUtility.HtmlEncode(notice.Body.Length > 250 ? notice.Body.Substring(0, 250) + "..." : notice.Body).Replace("\n", "<br/>"))
                             </p>
 
                             <div class="d-flex align-items-center justify-content-between mt-3">

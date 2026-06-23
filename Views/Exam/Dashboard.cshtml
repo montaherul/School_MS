@@ -25,20 +25,20 @@
             </div>
         </div>
         <div class="er-page-header__right">
-            <div class="er-filters__row" style="flex-wrap:nowrap;">
-                <form method="get" action="@Url.Action("Dashboard")" id="examDashFilters" style="display:contents;">
-                    <div class="er-filters__group" style="margin-bottom:0;">
-                        <label class="er-filters__label">Year</label>
-                        <select name="academicYearId" class="er-filters__select" onchange="this.form.submit()">
+            <div class="adm-filters__row">
+                <form method="get" action="@Url.Action("Dashboard")" id="examDashFilters" class="d-flex align-items-end gap-3 flex-wrap">
+                    <div class="adm-filters__group">
+                        <label class="adm-filters__label">Year</label>
+                        <select name="academicYearId" class="adm-filters__select" onchange="this.form.submit()">
                             @foreach (var y in Model.AcademicYears)
                             {
                                 <!option value="@y.Id" selected="@(y.Id == Model.SelectedAcademicYearId)">@y.Name</!option>
                             }
                         </select>
                     </div>
-                    <div class="er-filters__group" style="margin-bottom:0;">
-                        <label class="er-filters__label">Exam</label>
-                        <select name="examId" class="er-filters__select">
+                    <div class="adm-filters__group">
+                        <label class="adm-filters__label">Exam</label>
+                        <select name="examId" class="adm-filters__select">
                             <option value="">All</option>
                             @foreach (var ex in Model.YearExams)
                             {
@@ -46,9 +46,9 @@
                             }
                         </select>
                     </div>
-                    <div class="er-filters__group" style="margin-bottom:0;">
-                        <label class="er-filters__label">Class</label>
-                        <select name="classId" class="er-filters__select">
+                    <div class="adm-filters__group">
+                        <label class="adm-filters__label">Class</label>
+                        <select name="classId" class="adm-filters__select">
                             <option value="">All</option>
                             @foreach (var c in Model.Classes)
                             {
@@ -56,9 +56,9 @@
                             }
                         </select>
                     </div>
-                    <div class="er-filters__group" style="margin-bottom:0;">
-                        <label class="er-filters__label">Section</label>
-                        <select name="sectionId" class="er-filters__select">
+                    <div class="adm-filters__group">
+                        <label class="adm-filters__label">Section</label>
+                        <select name="sectionId" class="adm-filters__select">
                             <option value="">All</option>
                             @foreach (var s in Model.Sections)
                             {
@@ -66,9 +66,9 @@
                             }
                         </select>
                     </div>
-                    <div class="er-filters__group" style="margin-bottom:0;">
-                        <label class="er-filters__label">Group</label>
-                        <select name="groupId" class="er-filters__select">
+                    <div class="adm-filters__group">
+                        <label class="adm-filters__label">Group</label>
+                        <select name="groupId" class="adm-filters__select">
                             <option value="">All</option>
                             @foreach (var g in Model.Groups)
                             {
@@ -76,8 +76,7 @@
                             }
                         </select>
                     </div>
-                    <div class="er-filters__group--actions" style="margin-bottom:0;">
-                        <label class="er-filters__label">&nbsp;</label>
+                    <div class="adm-filters__group--actions">
                         <button type="submit" class="er-btn er-btn--secondary er-btn--sm">Apply</button>
                     </div>
                 </form>
@@ -199,7 +198,7 @@
                 <div class="dash-section__header">
                     <h3 class="dash-section__title">Exam Groups</h3>
                 </div>
-                <div class="er-stats" style="margin-bottom:20px;">
+                <div class="er-stats mb-3">
                     <div class="er-stat">
                         <div class="er-stat__icon er-stat__icon--primary">
                             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
@@ -230,17 +229,17 @@
                 </div>
                 @foreach (var grp in Model.ExamGroups.Take(5))
                 {
-                    <div class="er-card" style="margin-bottom:12px;">
-                        <div class="er-card__body" style="padding:14px 18px;">
-                            <div style="display:flex;justify-content:space-between;align-items:center;">
+                    <div class="er-card mb-2">
+                        <div class="er-card__body er-card__body--compact">
+                            <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <strong style="font-size:15px;">@grp.GroupName</strong>
-                                    <span style="font-size:12px;color:var(--er-text-3);margin-left:8px;">@grp.TotalExams class@(grp.TotalExams != 1 ? "es" : "")</span>
+                                    <strong class="er-text-md">@grp.GroupName</strong>
+                                    <span class="er-text-sm er-text-muted ml-2">@grp.TotalExams class@(grp.TotalExams != 1 ? "es" : "")</span>
                                 </div>
-                                <div style="display:flex;gap:16px;align-items:center;">
-                                    <span style="font-size:12px;color:var(--er-text-3);">Published: @grp.PublishedCount / @grp.TotalExams</span>
-                                    <div style="width:100px;height:6px;background:var(--er-border);border-radius:3px;overflow:hidden;">
-                                        <div style="width:@(grp.TotalExams > 0 ? (grp.PublishedCount * 100 / grp.TotalExams) : 0)%;height:100%;background:var(--er-success);border-radius:3px;"></div>
+                                <div class="d-flex gap-3 align-items-center">
+                                    <span class="er-text-sm er-text-muted">Published: @grp.PublishedCount / @grp.TotalExams</span>
+                                    <div class="er-progress-bar er-progress-bar--sm">
+                                        <div class="er-progress-bar__fill er-progress-bar__fill--success" style="width:@(grp.TotalExams > 0 ? (grp.PublishedCount * 100 / grp.TotalExams) : 0)%;"></div>
                                     </div>
                                     <a href="@Url.Action("Index", "Exam")?academicYearId=@Model.SelectedAcademicYearId" class="er-btn er-btn--secondary er-btn--sm">View All</a>
                                 </div>
@@ -255,7 +254,7 @@
             <div class="dash-section__header">
                 <h3 class="dash-section__title">Quick Actions</h3>
             </div>
-            <div style="display:flex;flex-wrap:wrap;gap:12px;">
+            <div class="d-flex flex-wrap gap-3">
                 <a href="@Url.Action("Create", "Exam")" class="er-btn er-btn--primary">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
                     Create New Exam
@@ -275,7 +274,7 @@
             </div>
         </div>
 
-        <div class="er-dash-grid" style="margin-bottom:24px;">
+        <div class="er-dash-grid mb-4">
             <div class="er-card">
                 <div class="er-card__header">
                     <h5 class="er-card__title">Exam Status Distribution</h5>
@@ -389,9 +388,9 @@
     }
 
     <div id="loadingOverlay" class="er-skeleton--card" style="display:none;">
-        <div style="display:flex;align-items:center;justify-content:center;height:100%;gap:12px;">
-            <div style="width:24px;height:24px;border:3px solid var(--er-border);border-top-color:var(--er-primary);border-radius:50%;animation:er-spin 0.8s linear infinite;"></div>
-            <span style="color:var(--er-text-3);font-size:13px;">Loading dashboard…</span>
+        <div class="d-flex align-items-center justify-content-center h-100 gap-3">
+            <div class="er-spinner"></div>
+            <span class="er-text-muted">Loading dashboard…</span>
         </div>
     </div>
 </div>

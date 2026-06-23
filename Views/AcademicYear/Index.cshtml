@@ -2,110 +2,133 @@
     ViewData["Title"] = "Academic Years";
 }
 
-@if (TempData["SuccessMessage"] != null)
-{
-    <div class="alert alert-success alert-dismissible fade show" role="alert">
-        <i class="bi bi-check-circle-fill me-2"></i>@TempData["SuccessMessage"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
-}
+@Html.AntiForgeryToken()
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 class="mb-0"><i class="bi bi-calendar3 me-2"></i>Academic Years</h2>
-    <a href="/AcademicYear/CreateEdit" class="btn btn-primary">
-        <i class="bi bi-plus-circle me-1"></i>Add Academic Year
-    </a>
+<div class="adm-page">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="adm-alert adm-alert--success mb-3">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap" style="background: linear-gradient(135deg, #D97706, #F59E0B); box-shadow: 0 4px 12px rgba(217,119,6,0.3);">
+                <i class="bi bi-calendar3"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Academic Years</h1>
+                <p class="adm-header__sub">Manage academic year sessions and date ranges</p>
+            </div>
+        </div>
+        <a href="/AcademicYear/CreateEdit" class="adm-btn adm-btn--primary">
+            <i class="bi bi-plus-circle"></i> <span>Add Year</span>
+        </a>
+    </div>
+
+    <div class="adm-table-card">
+        <div class="adm-table-card__body">
+            <div id="data-table"></div>
+        </div>
+    </div>
 </div>
 
-<div class="card shadow-sm">
-    <div class="card-body p-0">
-        <div id="data-table"></div>
-    </div>
-</div>
-
-<!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title text-danger"><i class="bi bi-exclamation-triangle-fill me-2"></i>Confirm Delete</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<div class="adm-modal-backdrop d-none" id="deleteModalBackdrop">
+    <div class="adm-modal">
+        <div class="adm-modal__header">
+            <div class="adm-modal__header-left">
+                <div class="adm-modal__header-icon adm-modal__header-icon--danger">
+                    <i class="bi bi-trash"></i>
+                </div>
+                <div>
+                    <h5 class="adm-modal__title">Confirm Delete</h5>
+                    <p class="adm-modal__subtitle">This action cannot be undone</p>
+                </div>
             </div>
-            <div class="modal-body">
-                Are you sure you want to delete <strong id="deleteName"></strong>?
-                <br><small class="text-muted">This action cannot be undone.</small>
-            </div>
-            <div class="modal-footer border-0 pt-0">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
-                    <i class="bi bi-trash me-1"></i>Delete
-                </button>
-            </div>
+            <button type="button" class="adm-modal__close" id="closeDeleteModal">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <div class="adm-modal__body">
+            Are you sure you want to delete <strong id="deleteName"></strong>?
+            <br><small class="text-muted">This action cannot be undone.</small>
+        </div>
+        <div class="adm-modal__footer">
+            <button class="adm-btn adm-btn--ghost" id="cancelDeleteBtn">Cancel</button>
+            <button class="adm-btn adm-btn--danger" id="confirmDeleteBtn">
+                <i class="bi bi-trash"></i> Delete
+            </button>
         </div>
     </div>
 </div>
 
 @section Scripts {
-<link href="https://unpkg.com/tabulator-tables@6.2.5/dist/css/tabulator_bootstrap5.min.css" rel="stylesheet">
-<script src="https://unpkg.com/tabulator-tables@6.2.5/dist/js/tabulator.min.js"></script>
+    <script>
+        var pendingDeleteId = null;
+        var deleteModal = document.getElementById('deleteModalBackdrop');
 
-<style>
-    .tabulator .tabulator-header { background-color: #f8f9fa; font-weight: 600; }
-    .tabulator-row:hover { background-color: #f1f3f5 !important; }
-    .btn-action { padding: 2px 10px; font-size: 0.8rem; }
-</style>
+        function openDeleteModal(name, id) {
+            pendingDeleteId = id;
+            document.getElementById('deleteName').textContent = name;
+            deleteModal.classList.remove('d-none');
+        }
 
-<script>
-    var pendingDeleteId = null;
-    var deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        function closeDeleteModal() {
+            deleteModal.classList.add('d-none');
+            pendingDeleteId = null;
+        }
 
-    var columns = [
-        { title: "#", formatter: "rownum", hozAlign: "center", width: 50, headerSort: false },
-        { title: "Name", field: "name", headerFilter: "input", minWidth: 150 },
-        { title: "Starts On", field: "startsOn", hozAlign: "center", width: 150 },
-        { title: "Ends On", field: "endsOn", hozAlign: "center", width: 150 },
-        { title: "Status", field: "isActive", hozAlign: "center", width: 100, formatter: function(cell) {
-            return cell.getValue() ? '<span class="badge bg-success">Active</span>' : '<span class="badge bg-secondary">Inactive</span>';
-        }},
-        { title: "Actions", field: "id", hozAlign: "center", headerSort: false, width: 120, formatter: function() {
-            return `
-                <button class="btn btn-warning btn-action edit-btn me-1"><i class="bi bi-pencil-fill"></i></button>
-                <button class="btn btn-danger btn-action delete-btn"><i class="bi bi-trash-fill"></i></button>
-            `;
-        }, cellClick: function(e, cell) {
-            var id = cell.getRow().getData().id;
-            var name = cell.getRow().getData().name;
-            if (e.target.closest(".edit-btn")) window.location.href = `/AcademicYear/CreateEdit/${id}`;
-            if (e.target.closest(".delete-btn")) {
-                pendingDeleteId = id;
-                document.getElementById('deleteName').textContent = name;
-                deleteModal.show();
+        document.getElementById('closeDeleteModal').addEventListener('click', closeDeleteModal);
+        document.getElementById('cancelDeleteBtn').addEventListener('click', closeDeleteModal);
+
+        var columns = [
+            { title: "#", formatter: "rownum", hozAlign: "center", width: 50, headerSort: false },
+            { title: "Name", field: "name", minWidth: 200, cssClass: "entity-cell__name" },
+            { title: "Starts On", field: "startsOn", hozAlign: "center", width: 150 },
+            { title: "Ends On", field: "endsOn", hozAlign: "center", width: 150 },
+            {
+                title: "Status", field: "isActive", hozAlign: "center", width: 110,
+                formatter: function(cell) {
+                    return cell.getValue()
+                        ? '<span class="adm-status adm-status--approved">Active</span>'
+                        : '<span class="adm-status adm-status--rejected">Inactive</span>';
+                }
+            },
+            {
+                title: "Actions", field: "id", hozAlign: "center", headerSort: false, width: 160,
+                formatter: function(cell) {
+                    var d = cell.getRow().getData();
+                    return buildActionGroup([
+                        { url: '/AcademicYear/CreateEdit/' + d.id, className: 'action-btn--edit', icon: 'pencil', title: 'Edit' },
+                        { className: 'action-btn--delete', icon: 'trash', title: 'Delete', onClick: 'openDeleteModal("' + d.name.replace(/"/g, '&quot;') + '", ' + d.id + ')' }
+                    ]);
+                }
             }
-        }}
-    ];
+        ];
 
-    var table = new Tabulator("#data-table", {
-        height: "60vh",
-        layout: "fitColumns",
-        pagination: true,
-        paginationMode: "remote",
-        filterMode: "remote",
-        paginationSize: 15,
-        paginationSizeSelector: [15,25,50,100],
-        ajaxURL: '@Url.Action("GetList", "AcademicYear")',
-        ajaxResponse: function(url, params, response) { return { data: response.data, last_page: response.last_page }; },
-        columns: columns,
-        placeholder: "<div class='p-4 text-center text-muted'>No records found</div>"
-    });
+        var table = new Tabulator("#data-table", {
+            height: "calc(100vh - 250px)",
+            layout: "fitColumns",
+            pagination: true,
+            paginationMode: "remote",
+            filterMode: "remote",
+            paginationSize: 15,
+            paginationSizeSelector: [15,25,50,100],
+            ajaxURL: '@Url.Action("GetList", "AcademicYear")',
+            ajaxResponse: function(url, params, response) { return { data: response.data, last_page: response.last_page }; },
+            columns: columns,
+            placeholder: "<div class='dash-empty'><i class='bi bi-calendar3 fs-1'></i><div class='dash-empty__title'>No Academic Years Found</div><div class='dash-empty__sub'>Create a new academic year to get started.</div></div>"
+        });
 
-    document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
-        if (!pendingDeleteId) return;
-        fetch(`/AcademicYear/Delete/${pendingDeleteId}`)
-            .then(res => res.json())
-            .then(data => {
-                deleteModal.hide();
-                if (data.success) { table.replaceData(); }
-            });
-    });
-</script>
+        document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+            if (!pendingDeleteId) return;
+            fetch(`/AcademicYear/Delete/${pendingDeleteId}`)
+                .then(res => res.json())
+                .then(data => {
+                    closeDeleteModal();
+                    if (data.success) { table.replaceData(); }
+                });
+        });
+    </script>
 }

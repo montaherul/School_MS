@@ -211,20 +211,12 @@
     }
 </div>
 
-<div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
-
 @section Scripts {
     <script>
         function showToast(message, type) {
-            var bg = type === 'success' ? 'bg-success' : 'bg-danger';
-            var container = document.getElementById('toastContainer');
-            var toast = document.createElement('div');
-            toast.className = 'toast align-items-center text-white border-0 ' + bg;
-            toast.innerHTML = '<div class="d-flex"><div class="toast-body">' + message + '</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>';
-            container.appendChild(toast);
-            var bs = new bootstrap.Toast(toast, { delay: 4000 });
-            bs.show();
-            toast.addEventListener('hidden.bs.toast', function () { toast.remove(); });
+            if (type === 'success') toastr.success(message);
+            else if (type === 'error') toastr.error(message);
+            else toastr.warning(message);
         }
 
         function printResult(studentId) {

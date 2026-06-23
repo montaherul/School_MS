@@ -3,8 +3,7 @@
     var name = !string.IsNullOrWhiteSpace(Model.EmployeeFullName) ? Model.EmployeeFullName : "---";
     var code = !string.IsNullOrWhiteSpace(Model.EmployeeIdNo) ? Model.EmployeeIdNo : "---";
     var dept = !string.IsNullOrWhiteSpace(Model.Department) ? Model.Department : "---";
-    var designation = !string.IsNullOrWhiteSpace(Model.Designation) ? Model.Designation : "Office Staff";
-    var joining = !string.IsNullOrWhiteSpace(Model.JoiningDate) ? Model.JoiningDate : "---";
+    var designation = !string.IsNullOrWhiteSpace(Model.Designation) ? Model.Designation : "---";
     var blood = !string.IsNullOrWhiteSpace(Model.BloodGroup) ? Model.BloodGroup : "N/A";
     var mobile = !string.IsNullOrWhiteSpace(Model.MobileNumber) ? Model.MobileNumber : "---";
     var email = !string.IsNullOrWhiteSpace(Model.SchoolEmail) ? Model.SchoolEmail : "---";
@@ -12,100 +11,66 @@
     var eiin = !string.IsNullOrWhiteSpace(Model.SchoolEIIN) ? Model.SchoolEIIN : "";
     var website = !string.IsNullOrWhiteSpace(Model.Website) ? Model.Website.Replace("http://", "").Replace("https://", "") : "";
     var schoolSub = string.Join(" | ", new[] {
-        !string.IsNullOrEmpty(motto) ? motto : null,
         !string.IsNullOrEmpty(eiin) ? "EIIN: " + eiin : null,
         !string.IsNullOrEmpty(website) ? website : null
     }.Where(x => x != null));
     var issueDate = DateTime.Today.ToString("dd MMM yyyy");
     var validUntil = !string.IsNullOrWhiteSpace(Model.ValidUntil) ? Model.ValidUntil : "N/A";
+    var shortName = !string.IsNullOrWhiteSpace(Model.SchoolShortName)
+        ? Model.SchoolShortName
+        : (Model.SchoolName?.Length >= 3 ? Model.SchoolName[..3].ToUpperInvariant() : "SCH");
+    var badgeLabel = !string.IsNullOrWhiteSpace(Model.BadgeLabel) ? Model.BadgeLabel : "STAFF";
+    var signatureLabel = !string.IsNullOrWhiteSpace(Model.SignatureLabel) ? Model.SignatureLabel : "CHAIRMAN";
 }
 
-<div class="idcard idcard-employee">
-    <div class="idcard-inner">
-        <div class="idcard-header">
-            <div class="idcard-logo-box">
-                @if (!string.IsNullOrEmpty(Model.SchoolLogoDataUri))
-                {
-                    <img src="@Model.SchoolLogoDataUri" alt="" />
-                }
-                else
-                {
-                    <span>@Model.SchoolShortName</span>
-                }
-            </div>
-            <div class="idcard-school-info">
-                <div class="idcard-school-name">@Model.SchoolName</div>
-                @if (!string.IsNullOrEmpty(schoolSub))
-                {
-                    <div class="idcard-school-sub">@schoolSub</div>
-                }
-            </div>
-            <div class="idcard-type-badge">Staff</div>
+<div class="id-card-print front employee">
+    <div class="card-header">
+        <div class="logo-box">@shortName</div>
+        <div class="school-details">
+            <h1>@Model.SchoolName</h1>
+            @if (!string.IsNullOrEmpty(schoolSub))
+            {
+                <p class="eiin-web">@schoolSub</p>
+            }
+        </div>
+        <span class="badge-student">@badgeLabel</span>
+    </div>
+
+    <div class="card-body">
+        <div class="photo-container">
+            @if (!string.IsNullOrEmpty(Model.EmployeePhotoDataUri))
+            {
+                <img src="@Model.EmployeePhotoDataUri" class="photo-img" alt="" />
+            }
+            else
+            {
+                <div class="photo-img" style="background:#e2e8f0;display:flex;align-items:center;justify-content:center;color:#64748b;font-size:6pt;font-weight:600;">PHOTO</div>
+            }
         </div>
 
-        <div class="idcard-identity">
-            <div class="idcard-photo-ring">
-                <div class="idcard-photo-inner">
-                    @if (!string.IsNullOrEmpty(Model.EmployeePhotoDataUri))
-                    {
-                        <img src="@Model.EmployeePhotoDataUri" alt="" />
-                    }
-                    else
-                    {
-                        <div class="idcard-photo-placeholder">PHOTO</div>
-                    }
-                </div>
-            </div>
-            <div class="idcard-name">@name</div>
-            <div class="idcard-role-pill">@designation</div>
-        </div>
+        <h2 class="student-name">@name.ToUpperInvariant()</h2>
+        <div class="class-tag">@designation</div>
 
-        <div class="idcard-data"@if (!string.IsNullOrEmpty(Model.SchoolLogoDataUri)) { <text> style="--watermark: url('@Model.SchoolLogoDataUri')"</text> }>
-            <table class="idcard-grid">
-                <tr>
-                    <td class="idcard-cell-label">Emp Code</td>
-                    <td class="idcard-cell-value">@code</td>
-                    <td class="idcard-cell-label">Department</td>
-                    <td class="idcard-cell-value">@dept</td>
-                </tr>
-                <tr>
-                    <td class="idcard-cell-label">Designation</td>
-                    <td class="idcard-cell-value">@designation</td>
-                    <td class="idcard-cell-label">Joining</td>
-                    <td class="idcard-cell-value">@joining</td>
-                </tr>
-                <tr>
-                    <td class="idcard-cell-label">Blood</td>
-                    <td class="idcard-cell-value">@blood</td>
-                    <td class="idcard-cell-label">Mobile</td>
-                    <td class="idcard-cell-value">@mobile</td>
-                </tr>
-                <tr>
-                    <td class="idcard-cell-label">Email</td>
-                    <td class="idcard-cell-value" colspan="3">@email</td>
-                </tr>
-            </table>
-        </div>
+        <div class="info-grid-front">
+            <span class="lbl">EMP CODE</span><span class="val highlight">@code</span>
+            <span class="lbl">DEPARTMENT</span><span class="val">@dept</span>
 
-        <div class="idcard-footer">
-            <div class="idcard-validity">
-                <div class="idcard-validity-row">
-                    <span class="idcard-validity-label">Issue</span>
-                    <span class="idcard-validity-value">@issueDate</span>
-                </div>
-                <div class="idcard-validity-row">
-                    <span class="idcard-validity-label">Valid</span>
-                    <span class="idcard-validity-value">@validUntil</span>
-                </div>
-            </div>
-            <div class="idcard-signature">
-                @if (!string.IsNullOrEmpty(Model.SchoolSealDataUri))
-                {
-                    <img src="@Model.SchoolSealDataUri" alt="" class="idcard-signature-seal" />
-                }
-                <div class="idcard-signature-line"></div>
-                <div class="idcard-signature-label">Authorized</div>
-            </div>
+            <span class="lbl">DESIGNATION</span><span class="val">@designation</span>
+            <span class="lbl">MOBILE</span><span class="val">@mobile</span>
+
+            <span class="lbl">BLOOD</span><span class="val">@blood</span>
+            <span class="lbl">EMAIL</span><span class="val" style="font-size:5.5pt;word-break:break-all;">@email</span>
+        </div>
+    </div>
+
+    <div class="card-footer-front">
+        <div class="date-meta">
+            <div><strong>ISSUE:</strong> @issueDate</div>
+            <div><strong>VALID:</strong> @validUntil</div>
+        </div>
+        <div class="signature-area">
+            <div class="sig-line"></div>
+            <span>@signatureLabel</span>
         </div>
     </div>
 </div>

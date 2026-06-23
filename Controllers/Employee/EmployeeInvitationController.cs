@@ -72,6 +72,7 @@ public class EmployeeInvitationController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     [RequirePermission("Employees.Invite")]
     public async Task<IActionResult> Resend(int id, CancellationToken ct)
     {
@@ -83,6 +84,7 @@ public class EmployeeInvitationController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     [RequirePermission("Employees.Invite")]
     public async Task<IActionResult> Cancel(int id, CancellationToken ct)
     {

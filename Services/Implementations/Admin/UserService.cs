@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using SchoolManagementSystem.Helpers.Security;
 using SchoolManagementSystem.Models.DTOs.Common;
 using SchoolManagementSystem.Models.Entities.Auth;
@@ -15,11 +17,13 @@ public class UserService : IUserService
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IPasswordHashService _passwordHashService;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public UserService(IUnitOfWork unitOfWork, IPasswordHashService passwordHashService)
+    public UserService(IUnitOfWork unitOfWork, IPasswordHashService passwordHashService, IHttpContextAccessor httpContextAccessor)
     {
         _unitOfWork = unitOfWork;
         _passwordHashService = passwordHashService;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     public async Task<PagedResult<UserListItemVm>> GetPagedAsync(
@@ -76,11 +80,8 @@ public class UserService : IUserService
             }
             else if (userType == "Guardian")
             {
-                var guardianUserIds = await _unitOfWork.Repository<GdnEntity>().Query().AsNoTracking()
-                    .Where(g => g.UserId != null && !g.IsDeleted)
-                    .Select(g => g.UserId!.Value)
-                    .ToListAsync(ct);
-                query = query.Where(u => guardianUserIds.Contains(u.Id));
+                query = query.Where(u => _unitOfWork.Repository<GdnEntity>().Query().AsNoTracking()
+                    .Any(g => g.UserId == u.Id && !g.IsDeleted));
             }
             // "System" type = users with no link to Employee, Guardian, or Student role
         }
@@ -98,14 +99,24 @@ public class UserService : IUserService
             _ => isDesc ? query.OrderByDescending(u => u.Id) : query.OrderBy(u => u.Id)
         };
 
-        var users = await query
-            .Include(u => u.UserRoles).ThenInclude(ur => ur.Role)
+        var rawUsers = await query
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
+            .Select(u => new
+            {
+                u.Id,
+                u.UserName,
+                u.Email,
+                u.PhoneNumber,
+                u.Status,
+                u.IsDeleted,
+                RolesText = string.Join(", ", u.UserRoles.Where(ur => ur.Role != null).Select(ur => ur.Role.Name).Distinct().OrderBy(name => name)),
+                IsStudent = u.UserRoles.Any(ur => ur.Role != null && ur.Role.Name == "Student")
+            })
             .ToListAsync(ct);
 
         // Fetch linked entity data for Employee and Guardian lookups
-        var userIds = users.Select(u => u.Id).ToList();
+        var userIds = rawUsers.Select(u => u.Id).ToList();
 
         var employeeMap = await _unitOfWork.Repository<EmpEntity>().Query().AsNoTracking()
             .Where(e => e.UserId.HasValue && userIds.Contains(e.UserId.Value) && !e.IsDeleted)
@@ -117,7 +128,7 @@ public class UserService : IUserService
             .Select(g => new { g.UserId, g.FullName, PhotoPath = g.PhotoPath ?? "" })
             .ToDictionaryAsync(g => g.UserId!.Value, ct);
 
-        var items = users.Select(u =>
+        var items = rawUsers.Select(u =>
         {
             string userType;
             string linkedEntityName;
@@ -137,7 +148,7 @@ public class UserService : IUserService
                 linkedEntityName = gdn.FullName;
                 profilePicturePath = gdn.PhotoPath;
             }
-            else if (u.UserRoles.Any(ur => ur.Role != null && ur.Role.Name == "Student"))
+            else if (u.IsStudent)
             {
                 userType = "Student";
                 linkedEntityName = "—";
@@ -160,11 +171,7 @@ public class UserService : IUserService
                 LinkedEntityName = linkedEntityName,
                 IsTeachingStaff = isTeachingStaff,
                 ProfilePicturePath = profilePicturePath,
-                RolesText = string.Join(", ",
-                    u.UserRoles.Where(ur => ur.Role != null)
-                               .Select(ur => ur.Role!.Name)
-                               .Distinct()
-                               .OrderBy(name => name))
+                RolesText = u.RolesText
             };
         }).ToList();
 
@@ -287,6 +294,8 @@ public class UserService : IUserService
         if (model.SelectedRoleIds != null && model.SelectedRoleIds.Count > 0)
             await AssignRolesAsync(user.Id, model.SelectedRoleIds, null, ct);
 
+        await LogAuditAsync("User", "User.Create", user.Id.ToString(), $"Created user: {user.UserName} ({user.Email})", ct);
+
         return user.Id;
     }
 
@@ -318,7 +327,17 @@ public class UserService : IUserService
         await _unitOfWork.SaveChangesAsync(ct);
 
         if (model.SelectedRoleIds != null)
-            await AssignRolesAsync(user.Id, model.SelectedRoleIds, null, ct);
+            await AssignRolesAsync(user.Id, model.SelectedRoleIds, GetCurrentUserId(), ct);
+
+        await LogAuditAsync("User", "User.Update", user.Id.ToString(), $"Updated user: {user.UserName} ({user.Email})", ct);
+    }
+
+    private int? GetCurrentUserId()
+    {
+        var userIdClaim = _httpContextAccessor?.HttpContext?.User?.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (int.TryParse(userIdClaim, out var uid))
+            return uid;
+        return null;
     }
 
     public async Task DeleteAsync(int id, string updatedBy, CancellationToken ct = default)
@@ -332,6 +351,8 @@ public class UserService : IUserService
         user.UpdatedAt = DateTime.UtcNow;
 
         await _unitOfWork.SaveChangesAsync(ct);
+
+        await LogAuditAsync("User", "User.Delete", id.ToString(), $"Deleted user: {user.UserName} ({user.Email})", ct);
     }
 
     public async Task AssignRolesAsync(int userId, IEnumerable<int> roleIds, int? performedByUserId = null, CancellationToken ct = default)
@@ -402,6 +423,27 @@ public class UserService : IUserService
             .OrderBy(r => r.Name)
             .Select(r => new RoleOptionVm { Id = r.Id, Name = r.Name, Description = r.Description })
             .ToListAsync(ct);
+    }
+
+    private async Task LogAuditAsync(string module, string action, string entityId, string details, CancellationToken ct = default)
+    {
+        var httpContext = _httpContextAccessor?.HttpContext;
+        var userIdStr = httpContext?.User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        int? userId = userIdStr != null && int.TryParse(userIdStr, out var uid) ? uid : null;
+
+        var log = new AuditLog
+        {
+            UserId = userId,
+            Module = module,
+            Action = action,
+            IpAddress = httpContext?.Connection?.RemoteIpAddress?.ToString(),
+            Details = details.Length > 1000 ? details[..1000] : details,
+            CreatedBy = httpContext?.User?.Identity?.Name ?? "system",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _unitOfWork.Repository<AuditLog>().AddAsync(log, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
     }
 
     private static void ValidatePasswordComplexity(string password)

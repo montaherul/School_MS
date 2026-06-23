@@ -18,24 +18,24 @@
   print-color-adjust: exact;
 }
 
+@page { size: 53.98mm 85.60mm; margin: 0; }
+
 html, body {
-  background: #f4f6fb;
-  color: #0d1b4b;
-  font-family: "Poppins", "Segoe UI", "Arial", "Noto Sans Bengali", sans-serif;
-  font-size: 7px;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: #ffffff;
+  -webkit-print-color-adjust: exact;
+  print-color-adjust: exact;
 }
 
-@page { margin: 0; size: 53.98mm 85.60mm; }
-
-/* ══════════════════════════════════════════════════════════
-   PAGE CONTAINERS
-   ══════════════════════════════════════════════════════════ */
-
 .page-single {
-  width: 53.98mm;
-  height: 85.6mm;
-  overflow: hidden;
   page-break-after: always;
+  width: 53.98mm;
+  height: 85.60mm;
+  overflow: hidden;
+  box-sizing: border-box;
+  position: relative;
 }
 .page-single:last-child { page-break-after: auto; }
 
@@ -43,7 +43,7 @@ html, body {
   width: 297mm;
   min-height: 210mm;
   padding: 4mm 5mm;
-  background: #f4f6fb;
+  background: #f0f2f5;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 3mm;
@@ -58,612 +58,380 @@ html, body {
    CARD SHELL
    ══════════════════════════════════════════════════════════ */
 
-.idcard {
-  width: 100%;
-  max-width: 53.98mm;
-  height: 85.6mm;
-  overflow: hidden;
+.id-card-print {
+  width: 53.98mm;
+  height: 85.60mm;
+  display: flex;
+  flex-direction: column;
   background: #ffffff;
-  border: 0.15mm solid #dde3f0;
+  box-sizing: border-box;
+  position: relative;
+  border: 0.15mm solid #e2e8f0;
   border-radius: 3mm;
-  box-shadow: 0 0.3mm 1.5mm rgba(13,27,75,0.12);
-  display: flex;
-  flex-direction: column;
-  position: relative;
-}
-
-.idcard-inner {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  position: relative;
-  z-index: 1;
+  overflow: hidden;
 }
 
 /* ══════════════════════════════════════════════════════════
-   HEADER — gold logo box + navy gradient
+   FRONT — HEADER
    ══════════════════════════════════════════════════════════ */
 
-.idcard-header {
-  padding: 1.2mm 2mm 1mm;
-  color: #fff;
-  background: linear-gradient(135deg, #0d1b4b 0%, #1e3278 100%);
+.id-card-print.front .card-header {
+  background: linear-gradient(135deg, #0d2c6c 0%, #1a4499 100%);
+  padding: 3.5mm 2.5mm;
   display: flex;
   align-items: center;
-  gap: 1.2mm;
   position: relative;
-  overflow: hidden;
+  height: 11mm;
+  box-sizing: border-box;
   flex-shrink: 0;
 }
 
-.idcard-header::after {
-  content: '';
-  position: absolute;
-  right: -4mm;
-  top: -4mm;
-  width: 14mm;
-  height: 14mm;
-  border-radius: 50%;
-  background: rgba(232,184,75,0.10);
-  pointer-events: none;
-}
-
-.idcard-logo-box {
-  width: 8mm;
-  height: 8mm;
-  background: #e8b84b;
-  border-radius: 1.2mm;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
+.logo-box {
+  background: #f1c40f;
+  color: #0d2c6c;
+  font-weight: 800;
+  padding: 1.5mm;
+  border-radius: 1mm;
+  font-size: 8pt;
+  line-height: 1;
+  margin-right: 1.5mm;
   flex-shrink: 0;
-  box-shadow: 0 0.2mm 0.6mm rgba(0,0,0,0.18);
 }
 
-.idcard-logo-box img {
-  width: 5.5mm;
-  height: 5.5mm;
-  object-fit: contain;
-}
-
-.idcard-logo-box span {
-  color: #0d1b4b;
-  font-size: 5pt;
-  font-weight: 900;
-}
-
-.idcard-school-info {
-  flex: 1;
+.school-details {
+  flex-grow: 1;
   min-width: 0;
 }
 
-.idcard-school-name {
-  font-size: 9px;
-  font-weight: 800;
+.school-details h1 {
+  color: #ffffff;
+  font-size: 6.5pt;
+  margin: 0;
+  font-weight: 700;
   line-height: 1.2;
-  letter-spacing: 0.1px;
   word-break: break-word;
   overflow-wrap: break-word;
-  color: #fff;
 }
 
-.idcard-school-sub {
-  font-size: 5.5px;
-  font-weight: 500;
-  color: rgba(255,255,255,0.55);
-  letter-spacing: 0.15px;
-  line-height: 1.2;
+.eiin-web {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 4.5pt;
+  margin: 0.5mm 0 0 0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.idcard-type-badge {
-  background: #e8b84b;
-  color: #0d1b4b;
-  font-size: 6px;
+.badge-student {
+  position: absolute;
+  top: 3.5mm;
+  right: 2mm;
+  background: rgba(255, 255, 255, 0.2);
+  color: #f1c40f;
+  font-size: 5pt;
   font-weight: 700;
-  padding: 0.3mm 1.5mm;
+  padding: 0.5mm 1.5mm;
   border-radius: 2mm;
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
-  flex-shrink: 0;
+  letter-spacing: 1px;
   white-space: nowrap;
 }
 
 /* ══════════════════════════════════════════════════════════
-   IDENTITY BAND — photo + name + role pill
+   FRONT — BODY
    ══════════════════════════════════════════════════════════ */
 
-.idcard-identity {
-  background: linear-gradient(180deg, #1e3278 0%, #0d1b4b 100%);
-  padding: 1.5mm 2mm 1mm;
+.id-card-print.front .card-body {
+  padding: 3mm 3mm 1mm 3mm;
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.6mm;
-  position: relative;
-  overflow: hidden;
-  flex-shrink: 0;
-}
-
-.idcard-identity::before {
-  content: '';
-  position: absolute;
-  bottom: -5mm;
-  left: -5mm;
-  width: 22mm;
-  height: 22mm;
-  border: 1.5px solid rgba(232,184,75,0.08);
-  border-radius: 50%;
-  pointer-events: none;
-}
-
-.idcard-identity::after {
-  content: '';
-  position: absolute;
-  bottom: -8mm;
-  left: -8mm;
-  width: 30mm;
-  height: 30mm;
-  border: 1.5px solid rgba(232,184,75,0.05);
-  border-radius: 50%;
-  pointer-events: none;
-}
-
-.idcard-photo-ring {
-  width: 22mm;
-  height: 22mm;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #e8b84b, #f5d07a);
-  padding: 0.35mm;
-  box-shadow: 0 0 0 0.35mm rgba(232,184,75,0.20);
-  flex-shrink: 0;
-}
-
-.idcard-photo-inner {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background: #2a3f7e;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   overflow: hidden;
 }
 
-.idcard-photo-inner img {
-  width: 100%;
-  height: 100%;
+.photo-container {
+  margin-bottom: 1.5mm;
+}
+
+.photo-img {
+  width: 15mm;
+  height: 18mm;
+  border: 0.6mm solid #f1c40f;
+  border-radius: 50%;
   object-fit: cover;
-  border-radius: 50%;
+  display: block;
 }
 
-.idcard-photo-placeholder {
-  font-size: 7px;
-  color: rgba(255,255,255,0.4);
+.student-name {
+  color: #0d2c6c;
+  font-size: 11pt;
   font-weight: 700;
-  text-align: center;
-  line-height: 1.2;
-}
-
-.idcard-name {
-  font-size: 17px;
-  font-weight: 800;
-  color: #fff;
-  letter-spacing: 0.3px;
+  margin: 0 0 1mm 0;
   text-align: center;
   line-height: 1.1;
-  text-transform: uppercase;
   word-break: break-word;
   overflow-wrap: break-word;
 }
 
-.idcard-role-pill {
-  background: #e8b84b;
-  color: #0d1b4b;
-  font-size: 8px;
+.class-tag {
+  background: #f1c40f;
+  color: #0d2c6c;
   font-weight: 700;
-  padding: 0.2mm 2mm;
-  border-radius: 2.5mm;
-  letter-spacing: 0.3px;
+  font-size: 7.5pt;
+  padding: 0.5mm 4mm;
+  border-radius: 3mm;
+  margin-bottom: 2mm;
   text-align: center;
   white-space: nowrap;
 }
 
-/* ══════════════════════════════════════════════════════════
-   DATA GRID — 2-column bordered cells
-   ══════════════════════════════════════════════════════════ */
-
-.idcard-data {
-  flex: 1;
-  padding: 1mm 2mm 0.5mm;
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  overflow: hidden;
-}
-
-.idcard-data::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background-image: var(--watermark, none);
-  background-size: 14mm auto;
-  background-position: center;
-  background-repeat: no-repeat;
-  opacity: 0.035;
-  pointer-events: none;
-}
-
-.idcard-grid {
+/* Front info grid — 4 columns, serial left-to-right top-to-bottom */
+.info-grid-front {
+  display: grid;
+  grid-template-columns: 14mm 10mm 12mm 11mm;
+  row-gap: 1.2mm;
   width: 100%;
-  border-collapse: collapse;
-  border: 0.08mm solid #dde3f0;
-  border-radius: 1mm;
-  overflow: hidden;
+  font-size: 6.5pt;
+  line-height: 1.2;
 }
 
-.idcard-grid td {
-  padding: 0.3mm 0.8mm;
-  border-bottom: 0.08mm solid #dde3f0;
-  border-right: 0.08mm solid #dde3f0;
-  vertical-align: middle;
-  word-break: break-word;
-  overflow-wrap: break-word;
-}
-
-.idcard-grid td:nth-child(2n) {
-  border-right: none;
-}
-
-.idcard-grid tr:last-child td {
-  border-bottom: none;
-}
-
-.idcard-grid tr:nth-child(even) td {
-  background: rgba(244,246,251,0.4);
-}
-
-.idcard-cell-label {
-  font-size: 5.5px;
+.info-grid-front .lbl {
+  color: #64748b;
   font-weight: 600;
-  color: #6b7a99;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  line-height: 1.2;
-  width: 32%;
 }
 
-.idcard-cell-value {
-  font-size: 7px;
+.info-grid-front .val {
+  color: #1e293b;
   font-weight: 700;
-  color: #0d1b4b;
-  line-height: 1.2;
-  width: 18%;
+}
+
+.info-grid-front .val.highlight {
+  color: #0d2c6c;
 }
 
 /* ══════════════════════════════════════════════════════════
-   FOOTER — navy gradient strip
+   FRONT — FOOTER
    ══════════════════════════════════════════════════════════ */
 
-.idcard-footer {
-  padding: 0.5mm 2mm;
-  background: linear-gradient(90deg, #0d1b4b 0%, #1e3278 100%);
-  flex-shrink: 0;
+.card-footer-front {
+  background: #f8fafc;
+  padding: 2mm 3mm;
+  border-top: 0.2mm solid #e2e8f0;
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  position: relative;
+  align-items: flex-end;
+  height: 9mm;
+  box-sizing: border-box;
+  flex-shrink: 0;
 }
 
-.idcard-footer::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 2mm;
-  right: 2mm;
-  height: 0.1mm;
-  background: linear-gradient(90deg, transparent, #e8b84b, transparent);
+.date-meta {
+  font-size: 5.5pt;
+  color: #1e293b;
+  line-height: 1.4;
 }
 
-.idcard-validity {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-}
-
-.idcard-validity-row {
-  display: flex;
-  gap: 0.5mm;
-  align-items: center;
-}
-
-.idcard-validity-label {
-  font-size: 5px;
-  color: rgba(255,255,255,0.4);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-  min-width: 4.5mm;
-}
-
-.idcard-validity-value {
-  font-size: 6px;
-  color: #fff;
-  font-weight: 600;
-}
-
-.idcard-signature {
+.signature-area {
   text-align: center;
+  width: 18mm;
 }
 
-.idcard-signature-seal {
-  max-width: 7mm;
-  max-height: 1.8mm;
-  vertical-align: middle;
+.sig-line {
+  border-bottom: 0.2mm solid #64748b;
+  margin-bottom: 0.8mm;
+  height: 4mm;
 }
 
-.idcard-signature-line {
-  width: 10mm;
-  height: 0.08mm;
-  margin: 0.02mm auto;
-  background: rgba(255,255,255,0.12);
-}
-
-.idcard-signature-label {
-  font-size: 5px;
-  color: rgba(255,255,255,0.35);
+.signature-area span {
+  font-size: 5pt;
   font-weight: 700;
+  color: #64748b;
+  letter-spacing: 0.5px;
   text-transform: uppercase;
-  letter-spacing: 0.35px;
-  line-height: 1.2;
 }
 
 /* ══════════════════════════════════════════════════════════
-   BACK CARD
+   BACK
    ══════════════════════════════════════════════════════════ */
 
-.idcard-back-header {
-  padding: 0.6mm 2mm;
-  background: linear-gradient(135deg, #0d1b4b 0%, #1e3278 100%);
+.id-card-print.back .section-title-bar {
+  background: #0d2c6c;
+  color: #ffffff;
   text-align: center;
-  position: relative;
-  flex-shrink: 0;
-}
-
-.idcard-back-header::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: repeating-linear-gradient(
-    45deg,
-    transparent,
-    transparent 1.8mm,
-    rgba(255,255,255,0.015) 1.8mm,
-    rgba(255,255,255,0.015) 2mm
-  );
-  pointer-events: none;
-}
-
-.idcard-back-title {
-  font-size: 6.5px;
-  font-weight: 800;
-  color: #fff;
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
-  position: relative;
-  z-index: 1;
-}
-
-.idcard-back-body {
-  flex: 1;
-  padding: 0.6mm 2mm 0.3mm;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5mm;
-}
-
-.idcard-back-section-title {
-  font-size: 5.5px;
+  font-size: 7.5pt;
   font-weight: 700;
-  color: #0d1b4b;
-  text-transform: uppercase;
+  padding: 2.5mm 0;
   letter-spacing: 0.5px;
-  padding-bottom: 0.1mm;
-  border-bottom: 0.12mm solid #e8b84b;
-  margin-bottom: 0.15mm;
-}
-
-.idcard-back-info-row {
-  display: flex;
-  align-items: baseline;
-  gap: 0.5mm;
-  padding: 0.05mm 0;
-}
-
-.idcard-back-info-label {
-  font-size: 5px;
-  color: #6b7a99;
-  font-weight: 600;
-  min-width: 10.5mm;
   flex-shrink: 0;
-  text-transform: uppercase;
-  letter-spacing: 0.1px;
 }
 
-.idcard-back-info-value {
-  font-size: 6px;
-  color: #0d1b4b;
-  font-weight: 600;
-  line-height: 1.2;
-}
-
-.idcard-back-rules {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+.id-card-print.back .back-body {
+  padding: 4mm 3.5mm;
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.05mm;
+  overflow: hidden;
 }
 
-.idcard-back-rules li {
-  font-size: 5.5px;
-  color: #0d1b4b;
-  font-weight: 400;
-  padding-left: 1.2mm;
-  position: relative;
+.id-card-print.back .info-group {
+  margin-bottom: 4mm;
+}
+
+.id-card-print.back .info-group h3 {
+  font-size: 7.5pt;
+  color: #0d2c6c;
+  border-bottom: 0.4mm solid #f1c40f;
+  margin: 0 0 2mm 0;
+  padding-bottom: 0.6mm;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
+}
+
+.grid-info-back {
+  display: grid;
+  grid-template-columns: 24mm 1fr;
+  row-gap: 1.6mm;
+  font-size: 7pt;
   line-height: 1.3;
 }
 
-.idcard-back-rules li::before {
-  content: '\203A';
-  position: absolute;
-  left: 0;
-  color: #e8b84b;
-  font-weight: 700;
-  font-size: 8px;
-  top: -0.5px;
+.grid-info-back .lbl {
+  color: #64748b;
+  font-weight: 600;
 }
 
-/* QR row */
-.idcard-back-qr {
-  display: flex;
-  align-items: center;
-  gap: 1mm;
-  background: #f4f6fb;
-  border-radius: 1mm;
-  padding: 0.3mm 1mm;
-  border: 0.08mm solid #dde3f0;
+.grid-info-back .val {
+  color: #1e293b;
+  font-weight: 700;
+}
+
+.back-bottom-row {
   margin-top: auto;
-  margin-bottom: 0.1mm;
-}
-
-.idcard-back-qr-box {
-  width: 7mm;
-  height: 7mm;
-  flex-shrink: 0;
-  border-radius: 0.6mm;
-  overflow: hidden;
-}
-
-.idcard-back-qr-box img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.idcard-back-qr-text {
   display: flex;
-  flex-direction: column;
-  gap: 0;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-top: 0.3mm solid #e2e8f0;
+  padding-top: 3mm;
 }
 
-.idcard-back-qr-title {
-  font-size: 6px;
-  font-weight: 700;
-  color: #0d1b4b;
+.rules-box h3 {
+  font-size: 7.5pt;
+  margin: 0 0 1.5mm 0;
+  color: #0d2c6c;
+  text-transform: uppercase;
   letter-spacing: 0.3px;
 }
 
-.idcard-back-qr-sub {
-  font-size: 5px;
-  color: #6b7a99;
-  font-weight: 400;
+.rules-box ul {
+  margin: 0;
+  padding-left: 3.5mm;
+  font-size: 6pt;
+  color: #64748b;
+  line-height: 1.5;
 }
 
-.idcard-back-qr-id {
-  font-size: 6px;
-  font-weight: 700;
-  color: #0d1b4b;
-  letter-spacing: 0.2px;
+.rules-box li::marker {
+  color: #f1c40f;
 }
 
-/* Back footer */
-.idcard-back-footer {
-  padding: 0.3mm 2mm;
-  text-align: center;
-  background: linear-gradient(90deg, #0d1b4b 0%, #1e3278 100%);
+.qr-box {
+  display: flex;
+  align-items: center;
+  gap: 2mm;
+  background: #f8fafc;
+  padding: 1.2mm;
+  border-radius: 1mm;
+  border: 0.2mm solid #e2e8f0;
   flex-shrink: 0;
 }
 
-.idcard-back-footer span {
-  color: rgba(255,255,255,0.25);
-  font-size: 4.5px;
-  font-weight: 600;
-  letter-spacing: 0.2px;
+.qr-img {
+  width: 12mm;
+  height: 12mm;
+  display: block;
+}
+
+.qr-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+}
+
+.qr-text strong {
+  font-size: 7.5pt;
+  color: #0d2c6c;
+}
+
+.qr-text span {
+  font-size: 6pt;
+  color: #64748b;
+}
+
+.qr-text small {
+  font-size: 5.5pt;
+  font-weight: 700;
+  margin-top: 0.5mm;
+  color: #0d2c6c;
+}
+
+.card-footer-back {
+  background: #0d2c6c;
+  color: rgba(255, 255, 255, 0.9);
+  text-align: center;
+  font-size: 5.5pt;
+  padding: 2.5mm 0;
+  font-weight: 500;
+  flex-shrink: 0;
 }
 
 /* ══════════════════════════════════════════════════════════
-   EMPLOYEE — green theme
+   EMPLOYEE — green theme overrides
    ══════════════════════════════════════════════════════════ */
 
-.idcard-employee .idcard-header {
+.id-card-print.front.employee .card-header {
   background: linear-gradient(135deg, #1a2e1a 0%, #2d5a2d 100%);
 }
 
-.idcard-employee .idcard-header::after {
-  background: rgba(126,200,126,0.10);
-}
-
-.idcard-employee .idcard-logo-box {
+.id-card-print.front.employee .logo-box {
   background: #7ec87e;
   color: #1a2e1a;
 }
 
-.idcard-employee .idcard-logo-box span {
+.id-card-print.front.employee .badge-student {
+  color: #7ec87e;
+}
+
+.id-card-print.front.employee .student-name {
   color: #1a2e1a;
 }
 
-.idcard-employee .idcard-identity {
-  background: linear-gradient(180deg, #2d5a2d 0%, #1a2e1a 100%);
-}
-
-.idcard-employee .idcard-identity::before,
-.idcard-employee .idcard-identity::after {
-  border-color: rgba(126,200,126,0.10);
-}
-
-.idcard-employee .idcard-photo-ring {
-  background: linear-gradient(135deg, #7ec87e, #a8d8a8);
-  box-shadow: 0 0 0 0.35mm rgba(126,200,126,0.20);
-}
-
-.idcard-employee .idcard-role-pill {
+.id-card-print.front.employee .class-tag {
   background: #7ec87e;
   color: #1a2e1a;
 }
 
-.idcard-employee .idcard-type-badge {
-  background: #7ec87e;
+.id-card-print.front.employee .photo-img {
+  border-color: #7ec87e;
+}
+
+.id-card-print.front.employee .info-grid-front .val.highlight {
   color: #1a2e1a;
 }
 
-.idcard-employee .idcard-footer {
-  background: linear-gradient(90deg, #1a2e1a 0%, #2d5a2d 100%);
+.id-card-print.back.employee .section-title-bar {
+  background: #1a2e1a;
 }
 
-.idcard-employee .idcard-footer::before {
-  background: linear-gradient(90deg, transparent, #7ec87e, transparent);
-}
-
-.idcard-employee .idcard-back-header {
-  background: linear-gradient(135deg, #1a2e1a 0%, #2d5a2d 100%);
-}
-
-.idcard-employee .idcard-back-section-title {
+.id-card-print.back.employee .info-group h3 {
   border-bottom-color: #7ec87e;
 }
 
-.idcard-employee .idcard-back-rules li::before {
-  color: #4caf50;
+.id-card-print.back.employee .rules-box li::marker {
+  color: #7ec87e;
 }
 
-.idcard-employee .idcard-back-footer {
-  background: linear-gradient(90deg, #1a2e1a 0%, #2d5a2d 100%);
+.id-card-print.back.employee .card-footer-back {
+  background: #1a2e1a;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -671,7 +439,7 @@ html, body {
    ══════════════════════════════════════════════════════════ */
 
 @media print {
-  .idcard {
+  .id-card-print {
     box-shadow: none;
     border-color: #b0b8c8;
   }
@@ -683,73 +451,47 @@ html, body {
 
             <div class="page-single">
                 
-<div class="idcard">
-    <div class="idcard-inner">
-        <div class="idcard-header">
-            <div class="idcard-logo-box">
-                    <span>CHA</span>
-            </div>
-            <div class="idcard-school-info">
-                <div class="idcard-school-name">Chattogram Collegiate School &amp; College</div>
-                    <div class="idcard-school-sub">EIIN: 104298 | school-ms-7l3e.onrender.com/</div>
-            </div>
-            <div class="idcard-type-badge">Student</div>
+<div class="id-card-print front">
+    <div class="card-header">
+        <div class="logo-box">CHA</div>
+        <div class="school-details">
+            <h1>Chattogram Collegiate School &amp; College</h1>
+                <p class="eiin-web">EIIN: 104298 | school-ms-7l3e.onrender.com/</p>
+        </div>
+        <span class="badge-student">STUDENT</span>
+    </div>
+
+    <div class="card-body">
+        <div class="photo-container">
+                <div class="photo-img" style="background:#e2e8f0;display:flex;align-items:center;justify-content:center;color:#64748b;font-size:6pt;font-weight:600;">PHOTO</div>
         </div>
 
-        <div class="idcard-identity">
-            <div class="idcard-photo-ring">
-                <div class="idcard-photo-inner">
-                        <div class="idcard-photo-placeholder">PHOTO</div>
-                </div>
-            </div>
-            <div class="idcard-name">Hasan Ali</div>
-            <div class="idcard-role-pill">Class Eight – A</div>
-        </div>
+        <h2 class="student-name">SHAH ALAM</h2>
+        <div class="class-tag">Class Ten – A</div>
 
-        <div class="idcard-data">
-            <table class="idcard-grid">
-                <tr>
-                    <td class="idcard-cell-label">Student ID</td>
-                    <td class="idcard-cell-value">STU-2026-0022</td>
-                    <td class="idcard-cell-label">Roll</td>
-                    <td class="idcard-cell-value">2</td>
-                </tr>
-                <tr>
-                    <td class="idcard-cell-label">Class</td>
-                    <td class="idcard-cell-value">Class Eight</td>
-                    <td class="idcard-cell-label">Section</td>
-                    <td class="idcard-cell-value">A</td>
-                </tr>
-                <tr>
-                    <td class="idcard-cell-label">Group</td>
-                    <td class="idcard-cell-value">---</td>
-                    <td class="idcard-cell-label">Blood</td>
-                    <td class="idcard-cell-value">N/A</td>
-                </tr>
-                <tr>
-                    <td class="idcard-cell-label">DOB</td>
-                    <td class="idcard-cell-value">15 Aug 2011</td>
-                    <td class="idcard-cell-label">Session</td>
-                    <td class="idcard-cell-value">2026</td>
-                </tr>
-            </table>
-        </div>
+        <div class="info-grid-front">
+            <span class="lbl">STUDENT ID</span><span class="val highlight">STU-2026-0027</span>
+            <span class="lbl">ROLL</span><span class="val">1</span>
 
-        <div class="idcard-footer">
-            <div class="idcard-validity">
-                <div class="idcard-validity-row">
-                    <span class="idcard-validity-label">Issue</span>
-                    <span class="idcard-validity-value">23 Jun 2026</span>
-                </div>
-                <div class="idcard-validity-row">
-                    <span class="idcard-validity-label">Valid</span>
-                    <span class="idcard-validity-value">23 Jun 2027</span>
-                </div>
-            </div>
-            <div class="idcard-signature">
-                <div class="idcard-signature-line"></div>
-                <div class="idcard-signature-label">Principal</div>
-            </div>
+            <span class="lbl">CLASS</span><span class="val">Class Ten</span>
+            <span class="lbl">SECTION</span><span class="val">A</span>
+
+            <span class="lbl">GROUP</span><span class="val">Science</span>
+            <span class="lbl">BLOOD</span><span class="val">N/A</span>
+
+            <span class="lbl">DOB</span><span class="val">15 Jan 2008</span>
+            <span class="lbl">SESSION</span><span class="val">2026</span>
+        </div>
+    </div>
+
+    <div class="card-footer-front">
+        <div class="date-meta">
+            <div><strong>ISSUE:</strong> 24 Jun 2026</div>
+            <div><strong>VALID:</strong> 24 Jun 2027</div>
+        </div>
+        <div class="signature-area">
+            <div class="sig-line"></div>
+            <span>PRINCIPAL</span>
         </div>
     </div>
 </div>
@@ -757,77 +499,44 @@ html, body {
             </div>
             <div class="page-single">
                 
-<div class="idcard idcard-back">
-    <div class="idcard-inner">
-        <div class="idcard-back-header">
-            <div class="idcard-back-title">Important Information</div>
-        </div>
+<div class="id-card-print back">
+    <div class="section-title-bar">IMPORTANT INFORMATION</div>
 
-        <div class="idcard-back-body">
-            <div class="idcard-back-section-title">Guardian Information</div>
-            <div class="idcard-back-info-row">
-                <span class="idcard-back-info-label">Father</span>
-                <span class="idcard-back-info-value">Sobahan Ali</span>
-            </div>
-            <div class="idcard-back-info-row">
-                <span class="idcard-back-info-label">Mother</span>
-                <span class="idcard-back-info-value">Rokeya Begum</span>
-            </div>
-            <div class="idcard-back-info-row">
-                <span class="idcard-back-info-label">Guardian Mob</span>
-                <span class="idcard-back-info-value">---</span>
-            </div>
-            <div class="idcard-back-info-row">
-                <span class="idcard-back-info-label">Emergency</span>
-                <span class="idcard-back-info-value">---</span>
-            </div>
-            <div class="idcard-back-info-row">
-                <span class="idcard-back-info-label">Address</span>
-                <span class="idcard-back-info-value">---</span>
-            </div>
-
-            <div class="idcard-back-section-title">Academic Information</div>
-            <div class="idcard-back-info-row">
-                <span class="idcard-back-info-label">Student ID</span>
-                <span class="idcard-back-info-value">STU-2026-0022</span>
-            </div>
-            <div class="idcard-back-info-row">
-                <span class="idcard-back-info-label">Class</span>
-                <span class="idcard-back-info-value">Class Eight</span>
-            </div>
-            <div class="idcard-back-info-row">
-                <span class="idcard-back-info-label">Section</span>
-                <span class="idcard-back-info-value">A</span>
-            </div>
-            <div class="idcard-back-info-row">
-                <span class="idcard-back-info-label">Session</span>
-                <span class="idcard-back-info-value">2026</span>
-            </div>
-
-            <div class="idcard-back-section-title">Rules</div>
-            <ul class="idcard-back-rules">
-                <li>Carry card daily</li>
-                <li>Mandatory during exams</li>
-                <li>Non-transferable</li>
-                <li>Report loss immediately</li>
-            </ul>
-
-            <div class="idcard-back-qr">
-                <div class="idcard-back-qr-box">
-                        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASIAAAEiAQMAAABncE31AAAABlBMVEUbTYz////LJPj&#x2B;AAABJElEQVR4nO2YSQ6DMAxFI/UAPRJX50g9AFKaeEhCocMCU7V6XqBg3uob/zhJ&#x2B;YOYExRK8E/QHfjEX3hhsrjkNN3k4ZkJKloJeckCyGtZDR&#x2B;gQpWoJdHi5KXk6koLBnWaEiXjLQJ1shIpXa07oM5Swp2pPLxWL/wL6kAlmHO&#x2B;psQqFvvWAypQCdmHhzKZPW0nUajjldB0G4TaXAQVr4RZkU1DsjXk&#x2B;brpDqgIJWpxJD0XuKxW9gQVqkQtSWsMPwps/AvqeCV6jPuDuhVUrBLjJNpQW0EFK9Fv3JKYkjfLo39BBSixunGz0&#x2B;&#x2B;uf0HFKaEV0tzzCkEFKOFp2RV2TwFQRyvhzqSnAKH0QAYVrcRw6dBPAbI1QAUr8SagUIJ/gu7AJ37eC&#x2B;&#x2B;tRmP4TA8imQAAAABJRU5ErkJggg==" alt="QR" />
-                </div>
-                <div class="idcard-back-qr-text">
-                    <div class="idcard-back-qr-title">SCAN FOR VERIFICATION</div>
-                    <div class="idcard-back-qr-sub">Secure identity</div>
-                    <div class="idcard-back-qr-id">STU-2026-0022</div>
-                </div>
+    <div class="back-body">
+        <div class="info-group">
+            <h3>GUARDIAN INFORMATION</h3>
+            <div class="grid-info-back">
+                <span class="lbl">FATHER</span><span class="val">Nurul Huda</span>
+                <span class="lbl">MOTHER</span><span class="val">Rahima Khatun</span>
+                <span class="lbl">GUARDIAN MOB</span><span class="val">---</span>
+                <span class="lbl">EMERGENCY</span><span class="val">---</span>
+                <span class="lbl">ADDRESS</span><span class="val">---</span>
             </div>
         </div>
 
-        <div class="idcard-back-footer">
-            <span>Chattogram Collegiate School &amp; College — Knowledge. Discipline. Excellence</span>
+        <div class="back-bottom-row">
+            <div class="rules-box">
+                <h3>RULES</h3>
+                <ul>
+                    <li>Carry card daily</li>
+                    <li>Mandatory during exams</li>
+                    <li>Non-transferable</li>
+                    <li>Report loss immediately</li>
+                </ul>
+            </div>
+
+            <div class="qr-box">
+                    <img class="qr-img" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASIAAAEiAQMAAABncE31AAAABlBMVEUbTYz////LJPj&#x2B;AAABJElEQVR4nO2Zyw3DIAxAkTpARsrqHSkDVErBNnH&#x2B;7QEjtXocqgbe6TnYmKT5i/FMUJjgnWB3kCf&#x2B;IhcmG488M5SJqc6MUNEm5GGeCpWX9J8vQIWaKCEZ81pKw0spCRhUTxNl2nio3iY8VlB9TNTM5BG6y19QDU0sFXkVppu6DdXOhA&#x2B;pChawZUAFmqghkdOQR8i2CFSkifXRU9NTORLpD1SsCQmJNAAyHDjWbajWJpY1my4tsPbBUMEmJB/JfcNmT&#x2B;wzE1SEiZOKbH0wVLCJ1Y3b6WaBCjThHZie/bUVuO5&#x2B;oRqa2N366JqECaqbCbvryUnpUBWggk2M27IMFW&#x2B;iZqbdx5Wr7zBQ7Uz4jZudgewzyzZCUAEmPgwoTPBOsDvIEz&#x2B;fC9&#x2B;oQ5BhvysOUAAAAABJRU5ErkJggg==" alt="QR" />
+                <div class="qr-text">
+                    <strong>SCAN</strong>
+                    <span>Verify identity</span>
+                    <small>STU-2026-0027</small>
+                </div>
+            </div>
         </div>
     </div>
+
+    <div class="card-footer-back">Chattogram Collegiate School &amp; College — </div>
 </div>
 
             </div>

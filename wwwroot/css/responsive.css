@@ -890,23 +890,6 @@ table:not(.tabulator-table):not(.ac-month-grid):not(.ac-week-grid) td {
 }
 
 /* ============================================
-   PHASE 6 — TABULATOR COLUMN HIDING PRIORITY
-   (Applies to all grids without responsiveLayout)
-   ============================================ */
-
-/* Universal Tabulator column widths for mobile */
-@media (max-width: 767.98px) {
-    .tabulator .tabulator-cell:nth-child(n+5):not(.tabulator-cell:last-child) {
-        display: none !important;
-    }
-
-    /* Show all cells when row is expanded/selected */
-    .tabulator-row.tabulator-responsive-collapse .tabulator-cell {
-        display: flex !important;
-    }
-}
-
-/* ============================================
    GENERAL OVERFLOW & LAYOUT SAFEGUARDS
    ============================================ */
 
@@ -952,6 +935,33 @@ img {
     .card-body {
         padding: 8px !important;
     }
+
+    /* Entity avatar compact on tiny screens */
+    .entity-avatar {
+        width: 40px !important;
+        height: 40px !important;
+        min-width: 40px !important;
+    }
+
+    .entity-avatar img {
+        width: 40px !important;
+        height: 40px !important;
+    }
+
+    .entity-avatar__initials {
+        width: 40px !important;
+        height: 40px !important;
+        font-size: 13px !important;
+        line-height: 40px !important;
+    }
+
+    .entity-cell__name {
+        font-size: 13px !important;
+    }
+
+    .entity-cell__code {
+        font-size: 11px !important;
+    }
 }
 
 /* ============================================
@@ -988,52 +998,323 @@ img {
 }
 
 /* ============================================
-   HEADER & FILTER BAR RESPONSIVE
+   ENTITY LISTING PAGES — FULL RESPONSIVE
+   Targets: Employee, Teacher, Student, User, Role index pages
    ============================================ */
 
+/* ── Tablet landscape & down ── */
+@media (max-width: 1199.98px) {
+    .adm-filters__field--search {
+        flex: 1 1 100% !important;
+    }
+
+    .adm-filters__field {
+        flex: 1 1 calc(33% - 10px) !important;
+    }
+
+    .adm-filters__field--actions {
+        flex: 1 1 100% !important;
+    }
+}
+
+/* ── Tablet portrait & down ── */
 @media (max-width: 767.98px) {
-    .adm-header,
-    .page-header {
+    /* Page layout */
+    .adm-page {
+        padding: 14px 12px 28px !important;
+    }
+
+    /* Header stack */
+    .adm-header {
         flex-direction: column !important;
-        gap: 10px !important;
+        gap: 14px !important;
         align-items: stretch !important;
     }
 
-    .adm-header .adm-header-title,
-    .page-header .page-header-title {
+    .adm-header__left {
+        flex-direction: column !important;
         text-align: center !important;
+        gap: 10px !important;
     }
 
-    .adm-header .adm-header-actions,
-    .page-header .page-header-actions {
-        display: flex !important;
-        flex-wrap: wrap !important;
-        gap: 6px !important;
+    .adm-header__icon-wrap {
+        width: 44px !important;
+        height: 44px !important;
+        margin: 0 auto !important;
+    }
+
+    .adm-header__title {
+        font-size: 18px !important;
+    }
+
+    .adm-header__sub {
+        font-size: 12px !important;
+    }
+
+    .adm-header > a.adm-btn,
+    .adm-header__right a.adm-btn {
+        width: 100% !important;
         justify-content: center !important;
     }
 
-    .adm-header .adm-header-actions .btn,
-    .page-header .page-header-actions .btn {
-        flex: 1 1 auto !important;
-        min-width: 120px !important;
+    /* Filters stack */
+    .adm-filters {
+        padding: 12px 14px !important;
     }
 
-    /* Filter bars */
-    .adm-filters,
-    .filter-row {
+    .adm-filters__row {
         flex-direction: column !important;
-        gap: 8px !important;
+        align-items: stretch !important;
+        gap: 10px !important;
     }
 
-    .adm-filters .adm-filter-item,
-    .filter-row .filter-group {
+    .adm-filters__field {
         width: 100% !important;
+        flex: 1 1 100% !important;
     }
 
-    .adm-filters .adm-input,
-    .adm-filters .adm-select {
+    .adm-filters__field--search {
+        flex: 1 1 100% !important;
+    }
+
+    .adm-filters__field--actions {
+        flex: 1 1 100% !important;
+    }
+
+    .adm-label {
+        font-size: 12px !important;
+        margin-bottom: 3px !important;
+    }
+
+    .adm-input,
+    .adm-select {
         width: 100% !important;
         max-width: 100% !important;
+        font-size: 13px !important;
+    }
+
+    /* Entity avatar & cell shrink */
+    .entity-avatar {
+        width: 44px !important;
+        height: 44px !important;
+        min-width: 44px !important;
+    }
+
+    .entity-avatar img {
+        width: 44px !important;
+        height: 44px !important;
+    }
+
+    .entity-avatar__initials {
+        width: 44px !important;
+        height: 44px !important;
+        font-size: 13px !important;
+        line-height: 44px !important;
+    }
+
+    .entity-cell {
+        gap: 10px !important;
+        min-height: 52px !important;
+        padding: 2px 0 !important;
+    }
+
+    .entity-cell__name {
+        font-size: 13px !important;
+    }
+
+    .entity-cell__code {
+        font-size: 11px !important;
+    }
+
+    .entity-cell__badge {
+        font-size: 9px !important;
+        padding: 1px 6px !important;
+    }
+
+    /* Action buttons wrap */
+    .action-group {
+        flex-wrap: wrap !important;
+        gap: 5px !important;
+        min-width: unset !important;
+    }
+
+    .action-btn {
+        width: 30px !important;
+        height: 30px !important;
+        font-size: 12px !important;
+    }
+
+    /* Status badges */
+    .adm-status {
+        font-size: 10px !important;
+        padding: 3px 8px !important;
+    }
+
+    /* Tabulator column cells */
+    .tabulator .tabulator-row .tabulator-cell {
+        padding: 8px 6px !important;
+    }
+
+    .tabulator .tabulator-header .tabulator-col {
+        padding: 8px 6px !important;
+    }
+
+    /* Tabulator responsive collapse rows */
+    .tabulator .tabulator-responsive-collapse {
+        font-size: 13px !important;
+        padding: 10px 14px !important;
+        border-bottom: 1px solid var(--adm-border, #e5e7eb) !important;
+    }
+
+    .tabulator .tabulator-responsive-collapse table {
+        width: 100% !important;
+    }
+
+    .tabulator .tabulator-responsive-collapse table td {
+        padding: 4px 8px !important;
+        font-size: 12.5px !important;
+        border: none !important;
+        vertical-align: top !important;
+    }
+
+    .tabulator .tabulator-responsive-collapse table td:first-child {
+        font-weight: 600 !important;
+        color: var(--adm-text-2, #6b7280) !important;
+        width: 40% !important;
+        white-space: nowrap !important;
+    }
+
+    .tabulator .tabulator-row .tabulator-responsive-collapse-toggle {
+        width: 26px !important;
+        height: 26px !important;
+        font-size: 13px !important;
+        line-height: 26px !important;
+    }
+
+    /* Collapsed row entity content */
+    .tabulator-responsive-collapse .entity-cell {
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 10px !important;
+        min-height: unset !important;
+    }
+
+    .tabulator-responsive-collapse .entity-avatar {
+        width: 32px !important;
+        height: 32px !important;
+        min-width: 32px !important;
+    }
+
+    .tabulator-responsive-collapse .entity-avatar img {
+        width: 32px !important;
+        height: 32px !important;
+    }
+
+    .tabulator-responsive-collapse .entity-avatar__initials {
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 11px !important;
+        line-height: 32px !important;
+    }
+
+    .tabulator-responsive-collapse .entity-cell__name {
+        font-size: 12.5px !important;
+    }
+
+    .tabulator-responsive-collapse .entity-cell__code {
+        font-size: 11px !important;
+    }
+
+    .tabulator-responsive-collapse .action-group {
+        flex-wrap: wrap !important;
+        gap: 6px !important;
+    }
+
+    .tabulator-responsive-collapse .action-btn {
+        width: 30px !important;
+        height: 30px !important;
+        font-size: 12px !important;
+    }
+
+    /* Table card full bleed */
+    .adm-table-card {
+        margin-left: -12px !important;
+        margin-right: -12px !important;
+        border-radius: 0 !important;
+        border-left: none !important;
+        border-right: none !important;
+    }
+
+    /* Tabs horizontal scroll */
+    .adm-tabs {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        flex-wrap: nowrap !important;
+    }
+
+    .adm-tab {
+        font-size: 12px !important;
+        white-space: nowrap !important;
+        flex-shrink: 0 !important;
+    }
+
+    /* Tabulator footer */
+    .tabulator .tabulator-footer {
+        width: max-content !important;
+        min-width: 100% !important;
+    }
+}
+
+/* ── Small phones ── */
+@media (max-width: 480px) {
+    .adm-page {
+        padding: 10px 8px 20px !important;
+    }
+
+    .adm-filters {
+        padding: 10px 10px !important;
+    }
+
+    .entity-avatar {
+        width: 36px !important;
+        height: 36px !important;
+        min-width: 36px !important;
+    }
+
+    .entity-avatar img {
+        width: 36px !important;
+        height: 36px !important;
+    }
+
+    .entity-avatar__initials {
+        width: 36px !important;
+        height: 36px !important;
+        font-size: 11px !important;
+        line-height: 36px !important;
+    }
+
+    .entity-cell {
+        gap: 8px !important;
+        min-height: 44px !important;
+    }
+
+    .entity-cell__name {
+        font-size: 12px !important;
+    }
+
+    .entity-cell__code {
+        font-size: 10px !important;
+    }
+
+    .action-btn {
+        width: 28px !important;
+        height: 28px !important;
+        font-size: 11px !important;
+    }
+
+    .adm-table-card {
+        margin-left: -8px !important;
+        margin-right: -8px !important;
     }
 }
 

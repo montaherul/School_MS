@@ -50,6 +50,7 @@ public class RoleController : GenericCrudController<Role>
     [HttpPost("{id}/Permissions")]
     [Authorize(Roles = "Admin,Super Admin")]
     [RequirePermission("Roles.AssignPermissions")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> AssignPermissions(int id, [FromBody] List<int> permissionIds, CancellationToken ct)
     {
         try

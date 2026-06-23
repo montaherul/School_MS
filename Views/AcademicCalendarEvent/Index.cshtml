@@ -2,37 +2,33 @@
     ViewData["Title"] = "Calendar Events";
 }
 
-<style>
-    .page-wrap { display: grid; gap: 20px; }
-    .page-title { margin: 0; font-size: 26px; font-weight: 800; color: #111827; }
-    .page-subtitle { margin: 4px 0 0; color: #64748b; font-size: 14px; }
-    .panel { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; box-shadow: 0 4px 24px rgba(15,23,42,.06); padding: 20px; }
-</style>
+@Html.AntiForgeryToken()
 
-<div class="page-wrap">
-    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
-        <div>
-            <h1 class="page-title"><i class="bi bi-calendar-event me-2 text-primary"></i>Calendar Events</h1>
-            <p class="page-subtitle">Manage events for each calendar day.</p>
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap"><i class="bi bi-calendar-event"></i></div>
+            <div>
+                <h1 class="adm-header__title">Calendar Events</h1>
+                <p class="adm-header__sub">Manage events for each calendar day.</p>
+            </div>
         </div>
-        <div class="d-flex gap-2">
-            <input type="number" id="calendarIdInput" class="form-control" placeholder="Calendar Day ID" style="width:160px" />
-            <button type="button" class="btn btn-primary" id="btnLoad"><i class="bi bi-search me-1"></i> Load</button>
-            <a asp-action="Create" asp-route-calendarId="0" class="btn btn-outline-primary d-none" id="btnAdd"><i class="bi bi-plus-circle me-1"></i> Add Event</a>
+        <div class="adm-btn-group">
+            <input type="number" id="calendarIdInput" class="adm-input" placeholder="Calendar Day ID" style="width:160px;padding:8px 12px" />
+            <button type="button" class="adm-btn adm-btn--primary" id="btnLoad"><i class="bi bi-search"></i> Load</button>
+            <a asp-action="Create" asp-route-calendarId="0" class="adm-btn adm-btn--ghost d-none" id="btnAdd"><i class="bi bi-plus-circle"></i> Add Event</a>
         </div>
     </div>
 
     @if (TempData["Success"] != null)
     {
-        <div class="alert alert-success alert-dismissible fade show">@TempData["Success"]<button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+        <div class="adm-alert adm-alert--success" style="margin-top:0"><i class="bi bi-check-circle-fill"></i> @TempData["Success"]</div>
     }
 
-    <div class="panel">
-        <div id="eventsTable"></div>
+    <div class="adm-table-card" style="border-top:1px solid var(--adm-border);border-radius:var(--adm-radius-lg)">
+        <div class="adm-table-card__body"><div id="eventsTable"></div></div>
     </div>
 </div>
-
-@Html.AntiForgeryToken()
 
 @section Scripts {
     <script>
@@ -41,55 +37,37 @@
         function loadEvents(calendarId) {
             if (!calendarId || calendarId === '0') return;
             document.getElementById('btnAdd').classList.remove('d-none');
-            document.getElementById('btnAdd').href = `/AcademicCalendarEvent/Create?calendarId=${calendarId}`;
-
+            document.getElementById('btnAdd').href = '/AcademicCalendarEvent/Create?calendarId=' + calendarId;
             if (table) table.destroy();
-
             table = new Tabulator("#eventsTable", {
-                height: 400,
-                layout: "fitColumns",
-                ajaxURL: `/AcademicCalendarEvent/GetList?calendarId=${calendarId}`,
+                height: 400, layout: "fitColumns",
+                ajaxURL: '/AcademicCalendarEvent/GetList?calendarId=' + calendarId,
                 ajaxResponse: function(url, params, response) { return response.data; },
                 columns: [
                     { title: "ID", field: "id", width: 60 },
                     { title: "Title", field: "title", minWidth: 200 },
                     { title: "Type", field: "eventType", width: 120, hozAlign: "center" },
-                    { title: "Start", field: "startDate", width: 160,
-                        formatter: function(c) { return new Date(c.getValue()).toLocaleString(); }
-                    },
-                    { title: "End", field: "endDate", width: 160,
-                        formatter: function(c) { return new Date(c.getValue()).toLocaleString(); }
-                    },
-                    { title: "Active", field: "isActive", width: 80, hozAlign: "center",
-                        formatter: function(c) { return c.getValue() ? '<span class="text-success"><i class="bi bi-check-circle"></i></span>' : '<span class="text-danger"><i class="bi bi-x-circle"></i></span>'; }
-                    },
+                    { title: "Start", field: "startDate", width: 160, formatter: function(c) { return new Date(c.getValue()).toLocaleString(); } },
+                    { title: "End", field: "endDate", width: 160, formatter: function(c) { return new Date(c.getValue()).toLocaleString(); } },
+                    { title: "Active", field: "isActive", width: 80, hozAlign: "center", formatter: function(c) { return c.getValue() ? '<span class="text-success"><i class="bi bi-check-circle"></i></span>' : '<span class="text-danger"><i class="bi bi-x-circle"></i></span>'; } },
                     { title: "Actions", width: 120, hozAlign: "center", headerSort: false,
                         formatter: function(c) {
-                            const d = c.getRow().getData();
-                            return `<div class="btn-group btn-group-sm">
-                                <a href="/AcademicCalendarEvent/Edit/${d.id}" class="btn btn-outline-primary"><i class="bi bi-pencil"></i></a>
-                                <button class="btn btn-outline-danger btn-del-event" data-id="${d.id}"><i class="bi bi-trash"></i></button>
-                            </div>`;
+                            var d = c.getRow().getData();
+                            return '<div class="adm-btn-group" style="gap:4px"><a href="/AcademicCalendarEvent/Edit/' + d.id + '" class="adm-action adm-action--edit"><i class="bi bi-pencil"></i></a><button class="adm-action adm-action--reject btn-del-event" data-id="' + d.id + '"><i class="bi bi-trash"></i></button></div>';
                         }
                     }
                 ]
             });
         }
 
-        document.getElementById('btnLoad').addEventListener('click', function() {
-            loadEvents(document.getElementById('calendarIdInput').value);
-        });
-
-        document.getElementById('calendarIdInput').addEventListener('keyup', function(e) {
-            if (e.key === 'Enter') loadEvents(this.value);
-        });
-
+        document.getElementById('btnLoad').addEventListener('click', function() { loadEvents(document.getElementById('calendarIdInput').value); });
+        document.getElementById('calendarIdInput').addEventListener('keyup', function(e) { if (e.key === 'Enter') loadEvents(this.value); });
         document.addEventListener('click', function(e) {
-            const btn = e.target.closest('.btn-del-event');
+            var btn = e.target.closest('.btn-del-event');
             if (btn && confirm('Delete this event?')) {
-                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
-                fetch(`/AcademicCalendarEvent/Delete/${btn.dataset.id}`, { method: 'POST', headers: { 'RequestVerificationToken': token } })
-                    .then(r => r.json()).then(r => { if (r.success) { toastr.success('Deleted'); table.replaceData(); } else toastr.error(r.message); });
+                var token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                fetch('/AcademicCalendarEvent/Delete/' + btn.dataset.id, { method: 'POST', headers: { 'RequestVerificationToken': token } })
+                    .then(function(r) { return r.json(); }).then(function(r) { if (r.success) { toastr.success('Deleted'); table.replaceData(); } else toastr.error(r.message); });
             }
         });
     </script>

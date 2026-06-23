@@ -39,7 +39,7 @@
         <form method="get" action="@Url.Action("StudentResults")" class="er-filters__row">
             <div class="er-filters__group" style="flex:2;">
                 <label class="er-filters__label">Search</label>
-                <input type="text" name="searchTerm" class="form-control form-control-sm" value="@Model.SearchTerm" placeholder="Search by student name or roll number..." style="min-width:220px;" />
+                            <input type="text" name="searchTerm" class="er-filters__select" value="@Model.SearchTerm" placeholder="Search by student name or roll number..." style="min-width:220px;" />
             </div>
             <div class="er-filters__group">
                 <label class="er-filters__label">Exam</label>
@@ -193,20 +193,12 @@
     </div>
 </div>
 
-<div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer"></div>
-
 @section Scripts {
     <script>
         function showToast(message, type) {
-            var bg = type === 'success' ? 'bg-success' : 'bg-danger';
-            var container = document.getElementById('toastContainer');
-            var toast = document.createElement('div');
-            toast.className = 'toast align-items-center text-white border-0 ' + bg;
-            toast.innerHTML = '<div class="d-flex"><div class="toast-body">' + message + '</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>';
-            container.appendChild(toast);
-            var bs = new bootstrap.Toast(toast, { delay: 4000 });
-            bs.show();
-            toast.addEventListener('hidden.bs.toast', function () { toast.remove(); });
+            if (type === 'success') toastr.success(message);
+            else if (type === 'error') toastr.error(message);
+            else toastr.warning(message);
         }
 
         function printResult(studentId) {

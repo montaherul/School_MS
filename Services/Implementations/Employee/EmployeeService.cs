@@ -17,6 +17,7 @@ public class EmployeeService : IEmployeeService
     private readonly IUserProvisionService _userProvisionService;
     private readonly IEmailService _emailService;
     private readonly ILogger<EmployeeService> _logger;
+    private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly SchoolManagementSystem.Services.Interfaces.Teachers.ITeacherSynchronizationService _teacherSynchronizationService;
 
     public EmployeeService(
@@ -24,12 +25,14 @@ public class EmployeeService : IEmployeeService
         IUserProvisionService userProvisionService, 
         IEmailService emailService,
         ILogger<EmployeeService> logger,
+        IHttpContextAccessor httpContextAccessor,
         SchoolManagementSystem.Services.Interfaces.Teachers.ITeacherSynchronizationService teacherSynchronizationService)
     {
         _unitOfWork = unitOfWork;
         _userProvisionService = userProvisionService;
         _emailService = emailService;
         _logger = logger;
+        _httpContextAccessor = httpContextAccessor;
         _teacherSynchronizationService = teacherSynchronizationService;
     }
 
@@ -130,8 +133,8 @@ public class EmployeeService : IEmployeeService
                 {
                     employee.UserId = userId;
                     
-                    // Track generated username & password for the notification workflow
-                    dto.Remarks = $"Account Auto-Provisioned: Username: {username}, Password: {password}. Please change password upon login.";
+                    // Track generated username for the notification workflow
+                    dto.Remarks = $"Account auto-provisioned. Username: {username}";
                     employee.Remarks = string.IsNullOrEmpty(employee.Remarks) ? dto.Remarks : $"{employee.Remarks}\n{dto.Remarks}";
                     
                     await _unitOfWork.SaveChangesAsync(ct);
@@ -243,6 +246,12 @@ public class EmployeeService : IEmployeeService
             _logger.LogError(ex, "Teacher sync failed after saving employee {EmployeeId}", employee.Id);
         }
 
+        var auditAction = dto.Id == 0 ? "Employee.Create" : "Employee.Update";
+        var auditDetails = dto.Id == 0
+            ? $"Created employee: {employee.FullName} ({employee.EmployeeCode})"
+            : $"Updated employee: {employee.FullName} ({employee.EmployeeCode})";
+        await LogAuditAsync("Employee", auditAction, employee.Id.ToString(), auditDetails, ct);
+
         return employee.Id;
     }
 
@@ -267,6 +276,8 @@ public class EmployeeService : IEmployeeService
         }
 
         await _unitOfWork.SaveChangesAsync(ct);
+
+        await LogAuditAsync("Employee", "Employee.Delete", id.ToString(), $"Deleted employee: {employee.FullName} ({employee.EmployeeCode})", ct);
 
         // Auto-synchronize teaching employee deactivation to Teacher extension layer
         try
@@ -300,6 +311,8 @@ public class EmployeeService : IEmployeeService
         }
 
         await _unitOfWork.SaveChangesAsync(ct);
+
+        await LogAuditAsync("Employee", "Employee.StatusChange", id.ToString(), $"Changed status to '{status}' for employee: {employee.FullName} ({employee.EmployeeCode})", ct);
 
         // Auto-synchronize teaching employee status updates to Teacher extension layer
         try
@@ -368,6 +381,27 @@ public class EmployeeService : IEmployeeService
         if (string.IsNullOrEmpty(relativePath)) return;
         var fullPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", relativePath.TrimStart('/'));
         if (File.Exists(fullPath)) File.Delete(fullPath);
+    }
+
+    private async Task LogAuditAsync(string module, string action, string entityId, string details, CancellationToken ct = default)
+    {
+        var httpContext = _httpContextAccessor?.HttpContext;
+        var userIdStr = httpContext?.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        int? userId = userIdStr != null && int.TryParse(userIdStr, out var uid) ? uid : null;
+
+        var log = new AuditLog
+        {
+            UserId = userId,
+            Module = module,
+            Action = action,
+            IpAddress = httpContext?.Connection?.RemoteIpAddress?.ToString(),
+            Details = details.Length > 1000 ? details[..1000] : details,
+            CreatedBy = httpContext?.User?.Identity?.Name ?? "system",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _unitOfWork.Repository<AuditLog>().AddAsync(log, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
     }
 
     private async Task ProcessQualificationsAsync(SchoolManagementSystem.Models.Entities.Employee.Employee employee, List<EmployeeQualificationDto> list, CancellationToken ct)

@@ -40,30 +40,30 @@
                     <table class="er-table">
                         <tbody>
                             <tr>
-                                <td class="er-text-mono" style="width:200px;padding:12px 0;">Exam Name</td>
-                                <td style="padding:12px 0;">@exam.Name</td>
+                                <th class="er-cell-label">Exam Name</th>
+                                <td>@exam.Name</td>
                             </tr>
                             <tr>
-                                <td style="font-weight:600;color:var(--er-text-2);padding:12px 0;">Term</td>
-                                <td style="padding:12px 0;">
+                                <th class="er-cell-label">Term</th>
+                                <td>
                                     <span class="er-badge er-badge--neutral">@exam.Term</span>
                                 </td>
                             </tr>
                             <tr>
-                                <td style="font-weight:600;color:var(--er-text-2);padding:12px 0;">Academic Year</td>
-                                <td style="padding:12px 0;">@exam.AcademicYearName</td>
+                                <th class="er-cell-label">Academic Year</th>
+                                <td>@exam.AcademicYearName</td>
                             </tr>
                             <tr>
-                                <td style="font-weight:600;color:var(--er-text-2);padding:12px 0;">Duration</td>
-                                <td style="padding:12px 0;">@exam.StartsOn.ToString("d") – @exam.EndsOn.ToString("d")</td>
+                                <th class="er-cell-label">Duration</th>
+                                <td>@exam.StartsOn.ToString("d") – @exam.EndsOn.ToString("d")</td>
                             </tr>
                             <tr>
-                                <td style="font-weight:600;color:var(--er-text-2);padding:12px 0;">Student Group</td>
-                                <td style="padding:12px 0;">@(exam.StudentGroupName ?? "All Groups")</td>
+                                <th class="er-cell-label">Student Group</th>
+                                <td>@(exam.StudentGroupName ?? "All Groups")</td>
                             </tr>
                             <tr>
-                                <td style="font-weight:600;color:var(--er-text-2);padding:12px 0;">Status</td>
-                                <td style="padding:12px 0;">
+                                <th class="er-cell-label">Status</th>
+                                <td>
                                     @{
                                         var badgeClass = exam.Status switch
                                         {
@@ -87,8 +87,8 @@
                             @if (exam.LockedAt.HasValue)
                             {
                                 <tr>
-                                    <td style="font-weight:600;color:var(--er-text-2);padding:12px 0;">Locked At</td>
-                                    <td style="padding:12px 0;">@exam.LockedAt.Value.ToString("g")</td>
+                                    <th class="er-cell-label">Locked At</th>
+                                    <td>@exam.LockedAt.Value.ToString("g")</td>
                                 </tr>
                             }
                         </tbody>
@@ -103,33 +103,33 @@
                     <h3 class="er-card__title">Statistics</h3>
                 </div>
                 <div class="er-card__body">
-                    <div style="display:flex;flex-direction:column;gap:12px;">
-                        <div class="er-stat-row" style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--er-surface-2);border-radius:var(--er-radius);">
-                            <span style="color:var(--er-text-2);font-size:13px;">Subjects</span>
-                            <span style="font-size:20px;font-weight:800;color:var(--er-primary);letter-spacing:-0.03em;">@exam.SubjectCount</span>
+                    <div class="d-flex flex-column gap-3">
+                        <div class="er-stat-row">
+                            <span class="er-stat-row__label">Subjects</span>
+                            <span class="er-stat-row__value">@exam.SubjectCount</span>
                         </div>
-                        <div class="er-stat-row" style="flex-direction:column;align-items:flex-start;gap:6px;padding:12px 16px;background:var(--er-surface-2);border-radius:var(--er-radius);">
-                            <span style="color:var(--er-text-2);font-size:13px;">Subject Names</span>
-                            <div style="display:flex;flex-wrap:wrap;gap:4px;">
+                        <div class="er-stat-row er-stat-row--column">
+                            <span class="er-stat-row__label">Subject Names</span>
+                            <div class="d-flex flex-wrap gap-1">
                                 @foreach (var subj in exam.SubjectNames)
                                 {
-                                    <span class="er-badge er-badge--info" style="font-size:11px;">@subj</span>
+                                    <span class="er-badge er-badge--info er-badge--sm">@subj</span>
                                 }
                             </div>
                         </div>
-                        <div class="er-stat-row" style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--er-surface-2);border-radius:var(--er-radius);">
-                            <span style="color:var(--er-text-2);font-size:13px;">Student Results</span>
-                            <span style="font-size:20px;font-weight:800;color:var(--er-primary);letter-spacing:-0.03em;">@exam.StudentResultCount</span>
+                        <div class="er-stat-row">
+                            <span class="er-stat-row__label">Student Results</span>
+                            <span class="er-stat-row__value">@exam.StudentResultCount</span>
                         </div>
-                        <div class="er-stat-row" style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--er-surface-2);border-radius:var(--er-radius);">
-                            <span style="color:var(--er-text-2);font-size:13px;">Created</span>
-                            <span style="font-size:14px;font-weight:600;color:var(--er-text);">@exam.CreatedAt.ToString("d")</span>
+                        <div class="er-stat-row">
+                            <span class="er-stat-row__label">Created</span>
+                            <span class="er-stat-row__value er-stat-row__value--sm">@exam.CreatedAt.ToString("d")</span>
                         </div>
                         @if (!string.IsNullOrEmpty(exam.CreatedBy))
                         {
-                            <div class="er-stat-row" style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:var(--er-surface-2);border-radius:var(--er-radius);">
-                                <span style="color:var(--er-text-2);font-size:13px;">Created By</span>
-                                <span style="font-size:14px;font-weight:600;color:var(--er-text);">@exam.CreatedBy</span>
+                            <div class="er-stat-row">
+                                <span class="er-stat-row__label">Created By</span>
+                                <span class="er-stat-row__value er-stat-row__value--sm">@exam.CreatedBy</span>
                             </div>
                         }
                     </div>

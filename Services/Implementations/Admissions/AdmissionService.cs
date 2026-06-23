@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
@@ -39,6 +40,7 @@ public class AdmissionService : IAdmissionService
     private readonly IGuardianService _guardianService;
     private readonly ISchoolSettingRepository _settingRepo;
     private readonly ILogger<AdmissionService> _logger;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
     public AdmissionService(
         IUnitOfWork unitOfWork,
@@ -53,7 +55,8 @@ public class AdmissionService : IAdmissionService
         ISectionRepository sectionRepository,
         IGuardianService guardianService,
         ISchoolSettingRepository settingRepo,
-        ILogger<AdmissionService> logger)
+        ILogger<AdmissionService> logger,
+        IHttpContextAccessor httpContextAccessor)
     {
         _unitOfWork = unitOfWork;
         _admissionRepository = admissionRepository;
@@ -68,6 +71,7 @@ public class AdmissionService : IAdmissionService
         _guardianService = guardianService;
         _settingRepo = settingRepo;
         _logger = logger;
+        _httpContextAccessor = httpContextAccessor;
     }
 
     public async Task<(List<AdmissionListResultDto> items, int totalRecords, object counts)> GetListByStoredProcedureAsync(
@@ -206,6 +210,8 @@ public class AdmissionService : IAdmissionService
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
+            await LogAuditAsync("Admission", "Admission.Apply", application.Id.ToString(), $"Application submitted: {application.ApplicantName} ({application.ApplicationNo})", cancellationToken);
+
             if (!string.IsNullOrWhiteSpace(application.ApplicantEmail))
             {
                 try { await _emailService.SendAdmissionReceivedAsync(application.ApplicantEmail, application.ApplicantName, application.ApplicationNo, cancellationToken); }
@@ -326,8 +332,8 @@ public class AdmissionService : IAdmissionService
 
             if (guardianPortalEnabled)
             {
-                // PHASE 6: Ensure Guardian (auto-create or auto-link) BEFORE student creation
-                var guardian = await _guardianService.EnsureGuardianFromAdmissionAsync(application, cancellationToken);
+                // PHASE 6: Ensure Guardian — with name-verification to prevent impersonation
+                var guardian = await EnsureGuardianFromAdmissionSafeAsync(application, cancellationToken);
                 application.LinkedGuardianId = guardian.Id;
                 linkedGuardianId = guardian.Id;
                 guardianEmail = guardian.Email;
@@ -464,6 +470,8 @@ public class AdmissionService : IAdmissionService
 
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
+            await LogAuditAsync("Admission", "Admission.Approve", applicationId.ToString(), $"Application approved & converted to student: {application.ApplicantName} ({application.ApplicationNo})", cancellationToken);
+
             try { await _emailService.SendStudentActivationAsync(studentEmail, application.ApplicantName, pendingUser.UserName, activationToken, cancellationToken); }
             catch (Exception ex) { _logger.LogError(ex, "Student activation email failed for application {ApplicationNo}", application.ApplicationNo); }
 
@@ -588,6 +596,8 @@ public class AdmissionService : IAdmissionService
         application.UpdatedBy = rejectedBy;
         application.UpdatedAt = DateTime.UtcNow;
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await LogAuditAsync("Admission", "Admission.Reject", applicationId.ToString(), $"Application rejected: {application.ApplicantName} ({application.ApplicationNo})", cancellationToken);
     }
 
     public async Task<AdmissionApplication?> GetByIdAsync(int id, CancellationToken ct = default)
@@ -623,6 +633,8 @@ public class AdmissionService : IAdmissionService
         application.UpdatedBy = updatedBy;
         application.UpdatedAt = DateTime.UtcNow;
         await _unitOfWork.SaveChangesAsync(ct);
+
+        await LogAuditAsync("Admission", "Admission.Delete", id.ToString(), $"Application deleted: {application.ApplicantName} ({application.ApplicationNo})", ct);
     }
 
     public async Task<IEnumerable<dynamic>> GetAvailableClassesAsync(CancellationToken ct = default)
@@ -685,6 +697,127 @@ public class AdmissionService : IAdmissionService
             .Select(x => (int?)x.RollNumber)
             .MaxAsync(cancellationToken);
         return (maxRoll ?? 0) + 1;
+    }
+
+    private async Task<Models.Entities.Guardian.Guardian> EnsureGuardianFromAdmissionSafeAsync(
+        AdmissionApplication application, CancellationToken ct)
+    {
+        var email = application.GuardianEmail?.Trim().ToLowerInvariant();
+        var name = application.GuardianName?.Trim();
+        var fallbackName = string.IsNullOrWhiteSpace(name) ? application.FatherName?.Trim() : name;
+        if (string.IsNullOrWhiteSpace(fallbackName))
+            throw new InvalidOperationException("Cannot create a Guardian: both GuardianName and FatherName are empty.");
+
+        // 1) Direct link from admission form (admin explicitly picked a guardian)
+        if (application.LinkedGuardianId.HasValue && application.LinkedGuardianId.Value > 0)
+        {
+            var linked = await _unitOfWork.Repository<Models.Entities.Guardian.Guardian>()
+                .FirstOrDefaultAsync(g => g.Id == application.LinkedGuardianId.Value && !g.IsDeleted, ct);
+            if (linked != null)
+                return linked;
+        }
+
+        // 2) Find by email with NAME VERIFICATION — prevent impersonation
+        if (!string.IsNullOrWhiteSpace(email))
+        {
+            var existing = await _unitOfWork.Repository<Models.Entities.Guardian.Guardian>()
+                .FirstOrDefaultAsync(g => g.Email != null && g.Email.ToLower() == email && !g.IsDeleted, ct);
+            if (existing != null)
+            {
+                var existingName = existing.FullName?.Trim().ToLowerInvariant() ?? "";
+                var admissionName = fallbackName.ToLowerInvariant();
+                if (!string.IsNullOrEmpty(admissionName) &&
+                    (existingName.Contains(admissionName) || admissionName.Contains(existingName)))
+                {
+                    return existing;
+                }
+                _logger.LogWarning(
+                    "Guardian email match but name mismatch for admission {AppNo}: " +
+                    "found '{ExistingName}' vs expected '{AdmissionName}'. Creating new guardian.",
+                    application.ApplicationNo, existingName, admissionName);
+            }
+        }
+
+        // 3) No safe match — create a new guardian record
+        var mobile = (application.GuardianMobileNumber ?? application.FatherOrGuardianMobileNo)?.Trim() ?? "";
+        var guardianCode = await GenerateNextGuardianCodeAsync(ct);
+
+        var guardian = new Models.Entities.Guardian.Guardian
+        {
+            GuardianCode = guardianCode,
+            FirstName = fallbackName,
+            LastName = string.Empty,
+            FullName = fallbackName,
+            Gender = string.Empty,
+            RelationType = ResolveGuardianRelationship(application.GuardianRelationship, !string.IsNullOrWhiteSpace(name)),
+            MobileNumber = mobile,
+            Email = email,
+            NationalId = application.GuardianNationalId?.Trim(),
+            Occupation = application.GuardianOccupation?.Trim(),
+            PresentAddress = application.GuardianAddress?.Trim(),
+            PhotoPath = application.GuardianPhoto,
+            Remarks = application.GuardianRemarks?.Trim(),
+            PortalAccessEnabled = true,
+            Status = string.IsNullOrWhiteSpace(email) && string.IsNullOrWhiteSpace(mobile)
+                ? GuardianStatus.Inactive
+                : GuardianStatus.PendingActivation
+        };
+
+        await _unitOfWork.Repository<Models.Entities.Guardian.Guardian>().AddAsync(guardian, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
+        return guardian;
+    }
+
+    private async Task<string> GenerateNextGuardianCodeAsync(CancellationToken ct)
+    {
+        var lastCode = await _unitOfWork.Repository<Models.Entities.Guardian.Guardian>().Query()
+            .OrderByDescending(g => g.GuardianCode)
+            .Select(g => g.GuardianCode)
+            .FirstOrDefaultAsync(ct);
+
+        int nextNum = 1;
+        if (lastCode != null && lastCode.StartsWith("GRD-", StringComparison.OrdinalIgnoreCase))
+        {
+            if (int.TryParse(lastCode.Substring(4), out int lastNum))
+            {
+                nextNum = lastNum + 1;
+            }
+        }
+
+        return $"GRD-{nextNum:D5}";
+    }
+
+    private static GuardianRelationshipType ResolveGuardianRelationship(string? relationship, bool hasSeparateGuardian)
+    {
+        if (!string.IsNullOrWhiteSpace(relationship) &&
+            Enum.TryParse<GuardianRelationshipType>(relationship.Replace(" ", string.Empty), true, out var parsed))
+        {
+            return parsed;
+        }
+        return hasSeparateGuardian
+            ? GuardianRelationshipType.LegalGuardian
+            : GuardianRelationshipType.Father;
+    }
+
+    private async Task LogAuditAsync(string module, string action, string entityId, string details, CancellationToken ct = default)
+    {
+        var httpContext = _httpContextAccessor?.HttpContext;
+        var userIdStr = httpContext?.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        int? userId = userIdStr != null && int.TryParse(userIdStr, out var uid) ? uid : null;
+
+        var log = new AuditLog
+        {
+            UserId = userId,
+            Module = module,
+            Action = action,
+            IpAddress = httpContext?.Connection?.RemoteIpAddress?.ToString(),
+            Details = details.Length > 1000 ? details[..1000] : details,
+            CreatedBy = httpContext?.User?.Identity?.Name ?? "system",
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _unitOfWork.Repository<AuditLog>().AddAsync(log, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
     }
 }
 

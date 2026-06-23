@@ -54,19 +54,19 @@
             </div>
         </div>
         <div class="er-page-header__right">
-            <form method="get" action="@Url.Action("Index")" class="er-filters__row" style="flex-wrap:nowrap;">
-                <div class="er-filters__group" style="margin-bottom:0;">
-                    <label class="er-filters__label">Year</label>
-                    <select name="academicYearId" class="er-filters__select" onchange="this.form.submit()">
+            <form method="get" action="@Url.Action("Index")" class="adm-filters__row">
+                <div class="adm-filters__group">
+                    <label class="adm-filters__label">Year</label>
+                    <select name="academicYearId" class="adm-filters__select" onchange="this.form.submit()">
                         @foreach (var year in Model.AcademicYears)
                         {
                             <!option value="@year.Id" selected="@(year.Id == Model.SelectedAcademicYearId)">@year.Name</!option>
                         }
                     </select>
                 </div>
-                <div class="er-filters__group" style="margin-bottom:0;">
-                    <label class="er-filters__label">Status</label>
-                    <select id="statusFilter" class="er-filters__select">
+                <div class="adm-filters__group">
+                    <label class="adm-filters__label">Status</label>
+                    <select id="statusFilter" class="adm-filters__select">
                         <option value="">All Status</option>
                         <option value="Draft">Draft</option>
                         <option value="Submitted">Submitted</option>
@@ -90,14 +90,14 @@
 
     @if (TempData["SuccessMessage"] is string msg)
     {
-        <div class="er-alert er-alert--success" style="margin-bottom:20px;">
+        <div class="er-alert er-alert--success mb-4">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12" /></svg>
             <span>@msg</span>
-            <button type="button" onclick="this.parentElement.remove()" style="background:none;border:none;color:inherit;cursor:pointer;font-size:20px;line-height:1;padding:0 0 0 12px;">&times;</button>
+            <button type="button" class="er-alert__dismiss" onclick="this.parentElement.remove()">&times;</button>
         </div>
     }
 
-    <div class="er-stats" style="margin-bottom:24px;">
+    <div class="er-stats mb-4">
         <div class="er-stat">
             <div class="er-stat__icon er-stat__icon--primary">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
@@ -136,7 +136,7 @@
         </div>
     </div>
 
-    <div class="er-card" style="border-radius:var(--adm-radius-lg);">
+    <div class="er-card">
         <div class="er-card__body--flush">
             @if (Model.ExamGroups.Any())
             {
@@ -158,16 +158,16 @@
                             {
                                 var groupId = "g_" + @group.GroupKey.Replace("_", "");
                                 var isExpanded = group.TotalExams <= 3;
-                                <tr class="exam-group-header" data-target="@groupId" style="cursor:pointer;background:var(--er-primary-bg, #f0fdfa);">
+                                <tr class="exam-group-header" data-target="@groupId">
                                     <td style="text-align:center;">
                                         <span class="group-toggle">@(isExpanded ? "▼" : "▶")</span>
                                     </td>
                                     <td colspan="6">
-                                        <strong style="font-size:15px;">@group.GroupName</strong>
-                                        <span style="font-size:12px;color:var(--er-text-3);margin-left:12px;">
+                                        <strong class="er-text-lg">@group.GroupName</strong>
+                                        <span class="er-text-sm er-text-muted ml-2">
                                             @group.TotalExams class@(group.TotalExams != 1 ? "es" : "")
                                         </span>
-                                        <a href="@Url.Action("GroupReport", "Exam", new { groupKey = group.GroupKey, academicYearId = Model.SelectedAcademicYearId })" style="margin-left:12px;font-size:12px;text-decoration:underline;color:var(--er-primary);" title="Class-by-class report">
+                                        <a href="@Url.Action("GroupReport", "Exam", new { groupKey = group.GroupKey, academicYearId = Model.SelectedAcademicYearId })" class="ml-2 er-text-sm er-link" title="Class-by-class report">
                                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="vertical-align:-1px;"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" /><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" /></svg>
                                             Report
                                         </a>
@@ -188,7 +188,7 @@
                                             <span class="er-badge er-badge--info">@exam.SubjectCount</span>
                                         </td>
                                         <td>
-                                            <div class="er-actions" style="justify-content:flex-end;">
+                                            <div class="er-actions er-actions--right">
                                                 <a href="@Url.Action("Edit", "Exam", new { id = exam.Id })" class="er-action er-action--edit" title="Edit">
                                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                                                 </a>
@@ -236,7 +236,7 @@
                                         <span class="er-badge er-badge--info">@exam.SubjectCount</span>
                                     </td>
                                     <td>
-                                        <div class="er-actions" style="justify-content:flex-end;">
+                                        <div class="er-actions er-actions--right">
                                             <a href="@Url.Action("Edit", "Exam", new { id = exam.Id })" class="er-action er-action--edit" title="Edit">
                                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
                                             </a>

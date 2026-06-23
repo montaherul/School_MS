@@ -3,45 +3,57 @@
     ViewData["Title"] = Model.IsEditMode ? $"Edit {Model.ModuleName}" : $"Create {Model.ModuleName}";
 }
 
-<div class="page-title">
-    <h1>@ViewData["Title"]</h1>
-    <a asp-controller="@Model.ControllerName" asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
-</div>
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <a asp-controller="@Model.ControllerName" asp-action="Index" class="adm-btn adm-btn--ghost" style="padding:8px 12px;">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                    <polyline points="15,18 9,12 15,6"></polyline>
+                </svg>
+            </a>
+            <div>
+                <h1 class="adm-header__title">@ViewData["Title"]</h1>
+                <p class="adm-header__sub">@(Model.IsEditMode ? "Update the record details below" : "Fill in the details to create a new record")</p>
+            </div>
+        </div>
+    </div>
 
-<div class="panel">
-    <form asp-controller="@Model.ControllerName" asp-action="Save" method="post">
-        @Html.AntiForgeryToken()
-        <input type="hidden" name="Id" value="@Model.Id" />
-        <div class="row g-3">
-            @foreach (var field in Model.Fields)
-            {
-                <div class="col-md-6">
-                    <label class="form-label" for="@field.Name">@field.Label</label>
-                    @if (field.Options.Count > 0)
-                    {
-                        <select class="form-select" id="@field.Name" name="@field.Name">
-                            @foreach (var option in field.Options)
-                            {
-                                <option value="@option" selected="@(option == field.Value)">@option</option>
-                            }
-                        </select>
-                    }
-                    else if (field.InputType == "checkbox")
-                    {
-                        <div class="form-check">
-                            <input class="form-check-input" id="@field.Name" name="@field.Name" type="checkbox" value="true" checked="@(field.Value == "true")" />
-                        </div>
-                    }
-                    else
-                    {
-                        <input class="form-control" id="@field.Name" name="@field.Name" type="@field.InputType" value="@field.Value" required="@field.IsRequired" />
-                    }
-                </div>
-            }
-        </div>
-        <div class="mt-4">
-            <button class="btn btn-primary" type="submit">Save</button>
-            <a asp-controller="@Model.ControllerName" asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
-        </div>
-    </form>
+    <div style="max-width:760px;">
+        <form asp-controller="@Model.ControllerName" asp-action="Save" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="Id" value="@Model.Id" />
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+                @foreach (var field in Model.Fields)
+                {
+                    <div class="adm-form-group">
+                        <label class="adm-form-label" for="@field.Name">@field.Label</label>
+                        @if (field.Options.Count > 0)
+                        {
+                            <select class="adm-select" id="@field.Name" name="@field.Name">
+                                @foreach (var option in field.Options)
+                                {
+                                    <option value="@option" selected="@(option == field.Value)">@option</option>
+                                }
+                            </select>
+                        }
+                        else if (field.InputType == "checkbox")
+                        {
+                            <label style="display:flex;align-items:center;gap:10px;cursor:pointer;margin-top:6px;">
+                                <input id="@field.Name" name="@field.Name" type="checkbox" value="true" checked="@(field.Value == "true")" style="width:16px;height:16px;accent-color:var(--adm-primary);" />
+                                @field.Label
+                            </label>
+                        }
+                        else
+                        {
+                            <input class="adm-input" id="@field.Name" name="@field.Name" type="@field.InputType" value="@field.Value" required="@field.IsRequired" style="padding-left:12px;" />
+                        }
+                    </div>
+                }
+            </div>
+            <div class="adm-btn-group" style="margin-top:28px;">
+                <button class="adm-btn adm-btn--primary" type="submit">Save</button>
+                <a asp-controller="@Model.ControllerName" asp-action="Index" class="adm-btn adm-btn--ghost">Cancel</a>
+            </div>
+        </form>
+    </div>
 </div>

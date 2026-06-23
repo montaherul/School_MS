@@ -60,7 +60,7 @@
         <div class="er-card__body">
             @if (Model.Exams != null && Model.Exams.Any())
             {
-                <div class="table-responsive">
+                        <div class="er-table-wrap">
                     <table class="dash-table" id="pubTable">
                         <thead>
                             <tr>
@@ -267,37 +267,43 @@
     </div>
 </div>
 
-<div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer" style="z-index:1080;"></div>
-
-<div class="modal fade" id="confirmModal" tabindex="-1" data-bs-backdrop="static">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h6 class="modal-title" id="confirmModalTitle">Confirm Action</h6>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p id="confirmModalBody" style="margin-bottom:16px;">Are you sure?</p>
-                <div id="confirmModalExtra" style="display:none;">
-                    <div class="mb-3">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="lockCheckbox" checked>
-                            <label class="form-check-label" for="lockCheckbox" style="font-size:14px;font-weight:500;">Lock results after publishing</label>
-                        </div>
-                    </div>
-                    <div class="mb-2">
-                        <label for="remarksInput" class="form-label" style="font-size:13px;font-weight:500;">Remarks / Notes</label>
-                        <textarea class="form-control form-control-sm" id="remarksInput" rows="2" placeholder="Optional notes for this action..." style="resize:vertical;"></textarea>
-                    </div>
+<div class="adm-modal-backdrop" id="confirmModal" style="display:none;">
+    <div class="adm-modal" role="dialog">
+        <div class="adm-modal__header">
+            <div class="adm-modal__header-left">
+                <div class="adm-modal__header-icon" id="confirmIcon" style="background:var(--adm-pending-bg);color:var(--adm-pending);">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+                </div>
+                <div>
+                    <h3 class="adm-modal__title" id="confirmModalTitle">Confirm Action</h3>
+                    <p class="adm-modal__subtitle" id="confirmModalBody">Are you sure?</p>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-sm btn-primary" id="confirmActionBtn">
-                    <span class="spinner-border spinner-border-sm me-1" id="confirmSpinner" style="display:none;"></span>
-                    <span id="confirmBtnText">Confirm</span>
-                </button>
+            <button type="button" class="adm-modal__close" onclick="closeConfirmModal()" aria-label="Close">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+            </button>
+        </div>
+        <div class="adm-modal__body" style="padding-top:4px;">
+            <p id="confirmModalBodyText" style="font-size:14px;color:var(--adm-text-2);margin-bottom:16px;">Are you sure?</p>
+            <div id="confirmModalExtra" style="display:none;">
+                <div class="adm-filters__field" style="margin-bottom:12px;">
+                    <label class="adm-checkbox">
+                        <input type="checkbox" id="lockCheckbox" checked>
+                        <span style="margin-left:6px;">Lock results after publishing</span>
+                    </label>
+                </div>
+                <div class="adm-filters__field">
+                    <label class="adm-label" style="font-size:13px;">Remarks / Notes</label>
+                    <textarea class="adm-input" id="remarksInput" rows="2" placeholder="Optional notes for this action..." style="resize:vertical;"></textarea>
+                </div>
             </div>
+        </div>
+        <div class="adm-modal__footer">
+            <button type="button" class="er-btn er-btn--secondary" onclick="closeConfirmModal()">Cancel</button>
+            <button type="button" class="er-btn er-btn--primary" id="confirmActionBtn">
+                <span class="adm-loading__spinner" id="confirmSpinner" style="width:14px;height:14px;border-width:2px;display:none;"></span>
+                <span id="confirmBtnText">Confirm</span>
+            </button>
         </div>
     </div>
 </div>
@@ -307,22 +313,15 @@
         var pendingAction = null;
 
         function showToast(message, type) {
-            var bg = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : 'bg-warning';
-            var container = document.getElementById('toastContainer');
-            var toast = document.createElement('div');
-            toast.className = 'toast align-items-center text-white border-0 ' + bg;
-            toast.setAttribute('role', 'alert');
-            toast.innerHTML = '<div class="d-flex"><div class="toast-body">' + message + '</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>';
-            container.appendChild(toast);
-            var bs = new bootstrap.Toast(toast, { delay: 4000 });
-            bs.show();
-            toast.addEventListener('hidden.bs.toast', function () { toast.remove(); });
+            if (type === 'success') toastr.success(message);
+            else if (type === 'error') toastr.error(message);
+            else toastr.warning(message);
         }
 
         function setLoadingState(el, loading, originalHtml) {
             if (loading) {
                 el.disabled = true;
-                el.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Processing...';
+                el.innerHTML = '<span class="adm-loading__spinner" style="width:14px;height:14px;border-width:2px;display:inline-block;vertical-align:middle;margin-right:4px;"></span> Processing...';
             } else {
                 el.disabled = false;
                 el.innerHTML = originalHtml || 'Confirm';
@@ -354,9 +353,15 @@
             }
         }
 
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
         function openConfirmModal(title, message, showExtra, actionType, callback) {
             document.getElementById('confirmModalTitle').textContent = title;
             document.getElementById('confirmModalBody').textContent = message;
+            document.getElementById('confirmModalBodyText').textContent = message;
             var extra = document.getElementById('confirmModalExtra');
             var lockCheck = document.getElementById('lockCheckbox');
             var remarks = document.getElementById('remarksInput');
@@ -377,8 +382,8 @@
             document.getElementById('confirmSpinner').style.display = 'none';
             document.getElementById('confirmActionBtn').disabled = false;
             pendingAction = callback;
-            var modal = new bootstrap.Modal(document.getElementById('confirmModal'));
-            modal.show();
+            document.getElementById('confirmModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
         }
 
         document.getElementById('confirmActionBtn').addEventListener('click', function () {
@@ -388,16 +393,30 @@
             spinner.style.display = 'inline-block';
             btnText.textContent = 'Processing...';
             document.getElementById('confirmActionBtn').disabled = true;
-            var modal = bootstrap.Modal.getInstance(document.getElementById('confirmModal'));
             pendingAction(function () {
-                if (modal) modal.hide();
+                closeConfirmModal();
             });
         });
 
-        document.getElementById('confirmModal').addEventListener('hidden.bs.modal', function () {
-            pendingAction = null;
-            document.getElementById('confirmSpinner').style.display = 'none';
-            document.getElementById('confirmActionBtn').disabled = false;
+        document.getElementById('confirmModal').addEventListener('click', function (e) {
+            if (e.target === this) {
+                closeConfirmModal();
+                pendingAction = null;
+                document.getElementById('confirmSpinner').style.display = 'none';
+                document.getElementById('confirmActionBtn').disabled = false;
+            }
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape') {
+                var modal = document.getElementById('confirmModal');
+                if (modal.style.display === 'flex') {
+                    closeConfirmModal();
+                    pendingAction = null;
+                    document.getElementById('confirmSpinner').style.display = 'none';
+                    document.getElementById('confirmActionBtn').disabled = false;
+                }
+            }
         });
 
         function executePublish(examId, action, done) {

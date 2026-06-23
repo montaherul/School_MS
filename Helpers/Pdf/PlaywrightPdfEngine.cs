@@ -22,6 +22,7 @@ public class PlaywrightPdfEngine : IDisposable
         try
         {
             await page.SetContentAsync(html, new() { WaitUntil = WaitUntilState.NetworkIdle });
+            await page.EmulateMediaAsync(new() { Media = Media.Print });
             var pdfOptions = new PagePdfOptions
             {
                 PrintBackground = true,
