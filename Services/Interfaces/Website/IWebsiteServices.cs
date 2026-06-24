@@ -41,6 +41,9 @@ public interface IEventService
     Task CreateEventAsync(Event ev, CancellationToken cancellationToken = default);
     Task UpdateEventAsync(Event ev, CancellationToken cancellationToken = default);
     Task DeleteEventAsync(int id, CancellationToken cancellationToken = default);
+    Task SubmitForApprovalAsync(int id, CancellationToken cancellationToken = default);
+    Task ApproveEventAsync(int id, int approvedBy, CancellationToken cancellationToken = default);
+    Task RejectEventAsync(int id, string reason, CancellationToken cancellationToken = default);
 }
 
 public interface IGalleryService

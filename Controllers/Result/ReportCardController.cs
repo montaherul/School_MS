@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Models.Entities.Result;
 using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Services.Interfaces.Result;
@@ -33,7 +34,7 @@ public class ReportCardController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller,Teacher,Senior Lecturer,Lecturer")]
+    [RequirePermission("ReportCard.View")]
     public async Task<IActionResult> Index(int? examId, int? classId, int? sectionId, CancellationToken ct)
     {
         var exams = await _uow.Repository<SchoolManagementSystem.Models.Entities.Exam.Exam>().ListAsync(x => !x.IsDeleted);
@@ -88,7 +89,7 @@ public class ReportCardController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller,Teacher,Senior Lecturer,Lecturer,Student,Guardian")]
+    [RequirePermission("ReportCard.Download")]
     public async Task<IActionResult> Download(int examId, int studentId, CancellationToken ct)
     {
         var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
@@ -135,12 +136,12 @@ public class ReportCardController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller,Teacher,Senior Lecturer,Lecturer,Student,Guardian")]
+    [RequirePermission("ReportCard.View")]
     public async Task<IActionResult> PrintFormat(int examId, int studentId, CancellationToken ct)
         => await BangladeshFormat(examId, studentId, ct);
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller,Teacher,Senior Lecturer,Lecturer,Student,Guardian")]
+    [RequirePermission("ReportCard.View")]
     public async Task<IActionResult> BangladeshFormat(int examId, int studentId, CancellationToken ct)
     {
         var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");

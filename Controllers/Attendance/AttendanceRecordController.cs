@@ -408,7 +408,7 @@ public class AttendanceRecordController : Controller
         return null;
     }
 
-    [Authorize(Roles = "Student")]
+    [RequirePermission("Attendance.View")]
     public async Task<IActionResult> MyAttendance(CancellationToken ct)
     {
         var studentId = await GetLoggedInStudentIdAsync(ct);
@@ -427,7 +427,7 @@ public class AttendanceRecordController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Student")]
+    [RequirePermission("Attendance.View")]
     public async Task<IActionResult> GetMyAttendanceData(int? year = null, int? month = null, CancellationToken ct = default)
     {
         var studentId = await GetLoggedInStudentIdAsync(ct);

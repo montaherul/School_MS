@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using SchoolManagementSystem.Filters;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using SchoolManagementSystem.Models.ViewModels.Attendance;
 using SchoolManagementSystem.Services.Interfaces.Attendance;
@@ -108,7 +109,7 @@ namespace SchoolManagementSystem.Controllers.Attendance
         
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
+        [RequirePermission("Leave.Approve")]
         public async Task<IActionResult> Approve(int id, string remarks, CancellationToken ct)
         {
             try
@@ -124,7 +125,7 @@ namespace SchoolManagementSystem.Controllers.Attendance
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
+        [RequirePermission("Leave.Reject")]
         public async Task<IActionResult> Reject(int id, string remarks, CancellationToken ct)
         {
             try

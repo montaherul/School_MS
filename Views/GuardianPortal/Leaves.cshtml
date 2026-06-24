@@ -7,31 +7,36 @@
     var leaveTypes = ViewBag.LeaveTypes as List<LeaveType> ?? new();
 }
 
-<div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold">Leave Applications</h2>
-            <p class="text-muted mb-0">@childName</p>
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-send"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Leave Applications</h1>
+                <p class="adm-header__sub">@childName</p>
+            </div>
         </div>
-        <a asp-action="Dashboard" class="btn btn-outline-secondary btn-sm">
+        <a asp-action="Dashboard" class="adm-btn adm-btn--ghost adm-btn--sm">
             <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
         </a>
     </div>
 
     @if (TempData["SuccessMessage"] is string success)
     {
-        <div class="alert alert-success">@success</div>
+        <div class="adm-alert adm-alert--success">@success</div>
     }
     @if (TempData["ErrorMessage"] is string err)
     {
-        <div class="alert alert-danger">@err</div>
+        <div class="adm-alert adm-alert--danger">@err</div>
     }
 
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-header bg-white">
+    <div class="adm-table-card mb-4">
+        <div class="px-4 py-3 border-bottom fw-bold">
             <h5 class="mb-0 fw-bold">Apply for Leave</h5>
         </div>
-        <div class="card-body">
+        <div class="p-4">
             <form asp-action="ApplyLeave" method="post" class="row g-3">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="studentId" value="@studentId" />
@@ -58,17 +63,17 @@
                     <input type="text" name="reason" class="form-control" placeholder="Brief reason" required />
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
-                    <button type="submit" class="btn btn-primary w-100">Submit</button>
+                    <button type="submit" class="adm-btn adm-btn--primary w-100">Submit</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm">
-        <div class="card-header bg-white">
+    <div class="adm-table-card">
+        <div class="px-4 py-3 border-bottom fw-bold">
             <h5 class="mb-0 fw-bold">Leave History</h5>
         </div>
-        <div class="card-body">
+        <div class="adm-table-card__body">
             @if (Model != null && Model.Any())
             {
                 <div class="table-responsive">
@@ -92,7 +97,7 @@
                                     <td>@l.ToDate.ToString("dd MMM yyyy")</td>
                                     <td>@l.Reason</td>
                                     <td>
-                                        <span class="badge bg-@(l.ApprovalStatus == StudentLeaveApplication.ApprovalStatusEnum.Approved ? "success" : l.ApprovalStatus == StudentLeaveApplication.ApprovalStatusEnum.Rejected ? "danger" : "warning text-dark")">
+                                        <span class="adm-badge adm-badge--@(l.ApprovalStatus == StudentLeaveApplication.ApprovalStatusEnum.Approved ? "success" : l.ApprovalStatus == StudentLeaveApplication.ApprovalStatusEnum.Rejected ? "danger" : "warning")">
                                             @l.ApprovalStatus
                                         </span>
                                     </td>

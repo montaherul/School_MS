@@ -3,20 +3,8 @@
 }
 
 <link rel="stylesheet" href="~/css/academic-calendar.css" asp-append-version="true" />
-<style>
-    .gp-cal-hero {
-        background: linear-gradient(135deg, #1e293b, #334155);
-        border-radius: 16px;
-        padding: 32px 36px;
-        margin-bottom: 28px;
-        color: #fff;
-    }
-    .gp-cal-hero h2 { font-weight: 800; margin: 0 0 6px; font-size: 26px; }
-    .gp-cal-hero p { color: rgba(255,255,255,0.6); margin: 0; font-size: 14px; }
-    .gp-cal-hero i { margin-right: 10px; opacity: 0.8; }
-</style>
 
-<div class="container-fluid py-4">
+<div class="adm-page">
 
     <!-- Hero -->
     <div class="gp-cal-hero d-flex align-items-center justify-content-between">
@@ -24,7 +12,7 @@
             <h2><i class="bi bi-calendar3"></i>Academic Calendar</h2>
             <p>View school holidays, exam schedules, and events</p>
         </div>
-        <a asp-action="Dashboard" class="btn btn-light btn-sm rounded-pill px-3">
+        <a asp-action="Dashboard" class="adm-btn adm-btn--ghost adm-btn--sm rounded-pill px-3">
             <i class="bi bi-arrow-left me-1"></i>Dashboard
         </a>
     </div>
@@ -33,8 +21,8 @@
     <div class="ac-stats" id="statsContainer"></div>
 
     <!-- Calendar Card -->
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-body">
+    <div class="adm-table-card mb-4">
+        <div class="p-4">
 
             <!-- Month Nav -->
             <div class="ac-month-nav">
@@ -73,8 +61,8 @@
     </div>
 
     <!-- Upcoming Events -->
-    <div class="card border-0 shadow-sm">
-        <div class="card-body">
+    <div class="adm-table-card">
+        <div class="p-4">
             <div class="d-flex align-items-center gap-2 mb-3">
                 <i class="bi bi-calendar-event fs-5" style="color:var(--ac-exam)"></i>
                 <h5 class="fw-bold mb-0">Upcoming Events</h5>
@@ -84,6 +72,21 @@
     </div>
 
 </div>
+
+@section Styles {
+<style>
+    .gp-cal-hero {
+        background: linear-gradient(135deg, #1e293b, #334155);
+        border-radius: 16px;
+        padding: 32px 36px;
+        margin-bottom: 28px;
+        color: #fff;
+    }
+    .gp-cal-hero h2 { font-weight: 800; margin: 0 0 6px; font-size: 26px; }
+    .gp-cal-hero p { color: rgba(255,255,255,0.6); margin: 0; font-size: 14px; }
+    .gp-cal-hero i { margin-right: 10px; opacity: 0.8; }
+</style>
+}
 
 @section Scripts {
     <script src="~/js/academic-calendar.js" asp-append-version="true"></script>

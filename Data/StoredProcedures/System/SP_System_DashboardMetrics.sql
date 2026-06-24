@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[SP_System_DashboardMetrics]
+﻿CREATE OR ALTER PROCEDURE [dbo].[SP_System_DashboardMetrics]
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -14,11 +14,11 @@ BEGIN
     BEGIN TRY
         SELECT @AvgQueryTime = ISNULL(AVG(total_elapsed_time / 1000.0 / NULLIF(execution_count, 0)), 0),
                @SlowQueries = COUNT(CASE WHEN total_elapsed_time / 1000.0 / NULLIF(execution_count, 0) > 2000 THEN 1 END)
-        FROM sys.dm_exec_query_stats
+FROM sys WITH(NOLOCK).dm_exec_query_stats
         WHERE last_execution_time >= DATEADD(HOUR, -1, GETDATE());
 
         SELECT @TotalUsersOnline = COUNT(DISTINCT session_id)
-        FROM sys.dm_exec_sessions
+FROM sys WITH(NOLOCK).dm_exec_sessions
         WHERE is_user_process = 1
           AND last_request_start_time >= DATEADD(MINUTE, -15, GETDATE());
     END TRY

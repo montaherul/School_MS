@@ -215,12 +215,12 @@ public class AdmissionController : Controller
     [HttpPost]
     [RequirePermission("Admission.Approve")]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Reject(int id, CancellationToken ct)
+    public async Task<IActionResult> Reject(int id, [FromForm] string? rejectionReason, CancellationToken ct)
     {
         try
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
-            await _admissionService.RejectAsync(id, userId, ct);
+            await _admissionService.RejectAsync(id, userId, rejectionReason, ct);
             return Json(new { success = true, message = "Application rejected successfully." });
         }
         catch (Exception ex)

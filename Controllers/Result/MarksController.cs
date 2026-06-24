@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Models.DTOs.Result;
 using SchoolManagementSystem.Models.Entities.Result;
 using SchoolManagementSystem.Models.Entities.Academic;
@@ -44,7 +45,7 @@ public class MarksController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Teacher,Senior Lecturer,Lecturer,Admin,Super Admin,Principal")]
+    [RequirePermission("Marks.View")]
     public async Task<IActionResult> Index(CancellationToken ct)
     {
         var activeYear = await _uow.Repository<AcademicYear>().FirstOrDefaultAsync(x => x.IsActive, ct);
@@ -76,7 +77,7 @@ public class MarksController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Teacher,Senior Lecturer,Lecturer,Admin,Super Admin,Principal")]
+    [RequirePermission("Marks.View")]
     public async Task<IActionResult> Entry(int examId, int classId, int sectionId, int subjectId, CancellationToken ct)
     {
         if (examId <= 0 || classId <= 0 || sectionId <= 0 || subjectId <= 0)
@@ -137,7 +138,7 @@ public class MarksController : Controller
     }
 
     [HttpPost]
-    [Authorize(Roles = "Teacher,Senior Lecturer,Lecturer,Admin,Super Admin,Principal")]
+    [RequirePermission("Marks.Edit")]
     public async Task<IActionResult> Save([FromBody] MarkBatchDto dto, CancellationToken ct)
     {
         try
@@ -178,7 +179,7 @@ public class MarksController : Controller
     }
 
     [HttpPost]
-    [Authorize(Roles = "Teacher,Senior Lecturer,Lecturer,Admin,Super Admin,Principal")]
+    [RequirePermission("Marks.Edit")]
     public async Task<IActionResult> SaveRow([FromBody] MarkEntryDto dto, CancellationToken ct)
     {
         try
@@ -220,7 +221,7 @@ public class MarksController : Controller
     }
 
     [HttpPost]
-    [Authorize(Roles = "Teacher,Senior Lecturer,Lecturer,Admin,Super Admin,Principal")]
+    [RequirePermission("Marks.Edit")]
     public async Task<IActionResult> SaveDraft([FromBody] MarkBatchDto dto, CancellationToken ct)
     {
         try
@@ -260,7 +261,7 @@ public class MarksController : Controller
     }
 
     [HttpPost]
-    [Authorize(Roles = "Teacher,Senior Lecturer,Lecturer,Admin,Super Admin,Principal")]
+    [RequirePermission("Marks.Import")]
     public async Task<IActionResult> ImportExcel(int examId, int subjectId, int classId, int sectionId, IFormFile file, bool saveAsDraft, CancellationToken ct)
     {
         var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
@@ -282,7 +283,7 @@ public class MarksController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Teacher,Senior Lecturer,Lecturer,Admin,Super Admin,Principal")]
+    [RequirePermission("Marks.View")]
     public async Task<IActionResult> DownloadTemplate(int examId, int subjectId, int classId, int sectionId, CancellationToken ct)
     {
         var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
@@ -298,7 +299,7 @@ public class MarksController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Teacher,Senior Lecturer,Lecturer,Admin,Super Admin,Principal")]
+    [RequirePermission("Marks.View")]
     public async Task<IActionResult> ExportExcel(int examId, int subjectId, int classId, int sectionId, int? groupId, CancellationToken ct)
     {
         var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
@@ -314,7 +315,7 @@ public class MarksController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Teacher,Senior Lecturer,Lecturer,Admin,Super Admin,Principal")]
+    [RequirePermission("Marks.View")]
     public async Task<IActionResult> ExportCsv(int examId, int subjectId, int classId, int sectionId, int? groupId, CancellationToken ct)
     {
         var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
@@ -329,7 +330,7 @@ public class MarksController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Teacher,Senior Lecturer,Lecturer")]
+    [RequirePermission("Marks.Dashboard")]
     public async Task<IActionResult> Dashboard(CancellationToken ct)
     {
         var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
@@ -391,7 +392,7 @@ public class MarksController : Controller
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    [RequirePermission("Marks.Lock")]
     public async Task<IActionResult> Lock(int examId, int subjectId, int classId, int sectionId)
     {
         try
@@ -409,7 +410,7 @@ public class MarksController : Controller
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    [RequirePermission("Marks.Lock")]
     public async Task<IActionResult> Unlock(int examId, int subjectId, int classId, int sectionId)
     {
         try
@@ -427,7 +428,7 @@ public class MarksController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    [RequirePermission("Marks.View")]
     public async Task<IActionResult> EntryStatus(int examId, int? classId, CancellationToken ct)
     {
         var dto = await _markEntryService.GetEntryStatusAsync(examId, classId);
@@ -437,7 +438,7 @@ public class MarksController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    [RequirePermission("Marks.Audit")]
     public async Task<IActionResult> AuditLog(int? examId, int? studentId, CancellationToken ct)
     {
         var query = _uow.Repository<ResultAuditLog>().Query()

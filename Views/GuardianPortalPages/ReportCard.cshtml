@@ -5,6 +5,211 @@
     var examId = Model?.ExamId ?? 0;
 }
 
+<div class="adm-page">
+    <div class="adm-header no-print">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-file-earmark-text"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Report Card</h1>
+                <p class="adm-header__sub">@Model?.StudentName</p>
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="@Url.Action("Download", "ReportCard", new { examId, studentId })" class="adm-btn adm-btn--primary">
+                <i class="bi bi-file-earmark-pdf me-1"></i>Download PDF
+            </a>
+            <a href="@Url.Action("PrintFormat", "ReportCard", new { examId, studentId })" class="adm-btn adm-btn--ghost">
+                <i class="bi bi-file-earmark-text me-1"></i>View Full Report Card
+            </a>
+            <a href="@Url.Action("Results", "GuardianPortalPages", new { studentId })" class="adm-btn adm-btn--ghost">
+                <i class="bi bi-arrow-left me-1"></i>Back to Results
+            </a>
+        </div>
+    </div>
+
+    @if (Model == null)
+    {
+        <div class="adm-table-card">
+            <div class="text-center py-5">
+                <i class="bi bi-file-earmark-x fs-1 text-muted"></i>
+                <p class="text-muted mt-2">Report card not found.</p>
+            </div>
+        </div>
+        return;
+    }
+
+    <div class="rc-card">
+        <div class="rc-card__inner">
+            <div class="rc-header">
+                <div class="rc-header__left">
+                    <div class="rc-header__logo">
+                        @if (!string.IsNullOrEmpty(Model.SchoolLogoPath))
+                        {
+                            <img src="@Model.SchoolLogoPath" alt="Logo" style="width:100%;height:100%;object-fit:cover;" />
+                        }
+                        else
+                        {
+                            <i class="bi bi-building"></i>
+                        }
+                    </div>
+                    <div>
+                        <p class="rc-header__school-name">@Model.SchoolName</p>
+                        <p class="rc-header__address">@Model.SchoolAddress</p>
+                        @if (!string.IsNullOrEmpty(Model.EIIN))
+                        {
+                            <p class="rc-header__address">EIIN: @Model.EIIN</p>
+                        }
+                    </div>
+                </div>
+                <div class="rc-header__right">
+                    <div class="rc-header__exam-name">@Model.ExamName</div>
+                    <div class="rc-header__year">Academic Year: @Model.AcademicYearName</div>
+                </div>
+            </div>
+
+            <h6 style="font-weight:700;margin-bottom:12px;font-size:0.9rem;color:var(--adm-text-2);text-transform:uppercase;letter-spacing:0.04em;">
+                <i class="bi bi-person-vcard me-1"></i>Student Information
+            </h6>
+            <table class="rc-table" style="margin-bottom:20px;">
+                <tbody>
+                    <tr>
+                        <td style="width:140px;font-weight:600;color:var(--adm-text-2);">Student Name</td>
+                        <td style="font-weight:700;">@Model.StudentName</td>
+                        <td style="width:140px;font-weight:600;color:var(--adm-text-2);">Roll Number</td>
+                        <td class="font-monospace">@Model.RollNumber</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:600;color:var(--adm-text-2);">Father's Name</td>
+                        <td>@Model.FatherName</td>
+                        <td style="font-weight:600;color:var(--adm-text-2);">Mother's Name</td>
+                        <td>@Model.MotherName</td>
+                    </tr>
+                    <tr>
+                        <td style="font-weight:600;color:var(--adm-text-2);">Class</td>
+                        <td>@Model.ClassName</td>
+                        <td style="font-weight:600;color:var(--adm-text-2);">Section</td>
+                        <td>@Model.SectionName</td>
+                    </tr>
+                    @if (!string.IsNullOrEmpty(Model.GroupName))
+                    {
+                        <tr>
+                            <td style="font-weight:600;color:var(--adm-text-2);">Group</td>
+                            <td colspan="3">@Model.GroupName</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <h6 style="font-weight:700;margin-bottom:12px;font-size:0.9rem;color:var(--adm-text-2);text-transform:uppercase;letter-spacing:0.04em;">
+                <i class="bi bi-journal-check me-1"></i>Subject-wise Marks
+            </h6>
+            <table class="rc-table" style="margin-bottom:20px;">
+                <thead>
+                    <tr>
+                        <th>Subject</th>
+                        <th style="text-align:center;width:90px;">Full Marks</th>
+                        <th style="text-align:center;width:90px;">Pass Marks</th>
+                        <th style="text-align:center;width:100px;">Marks Obtained</th>
+                        <th style="text-align:center;width:70px;">Grade</th>
+                        <th style="text-align:center;width:90px;">Grade Point</th>
+                        <th style="text-align:center;width:70px;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var sub in Model.Subjects)
+                    {
+                        <tr>
+                            <td style="font-weight:600;">
+                                @sub.SubjectName
+                                @if (sub.IsOptionalSubject)
+                                {
+                                    <span class="adm-badge adm-badge--neutral" style="font-size:9px;">Optional</span>
+                                }
+                            </td>
+                            <td style="text-align:center;font-family:'SF Mono','Cascadia Code','Consolas',monospace;">@sub.FullMarks.ToString("F0")</td>
+                            <td style="text-align:center;font-family:'SF Mono','Cascadia Code','Consolas',monospace;">@sub.PassMarks.ToString("F0")</td>
+                            <td style="text-align:center;font-family:'SF Mono','Cascadia Code','Consolas',monospace;font-weight:700;">@sub.MarksObtained.ToString("F0")</td>
+                            <td style="text-align:center;font-weight:700;">@sub.Grade</td>
+                            <td style="text-align:center;">@sub.GradePoint.ToString("F2")</td>
+                            <td style="text-align:center;">
+                                @if (sub.IsPassed)
+                                {
+                                    <span class="adm-badge adm-badge--success">Pass</span>
+                                }
+                                else
+                                {
+                                    <span class="adm-badge adm-badge--danger">Fail</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr class="rc-summary">
+                        <td style="font-weight:700;">Overall Result</td>
+                        <td style="text-align:center;font-weight:700;">@Model.Summary.TotalFullMarks.ToString("F0")</td>
+                        <td></td>
+                        <td style="text-align:center;font-weight:700;">@Model.Summary.TotalMarks.ToString("F0")</td>
+                        <td style="text-align:center;font-weight:700;">@Model.Summary.Grade</td>
+                        <td style="text-align:center;font-weight:700;color:var(--adm-primary);">@Model.Summary.Gpa.ToString("F2")</td>
+                        <td style="text-align:center;">
+                            @if (Model.Summary.IsPassed)
+                            {
+                                <span class="adm-badge adm-badge--success">Passed</span>
+                            }
+                            else
+                            {
+                                <span class="adm-badge adm-badge--danger">Failed</span>
+                            }
+                        </td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            <div style="display:flex;gap:24px;flex-wrap:wrap;justify-content:center;padding:16px;background:var(--adm-surface-1);border-radius:8px;">
+                <div style="text-align:center;">
+                    <div style="font-size:11px;font-weight:600;color:var(--adm-text-3);text-transform:uppercase;">GPA</div>
+                    <div style="font-size:28px;font-weight:800;color:var(--adm-primary);">@Model.Summary.Gpa.ToString("F2")</div>
+                </div>
+                <div style="text-align:center;">
+                    <div style="font-size:11px;font-weight:600;color:var(--adm-text-3);text-transform:uppercase;">Grade</div>
+                    <div style="font-size:28px;font-weight:800;color:var(--adm-text);">@Model.Summary.Grade</div>
+                </div>
+                <div style="text-align:center;">
+                    <div style="font-size:11px;font-weight:600;color:var(--adm-text-3);text-transform:uppercase;">Position</div>
+                    <div style="font-size:28px;font-weight:800;color:var(--adm-pending);">
+                        @if (Model.Summary.Position > 0)
+                        {
+                            @Model.Summary.Position<sup style="font-size:14px;">th</sup>
+                        }
+                        else
+                        {
+                            <span style="font-size:16px;color:var(--adm-text-3);">N/A</span>
+                        }
+                    </div>
+                </div>
+                <div style="text-align:center;">
+                    <div style="font-size:11px;font-weight:600;color:var(--adm-text-3);text-transform:uppercase;">Passed / Total</div>
+                    <div style="font-size:28px;font-weight:800;color:var(--adm-success);">
+                        @Model.Summary.PassedSubjectCount / @(Model.Summary.PassedSubjectCount + Model.Summary.FailedSubjectCount)
+                    </div>
+                </div>
+            </div>
+
+            @if (Model.Summary.PublishedAt.HasValue)
+            {
+                <div style="text-align:center;margin-top:16px;font-size:12px;color:var(--adm-text-3);">
+                    <i class="bi bi-check-circle text-success me-1"></i>
+                    Published on @Model.Summary.PublishedAt.Value.ToString("dd MMM yyyy")
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Styles {
 <style>
     .rc-card {
         max-width: 210mm;
@@ -121,202 +326,4 @@
         .app-shell, .main-panel, .content { margin: 0 !important; padding: 0 !important; max-width: 100% !important; }
     }
 </style>
-
-<div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4 no-print">
-        <div>
-            <h2 class="fw-bold">Report Card</h2>
-            <p class="text-muted mb-0">@Model?.StudentName</p>
-        </div>
-        <div class="d-flex gap-2">
-            <a href="@Url.Action("Download", "ReportCard", new { examId, studentId })" class="btn btn-primary">
-                <i class="bi bi-file-earmark-pdf me-1"></i>Download PDF
-            </a>
-            <a href="@Url.Action("PrintFormat", "ReportCard", new { examId, studentId })" class="btn btn-outline-info">
-                <i class="bi bi-file-earmark-text me-1"></i>View Full Report Card
-            </a>
-            <a href="@Url.Action("Results", "GuardianPortalPages", new { studentId })" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left me-1"></i>Back to Results
-            </a>
-        </div>
-    </div>
-
-    @if (Model == null)
-    {
-        <div class="card border-0 shadow-sm">
-            <div class="card-body text-center py-5">
-                <i class="bi bi-file-earmark-x fs-1 text-muted"></i>
-                <p class="text-muted mt-2">Report card not found.</p>
-            </div>
-        </div>
-        return;
-    }
-
-    <div class="rc-card">
-        <div class="rc-card__inner">
-            <div class="rc-header">
-                <div class="rc-header__left">
-                    <div class="rc-header__logo">
-                        @if (!string.IsNullOrEmpty(Model.SchoolLogoPath))
-                        {
-                            <img src="@Model.SchoolLogoPath" alt="Logo" style="width:100%;height:100%;object-fit:cover;" />
-                        }
-                        else
-                        {
-                            <i class="bi bi-building"></i>
-                        }
-                    </div>
-                    <div>
-                        <p class="rc-header__school-name">@Model.SchoolName</p>
-                        <p class="rc-header__address">@Model.SchoolAddress</p>
-                        @if (!string.IsNullOrEmpty(Model.EIIN))
-                        {
-                            <p class="rc-header__address">EIIN: @Model.EIIN</p>
-                        }
-                    </div>
-                </div>
-                <div class="rc-header__right">
-                    <div class="rc-header__exam-name">@Model.ExamName</div>
-                    <div class="rc-header__year">Academic Year: @Model.AcademicYearName</div>
-                </div>
-            </div>
-
-            <h6 style="font-weight:700;margin-bottom:12px;font-size:0.9rem;color:var(--adm-text-2);text-transform:uppercase;letter-spacing:0.04em;">
-                <i class="bi bi-person-vcard me-1"></i>Student Information
-            </h6>
-            <table class="rc-table" style="margin-bottom:20px;">
-                <tbody>
-                    <tr>
-                        <td style="width:140px;font-weight:600;color:var(--adm-text-2);">Student Name</td>
-                        <td style="font-weight:700;">@Model.StudentName</td>
-                        <td style="width:140px;font-weight:600;color:var(--adm-text-2);">Roll Number</td>
-                        <td class="font-monospace">@Model.RollNumber</td>
-                    </tr>
-                    <tr>
-                        <td style="font-weight:600;color:var(--adm-text-2);">Father's Name</td>
-                        <td>@Model.FatherName</td>
-                        <td style="font-weight:600;color:var(--adm-text-2);">Mother's Name</td>
-                        <td>@Model.MotherName</td>
-                    </tr>
-                    <tr>
-                        <td style="font-weight:600;color:var(--adm-text-2);">Class</td>
-                        <td>@Model.ClassName</td>
-                        <td style="font-weight:600;color:var(--adm-text-2);">Section</td>
-                        <td>@Model.SectionName</td>
-                    </tr>
-                    @if (!string.IsNullOrEmpty(Model.GroupName))
-                    {
-                        <tr>
-                            <td style="font-weight:600;color:var(--adm-text-2);">Group</td>
-                            <td colspan="3">@Model.GroupName</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-
-            <h6 style="font-weight:700;margin-bottom:12px;font-size:0.9rem;color:var(--adm-text-2);text-transform:uppercase;letter-spacing:0.04em;">
-                <i class="bi bi-journal-check me-1"></i>Subject-wise Marks
-            </h6>
-            <table class="rc-table" style="margin-bottom:20px;">
-                <thead>
-                    <tr>
-                        <th>Subject</th>
-                        <th style="text-align:center;width:90px;">Full Marks</th>
-                        <th style="text-align:center;width:90px;">Pass Marks</th>
-                        <th style="text-align:center;width:100px;">Marks Obtained</th>
-                        <th style="text-align:center;width:70px;">Grade</th>
-                        <th style="text-align:center;width:90px;">Grade Point</th>
-                        <th style="text-align:center;width:70px;">Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var sub in Model.Subjects)
-                    {
-                        <tr>
-                            <td style="font-weight:600;">
-                                @sub.SubjectName
-                                @if (sub.IsOptionalSubject)
-                                {
-                                    <span class="badge bg-light text-muted" style="font-size:9px;">Optional</span>
-                                }
-                            </td>
-                            <td style="text-align:center;font-family:'SF Mono','Cascadia Code','Consolas',monospace;">@sub.FullMarks.ToString("F0")</td>
-                            <td style="text-align:center;font-family:'SF Mono','Cascadia Code','Consolas',monospace;">@sub.PassMarks.ToString("F0")</td>
-                            <td style="text-align:center;font-family:'SF Mono','Cascadia Code','Consolas',monospace;font-weight:700;">@sub.MarksObtained.ToString("F0")</td>
-                            <td style="text-align:center;font-weight:700;">@sub.Grade</td>
-                            <td style="text-align:center;">@sub.GradePoint.ToString("F2")</td>
-                            <td style="text-align:center;">
-                                @if (sub.IsPassed)
-                                {
-                                    <span class="badge bg-success">Pass</span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-danger">Fail</span>
-                                }
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-                <tfoot>
-                    <tr class="rc-summary">
-                        <td style="font-weight:700;">Overall Result</td>
-                        <td style="text-align:center;font-weight:700;">@Model.Summary.TotalFullMarks.ToString("F0")</td>
-                        <td></td>
-                        <td style="text-align:center;font-weight:700;">@Model.Summary.TotalMarks.ToString("F0")</td>
-                        <td style="text-align:center;font-weight:700;">@Model.Summary.Grade</td>
-                        <td style="text-align:center;font-weight:700;color:var(--adm-primary);">@Model.Summary.Gpa.ToString("F2")</td>
-                        <td style="text-align:center;">
-                            @if (Model.Summary.IsPassed)
-                            {
-                                <span class="badge bg-success">Passed</span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-danger">Failed</span>
-                            }
-                        </td>
-                    </tr>
-                </tfoot>
-            </table>
-
-            <div style="display:flex;gap:24px;flex-wrap:wrap;justify-content:center;padding:16px;background:var(--adm-surface-1);border-radius:8px;">
-                <div style="text-align:center;">
-                    <div style="font-size:11px;font-weight:600;color:var(--adm-text-3);text-transform:uppercase;">GPA</div>
-                    <div style="font-size:28px;font-weight:800;color:var(--adm-primary);">@Model.Summary.Gpa.ToString("F2")</div>
-                </div>
-                <div style="text-align:center;">
-                    <div style="font-size:11px;font-weight:600;color:var(--adm-text-3);text-transform:uppercase;">Grade</div>
-                    <div style="font-size:28px;font-weight:800;color:var(--adm-text);">@Model.Summary.Grade</div>
-                </div>
-                <div style="text-align:center;">
-                    <div style="font-size:11px;font-weight:600;color:var(--adm-text-3);text-transform:uppercase;">Position</div>
-                    <div style="font-size:28px;font-weight:800;color:var(--adm-pending);">
-                        @if (Model.Summary.Position > 0)
-                        {
-                            @Model.Summary.Position<sup style="font-size:14px;">th</sup>
-                        }
-                        else
-                        {
-                            <span style="font-size:16px;color:var(--adm-text-3);">N/A</span>
-                        }
-                    </div>
-                </div>
-                <div style="text-align:center;">
-                    <div style="font-size:11px;font-weight:600;color:var(--adm-text-3);text-transform:uppercase;">Passed / Total</div>
-                    <div style="font-size:28px;font-weight:800;color:var(--adm-success);">
-                        @Model.Summary.PassedSubjectCount / @(Model.Summary.PassedSubjectCount + Model.Summary.FailedSubjectCount)
-                    </div>
-                </div>
-            </div>
-
-            @if (Model.Summary.PublishedAt.HasValue)
-            {
-                <div style="text-align:center;margin-top:16px;font-size:12px;color:var(--adm-text-3);">
-                    <i class="bi bi-check-circle text-success me-1"></i>
-                    Published on @Model.Summary.PublishedAt.Value.ToString("dd MMM yyyy")
-                </div>
-            }
-        </div>
-    </div>
-</div>
+}

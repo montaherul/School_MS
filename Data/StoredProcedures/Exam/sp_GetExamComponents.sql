@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[sp_GetExamComponents]
+﻿CREATE OR ALTER PROCEDURE [dbo].[sp_GetExamComponents]
     @IncludeInactive BIT = 0
 AS
 BEGIN
@@ -17,7 +17,7 @@ BEGIN
         IsActive,
         CreatedAt,
         CreatedBy
-    FROM ExamComponents
+FROM ExamComponents WITH(NOLOCK)
     WHERE IsDeleted = 0
       AND (@IncludeInactive = 1 OR IsActive = 1)
     ORDER BY DisplayOrder, Name;

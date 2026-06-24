@@ -1,11 +1,11 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Data;
+using SchoolManagementSystem.Filters;
 
 namespace SchoolManagementSystem.Controllers.Admin;
 
-[Authorize(Roles = "Admin,Super Admin,Principal")]
+[RequirePermission("Monitoring.View")]
 public class MonitoringController : Controller
 {
     private readonly SchoolDbContext _db;

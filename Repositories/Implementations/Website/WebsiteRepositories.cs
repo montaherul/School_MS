@@ -88,3 +88,114 @@ public class EmailTemplateRepository : BaseRepository<EmailTemplate>, IEmailTemp
     {
     }
 }
+
+public class EventNotificationRepository : BaseRepository<EventNotification>, IEventNotificationRepository
+{
+    public EventNotificationRepository(SchoolDbContext context) : base(context)
+    {
+    }
+
+    public async Task<EventNotification?> GetWithRecipientsAsync(int id, CancellationToken cancellationToken = default)
+    {
+        return await _set
+            .Include(n => n.Event)
+            .Include(n => n.Recipients.Where(r => !r.IsDeleted))
+            .Include(n => n.Logs.Where(l => !l.IsDeleted))
+            .FirstOrDefaultAsync(n => n.Id == id && !n.IsDeleted, cancellationToken);
+    }
+}
+
+public class EventNotificationRecipientRepository : BaseRepository<EventNotificationRecipient>, IEventNotificationRecipientRepository
+{
+    public EventNotificationRecipientRepository(SchoolDbContext context) : base(context)
+    {
+    }
+}
+
+public class EventNotificationLogRepository : BaseRepository<EventNotificationLog>, IEventNotificationLogRepository
+{
+    public EventNotificationLogRepository(SchoolDbContext context) : base(context)
+    {
+    }
+}
+
+public class EventNotificationQueueRepository : BaseRepository<EventNotificationQueue>, IEventNotificationQueueRepository
+{
+    public EventNotificationQueueRepository(SchoolDbContext context) : base(context)
+    {
+    }
+
+    public async Task<IReadOnlyList<EventNotificationQueue>> GetPendingBatchAsync(int batchSize, CancellationToken cancellationToken = default)
+    {
+        var now = DateTime.UtcNow;
+        return await _set
+            .Where(q => !q.IsDeleted
+                && (q.Status == "Pending"
+                    || (q.Status == "Failed" && q.RetryCount < q.MaxRetries
+                        && q.NextRetryAt != null && q.NextRetryAt <= now)))
+            .OrderBy(q => q.Id)
+            .Take(batchSize)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<int> GetPendingCountAsync(CancellationToken cancellationToken = default)
+    {
+        var now = DateTime.UtcNow;
+        return await _set
+            .Where(q => !q.IsDeleted
+                && (q.Status == "Pending"
+                    || (q.Status == "Failed" && q.RetryCount < q.MaxRetries
+                        && q.NextRetryAt != null && q.NextRetryAt <= now)))
+            .CountAsync(cancellationToken);
+    }
+}
+
+public class GuardainNotificationPreferenceRepository : BaseRepository<GuardainNotificationPreference>, IGuardainNotificationPreferenceRepository
+{
+    public GuardainNotificationPreferenceRepository(SchoolDbContext context) : base(context)
+    {
+    }
+
+    public async Task<GuardainNotificationPreference?> GetByGuardianIdAsync(int guardianId, CancellationToken cancellationToken = default)
+    {
+        return await _set.FirstOrDefaultAsync(p => p.GuardianId == guardianId && !p.IsDeleted, cancellationToken);
+    }
+}
+
+public class EventNotificationAttachmentRepository : BaseRepository<EventNotificationAttachment>, IEventNotificationAttachmentRepository
+{
+    public EventNotificationAttachmentRepository(SchoolDbContext context) : base(context)
+    {
+    }
+}
+
+public class ScheduledNotificationRepository : BaseRepository<ScheduledNotification>, IScheduledNotificationRepository
+{
+    public ScheduledNotificationRepository(SchoolDbContext context) : base(context)
+    {
+    }
+
+    public async Task<IReadOnlyList<ScheduledNotification>> GetPendingScheduledAsync(CancellationToken cancellationToken = default)
+    {
+        var now = DateTime.UtcNow;
+        return await _set
+            .Where(s => !s.IsDeleted && !s.IsProcessed && s.ScheduledAt <= now)
+            .OrderBy(s => s.ScheduledAt)
+            .ToListAsync(cancellationToken);
+    }
+}
+
+public class ReminderConfigRepository : BaseRepository<ReminderConfig>, IReminderConfigRepository
+{
+    public ReminderConfigRepository(SchoolDbContext context) : base(context)
+    {
+    }
+
+    public async Task<IReadOnlyList<ReminderConfig>> GetActiveRemindersDueAsync(CancellationToken cancellationToken = default)
+    {
+        var now = DateTime.UtcNow;
+        return await _set
+            .Where(r => !r.IsDeleted && r.IsActive)
+            .ToListAsync(cancellationToken);
+    }
+}

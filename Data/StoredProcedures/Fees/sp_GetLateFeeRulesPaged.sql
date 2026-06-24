@@ -1,4 +1,4 @@
--- ============================================================================
+﻿-- ============================================================================
 -- Stored Procedure: sp_GetLateFeeRulesPaged
 -- Purpose: Get paginated late fee rules
 -- ============================================================================
@@ -13,7 +13,7 @@ BEGIN
 
     DECLARE @Offset INT = (@PageNumber - 1) * @PageSize;
 
-    WITH Data AS (
+
         SELECT 
             lfr.Id,
             lfr.Name,
@@ -26,31 +26,23 @@ BEGIN
             lfr.FeeCategoryId,
             fc.Name AS FeeCategoryName,
             lfr.IsActive,
-            ROW_NUMBER() OVER (ORDER BY lfr.Name, lfr.Id) AS RowNum,
-            COUNT(*) OVER () AS TotalCount
+
+            COUNT(*) OVER () AS TotalRecords
         FROM 
-            LateFeeRules lfr
+LateFeeRules lfr WITH(NOLOCK)
         LEFT JOIN 
-            Classes c ON lfr.SchoolClassId = c.Id
+Classes c WITH(NOLOCK) ON lfr.SchoolClassId = c.Id
         LEFT JOIN 
-            FeeCategories fc ON lfr.FeeCategoryId = fc.Id
+FeeCategories fc WITH(NOLOCK) ON lfr.FeeCategoryId = fc.Id
         WHERE 
             lfr.IsDeleted = 0
             AND (
                 @SearchTerm IS NULL 
                 OR lfr.Name LIKE '%' + @SearchTerm + '%'
             )
-    )
-    SELECT 
-        Id, Name, GraceDays, FeeType, FeeValue, MaxFee,
-        SchoolClassId, ClassName, FeeCategoryId, FeeCategoryName, IsActive,
-        TotalCount AS TotalRecords
-    FROM 
-        Data
-    WHERE 
-        RowNum > @Offset 
-        AND RowNum <= @Offset + @PageSize
-    ORDER BY 
-        RowNum;
+    
+ORDER BY lfr.Name, lfr.Id
+OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
+
 END;
 GO

@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
+using SchoolManagementSystem.Filters;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Data;
 using SchoolManagementSystem.Models.DTOs.Result;
@@ -57,7 +58,7 @@ public class AdminResultController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    [RequirePermission("Result.Dashboard")]
     public async Task<IActionResult> Dashboard(
         int? academicYearId,
         int? examId,
@@ -199,7 +200,7 @@ public class AdminResultController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    [RequirePermission("Result.View")]
     public async Task<IActionResult> AllSubjects(CancellationToken ct)
     {
         var groupedSubjects = await _subjectService.GetGroupedSubjectsAsync(ct);
@@ -216,7 +217,7 @@ public class AdminResultController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    [RequirePermission("Result.View")]
     public async Task<IActionResult> AllResults(int? examId, int? classId, string? status, CancellationToken ct)
     {
         var rawClasses = await _examService.GetClassesAsync(ct);
@@ -237,7 +238,7 @@ public class AdminResultController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    [RequirePermission("Result.View")]
     public async Task<IActionResult> GetResultListJson(
         int page = 1,
         int size = 20,
@@ -263,7 +264,7 @@ public class AdminResultController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    [RequirePermission("Result.View")]
     public async Task<IActionResult> TabulationSheet(int examId, int? classId, int? sectionId, CancellationToken ct)
     {
         var tabulationSheet = await _analyticsService.GetTabulationSheetAsync(examId, classId, sectionId);
@@ -276,14 +277,14 @@ public class AdminResultController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    [RequirePermission("Result.View")]
     public IActionResult MeritLists(int examId)
     {
         return RedirectToAction("Index", "MeritList", new { examId });
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    [RequirePermission("Result.View")]
     public async Task<IActionResult> SubjectAnalysis(int examId, CancellationToken ct)
     {
         var exam = await _examService.GetExamByIdAsync(examId, ct) as ExamEntity;
@@ -298,7 +299,7 @@ public class AdminResultController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    [RequirePermission("Result.Publish")]
     public async Task<IActionResult> ResultPublishing(int? academicYearId, CancellationToken ct)
     {
         var academicYears = await _uow.Repository<AcademicYear>().ListAsync(x => !x.IsDeleted, ct);
@@ -349,7 +350,7 @@ public class AdminResultController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    [RequirePermission("Result.Publish")]
     public async Task<IActionResult> ReviewResults(int examId, int? classId, int? sectionId, int? groupId, CancellationToken ct)
     {
         var exam = await _uow.Repository<ExamEntity>().Query()
@@ -377,7 +378,7 @@ public class AdminResultController : Controller
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    [RequirePermission("Result.Publish")]
     public async Task<IActionResult> PublishResults([FromBody] PublishRequest request)
     {
         try
@@ -403,7 +404,7 @@ public class AdminResultController : Controller
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    [RequirePermission("Result.Publish")]
     public async Task<IActionResult> UnpublishResults([FromBody] PublishRequest request)
     {
         try
@@ -433,7 +434,7 @@ public class AdminResultController : Controller
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    [RequirePermission("Result.Publish")]
     public async Task<IActionResult> RepublishResults([FromBody] PublishRequest request)
     {
         try
@@ -448,7 +449,7 @@ public class AdminResultController : Controller
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin,Super Admin,Principal")]
+    [RequirePermission("Result.Approve")]
     public async Task<IActionResult> ApproveResults([FromBody] PublishRequest request)
     {
         try
@@ -464,7 +465,7 @@ public class AdminResultController : Controller
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    [RequirePermission("Result.Publish")]
     public async Task<IActionResult> RejectResults([FromBody] RejectRequest request)
     {
         try
@@ -503,7 +504,7 @@ public class AdminResultController : Controller
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin,Super Admin,Principal")]
+    [RequirePermission("Result.Recalculate")]
     public async Task<IActionResult> RecalculateResults(int examId)
     {
         try
@@ -526,7 +527,7 @@ public class AdminResultController : Controller
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin,Super Admin,Principal")]
+    [RequirePermission("Result.Recalculate")]
     public async Task<IActionResult> RecalculateMeritPositions(int examId)
     {
         try

@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[sp_GetGuardianAttendance]
+﻿CREATE OR ALTER PROCEDURE [dbo].[sp_GetGuardianAttendance]
     @GuardianId INT,
     @StudentId INT,
     @FromDate DATETIME = NULL,
@@ -22,7 +22,7 @@ BEGIN
         @AbsentCount = SUM(CASE WHEN Status = 2 THEN 1 ELSE 0 END),
         @LateCount = SUM(CASE WHEN Status = 3 THEN 1 ELSE 0 END),
         @LeaveCount = SUM(CASE WHEN Status = 4 THEN 1 ELSE 0 END)
-    FROM Attendance a
+FROM Attendance a WITH(NOLOCK)
     WHERE a.StudentId = @StudentId AND a.IsDeleted = 0
       AND (@FromDate IS NULL OR a.AttendanceDate >= @FromDate)
       AND (@ToDate IS NULL OR a.AttendanceDate <= @ToDate);
@@ -47,9 +47,9 @@ BEGIN
         a.Remarks,
         c.Name AS ClassName,
         sec.Name AS SectionName
-    FROM Attendance a
-    LEFT JOIN Classes c ON a.SchoolClassId = c.Id
-    LEFT JOIN Sections sec ON a.SectionId = sec.Id
+FROM Attendance a WITH(NOLOCK)
+LEFT JOIN Classes c WITH(NOLOCK) ON a.SchoolClassId = c.Id
+LEFT JOIN Sections sec WITH(NOLOCK) ON a.SectionId = sec.Id
     WHERE a.StudentId = @StudentId AND a.IsDeleted = 0
       AND (@FromDate IS NULL OR a.AttendanceDate >= @FromDate)
       AND (@ToDate IS NULL OR a.AttendanceDate <= @ToDate)

@@ -1,4 +1,5 @@
 @inject SchoolManagementSystem.Data.SchoolDbContext _db
+@inject SchoolManagementSystem.Services.Interfaces.Website.ISchoolWebsiteService _websiteService
 @using System.Security.Claims
 @using Microsoft.EntityFrameworkCore
 <!DOCTYPE html>
@@ -44,7 +45,7 @@
     bool guardianPortalEnabled = false;
     try
     {
-        var guardianSetting = _db.SchoolSettings.AsNoTracking().FirstOrDefault(s => !s.IsDeleted);
+        var guardianSetting = await _websiteService.GetSettingsAsync();
         guardianPortalEnabled = guardianSetting?.EnableGuardianPortal ?? false;
     }
     catch { }
@@ -236,6 +237,10 @@
                             @if (Can("Teachers.View"))
                             {
                                 <a asp-controller="Teacher" asp-action="Index" data-title="Teachers"><i class="bi bi-person-badge"></i><span class="nav-text">Teachers</span></a>
+                            }
+                            @if (Can("Students.View"))
+                            {
+                                <a asp-controller="Guardian" asp-action="Index" data-title="Guardians"><i class="bi bi-shield-check"></i><span class="nav-text">Guardians</span></a>
                             }
                             @if (Can("Employees.Invite"))
                             {

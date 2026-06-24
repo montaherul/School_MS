@@ -1,4 +1,4 @@
--- ============================================================================
+﻿-- ============================================================================
 -- Stored Procedure: sp_GetFeeLedgerPaged
 -- Purpose: Get paginated fee ledger entries
 -- ============================================================================
@@ -15,7 +15,7 @@ BEGIN
 
     DECLARE @Offset INT = (@PageNumber - 1) * @PageSize;
 
-    WITH Data AS (
+
         SELECT 
             fl.Id,
             fl.StudentId,
@@ -29,14 +29,14 @@ BEGIN
             fl.Balance,
             fl.Description,
             fl.TransactionDate,
-            ROW_NUMBER() OVER (ORDER BY fl.TransactionDate DESC, fl.Id DESC) AS RowNum,
-            COUNT(*) OVER () AS TotalCount
+
+            COUNT(*) OVER () AS TotalRecords
         FROM 
-            FeeLedgers fl
+FeeLedgers fl WITH(NOLOCK)
         INNER JOIN 
-            Students s ON fl.StudentId = s.Id
+Students s WITH(NOLOCK) ON fl.StudentId = s.Id
         LEFT JOIN 
-            FeeInvoices fi ON fl.FeeInvoiceId = fi.Id
+FeeInvoices fi WITH(NOLOCK) ON fl.FeeInvoiceId = fi.Id
         WHERE 
             fl.IsDeleted = 0
             AND (@StudentId = 0 OR fl.StudentId = @StudentId)
@@ -47,19 +47,9 @@ BEGIN
                 OR fi.InvoiceNo LIKE '%' + @SearchTerm + '%'
                 OR fl.Description LIKE '%' + @SearchTerm + '%'
             )
-    )
-    SELECT 
-        Id, StudentId, StudentName,
-        FeeInvoiceId, InvoiceNo, FeePaymentId,
-        TransactionType, Debit, Credit, Balance,
-        Description, TransactionDate,
-        TotalCount AS TotalRecords
-    FROM 
-        Data
-    WHERE 
-        RowNum > @Offset 
-        AND RowNum <= @Offset + @PageSize
-    ORDER BY 
-        RowNum;
+    
+ORDER BY fl.TransactionDate DESC, fl.Id DESC
+OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
+
 END;
 GO

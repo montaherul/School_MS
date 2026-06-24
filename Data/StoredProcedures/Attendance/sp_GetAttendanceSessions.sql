@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE sp_GetAttendanceSessions
+﻿CREATE OR ALTER PROCEDURE sp_GetAttendanceSessions
     @PageNumber     INT            = 1,
     @PageSize       INT            = 25,
     @SearchTerm     NVARCHAR(MAX)  = NULL,
@@ -30,10 +30,10 @@ BEGIN
             s.LockedAt,
             s.UpdatedAt
         FROM
-            AttendanceSessions s
-            JOIN Classes c ON s.SchoolClassId = c.Id
-            JOIN Sections sec ON s.SectionId = sec.Id
-            LEFT JOIN StudentGroups g ON s.StudentGroupId = g.Id
+AttendanceSessions s WITH(NOLOCK)
+JOIN Classes c WITH(NOLOCK) ON s.SchoolClassId = c.Id
+JOIN Sections sec WITH(NOLOCK) ON s.SectionId = sec.Id
+LEFT JOIN StudentGroups g WITH(NOLOCK) ON s.StudentGroupId = g.Id
         WHERE
             s.IsDeleted = 0
             AND (@ClassId = 0 OR s.SchoolClassId = @ClassId)
@@ -53,8 +53,8 @@ BEGIN
             fs.*,
             (
                 SELECT COUNT(*) 
-                FROM Attendance a
-                INNER JOIN Students st ON st.Id = a.StudentId AND st.IsDeleted = 0
+FROM Attendance a WITH(NOLOCK)
+INNER JOIN Students st WITH(NOLOCK) ON st.Id = a.StudentId AND st.IsDeleted = 0
                 WHERE a.SchoolClassId = fs.SchoolClassId 
                   AND a.SectionId = fs.SectionId 
                   AND a.AttendanceDate = fs.AttendanceDate 
@@ -63,8 +63,8 @@ BEGIN
             ) AS TotalStudents,
             (
                 SELECT COUNT(*) 
-                FROM Attendance a
-                INNER JOIN Students st ON st.Id = a.StudentId AND st.IsDeleted = 0
+FROM Attendance a WITH(NOLOCK)
+INNER JOIN Students st WITH(NOLOCK) ON st.Id = a.StudentId AND st.IsDeleted = 0
                 WHERE a.SchoolClassId = fs.SchoolClassId 
                   AND a.SectionId = fs.SectionId 
                   AND a.AttendanceDate = fs.AttendanceDate 
@@ -74,8 +74,8 @@ BEGIN
             ) AS Present,
             (
                 SELECT COUNT(*) 
-                FROM Attendance a
-                INNER JOIN Students st ON st.Id = a.StudentId AND st.IsDeleted = 0
+FROM Attendance a WITH(NOLOCK)
+INNER JOIN Students st WITH(NOLOCK) ON st.Id = a.StudentId AND st.IsDeleted = 0
                 WHERE a.SchoolClassId = fs.SchoolClassId 
                   AND a.SectionId = fs.SectionId 
                   AND a.AttendanceDate = fs.AttendanceDate 
@@ -84,7 +84,7 @@ BEGIN
                   AND (fs.StudentGroupId IS NULL OR st.StudentGroupId = fs.StudentGroupId)
             ) AS Absent
         FROM
-            FilteredSessions fs
+FilteredSessions fs WITH(NOLOCK)
     ),
     FinalCount AS (
         SELECT COUNT(*) AS TotalCount FROM SessionsWithCounts
@@ -117,7 +117,7 @@ BEGIN
         swc.Absent,
         TotalRecords = fc.TotalCount
     FROM
-        SessionsWithCounts swc,
+SessionsWithCounts swc WITH(NOLOCK),
         FinalCount fc
     ORDER BY
         swc.AttendanceDate DESC,

@@ -137,6 +137,7 @@ public class WebsiteSeeder
                     CoverImagePath = "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&q=80&w=800",
                     IsUpcoming = true,
                     IsPublished = true,
+                    ApprovalStatus = EventApprovalStatus.Approved,
                     CreatedBy = "seeder",
                     CreatedAt = DateTime.UtcNow
                 },
@@ -149,6 +150,7 @@ public class WebsiteSeeder
                     CoverImagePath = "https://images.unsplash.com/photo-1485827404703-89b55fcc595e?auto=format&fit=crop&q=80&w=800",
                     IsUpcoming = true,
                     IsPublished = true,
+                    ApprovalStatus = EventApprovalStatus.Approved,
                     CreatedBy = "seeder",
                     CreatedAt = DateTime.UtcNow
                 }
@@ -366,7 +368,157 @@ public class WebsiteSeeder
             await _db.Announcements.AddRangeAsync(announcements);
         }
 
-        // 8. Seed Contact Notification Email Template
+        // 8. Seed Event Notification Email Templates
+        var eventTemplates = new[] { "EventPublished", "EventUpdated", "EventCancelled", "ExamAnnouncement", "HolidayNotice", "EmergencyNotice", "AdmissionEvent", "SportsEvent", "AcademicEvent", "ParentMeeting" };
+        foreach (var name in eventTemplates)
+        {
+            if (!await _db.EmailTemplates.AnyAsync(t => t.TemplateName == name && !t.IsDeleted))
+            {
+                var (subject, body, placeholders) = name switch
+                {
+                    "EventPublished" => (
+                        "{SchoolName} - New Event: {EventTitle}",
+                        @"<h2>New School Event</h2>
+<p>Dear {GuardianName},</p>
+<p>A new school event has been announced.</p>
+<table style=""border:1px solid #ddd;border-collapse:collapse;width:100%;max-width:600px;"">
+<tr><td style=""padding:8px;border:1px solid #ddd;font-weight:bold;width:120px;"">Event:</td><td style=""padding:8px;border:1px solid #ddd;"">{EventTitle}</td></tr>
+<tr><td style=""padding:8px;border:1px solid #ddd;font-weight:bold;"">Date:</td><td style=""padding:8px;border:1px solid #ddd;"">{EventDate}</td></tr>
+<tr><td style=""padding:8px;border:1px solid #ddd;font-weight:bold;"">Time:</td><td style=""padding:8px;border:1px solid #ddd;"">{EventTime}</td></tr>
+<tr><td style=""padding:8px;border:1px solid #ddd;font-weight:bold;"">Venue:</td><td style=""padding:8px;border:1px solid #ddd;"">{Venue}</td></tr>
+</table>
+<p><strong>Description:</strong></p>
+<p>{Description}</p>
+<p>Please visit the school portal for details.</p>
+<p>Regards,<br/>{SchoolName}</p>",
+                        "{SchoolName},{GuardianName},{EventTitle},{EventDate},{EventTime},{Venue},{Description}"
+                    ),
+                    "EventUpdated" => (
+                        "{SchoolName} - Event Updated: {EventTitle}",
+                        @"<h2>Event Updated</h2>
+<p>Dear {GuardianName},</p>
+<p>The following event has been updated:</p>
+<table style=""border:1px solid #ddd;border-collapse:collapse;width:100%;max-width:600px;"">
+<tr><td style=""padding:8px;border:1px solid #ddd;font-weight:bold;width:120px;"">Event:</td><td style=""padding:8px;border:1px solid #ddd;"">{EventTitle}</td></tr>
+<tr><td style=""padding:8px;border:1px solid #ddd;font-weight:bold;"">Date:</td><td style=""padding:8px;border:1px solid #ddd;"">{EventDate}</td></tr>
+<tr><td style=""padding:8px;border:1px solid #ddd;font-weight:bold;"">Time:</td><td style=""padding:8px;border:1px solid #ddd;"">{EventTime}</td></tr>
+<tr><td style=""padding:8px;border:1px solid #ddd;font-weight:bold;"">Venue:</td><td style=""padding:8px;border:1px solid #ddd;"">{Venue}</td></tr>
+</table>
+<p>{Description}</p>
+<p>Regards,<br/>{SchoolName}</p>",
+                        "{SchoolName},{GuardianName},{EventTitle},{EventDate},{EventTime},{Venue},{Description}"
+                    ),
+                    "EventCancelled" => (
+                        "{SchoolName} - Event Cancelled: {EventTitle}",
+                        @"<h2>Event Cancelled</h2>
+<p>Dear {GuardianName},</p>
+<p>We regret to inform you that the following event has been cancelled:</p>
+<p><strong>{EventTitle}</strong> scheduled for <strong>{EventDate}</strong> at <strong>{EventTime}</strong>.</p>
+<p>We apologize for any inconvenience caused.</p>
+<p>Regards,<br/>{SchoolName}</p>",
+                        "{SchoolName},{GuardianName},{EventTitle},{EventDate},{EventTime}"
+                    ),
+                    "ExamAnnouncement" => (
+                        "{SchoolName} - Exam Announcement",
+                        @"<h2>Examination Announcement</h2>
+<p>Dear {GuardianName},</p>
+<p>We are pleased to announce the upcoming examinations at {SchoolName}.</p>
+<p><strong>{EventTitle}</strong></p>
+<p>Date: {EventDate}<br/>Venue: {Venue}</p>
+<p>{Description}</p>
+<p>Please ensure your ward is well prepared.</p>
+<p>Regards,<br/>{SchoolName}</p>",
+                        "{SchoolName},{GuardianName},{EventTitle},{EventDate},{EventTime},{Venue},{Description}"
+                    ),
+                    "HolidayNotice" => (
+                        "{SchoolName} - Holiday Notice",
+                        @"<h2>Holiday Notice</h2>
+<p>Dear {GuardianName},</p>
+<p>Please be informed that {SchoolName} will remain closed for the following event:</p>
+<p><strong>{EventTitle}</strong></p>
+<p>Date: {EventDate}<br/>Venue: {Venue}</p>
+<p>{Description}</p>
+<p>Regards,<br/>{SchoolName}</p>",
+                        "{SchoolName},{GuardianName},{EventTitle},{EventDate},{Venue},{Description}"
+                    ),
+                    "EmergencyNotice" => (
+                        "IMPORTANT: {SchoolName} - Emergency Notice",
+                        @"<h2>⚠ Emergency Notice</h2>
+<p>Dear {GuardianName},</p>
+<p>This is an urgent notification from {SchoolName}.</p>
+<p><strong>{EventTitle}</strong></p>
+<p>Date: {EventDate}<br/>Time: {EventTime}</p>
+<p>{Description}</p>
+<p>Please take necessary action immediately.</p>
+<p>Regards,<br/>{SchoolName} Administration</p>",
+                        "{SchoolName},{GuardianName},{EventTitle},{EventDate},{EventTime},{Description}"
+                    ),
+                    "AdmissionEvent" => (
+                        "{SchoolName} - Admission Event: {EventTitle}",
+                        @"<h2>Admission Event</h2>
+<p>Dear {GuardianName},</p>
+<p>{SchoolName} is pleased to invite you to our admission event.</p>
+<p><strong>{EventTitle}</strong></p>
+<p>Date: {EventDate}<br/>Time: {EventTime}<br/>Venue: {Venue}</p>
+<p>{Description}</p>
+<p>We look forward to welcoming you.</p>
+<p>Regards,<br/>Admission Office, {SchoolName}</p>",
+                        "{SchoolName},{GuardianName},{EventTitle},{EventDate},{EventTime},{Venue},{Description}"
+                    ),
+                    "SportsEvent" => (
+                        "{SchoolName} - Sports Event: {EventTitle}",
+                        @"<h2>Sports Event</h2>
+<p>Dear {GuardianName},</p>
+<p>We are excited to announce the upcoming sports event at {SchoolName}.</p>
+<p><strong>{EventTitle}</strong></p>
+<p>Date: {EventDate}<br/>Time: {EventTime}<br/>Venue: {Venue}</p>
+<p>{Description}</p>
+<p>Come and cheer for our young athletes!</p>
+<p>Regards,<br/>{SchoolName}</p>",
+                        "{SchoolName},{GuardianName},{EventTitle},{EventDate},{EventTime},{Venue},{Description}"
+                    ),
+                    "AcademicEvent" => (
+                        "{SchoolName} - Academic Event: {EventTitle}",
+                        @"<h2>Academic Event</h2>
+<p>Dear {GuardianName},</p>
+<p>{SchoolName} is organizing an academic event.</p>
+<p><strong>{EventTitle}</strong></p>
+<p>Date: {EventDate}<br/>Time: {EventTime}<br/>Venue: {Venue}</p>
+<p>{Description}</p>
+<p>We encourage all students to participate.</p>
+<p>Regards,<br/>Academic Office, {SchoolName}</p>",
+                        "{SchoolName},{GuardianName},{EventTitle},{EventDate},{EventTime},{Venue},{Description}"
+                    ),
+                    "ParentMeeting" => (
+                        "{SchoolName} - Parent Meeting: {EventTitle}",
+                        @"<h2>Parent-Teacher Meeting</h2>
+<p>Dear {GuardianName},</p>
+<p>You are cordially invited to the Parent-Teacher Meeting at {SchoolName}.</p>
+<p><strong>{EventTitle}</strong></p>
+<p>Date: {EventDate}<br/>Time: {EventTime}<br/>Venue: {Venue}</p>
+<p>{Description}</p>
+<p>Your presence is highly valued.</p>
+<p>Regards,<br/>{SchoolName}</p>",
+                        "{SchoolName},{GuardianName},{EventTitle},{EventDate},{EventTime},{Venue},{Description}"
+                    ),
+                    _ => ("{SchoolName} - {EventTitle}", "", "")
+                };
+
+                var template = new EmailTemplate
+                {
+                    TemplateName = name,
+                    Subject = subject,
+                    Body = body,
+                    Placeholders = placeholders,
+                    IsActive = true,
+                    CreatedBy = "seeder",
+                    CreatedAt = DateTime.UtcNow
+                };
+                await _db.EmailTemplates.AddAsync(template);
+            }
+        }
+
+        // 9. Seed Contact Notification Email Template
         if (!await _db.EmailTemplates.AnyAsync(t => t.TemplateName == "ContactNotification" && !t.IsDeleted))
         {
             var contactTemplate = new EmailTemplate

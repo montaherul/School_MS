@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE sp_GetLateStudents
+﻿CREATE OR ALTER PROCEDURE sp_GetLateStudents
     @ClassId INT = 0,
     @SectionId INT = 0,
     @Date DATE = NULL
@@ -19,10 +19,10 @@ BEGIN
         a.Remarks,
         a.AttendanceDate
     FROM
-        Attendance a
-        JOIN Students s ON a.StudentId = s.Id
-        JOIN Classes c ON a.SchoolClassId = c.Id
-        JOIN Sections sec ON a.SectionId = sec.Id
+Attendance a WITH(NOLOCK)
+JOIN Students s WITH(NOLOCK) ON a.StudentId = s.Id
+JOIN Classes c WITH(NOLOCK) ON a.SchoolClassId = c.Id
+JOIN Sections sec WITH(NOLOCK) ON a.SectionId = sec.Id
     WHERE
         a.IsDeleted = 0
         AND a.Status = 3 -- Late

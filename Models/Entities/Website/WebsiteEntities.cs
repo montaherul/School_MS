@@ -190,6 +190,50 @@ public class SchoolSetting : BaseEntity
     public bool RequireGuardianForAdmission { get; set; } = false;
     public bool EnableGuardianNotifications { get; set; } = false;
 
+    // Event Notification Settings
+    public bool EnableEventEmailNotifications { get; set; } = false;
+    public bool EnableStudentNotifications { get; set; } = false;
+    public bool SendImmediately { get; set; } = true;
+    public bool SendOnPublish { get; set; } = true;
+    public bool DailyDigestMode { get; set; } = false;
+    public int MaximumEmailsPerBatch { get; set; } = 50;
+    public int? DefaultEventTemplateId { get; set; }
+
+    [MaxLength(160)]
+    public string? NotificationSenderName { get; set; }
+
+    [MaxLength(160)]
+    public string? NotificationSenderEmail { get; set; }
+
+    // SMTP Server Settings
+    [MaxLength(160)]
+    public string? SmtpHost { get; set; }
+
+    public int SmtpPort { get; set; } = 587;
+
+    public bool SmtpEnableSsl { get; set; } = true;
+
+    [MaxLength(160)]
+    public string? SmtpUserName { get; set; }
+
+    [MaxLength(260)]
+    public string? SmtpPassword { get; set; }
+
+    [MaxLength(160)]
+    public string? SmtpFromEmail { get; set; }
+
+    [MaxLength(260)]
+    public string? BaseUrl { get; set; }
+
+    // Event Approval Workflow Settings
+    public bool EnableEventApprovalWorkflow { get; set; } = false;
+
+    // Event Reminder Settings
+    public bool EnableEventReminders { get; set; } = false;
+    public int DefaultReminderTiming { get; set; } = 1;
+    public ReminderUnit DefaultReminderUnit { get; set; } = ReminderUnit.Days;
+    public int MaxRemindersPerEvent { get; set; } = 3;
+
     [MaxLength(200)]
     public string? AdmissionTitle { get; set; }
 
@@ -327,6 +371,17 @@ public class Event : BaseEntity
 
     public bool IsUpcoming { get; set; } = true;
     public bool IsPublished { get; set; } = true;
+
+    public EventApprovalStatus ApprovalStatus { get; set; } = EventApprovalStatus.Draft;
+
+    public int? ApprovedBy { get; set; }
+
+    public DateTime? ApprovedAt { get; set; }
+
+    [MaxLength(500)]
+    public string? RejectionReason { get; set; }
+
+    public ICollection<ReminderConfig> ReminderConfigs { get; set; } = new List<ReminderConfig>();
 }
 
 public class Gallery : BaseEntity

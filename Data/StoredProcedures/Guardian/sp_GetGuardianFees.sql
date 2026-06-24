@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[sp_GetGuardianFees]
+﻿CREATE OR ALTER PROCEDURE [dbo].[sp_GetGuardianFees]
     @GuardianId INT,
     @StudentId INT
 AS
@@ -16,7 +16,7 @@ BEGIN
         ISNULL(SUM(CASE WHEN fi.Status <> 3 THEN fi.TotalAmount - fi.PaidAmount ELSE 0 END), 0) AS TotalDue,
         ISNULL(SUM(fi.PaidAmount), 0) AS TotalPaid,
         ISNULL(SUM(fi.TotalAmount), 0) AS TotalInvoiced
-    FROM FeeInvoices fi
+FROM FeeInvoices fi WITH(NOLOCK)
     WHERE fi.StudentId = @StudentId AND fi.IsDeleted = 0;
 
     -- Invoices
@@ -35,7 +35,7 @@ BEGIN
             ELSE 'Unknown'
         END AS StatusName,
         fi.DueDate
-    FROM FeeInvoices fi
+FROM FeeInvoices fi WITH(NOLOCK)
     WHERE fi.StudentId = @StudentId AND fi.IsDeleted = 0
     ORDER BY fi.DueDate DESC, fi.Id DESC;
 
@@ -46,8 +46,8 @@ BEGIN
         p.Method,
         p.PaidAt,
         p.ReferenceNo AS Reference
-    FROM Payments p
-    INNER JOIN FeeInvoices fi ON p.FeeInvoiceId = fi.Id AND fi.StudentId = @StudentId AND fi.IsDeleted = 0
+FROM Payments p WITH(NOLOCK)
+INNER JOIN FeeInvoices fi WITH(NOLOCK) ON p.FeeInvoiceId = fi.Id AND fi.StudentId = @StudentId AND fi.IsDeleted = 0
     WHERE p.IsDeleted = 0
     ORDER BY p.PaidAt DESC;
 END

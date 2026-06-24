@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE sp_GetTeacherDashboardSchedule
+﻿CREATE OR ALTER PROCEDURE sp_GetTeacherDashboardSchedule
     @TeacherId INT
 AS
 BEGIN
@@ -12,10 +12,10 @@ BEGIN
         tt.StartTime,
         tt.EndTime,
         tt.RoomNo
-    FROM TeacherTimetables tt
-    INNER JOIN Subjects s ON s.Id = tt.SubjectId AND s.IsDeleted = 0
-    INNER JOIN SchoolClasses c ON c.Id = tt.ClassId AND c.IsDeleted = 0
-    INNER JOIN Sections sec ON sec.Id = tt.SectionId AND sec.IsDeleted = 0
+FROM TeacherTimetables tt WITH(NOLOCK)
+INNER JOIN Subjects s WITH(NOLOCK) ON s.Id = tt.SubjectId AND s.IsDeleted = 0
+INNER JOIN SchoolClasses c WITH(NOLOCK) ON c.Id = tt.ClassId AND c.IsDeleted = 0
+INNER JOIN Sections sec WITH(NOLOCK) ON sec.Id = tt.SectionId AND sec.IsDeleted = 0
     WHERE tt.TeacherId = @TeacherId
       AND tt.IsDeleted = 0
     ORDER BY

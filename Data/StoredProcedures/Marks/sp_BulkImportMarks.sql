@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[sp_BulkImportMarks]
+﻿CREATE OR ALTER PROCEDURE [dbo].[sp_BulkImportMarks]
     @ExamId INT,
     @AcademicYearId INT,
     @ClassId INT,
@@ -27,7 +27,7 @@ BEGIN
     INSERT INTO @Marks (StudentId, SubjectId, MarksObtained, FullMarks, Grade, GradePoint)
     SELECT
         StudentId, SubjectId, MarksObtained, FullMarks, Grade, GradePoint
-    FROM OPENJSON(@MarksData)
+FROM OPENJSON WITH(NOLOCK)(@MarksData)
     WITH (
         StudentId INT '$.studentId',
         SubjectId INT '$.subjectId',

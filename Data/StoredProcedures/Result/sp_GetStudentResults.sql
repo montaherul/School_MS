@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[sp_GetStudentResults]
+﻿CREATE OR ALTER PROCEDURE [dbo].[sp_GetStudentResults]
     @StudentId INT,
     @AcademicYearId INT = NULL
 AS
@@ -25,8 +25,8 @@ BEGIN
         ser.PassedSubjectCount,
         ser.PublishedAt,
         ser.Status
-    FROM StudentExamResults ser
-    INNER JOIN Exams e ON ser.ExamId = e.Id
+FROM StudentExamResults ser WITH(NOLOCK)
+INNER JOIN Exams e WITH(NOLOCK) ON ser.ExamId = e.Id
     WHERE ser.StudentId = @StudentId
       AND ser.IsDeleted = 0
       AND e.IsDeleted = 0
@@ -50,9 +50,9 @@ BEGIN
         ssr.Grade,
         ssr.GradePoint,
         CAST(ssr.IsPassed AS BIT) AS IsPassed
-    FROM StudentSubjectResults ssr
-    INNER JOIN Exams e ON ssr.ExamId = e.Id
-    INNER JOIN Subjects sub ON ssr.SubjectId = sub.Id
+FROM StudentSubjectResults ssr WITH(NOLOCK)
+INNER JOIN Exams e WITH(NOLOCK) ON ssr.ExamId = e.Id
+INNER JOIN Subjects sub WITH(NOLOCK) ON ssr.SubjectId = sub.Id
     WHERE ssr.StudentId = @StudentId
       AND ssr.IsDeleted = 0
       AND e.IsDeleted = 0

@@ -43,11 +43,15 @@ public class PermissionCacheService : IPermissionCacheService
 
     public void InvalidateRolePermissions(int roleId)
     {
+        foreach (var key in _trackedKeys)
+            _cache.Remove(key);
         _trackedKeys.Clear();
     }
 
     public void InvalidateAll()
     {
+        foreach (var key in _trackedKeys)
+            _cache.Remove(key);
         _trackedKeys.Clear();
     }
 

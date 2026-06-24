@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[sp_GetGuardianResults]
+﻿CREATE OR ALTER PROCEDURE [dbo].[sp_GetGuardianResults]
     @GuardianId INT,
     @StudentId INT
 AS
@@ -30,8 +30,8 @@ BEGIN
         ser.PassedSubjectCount,
         ser.PublishedAt,
         ser.Status
-    FROM StudentExamResults ser
-    LEFT JOIN Exams e ON ser.ExamId = e.Id
+FROM StudentExamResults ser WITH(NOLOCK)
+LEFT JOIN Exams e WITH(NOLOCK) ON ser.ExamId = e.Id
     WHERE ser.StudentId = @StudentId AND ser.IsDeleted = 0
     ORDER BY ser.ExamId DESC;
 
@@ -49,9 +49,9 @@ BEGIN
         ssr.Grade,
         ssr.GradePoint,
         CAST(ssr.IsPassed AS BIT) AS IsPassed
-    FROM StudentSubjectResults ssr
-    LEFT JOIN Exams e ON ssr.ExamId = e.Id
-    LEFT JOIN Subjects sub ON ssr.SubjectId = sub.Id
+FROM StudentSubjectResults ssr WITH(NOLOCK)
+LEFT JOIN Exams e WITH(NOLOCK) ON ssr.ExamId = e.Id
+LEFT JOIN Subjects sub WITH(NOLOCK) ON ssr.SubjectId = sub.Id
     WHERE ssr.StudentId = @StudentId AND ssr.IsDeleted = 0
     ORDER BY ssr.ExamId DESC, sub.Name;
 END

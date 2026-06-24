@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE sp_AssignStudentToSection
+﻿CREATE OR ALTER PROCEDURE sp_AssignStudentToSection
     @StudentId INT,
     @SectionId INT
 AS
@@ -10,7 +10,7 @@ BEGIN
 
     -- Get the capacity of the section (default to 50 if somehow null)
     SELECT @Capacity = ISNULL(Capacity, 50)
-    FROM Sections
+FROM Sections WITH(NOLOCK)
     WHERE Id = @SectionId AND IsDeleted = 0;
 
     IF @Capacity IS NULL
@@ -21,7 +21,7 @@ BEGIN
 
     -- Count active students currently in this section
     SELECT @CurrentCount = COUNT(*) 
-    FROM Students 
+FROM Students WITH(NOLOCK) 
     WHERE SectionId = @SectionId AND IsDeleted = 0 AND Status = 1; -- 1 = Active
 
     -- Check if section is full

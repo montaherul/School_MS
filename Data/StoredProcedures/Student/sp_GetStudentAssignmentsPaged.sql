@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE sp_GetStudentAssignmentsPaged
+﻿CREATE OR ALTER PROCEDURE sp_GetStudentAssignmentsPaged
     @PageNumber INT = 1,
     @PageSize INT = 10,
     @SearchTerm NVARCHAR(MAX) = NULL,
@@ -9,7 +9,8 @@ AS
 BEGIN
     SET NOCOUNT ON;
     DECLARE @Offset INT = (@PageNumber - 1) * @PageSize;
-    WITH Filtered AS (
+
+
         SELECT
             at.Id,
             at.Title,
@@ -22,22 +23,19 @@ BEGIN
             asub.SubmittedAt,
             asub.Marks,
             asub.Feedback,
-            ROW_NUMBER() OVER (ORDER BY at.Deadline ASC, at.Id ASC) AS RowNum,
-            COUNT(*) OVER () AS TotalCount
-        FROM AssignmentTasks at
-        INNER JOIN Subjects s ON at.SubjectId = s.Id
-        INNER JOIN Teachers t ON at.TeacherProfileId = t.Id
-        LEFT JOIN AssignmentSubmissions asub ON asub.AssignmentTaskId = at.Id AND asub.StudentId = @StudentId AND asub.IsDeleted = 0
+
+            COUNT(*) OVER () AS TotalRecords
+FROM AssignmentTasks at WITH(NOLOCK)
+INNER JOIN Subjects s WITH(NOLOCK) ON at.SubjectId = s.Id
+INNER JOIN Teachers t WITH(NOLOCK) ON at.TeacherProfileId = t.Id
+LEFT JOIN AssignmentSubmissions asub WITH(NOLOCK) ON asub.AssignmentTaskId = at.Id AND asub.StudentId = @StudentId AND asub.IsDeleted = 0
         WHERE at.IsDeleted = 0
           AND at.SchoolClassId = @ClassId
           AND at.SectionId = @SectionId
           AND (@SearchTerm IS NULL OR at.Title LIKE '%' + @SearchTerm + '%' OR s.Name LIKE '%' + @SearchTerm + '%')
-    )
-    SELECT Id, Title, Instructions, Deadline, AssignmentStatus,
-           SubjectName, TeacherName, IsSubmitted, SubmittedAt, Marks, Feedback,
-           TotalCount AS TotalRecords
-    FROM Filtered
-    WHERE RowNum > @Offset AND RowNum <= @Offset + @PageSize
-    ORDER BY RowNum;
+    
+ORDER BY at.Deadline ASC, at.Id ASC
+OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
+
 END;
 GO

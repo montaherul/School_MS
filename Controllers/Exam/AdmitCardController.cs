@@ -120,7 +120,7 @@ public class AdmitCardController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Student")]
+    [RequirePermission("AdmitCard.View")]
     public async Task<IActionResult> MyAdmitCard(int examId)
     {
         var currentUserId = int.Parse(User.FindFirstValue(System.Security.Claims.ClaimTypes.NameIdentifier) ?? "0");

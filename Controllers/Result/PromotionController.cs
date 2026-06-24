@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Data;
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Models.Entities.Result;
@@ -32,8 +33,8 @@ public class PromotionController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
-    public async Task<IActionResult> Index(int? academicYearId, CancellationToken ct = default)
+        [RequirePermission("Promotion.View")]
+        public async Task<IActionResult> Index(int? academicYearId, CancellationToken ct = default)
     {
         var academicYears = await _uow.Repository<AcademicYear>().ListAsync(x => !x.IsDeleted, ct);
         var activeYear = academicYears.FirstOrDefault(x => x.IsActive);
@@ -78,8 +79,8 @@ public class PromotionController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
-    public async Task<IActionResult> Evaluate(int classId, int academicYearId, CancellationToken ct = default)
+        [RequirePermission("Promotion.View")]
+        public async Task<IActionResult> Evaluate(int classId, int academicYearId, CancellationToken ct = default)
     {
         var results = await _promotionPolicyService.EvaluateClassPromotionAsync(classId, academicYearId, ct);
         var cls = await _uow.Repository<SchoolClass>().GetByIdAsync(classId);
@@ -97,8 +98,8 @@ public class PromotionController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
-    public async Task<IActionResult> Execute(int classId, int academicYearId, CancellationToken ct = default)
+        [RequirePermission("Promotion.Execute")]
+        public async Task<IActionResult> Execute(int classId, int academicYearId, CancellationToken ct = default)
     {
         try
         {
@@ -114,8 +115,8 @@ public class PromotionController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
-    public async Task<IActionResult> History(int? studentId, int? classId, int? academicYearId, CancellationToken ct = default)
+        [RequirePermission("Promotion.View")]
+        public async Task<IActionResult> History(int? studentId, int? classId, int? academicYearId, CancellationToken ct = default)
     {
         var academicYears = await _uow.Repository<AcademicYear>().ListAsync(x => !x.IsDeleted, ct);
         var activeYear = academicYears.FirstOrDefault(x => x.IsActive);
@@ -173,8 +174,8 @@ public class PromotionController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
-    public async Task<IActionResult> Reverse(int promotionHistoryId, string reason, int? academicYearId, CancellationToken ct = default)
+        [RequirePermission("Promotion.Reverse")]
+        public async Task<IActionResult> Reverse(int promotionHistoryId, string reason, int? academicYearId, CancellationToken ct = default)
     {
         try
         {
@@ -190,8 +191,8 @@ public class PromotionController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
-    public async Task<IActionResult> Policies(int? academicYearId, CancellationToken ct = default)
+        [RequirePermission("Promotion.View")]
+        public async Task<IActionResult> Policies(int? academicYearId, CancellationToken ct = default)
     {
         var academicYears = await _uow.Repository<AcademicYear>().ListAsync(x => !x.IsDeleted, ct);
         var activeYear = academicYears.FirstOrDefault(x => x.IsActive);
@@ -211,8 +212,8 @@ public class PromotionController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
-    public async Task<IActionResult> PolicyCreate(int? academicYearId, CancellationToken ct = default)
+        [RequirePermission("Promotion.Manage")]
+        public async Task<IActionResult> PolicyCreate(int? academicYearId, CancellationToken ct = default)
     {
         var academicYears = await _uow.Repository<AcademicYear>().ListAsync(x => !x.IsDeleted, ct);
         var activeYear = academicYears.FirstOrDefault(x => x.IsActive);
@@ -227,8 +228,8 @@ public class PromotionController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
-    public async Task<IActionResult> PolicyCreate(PromotionPolicy policy, string? criticalSubjects, CancellationToken ct = default)
+        [RequirePermission("Promotion.Manage")]
+        public async Task<IActionResult> PolicyCreate(PromotionPolicy policy, string? criticalSubjects, CancellationToken ct = default)
     {
         try
         {
@@ -253,8 +254,8 @@ public class PromotionController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
-    public async Task<IActionResult> PolicyEdit(int id, CancellationToken ct = default)
+        [RequirePermission("Promotion.Manage")]
+        public async Task<IActionResult> PolicyEdit(int id, CancellationToken ct = default)
     {
         var policy = await _uow.Repository<PromotionPolicy>().Query()
             .Include(p => p.Rules)
@@ -275,8 +276,8 @@ public class PromotionController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
-    public async Task<IActionResult> PolicyEdit(PromotionPolicy policy, string? criticalSubjects, CancellationToken ct = default)
+        [RequirePermission("Promotion.Manage")]
+        public async Task<IActionResult> PolicyEdit(PromotionPolicy policy, string? criticalSubjects, CancellationToken ct = default)
     {
         try
         {
@@ -303,8 +304,8 @@ public class PromotionController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
-    public async Task<IActionResult> PolicyDelete(int id, int academicYearId, CancellationToken ct = default)
+        [RequirePermission("Promotion.Manage")]
+        public async Task<IActionResult> PolicyDelete(int id, int academicYearId, CancellationToken ct = default)
     {
         try
         {
@@ -319,8 +320,8 @@ public class PromotionController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
-    public async Task<IActionResult> RollGeneration(int? academicYearId, int? classId, CancellationToken ct = default)
+        [RequirePermission("Promotion.View")]
+        public async Task<IActionResult> RollGeneration(int? academicYearId, int? classId, CancellationToken ct = default)
     {
         var academicYears = await _uow.Repository<AcademicYear>().ListAsync(x => !x.IsDeleted, ct);
         var activeYear = academicYears.FirstOrDefault(x => x.IsActive);
@@ -339,8 +340,8 @@ public class PromotionController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
-    public async Task<IActionResult> RollGeneration(int academicYearId, int classId, RollGenerationStrategy strategy, CancellationToken ct = default)
+        [RequirePermission("Promotion.Execute")]
+        public async Task<IActionResult> RollGeneration(int academicYearId, int classId, RollGenerationStrategy strategy, CancellationToken ct = default)
     {
         try
         {
@@ -367,8 +368,8 @@ public class PromotionController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
-    public async Task<IActionResult> GroupAssignment(int? fromClassId, int? toClassId, int? academicYearId, CancellationToken ct = default)
+        [RequirePermission("Promotion.View")]
+        public async Task<IActionResult> GroupAssignment(int? fromClassId, int? toClassId, int? academicYearId, CancellationToken ct = default)
     {
         var academicYears = await _uow.Repository<AcademicYear>().ListAsync(x => !x.IsDeleted, ct);
         var activeYear = academicYears.FirstOrDefault(x => x.IsActive);
@@ -388,8 +389,8 @@ public class PromotionController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
-    public async Task<IActionResult> GroupAssignment(int fromClassId, int toClassId, int academicYearId, GroupAssignmentMethod method, CancellationToken ct = default)
+        [RequirePermission("Promotion.Execute")]
+        public async Task<IActionResult> GroupAssignment(int fromClassId, int toClassId, int academicYearId, GroupAssignmentMethod method, CancellationToken ct = default)
     {
         try
         {
@@ -417,8 +418,8 @@ public class PromotionController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
-    public async Task<IActionResult> GetClassStudentsJson(int classId, int academicYearId, CancellationToken ct)
+        [RequirePermission("Promotion.View")]
+        public async Task<IActionResult> GetClassStudentsJson(int classId, int academicYearId, CancellationToken ct)
     {
         var students = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query()
             .Where(s => s.ClassId == classId && !s.IsDeleted)

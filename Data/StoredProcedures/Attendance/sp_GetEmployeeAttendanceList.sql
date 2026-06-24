@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE sp_GetEmployeeAttendanceList
+﻿CREATE OR ALTER PROCEDURE sp_GetEmployeeAttendanceList
     @PageNumber     INT            = 1,
     @PageSize       INT            = 10,
     @SearchTerm     NVARCHAR(MAX)  = NULL,
@@ -30,9 +30,9 @@ BEGIN
             e.EmployeeType,
             e.IsTeachingStaff
         FROM
-            Employees e
-            LEFT JOIN Departments dept ON e.DepartmentId = dept.Id
-            LEFT JOIN Designations desg ON e.DesignationId = desg.Id
+Employees e WITH(NOLOCK)
+LEFT JOIN Departments dept WITH(NOLOCK) ON e.DepartmentId = dept.Id
+LEFT JOIN Designations desg WITH(NOLOCK) ON e.DesignationId = desg.Id
         WHERE
             e.IsDeleted = 0
             AND e.Status = 'Active'
@@ -69,8 +69,8 @@ BEGIN
                 ELSE 0
             END AS LateMinutes
         FROM
-            FilteredEmployees fe
-            LEFT JOIN EmployeeAttendances a ON a.EmployeeId = fe.EmployeeId
+FilteredEmployees fe WITH(NOLOCK)
+LEFT JOIN EmployeeAttendances a WITH(NOLOCK) ON a.EmployeeId = fe.EmployeeId
                 AND a.IsDeleted = 0
                 AND CAST(a.AttendanceDate AS DATE) = @TargetDate
         WHERE
@@ -105,7 +105,7 @@ BEGIN
         awl.LateMinutes,
         TotalRecords = fc.TotalCount
     FROM
-        AttendanceWithLate awl,
+AttendanceWithLate awl WITH(NOLOCK),
         FinalCount fc
     ORDER BY
         awl.EmployeeName ASC, awl.EmployeeId ASC

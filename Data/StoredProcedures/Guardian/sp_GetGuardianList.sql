@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[sp_GetGuardianList]
+﻿CREATE OR ALTER PROCEDURE [dbo].[sp_GetGuardianList]
     @SearchTerm NVARCHAR(100) = NULL,
     @Status NVARCHAR(20) = NULL,
     @PageNumber INT = 1,
@@ -52,7 +52,7 @@ BEGIN
         END AS Status,
         (SELECT COUNT(*) FROM StudentGuardians sg WHERE sg.GuardianId = g.Id) AS ChildrenCount,
         g.CreatedAt
-    FROM Guardians g
+FROM Guardians g WITH(NOLOCK)
     WHERE g.IsDeleted = 0
       AND (@SearchTerm IS NULL OR 
            g.FirstName LIKE '%' + @SearchTerm + '%' OR 

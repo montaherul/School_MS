@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[sp_GetStudentTrend]
+﻿CREATE OR ALTER PROCEDURE [dbo].[sp_GetStudentTrend]
     @StudentId INT,
     @AcademicYearId INT = NULL
 AS
@@ -22,9 +22,9 @@ BEGIN
         CAST(ser.IsPassed AS BIT) AS IsPassed,
         ser.PassedSubjectCount,
         ser.FailedSubjectCount
-    FROM StudentExamResults ser
-    INNER JOIN Exams e ON ser.ExamId = e.Id
-    LEFT JOIN AcademicYears ay ON e.AcademicYearId = ay.Id
+FROM StudentExamResults ser WITH(NOLOCK)
+INNER JOIN Exams e WITH(NOLOCK) ON ser.ExamId = e.Id
+LEFT JOIN AcademicYears ay WITH(NOLOCK) ON e.AcademicYearId = ay.Id
     WHERE ser.StudentId = @StudentId
       AND ser.IsDeleted = 0
       AND e.IsDeleted = 0

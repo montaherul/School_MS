@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
@@ -13,7 +12,9 @@ using SchoolManagementSystem.Models.Enums;
 
 namespace SchoolManagementSystem.Controllers.Attendance
 {
-    [Authorize(Roles = "Super Admin,Admin,Principal,Assistant Head,Senior Lecturer,Lecturer,Teacher")]
+    using SchoolManagementSystem.Filters;
+
+    [RequirePermission("Attendance.Manage")]
     public class AttendanceSessionController : Controller
     {
         private readonly IUnitOfWork _uow;
@@ -164,7 +165,7 @@ namespace SchoolManagementSystem.Controllers.Attendance
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Super Admin,Admin,Principal,Assistant Head,Senior Lecturer,Lecturer,Teacher")]
+        [RequirePermission("Attendance.Submit")]
         public async Task<IActionResult> Submit([FromBody] SubmitRequest dto, CancellationToken ct)
         {
             if (dto == null) return BadRequest();
@@ -183,7 +184,7 @@ namespace SchoolManagementSystem.Controllers.Attendance
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Super Admin,Admin,Principal,Assistant Head")]
+        [RequirePermission("Attendance.Lock")]
         public async Task<IActionResult> Lock([FromBody] LockRequest dto, CancellationToken ct)
         {
             if (dto == null) return BadRequest();
@@ -202,7 +203,7 @@ namespace SchoolManagementSystem.Controllers.Attendance
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Super Admin,Admin,Principal,Assistant Head")]
+        [RequirePermission("Attendance.Lock")]
         public async Task<IActionResult> Unlock([FromBody] UnlockRequest dto, CancellationToken ct)
         {
             if (dto == null) return BadRequest();
@@ -212,7 +213,7 @@ namespace SchoolManagementSystem.Controllers.Attendance
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Super Admin,Admin,Principal,Assistant Head")]
+        [RequirePermission("Attendance.Manage")]
         public async Task<IActionResult> Revise([FromBody] ReviseRequest dto, CancellationToken ct)
         {
             if (dto == null) return BadRequest();
@@ -222,7 +223,7 @@ namespace SchoolManagementSystem.Controllers.Attendance
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Super Admin,Admin,Principal,Assistant Head")]
+        [RequirePermission("Attendance.Manage")]
         public async Task<IActionResult> Approve([FromBody] ApproveRequest dto, CancellationToken ct)
         {
             if (dto == null) return BadRequest();

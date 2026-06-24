@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Models.Entities.Academic;
@@ -9,7 +8,9 @@ using ExamScheduleEntity = SchoolManagementSystem.Models.Entities.Exam.ExamSched
 
 namespace SchoolManagementSystem.Controllers.Exam;
 
-[Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+using SchoolManagementSystem.Filters;
+
+[RequirePermission("ExamSchedule.Manage")]
 public class ExamScheduleController : Controller
 {
     private readonly IUnitOfWork _uow;

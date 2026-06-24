@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[sp_GetExamMarkStructure]
+﻿CREATE OR ALTER PROCEDURE [dbo].[sp_GetExamMarkStructure]
     @ExamId INT
 AS
 BEGIN
@@ -20,11 +20,11 @@ BEGIN
         s.PassMarks,
         s.DisplayOrder,
         s.IsActive
-    FROM SubjectMarkStructures s
-    INNER JOIN ExamComponents c ON c.Id = s.ComponentId AND c.IsDeleted = 0
-    LEFT JOIN Subjects sub ON s.SubjectId = sub.Id AND sub.IsDeleted = 0
-    LEFT JOIN SchoolClasses cl ON s.ClassId = cl.Id AND cl.IsDeleted = 0
-    LEFT JOIN StudentGroups sg ON s.StudentGroupId = sg.Id AND sg.IsDeleted = 0
+FROM SubjectMarkStructures s WITH(NOLOCK)
+INNER JOIN ExamComponents c WITH(NOLOCK) ON c.Id = s.ComponentId AND c.IsDeleted = 0
+LEFT JOIN Subjects sub WITH(NOLOCK) ON s.SubjectId = sub.Id AND sub.IsDeleted = 0
+LEFT JOIN SchoolClasses cl WITH(NOLOCK) ON s.ClassId = cl.Id AND cl.IsDeleted = 0
+LEFT JOIN StudentGroups sg WITH(NOLOCK) ON s.StudentGroupId = sg.Id AND sg.IsDeleted = 0
     WHERE s.IsDeleted = 0
       AND s.ExamId = @ExamId
       AND c.IsActive = 1

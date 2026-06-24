@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE sp_GetAttendanceAnalytics
+﻿CREATE OR ALTER PROCEDURE sp_GetAttendanceAnalytics
     @StartDate DATE = NULL,
     @EndDate DATE = NULL
 AS
@@ -17,7 +17,7 @@ BEGIN
              THEN CAST(SUM(CASE WHEN Status = 1 OR Status = 3 THEN 1 ELSE 0 END) AS DECIMAL(5,2)) / COUNT(Id) * 100
              ELSE 0.00
         END
-    FROM Attendance
+FROM Attendance WITH(NOLOCK)
     WHERE AttendanceDate >= @Start AND AttendanceDate <= @End AND IsDeleted = 0
     GROUP BY AttendanceDate
     ORDER BY AttendanceDate ASC;
@@ -33,7 +33,7 @@ BEGIN
              THEN CAST(SUM(CASE WHEN Status = 1 OR Status = 3 THEN 1 ELSE 0 END) AS DECIMAL(5,2)) / COUNT(Id) * 100
              ELSE 0.00
         END
-    FROM Attendance
+FROM Attendance WITH(NOLOCK)
     WHERE AttendanceDate >= @SixMonthsAgo AND IsDeleted = 0
     GROUP BY YEAR(AttendanceDate), MONTH(AttendanceDate)
     ORDER BY YEAR(AttendanceDate) ASC, MONTH(AttendanceDate) ASC;

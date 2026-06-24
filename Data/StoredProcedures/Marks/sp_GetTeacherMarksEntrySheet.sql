@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[sp_GetTeacherMarksEntrySheet]
+﻿CREATE OR ALTER PROCEDURE [dbo].[sp_GetTeacherMarksEntrySheet]
     @TeacherId INT,
     @ExamId INT,
     @ClassId INT,
@@ -28,10 +28,10 @@ BEGIN
     SELECT st.Id AS StudentId, st.StudentNo, st.FullName AS StudentName,
            st.RollNumber, sc.Name AS ClassName, sec.Name AS SectionName,
            sg.Name AS GroupName
-    FROM Students st
-    INNER JOIN SchoolClasses sc ON sc.Id = @ClassId
-    INNER JOIN Sections sec ON sec.Id = @SectionId AND sec.IsDeleted = 0
-    LEFT JOIN StudentGroups sg ON sg.Id = @GroupId AND sg.IsDeleted = 0
+FROM Students st WITH(NOLOCK)
+INNER JOIN SchoolClasses sc WITH(NOLOCK) ON sc.Id = @ClassId
+INNER JOIN Sections sec WITH(NOLOCK) ON sec.Id = @SectionId AND sec.IsDeleted = 0
+LEFT JOIN StudentGroups sg WITH(NOLOCK) ON sg.Id = @GroupId AND sg.IsDeleted = 0
     WHERE st.IsDeleted = 0 AND st.Status = 1
       AND st.ClassId = @ClassId AND st.SectionId = @SectionId
       AND (@GroupId IS NULL OR st.StudentGroupId = @GroupId)
@@ -43,7 +43,7 @@ BEGIN
            me.VivaMarks, me.LabMarks, me.OralMarks, me.AssignmentMarks,
            me.ContinuousAssessmentMarks, me.CompetencyMarks, me.BehaviourMarks,
            me.ParticipationMarks, me.ComponentValues, me.Status, me.IsLocked
-    FROM Marks me
+FROM Marks me WITH(NOLOCK)
     WHERE me.ExamId = @ExamId AND me.SubjectId = @SubjectId
       AND me.ClassId = @ClassId AND me.SectionId = @SectionId
       AND me.IsDeleted = 0

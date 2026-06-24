@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[sp_GetTeacherExportSheet]
+﻿CREATE OR ALTER PROCEDURE [dbo].[sp_GetTeacherExportSheet]
     @TeacherId INT,
     @ExamId INT,
     @SubjectId INT,
@@ -43,11 +43,11 @@ BEGIN
         me.GradePoint,
         CASE WHEN me.Grade IS NOT NULL AND me.Grade != 'F' THEN 'Pass' ELSE 'Fail' END AS PassStatus,
         me.Status
-    FROM Marks me
-    INNER JOIN Students st ON st.Id = me.StudentId AND st.IsDeleted = 0
-    INNER JOIN SchoolClasses sc ON sc.Id = me.ClassId
-    INNER JOIN Sections sec ON sec.Id = me.SectionId
-    LEFT JOIN StudentGroups sg ON sg.Id = st.StudentGroupId
+FROM Marks me WITH(NOLOCK)
+INNER JOIN Students st WITH(NOLOCK) ON st.Id = me.StudentId AND st.IsDeleted = 0
+INNER JOIN SchoolClasses sc WITH(NOLOCK) ON sc.Id = me.ClassId
+INNER JOIN Sections sec WITH(NOLOCK) ON sec.Id = me.SectionId
+LEFT JOIN StudentGroups sg WITH(NOLOCK) ON sg.Id = st.StudentGroupId
     WHERE me.ExamId = @ExamId AND me.SubjectId = @SubjectId
       AND me.ClassId = @ClassId AND me.SectionId = @SectionId
       AND me.IsDeleted = 0

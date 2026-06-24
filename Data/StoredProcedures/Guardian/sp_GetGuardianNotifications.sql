@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[sp_GetGuardianNotifications]
+﻿CREATE OR ALTER PROCEDURE [dbo].[sp_GetGuardianNotifications]
     @GuardianId INT,
     @PageNumber INT = 1,
     @PageSize INT = 20
@@ -16,7 +16,7 @@ BEGIN
         CAST(gn.IsRead AS BIT) AS IsRead,
         gn.ReadAt,
         gn.CreatedAt
-    FROM GuardianNotifications gn
+FROM GuardianNotifications gn WITH(NOLOCK)
     WHERE gn.GuardianId = @GuardianId AND gn.IsDeleted = 0
     ORDER BY gn.IsRead ASC, gn.Id DESC
     OFFSET (@PageNumber - 1) * @PageSize ROWS

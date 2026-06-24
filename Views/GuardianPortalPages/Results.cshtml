@@ -19,21 +19,26 @@
     var currentPosition = resultList.Any() ? resultList.Min(r => r.Position) : 0;
 }
 
-<div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold">Academic Results</h2>
-            <p class="text-muted mb-0">@childName</p>
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-bar-chart"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Academic Results</h1>
+                <p class="adm-header__sub">@childName</p>
+            </div>
         </div>
-        <a asp-action="Dashboard" asp-controller="GuardianPortal" class="btn btn-outline-secondary btn-sm">
+        <a asp-action="Dashboard" asp-controller="GuardianPortal" class="adm-btn adm-btn--ghost adm-btn--sm">
             <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
         </a>
     </div>
 
     @if (children.Count > 1 || currentChild != null)
     {
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-body py-3">
+        <div class="adm-table-card mb-4">
+            <div class="p-3">
                 <div class="row align-items-center">
                     <div class="col-md-auto mb-2 mb-md-0">
                         <span class="fw-bold me-2">Select Child:</span>
@@ -69,8 +74,8 @@
     {
         <div class="row mb-4 g-3">
             <div class="col-md-3">
-                <div class="card border-0 shadow-sm border-start border-4 border-primary h-100">
-                    <div class="card-body">
+                <div class="adm-table-card border-start border-4 border-primary h-100">
+                    <div class="p-3">
                         <div class="d-flex align-items-center">
                             <div class="flex-shrink-0 bg-primary bg-opacity-10 p-3 rounded">
                                 <i class="bi bi-journal-check text-primary fs-4"></i>
@@ -84,8 +89,8 @@
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card border-0 shadow-sm border-start border-4 border-success h-100">
-                    <div class="card-body">
+                <div class="adm-table-card border-start border-4 border-success h-100">
+                    <div class="p-3">
                         <div class="d-flex align-items-center">
                             <div class="flex-shrink-0 bg-success bg-opacity-10 p-3 rounded">
                                 <i class="bi bi-check-circle text-success fs-4"></i>
@@ -99,8 +104,8 @@
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card border-0 shadow-sm border-start border-4 border-info h-100">
-                    <div class="card-body">
+                <div class="adm-table-card border-start border-4 border-info h-100">
+                    <div class="p-3">
                         <div class="d-flex align-items-center">
                             <div class="flex-shrink-0 bg-info bg-opacity-10 p-3 rounded">
                                 <i class="bi bi-cpu text-info fs-4"></i>
@@ -114,8 +119,8 @@
                 </div>
             </div>
             <div class="col-md-3">
-                <div class="card border-0 shadow-sm border-start border-4 border-warning h-100">
-                    <div class="card-body">
+                <div class="adm-table-card border-start border-4 border-warning h-100">
+                    <div class="p-3">
                         <div class="d-flex align-items-center">
                             <div class="flex-shrink-0 bg-warning bg-opacity-10 p-3 rounded">
                                 <i class="bi bi-trophy text-warning fs-4"></i>
@@ -139,14 +144,14 @@
             </div>
         </div>
 
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-header bg-white">
+        <div class="adm-table-card mb-4">
+            <div class="px-4 py-3 border-bottom fw-bold">
                 <h5 class="mb-0 fw-bold"><i class="bi bi-table me-2 text-primary"></i>Exam Results</h5>
             </div>
-            <div class="card-body">
+            <div class="adm-table-card__body">
                 <div class="table-responsive">
                     <table class="table table-bordered align-middle">
-                        <thead class="bg-light">
+                        <thead>
                             <tr>
                                 <th>Exam</th>
                                 <th>Term</th>
@@ -163,10 +168,10 @@
                             {
                                 <tr>
                                     <td class="fw-semibold">@r.Exam?.Name</td>
-                                    <td><span class="badge bg-light text-dark">@(r.Exam?.Term ?? ExamTerm.Other)</span></td>
+                                    <td><span class="adm-badge adm-badge--neutral">@(r.Exam?.Term ?? ExamTerm.Other)</span></td>
                                     <td class="font-monospace">@r.TotalMarks.ToString("F0") / @r.TotalFullMarks.ToString("F0")</td>
                                     <td class="fw-bold text-primary">@r.Gpa.ToString("F2")</td>
-                                    <td><span class="badge bg-secondary">@r.Grade</span></td>
+                                    <td><span class="adm-badge adm-badge--neutral">@r.Grade</span></td>
                                     <td class="text-center">
                                         @if (r.Position > 0)
                                         {
@@ -182,22 +187,22 @@
                                         }
                                     </td>
                                     <td>
-                                        <span class="badge bg-@(r.IsPassed ? "success" : "danger")">
+                                        <span class="adm-badge adm-badge--@(r.IsPassed ? "success" : "danger")">
                                             @(r.IsPassed ? "Pass" : "Fail")
                                         </span>
                                     </td>
                                     <td class="text-center">
-                                        <div class="btn-group btn-group-sm">
+                                        <div class="d-flex gap-1">
                                             <a href="@Url.Action("ReportCard", "GuardianPortalPages", new { examId = r.ExamId, studentId = r.StudentId })"
-                                               class="btn btn-outline-primary" title="Download Report Card PDF">
+                                               class="adm-btn adm-btn--ghost adm-btn--sm" title="Download Report Card PDF">
                                                 <i class="bi bi-file-earmark-pdf"></i>
                                             </a>
                                             <a href="@Url.Action("ReportCard", "GuardianPortalPages", new { examId = r.ExamId, studentId = r.StudentId })"
-                                               class="btn btn-outline-info" title="View Report Card">
+                                               class="adm-btn adm-btn--ghost adm-btn--sm" title="View Report Card">
                                                 <i class="bi bi-eye"></i>
                                             </a>
                                             <a href="@Url.Action("Transcript", "GuardianPortalPages", new { studentId = r.StudentId })"
-                                               class="btn btn-outline-secondary" title="Download Transcript">
+                                               class="adm-btn adm-btn--ghost adm-btn--sm" title="Download Transcript">
                                                 <i class="bi bi-journal-text"></i>
                                             </a>
                                         </div>
@@ -212,11 +217,11 @@
 
         @if (resultList.Count > 1)
         {
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-white">
+            <div class="adm-table-card mb-4">
+                <div class="px-4 py-3 border-bottom fw-bold">
                     <h5 class="mb-0 fw-bold"><i class="bi bi-graph-up me-2 text-success"></i>GPA Trend</h5>
                 </div>
-                <div class="card-body">
+                <div class="p-4">
                     <canvas id="gpaTrendChart" height="100"></canvas>
                 </div>
             </div>
@@ -229,14 +234,14 @@
                 .Select(g => g.OrderByDescending(s => s.Id).First())
                 .ToList();
 
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-header bg-white">
+            <div class="adm-table-card mb-4">
+                <div class="px-4 py-3 border-bottom fw-bold">
                     <h5 class="mb-0 fw-bold"><i class="bi bi-bar-chart me-2 text-info"></i>Subject-wise Performance (Latest)</h5>
                 </div>
-                <div class="card-body">
+                <div class="adm-table-card__body">
                     <div class="table-responsive">
                         <table class="table table-bordered align-middle">
-                            <thead class="bg-light">
+                            <thead>
                                 <tr>
                                     <th>Subject</th>
                                     <th>Marks</th>
@@ -256,7 +261,7 @@
                                         <td>@s.Grade</td>
                                         <td class="fw-bold">@s.GradePoint.ToString("F2")</td>
                                         <td>
-                                            <span class="badge bg-@(s.IsPassed ? "success" : "danger")">
+                                            <span class="adm-badge adm-badge--@(s.IsPassed ? "success" : "danger")">
                                                 @(s.IsPassed ? "Pass" : "Fail")
                                             </span>
                                         </td>
@@ -270,18 +275,18 @@
         }
 
         <div class="d-flex flex-wrap gap-2">
-            <a href="@Url.Action("ExamComparison", "GuardianPortalPages", new { studentId })" class="btn btn-outline-primary">
+            <a href="@Url.Action("ExamComparison", "GuardianPortalPages", new { studentId })" class="adm-btn adm-btn--ghost">
                 <i class="bi bi-bar-chart-steps me-1"></i>Compare Exams
             </a>
-            <a href="@Url.Action("Transcript", "GuardianPortalPages", new { studentId })" class="btn btn-outline-secondary">
+            <a href="@Url.Action("Transcript", "GuardianPortalPages", new { studentId })" class="adm-btn adm-btn--ghost">
                 <i class="bi bi-journal-text me-1"></i>Full Transcript
             </a>
         </div>
     }
     else
     {
-        <div class="card border-0 shadow-sm">
-            <div class="card-body text-center py-5">
+        <div class="adm-table-card">
+            <div class="text-center py-5">
                 <i class="bi bi-bar-chart fs-1 text-muted"></i>
                 <p class="text-muted mt-2">No published results yet.</p>
             </div>

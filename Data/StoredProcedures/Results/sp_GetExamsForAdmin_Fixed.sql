@@ -1,4 +1,4 @@
--- ============================================================================
+﻿-- ============================================================================
 -- Stored Procedure: sp_GetExamsForAdmin
 -- Purpose: Get active exams with summary stats
 -- ============================================================================
@@ -18,7 +18,7 @@ BEGIN
         e.Status,
         (SELECT COUNT(*) FROM StudentExamResults r WHERE r.ExamId = e.Id AND r.IsDeleted = 0) as StudentCount,
         (SELECT COUNT(*) FROM Marks m WHERE m.ExamId = e.Id AND m.Status = 4 AND m.IsDeleted = 0) as PublishedMarks
-    FROM Exams e
+FROM Exams e WITH(NOLOCK)
     WHERE e.AcademicYearId = @AcademicYearId AND e.IsDeleted = 0
     ORDER BY e.StartsOn DESC;
 END;

@@ -8,21 +8,26 @@
     var subjectResults = ViewBag.SubjectResults as List<StudentSubjectResult> ?? new();
 }
 
-<div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h2 class="fw-bold">Exam Comparison</h2>
-            <p class="text-muted mb-0">@childName</p>
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-bar-chart-steps"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Exam Comparison</h1>
+                <p class="adm-header__sub">@childName</p>
+            </div>
         </div>
-        <a href="@Url.Action("Results", "GuardianPortalPages", new { studentId })" class="btn btn-outline-secondary btn-sm">
+        <a href="@Url.Action("Results", "GuardianPortalPages", new { studentId })" class="adm-btn adm-btn--ghost adm-btn--sm">
             <i class="bi bi-arrow-left me-1"></i>Back to Results
         </a>
     </div>
 
     @if (results.Count < 2)
     {
-        <div class="card border-0 shadow-sm">
-            <div class="card-body text-center py-5">
+        <div class="adm-table-card">
+            <div class="text-center py-5">
                 <i class="bi bi-bar-chart-steps fs-1 text-muted"></i>
                 <p class="text-muted mt-2">At least two exam results are required for comparison.</p>
             </div>
@@ -46,32 +51,32 @@
 
     <div class="row mb-4 g-3">
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm border-start border-4 border-primary h-100">
-                <div class="card-body text-center">
+            <div class="adm-table-card border-start border-4 border-primary h-100">
+                <div class="p-3 text-center">
                     <small class="text-muted">Exams Compared</small>
                     <h3 class="fw-bold text-primary">@results.Count</h3>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm border-start border-4 border-success h-100">
-                <div class="card-body text-center">
+            <div class="adm-table-card border-start border-4 border-success h-100">
+                <div class="p-3 text-center">
                     <small class="text-muted">Highest GPA</small>
                     <h3 class="fw-bold text-success">@results.Max(r => r.Gpa).ToString("F2")</h3>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm border-start border-4 border-warning h-100">
-                <div class="card-body text-center">
+            <div class="adm-table-card border-start border-4 border-warning h-100">
+                <div class="p-3 text-center">
                     <small class="text-muted">Average GPA</small>
                     <h3 class="fw-bold text-warning">@results.Average(r => r.Gpa).ToString("F2")</h3>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="card border-0 shadow-sm border-start border-4 border-info h-100">
-                <div class="card-body text-center">
+            <div class="adm-table-card border-start border-4 border-info h-100">
+                <div class="p-3 text-center">
                     <small class="text-muted">GPA Trend</small>
                     <h3 class="fw-bold text-info">
                         @if (gpas.Count > 1)
@@ -87,14 +92,14 @@
         </div>
     </div>
 
-    <div class="card border-0 shadow-sm mb-4">
-        <div class="card-header bg-white">
+    <div class="adm-table-card mb-4">
+        <div class="px-4 py-3 border-bottom fw-bold">
             <h5 class="mb-0 fw-bold"><i class="bi bi-table me-2 text-primary"></i>Side-by-Side Comparison</h5>
         </div>
-        <div class="card-body">
+        <div class="adm-table-card__body">
             <div class="table-responsive">
                 <table class="table table-bordered align-middle">
-                    <thead class="bg-light">
+                    <thead>
                         <tr>
                             <th style="min-width:120px;">Metric</th>
                             @foreach (var r in orderedResults)
@@ -129,7 +134,7 @@
                             @foreach (var r in orderedResults)
                             {
                                 <td style="text-align:center;">
-                                    <span class="badge bg-secondary">@r.Grade</span>
+                                    <span class="adm-badge adm-badge--neutral">@r.Grade</span>
                                 </td>
                             }
                         </tr>
@@ -179,7 +184,7 @@
                             @foreach (var r in orderedResults)
                             {
                                 <td style="text-align:center;">
-                                    <span class="badge bg-@(r.IsPassed ? "success" : "danger")">
+                                    <span class="adm-badge adm-badge--@(r.IsPassed ? "success" : "danger")">
                                         @(r.IsPassed ? "Pass" : "Fail")
                                     </span>
                                 </td>
@@ -193,21 +198,21 @@
 
     <div class="row g-4">
         <div class="col-lg-6">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-white">
+            <div class="adm-table-card h-100">
+                <div class="px-4 py-3 border-bottom fw-bold">
                     <h5 class="mb-0 fw-bold"><i class="bi bi-graph-up me-2 text-success"></i>GPA Trend</h5>
                 </div>
-                <div class="card-body">
+                <div class="p-4">
                     <canvas id="comparisonGpaChart" height="200"></canvas>
                 </div>
             </div>
         </div>
         <div class="col-lg-6">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-header bg-white">
+            <div class="adm-table-card h-100">
+                <div class="px-4 py-3 border-bottom fw-bold">
                     <h5 class="mb-0 fw-bold"><i class="bi bi-bar-chart me-2 text-info"></i>Pass/Fail Distribution</h5>
                 </div>
-                <div class="card-body">
+                <div class="p-4">
                     <canvas id="comparisonBarChart" height="200"></canvas>
                 </div>
             </div>
@@ -216,18 +221,18 @@
 
     @if (allSubjectIds.Any())
     {
-        <div class="card border-0 shadow-sm mt-4">
-            <div class="card-header bg-white">
+        <div class="adm-table-card mt-4">
+            <div class="px-4 py-3 border-bottom fw-bold">
                 <h5 class="mb-0 fw-bold"><i class="bi bi-grid-3x3-gap me-2 text-warning"></i>Subject-wise Marks Across Exams</h5>
             </div>
-            <div class="card-body">
+            <div class="adm-table-card__body">
                 <div class="table-responsive">
                     <table class="table table-bordered align-middle">
-                        <thead class="bg-light">
-                            <tr>
-                                <th>Subject</th>
-                                @foreach (var r in orderedResults)
-                                {
+                            <thead>
+                                <tr>
+                                    <th>Subject</th>
+                                    @foreach (var r in orderedResults)
+                                    {
                                     <th style="text-align:center;min-width:100px;" class="fw-bold">
                                         @r.Exam?.Name<br />
                                         <small class="fw-normal">(Full / Obtained)</small>
@@ -250,7 +255,7 @@
                                                 <span class="font-monospace">@sr.MarksObtained.ToString("F0")</span>
                                                 <span class="text-muted">/ @sr.FullMarks.ToString("F0")</span>
                                                 <br />
-                                                <small class="badge bg-@(sr.IsPassed ? "success" : "danger")" style="font-size:9px;">
+                                                <small class="adm-badge adm-badge--@(sr.IsPassed ? "success" : "danger")" style="font-size:9px;">
                                                     @sr.Grade (@sr.GradePoint.ToString("F2"))
                                                 </small>
                                             </td>

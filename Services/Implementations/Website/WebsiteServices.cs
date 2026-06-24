@@ -4,8 +4,11 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using SchoolManagementSystem.Models.Entities.Website;
 using SchoolManagementSystem.Models.Entities.Communication;
+using SchoolManagementSystem.Repositories.Interfaces.Website;
+using SchoolManagementSystem.Models.Entities.Website;
 using SchoolManagementSystem.Repositories.Interfaces.Website;
 using SchoolManagementSystem.Services.Interfaces.Website;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
@@ -16,15 +19,22 @@ public class SchoolWebsiteService : ISchoolWebsiteService
 {
     private readonly ISchoolSettingRepository _repo;
     private readonly IUnitOfWork _uow;
+    private readonly IMemoryCache _cache;
+    private const string CacheKey = "SchoolSettings";
+    private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(5);
 
-    public SchoolWebsiteService(ISchoolSettingRepository repo, IUnitOfWork uow)
+    public SchoolWebsiteService(ISchoolSettingRepository repo, IUnitOfWork uow, IMemoryCache cache)
     {
         _repo = repo;
         _uow = uow;
+        _cache = cache;
     }
 
     public async Task<SchoolSetting> GetSettingsAsync(CancellationToken cancellationToken = default)
     {
+        if (_cache.TryGetValue(CacheKey, out SchoolSetting? cached) && cached != null)
+            return cached;
+
         var settings = await _repo.GetCurrentSettingsAsync(cancellationToken);
         if (settings == null)
         {
@@ -46,6 +56,8 @@ public class SchoolWebsiteService : ISchoolWebsiteService
             await _repo.AddAsync(settings, cancellationToken);
             await _uow.SaveChangesAsync(cancellationToken);
         }
+
+        _cache.Set(CacheKey, settings, CacheDuration);
         return settings;
     }
 
@@ -154,11 +166,31 @@ public class SchoolWebsiteService : ISchoolWebsiteService
             existing.RequireGuardianForAdmission = settings.RequireGuardianForAdmission;
             existing.EnableGuardianNotifications = settings.EnableGuardianNotifications;
 
+            // Event Notification Settings
+            existing.EnableEventEmailNotifications = settings.EnableEventEmailNotifications;
+            existing.EnableStudentNotifications = settings.EnableStudentNotifications;
+            existing.SendImmediately = settings.SendImmediately;
+            existing.SendOnPublish = settings.SendOnPublish;
+            existing.DailyDigestMode = settings.DailyDigestMode;
+            existing.MaximumEmailsPerBatch = settings.MaximumEmailsPerBatch;
+            existing.DefaultEventTemplateId = settings.DefaultEventTemplateId;
+            existing.NotificationSenderName = settings.NotificationSenderName;
+            existing.NotificationSenderEmail = settings.NotificationSenderEmail;
+
+            existing.SmtpHost = settings.SmtpHost;
+            existing.SmtpPort = settings.SmtpPort;
+            existing.SmtpEnableSsl = settings.SmtpEnableSsl;
+            existing.SmtpUserName = settings.SmtpUserName;
+            existing.SmtpPassword = settings.SmtpPassword;
+            existing.SmtpFromEmail = settings.SmtpFromEmail;
+            existing.BaseUrl = settings.BaseUrl;
+
             existing.UpdatedAt = DateTime.UtcNow;
             existing.UpdatedBy = "admin";
             _repo.Update(existing);
         }
         await _uow.SaveChangesAsync(cancellationToken);
+        _cache.Remove(CacheKey);
     }
 }
 
@@ -484,11 +516,20 @@ public class EventService : IEventService
 {
     private readonly IEventRepository _repo;
     private readonly IUnitOfWork _uow;
+    private readonly ISchoolSettingRepository _settingRepo;
+    private readonly IEmailTemplateRepository _templateRepo;
+    private readonly IEventNotificationService? _notificationService;
 
-    public EventService(IEventRepository repo, IUnitOfWork uow)
+    public EventService(IEventRepository repo, IUnitOfWork uow,
+        ISchoolSettingRepository settingRepo,
+        IEmailTemplateRepository templateRepo,
+        IEventNotificationService? notificationService = null)
     {
         _repo = repo;
         _uow = uow;
+        _settingRepo = settingRepo;
+        _templateRepo = templateRepo;
+        _notificationService = notificationService;
     }
 
     public async Task<IReadOnlyList<Event>> GetUpcomingEventsAsync(int count, CancellationToken cancellationToken = default)
@@ -519,6 +560,8 @@ public class EventService : IEventService
         ev.CreatedBy = "admin";
         await _repo.AddAsync(ev, cancellationToken);
         await _uow.SaveChangesAsync(cancellationToken);
+
+        await TryNotifyOnPublishAsync(ev.Id, ev.IsPublished, cancellationToken);
     }
 
     public async Task UpdateEventAsync(Event ev, CancellationToken cancellationToken = default)
@@ -526,6 +569,7 @@ public class EventService : IEventService
         var existing = await _repo.GetByIdAsync(ev.Id, cancellationToken);
         if (existing != null)
         {
+            var wasPublished = existing.IsPublished;
             existing.Title = ev.Title;
             existing.Description = ev.Description;
             existing.EventDate = ev.EventDate;
@@ -537,6 +581,38 @@ public class EventService : IEventService
             existing.UpdatedBy = "admin";
             _repo.Update(existing);
             await _uow.SaveChangesAsync(cancellationToken);
+
+            if (!wasPublished && existing.IsPublished)
+            {
+                await TryNotifyOnPublishAsync(existing.Id, true, cancellationToken);
+            }
+        }
+    }
+
+    private async Task TryNotifyOnPublishAsync(int eventId, bool isPublished, CancellationToken ct)
+    {
+        if (!isPublished || _notificationService == null) return;
+
+        try
+        {
+            var settings = await _settingRepo.GetCurrentSettingsAsync(ct);
+            if (settings == null || !settings.EnableEventEmailNotifications || !settings.SendOnPublish)
+                return;
+
+            var notification = await _notificationService.CreateNotificationAsync(eventId,
+                EventScope.AllStudents, notifyGuardians: true, notifyStudents: settings.EnableStudentNotifications,
+                primaryGuardianOnly: true, ct: ct);
+
+            await _notificationService.QueueNotificationAsync(notification.Id, ct);
+
+            if (settings.SendImmediately)
+            {
+                await _notificationService.SendNotificationAsync(notification.Id, ct);
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[EventNotification] Failed to auto-notify event {eventId}: {ex.Message}");
         }
     }
 
@@ -550,7 +626,85 @@ public class EventService : IEventService
             existing.UpdatedBy = "admin";
             _repo.Update(existing);
             await _uow.SaveChangesAsync(cancellationToken);
+
+            try
+            {
+                if (existing.IsPublished && _notificationService != null)
+                {
+                    var settings = await _settingRepo.GetCurrentSettingsAsync(cancellationToken);
+                    if (settings != null && settings.EnableEventEmailNotifications)
+                    {
+                        var cancelTemplate = await _templateRepo.Query()
+                            .Where(t => t.TemplateName == "EventCancelled" && t.IsActive && !t.IsDeleted)
+                            .Select(t => t.Id)
+                            .FirstOrDefaultAsync(cancellationToken);
+
+                        var notification = await _notificationService.CreateNotificationAsync(id,
+                            EventScope.AllStudents,
+                            notifyGuardians: true,
+                            notifyStudents: settings.EnableStudentNotifications,
+                            primaryGuardianOnly: true,
+                            templateId: cancelTemplate > 0 ? cancelTemplate : null,
+                            ct: cancellationToken);
+
+                        await _notificationService.QueueNotificationAsync(notification.Id, cancellationToken);
+                        if (settings.SendImmediately)
+                            await _notificationService.SendNotificationAsync(notification.Id, cancellationToken);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[EventNotification] Failed to notify cancellation for event {id}: {ex.Message}");
+            }
         }
+    }
+
+    public async Task SubmitForApprovalAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var ev = await _repo.GetByIdAsync(id, cancellationToken);
+        if (ev == null) throw new KeyNotFoundException($"Event {id} not found.");
+
+        var settings = await _settingRepo.GetCurrentSettingsAsync(cancellationToken);
+        if (settings != null && settings.EnableEventApprovalWorkflow)
+        {
+            ev.ApprovalStatus = EventApprovalStatus.PendingApproval;
+            ev.UpdatedAt = DateTime.UtcNow;
+            ev.UpdatedBy = "admin";
+            _repo.Update(ev);
+            await _uow.SaveChangesAsync(cancellationToken);
+        }
+    }
+
+    public async Task ApproveEventAsync(int id, int approvedBy, CancellationToken cancellationToken = default)
+    {
+        var ev = await _repo.GetByIdAsync(id, cancellationToken);
+        if (ev == null) throw new KeyNotFoundException($"Event {id} not found.");
+
+        ev.ApprovalStatus = EventApprovalStatus.Approved;
+        ev.ApprovedBy = approvedBy;
+        ev.ApprovedAt = DateTime.UtcNow;
+        ev.IsPublished = true;
+        ev.UpdatedAt = DateTime.UtcNow;
+        ev.UpdatedBy = "admin";
+        _repo.Update(ev);
+        await _uow.SaveChangesAsync(cancellationToken);
+
+        await TryNotifyOnPublishAsync(ev.Id, true, cancellationToken);
+    }
+
+    public async Task RejectEventAsync(int id, string reason, CancellationToken cancellationToken = default)
+    {
+        var ev = await _repo.GetByIdAsync(id, cancellationToken);
+        if (ev == null) throw new KeyNotFoundException($"Event {id} not found.");
+
+        ev.ApprovalStatus = EventApprovalStatus.Rejected;
+        ev.RejectionReason = reason;
+        ev.IsPublished = false;
+        ev.UpdatedAt = DateTime.UtcNow;
+        ev.UpdatedBy = "admin";
+        _repo.Update(ev);
+        await _uow.SaveChangesAsync(cancellationToken);
     }
 }
 

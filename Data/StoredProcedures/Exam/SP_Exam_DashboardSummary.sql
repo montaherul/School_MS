@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[SP_Exam_DashboardSummary]
+﻿CREATE OR ALTER PROCEDURE [dbo].[SP_Exam_DashboardSummary]
     @AcademicYearId INT
 AS
 BEGIN
@@ -9,11 +9,11 @@ BEGIN
         (SELECT COUNT(*) FROM Exams WHERE AcademicYearId = @AcademicYearId AND IsDeleted = 0 AND Status = 5) AS PublishedExams,
         (SELECT COUNT(*) FROM Exams WHERE AcademicYearId = @AcademicYearId AND IsDeleted = 0 AND Status NOT IN (5, 7)) AS PendingExams,
         (SELECT COUNT(DISTINCT StudentId) FROM StudentExamResults ser
-            INNER JOIN Exams e ON ser.ExamId = e.Id
+INNER JOIN Exams e WITH(NOLOCK) ON ser.ExamId = e.Id
             WHERE e.AcademicYearId = @AcademicYearId AND ser.IsDeleted = 0) AS StudentsAppeared,
         ROUND(
             (SELECT 100.0 * SUM(CASE WHEN ser.IsPassed = 1 THEN 1 ELSE 0 END) / NULLIF(COUNT(ser.Id), 0)
-             FROM StudentExamResults ser INNER JOIN Exams e ON ser.ExamId = e.Id
+FROM StudentExamResults ser WITH(NOLOCK) INNER JOIN Exams e ON ser.ExamId = e.Id
              WHERE e.AcademicYearId = @AcademicYearId AND ser.IsDeleted = 0)
         , 1) AS PassRate,
         ROUND(

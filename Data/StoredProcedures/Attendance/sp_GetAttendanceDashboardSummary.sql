@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE sp_GetAttendanceDashboardSummary
+﻿CREATE OR ALTER PROCEDURE sp_GetAttendanceDashboardSummary
     @Date DATE = NULL,
     @StudentId INT = 0,
     @GuardianId INT = 0
@@ -25,7 +25,7 @@ BEGIN
         @StudentAbsent = SUM(CASE WHEN Status = 2 THEN 1 ELSE 0 END),
         @StudentLate = SUM(CASE WHEN Status = 3 THEN 1 ELSE 0 END),
         @StudentLeave = SUM(CASE WHEN Status = 4 THEN 1 ELSE 0 END)
-    FROM Attendance a
+FROM Attendance a WITH(NOLOCK)
     WHERE a.AttendanceDate = @TargetDate AND a.IsDeleted = 0
       AND (@StudentId = 0 OR a.StudentId = @StudentId)
       AND (@GuardianId = 0 OR a.StudentId IN (SELECT StudentId FROM StudentGuardians WHERE GuardianId = @GuardianId));
@@ -49,7 +49,7 @@ BEGIN
             @EmployeeAbsent = SUM(CASE WHEN Status = 2 THEN 1 ELSE 0 END),
             @EmployeeLate = SUM(CASE WHEN Status = 3 THEN 1 ELSE 0 END),
             @EmployeeLeave = SUM(CASE WHEN Status = 4 THEN 1 ELSE 0 END)
-        FROM EmployeeAttendances
+FROM EmployeeAttendances WITH(NOLOCK)
         WHERE CAST(AttendanceDate AS DATE) = @TargetDate AND IsDeleted = 0;
         
         IF @EmployeeTotal > 0
@@ -67,7 +67,7 @@ BEGIN
             @PendingSessions = SUM(CASE WHEN Status = 2 THEN 1 ELSE 0 END), -- Submitted / Pending Approval
             @LockedSessions = SUM(CASE WHEN Status = 3 THEN 1 ELSE 0 END), -- Locked
             @ApprovedSessions = SUM(CASE WHEN Status = 5 THEN 1 ELSE 0 END) -- Approved
-        FROM AttendanceSessions
+FROM AttendanceSessions WITH(NOLOCK)
         WHERE AttendanceDate = @TargetDate AND IsDeleted = 0;
     END
     

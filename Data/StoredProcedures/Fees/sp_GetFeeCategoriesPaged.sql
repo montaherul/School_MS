@@ -1,4 +1,4 @@
--- ============================================================================
+﻿-- ============================================================================
 -- Stored Procedure: sp_GetFeeCategoriesPaged
 -- Purpose: Get paginated fee categories
 -- ============================================================================
@@ -13,17 +13,17 @@ BEGIN
 
     DECLARE @Offset INT = (@PageNumber - 1) * @PageSize;
 
-    WITH Data AS (
+
         SELECT 
             fc.Id,
             fc.Name,
             fc.Description,
             fc.DisplayOrder,
             fc.IsActive,
-            ROW_NUMBER() OVER (ORDER BY fc.DisplayOrder, fc.Name, fc.Id) AS RowNum,
-            COUNT(*) OVER () AS TotalCount
+
+            COUNT(*) OVER () AS TotalRecords
         FROM 
-            FeeCategories fc
+FeeCategories fc WITH(NOLOCK)
         WHERE 
             fc.IsDeleted = 0
             AND (
@@ -31,15 +31,9 @@ BEGIN
                 OR fc.Name LIKE '%' + @SearchTerm + '%'
                 OR fc.Description LIKE '%' + @SearchTerm + '%'
             )
-    )
-    SELECT 
-        Id, Name, Description, DisplayOrder, IsActive, TotalCount AS TotalRecords
-    FROM 
-        Data
-    WHERE 
-        RowNum > @Offset 
-        AND RowNum <= @Offset + @PageSize
-    ORDER BY 
-        RowNum;
+    
+ORDER BY fc.DisplayOrder, fc.Name, fc.Id
+OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
+
 END;
 GO

@@ -333,6 +333,31 @@ public class EmployeeInvitationService : IEmployeeInvitationService
                await _teacherSync.SyncEmployeeToTeacherAsync(employee.Id, ct);
             }
 
+            // Send account creation email
+            if (!string.IsNullOrWhiteSpace(employee.Email))
+            {
+                try
+                {
+                    await _emailService.SendEmployeeAccountAsync(employee.Email, employee.FullName, username, password, ct);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Employee account email failed for {Email}", employee.Email);
+                }
+
+                if (employee.IsTeachingStaff || (invite.Designation != null && invite.Designation.IsTeachingRole))
+                {
+                    try
+                    {
+                        await _emailService.SendTeacherAccountAsync(employee.Email, employee.FullName, username, password, ct);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Teacher account email failed for {Email}", employee.Email);
+                    }
+                }
+            }
+
             // Mark Invite Used
             invite.IsUsed = true;
             invite.InvitationStatus = "Completed";

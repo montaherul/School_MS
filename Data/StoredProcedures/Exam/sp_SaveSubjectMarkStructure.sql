@@ -1,4 +1,4 @@
-SET QUOTED_IDENTIFIER ON;
+﻿SET QUOTED_IDENTIFIER ON;
 GO
 
 CREATE OR ALTER PROCEDURE [dbo].[sp_SaveSubjectMarkStructure]
@@ -17,7 +17,7 @@ BEGIN
     DECLARE @ExistingId INT;
 
     SELECT @ExistingId = Id
-    FROM SubjectMarkStructures
+FROM SubjectMarkStructures WITH(NOLOCK)
     WHERE ComponentId = @ComponentId
       AND (@SubjectId IS NULL OR SubjectId = @SubjectId)
       AND (@ClassId IS NULL OR ClassId = @ClassId)
@@ -33,7 +33,7 @@ BEGIN
 
         -- Reset the flag if we just restored
         SELECT @ExistingId = Id
-        FROM SubjectMarkStructures
+FROM SubjectMarkStructures WITH(NOLOCK)
         WHERE Id = @ExistingId;
     END
 

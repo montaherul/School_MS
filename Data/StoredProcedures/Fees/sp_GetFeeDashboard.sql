@@ -1,4 +1,4 @@
--- ============================================================================
+﻿-- ============================================================================
 -- Stored Procedure: sp_GetFeeDashboard
 -- Purpose: Get fee dashboard aggregate data
 -- ============================================================================
@@ -20,13 +20,13 @@ BEGIN
         @TotalDiscounted = ISNULL(SUM(DiscountAmount), 0),
         @TotalInvoices = COUNT(*),
         @OverdueInvoices = SUM(CASE WHEN [Status] IN (1, 2) AND DueDate < GETDATE() THEN 1 ELSE 0 END)
-    FROM FeeInvoices
+FROM FeeInvoices WITH(NOLOCK)
     WHERE IsDeleted = 0
       AND (@AcademicYearId = 0 OR AcademicYearId = @AcademicYearId);
 
     SELECT @TotalPayments = COUNT(*)
-    FROM Payments p
-    INNER JOIN FeeInvoices fi ON p.FeeInvoiceId = fi.Id
+FROM Payments p WITH(NOLOCK)
+INNER JOIN FeeInvoices fi WITH(NOLOCK) ON p.FeeInvoiceId = fi.Id
     WHERE p.IsDeleted = 0
       AND (@AcademicYearId = 0 OR fi.AcademicYearId = @AcademicYearId);
 
@@ -49,8 +49,8 @@ BEGIN
         MONTH(PaidAt) AS [Month],
         SUM(Amount) AS Collected,
         COUNT(*) AS TransactionCount
-    FROM Payments p
-    INNER JOIN FeeInvoices fi ON p.FeeInvoiceId = fi.Id
+FROM Payments p WITH(NOLOCK)
+INNER JOIN FeeInvoices fi WITH(NOLOCK) ON p.FeeInvoiceId = fi.Id
     WHERE p.IsDeleted = 0
       AND p.PaidAt >= DATEADD(MONTH, -6, GETUTCDATE())
       AND (@AcademicYearId = 0 OR fi.AcademicYearId = @AcademicYearId)
@@ -62,8 +62,8 @@ BEGIN
         p.Method,
         COUNT(*) AS Count,
         SUM(p.Amount) AS Total
-    FROM Payments p
-    INNER JOIN FeeInvoices fi ON p.FeeInvoiceId = fi.Id
+FROM Payments p WITH(NOLOCK)
+INNER JOIN FeeInvoices fi WITH(NOLOCK) ON p.FeeInvoiceId = fi.Id
     WHERE p.IsDeleted = 0
       AND (@AcademicYearId = 0 OR fi.AcademicYearId = @AcademicYearId)
     GROUP BY p.Method;
@@ -74,8 +74,8 @@ BEGIN
         fi.DueDate, fi.TotalAmount, fi.PaidAmount,
         (fi.TotalAmount - fi.PaidAmount) AS DueAmount,
         DATEDIFF(DAY, GETDATE(), fi.DueDate) AS DaysRemaining
-    FROM FeeInvoices fi
-    INNER JOIN Students s ON fi.StudentId = s.Id
+FROM FeeInvoices fi WITH(NOLOCK)
+INNER JOIN Students s WITH(NOLOCK) ON fi.StudentId = s.Id
     WHERE fi.IsDeleted = 0
       AND fi.[Status] IN (1, 2)
       AND fi.DueDate BETWEEN CAST(GETDATE() AS DATE) AND DATEADD(DAY, 7, CAST(GETDATE() AS DATE))

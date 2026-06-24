@@ -106,7 +106,7 @@
 @section Scripts {
     <script>
         var table = new Tabulator("#user-table", {
-            height: "650px",
+            height: "calc(100vh - 280px)",
             layout: "fitColumns",
             placeholder: "<div class='dash-empty'><i class='bi bi-people fs-1'></i><div class='dash-empty__title'>No Users Found</div><div class='dash-empty__sub'>Try adjusting your search or filters.</div></div>",
             pagination: true,
@@ -114,9 +114,11 @@
             paginationSize: 10,
             paginationSizeSelector: [10, 20, 50, 100],
             ajaxURL: "/User/Index",
-            ajaxConfig: "GET",
+            ajaxConfig: {
+                method: "GET",
+                headers: { "X-Requested-With": "XMLHttpRequest" }
+            },
             paginationDataSent: { page: "pageNumber", size: "pageSize" },
-            paginationDataReceived: { last_page: "last_page", data: "data", current_page: "current_page", total_records: "total_records" },
             ajaxParams: function () {
                 return {
                     searchTerm: $("#userInput").val(),
@@ -126,7 +128,7 @@
                 };
             },
             ajaxResponse: function (url, params, response) {
-                return { data: response.data, last_page: response.last_page, current_page: response.current_page, total_records: response.total_records };
+                return { data: response.data, last_page: response.last_page };
             },
             columns: [
                 {

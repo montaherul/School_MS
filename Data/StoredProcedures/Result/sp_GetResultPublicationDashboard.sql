@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[sp_GetResultPublicationDashboard]
+﻿CREATE OR ALTER PROCEDURE [dbo].[sp_GetResultPublicationDashboard]
     @AcademicYearId INT
 AS
 BEGIN
@@ -22,8 +22,8 @@ BEGIN
         SUM(CASE WHEN ser.Status = 1 THEN 1 ELSE 0 END) AS SubmittedResults,
         SUM(CASE WHEN ser.Status = 0 OR ser.Status IS NULL THEN 1 ELSE 0 END) AS DraftResults,
         CASE WHEN e.IsLocked = 1 THEN e.LockedAt ELSE NULL END AS LockedDateTime
-    FROM Exams e
-    LEFT JOIN StudentExamResults ser ON e.Id = ser.ExamId AND ser.IsDeleted = 0
+FROM Exams e WITH(NOLOCK)
+LEFT JOIN StudentExamResults ser WITH(NOLOCK) ON e.Id = ser.ExamId AND ser.IsDeleted = 0
     WHERE e.AcademicYearId = @AcademicYearId AND e.IsDeleted = 0
     GROUP BY e.Id, e.Name, e.Term, e.StartsOn, e.EndsOn, e.Status, e.IsLocked, e.LockedAt, e.LockedByUserId
     ORDER BY e.EndsOn DESC;
@@ -38,8 +38,8 @@ BEGIN
         SUM(CASE WHEN e.Status = 0 THEN 1 ELSE 0 END) AS DraftExams,
         COUNT(ser.Id) AS TotalStudentResults,
         SUM(CASE WHEN ser.Status IN (4, 5) THEN 1 ELSE 0 END) AS TotalPublishedResults
-    FROM Exams e
-    LEFT JOIN StudentExamResults ser ON e.Id = ser.ExamId AND ser.IsDeleted = 0
+FROM Exams e WITH(NOLOCK)
+LEFT JOIN StudentExamResults ser WITH(NOLOCK) ON e.Id = ser.ExamId AND ser.IsDeleted = 0
     WHERE e.AcademicYearId = @AcademicYearId AND e.IsDeleted = 0;
 END;
 GO

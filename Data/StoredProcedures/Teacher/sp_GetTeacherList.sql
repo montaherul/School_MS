@@ -1,4 +1,4 @@
--- ============================================================================
+﻿-- ============================================================================
 -- Stored Procedure: sp_GetTeacherList
 -- Purpose: Get paginated teacher list with filtering and count
 -- Updated to match current Employees schema (EmployeeCode, DepartmentId, DesignationId)
@@ -16,7 +16,7 @@ BEGIN
 
     DECLARE @Offset INT = (@PageNumber - 1) * @PageSize;
 
-    WITH TeacherData AS (
+
         SELECT
             t.Id,
             e.EmployeeCode AS TeacherNo,
@@ -27,13 +27,13 @@ BEGIN
             e.[Status],
             e.ProfilePicturePath,
             t.IsDeleted,
-            ROW_NUMBER() OVER (ORDER BY e.FullName ASC, t.Id ASC) AS RowNum,
-            COUNT(*) OVER () AS TotalCount
+
+            COUNT(*) OVER () AS TotalRecords
         FROM
-            Teachers t
-        LEFT JOIN Employees e ON t.EmployeeId = e.Id
-        LEFT JOIN Departments dept ON e.DepartmentId = dept.Id
-        LEFT JOIN Designations d ON e.DesignationId = d.Id
+Teachers t WITH(NOLOCK)
+LEFT JOIN Employees e WITH(NOLOCK) ON t.EmployeeId = e.Id
+LEFT JOIN Departments dept WITH(NOLOCK) ON e.DepartmentId = dept.Id
+LEFT JOIN Designations d WITH(NOLOCK) ON e.DesignationId = d.Id
         WHERE
             t.IsDeleted = 0
             AND (e.IsDeleted = 0 OR e.Id IS NULL)
@@ -46,23 +46,9 @@ BEGIN
             )
             AND (@Department IS NULL OR dept.Name = @Department)
             AND (@Status IS NULL OR e.[Status] = @Status)
-    )
-    SELECT
-        Id,
-        TeacherNo,
-        FullName,
-        Designation,
-        Department,
-        MobileNumber,
-        [Status],
-        ProfilePicturePath,
-        TotalCount AS TotalRecords
-    FROM
-        TeacherData
-    WHERE
-        RowNum > @Offset
-        AND RowNum <= @Offset + @PageSize
-    ORDER BY
-        RowNum;
+    
+ORDER BY e.FullName ASC, t.Id ASC
+OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
+
 END;
 GO

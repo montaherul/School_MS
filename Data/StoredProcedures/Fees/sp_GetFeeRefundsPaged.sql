@@ -1,4 +1,4 @@
--- ============================================================================
+﻿-- ============================================================================
 -- Stored Procedure: sp_GetFeeRefundsPaged
 -- Purpose: Get paginated fee refunds
 -- ============================================================================
@@ -13,7 +13,7 @@ BEGIN
 
     DECLARE @Offset INT = (@PageNumber - 1) * @PageSize;
 
-    WITH Data AS (
+
         SELECT 
             fr.Id,
             fr.FeePaymentId,
@@ -27,16 +27,16 @@ BEGIN
             fr.Reason,
             fr.IsApproved,
             fr.RefundDate,
-            ROW_NUMBER() OVER (ORDER BY fr.RefundDate DESC, fr.Id DESC) AS RowNum,
-            COUNT(*) OVER () AS TotalCount
+
+            COUNT(*) OVER () AS TotalRecords
         FROM 
-            FeeRefunds fr
+FeeRefunds fr WITH(NOLOCK)
         INNER JOIN 
-            Payments p ON fr.FeePaymentId = p.Id
+Payments p WITH(NOLOCK) ON fr.FeePaymentId = p.Id
         INNER JOIN 
-            FeeInvoices fi ON p.FeeInvoiceId = fi.Id
+FeeInvoices fi WITH(NOLOCK) ON p.FeeInvoiceId = fi.Id
         INNER JOIN 
-            Students s ON fi.StudentId = s.Id
+Students s WITH(NOLOCK) ON fi.StudentId = s.Id
         WHERE 
             fr.IsDeleted = 0
             AND (
@@ -45,17 +45,9 @@ BEGIN
                 OR s.FullName LIKE '%' + @SearchTerm + '%'
                 OR fr.Reason LIKE '%' + @SearchTerm + '%'
             )
-    )
-    SELECT 
-        Id, FeePaymentId, FeeInvoiceId, InvoiceNo, StudentId, StudentName,
-        RefundAmount, RefundMethod, ReferenceNo, Reason, IsApproved, RefundDate,
-        TotalCount AS TotalRecords
-    FROM 
-        Data
-    WHERE 
-        RowNum > @Offset 
-        AND RowNum <= @Offset + @PageSize
-    ORDER BY 
-        RowNum;
+    
+ORDER BY fr.RefundDate DESC, fr.Id DESC
+OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
+
 END;
 GO

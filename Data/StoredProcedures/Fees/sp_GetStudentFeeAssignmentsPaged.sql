@@ -1,4 +1,4 @@
--- ============================================================================
+﻿-- ============================================================================
 -- Stored Procedure: sp_GetStudentFeeAssignmentsPaged
 -- Purpose: Get paginated student fee assignments
 -- ============================================================================
@@ -15,7 +15,7 @@ BEGIN
 
     DECLARE @Offset INT = (@PageNumber - 1) * @PageSize;
 
-    WITH Data AS (
+
         SELECT 
             sfa.Id,
             sfa.StudentId,
@@ -29,16 +29,16 @@ BEGIN
             sfa.IsActive,
             sfa.ValidFrom,
             sfa.ValidTo,
-            ROW_NUMBER() OVER (ORDER BY st.FullName, fs.FeeName, sfa.Id) AS RowNum,
-            COUNT(*) OVER () AS TotalCount
+
+            COUNT(*) OVER () AS TotalRecords
         FROM 
-            StudentFeeAssignments sfa
+StudentFeeAssignments sfa WITH(NOLOCK)
         INNER JOIN 
-            Students st ON sfa.StudentId = st.Id
+Students st WITH(NOLOCK) ON sfa.StudentId = st.Id
         INNER JOIN 
-            FeeStructures fs ON sfa.FeeStructureId = fs.Id
+FeeStructures fs WITH(NOLOCK) ON sfa.FeeStructureId = fs.Id
         LEFT JOIN 
-            AcademicYears ay ON sfa.AcademicYearId = ay.Id
+AcademicYears ay WITH(NOLOCK) ON sfa.AcademicYearId = ay.Id
         WHERE 
             sfa.IsDeleted = 0
             AND (@StudentId = 0 OR sfa.StudentId = @StudentId)
@@ -49,19 +49,9 @@ BEGIN
                 OR st.StudentNo LIKE '%' + @SearchTerm + '%'
                 OR fs.FeeName LIKE '%' + @SearchTerm + '%'
             )
-    )
-    SELECT 
-        Id, StudentId, StudentName, StudentNo,
-        FeeStructureId, FeeStructureName,
-        AcademicYearId, AcademicYearName,
-        CustomAmount, IsActive, ValidFrom, ValidTo,
-        TotalCount AS TotalRecords
-    FROM 
-        Data
-    WHERE 
-        RowNum > @Offset 
-        AND RowNum <= @Offset + @PageSize
-    ORDER BY 
-        RowNum;
+    
+ORDER BY st.FullName, fs.FeeName, sfa.Id
+OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
+
 END;
 GO

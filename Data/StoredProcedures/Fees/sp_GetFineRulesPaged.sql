@@ -1,4 +1,4 @@
--- ============================================================================
+﻿-- ============================================================================
 -- Stored Procedure: sp_GetFineRulesPaged
 -- Purpose: Get paginated fine rules
 -- ============================================================================
@@ -13,31 +13,25 @@ BEGIN
 
     DECLARE @Offset INT = (@PageNumber - 1) * @PageSize;
 
-    WITH Data AS (
+
         SELECT 
             fr.Id,
             fr.Name,
             fr.GraceDays,
             fr.FinePerDay,
-            ROW_NUMBER() OVER (ORDER BY fr.Name, fr.Id) AS RowNum,
-            COUNT(*) OVER () AS TotalCount
+
+            COUNT(*) OVER () AS TotalRecords
         FROM 
-            FineRules fr
+FineRules fr WITH(NOLOCK)
         WHERE 
             fr.IsDeleted = 0
             AND (
                 @SearchTerm IS NULL 
                 OR fr.Name LIKE '%' + @SearchTerm + '%'
             )
-    )
-    SELECT 
-        Id, Name, GraceDays, FinePerDay, TotalCount AS TotalRecords
-    FROM 
-        Data
-    WHERE 
-        RowNum > @Offset 
-        AND RowNum <= @Offset + @PageSize
-    ORDER BY 
-        RowNum;
+    
+ORDER BY fr.Name, fr.Id
+OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
+
 END;
 GO

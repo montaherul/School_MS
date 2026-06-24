@@ -58,6 +58,7 @@ using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.Services.Interfaces.Students;
 using SchoolManagementSystem.Services.Interfaces.Teachers;
 using SchoolManagementSystem.Services.Interfaces.Website;
+using SchoolManagementSystem.Services.Implementations.Website;
 using SchoolManagementSystem.UnitOfWork.Implementations;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 
@@ -139,6 +140,14 @@ public static class ServiceRegistration
         services.AddScoped<INoticeRepository, NoticeRepository>();
         services.AddScoped<IContactMessageRepository, ContactMessageRepository>();
         services.AddScoped<IEmailTemplateRepository, EmailTemplateRepository>();
+        services.AddScoped<IEventNotificationRepository, EventNotificationRepository>();
+        services.AddScoped<IEventNotificationRecipientRepository, EventNotificationRecipientRepository>();
+        services.AddScoped<IEventNotificationLogRepository, EventNotificationLogRepository>();
+        services.AddScoped<IEventNotificationQueueRepository, EventNotificationQueueRepository>();
+        services.AddScoped<IGuardainNotificationPreferenceRepository, GuardainNotificationPreferenceRepository>();
+        services.AddScoped<IEventNotificationAttachmentRepository, EventNotificationAttachmentRepository>();
+        services.AddScoped<IScheduledNotificationRepository, ScheduledNotificationRepository>();
+        services.AddScoped<IReminderConfigRepository, ReminderConfigRepository>();
 
         services.AddScoped<IDashboardService, DashboardService>();
         services.AddScoped<IStudentService, StudentService>();
@@ -219,6 +228,7 @@ public static class ServiceRegistration
         services.AddScoped<IWebsitePageService, WebsitePageService>();
         services.AddScoped<IContactMessageService, ContactMessageService>();
         services.AddScoped<IEmailTemplateService, EmailTemplateService>();
+        services.AddScoped<IEventNotificationService, EventNotificationService>();
         services.AddScoped<IAdmissionFeeStructureService, AdmissionFeeStructureService>();
         services.AddScoped<IAnnouncementService, AnnouncementService>();
         services.AddScoped<IAuditLogService, AuditLogService>();
@@ -252,6 +262,8 @@ public static class ServiceRegistration
         services.AddScoped<SchoolManagementSystem.Services.Interfaces.Attendance.IAutoAbsentService, SchoolManagementSystem.Services.Implementations.Attendance.AutoAbsentService>();
         services.AddHostedService<SchoolManagementSystem.Services.Implementations.Attendance.AttendanceNotificationWorker>();
         services.AddHostedService<SchoolManagementSystem.Services.Implementations.Attendance.AutoAbsentWorker>();
+        services.AddHostedService<SchoolManagementSystem.Services.Implementations.Website.EventNotificationWorker>();
+        services.AddHostedService<SchoolManagementSystem.Services.Implementations.Website.EventReminderWorker>();
 
        
         return services;

@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[sp_GetExamScheduleList]
+﻿CREATE OR ALTER PROCEDURE [dbo].[sp_GetExamScheduleList]
     @ExamId INT = NULL,
     @ClassId INT = NULL,
     @StudentGroupId INT = NULL,
@@ -27,12 +27,12 @@ BEGIN
         esch.EndsAt,
         esch.RoomNo,
         esch.Instructions
-    FROM ExamSchedules esch
-    INNER JOIN Exams e ON esch.ExamId = e.Id
-    INNER JOIN Subjects sub ON esch.SubjectId = sub.Id
-    LEFT JOIN SchoolClasses c ON esch.ClassId = c.Id
-    LEFT JOIN StudentGroups sg ON esch.StudentGroupId = sg.Id
-    LEFT JOIN Sections sec ON esch.SectionId = sec.Id
+FROM ExamSchedules esch WITH(NOLOCK)
+INNER JOIN Exams e WITH(NOLOCK) ON esch.ExamId = e.Id
+INNER JOIN Subjects sub WITH(NOLOCK) ON esch.SubjectId = sub.Id
+LEFT JOIN SchoolClasses c WITH(NOLOCK) ON esch.ClassId = c.Id
+LEFT JOIN StudentGroups sg WITH(NOLOCK) ON esch.StudentGroupId = sg.Id
+LEFT JOIN Sections sec WITH(NOLOCK) ON esch.SectionId = sec.Id
     WHERE e.IsDeleted = 0
       AND (@ExamId IS NULL OR esch.ExamId = @ExamId)
       AND (@ClassId IS NULL OR esch.ClassId = @ClassId)

@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[sp_BulkGenerateReportCards]
+﻿CREATE OR ALTER PROCEDURE [dbo].[sp_BulkGenerateReportCards]
     @ExamId INT,
     @ClassId INT = NULL,
     @SectionId INT = NULL
@@ -21,11 +21,11 @@ BEGIN
         ser.GroupPosition,
         CAST(ser.IsPassed AS BIT) AS IsPassed,
         ser.PublishedAt
-    FROM StudentExamResults ser
-    INNER JOIN Students s ON ser.StudentId = s.Id
-    INNER JOIN Classes c ON s.ClassId = c.Id
-    LEFT JOIN Sections sec ON s.SectionId = sec.Id
-    LEFT JOIN StudentGroups sg ON s.StudentGroupId = sg.Id
+FROM StudentExamResults ser WITH(NOLOCK)
+INNER JOIN Students s WITH(NOLOCK) ON ser.StudentId = s.Id
+INNER JOIN Classes c WITH(NOLOCK) ON s.ClassId = c.Id
+LEFT JOIN Sections sec WITH(NOLOCK) ON s.SectionId = sec.Id
+LEFT JOIN StudentGroups sg WITH(NOLOCK) ON s.StudentGroupId = sg.Id
     WHERE ser.ExamId = @ExamId
       AND ser.IsDeleted = 0
       AND (@ClassId IS NULL OR s.ClassId = @ClassId)

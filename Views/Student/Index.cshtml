@@ -1,4 +1,3 @@
-@model SchoolManagementSystem.Models.ViewModels.Student.StudentIndexViewModel
 @{
     ViewData["Title"] = "Student Management";
 }
@@ -8,17 +7,15 @@
 <div class="adm-page">
     @if (TempData["SuccessMessage"] != null)
     {
-        <div class="adm-alert adm-alert--success mb-3">
-            <i class="bi bi-check-circle-fill me-2"></i>
-            @TempData["SuccessMessage"]
+        <div class="adm-alert adm-alert--success">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
         </div>
     }
 
     @if (TempData["ErrorMessage"] != null)
     {
-        <div class="adm-alert adm-alert--error mb-3">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i>
-            @TempData["ErrorMessage"]
+        <div class="adm-alert adm-alert--error">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["ErrorMessage"]
         </div>
     }
 
@@ -38,7 +35,7 @@
         </a>
     </div>
 
-    <div class="adm-filters mb-3">
+    <div class="adm-filters">
         <div class="adm-filters__row">
             <div class="adm-filters__field adm-filters__field--search">
                 <label class="adm-label">Search</label>
@@ -80,8 +77,6 @@
     </div>
 </div>
 
-<div class="toast-container position-fixed bottom-0 end-0 p-3" id="toastContainer" style="z-index:1060;"></div>
-
 <div class="adm-modal-backdrop d-none" id="deleteModalBackdrop">
     <div class="adm-modal">
         <div class="adm-modal__header">
@@ -112,11 +107,11 @@
 
 @section Scripts {
     <script>
-        let pendingDeleteId = null;
-        const deleteModal = document.getElementById('deleteModalBackdrop');
-        const searchInput = document.getElementById('table-search');
-        const classFilter = document.getElementById('classFilter');
-        const sectionFilter = document.getElementById('sectionFilter');
+        var pendingDeleteId = null;
+        var deleteModal = document.getElementById('deleteModalBackdrop');
+        var searchInput = document.getElementById('table-search');
+        var classFilter = document.getElementById('classFilter');
+        var sectionFilter = document.getElementById('sectionFilter');
 
         function openDeleteModal(name, id) {
             pendingDeleteId = id;
@@ -132,79 +127,49 @@
         document.getElementById('closeDeleteModal').addEventListener('click', closeDeleteModal);
         document.getElementById('cancelDeleteBtn').addEventListener('click', closeDeleteModal);
 
-        function showToast(message, type) {
-            var bg = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-danger' : 'bg-warning';
-            var container = document.getElementById('toastContainer');
-            if (!container) return;
-            var toast = document.createElement('div');
-            toast.className = 'toast align-items-center text-white border-0 ' + bg;
-            toast.setAttribute('role', 'alert');
-            toast.innerHTML = '<div class="d-flex"><div class="toast-body">' + message + '</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button></div>';
-            container.appendChild(toast);
-            var bs = new bootstrap.Toast(toast, { delay: 4000 });
-            bs.show();
-            toast.addEventListener('hidden.bs.toast', function () { toast.remove(); });
-        }
-
-        const table = new Tabulator("#data-table", {
-            layout: "fitDataTable",
-            responsiveLayout: false,
+        var table = new Tabulator("#data-table", {
+            height: "calc(100vh - 280px)",
+            layout: "fitColumns",
             pagination: true,
             paginationMode: "remote",
             paginationSize: 15,
-            paginationSizeSelector: [15, 25, 50, 100],
+            paginationSizeSelector: [15,25,50,100],
             ajaxURL: '@Url.Action("GetList", "Student")',
-            ajaxParams: function () { return getFilters(); },
-            ajaxResponse: function (url, params, response) {
-                if (response.error) {
-                    console.error("Student list error:", response.error);
-                    return { data: [], last_page: 1 };
-                }
+            paginationDataSent: { "page": "page", "size": "pageSize" },
+            ajaxResponse: function(url, params, response) {
                 return { data: response.data || [], last_page: response.last_page || 1 };
             },
-            ajaxError: function (xhr, textStatus, errorThrown) {
-                console.error("Student list AJAX error:", textStatus, errorThrown);
-                showToast("Failed to load student data: " + textStatus, 'error');
-            },
+            ajaxParams: function() { return getFilters(); },
             placeholder: "<div class='dash-empty'><i class='bi bi-people fs-1'></i><div class='dash-empty__title'>No Students Found</div><div class='dash-empty__sub'>Try adjusting your filters or search.</div></div>",
             columns: [
                 {
-                    formatter: function () { return '<i class="bi bi-plus-circle text-primary"></i>'; },
-                    width: 50, hozAlign: "center", headerSort: false,
-                    cellClick: function (e, cell) {
-                        var row = cell.getRow();
-                        var data = row.getData();
-                        var element = row.getElement();
-                        var existing = element.querySelector('.student-row-details');
-                        if (existing) {
-                            existing.remove();
-                            cell.getElement().querySelector('i').classList.replace('bi-dash-circle', 'bi-plus-circle');
-                            return;
-                        }
-                        var details = document.createElement('div');
-                        details.className = 'student-row-details';
-                        details.innerHTML = '<div class="adm-table-card m-3"><div class="p-4"><div class="row g-4"><div class="col-lg-4"><div class="d-flex gap-3"><div class="entity-avatar entity-avatar--primary"><img src="' + (data.profilePicturePath || '/images/default-user.png') + '" /></div><div><h5 class="fw-bold mb-1">' + data.fullName + '</h5><div class="entity-cell__code mb-2">' + data.studentNo + '</div><span class="adm-status adm-status--approved">' + data.className + ' - ' + data.sectionName + '</span></div></div></div><div class="col-lg-4"><h6 class="fw-bold mb-3">Family Information</h6><div class="small"><div><strong>Father:</strong> ' + (data.fatherName || 'N/A') + '</div><div><strong>Mother:</strong> ' + (data.motherName || 'N/A') + '</div><div><strong>Guardian Mobile:</strong> ' + (data.fatherOrGuardianMobileNo || 'N/A') + '</div></div></div><div class="col-lg-4"><h6 class="fw-bold mb-3">Contact Information</h6><div class="small"><div><strong>Mobile:</strong> ' + (data.mobileNumber || 'N/A') + '</div><div><strong>Email:</strong> ' + (data.emailAddress || 'N/A') + '</div><div><strong>Blood Group:</strong> ' + (data.bloodGroup || 'N/A') + '</div></div></div></div></div></div>';
-                        element.appendChild(details);
-                        cell.getElement().querySelector('i').classList.replace('bi-plus-circle', 'bi-dash-circle');
+                    title: "Student",
+                    field: "fullName",
+                    widthGrow: 2,
+                    cssClass: "adm-col-entity",
+                    formatter: function(cell) {
+                        return renderPersonCell(cell.getData(), { nameField: 'fullName', codeField: 'studentNo', avatarField: 'profilePicturePath' });
                     }
                 },
+                { title: "Class", field: "className", width: 120, hozAlign: "center" },
+                { title: "Section", field: "sectionName", width: 120, hozAlign: "center" },
+                { title: "Roll", field: "rollNumber", width: 80, hozAlign: "center" },
                 {
-                    title: "Student", field: "fullName", width: 280, minWidth: 280, cssClass: "adm-col-entity",
-                    formatter: function (cell) {
-                        return renderPersonCell(cell.getData(), { nameField: 'fullName', codeField: 'studentNo' });
-                    }
-                },
-                { title: "Class", field: "className", width: 120, minWidth: 120 },
-                { title: "Section", field: "sectionName", width: 120, minWidth: 120 },
-                { title: "Roll", field: "rollNumber", width: 80, minWidth: 80 },
-                {
-                    title: "Status", field: "status", width: 100, hozAlign: "center", cssClass: "adm-col-status",
-                    formatter: function (cell) { return renderStatusBadge(cell.getValue()); }
+                    title: "Status",
+                    field: "status",
+                    width: 110,
+                    hozAlign: "center",
+                    cssClass: "adm-col-status",
+                    formatter: function(cell) { return renderStatusBadge(cell.getValue()); }
                 },
                 {
-                    title: "Actions", hozAlign: "center", headerSort: false,
-                    cssClass: "adm-col-actions", width: 160, minWidth: 160,
-                    formatter: function (cell) {
+                    title: "Actions",
+                    field: "id",
+                    hozAlign: "center",
+                    headerSort: false,
+                    width: 140,
+                    cssClass: "adm-col-actions",
+                    formatter: function(cell) {
                         var d = cell.getRow().getData();
                         return buildActionGroup([
                             { url: '/Student/Details/' + d.studentNo, className: 'action-btn--view', icon: 'eye', title: 'View' },
@@ -222,16 +187,16 @@
 
         function reloadTable() { table.setData(); }
 
-        searchInput.addEventListener('keyup', function (e) { if (e.key === "Enter") reloadTable(); });
+        searchInput.addEventListener('keyup', function(e) { if (e.key === "Enter") reloadTable(); });
 
-        classFilter.addEventListener('change', async function () {
+        classFilter.addEventListener('change', async function() {
             var classId = this.value;
             sectionFilter.innerHTML = '<option value="">All Sections</option>';
             if (classId) {
                 try {
                     var res = await fetch('@Url.Action("GetSectionsByClass", "Section")?classId=' + classId);
                     var sections = await res.json();
-                    sections.forEach(function (s) { sectionFilter.innerHTML += '<option value="' + s.id + '">' + s.name + '</option>'; });
+                    sections.forEach(function(s) { sectionFilter.innerHTML += '<option value="' + s.id + '">' + s.name + '</option>'; });
                 } catch (e) { console.error("Error loading sections:", e); }
             }
             reloadTable();
@@ -239,19 +204,14 @@
 
         sectionFilter.addEventListener('change', reloadTable);
 
-        document.getElementById('btn-reset').addEventListener('click', function () {
+        document.getElementById('btn-reset').addEventListener('click', function() {
             searchInput.value = "";
             classFilter.value = "";
             sectionFilter.innerHTML = '<option value="">All Sections</option>';
             reloadTable();
         });
 
-        document.addEventListener('click', function (e) {
-            var btn = e.target.closest('.delete-btn');
-            if (btn) openDeleteModal(btn.dataset.name, btn.dataset.id);
-        });
-
-        document.getElementById('confirmDeleteBtn').addEventListener('click', async function () {
+        document.getElementById('confirmDeleteBtn').addEventListener('click', async function() {
             if (!pendingDeleteId) return;
             var res = await fetch('@Url.Action("DeleteConfirmed", "Student")/' + pendingDeleteId, {
                 method: "POST",
@@ -260,7 +220,6 @@
             var data = await res.json();
             closeDeleteModal();
             if (data.success) reloadTable();
-            else showToast(data.message, 'error');
         });
     </script>
 }

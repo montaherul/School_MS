@@ -3,10 +3,17 @@
     ViewData["Title"] = "Notifications";
 }
 
-<div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold">My Notifications</h2>
-        <a asp-action="Dashboard" class="btn btn-outline-secondary btn-sm">
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-bell"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">My Notifications</h1>
+            </div>
+        </div>
+        <a asp-action="Dashboard" class="adm-btn adm-btn--ghost adm-btn--sm">
             <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
         </a>
     </div>
@@ -15,8 +22,8 @@
     {
         @foreach (var n in Model)
         {
-            <div class="card border-0 shadow-sm mb-2 @(n.IsRead ? "" : "border-start border-4 border-primary")">
-                <div class="card-body">
+            <div class="adm-table-card mb-2 @(n.IsRead ? "" : "border-start border-4 border-primary")">
+                <div class="p-4">
                     <div class="d-flex justify-content-between">
                         <div>
                             <h6 class="mb-1 fw-bold @(n.IsRead ? "" : "text-primary")">@n.Title</h6>
@@ -27,7 +34,7 @@
                         {
                             <form asp-action="MarkRead" asp-route-id="@n.Id" method="post" class="ms-3">
                                 @Html.AntiForgeryToken()
-                                <button type="submit" class="btn btn-sm btn-outline-primary">Mark Read</button>
+                                <button type="submit" class="adm-btn adm-btn--sm adm-btn--ghost">Mark Read</button>
                             </form>
                         }
                     </div>
@@ -37,8 +44,8 @@
     }
     else
     {
-        <div class="card border-0 shadow-sm">
-            <div class="card-body text-center py-5">
+        <div class="adm-table-card">
+            <div class="text-center py-5">
                 <i class="bi bi-bell-slash fs-1 text-muted"></i>
                 <p class="text-muted mt-2">No notifications yet.</p>
             </div>

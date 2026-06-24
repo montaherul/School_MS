@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[sp_CalculateSubjectResults]
+﻿CREATE OR ALTER PROCEDURE [dbo].[sp_CalculateSubjectResults]
     @ExamId INT,
     @AcademicYearId INT
 AS
@@ -29,9 +29,9 @@ BEGIN
                 WHEN m.MarksObtained >= es.PassMarks THEN 1
                 ELSE 0
             END AS IsPassed
-        FROM Marks m
-        INNER JOIN ExamSubjects es ON m.ExamId = es.ExamId AND m.SubjectId = es.SubjectId AND es.IsDeleted = 0
-        INNER JOIN Subjects sub ON m.SubjectId = sub.Id
+FROM Marks m WITH(NOLOCK)
+INNER JOIN ExamSubjects es WITH(NOLOCK) ON m.ExamId = es.ExamId AND m.SubjectId = es.SubjectId AND es.IsDeleted = 0
+INNER JOIN Subjects sub WITH(NOLOCK) ON m.SubjectId = sub.Id
         WHERE m.ExamId = @ExamId AND m.IsDeleted = 0
     ) AS source
     ON (

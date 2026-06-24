@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[SP_MarkEntry_GetGrid]
+﻿CREATE OR ALTER PROCEDURE [dbo].[SP_MarkEntry_GetGrid]
     @ExamId INT,
     @ClassId INT,
     @SubjectId INT
@@ -14,9 +14,9 @@ BEGIN
         m.Grade,
         m.Status,
         CAST(COALESCE(m.IsLocked, 0) AS BIT) AS IsLocked
-    FROM Students s
-    INNER JOIN ExamSubjects es ON es.ExamId = @ExamId AND es.SubjectId = @SubjectId AND es.IsDeleted = 0
-    LEFT JOIN Marks m ON m.ExamId = @ExamId AND m.SubjectId = @SubjectId AND m.StudentId = s.Id AND m.IsDeleted = 0
+FROM Students s WITH(NOLOCK)
+INNER JOIN ExamSubjects es WITH(NOLOCK) ON es.ExamId = @ExamId AND es.SubjectId = @SubjectId AND es.IsDeleted = 0
+LEFT JOIN Marks m WITH(NOLOCK) ON m.ExamId = @ExamId AND m.SubjectId = @SubjectId AND m.StudentId = s.Id AND m.IsDeleted = 0
     WHERE s.ClassId = @ClassId
       AND s.Status = 1
       AND s.IsDeleted = 0

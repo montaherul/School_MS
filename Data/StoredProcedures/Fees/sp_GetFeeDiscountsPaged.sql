@@ -1,4 +1,4 @@
--- ============================================================================
+﻿-- ============================================================================
 -- Stored Procedure: sp_GetFeeDiscountsPaged
 -- Purpose: Get paginated fee discount rules
 -- ============================================================================
@@ -13,7 +13,7 @@ BEGIN
 
     DECLARE @Offset INT = (@PageNumber - 1) * @PageSize;
 
-    WITH Data AS (
+
         SELECT 
             fd.Id,
             fd.Name,
@@ -29,16 +29,16 @@ BEGIN
             fd.IsActive,
             fd.ValidFrom,
             fd.ValidTo,
-            ROW_NUMBER() OVER (ORDER BY fd.Name, fd.Id) AS RowNum,
-            COUNT(*) OVER () AS TotalCount
+
+            COUNT(*) OVER () AS TotalRecords
         FROM 
-            FeeDiscounts fd
+FeeDiscounts fd WITH(NOLOCK)
         LEFT JOIN 
-            Classes c ON fd.SchoolClassId = c.Id
+Classes c WITH(NOLOCK) ON fd.SchoolClassId = c.Id
         LEFT JOIN 
-            FeeCategories fc ON fd.FeeCategoryId = fc.Id
+FeeCategories fc WITH(NOLOCK) ON fd.FeeCategoryId = fc.Id
         LEFT JOIN 
-            FeeStructures fs ON fd.FeeStructureId = fs.Id
+FeeStructures fs WITH(NOLOCK) ON fd.FeeStructureId = fs.Id
         WHERE 
             fd.IsDeleted = 0
             AND (
@@ -46,20 +46,9 @@ BEGIN
                 OR fd.Name LIKE '%' + @SearchTerm + '%'
                 OR fd.Description LIKE '%' + @SearchTerm + '%'
             )
-    )
-    SELECT 
-        Id, Name, Description, DiscountType, Value,
-        SchoolClassId, ClassName,
-        FeeCategoryId, FeeCategoryName,
-        FeeStructureId, FeeStructureName,
-        IsActive, ValidFrom, ValidTo,
-        TotalCount AS TotalRecords
-    FROM 
-        Data
-    WHERE 
-        RowNum > @Offset 
-        AND RowNum <= @Offset + @PageSize
-    ORDER BY 
-        RowNum;
+    
+ORDER BY fd.Name, fd.Id
+OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
+
 END;
 GO

@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[sp_GetTeacherResultSummary]
+﻿CREATE OR ALTER PROCEDURE [dbo].[sp_GetTeacherResultSummary]
     @TeacherId INT,
     @ExamId INT,
     @SubjectId INT,
@@ -13,13 +13,13 @@ BEGIN
     DECLARE @AvgMarks DECIMAL(10,2), @HighestMarks DECIMAL(10,2), @LowestMarks DECIMAL(10,2);
 
     SELECT @TotalStudents = COUNT(DISTINCT st.Id)
-    FROM Students st
+FROM Students st WITH(NOLOCK)
     WHERE st.IsDeleted = 0 AND st.Status = 1
       AND st.ClassId = @ClassId AND st.SectionId = @SectionId
       AND (@GroupId IS NULL OR st.StudentGroupId = @GroupId);
 
     SELECT @MarksEntered = COUNT(DISTINCT me.StudentId)
-    FROM Marks me
+FROM Marks me WITH(NOLOCK)
     WHERE me.ExamId = @ExamId AND me.SubjectId = @SubjectId
       AND me.ClassId = @ClassId AND me.SectionId = @SectionId
       AND me.IsDeleted = 0 AND me.Status > 0;
@@ -28,7 +28,7 @@ BEGIN
            @AvgMarks = AVG(me.MarksObtained),
            @HighestMarks = MAX(me.MarksObtained),
            @LowestMarks = MIN(me.MarksObtained)
-    FROM Marks me
+FROM Marks me WITH(NOLOCK)
     WHERE me.ExamId = @ExamId AND me.SubjectId = @SubjectId
       AND me.ClassId = @ClassId AND me.SectionId = @SectionId
       AND me.IsDeleted = 0 AND me.Status > 0 AND me.MarksObtained >= 0;
@@ -46,7 +46,7 @@ BEGIN
 
     -- Grade distribution
     SELECT me.Grade, COUNT(*) AS Count
-    FROM Marks me
+FROM Marks me WITH(NOLOCK)
     WHERE me.ExamId = @ExamId AND me.SubjectId = @SubjectId
       AND me.ClassId = @ClassId AND me.SectionId = @SectionId
       AND me.IsDeleted = 0 AND me.Status > 0

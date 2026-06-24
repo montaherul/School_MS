@@ -1,4 +1,4 @@
--- ============================================================================
+﻿-- ============================================================================
 -- Stored Procedure: sp_GetStudentIdCardList
 -- Purpose: Get paginated student records for ID Card management with filters
 -- Author: School Management System
@@ -23,7 +23,7 @@ BEGIN
     DECLARE @Offset INT;
     SET @Offset = (@PageNumber - 1) * @PageSize;
 
-    ;WITH FilteredStudents AS (
+
         SELECT 
             s.Id,
             s.StudentNo AS StudentCode,
@@ -39,20 +39,20 @@ BEGIN
             s.Status,
             s.CreatedAt AS AdmissionDate,
             COALESCE(g.FullName, s.FatherName, '') AS GuardianName,
-            ROW_NUMBER() OVER (ORDER BY s.CreatedAt DESC, s.Id DESC) AS RowNum,
-            COUNT(*) OVER () AS TotalCount
+
+            COUNT(*) OVER () AS TotalRecords
         FROM 
-            Students s
+Students s WITH(NOLOCK)
         LEFT JOIN 
-            Classes c ON s.ClassId = c.Id AND c.IsDeleted = 0
+Classes c WITH(NOLOCK) ON s.ClassId = c.Id AND c.IsDeleted = 0
         LEFT JOIN 
-            Sections sec ON s.SectionId = sec.Id AND sec.IsDeleted = 0
+Sections sec WITH(NOLOCK) ON s.SectionId = sec.Id AND sec.IsDeleted = 0
         LEFT JOIN 
-            StudentGroups sg ON s.StudentGroupId = sg.Id AND sg.IsDeleted = 0
+StudentGroups sg WITH(NOLOCK) ON s.StudentGroupId = sg.Id AND sg.IsDeleted = 0
         LEFT JOIN
-            StudentGuardians sg_guard ON sg_guard.StudentId = s.Id AND sg_guard.IsPrimaryGuardian = 1 AND sg_guard.IsDeleted = 0
+StudentGuardians sg_guard WITH(NOLOCK) ON sg_guard.StudentId = s.Id AND sg_guard.IsPrimaryGuardian = 1 AND sg_guard.IsDeleted = 0
         LEFT JOIN
-            Guardians g ON sg_guard.GuardianId = g.Id AND g.IsDeleted = 0
+Guardians g WITH(NOLOCK) ON sg_guard.GuardianId = g.Id AND g.IsDeleted = 0
         WHERE 
             s.IsDeleted = 0
             AND (@ClassId = 0 OR s.ClassId = @ClassId)
@@ -79,36 +79,9 @@ BEGIN
                 OR s.EmailAddress LIKE '%' + @SearchTerm + '%'
                 OR COALESCE(g.FullName, s.FatherName, '') LIKE '%' + @SearchTerm + '%'
             )
-    )
-    SELECT 
-        Id,
-        StudentCode,
-        RollNumber,
-        StudentName,
-        PhotoPath,
-        ClassName,
-        SectionName,
-        GroupName,
-        Gender,
-        Phone,
-        Email,
-        CASE [Status]
-            WHEN 1 THEN 'Active'
-            WHEN 2 THEN 'Inactive'
-            WHEN 3 THEN 'Graduated'
-            WHEN 4 THEN 'Transferred'
-            WHEN 5 THEN 'Dropped'
-            ELSE 'Unknown'
-        END AS [Status],
-        GuardianName,
-        AdmissionDate,
-        TotalCount AS TotalRecords
-    FROM 
-        FilteredStudents
-    WHERE 
-        RowNum > @Offset 
-        AND RowNum <= @Offset + @PageSize
-    ORDER BY 
-        RowNum;
+    
+ORDER BY s.CreatedAt DESC, s.Id DESC
+OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
+
 END;
 GO

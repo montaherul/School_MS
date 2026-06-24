@@ -1,4 +1,4 @@
--- ============================================================================
+﻿-- ============================================================================
 -- Stored Procedure: sp_GetSectionList
 -- Purpose: Get paginated section list with class details
 -- Author: School Management System
@@ -15,19 +15,19 @@ BEGIN
 
     DECLARE @Offset INT = (@PageNumber - 1) * @PageSize;
 
-    WITH FilteredSections AS (
+
         SELECT 
             s.Id,
             s.Name,
             s.SchoolClassId,
             c.Name AS ClassName,
             (SELECT COUNT(*) FROM Students WHERE SectionId = s.Id AND IsDeleted = 0) AS StudentCount,
-            ROW_NUMBER() OVER (ORDER BY s.Id DESC) AS RowNum,
-            COUNT(*) OVER () AS TotalCount
+
+            COUNT(*) OVER () AS TotalRecords
         FROM 
-            Sections s
+Sections s WITH(NOLOCK)
         JOIN 
-            Classes c ON s.SchoolClassId = c.Id
+Classes c WITH(NOLOCK) ON s.SchoolClassId = c.Id
         WHERE 
             s.IsDeleted = 0
             AND (
@@ -35,20 +35,9 @@ BEGIN
                 OR s.Name LIKE '%' + @SearchTerm + '%'
                 OR c.Name LIKE '%' + @SearchTerm + '%'
             )
-    )
-    SELECT 
-        Id,
-        Name,
-        SchoolClassId,
-        ClassName,
-        StudentCount,
-        TotalCount AS TotalRecords
-    FROM 
-        FilteredSections
-    WHERE 
-        RowNum > @Offset 
-        AND RowNum <= @Offset + @PageSize
-    ORDER BY 
-        RowNum;
+    
+ORDER BY s.Id DESC
+OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
+
 END;
 GO

@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[sp_CalculateExamRanking]
+﻿CREATE OR ALTER PROCEDURE [dbo].[sp_CalculateExamRanking]
     @ExamId INT
 AS
 BEGIN
@@ -15,7 +15,7 @@ BEGIN
                 THEN 0 
                 ELSE 1 
             END AS IsPassed
-        FROM Marks m
+FROM Marks m WITH(NOLOCK)
         WHERE m.ExamId = @ExamId 
           AND m.IsDeleted = 0
         GROUP BY m.StudentId
@@ -72,8 +72,8 @@ BEGIN
                 PARTITION BY s.ClassId 
                 ORDER BY r.TotalMarks DESC, r.Gpa DESC
             ) AS NewPosition
-        FROM StudentExamResults r
-        JOIN Students s 
+FROM StudentExamResults r WITH(NOLOCK)
+JOIN Students s WITH(NOLOCK) 
             ON r.StudentId = s.Id
         WHERE r.ExamId = @ExamId 
           AND r.IsDeleted = 0
@@ -81,8 +81,8 @@ BEGIN
 
     UPDATE r
     SET r.Position = rr.NewPosition
-    FROM StudentExamResults r
-    JOIN RankedResults rr 
+FROM StudentExamResults r WITH(NOLOCK)
+JOIN RankedResults rr WITH(NOLOCK) 
         ON r.Id = rr.Id;
 END;
 GO

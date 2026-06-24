@@ -1,4 +1,4 @@
--- Notification Queue for Email/SMS/In-App background processing
+﻿-- Notification Queue for Email/SMS/In-App background processing
 -- Supports: retry (3 attempts), status tracking, priority ordering
 
 IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'NotificationQueue')

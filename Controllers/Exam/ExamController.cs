@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Controllers.Common;
@@ -17,7 +16,9 @@ using ExamEntity = SchoolManagementSystem.Models.Entities.Exam.Exam;
 
 namespace SchoolManagementSystem.Controllers.Exam;
 
-[Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+using SchoolManagementSystem.Filters;
+
+[RequirePermission("Exam.Manage")]
 public class ExamController : GenericCrudController<ExamEntity>
 {
     private readonly IExamRepository _examRepository;

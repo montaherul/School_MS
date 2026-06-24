@@ -1,4 +1,4 @@
--- ============================================================================
+﻿-- ============================================================================
 -- Stored Procedure: sp_GetSubjectList
 -- Purpose: Get paginated subject list with search
 -- Author: School Management System
@@ -15,15 +15,15 @@ BEGIN
 
     DECLARE @Offset INT = (@PageNumber - 1) * @PageSize;
 
-    WITH SubjectData AS (
+
         SELECT 
             s.Id,
             s.Code,
             s.Name,
-            ROW_NUMBER() OVER (ORDER BY s.Id DESC) AS RowNum,
-            COUNT(*) OVER () AS TotalCount
+
+            COUNT(*) OVER () AS TotalRecords
         FROM 
-            Subjects s
+Subjects s WITH(NOLOCK)
         WHERE 
             s.IsDeleted = 0
             AND (
@@ -31,18 +31,9 @@ BEGIN
                 OR s.Code LIKE '%' + @SearchTerm + '%'
                 OR s.Name LIKE '%' + @SearchTerm + '%'
             )
-    )
-    SELECT 
-        Id,
-        Code,
-        Name,
-        TotalCount AS TotalRecords
-    FROM 
-        SubjectData
-    WHERE 
-        RowNum > @Offset 
-        AND RowNum <= @Offset + @PageSize
-    ORDER BY 
-        RowNum;
+    
+ORDER BY s.Id DESC
+OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
+
 END;
 GO

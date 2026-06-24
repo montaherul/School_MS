@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[sp_GenerateAdmitCard]
+﻿CREATE OR ALTER PROCEDURE [dbo].[sp_GenerateAdmitCard]
     @ExamId INT,
     @StudentId INT
 AS
@@ -40,12 +40,12 @@ BEGIN
         e.Name AS ExamName,
         e.StartsOn,
         e.EndsOn
-    FROM AdmitCards ac
-    INNER JOIN Students s ON ac.StudentId = s.Id
-    INNER JOIN Exams e ON ac.ExamId = e.Id
-    INNER JOIN Classes c ON s.ClassId = c.Id
-    LEFT JOIN Sections sec ON s.SectionId = sec.Id
-    LEFT JOIN StudentGroups sg ON s.StudentGroupId = sg.Id
+FROM AdmitCards ac WITH(NOLOCK)
+INNER JOIN Students s WITH(NOLOCK) ON ac.StudentId = s.Id
+INNER JOIN Exams e WITH(NOLOCK) ON ac.ExamId = e.Id
+INNER JOIN Classes c WITH(NOLOCK) ON s.ClassId = c.Id
+LEFT JOIN Sections sec WITH(NOLOCK) ON s.SectionId = sec.Id
+LEFT JOIN StudentGroups sg WITH(NOLOCK) ON s.StudentGroupId = sg.Id
     WHERE ac.ExamId = @ExamId AND ac.StudentId = @StudentId AND ac.IsDeleted = 0;
 END;
 GO

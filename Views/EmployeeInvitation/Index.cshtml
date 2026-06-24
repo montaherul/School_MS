@@ -2,9 +2,9 @@
     ViewData["Title"] = "Employee Invitations";
 }
 
-<div class="adm-page">
-    @Html.AntiForgeryToken()
+@Html.AntiForgeryToken()
 
+<div class="adm-page">
     <div class="adm-header">
         <div class="adm-header__left">
             <div class="adm-header__icon-wrap">
@@ -16,12 +16,11 @@
             </div>
         </div>
         <a asp-action="Create" class="adm-btn adm-btn--primary">
-            <i class="bi bi-plus-lg"></i>
-            <span>New Invitation</span>
+            <i class="bi bi-plus-lg"></i> <span>New Invitation</span>
         </a>
     </div>
 
-    <div class="adm-filters mt-4">
+    <div class="adm-filters">
         <div class="adm-filters__row">
             <div class="adm-filters__field adm-filters__field--search">
                 <label class="adm-label">Search</label>
@@ -30,185 +29,128 @@
                     <input type="text" id="invitationSearch" class="adm-input" placeholder="Search by name or email..." />
                 </div>
             </div>
-            <div class="adm-filters__field">
-                <button type="button" id="btnSearch" class="adm-btn adm-btn--ghost mt-4">
-                    <span>Search</span>
-                </button>
+            <div class="adm-filters__field adm-filters__field--actions">
+                <label class="adm-label">Action</label>
+                <button id="btnSearch" class="adm-btn adm-btn--ghost">Search</button>
             </div>
         </div>
     </div>
 
-    <div class="adm-table-card mt-4">
+    <div class="adm-table-card">
         <div class="adm-table-card__body">
-            <div id="loadingOverlay" class="adm-loading adm-loading--hidden">
-                <div class="adm-loading__spinner"></div>
-                <span class="adm-loading__text">Loading invitations...</span>
-            </div>
-            <div class="table-shell">
-                <div class="table-responsive">
-                    <div id="invitationTable"></div>
-                </div>
-            </div>
+            <div id="invitationTable"></div>
         </div>
     </div>
 </div>
 
 @section Scripts {
-    <link href="https://unpkg.com/tabulator-tables/dist/css/tabulator.min.css" rel="stylesheet">
-    <script type="text/javascript" src="https://unpkg.com/tabulator-tables/dist/js/tabulator.min.js"></script>
-
     <script>
-        var table;
-
-        function initTable() {
-            table = new Tabulator("#invitationTable", {
-                ajaxURL: "/EmployeeInvitation/Index",
-                pagination: true,
-                paginationMode: "remote",
-                paginationSize: 15,
-                paginationSizeSelector: [15,25,50,100],
-                ajaxParams: function () {
-                    return {
-                        search: document.getElementById("invitationSearch").value
-                    };
-                },
-                ajaxResponse: function (url, params, response) {
-                    return {
-                        data: response.data || [],
-                        last_page: response.last_page || 1
-                    };
-                },
-                layout: "fitDataTable",
-                responsiveLayout: false,
-                placeholder: "No invitations found",
-                columns: [
-                    { title: "Invitation Code", field: "invitationCode", width: 170, minWidth: 120 },
-                    { title: "Full Name", field: "fullName", width: 200, minWidth: 160 },
-                    { title: "Email", field: "email", width: 200, minWidth: 160 },
-                    { title: "Department", field: "departmentName", width: 150, minWidth: 120 },
-                    { title: "Designation", field: "designationName", width: 160, minWidth: 130,
-                        formatter: function (cell) {
-                            var des = cell.getValue();
-                            if (!des) return '<span class="text-muted">-</span>';
-                            return '<span class="designation-badge" style="background:' + getDesignationColor(des) + ';color:#fff;padding:2px 10px;border-radius:12px;display:inline-block;font-size:11px;font-weight:600;white-space:nowrap;">' + des + '</span>';
-                        }
-                    },
-                    { 
-                        title: "Status", 
-                        field: "invitationStatus",
-                        width: 100,
-                        minWidth: 90,
-                        formatter: function(cell) {
-                            var val = cell.getValue();
-                            var cls = "success";
-                            if (val === "Sent") cls = "primary";
-                            if (val === "Expired") cls = "danger";
-                            if (val === "Cancelled") cls = "warning";
-                            return `<span class="badge bg-${cls}">${val}</span>`;
-                        }
-                    },
-                    { 
-                        title: "Sent At", 
-                        field: "sentAt",
-                        width: 180,
-                        minWidth: 140,
-                        formatter: function(cell) {
-                            var value = cell.getValue();
-                            return value ? new Date(value).toLocaleString() : "-";
-                        }
-                    },
-                    { 
-                        title: "Completed At", 
-                        field: "completedAt",
-                        width: 180,
-                        minWidth: 140,
-                        formatter: function(cell) {
-                            var value = cell.getValue();
-                            return value ? new Date(value).toLocaleString() : "-";
-                        }
-                    },
-                    {
-                        title: "Actions",
-                        headerSort: false,
-                        width: 120,
-                        minWidth: 100,
-                        formatter: function(cell) {
-                            var id = cell.getData().id;
-                            var status = cell.getData().invitationStatus;
-                            var btnResend = status === "Sent" || status === "Expired" ? `<button class="btn btn-sm btn-outline-primary me-2" onclick="resendInvite(${id})"><i class="bi bi-arrow-clockwise"></i></button>` : "";
-                            var btnCancel = status === "Sent" ? `<button class="btn btn-sm btn-outline-danger" onclick="cancelInvite(${id})"><i class="bi bi-x-circle"></i></button>` : "";
-                            return btnResend + btnCancel;
-                        }
+        var table = new Tabulator("#invitationTable", {
+            ajaxURL: "/EmployeeInvitation/Index",
+            height: "calc(100vh - 280px)",
+            layout: "fitColumns",
+            pagination: true,
+            paginationMode: "remote",
+            paginationSize: 15,
+            paginationSizeSelector: [15,25,50,100],
+            paginationDataSent: { "page": "page", "size": "pageSize" },
+            ajaxParams: function () {
+                return { search: document.getElementById("invitationSearch").value };
+            },
+            ajaxResponse: function (url, params, response) {
+                return { data: response.data || [], last_page: response.last_page || 1 };
+            },
+            columns: [
+                { title: "Invitation Code", field: "invitationCode", width: 160, hozAlign: "center", cssClass: "adm-cell-mono" },
+                {
+                    title: "Full Name", field: "fullName", widthGrow: 2,
+                    formatter: function(cell) {
+                        return `<div class="entity-cell__name">${cell.getValue()}</div>`;
                     }
-                ]
-            });
-        }
+                },
+                { title: "Email", field: "email", width: 200 },
+                { title: "Department", field: "departmentName", width: 150, hozAlign: "center" },
+                {
+                    title: "Designation", field: "designationName", width: 160, hozAlign: "center",
+                    formatter: function (cell) {
+                        return getDesignationBadge(cell.getValue());
+                    }
+                },
+                {
+                    title: "Status", field: "invitationStatus", width: 120, hozAlign: "center",
+                    formatter: function(cell) {
+                        var val = cell.getValue();
+                        if (val === 'Completed') return '<span class="adm-status adm-status--approved">Completed</span>';
+                        if (val === 'Sent') return '<span class="adm-status adm-status--converted">Sent</span>';
+                        if (val === 'Expired') return '<span class="adm-status adm-status--rejected">Expired</span>';
+                        if (val === 'Cancelled') return '<span class="adm-status adm-status--pending">Cancelled</span>';
+                        return '<span class="adm-status adm-status--neutral">' + val + '</span>';
+                    }
+                },
+                {
+                    title: "Sent At", field: "sentAt", width: 170, hozAlign: "center",
+                    formatter: function(cell) {
+                        var v = cell.getValue();
+                        return v ? new Date(v).toLocaleString() : '<span class="text-muted">-</span>';
+                    }
+                },
+                {
+                    title: "Completed", field: "completedAt", width: 170, hozAlign: "center",
+                    formatter: function(cell) {
+                        var v = cell.getValue();
+                        return v ? new Date(v).toLocaleString() : '<span class="text-muted">-</span>';
+                    }
+                },
+                {
+                    title: "Actions", field: "id", hozAlign: "center", headerSort: false, width: 130,
+                    formatter: function(cell) {
+                        var d = cell.getData();
+                        var status = d.invitationStatus;
+                        var items = [];
+                        if (status === "Sent" || status === "Expired") {
+                            items.push({ className: 'action-btn--view', icon: 'arrow-clockwise', title: 'Resend', onClick: 'resendInvite(' + d.id + ')' });
+                        }
+                        if (status === "Sent") {
+                            items.push({ className: 'action-btn--delete', icon: 'x-circle', title: 'Cancel', onClick: 'cancelInvite(' + d.id + ')' });
+                        }
+                        return items.length ? buildActionGroup(items) : '<span class="text-muted small">Done</span>';
+                    }
+                }
+            ],
+            placeholder: "<div class='dash-empty'><i class='bi bi-envelope-paper-fill fs-1'></i><div class='dash-empty__title'>No Invitations Found</div><div class='dash-empty__sub'>Try adjusting your search.</div></div>"
+        });
 
         async function resendInvite(id) {
             if (!confirm("Resend invitation email?")) return;
             try {
-                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
-                const res = await fetch('/EmployeeInvitation/Resend', {
+                var token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                var res = await fetch('/EmployeeInvitation/Resend', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'RequestVerificationToken': token
-                    },
+                    headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
                     body: JSON.stringify({ id: id })
                 });
-                const data = await res.json();
+                var data = await res.json();
                 if (data.success) table.setData();
-                alert(data.message);
-            } catch(e) {
-                alert("Failed to resend invitation.");
-            }
+            } catch(e) { alert("Failed to resend invitation."); }
         }
 
         async function cancelInvite(id) {
             if (!confirm("Cancel this invitation?")) return;
             try {
-                const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
-                const res = await fetch('/EmployeeInvitation/Cancel', {
+                var token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+                var res = await fetch('/EmployeeInvitation/Cancel', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'RequestVerificationToken': token
-                    },
+                    headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
                     body: JSON.stringify({ id: id })
                 });
-                const data = await res.json();
+                var data = await res.json();
                 if (data.success) table.setData();
-                alert(data.message);
-            } catch(e) {
-                alert("Failed to cancel invitation.");
-            }
+            } catch(e) { alert("Failed to cancel invitation."); }
         }
 
-        function getDesignationColor(designation) {
-            if (!designation) return "#1B4D8C";
-            var d = designation.toLowerCase();
-            if (d.indexOf('principal') >= 0) return "#DAA520";
-            if (d.indexOf('vice principal') >= 0 || d.indexOf('assistant head') >= 0) return "#C0C0C0";
-            if (d.indexOf('teacher') >= 0 || d.indexOf('lecturer') >= 0) return "#1B4D8C";
-            if (d.indexOf('senior') >= 0) return "#1E90FF";
-            if (d.indexOf('accountant') >= 0) return "#2E8B57";
-            if (d.indexOf('librarian') >= 0) return "#800080";
-            if (d.indexOf('office staff') >= 0) return "#808080";
-            if (d.indexOf('lab assistant') >= 0) return "#FF8C00";
-            if (d.indexOf('driver') >= 0) return "#8B4513";
-            if (d.indexOf('guard') >= 0) return "#282828";
-            if (d.indexOf('support') >= 0) return "#6B7280";
-            return "#1B4D8C";
-        }
-
-        document.addEventListener("DOMContentLoaded", function() {
-            initTable();
-            document.getElementById("btnSearch").addEventListener("click", function() {
-                table.setData();
-            });
-            document.getElementById("invitationSearch").addEventListener("keypress", function(e) {
-                if (e.key === "Enter") document.getElementById("btnSearch").click();
-            });
+        document.getElementById("btnSearch").addEventListener("click", function() { table.setData(); });
+        document.getElementById("invitationSearch").addEventListener("keyup", function(e) {
+            if (e.key === "Enter") table.setData();
         });
     </script>
 }

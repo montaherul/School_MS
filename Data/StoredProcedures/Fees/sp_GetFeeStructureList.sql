@@ -1,4 +1,4 @@
--- ============================================================================
+﻿-- ============================================================================
 -- Stored Procedure: sp_GetFeeStructureList
 -- Purpose: Get paginated fee structure with class and category names
 -- ============================================================================
@@ -15,7 +15,7 @@ BEGIN
 
     DECLARE @Offset INT = (@PageNumber - 1) * @PageSize;
 
-    WITH FeeData AS (
+
         SELECT 
             fs.Id,
             fs.SchoolClassId,
@@ -31,16 +31,16 @@ BEGIN
             fs.Frequency,
             fs.DueDay,
             fs.IsActive,
-            ROW_NUMBER() OVER (ORDER BY c.SortOrder, fc.DisplayOrder, fs.FeeName, fs.Id) AS RowNum,
-            COUNT(*) OVER () AS TotalCount
+
+            COUNT(*) OVER () AS TotalRecords
         FROM 
-            FeeStructures fs
+FeeStructures fs WITH(NOLOCK)
         INNER JOIN 
-            Classes c ON fs.SchoolClassId = c.Id
+Classes c WITH(NOLOCK) ON fs.SchoolClassId = c.Id
         LEFT JOIN 
-            FeeCategories fc ON fs.FeeCategoryId = fc.Id
+FeeCategories fc WITH(NOLOCK) ON fs.FeeCategoryId = fc.Id
         LEFT JOIN 
-            AcademicYears ay ON fs.AcademicYearId = ay.Id
+AcademicYears ay WITH(NOLOCK) ON fs.AcademicYearId = ay.Id
         WHERE 
             fs.IsDeleted = 0
             AND (@SchoolClassId = 0 OR fs.SchoolClassId = @SchoolClassId)
@@ -51,29 +51,9 @@ BEGIN
                 OR c.Name LIKE '%' + @SearchTerm + '%'
                 OR fc.Name LIKE '%' + @SearchTerm + '%'
             )
-    )
-    SELECT 
-        Id,
-        SchoolClassId,
-        ClassName,
-        FeeCategoryId,
-        FeeCategoryName,
-        AcademicYearId,
-        AcademicYearName,
-        FeeName,
-        Description,
-        Amount,
-        IsRecurring,
-        Frequency,
-        DueDay,
-        IsActive,
-        TotalCount AS TotalRecords
-    FROM 
-        FeeData
-    WHERE 
-        RowNum > @Offset 
-        AND RowNum <= @Offset + @PageSize
-    ORDER BY 
-        RowNum;
+    
+ORDER BY c.SortOrder, fc.DisplayOrder, fs.FeeName, fs.Id
+OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
+
 END;
 GO

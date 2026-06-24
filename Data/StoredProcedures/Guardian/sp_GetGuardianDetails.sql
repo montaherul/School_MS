@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[sp_GetGuardianDetails]
+﻿CREATE OR ALTER PROCEDURE [dbo].[sp_GetGuardianDetails]
     @GuardianId INT
 AS
 BEGIN
@@ -46,7 +46,7 @@ BEGIN
             ELSE 'Unknown'
         END AS Status,
         g.Remarks
-    FROM Guardians g
+FROM Guardians g WITH(NOLOCK)
     WHERE g.Id = @GuardianId AND g.IsDeleted = 0;
 
     -- Children section
@@ -70,10 +70,10 @@ BEGIN
             WHEN 10 THEN 'Other'
             ELSE 'Other'
         END AS RelationshipToStudent
-    FROM StudentGuardians sg
-    JOIN Students s ON sg.StudentId = s.Id AND s.IsDeleted = 0
-    LEFT JOIN Classes c ON s.ClassId = c.Id
-    LEFT JOIN Sections sec ON s.SectionId = sec.Id
+FROM StudentGuardians sg WITH(NOLOCK)
+JOIN Students s WITH(NOLOCK) ON sg.StudentId = s.Id AND s.IsDeleted = 0
+LEFT JOIN Classes c WITH(NOLOCK) ON s.ClassId = c.Id
+LEFT JOIN Sections sec WITH(NOLOCK) ON s.SectionId = sec.Id
     WHERE sg.GuardianId = @GuardianId AND sg.IsDeleted = 0;
 END
 GO

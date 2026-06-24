@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[sp_GetResultList]
+﻿CREATE OR ALTER PROCEDURE [dbo].[sp_GetResultList]
     @ExamId INT = NULL,
     @ClassId INT = NULL,
     @SectionId INT = NULL,
@@ -42,12 +42,12 @@ BEGIN
         ser.PassedSubjectCount,
         ser.Status,
         ser.PublishedAt
-    FROM StudentExamResults ser
-    INNER JOIN Students s ON ser.StudentId = s.Id
-    INNER JOIN Exams e ON ser.ExamId = e.Id
-    INNER JOIN Classes cl ON s.ClassId = cl.Id
-    LEFT JOIN Sections sec ON s.SectionId = sec.Id
-    LEFT JOIN StudentGroups sg ON s.StudentGroupId = sg.Id
+FROM StudentExamResults ser WITH(NOLOCK)
+INNER JOIN Students s WITH(NOLOCK) ON ser.StudentId = s.Id
+INNER JOIN Exams e WITH(NOLOCK) ON ser.ExamId = e.Id
+INNER JOIN Classes cl WITH(NOLOCK) ON s.ClassId = cl.Id
+LEFT JOIN Sections sec WITH(NOLOCK) ON s.SectionId = sec.Id
+LEFT JOIN StudentGroups sg WITH(NOLOCK) ON s.StudentGroupId = sg.Id
     WHERE ser.IsDeleted = 0
       AND (@ExamId IS NULL OR ser.ExamId = @ExamId)
       AND (@ClassId IS NULL OR s.ClassId = @ClassId)
@@ -61,12 +61,12 @@ BEGIN
 
     -- Result Set 2: Total Record Count
     SELECT COUNT(*) AS TotalCount
-    FROM StudentExamResults ser
-    INNER JOIN Students s ON ser.StudentId = s.Id
-    INNER JOIN Exams e ON ser.ExamId = e.Id
-    INNER JOIN Classes cl ON s.ClassId = cl.Id
-    LEFT JOIN Sections sec ON s.SectionId = sec.Id
-    LEFT JOIN StudentGroups sg ON s.StudentGroupId = sg.Id
+FROM StudentExamResults ser WITH(NOLOCK)
+INNER JOIN Students s WITH(NOLOCK) ON ser.StudentId = s.Id
+INNER JOIN Exams e WITH(NOLOCK) ON ser.ExamId = e.Id
+INNER JOIN Classes cl WITH(NOLOCK) ON s.ClassId = cl.Id
+LEFT JOIN Sections sec WITH(NOLOCK) ON s.SectionId = sec.Id
+LEFT JOIN StudentGroups sg WITH(NOLOCK) ON s.StudentGroupId = sg.Id
     WHERE ser.IsDeleted = 0
       AND (@ExamId IS NULL OR ser.ExamId = @ExamId)
       AND (@ClassId IS NULL OR s.ClassId = @ClassId)

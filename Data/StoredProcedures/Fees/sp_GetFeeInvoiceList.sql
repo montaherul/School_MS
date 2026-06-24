@@ -1,4 +1,4 @@
--- ============================================================================
+﻿-- ============================================================================
 -- Stored Procedure: sp_GetFeeInvoiceList
 -- Purpose: Get paginated fee invoices with student details
 -- ============================================================================
@@ -15,7 +15,7 @@ BEGIN
 
     DECLARE @Offset INT = (@PageNumber - 1) * @PageSize;
 
-    WITH FilteredInvoices AS (
+
         SELECT 
             fi.Id,
             fi.InvoiceNo,
@@ -30,14 +30,14 @@ BEGIN
             fi.LateFee,
             fi.[Status],
             fi.Remarks,
-            ROW_NUMBER() OVER (ORDER BY fi.Id DESC) AS RowNum,
-            COUNT(*) OVER () AS TotalCount
+
+            COUNT(*) OVER () AS TotalRecords
         FROM 
-            FeeInvoices fi
+FeeInvoices fi WITH(NOLOCK)
         JOIN 
-            Students s ON fi.StudentId = s.Id
+Students s WITH(NOLOCK) ON fi.StudentId = s.Id
         LEFT JOIN 
-            AcademicYears ay ON fi.AcademicYearId = ay.Id
+AcademicYears ay WITH(NOLOCK) ON fi.AcademicYearId = ay.Id
         WHERE 
             fi.IsDeleted = 0
             AND (@StudentId = 0 OR fi.StudentId = @StudentId)
@@ -47,19 +47,9 @@ BEGIN
                 OR fi.InvoiceNo LIKE '%' + @SearchTerm + '%'
                 OR s.FullName LIKE '%' + @SearchTerm + '%'
             )
-    )
-    SELECT 
-        Id, InvoiceNo, StudentId, StudentName,
-        AcademicYearId, AcademicYearName,
-        DueDate, TotalAmount, PaidAmount, DiscountAmount, LateFee,
-        [Status], Remarks,
-        TotalCount AS TotalRecords
-    FROM 
-        FilteredInvoices
-    WHERE 
-        RowNum > @Offset 
-        AND RowNum <= @Offset + @PageSize
-    ORDER BY 
-        RowNum;
+    
+ORDER BY fi.Id DESC
+OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
+
 END;
 GO

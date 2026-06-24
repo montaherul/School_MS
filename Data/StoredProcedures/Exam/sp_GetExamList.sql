@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[sp_GetExamList]
+﻿CREATE OR ALTER PROCEDURE [dbo].[sp_GetExamList]
     @AcademicYearId INT,
     @SearchTerm NVARCHAR(100) = NULL,
     @Status INT = NULL,
@@ -13,7 +13,7 @@ BEGIN
     DECLARE @Offset INT = (@PageNumber - 1) * @PageSize;
 
     SELECT COUNT(*) AS TotalCount
-    FROM Exams e
+FROM Exams e WITH(NOLOCK)
     WHERE e.IsDeleted = 0
       AND e.AcademicYearId = @AcademicYearId
       AND (@SearchTerm IS NULL OR e.Name LIKE '%' + @SearchTerm + '%')
@@ -33,7 +33,7 @@ BEGIN
         e.CreatedBy,
         (SELECT COUNT(*) FROM ExamSubjects es WHERE es.ExamId = e.Id) AS SubjectCount,
         (SELECT COUNT(*) FROM StudentExamResults ser WHERE ser.ExamId = e.Id AND ser.IsDeleted = 0) AS StudentResultCount
-    FROM Exams e
+FROM Exams e WITH(NOLOCK)
     WHERE e.IsDeleted = 0
       AND e.AcademicYearId = @AcademicYearId
       AND (@SearchTerm IS NULL OR e.Name LIKE '%' + @SearchTerm + '%')

@@ -1,4 +1,4 @@
--- ============================================================================
+﻿-- ============================================================================
 -- Stored Procedure: sp_GetStudentList
 -- Purpose: Get paginated student records with optional search and filters
 -- Author: School Management System
@@ -21,7 +21,8 @@ BEGIN
     SET @Offset = (@PageNumber - 1) * @PageSize;
 
     -- Build the base query with filters
-    ;WITH FilteredStudents AS (
+
+
         SELECT 
             s.Id,
             s.StudentNo,
@@ -49,8 +50,8 @@ BEGIN
             s.FatherName,
             s.FatherOccupation,
             (SELECT TOP 1 g.MobileNumber 
-             FROM StudentGuardians sg 
-             INNER JOIN Guardians g ON sg.GuardianId = g.Id 
+FROM StudentGuardians sg WITH(NOLOCK) 
+INNER JOIN Guardians g WITH(NOLOCK) ON sg.GuardianId = g.Id 
              WHERE sg.StudentId = s.Id AND sg.IsPrimaryGuardian = 1
             ) AS FatherOrGuardianMobileNo,
             s.MotherName,
@@ -68,14 +69,14 @@ BEGIN
             s.BirthCertificateNo,
             s.Nationality,
             s.CreatedAt,
-            ROW_NUMBER() OVER (ORDER BY s.CreatedAt DESC, s.Id DESC) AS RowNum,
-            COUNT(*) OVER () AS TotalCount
+
+            COUNT(*) OVER () AS TotalRecords
         FROM 
-            Students s
+Students s WITH(NOLOCK)
         LEFT JOIN 
-            Classes c ON s.ClassId = c.Id
+Classes c WITH(NOLOCK) ON s.ClassId = c.Id
         LEFT JOIN 
-            Sections sec ON s.SectionId = sec.Id
+Sections sec WITH(NOLOCK) ON s.SectionId = sec.Id
         WHERE 
             s.IsDeleted = 0
             AND (@ClassId = 0 OR s.ClassId = @ClassId)
@@ -88,49 +89,9 @@ BEGIN
                 OR s.FatherName LIKE '%' + @SearchTerm + '%'
             )
             AND (@Status IS NULL OR s.Status = @Status)
-    )
-    SELECT 
-        Id,
-        StudentNo,
-        FullName,
-        FullNameBangla,
-        DateOfBirth,
-        Gender,
-        MobileNumber,
-        EmailAddress,
-        ClassId,
-        ClassName,
-        SectionId,
-        SectionName,
-        RollNumber,
-        ProfilePicturePath,
-        [Status],
-        FatherName,
-        FatherOrGuardianMobileNo,
-        FatherOccupation,
-        MotherName,
-        MotherOccupation,
+    
+ORDER BY s.CreatedAt DESC, s.Id DESC
+OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
 
-        PresentVillage,
-        PresentPostOffice,
-        PresentThana,
-        PresentDistrict,
-        PermanentVillage,
-        PermanentPostOffice,
-        PermanentThana,
-        PermanentDistrict,
-        Religion,
-        BloodGroup,
-        Nationality,
-        BirthCertificateNo,
-        CreatedAt,
-        TotalCount AS TotalRecords
-    FROM 
-        FilteredStudents
-    WHERE 
-        RowNum > @Offset 
-        AND RowNum <= @Offset + @PageSize
-    ORDER BY 
-        RowNum;
 END;
 GO

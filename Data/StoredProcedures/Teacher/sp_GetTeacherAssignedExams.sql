@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[sp_GetTeacherAssignedExams]
+﻿CREATE OR ALTER PROCEDURE [dbo].[sp_GetTeacherAssignedExams]
     @TeacherId INT,
     @AcademicYearId INT = NULL
 AS
@@ -7,8 +7,8 @@ BEGIN
 
     SELECT DISTINCT e.Id AS ExamId, e.Name AS ExamName, e.Term, e.StartsOn, e.EndsOn, e.Status,
            ay.Id AS AcademicYearId, ay.Name AS AcademicYearName
-    FROM Exams e
-    INNER JOIN AcademicYears ay ON ay.Id = e.AcademicYearId AND ay.IsDeleted = 0
+FROM Exams e WITH(NOLOCK)
+INNER JOIN AcademicYears ay WITH(NOLOCK) ON ay.Id = e.AcademicYearId AND ay.IsDeleted = 0
     WHERE e.IsDeleted = 0
       AND (e.Status = 1 OR e.Status = 2) -- Draft or Submitted
       AND EXISTS (

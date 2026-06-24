@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE sp_GetAttendanceSummary
+﻿CREATE OR ALTER PROCEDURE sp_GetAttendanceSummary
     @StudentId INT = 0,
     @EmployeeId INT = 0,
     @ClassId INT = 0,
@@ -17,8 +17,8 @@ BEGIN
         SELECT
             EffectiveStatus = ISNULL(a.Status, 1),
             CountValue = COUNT(*)
-        FROM Students s
-        LEFT JOIN Attendance a ON a.StudentId = s.Id
+FROM Students s WITH(NOLOCK)
+LEFT JOIN Attendance a WITH(NOLOCK) ON a.StudentId = s.Id
             AND a.AttendanceDate = @AttendanceDate
             AND a.IsDeleted = 0
         WHERE s.ClassId = @ClassId
@@ -36,7 +36,7 @@ BEGIN
         SELECT
             Status,
             CountValue = COUNT(*)
-        FROM EmployeeAttendances
+FROM EmployeeAttendances WITH(NOLOCK)
         WHERE AttendanceDate = @AttendanceDate
           AND IsDeleted = 0
         GROUP BY Status;
@@ -51,7 +51,7 @@ BEGIN
         SELECT
             Status,
             CountValue = COUNT(*)
-        FROM Attendance
+FROM Attendance WITH(NOLOCK)
         WHERE StudentId = @StudentId
           AND AttendanceDate >= @MonthStart AND AttendanceDate < @NextMonthStart
           AND IsDeleted = 0
@@ -67,7 +67,7 @@ BEGIN
         SELECT
             Status,
             CountValue = COUNT(*)
-        FROM EmployeeAttendances
+FROM EmployeeAttendances WITH(NOLOCK)
         WHERE EmployeeId = @EmployeeId
           AND AttendanceDate >= @EmpMonthStart AND AttendanceDate < @EmpNextMonth
           AND IsDeleted = 0

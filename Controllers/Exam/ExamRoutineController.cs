@@ -48,7 +48,7 @@ public class ExamRoutineController : Controller
     // ── Student Portal ──────────────────────────────────────────
 
     [HttpGet("Student/ExamRoutine")]
-    [Authorize(Roles = "Student")]
+    [RequirePermission("Routine.View")]
     public async Task<IActionResult> Student(CancellationToken ct)
     {
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
@@ -61,7 +61,7 @@ public class ExamRoutineController : Controller
     }
 
     [HttpGet("Student/ExamRoutine/DownloadPdf")]
-    [Authorize(Roles = "Student")]
+    [RequirePermission("Routine.View")]
     public async Task<IActionResult> StudentDownloadPdf(CancellationToken ct)
     {
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
@@ -118,7 +118,7 @@ public class ExamRoutineController : Controller
     // ── Teacher Portal ──────────────────────────────────────────
 
     [HttpGet("Teacher/ExamRoutine")]
-    [Authorize(Roles = "Teacher,Senior Lecturer,Lecturer")]
+    [RequirePermission("Routine.View")]
     public async Task<IActionResult> Teacher(CancellationToken ct)
     {
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
@@ -131,7 +131,7 @@ public class ExamRoutineController : Controller
     }
 
     [HttpGet("Teacher/ExamRoutine/DownloadPdf")]
-    [Authorize(Roles = "Teacher,Senior Lecturer,Lecturer")]
+    [RequirePermission("Routine.View")]
     public async Task<IActionResult> TeacherDownloadPdf(CancellationToken ct)
     {
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");

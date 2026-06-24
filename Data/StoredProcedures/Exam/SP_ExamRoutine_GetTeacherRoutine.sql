@@ -1,4 +1,4 @@
--- ============================================================================
+﻿-- ============================================================================
 -- Stored Procedure: SP_ExamRoutine_GetTeacherRoutine
 -- Purpose: Get exam schedule + invigilation duties for a teacher
 -- ============================================================================
@@ -22,13 +22,13 @@ BEGIN
         sg.Name AS GroupName,
         sec.Name AS SectionName,
         'Assigned Subject' AS DutyType
-    FROM ExamSchedules es
-    INNER JOIN Exams e ON es.ExamId = e.Id
-    INNER JOIN Subjects s ON es.SubjectId = s.Id
-    INNER JOIN Classes c ON es.ClassId = c.Id
-    LEFT JOIN StudentGroups sg ON es.StudentGroupId = sg.Id
-    LEFT JOIN Sections sec ON es.SectionId = sec.Id
-    INNER JOIN ExamSubjects exs ON exs.ExamId = es.ExamId 
+FROM ExamSchedules es WITH(NOLOCK)
+INNER JOIN Exams e WITH(NOLOCK) ON es.ExamId = e.Id
+INNER JOIN Subjects s WITH(NOLOCK) ON es.SubjectId = s.Id
+INNER JOIN Classes c WITH(NOLOCK) ON es.ClassId = c.Id
+LEFT JOIN StudentGroups sg WITH(NOLOCK) ON es.StudentGroupId = sg.Id
+LEFT JOIN Sections sec WITH(NOLOCK) ON es.SectionId = sec.Id
+INNER JOIN ExamSubjects exs WITH(NOLOCK) ON exs.ExamId = es.ExamId 
         AND exs.SubjectId = es.SubjectId 
         AND exs.ClassId = es.ClassId
     WHERE exs.TeacherId = @TeacherId
@@ -51,13 +51,13 @@ BEGIN
         sg.Name AS GroupName,
         sec.Name AS SectionName,
         'Invigilation' AS DutyType
-    FROM ExamSchedules es
-    INNER JOIN Exams e ON es.ExamId = e.Id
-    INNER JOIN Subjects s ON es.SubjectId = s.Id
-    INNER JOIN Classes c ON es.ClassId = c.Id
-    LEFT JOIN StudentGroups sg ON es.StudentGroupId = sg.Id
-    LEFT JOIN Sections sec ON es.SectionId = sec.Id
-    INNER JOIN TeacherClassAssignments tca ON tca.ClassId = es.ClassId
+FROM ExamSchedules es WITH(NOLOCK)
+INNER JOIN Exams e WITH(NOLOCK) ON es.ExamId = e.Id
+INNER JOIN Subjects s WITH(NOLOCK) ON es.SubjectId = s.Id
+INNER JOIN Classes c WITH(NOLOCK) ON es.ClassId = c.Id
+LEFT JOIN StudentGroups sg WITH(NOLOCK) ON es.StudentGroupId = sg.Id
+LEFT JOIN Sections sec WITH(NOLOCK) ON es.SectionId = sec.Id
+INNER JOIN TeacherClassAssignments tca WITH(NOLOCK) ON tca.ClassId = es.ClassId
     WHERE tca.TeacherId = @TeacherId
       AND tca.IsDeleted = 0
       AND e.IsDeleted = 0

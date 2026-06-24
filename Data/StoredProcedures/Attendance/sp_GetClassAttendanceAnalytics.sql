@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE sp_GetClassAttendanceAnalytics
+﻿CREATE OR ALTER PROCEDURE sp_GetClassAttendanceAnalytics
     @Date DATE = NULL
 AS
 BEGIN
@@ -15,8 +15,8 @@ BEGIN
              THEN CAST(SUM(CASE WHEN a.Status = 1 OR a.Status = 3 THEN 1 ELSE 0 END) AS DECIMAL(18,2)) / COUNT(a.Id) * 100
              ELSE 100.00 
         END
-    FROM Classes c
-    LEFT JOIN Attendance a ON c.Id = a.SchoolClassId AND a.IsDeleted = 0 AND a.AttendanceDate = @TargetDate
+FROM Classes c WITH(NOLOCK)
+LEFT JOIN Attendance a WITH(NOLOCK) ON c.Id = a.SchoolClassId AND a.IsDeleted = 0 AND a.AttendanceDate = @TargetDate
     WHERE c.IsDeleted = 0
     GROUP BY c.Id, c.Name;
 
@@ -30,9 +30,9 @@ BEGIN
              THEN CAST(SUM(CASE WHEN a.Status = 1 OR a.Status = 3 THEN 1 ELSE 0 END) AS DECIMAL(18,2)) / COUNT(a.Id) * 100
              ELSE 100.00 
         END
-    FROM StudentGroups g
-    LEFT JOIN Students s ON s.StudentGroupId = g.Id AND s.IsDeleted = 0
-    LEFT JOIN Attendance a ON s.Id = a.StudentId AND a.IsDeleted = 0 AND a.AttendanceDate = @TargetDate
+FROM StudentGroups g WITH(NOLOCK)
+LEFT JOIN Students s WITH(NOLOCK) ON s.StudentGroupId = g.Id AND s.IsDeleted = 0
+LEFT JOIN Attendance a WITH(NOLOCK) ON s.Id = a.StudentId AND a.IsDeleted = 0 AND a.AttendanceDate = @TargetDate
     WHERE g.IsDeleted = 0 AND g.IsActive = 1
     GROUP BY g.Id, g.Name;
 END;

@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[sp_GetTeacherAssignedSubjects]
+﻿CREATE OR ALTER PROCEDURE [dbo].[sp_GetTeacherAssignedSubjects]
     @TeacherId INT,
     @ClassId INT,
     @SectionId INT = NULL,
@@ -11,11 +11,11 @@ BEGIN
            sc.Id AS ClassId, sc.Name AS ClassName,
            sec.Id AS SectionId, sec.Name AS SectionName,
            sg.Id AS GroupId, sg.Name AS GroupName
-    FROM TeacherSubjectAssignments tsa
-    INNER JOIN Subjects s ON s.Id = tsa.SubjectId AND s.IsDeleted = 0
-    INNER JOIN SchoolClasses sc ON sc.Id = tsa.ClassId AND sc.IsDeleted = 0
-    LEFT JOIN Sections sec ON sec.Id = tsa.SectionId AND sec.IsDeleted = 0
-    LEFT JOIN StudentGroups sg ON sg.Id = tsa.GroupId AND sg.IsDeleted = 0
+FROM TeacherSubjectAssignments tsa WITH(NOLOCK)
+INNER JOIN Subjects s WITH(NOLOCK) ON s.Id = tsa.SubjectId AND s.IsDeleted = 0
+INNER JOIN SchoolClasses sc WITH(NOLOCK) ON sc.Id = tsa.ClassId AND sc.IsDeleted = 0
+LEFT JOIN Sections sec WITH(NOLOCK) ON sec.Id = tsa.SectionId AND sec.IsDeleted = 0
+LEFT JOIN StudentGroups sg WITH(NOLOCK) ON sg.Id = tsa.GroupId AND sg.IsDeleted = 0
     WHERE tsa.TeacherId = @TeacherId
       AND tsa.IsActive = 1 AND tsa.IsDeleted = 0
       AND tsa.ClassId = @ClassId

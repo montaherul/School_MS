@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Models.Entities.Assignment;
@@ -7,7 +6,9 @@ using System.Security.Claims;
 
 namespace SchoolManagementSystem.Controllers.Student;
 
-[Authorize(Roles = "Super Admin,Principal,Assistant Head,Senior Lecturer,Lecturer,Student")]
+using SchoolManagementSystem.Filters;
+
+[RequirePermission("Assignment.View")]
 public class StudentClassAssignmentController : Controller
 {
     private readonly IAssignmentService _service;

@@ -1,108 +1,78 @@
 @{
     ViewData["Title"] = "Attendance Sessions";
-    var sessionsUrl = Url.Action("GetSessions", "AttendanceSession");
 }
 
-<div class="container-fluid">
-    <h2>Attendance Session Management</h2>
+@Html.AntiForgeryToken()
 
-    <div class="row mb-3">
-        <div class="col-md-2">
-            <input type="date" id="filterDate" class="form-control" />
-        </div>
-        <div class="col-md-2">
-            <select id="filterClass" class="form-select">
-                <option value="">All Classes</option>
-                @foreach (var c in (IEnumerable<dynamic>)ViewBag.Classes)
-                {
-                    <option value="@c.Id">@c.Name</option>
-                }
-            </select>
-        </div>
-        <div class="col-md-2">
-            <select id="filterSection" class="form-select">
-                <option value="">All Sections</option>
-            </select>
-        </div>
-        <div class="col-md-2">
-            <select id="filterGroup" class="form-select">
-                <option value="">All Groups</option>
-            </select>
-        </div>
-        <div class="col-md-2">
-            <select id="filterStatus" class="form-select">
-                <option value="">All Status</option>
-                <option value="1">Draft</option>
-                <option value="2">Submitted</option>
-                <option value="3">Locked</option>
-                <option value="4">Revised</option>
-                <option value="5">Approved</option>
-            </select>
-        </div>
-        <div class="col-md-2 text-end">
-            <button id="btnFilter" class="btn btn-primary">Filter</button>
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-calendar-check"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Attendance Sessions</h1>
+                <p class="adm-header__sub">Manage and monitor daily attendance sessions</p>
+            </div>
         </div>
     </div>
 
-    <div id="sessionGrid"></div>
+    <div class="adm-filters">
+        <div class="adm-filters__row">
+            <div class="adm-filters__field">
+                <label class="adm-label">Date</label>
+                <input type="date" id="filterDate" class="adm-input" />
+            </div>
+            <div class="adm-filters__field">
+                <label class="adm-label">Class</label>
+                <select id="filterClass" class="adm-select">
+                    <option value="">All Classes</option>
+                    @foreach (var c in (IEnumerable<dynamic>)ViewBag.Classes)
+                    {
+                        <option value="@c.Id">@c.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="adm-filters__field">
+                <label class="adm-label">Section</label>
+                <select id="filterSection" class="adm-select">
+                    <option value="">All Sections</option>
+                </select>
+            </div>
+            <div class="adm-filters__field">
+                <label class="adm-label">Group</label>
+                <select id="filterGroup" class="adm-select">
+                    <option value="">All Groups</option>
+                </select>
+            </div>
+            <div class="adm-filters__field">
+                <label class="adm-label">Status</label>
+                <select id="filterStatus" class="adm-select">
+                    <option value="">All Status</option>
+                    <option value="1">Draft</option>
+                    <option value="2">Submitted</option>
+                    <option value="3">Locked</option>
+                    <option value="4">Revised</option>
+                    <option value="5">Approved</option>
+                </select>
+            </div>
+            <div class="adm-filters__field adm-filters__field--actions">
+                <label class="adm-label">Action</label>
+                <button id="btnFilter" class="adm-btn adm-btn--primary">Filter</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="adm-table-card">
+        <div class="adm-table-card__body">
+            <div id="sessionGrid"></div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
-    <script src="https://unpkg.com/tabulator-tables@5.4.4/dist/js/tabulator.min.js"></script>
-    <link href="https://unpkg.com/tabulator-tables@5.4.4/dist/css/tabulator.min.css" rel="stylesheet" />
-
     <script>
-        const sessionsUrl = '@sessionsUrl';
-
-        const table = new Tabulator("#sessionGrid", {
-            layout: "fitDataStretch",
-            ajaxURL: sessionsUrl,
-            ajaxParams: getParams,
-            ajaxConfig: 'GET',
-            pagination: 'remote',
-            paginationSize: 15,
-            paginationSizeSelector: [15,25,50,100],
-            placeholder: 'No sessions found',
-            ajaxResponse: function(url, params, response) {
-                return {
-                    data: response.data || [],
-                    last_page: response.last_page || 1,
-                    total_records: response.total_records || 0
-                };
-            },
-            columns: [
-                { title: 'Date', field: 'attendanceDate', formatter: 'datetime', formatterParams: { inputFormat: 'iso', outputFormat: 'yyyy-MM-dd' } },
-                { title: 'Class', field: 'className' },
-                { title: 'Section', field: 'sectionName' },
-                { title: 'Group', field: 'studentGroupName' },
-                { title: 'Status', field: 'status', formatter: statusBadge },
-                { title: 'Submitted By', field: 'submittedBy' },
-                { title: 'Submitted At', field: 'submittedAt', formatter: 'datetime', formatterParams: { inputFormat: 'iso', outputFormat: 'yyyy-MM-dd HH:mm' } },
-                { title: 'Locked By', field: 'lockedBy' },
-                { title: 'Last Modified', field: 'updatedAt', formatter: 'datetime', formatterParams: { inputFormat: 'iso', outputFormat: 'yyyy-MM-dd HH:mm' } },
-                { title: 'Total', field: 'totalStudents' },
-                { title: 'Present', field: 'present' },
-                { title: 'Absent', field: 'absent' }
-            ]
-        });
-
-        document.getElementById('btnFilter').addEventListener('click', function () {
-            table.setData(sessionsUrl, getParams());
-        });
-
-        document.getElementById('filterClass').addEventListener('change', async function () {
-            const classId = this.value;
-            const sectionSelect = document.getElementById('filterSection');
-            sectionSelect.innerHTML = '<option value="">All Sections</option>';
-            if (!classId) return;
-            const res = await fetch(`/StudentAttendance/GetSections?classId=${classId}`);
-            const json = await res.json();
-            (json.data || []).forEach(s => {
-                sectionSelect.innerHTML += `<option value="${s.id}">${s.name}</option>`;
-            });
-        });
-
-        function getParams() {
+        function getSessionParams() {
             return {
                 date: document.getElementById('filterDate').value,
                 classId: document.getElementById('filterClass').value,
@@ -112,15 +82,58 @@
             };
         }
 
-        function statusBadge(cell) {
-            const value = cell.getValue();
-            let cls = 'badge bg-secondary';
-            if (value === 'Draft') cls = 'badge bg-secondary';
-            if (value === 'Submitted') cls = 'badge bg-primary';
-            if (value === 'Locked') cls = 'badge bg-danger';
-            if (value === 'Revised') cls = 'badge bg-warning text-dark';
-            if (value === 'Approved') cls = 'badge bg-success';
-            return `<span class="${cls}">${value}</span>`;
+        function sessionStatusBadge(cell) {
+            var val = cell.getValue();
+            if (val === 'Draft') return '<span class="adm-status adm-status--neutral">Draft</span>';
+            if (val === 'Submitted') return '<span class="adm-status adm-status--converted">Submitted</span>';
+            if (val === 'Locked') return '<span class="adm-status adm-status--rejected">Locked</span>';
+            if (val === 'Revised') return '<span class="adm-status adm-status--pending">Revised</span>';
+            if (val === 'Approved') return '<span class="adm-status adm-status--approved">Approved</span>';
+            return '<span class="adm-status adm-status--neutral">' + val + '</span>';
         }
+
+        var sessionsUrl = '@Url.Action("GetSessions", "AttendanceSession")';
+
+        var table = new Tabulator("#sessionGrid", {
+            height: "calc(100vh - 280px)",
+            layout: "fitColumns",
+            ajaxURL: sessionsUrl,
+            ajaxParams: getSessionParams,
+            pagination: true,
+            paginationMode: "remote",
+            paginationSize: 15,
+            paginationSizeSelector: [15,25,50,100],
+            paginationDataSent: { "page": "page", "size": "pageSize" },
+            ajaxResponse: function(url, params, response) {
+                return { data: response.data || [], last_page: response.last_page || 1 };
+            },
+            columns: [
+                { title: "Date", field: "attendanceDate", width: 120, hozAlign: "center", formatter: 'datetime', formatterParams: { inputFormat: 'iso', outputFormat: 'yyyy-MM-dd' } },
+                { title: "Class", field: "className", width: 140, hozAlign: "center" },
+                { title: "Section", field: "sectionName", width: 120, hozAlign: "center" },
+                { title: "Group", field: "studentGroupName", width: 120, hozAlign: "center" },
+                { title: "Status", field: "status", width: 110, hozAlign: "center", formatter: sessionStatusBadge },
+                { title: "Submitted By", field: "submittedBy", width: 140 },
+                { title: "Submitted At", field: "submittedAt", width: 160, hozAlign: "center", formatter: 'datetime', formatterParams: { inputFormat: 'iso', outputFormat: 'yyyy-MM-dd HH:mm' } },
+                { title: "Total", field: "totalStudents", width: 80, hozAlign: "center", cssClass: "fw-semibold" },
+                { title: "Present", field: "present", width: 80, hozAlign: "center", cssClass: "text-success" },
+                { title: "Absent", field: "absent", width: 80, hozAlign: "center", cssClass: "text-danger" }
+            ],
+            placeholder: "<div class='dash-empty'><i class='bi bi-calendar-check fs-1'></i><div class='dash-empty__title'>No Sessions Found</div><div class='dash-empty__sub'>Try adjusting your filters.</div></div>"
+        });
+
+        document.getElementById('btnFilter').addEventListener('click', function () { table.setData(); });
+
+        document.getElementById('filterClass').addEventListener('change', async function () {
+            var classId = this.value;
+            var sectionSelect = document.getElementById('filterSection');
+            sectionSelect.innerHTML = '<option value="">All Sections</option>';
+            if (!classId) return;
+            var res = await fetch('/StudentAttendance/GetSections?classId=' + classId);
+            var json = await res.json();
+            (json.data || []).forEach(function(s) {
+                sectionSelect.innerHTML += '<option value="' + s.id + '">' + s.name + '</option>';
+            });
+        });
     </script>
 }

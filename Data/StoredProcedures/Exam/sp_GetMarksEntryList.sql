@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[sp_GetMarksEntryList]
+﻿CREATE OR ALTER PROCEDURE [dbo].[sp_GetMarksEntryList]
     @ExamId INT,
     @ClassId INT,
     @SectionId INT,
@@ -37,10 +37,10 @@ BEGIN
         m.IsLocked,
         m.Status AS MarkStatus,
         CASE WHEN m.Id IS NOT NULL THEN 1 ELSE 0 END AS HasEntry
-    FROM Students s
-    INNER JOIN Classes sc ON s.ClassId = sc.Id
-    INNER JOIN Sections sec ON s.SectionId = sec.Id
-    LEFT JOIN Marks m ON s.Id = m.StudentId 
+FROM Students s WITH(NOLOCK)
+INNER JOIN Classes sc WITH(NOLOCK) ON s.ClassId = sc.Id
+INNER JOIN Sections sec WITH(NOLOCK) ON s.SectionId = sec.Id
+LEFT JOIN Marks m WITH(NOLOCK) ON s.Id = m.StudentId 
         AND m.ExamId = @ExamId 
         AND m.SubjectId = @SubjectId
         AND m.IsDeleted = 0

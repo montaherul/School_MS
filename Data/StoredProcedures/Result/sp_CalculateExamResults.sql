@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[sp_CalculateExamResults]
+﻿CREATE OR ALTER PROCEDURE [dbo].[sp_CalculateExamResults]
     @ExamId INT,
     @AcademicYearId INT
 AS
@@ -27,7 +27,7 @@ BEGIN
             CASE WHEN MIN(CASE WHEN ssr.IsPassed = 0 THEN 0 ELSE 1 END) = 0 THEN 0 ELSE 1 END AS IsPassed,
             SUM(CASE WHEN ssr.IsPassed = 0 THEN 1 ELSE 0 END) AS FailedSubjectCount,
             SUM(CASE WHEN ssr.IsPassed = 1 THEN 1 ELSE 0 END) AS PassedSubjectCount
-        FROM StudentSubjectResults ssr
+FROM StudentSubjectResults ssr WITH(NOLOCK)
         WHERE ssr.ExamId = @ExamId AND ssr.IsDeleted = 0
         GROUP BY ssr.StudentId, ssr.ClassId, ssr.SectionId, ssr.StudentGroupId
     ) AS source

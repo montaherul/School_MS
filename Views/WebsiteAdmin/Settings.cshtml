@@ -1,3 +1,4 @@
+@using SchoolManagementSystem.Models.Entities.Website
 @model SchoolManagementSystem.Models.Entities.Website.SchoolSetting
 @{
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -377,6 +378,195 @@
                                     <input type="hidden" name="ShowStatistics" value="false"/>
                                     <label class="form-check-label fw-bold" for="chkStats">Statistics Section</label>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SMTP Server Settings -->
+                <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:8px;">
+                    <div style="flex:1 1 100%;min-width:280px;">
+                        <h6 style="font-weight:700;margin-bottom:12px;border-bottom:1px solid var(--adm-border);padding-bottom:8px;"><i class="bi bi-envelope-at me-2 text-primary" style="color:var(--adm-primary);"></i> SMTP Server Settings</h6>
+                        <div style="display:flex;flex-wrap:wrap;gap:12px;">
+                            <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
+                                <label class="adm-form-label">SMTP Host</label>
+                                <input type="text" class="adm-input" name="SmtpHost" value="@Model.SmtpHost" placeholder="smtp.gmail.com" />
+                            </div>
+                            <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
+                                <label class="adm-form-label">Port</label>
+                                <input type="number" class="adm-input" name="SmtpPort" value="@Model.SmtpPort" />
+                            </div>
+                            <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
+                                <label class="adm-form-label">&nbsp;</label>
+                                <div class="form-check" style="display:flex;align-items:center;gap:8px;">
+                                    <input type="hidden" name="SmtpEnableSsl" value="false" />
+                                    <input type="checkbox" class="form-check-input" name="SmtpEnableSsl" value="true" checked="@Model.SmtpEnableSsl" id="chkSmtpSsl" />
+                                    <label class="form-check-label fw-bold" for="chkSmtpSsl">Enable SSL</label>
+                                </div>
+                            </div>
+                            <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
+                                <label class="adm-form-label">Username</label>
+                                <input type="text" class="adm-input" name="SmtpUserName" value="@Model.SmtpUserName" placeholder="user@gmail.com" />
+                            </div>
+                            <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
+                                <label class="adm-form-label">Password</label>
+                                <input type="password" class="adm-input" name="SmtpPassword" value="@Model.SmtpPassword" placeholder="App password" />
+                            </div>
+                            <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
+                                <label class="adm-form-label">From Email</label>
+                                <input type="email" class="adm-input" name="SmtpFromEmail" value="@Model.SmtpFromEmail" placeholder="noreply@school.com" />
+                            </div>
+                            <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
+                                <label class="adm-form-label">Base URL</label>
+                                <input type="text" class="adm-input" name="BaseUrl" value="@Model.BaseUrl" placeholder="https://school-ms-7l3e.onrender.com/" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SMTP Server Settings -->
+                <div class="adm-table-card mb-4">
+                    <div class="px-4 py-3 border-bottom">
+                        <h5 class="mb-0 fw-bold"><i class="bi bi-envelope-at me-2 text-primary"></i>SMTP Server Settings</h5>
+                    </div>
+                    <div style="padding: 24px;">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">SMTP Host</label>
+                                <input type="text" class="form-control" name="SmtpHost" value="@Model.SmtpHost" placeholder="smtp.gmail.com" />
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">Port</label>
+                                <input type="number" class="form-control" name="SmtpPort" value="@Model.SmtpPort" />
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">&nbsp;</label>
+                                <div class="form-check pt-2">
+                                    <input type="checkbox" class="form-check-input" name="SmtpEnableSsl" value="true" checked="@Model.SmtpEnableSsl" />
+                                    <label class="form-check-label">Enable SSL</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Username</label>
+                                <input type="text" class="form-control" name="SmtpUserName" value="@Model.SmtpUserName" placeholder="user@gmail.com" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Password</label>
+                                <input type="password" class="form-control" name="SmtpPassword" value="@Model.SmtpPassword" placeholder="App password" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">From Email</label>
+                                <input type="email" class="form-control" name="SmtpFromEmail" value="@Model.SmtpFromEmail" placeholder="noreply@school.com" />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Base URL</label>
+                                <input type="text" class="form-control" name="BaseUrl" value="@Model.BaseUrl" placeholder="https://school-ms-7l3e.onrender.com/" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Event Notification Settings -->
+                <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:8px;">
+                    <div style="flex:1 1 100%;min-width:280px;">
+                        <h6 style="font-weight:700;margin-bottom:12px;border-bottom:1px solid var(--adm-border);padding-bottom:8px;"><i class="bi bi-bell-fill" style="margin-right:4px;color:var(--adm-primary);"></i> Event Notification Settings</h6>
+                        <p style="color:var(--adm-text-3);font-size:0.875rem;margin-bottom:12px;">Configure automatic email notifications when website events are created or published.</p>
+                        <div style="display:flex;flex-wrap:wrap;gap:12px;">
+                            <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
+                                <div class="form-check form-switch" style="display:flex;align-items:center;gap:8px;">
+                                    <input class="form-check-input" type="checkbox" name="EnableEventEmailNotifications" value="true" @(Model.EnableEventEmailNotifications ? "checked" : "") id="chkEventEmailNotifications"/>
+                                    <input type="hidden" name="EnableEventEmailNotifications" value="false"/>
+                                    <label class="form-check-label fw-bold" for="chkEventEmailNotifications">Enable Event Emails</label>
+                                </div>
+                            </div>
+                            <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
+                                <div class="form-check form-switch" style="display:flex;align-items:center;gap:8px;">
+                                    <input class="form-check-input" type="checkbox" name="EnableStudentNotifications" value="true" @(Model.EnableStudentNotifications ? "checked" : "") id="chkStudentNotifications"/>
+                                    <input type="hidden" name="EnableStudentNotifications" value="false"/>
+                                    <label class="form-check-label fw-bold" for="chkStudentNotifications">Notify Students</label>
+                                </div>
+                            </div>
+                            <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
+                                <div class="form-check form-switch" style="display:flex;align-items:center;gap:8px;">
+                                    <input class="form-check-input" type="checkbox" name="SendImmediately" value="true" @(Model.SendImmediately ? "checked" : "") id="chkSendImmediately"/>
+                                    <input type="hidden" name="SendImmediately" value="false"/>
+                                    <label class="form-check-label fw-bold" for="chkSendImmediately">Send Immediately</label>
+                                </div>
+                            </div>
+                            <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
+                                <div class="form-check form-switch" style="display:flex;align-items:center;gap:8px;">
+                                    <input class="form-check-input" type="checkbox" name="SendOnPublish" value="true" @(Model.SendOnPublish ? "checked" : "") id="chkSendOnPublish"/>
+                                    <input type="hidden" name="SendOnPublish" value="false"/>
+                                    <label class="form-check-label fw-bold" for="chkSendOnPublish">Send On Publish</label>
+                                </div>
+                            </div>
+                            <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
+                                <div class="form-check form-switch" style="display:flex;align-items:center;gap:8px;">
+                                    <input class="form-check-input" type="checkbox" name="DailyDigestMode" value="true" @(Model.DailyDigestMode ? "checked" : "") id="chkDailyDigest"/>
+                                    <input type="hidden" name="DailyDigestMode" value="false"/>
+                                    <label class="form-check-label fw-bold" for="chkDailyDigest">Daily Digest Mode</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:8px;">
+                            <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
+                                <label class="adm-form-label">Max Emails Per Batch</label>
+                                <input type="number" name="MaximumEmailsPerBatch" value="@Model.MaximumEmailsPerBatch" class="adm-input" min="10" max="500"/>
+                            </div>
+                            <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
+                                <label class="adm-form-label">Notification Sender Name</label>
+                                <input type="text" name="NotificationSenderName" value="@Model.NotificationSenderName" class="adm-input" placeholder="School Name"/>
+                            </div>
+                            <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
+                                <label class="adm-form-label">Notification Sender Email</label>
+                                <input type="email" name="NotificationSenderEmail" value="@Model.NotificationSenderEmail" class="adm-input" placeholder="noreply@school.edu.bd"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Event Approval & Reminder Settings -->
+                <div style="display:flex;flex-wrap:wrap;gap:16px;margin-top:8px;">
+                    <div style="flex:1 1 100%;min-width:280px;">
+                        <h6 style="font-weight:700;margin-bottom:12px;border-bottom:1px solid var(--adm-border);padding-bottom:8px;"><i class="bi bi-check2-circle" style="margin-right:4px;color:var(--adm-primary);"></i> Event Approval & Reminder Settings</h6>
+                        <p style="color:var(--adm-text-3);font-size:0.875rem;margin-bottom:12px;">Configure event approval workflow and automatic reminder notifications for upcoming events.</p>
+                        <div style="display:flex;flex-wrap:wrap;gap:12px;">
+                            <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
+                                <div class="form-check form-switch" style="display:flex;align-items:center;gap:8px;">
+                                    <input class="form-check-input" type="checkbox" name="EnableEventApprovalWorkflow" value="true" @(Model.EnableEventApprovalWorkflow ? "checked" : "") id="chkEnableEventApproval"/>
+                                    <input type="hidden" name="EnableEventApprovalWorkflow" value="false"/>
+                                    <label class="form-check-label fw-bold" for="chkEnableEventApproval">Enable Approval Workflow</label>
+                                </div>
+                            </div>
+                            <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
+                                <div class="form-check form-switch" style="display:flex;align-items:center;gap:8px;">
+                                    <input class="form-check-input" type="checkbox" name="EnableEventReminders" value="true" @(Model.EnableEventReminders ? "checked" : "") id="chkEnableEventReminders"/>
+                                    <input type="hidden" name="EnableEventReminders" value="false"/>
+                                    <label class="form-check-label fw-bold" for="chkEnableEventReminders">Enable Event Reminders</label>
+                                </div>
+                            </div>
+                            <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
+                                <label class="adm-form-label">Default Reminder Timing</label>
+                                <input type="number" name="DefaultReminderTiming" value="@Model.DefaultReminderTiming" class="adm-input" min="1" max="365"/>
+                            </div>
+                            <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
+                                <label class="adm-form-label">Reminder Unit</label>
+                                @{
+                                    var selMinutes = Model.DefaultReminderUnit == ReminderUnit.Minutes;
+                                    var selHours = Model.DefaultReminderUnit == ReminderUnit.Hours;
+                                    var selDays = Model.DefaultReminderUnit == ReminderUnit.Days;
+                                    var selWeeks = Model.DefaultReminderUnit == ReminderUnit.Weeks;
+                                }
+                                <select name="DefaultReminderUnit" class="adm-input">
+                                    <option value="0" selected="@selMinutes">Minutes</option>
+                                    <option value="1" selected="@selHours">Hours</option>
+                                    <option value="2" selected="@selDays">Days</option>
+                                    <option value="3" selected="@selWeeks">Weeks</option>
+                                </select>
+                            </div>
+                            <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
+                                <label class="adm-form-label">Max Reminders Per Event</label>
+                                <input type="number" name="MaxRemindersPerEvent" value="@Model.MaxRemindersPerEvent" class="adm-input" min="0" max="20"/>
                             </div>
                         </div>
                     </div>

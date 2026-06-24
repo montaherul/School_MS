@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE sp_GetClassCollectionSummary
+﻿CREATE OR ALTER PROCEDURE sp_GetClassCollectionSummary
     @AcademicYearId INT = 0,
     @PageNumber INT = 1,
     @PageSize INT = 50
@@ -16,9 +16,9 @@ BEGIN
                 ELSE 0 END AS CollectionRate,
            COUNT(DISTINCT fi.StudentId) AS StudentCount,
            COUNT(*) OVER() AS TotalRecords
-    FROM FeeInvoices fi
-    JOIN Students s ON fi.StudentId = s.Id
-    JOIN Classes c ON s.ClassId = c.Id
+FROM FeeInvoices fi WITH(NOLOCK)
+JOIN Students s WITH(NOLOCK) ON fi.StudentId = s.Id
+JOIN Classes c WITH(NOLOCK) ON s.ClassId = c.Id
     WHERE fi.IsDeleted = 0 AND (@AcademicYearId = 0 OR fi.AcademicYearId = @AcademicYearId)
     GROUP BY c.Name, c.Id
     ORDER BY c.Name, c.Id

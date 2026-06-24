@@ -1,4 +1,4 @@
--- ============================================================================
+﻿-- ============================================================================
 -- Stored Procedure: SP_ExamRoutine_GetStudentRoutine
 -- Purpose: Get published exam routine for a student's class/group
 -- ============================================================================
@@ -20,13 +20,13 @@ BEGIN
         c.Name AS ClassName,
         sg.Name AS GroupName,
         sec.Name AS SectionName
-    FROM ExamSchedules es
-    INNER JOIN Exams e ON es.ExamId = e.Id
-    INNER JOIN Subjects s ON es.SubjectId = s.Id
-    INNER JOIN Classes c ON es.ClassId = c.Id
-    LEFT JOIN StudentGroups sg ON es.StudentGroupId = sg.Id
-    LEFT JOIN Sections sec ON es.SectionId = sec.Id
-    INNER JOIN Students st ON st.Id = @StudentId
+FROM ExamSchedules es WITH(NOLOCK)
+INNER JOIN Exams e WITH(NOLOCK) ON es.ExamId = e.Id
+INNER JOIN Subjects s WITH(NOLOCK) ON es.SubjectId = s.Id
+INNER JOIN Classes c WITH(NOLOCK) ON es.ClassId = c.Id
+LEFT JOIN StudentGroups sg WITH(NOLOCK) ON es.StudentGroupId = sg.Id
+LEFT JOIN Sections sec WITH(NOLOCK) ON es.SectionId = sec.Id
+INNER JOIN Students st WITH(NOLOCK) ON st.Id = @StudentId
         AND st.ClassId = es.ClassId
         AND (es.StudentGroupId IS NULL OR es.StudentGroupId = st.StudentGroupId)
         AND (es.SectionId IS NULL OR es.SectionId = st.SectionId)

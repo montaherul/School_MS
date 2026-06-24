@@ -1,16 +1,15 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Controllers.Common;
+using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Models.Entities.Communication;
 using SchoolManagementSystem.Services.Interfaces.Base;
 
 namespace SchoolManagementSystem.Controllers.Communication;
 
-[Authorize]
+[RequirePermission("Communication.Manage")]
 public class CommunicationController : GenericCrudController<Notice>
 {
-    private const string AdminRoles = "Super Admin,Principal,Assistant Head,Senior Lecturer,Lecturer,Office Staff";
 
     public CommunicationController(IBaseService<Notice> service) : base(service, "Notice / News") { }
 
@@ -88,19 +87,19 @@ public class CommunicationController : GenericCrudController<Notice>
     }
 
     // ADMIN-only actions: restrict create/edit/delete/save endpoints to administrative roles
-    [Authorize(Roles = AdminRoles)]
+    [RequirePermission("Communication.Manage")]
     public override IActionResult Create()
     {
         return base.Create();
     }
 
-    [Authorize(Roles = AdminRoles)]
+    [RequirePermission("Communication.Manage")]
     public override Task<IActionResult> Edit(int id, CancellationToken cancellationToken = default)
     {
         return base.Edit(id, cancellationToken);
     }
 
-    [Authorize(Roles = AdminRoles)]
+    [RequirePermission("Communication.Manage")]
     public override Task<IActionResult> CreateEdit(int? id = null, CancellationToken cancellationToken = default)
     {
         return base.CreateEdit(id, cancellationToken);
@@ -108,13 +107,13 @@ public class CommunicationController : GenericCrudController<Notice>
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Authorize(Roles = AdminRoles)]
+    [RequirePermission("Communication.Manage")]
     public override Task<IActionResult> Save(IFormCollection form, CancellationToken cancellationToken = default)
     {
         return base.Save(form, cancellationToken);
     }
 
-    [Authorize(Roles = AdminRoles)]
+    [RequirePermission("Communication.Manage")]
     public override Task<IActionResult> Delete(int id, CancellationToken cancellationToken = default)
     {
         return base.Delete(id, cancellationToken);
@@ -122,7 +121,7 @@ public class CommunicationController : GenericCrudController<Notice>
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    [Authorize(Roles = AdminRoles)]
+    [RequirePermission("Communication.Manage")]
     public override Task<IActionResult> DeleteConfirmed(int id, CancellationToken cancellationToken = default)
     {
         return base.DeleteConfirmed(id, cancellationToken);

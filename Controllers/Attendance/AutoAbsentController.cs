@@ -1,13 +1,14 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SchoolManagementSystem.Services.Interfaces.Attendance;
 
 namespace SchoolManagementSystem.Controllers.Attendance
 {
-    [Authorize(Roles = "Super Admin,Admin,Principal,Assistant Head")]
+    using SchoolManagementSystem.Filters;
+
+    [RequirePermission("Attendance.AutoAbsent")]
     [Route("AutoAbsent")]
     public class AutoAbsentController : Controller
     {

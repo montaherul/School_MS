@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.Models.DTOs.Result;
 using SchoolManagementSystem.Models.Entities.Academic;
@@ -21,7 +22,7 @@ public class MeritListController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller,Teacher,Senior Lecturer,Lecturer")]
+    [RequirePermission("MeritList.View")]
     public async Task<IActionResult> Index(int? examId, MeritCategory category = MeritCategory.Class, CancellationToken ct = default)
     {
         var exams = await _uow.Repository<SchoolManagementSystem.Models.Entities.Exam.Exam>().ListAsync(x => !x.IsDeleted);
@@ -41,7 +42,7 @@ public class MeritListController : Controller
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller")]
+    [RequirePermission("MeritList.Recalculate")]
     public async Task<IActionResult> Recalculate(int examId)
     {
         try

@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[sp_GetTranscript]
+﻿CREATE OR ALTER PROCEDURE [dbo].[sp_GetTranscript]
     @StudentId INT
 AS
 BEGIN
@@ -20,10 +20,10 @@ BEGIN
         s.StudentGroupId,
         sg.Name AS GroupName,
         (SELECT TOP 1 Name FROM AcademicYears WHERE IsActive = 1) AS CurrentAcademicYear
-    FROM Students s
-    INNER JOIN Classes cl ON s.ClassId = cl.Id
-    LEFT JOIN Sections sec ON s.SectionId = sec.Id
-    LEFT JOIN StudentGroups sg ON s.StudentGroupId = sg.Id
+FROM Students s WITH(NOLOCK)
+INNER JOIN Classes cl WITH(NOLOCK) ON s.ClassId = cl.Id
+LEFT JOIN Sections sec WITH(NOLOCK) ON s.SectionId = sec.Id
+LEFT JOIN StudentGroups sg WITH(NOLOCK) ON s.StudentGroupId = sg.Id
     WHERE s.Id = @StudentId;
 
     -- All exam results across all academic years
@@ -54,9 +54,9 @@ BEGIN
         ser.IsPassed,
         ser.FailedSubjectCount,
         ser.PassedSubjectCount
-    FROM StudentExamResults ser
-    INNER JOIN Exams e ON ser.ExamId = e.Id
-    INNER JOIN AcademicYears ay ON e.AcademicYearId = ay.Id
+FROM StudentExamResults ser WITH(NOLOCK)
+INNER JOIN Exams e WITH(NOLOCK) ON ser.ExamId = e.Id
+INNER JOIN AcademicYears ay WITH(NOLOCK) ON e.AcademicYearId = ay.Id
     WHERE ser.StudentId = @StudentId
       AND ser.IsDeleted = 0
       AND e.IsDeleted = 0
@@ -76,11 +76,11 @@ BEGIN
         ssr.Grade,
         ssr.GradePoint,
         CAST(ssr.IsPassed AS BIT) AS IsPassed
-    FROM StudentSubjectResults ssr
-    INNER JOIN Exams e ON ssr.ExamId = e.Id
-    INNER JOIN Subjects sub ON ssr.SubjectId = sub.Id
-    INNER JOIN Students s ON s.Id = @StudentId
-    LEFT JOIN ClassSubjects cs ON cs.SchoolClassId = s.ClassId AND cs.SubjectId = ssr.SubjectId AND cs.IsDeleted = 0
+FROM StudentSubjectResults ssr WITH(NOLOCK)
+INNER JOIN Exams e WITH(NOLOCK) ON ssr.ExamId = e.Id
+INNER JOIN Subjects sub WITH(NOLOCK) ON ssr.SubjectId = sub.Id
+INNER JOIN Students s WITH(NOLOCK) ON s.Id = @StudentId
+LEFT JOIN ClassSubjects cs WITH(NOLOCK) ON cs.SchoolClassId = s.ClassId AND cs.SubjectId = ssr.SubjectId AND cs.IsDeleted = 0
     WHERE ssr.StudentId = @StudentId
       AND ssr.IsDeleted = 0
       AND e.IsDeleted = 0
@@ -101,8 +101,8 @@ BEGIN
         MAX(ser.Gpa) AS BestGPA,
         COUNT(CASE WHEN ser.IsPassed = 1 THEN 1 END) AS PassedExams,
         COUNT(CASE WHEN ser.IsPassed = 0 THEN 1 END) AS FailedExams
-    FROM StudentExamResults ser
-    INNER JOIN Exams e ON ser.ExamId = e.Id
+FROM StudentExamResults ser WITH(NOLOCK)
+INNER JOIN Exams e WITH(NOLOCK) ON ser.ExamId = e.Id
     WHERE ser.StudentId = @StudentId
       AND ser.IsDeleted = 0
       AND e.IsDeleted = 0

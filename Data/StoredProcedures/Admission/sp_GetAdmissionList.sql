@@ -1,4 +1,4 @@
--- ============================================================================
+﻿-- ============================================================================
 -- Stored Procedure: sp_GetAdmissionList
 -- Purpose: Get paginated admission applications with optional search and filter
 -- Author: School Management System
@@ -20,7 +20,8 @@ BEGIN
     SET @Offset = (@PageNumber - 1) * @PageSize;
 
     -- Build the base query with filters
-    ;WITH FilteredAdmissions AS (
+
+
         SELECT 
             a.Id,
             a.ApplicationNo,
@@ -75,12 +76,12 @@ BEGIN
             a.ProfilePicturePath,
             a.CreatedBy,
             a.CreatedAt,
-            ROW_NUMBER() OVER (ORDER BY a.CreatedAt DESC, a.Id DESC) AS RowNum,
-            COUNT(*) OVER () AS TotalCount
+
+            COUNT(*) OVER () AS TotalRecords
         FROM 
-            Admissions a
+Admissions a WITH(NOLOCK)
         LEFT JOIN 
-            Classes c ON a.AppliedClassId = c.Id
+Classes c WITH(NOLOCK) ON a.AppliedClassId = c.Id
         WHERE 
             a.IsDeleted = 0
             AND (@ClassId = 0 OR a.AppliedClassId = @ClassId)
@@ -94,61 +95,9 @@ BEGIN
 
             )
             AND (@Status IS NULL OR a.Status = @Status)
-    )
-    SELECT 
-        Id,
-        ApplicationNo,
-        ApplicantName,
-        ApplicantNameBangla,
-        DateOfBirth,
-        Gender,
-        AppliedClassId,
-        ClassName,
-        [Status],
-        FatherName,
-        FatherOccupation,
-        MotherName,
-        MotherOccupation,
-        GuardianName,
-        GuardianOccupation,
-        GuardianEmail,
-        GuardianMobileNumber,
-        GuardianRelationship,
-        GuardianNationalId,
-        GuardianAddress,
-        GuardianPhoto,
-        GuardianRemarks,
-        LinkedGuardianId,
-        FatherOrGuardianMobileNo,
-        ApplicantMobileNumber,
-        AlternativeNumber,
-        ApplicantEmail,
-        Nationality,
-        Religion,
-        BloodGroup,
-        BirthCertificateNo,
-        BirthCertificatePath,
-        PaymentSlipPath,
-        PaymentMethod,
-        TransactionDetails,
-        PresentVillage,
-        PresentPostOffice,
-        PresentThana,
-        PresentDistrict,
-        PermanentVillage,
-        PermanentPostOffice,
-        PermanentThana,
-        PermanentDistrict,
-        ProfilePicturePath,
-        CreatedBy,
-        CreatedAt,
-        TotalCount AS TotalRecords
-    FROM 
-        FilteredAdmissions
-    WHERE 
-        RowNum > @Offset 
-        AND RowNum <= @Offset + @PageSize
-    ORDER BY 
-        RowNum;
+    
+ORDER BY a.CreatedAt DESC, a.Id DESC
+OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
+
 END;
 GO

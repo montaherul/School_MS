@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[sp_BulkGenerateAdmitCards]
+﻿CREATE OR ALTER PROCEDURE [dbo].[sp_BulkGenerateAdmitCards]
     @ExamId INT,
     @ClassId INT = NULL,
     @SectionId INT = NULL
@@ -10,7 +10,7 @@ BEGIN
 
     INSERT INTO @Students
     SELECT s.Id
-    FROM Students s
+FROM Students s WITH(NOLOCK)
     WHERE s.Status = 1
       AND s.IsDeleted = 0
       AND (@ClassId IS NULL OR s.ClassId = @ClassId)

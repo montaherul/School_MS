@@ -17,15 +17,21 @@ public class AuditLogController : Controller
     }
 
     [RequirePermission("AuditLogs.View")]
-    public async Task<IActionResult> Index(int page = 1, int pageSize = 20, string? search = null, CancellationToken ct = default)
+    public async Task<IActionResult> Index(int page = 1, int pageSize = 15, string? search = null, CancellationToken ct = default)
     {
-        var result = await _auditLogService.GetPagedAsync(page, pageSize, search, ct);
+        if (Request.Headers.XRequestedWith == "XMLHttpRequest")
+        {
+            var result = await _auditLogService.GetPagedAsync(page, pageSize, search, ct);
+            var lastPage = (int)Math.Ceiling((double)result.TotalItems / pageSize);
+            return Json(new { data = result.Items, last_page = lastPage });
+        }
+        var viewResult = await _auditLogService.GetPagedAsync(page, 20, search, ct);
         var model = new AuditLogIndexViewModel
         {
-            Items = result.Items.ToList(),
-            Page = result.Page,
-            PageSize = result.PageSize,
-            TotalItems = result.TotalItems,
+            Items = viewResult.Items.ToList(),
+            Page = viewResult.Page,
+            PageSize = viewResult.PageSize,
+            TotalItems = viewResult.TotalItems,
             Search = search
         };
         return View(model);

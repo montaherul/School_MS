@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[sp_GetGuardianChildren]
+﻿CREATE OR ALTER PROCEDURE [dbo].[sp_GetGuardianChildren]
     @GuardianId INT,
     @FromDate DATETIME = NULL,
     @ToDate DATETIME = NULL
@@ -37,29 +37,29 @@ BEGIN
         END AS AttendancePercentage,
         ISNULL(fees.Outstanding, 0) AS OutstandingFees,
         ISNULL(unr.UnreadCount, 0) AS UnreadNotificationCount
-    FROM StudentGuardians sg
-    JOIN Students s ON sg.StudentId = s.Id
-    LEFT JOIN Classes c ON s.ClassId = c.Id
-    LEFT JOIN Sections sec ON s.SectionId = sec.Id
+FROM StudentGuardians sg WITH(NOLOCK)
+JOIN Students s WITH(NOLOCK) ON sg.StudentId = s.Id
+LEFT JOIN Classes c WITH(NOLOCK) ON s.ClassId = c.Id
+LEFT JOIN Sections sec WITH(NOLOCK) ON s.SectionId = sec.Id
     OUTER APPLY (
         SELECT 
             COUNT(*) AS TotalDays,
             SUM(CASE WHEN Status = 1 THEN 1 ELSE 0 END) AS PresentCount,
             SUM(CASE WHEN Status = 2 THEN 1 ELSE 0 END) AS AbsentCount,
             SUM(CASE WHEN Status = 3 THEN 1 ELSE 0 END) AS LateCount
-        FROM Attendance a 
+FROM Attendance a WITH(NOLOCK) 
         WHERE a.StudentId = s.Id AND a.IsDeleted = 0
           AND (@FromDate IS NULL OR a.AttendanceDate >= @FromDate)
           AND (@ToDate IS NULL OR a.AttendanceDate <= @ToDate)
     ) atts
     OUTER APPLY (
         SELECT ISNULL(SUM(fi.TotalAmount - fi.PaidAmount), 0) AS Outstanding
-        FROM FeeInvoices fi
+FROM FeeInvoices fi WITH(NOLOCK)
         WHERE fi.StudentId = s.Id AND fi.IsDeleted = 0 AND fi.Status <> 3
     ) fees
     OUTER APPLY (
         SELECT COUNT(*) AS UnreadCount
-        FROM GuardianNotifications gn
+FROM GuardianNotifications gn WITH(NOLOCK)
         WHERE gn.GuardianId = sg.GuardianId AND gn.IsRead = 0 AND gn.IsDeleted = 0
     ) unr
     WHERE sg.GuardianId = @GuardianId AND sg.IsDeleted = 0 AND s.IsDeleted = 0

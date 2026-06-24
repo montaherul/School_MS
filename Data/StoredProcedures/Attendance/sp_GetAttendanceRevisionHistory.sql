@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE sp_GetAttendanceRevisionHistory
+﻿CREATE OR ALTER PROCEDURE sp_GetAttendanceRevisionHistory
     @ClassId   INT,
     @SectionId INT,
     @AttendanceDate DATE
@@ -19,8 +19,8 @@ BEGIN
         r.ChangedBy,
         r.ChangedAt
     FROM
-        AttendanceRevisions r
-        LEFT JOIN Students s ON r.StudentId = s.Id
+AttendanceRevisions r WITH(NOLOCK)
+LEFT JOIN Students s WITH(NOLOCK) ON r.StudentId = s.Id
     WHERE
         r.IsDeleted = 0
         AND r.AttendanceDate = @AttendanceDate

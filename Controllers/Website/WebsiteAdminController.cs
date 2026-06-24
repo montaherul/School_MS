@@ -11,10 +11,11 @@ using SchoolManagementSystem.Helpers.Files;
 using SchoolManagementSystem.Models.Entities.Website;
 using SchoolManagementSystem.Models.Entities.Communication;
 using SchoolManagementSystem.Services.Interfaces.Website;
+using SchoolManagementSystem.Models.Entities.Website;
 
 namespace SchoolManagementSystem.Controllers.Website;
 
-[Authorize(Roles = "Admin,Super Admin,Principal")]
+[Authorize]
 [Route("Admin/Website")]
 public class WebsiteAdminController : Controller
 {
@@ -28,6 +29,7 @@ public class WebsiteAdminController : Controller
     private readonly IEmailTemplateService _emailTemplateService;
     private readonly IAdmissionFeeStructureService _feeService;
     private readonly IAnnouncementService _announcementService;
+    private readonly IEventNotificationService _eventNotificationService;
     private readonly IFileStorageService _fileService;
 
     public WebsiteAdminController(
@@ -41,6 +43,7 @@ public class WebsiteAdminController : Controller
         IEmailTemplateService emailTemplateService,
         IAdmissionFeeStructureService feeService,
         IAnnouncementService announcementService,
+        IEventNotificationService eventNotificationService,
         IFileStorageService fileService)
     {
         _settingsService = settingsService;
@@ -53,6 +56,7 @@ public class WebsiteAdminController : Controller
         _emailTemplateService = emailTemplateService;
         _feeService = feeService;
         _announcementService = announcementService;
+        _eventNotificationService = eventNotificationService;
         _fileService = fileService;
     }
 
@@ -587,6 +591,248 @@ public class WebsiteAdminController : Controller
     {
         await _feeService.DeleteAsync(id, ct);
         return Json(new { success = true });
+    }
+
+    // ── Event Notifications ──
+    [HttpGet("Events/Notifications")]
+    [RequirePermission("Website.Events")]
+    public async Task<IActionResult> EventNotifications(CancellationToken ct)
+    {
+        var notifications = await _eventNotificationService.GetAllNotificationsAsync(ct);
+        return Json(notifications);
+    }
+
+    [HttpGet("Events/Notifications/Dashboard")]
+    [RequirePermission("Website.Events")]
+    public async Task<IActionResult> EventNotificationDashboard(CancellationToken ct)
+    {
+        var dashboard = await _eventNotificationService.GetDashboardAsync(ct);
+        return Json(dashboard);
+    }
+
+    [HttpGet("Events/Notifications/Recent")]
+    [RequirePermission("Website.Events")]
+    public async Task<IActionResult> RecentNotifications(int count = 10, CancellationToken ct = default)
+    {
+        var list = await _eventNotificationService.GetRecentNotificationsAsync(count, ct);
+        return Json(list);
+    }
+
+    [HttpPost("Events/Notifications/Send/{eventId}")]
+    [RequirePermission("Website.Events")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SendEventNotification(int eventId, [FromForm] EventScope scope,
+        int? classId, int? sectionId, int? groupId, string? studentIds, string? guardianIds,
+        bool notifyGuardians = true, bool notifyStudents = false, bool primaryGuardianOnly = true,
+        int? templateId = null, CancellationToken ct = default)
+    {
+        var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        int? userId = userIdStr != null && int.TryParse(userIdStr, out var uid) ? uid : null;
+
+        var notification = await _eventNotificationService.CreateNotificationAsync(eventId, scope,
+            classId, sectionId, groupId, studentIds, guardianIds,
+            notifyGuardians, notifyStudents, primaryGuardianOnly,
+            templateId, userId, ct);
+
+        await _eventNotificationService.QueueNotificationAsync(notification.Id, ct);
+
+        var settings = await _settingsService.GetSettingsAsync(ct);
+        if (settings.SendImmediately)
+        {
+            await _eventNotificationService.SendNotificationAsync(notification.Id, ct);
+        }
+
+        TempData["SuccessMessage"] = "Event notification sent successfully.";
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost("Events/Notifications/Resend/{notificationId}")]
+    [RequirePermission("Website.Events")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ResendEventNotification(int notificationId, CancellationToken ct)
+    {
+        await _eventNotificationService.ResendNotificationAsync(notificationId, ct);
+        TempData["SuccessMessage"] = "Failed notifications rescheduled for retry.";
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpGet("Events/Notifications/Preview/{notificationId}")]
+    [RequirePermission("Website.Events")]
+    public async Task<IActionResult> PreviewEventNotification(int notificationId, CancellationToken ct)
+    {
+        var html = await _eventNotificationService.PreviewEmailAsync(notificationId, ct);
+        return Content(html, "text/html");
+    }
+
+    [HttpGet("Events/Notifications/{notificationId}/Recipients")]
+    [RequirePermission("Website.Events")]
+    public async Task<IActionResult> NotificationRecipients(int notificationId, CancellationToken ct)
+    {
+        var recipients = await _eventNotificationService.GetRecipientsAsync(notificationId, ct);
+        return Json(recipients);
+    }
+
+    [HttpGet("Events/Notifications/{notificationId}")]
+    [RequirePermission("Website.Events")]
+    public async Task<IActionResult> NotificationDetail(int notificationId, CancellationToken ct)
+    {
+        var notification = await _eventNotificationService.GetNotificationAsync(notificationId, ct);
+        if (notification == null) return NotFound();
+        return Json(notification);
+    }
+
+    // ── Event Notification Analytics ──
+    [HttpGet("Events/Notifications/Analytics/{notificationId}")]
+    [RequirePermission("Website.Events")]
+    public async Task<IActionResult> NotificationAnalytics(int notificationId, CancellationToken ct)
+    {
+        var analytics = await _eventNotificationService.GetAnalyticsAsync(notificationId, ct);
+        return Json(analytics);
+    }
+
+    // ── Guardian Notification Preferences ──
+    [HttpGet("Events/Notifications/Preferences/{guardianId}")]
+    [RequirePermission("Website.Events")]
+    public async Task<IActionResult> GuardianNotificationPreferences(int guardianId, CancellationToken ct)
+    {
+        var pref = await _eventNotificationService.GetGuardianPreferenceAsync(guardianId, ct);
+        return Json(pref != null ? pref : (object)new { });
+    }
+
+    [HttpPost("Events/Notifications/Preferences/{guardianId}")]
+    [RequirePermission("Website.Events")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SetGuardianNotificationPreferences(int guardianId,
+        [FromForm] Models.Entities.Website.GuardainNotificationPreference model, CancellationToken ct)
+    {
+        await _eventNotificationService.SetGuardianPreferenceAsync(guardianId, model, ct);
+        return Json(new { success = true });
+    }
+
+    [HttpPost("Events/Notifications/VerifyEmail/{guardianId}")]
+    [RequirePermission("Website.Events")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> VerifyGuardianEmail(int guardianId, [FromForm] string email, CancellationToken ct)
+    {
+        await _eventNotificationService.VerifyGuardianEmailAsync(guardianId, email, ct);
+        return Json(new { success = true });
+    }
+
+    // ── Event Notification Attachments ──
+    [HttpGet("Events/Notifications/{notificationId}/Attachments")]
+    [RequirePermission("Website.Events")]
+    public async Task<IActionResult> GetAttachments(int notificationId, CancellationToken ct)
+    {
+        var list = await _eventNotificationService.GetAttachmentsAsync(notificationId, ct);
+        return Json(list);
+    }
+
+    [HttpPost("Events/Notifications/{notificationId}/Attachments")]
+    [RequirePermission("Website.Events")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UploadAttachment(int notificationId, IFormFile file, string? description = null, bool isInline = false, CancellationToken ct = default)
+    {
+        if (file == null || file.Length == 0)
+            return BadRequest("No file provided.");
+
+        if (file.Length > 10 * 1024 * 1024)
+            return BadRequest("File too large (max 10MB).");
+
+        var path = await _fileService.SaveAsync(file, "notifications", ct);
+        await _eventNotificationService.AddAttachmentAsync(notificationId,
+            file.FileName, path, file.ContentType, file.Length, description, isInline, ct);
+
+        return Json(new { success = true, path });
+    }
+
+    [HttpPost("Events/Notifications/Attachments/Delete/{attachmentId}")]
+    [RequirePermission("Website.Events")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteAttachment(int attachmentId, CancellationToken ct)
+    {
+        await _eventNotificationService.RemoveAttachmentAsync(attachmentId, ct);
+        return Json(new { success = true });
+    }
+
+    // ── Scheduled Notifications ──
+    [HttpPost("Events/Notifications/Schedule/{notificationId}")]
+    [RequirePermission("Website.Events")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ScheduleNotification(int notificationId, [FromForm] DateTime scheduledAt, CancellationToken ct)
+    {
+        await _eventNotificationService.ScheduleNotificationAsync(notificationId, scheduledAt, ct);
+        TempData["SuccessMessage"] = "Notification scheduled successfully.";
+        return RedirectToAction(nameof(Index));
+    }
+
+    // ── Event Reminder Configs ──
+    [HttpGet("Events/{eventId}/Reminders")]
+    [RequirePermission("Website.Events")]
+    public async Task<IActionResult> GetReminderConfigs(int eventId, CancellationToken ct)
+    {
+        var list = await _eventNotificationService.GetReminderConfigsAsync(eventId, ct);
+        return Json(list);
+    }
+
+    [HttpPost("Events/{eventId}/Reminders/Create")]
+    [RequirePermission("Website.Events")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateReminderConfig(int eventId,
+        [FromForm] int reminderValue, [FromForm] ReminderUnit reminderUnit, CancellationToken ct)
+    {
+        var config = await _eventNotificationService.CreateReminderConfigAsync(eventId, reminderValue, reminderUnit, ct);
+        return Json(new { success = true, configId = config.Id });
+    }
+
+    [HttpPost("Events/Reminders/Update")]
+    [RequirePermission("Website.Events")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> UpdateReminderConfig([FromForm] ReminderConfig model, CancellationToken ct)
+    {
+        await _eventNotificationService.UpdateReminderConfigAsync(model, ct);
+        return Json(new { success = true });
+    }
+
+    [HttpPost("Events/Reminders/Delete/{configId}")]
+    [RequirePermission("Website.Events")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> DeleteReminderConfig(int configId, CancellationToken ct)
+    {
+        await _eventNotificationService.DeleteReminderConfigAsync(configId, ct);
+        return Json(new { success = true });
+    }
+
+    // ── Event Approval Workflow ──
+    [HttpPost("Events/SubmitForApproval/{id}")]
+    [RequirePermission("Website.Events")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SubmitEventForApproval(int id, CancellationToken ct)
+    {
+        await _eventService.SubmitForApprovalAsync(id, ct);
+        TempData["SuccessMessage"] = "Event submitted for approval.";
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost("Events/Approve/{id}")]
+    [RequirePermission("Website.Events")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ApproveEvent(int id, CancellationToken ct)
+    {
+        var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        int userId = userIdStr != null && int.TryParse(userIdStr, out var uid) ? uid : 0;
+        await _eventService.ApproveEventAsync(id, userId, ct);
+        TempData["SuccessMessage"] = "Event approved successfully.";
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost("Events/Reject/{id}")]
+    [RequirePermission("Website.Events")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> RejectEvent(int id, [FromForm] string reason, CancellationToken ct)
+    {
+        await _eventService.RejectEventAsync(id, reason, ct);
+        TempData["SuccessMessage"] = "Event rejected.";
+        return RedirectToAction(nameof(Index));
     }
 
     // ── Announcements ──

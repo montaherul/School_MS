@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[sp_Audit_LogAction]
+﻿CREATE OR ALTER PROCEDURE [dbo].[sp_Audit_LogAction]
     @UserId        INT,
     @Action        NVARCHAR(100),
     @Module        NVARCHAR(100) = NULL,

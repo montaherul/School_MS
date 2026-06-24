@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Options;
 using System.Text.Encodings.Web;
 using SchoolManagementSystem.Helpers.Email;
+using SchoolManagementSystem.Repositories.Interfaces.Website;
 using SchoolManagementSystem.Services.Interfaces.Email;
 
 namespace SchoolManagementSystem.Services.Implementations.Email;
@@ -9,15 +10,18 @@ public class EmailService : IEmailService
 {
     private readonly IEmailSender _emailSender;
     private readonly EmailOptions _options;
+    private readonly ISchoolSettingRepository _settingRepo;
     private readonly ILogger<EmailService> _logger;
 
     public EmailService(
         IEmailSender emailSender,
         IOptions<EmailOptions> options,
+        ISchoolSettingRepository settingRepo,
         ILogger<EmailService> logger)
     {
         _emailSender = emailSender;
         _options = options.Value;
+        _settingRepo = settingRepo;
         _logger = logger;
     }
 
@@ -101,7 +105,7 @@ public class EmailService : IEmailService
         string password,
         CancellationToken cancellationToken = default)
     {
-        var baseUrl = _options.BaseUrl?.TrimEnd('/');
+        var baseUrl = ResolveBaseUrl();
         var loginUrl = $"{baseUrl}/Auth/Login";
 
         var htmlBody = $@"
@@ -235,7 +239,7 @@ public class EmailService : IEmailService
 
     private async Task SendWorkflowEmailAsync(string workflowName, string toEmail, string subject, string htmlBody, CancellationToken cancellationToken)
     {
-        ValidateEmailConfiguration();
+        await ValidateEmailConfigurationAsync();
         ValidateRecipient(toEmail);
         ValidateSubjectAndBody(subject, htmlBody);
 
@@ -255,29 +259,34 @@ public class EmailService : IEmailService
 
     private string ResolveBaseUrl()
     {
-        var baseUrl = string.IsNullOrWhiteSpace(_options.BaseUrl) ? _options.LocalUrl : _options.BaseUrl;
-
-        if (string.IsNullOrWhiteSpace(baseUrl))
+        try
         {
-            throw new InvalidOperationException("Email configuration is missing BaseUrl/LocalUrl for link generation.");
+            var settings = _settingRepo.GetCurrentSettingsAsync().GetAwaiter().GetResult();
+            if (settings?.BaseUrl != null) return settings.BaseUrl.TrimEnd('/');
         }
+        catch { }
 
-        return baseUrl.TrimEnd('/');
+        return _options.BaseUrl;
     }
 
-    private void ValidateEmailConfiguration()
+    private async Task ValidateEmailConfigurationAsync()
     {
-        if (string.IsNullOrWhiteSpace(_options.Host))
+        var settings = await _settingRepo.GetCurrentSettingsAsync();
+        var host = settings?.SmtpHost ?? _options.Host;
+        var port = settings?.SmtpPort > 0 ? settings.SmtpPort : _options.Port;
+        var from = settings?.SmtpFromEmail ?? _options.From;
+
+        if (string.IsNullOrWhiteSpace(host))
         {
             throw new InvalidOperationException("Email configuration is missing EMAIL_HOST / Email:Host.");
         }
 
-        if (_options.Port <= 0)
+        if (port <= 0)
         {
             throw new InvalidOperationException("Email configuration is missing a valid EMAIL_PORT / Email:Port.");
         }
 
-        if (string.IsNullOrWhiteSpace(_options.From))
+        if (string.IsNullOrWhiteSpace(from))
         {
             throw new InvalidOperationException("Email configuration is missing EMAIL_FROM / Email:From.");
         }

@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[sp_GetReportCard]
+﻿CREATE OR ALTER PROCEDURE [dbo].[sp_GetReportCard]
     @ExamId INT,
     @StudentId INT
 AS
@@ -11,7 +11,7 @@ BEGIN
         Address AS SchoolAddress,
         EIIN,
         LogoPath AS SchoolLogoPath
-    FROM SchoolSettings
+FROM SchoolSettings WITH(NOLOCK)
     WHERE IsDeleted = 0;
 
     -- Student info
@@ -30,10 +30,10 @@ BEGIN
         s.StudentGroupId,
         sg.Name AS GroupName,
         s.ProfilePicturePath AS PhotoPath
-    FROM Students s
-    INNER JOIN Classes cl ON s.ClassId = cl.Id
-    LEFT JOIN Sections sec ON s.SectionId = sec.Id
-    LEFT JOIN StudentGroups sg ON s.StudentGroupId = sg.Id
+FROM Students s WITH(NOLOCK)
+INNER JOIN Classes cl WITH(NOLOCK) ON s.ClassId = cl.Id
+LEFT JOIN Sections sec WITH(NOLOCK) ON s.SectionId = sec.Id
+LEFT JOIN StudentGroups sg WITH(NOLOCK) ON s.StudentGroupId = sg.Id
     WHERE s.Id = @StudentId;
 
     -- Exam info
@@ -45,8 +45,8 @@ BEGIN
         e.EndsOn,
         e.AcademicYearId,
         ay.Name AS AcademicYearName
-    FROM Exams e
-    INNER JOIN AcademicYears ay ON e.AcademicYearId = ay.Id
+FROM Exams e WITH(NOLOCK)
+INNER JOIN AcademicYears ay WITH(NOLOCK) ON e.AcademicYearId = ay.Id
     WHERE e.Id = @ExamId;
 
     -- Subject-wise marks and grades (filtered by student's religion & group)
@@ -74,10 +74,10 @@ BEGIN
         m.BehaviourMarks AS MarksBehaviour,
         m.ParticipationMarks AS MarksParticipation,
         m.ComponentValues
-    FROM StudentSubjectResults ssr
-    INNER JOIN Subjects sub ON ssr.SubjectId = sub.Id
-    INNER JOIN Students s ON s.Id = @StudentId
-    LEFT JOIN Marks m ON m.ExamId = @ExamId AND m.StudentId = @StudentId AND m.SubjectId = ssr.SubjectId AND m.IsDeleted = 0
+FROM StudentSubjectResults ssr WITH(NOLOCK)
+INNER JOIN Subjects sub WITH(NOLOCK) ON ssr.SubjectId = sub.Id
+INNER JOIN Students s WITH(NOLOCK) ON s.Id = @StudentId
+LEFT JOIN Marks m WITH(NOLOCK) ON m.ExamId = @ExamId AND m.StudentId = @StudentId AND m.SubjectId = ssr.SubjectId AND m.IsDeleted = 0
     WHERE ssr.ExamId = @ExamId AND ssr.StudentId = @StudentId AND ssr.IsDeleted = 0
       AND (
           -- Include non-religion subjects
@@ -102,7 +102,7 @@ BEGIN
         ser.PassedSubjectCount,
         ser.Status,
         ser.PublishedAt
-    FROM StudentExamResults ser
+FROM StudentExamResults ser WITH(NOLOCK)
     WHERE ser.ExamId = @ExamId AND ser.StudentId = @StudentId AND ser.IsDeleted = 0;
 END;
 GO

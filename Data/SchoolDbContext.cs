@@ -156,6 +156,14 @@ public class SchoolDbContext : DbContext
     public DbSet<ContactMessage> ContactMessages => Set<ContactMessage>();
     public DbSet<EmailTemplate> EmailTemplates => Set<EmailTemplate>();
     public DbSet<AdmissionFeeStructure> AdmissionFeeStructures => Set<AdmissionFeeStructure>();
+    public DbSet<EventNotification> EventNotifications => Set<EventNotification>();
+    public DbSet<EventNotificationRecipient> EventNotificationRecipients => Set<EventNotificationRecipient>();
+    public DbSet<EventNotificationLog> EventNotificationLogs => Set<EventNotificationLog>();
+    public DbSet<EventNotificationQueue> EventNotificationQueues => Set<EventNotificationQueue>();
+    public DbSet<GuardainNotificationPreference> GuardainNotificationPreferences => Set<GuardainNotificationPreference>();
+    public DbSet<EventNotificationAttachment> EventNotificationAttachments => Set<EventNotificationAttachment>();
+    public DbSet<ScheduledNotification> ScheduledNotifications => Set<ScheduledNotification>();
+    public DbSet<ReminderConfig> ReminderConfigs => Set<ReminderConfig>();
 
     public DbSet<ClassSubject> ClassSubjects => Set<ClassSubject>();
 

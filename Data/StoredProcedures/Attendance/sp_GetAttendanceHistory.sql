@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE sp_GetAttendanceHistory
+﻿CREATE OR ALTER PROCEDURE sp_GetAttendanceHistory
     @StudentId INT,
     @Year INT,
     @Month INT
@@ -12,7 +12,7 @@ BEGIN
         AttendanceDate,
         Status,
         Remarks
-    FROM Attendance
+FROM Attendance WITH(NOLOCK)
     WHERE StudentId = @StudentId
       AND YEAR(AttendanceDate) = @Year
       AND MONTH(AttendanceDate) = @Month

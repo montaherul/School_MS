@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Models.DTOs.Result;
 using SchoolManagementSystem.Models.DTOs.Exam;
 using SchoolManagementSystem.Models.ViewModels.Result;
@@ -69,7 +70,7 @@ public class ResultManagementController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Super Admin,Principal")]
+    [RequirePermission("Result.Manage")]
     public async Task<IActionResult> AdminIndex(CancellationToken ct)
     {
         var exams = (await _examService.GetExamsAsync(0, ct)).ToList();
@@ -81,12 +82,12 @@ public class ResultManagementController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Teacher,Senior Lecturer,Lecturer")]
+    [RequirePermission("Result.TeacherEntry")]
     public IActionResult TeacherEntry()
         => RedirectToAction("Index", "Marks");
 
     [HttpGet]
-    [Authorize(Roles = "Teacher,Senior Lecturer,Lecturer")]
+    [RequirePermission("Result.TeacherEntry")]
     public async Task<IActionResult> GetSubjectsForTeacher(int classId, int? groupId, int? sectionId, CancellationToken ct)
     {
         var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
@@ -110,14 +111,14 @@ public class ResultManagementController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Student")]
+    [RequirePermission("Result.View")]
     public async Task<IActionResult> StudentIndex(CancellationToken ct)
     {
         return RedirectToAction(nameof(StudentDashboard));
     }
 
     [HttpGet]
-    [Authorize(Roles = "Student")]
+    [RequirePermission("Result.View")]
     public async Task<IActionResult> StudentDashboard(CancellationToken ct)
     {
         var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
@@ -139,7 +140,7 @@ public class ResultManagementController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Student")]
+    [RequirePermission("Result.View")]
     public async Task<IActionResult> StudentReportCards(int? academicYearId, int? examId, CancellationToken ct)
     {
         var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
@@ -173,7 +174,7 @@ public class ResultManagementController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Student")]
+    [RequirePermission("Result.View")]
     public async Task<IActionResult> StudentTranscript(int? academicYearId, CancellationToken ct)
     {
         var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
@@ -218,14 +219,14 @@ public class ResultManagementController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Principal,Teacher,Senior Lecturer,Lecturer")]
+    [RequirePermission("Result.MarkEntry")]
     public IActionResult MarkEntry(int examId, int classId, int sectionId, int subjectId, int? groupId)
     {
         return RedirectToAction("Entry", "Marks", new { examId, classId, sectionId, subjectId, groupId });
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Super Admin,Principal")]
+    [RequirePermission("Result.ReEvaluation")]
     public async Task<IActionResult> ReEvaluationDashboard()
     {
         var dto = await _reEvaluationService.GetReEvaluationDashboardAsync();
@@ -266,7 +267,7 @@ public class ResultManagementController : Controller
     }
 
     [HttpPost]
-    [Authorize(Roles = "Admin,Super Admin,Principal")]
+    [RequirePermission("Result.ReEvaluation")]
     public async Task<IActionResult> ProcessReEvaluation([FromBody] ReEvaluationProcessDto dto)
     {
         var adminId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
@@ -275,7 +276,7 @@ public class ResultManagementController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Student")]
+    [RequirePermission("Result.RequestReEvaluation")]
     public async Task<IActionResult> RequestReEvaluation(int examId, int subjectId, CancellationToken ct)
     {
         var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
@@ -287,7 +288,7 @@ public class ResultManagementController : Controller
     }
 
     [HttpPost]
-    [Authorize(Roles = "Student")]
+    [RequirePermission("Result.RequestReEvaluation")]
     public async Task<IActionResult> RequestReEvaluation(ReEvaluationRequestDto dto, CancellationToken ct)
     {
         var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");

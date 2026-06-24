@@ -1,4 +1,4 @@
--- ============================================================================
+﻿-- ============================================================================
 -- Stored Procedure: sp_GetFeeCollectionSummariesPaged
 -- Purpose: Get paginated fee collection summaries
 -- ============================================================================
@@ -15,7 +15,7 @@ BEGIN
 
     DECLARE @Offset INT = (@PageNumber - 1) * @PageSize;
 
-    WITH Data AS (
+
         SELECT 
             fcs.Id,
             fcs.CollectionDate,
@@ -25,10 +25,10 @@ BEGIN
             fcs.TotalTransactions,
             fcs.PaymentMethod,
             fcs.IsDailySummary,
-            ROW_NUMBER() OVER (ORDER BY fcs.CollectionDate DESC, fcs.Id DESC) AS RowNum,
-            COUNT(*) OVER () AS TotalCount
+
+            COUNT(*) OVER () AS TotalRecords
         FROM 
-            FeeCollectionSummaries fcs
+FeeCollectionSummaries fcs WITH(NOLOCK)
         WHERE 
             fcs.IsDeleted = 0
             AND (@FromDate IS NULL OR fcs.CollectionDate >= @FromDate)
@@ -37,17 +37,9 @@ BEGIN
                 @SearchTerm IS NULL 
                 OR CAST(fcs.CollectionDate AS NVARCHAR) LIKE '%' + @SearchTerm + '%'
             )
-    )
-    SELECT 
-        Id, CollectionDate, TotalCollected, TotalDiscounted,
-        TotalRefunded, TotalTransactions, PaymentMethod, IsDailySummary,
-        TotalCount AS TotalRecords
-    FROM 
-        Data
-    WHERE 
-        RowNum > @Offset 
-        AND RowNum <= @Offset + @PageSize
-    ORDER BY 
-        RowNum;
+    
+ORDER BY fcs.CollectionDate DESC, fcs.Id DESC
+OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
+
 END;
 GO

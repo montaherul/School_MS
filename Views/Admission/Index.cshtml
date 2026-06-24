@@ -2,7 +2,23 @@
     ViewData["Title"] = "Admissions";
 }
 
+@Html.AntiForgeryToken()
+
 <div class="adm-page">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="adm-alert adm-alert--success">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+        </div>
+    }
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="adm-alert adm-alert--error">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["ErrorMessage"]
+        </div>
+    }
+
     <div class="adm-header">
         <div class="adm-header__left">
             <div class="adm-header__icon-wrap">
@@ -24,9 +40,8 @@
             <div class="adm-filters__field adm-filters__field--search">
                 <label class="adm-label">Search</label>
                 <div class="adm-input-wrap">
-                    <svg class="adm-input-wrap__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
-                    <input type="text" id="searchInput" class="adm-input" placeholder="Name, App No, or Phone...">
-                    <button class="adm-input-wrap__btn" type="button" id="searchBtn">Go</button>
+                    <i class="bi bi-search adm-input-wrap__icon"></i>
+                    <input type="text" id="searchInput" class="adm-input" placeholder="Name, App No, or Phone..." />
                 </div>
             </div>
             <div class="adm-filters__field">
@@ -54,6 +69,7 @@
             <div class="adm-filters__field adm-filters__field--actions">
                 <label class="adm-label">&nbsp;</label>
                 <div class="adm-btn-group">
+                    <button type="button" class="adm-btn adm-btn--ghost" id="btn-reset">Reset Filters</button>
                     <button type="button" class="adm-btn adm-btn--ghost" id="exportExcel" title="Export to Excel">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="12" y1="18" x2="12" y2="12" /><polyline points="9 15 12 18 15 15" /></svg>
                         Excel
@@ -61,9 +77,6 @@
                     <button type="button" class="adm-btn adm-btn--ghost" id="exportPdf" title="Export to PDF">
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><path d="M9 15h6" /><path d="M9 11h6" /></svg>
                         PDF
-                    </button>
-                    <button type="button" class="adm-btn adm-btn--ghost adm-btn--icon-only" id="refreshBtn" title="Refresh">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10" /><polyline points="1 20 1 14 7 14" /><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" /></svg>
                     </button>
                 </div>
             </div>
@@ -95,19 +108,7 @@
 
     <div class="adm-table-card">
         <div class="adm-table-card__body">
-            <div id="loadingOverlay" class="adm-loading adm-loading--hidden">
-                <div class="adm-loading__spinner"></div>
-                <span class="adm-loading__text">Loading admissions...</span>
-            </div>
-            <div class="table-shell">
-                <div class="table-responsive">
-                    <div id="admissionTable" class="table-fixed"></div>
-                </div>
-                <div class="table-footer">
-                    <div class="table-info" id="tableInfo">No records</div>
-                    <div class="pagination-wrapper" id="paginationWrapper"></div>
-                </div>
-            </div>
+            <div id="admissionTable"></div>
         </div>
     </div>
 </div>
@@ -157,8 +158,6 @@
     </div>
 </div>
 
-@Html.AntiForgeryToken()
-
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -168,189 +167,12 @@
         var currentClassId = '';
         var currentSearchTerm = '';
         var currentStatus = '';
-        var currentTotalRecords = 0;
-        var currentPageSize = 10;
-        var table = null;
-        var currentClassIdForSection = 0;
-        var loadedSectionData = [];
 
         $.ajaxSetup({
             beforeSend: function (xhr) {
                 xhr.setRequestHeader('RequestVerificationToken', $('input[name="__RequestVerificationToken"]').val());
             }
         });
-
-        function safeSpan(text, className) {
-            var el = document.createElement('span');
-            if (className) el.className = className;
-            el.textContent = text;
-            return el;
-        }
-
-        function safeMuted() {
-            var el = document.createElement('span');
-            el.className = 'text-muted small';
-            el.textContent = '\u2014';
-            return el;
-        }
-
-         function statusFormatter(cell) {
-            return renderStatusBadge(cell.getValue());
-        }
-
-        function actionFormatter(cell) {
-            var row = cell.getRow().getData();
-            if (row.status === 'Pending') {
-                return buildActionGroup([
-                    { url: '/Admission/Details/' + row.id, className: 'action-btn--view', icon: 'eye', title: 'Details' },
-                    { url: '/Admission/CreateEdit/' + row.id, className: 'action-btn--edit', icon: 'pencil', title: 'Edit' },
-                    { className: 'action-btn--success', icon: 'check-lg', title: 'Convert', onClick: 'openApproveModal(' + row.id + ', ' + row.appliedClassId + ')' },
-                    { className: 'action-btn--delete', icon: 'x-lg', title: 'Reject', onClick: 'rejectItem(' + row.id + ')' }
-                ]);
-            }
-            return '<span class="adm-actions--done">Done</span>';
-        }
-
-        function entityFormatter(cell) {
-            var d = cell.getRow().getData();
-            return renderPersonCell(d, { nameField: 'applicantName', codeField: 'applicationNo', avatarField: 'profilePicturePath' });
-        }
-
-        var columnDefs = [
-            { title: "", field: "profilePicturePath", width: 80, minWidth: 80, sorter: false, headerSort: false, formatter: entityFormatter, cssClass: "adm-col-entity" },
-            {
-                title: "App No", field: "applicationNo", width: 150, minWidth: 120, sorter: false, headerSort: false,
-                formatter: function (c) { return safeSpan(c.getValue(), 'entity-cell__code'); }
-            },
-            {
-                title: "Applicant Name", field: "applicantName", width: 220, minWidth: 160, sorter: false, headerSort: false,
-                formatter: function (c) { return safeSpan(c.getValue(), 'entity-cell__name'); }
-            },
-            {
-                title: "নাম (বাংলা)", field: "applicantNameBangla", width: 180, minWidth: 120, sorter: false, headerSort: false,
-                formatter: function (c) {
-                    var v = c.getValue();
-                    if (!v) return safeMuted();
-                    var el = document.createElement('span');
-                    el.className = 'adm-cell-bangla';
-                    el.setAttribute('lang', 'bn');
-                    el.textContent = v;
-                    return el;
-                }
-            },
-            {
-                title: "Age / DOB", field: "dateOfBirth", width: 130, minWidth: 110, sorter: false, headerSort: false,
-                formatter: function (c) {
-                    var el = document.createElement('span');
-                    el.className = 'adm-cell-dob';
-                    var strong = document.createElement('strong');
-                    strong.textContent = c.getRow().getData().age;
-                    el.appendChild(strong);
-                    el.appendChild(document.createTextNode(' yrs\n'));
-                    var dateSpan = document.createElement('span');
-                    dateSpan.className = 'adm-cell-dob__date';
-                    dateSpan.textContent = new Date(c.getValue()).toLocaleDateString('en-BD');
-                    el.appendChild(dateSpan);
-                    return el;
-                }
-            },
-            { title: "Gender", field: "gender", width: 90, minWidth: 80, sorter: false, headerSort: false, formatter: function (c) { return safeSpan(c.getValue(), 'adm-cell-gender'); } },
-            { title: "Class", field: "className", width: 140, minWidth: 120, sorter: false, headerSort: false },
-            {
-                title: "Phone", field: "applicantMobileNumber", width: 140, minWidth: 120, sorter: false, headerSort: false,
-                formatter: function (c) { return safeSpan(c.getValue(), 'adm-cell-phone'); }
-            },
-            {
-                title: "Guardian", field: "guardianName", width: 140, minWidth: 100, sorter: false, headerSort: false,
-                formatter: function (c) { var v = c.getValue(); return v ? safeSpan(v, 'fw-medium') : safeMuted(); }
-            },
-            {
-                title: "G. Phone", field: "guardianMobileNumber", width: 130, minWidth: 100, sorter: false, headerSort: false,
-                formatter: function (c) { return c.getValue() ? safeSpan(c.getValue(), 'adm-cell-phone') : safeMuted(); }
-            },
-            { title: "G. Email", field: "guardianEmail", width: 160, minWidth: 120, sorter: false, headerSort: false, formatter: function (c) { return c.getValue() ? safeSpan(c.getValue(), 'small') : safeMuted(); } },
-            {
-                title: "Linked ID", field: "linkedGuardianId", width: 100, minWidth: 80, sorter: false, headerSort: false,
-                formatter: function (c) {
-                    var v = c.getValue();
-                    if (!v) return safeMuted();
-                    var el = document.createElement('span');
-                    el.className = 'badge bg-info bg-opacity-10 text-info';
-                    el.textContent = '#' + v;
-                    return el;
-                }
-            },
-            { title: "Transaction ID", field: "transactionDetails", width: 150, minWidth: 120, sorter: false, headerSort: false, formatter: function (c) { var v = c.getValue(); return v ? safeSpan(v, 'adm-cell-mono') : safeMuted(); } },
-            { title: "Status", field: "status", width: 120, minWidth: 120, sorter: false, headerSort: false, formatter: statusFormatter, cssClass: "adm-col-status" },
-            { title: "", field: "id", width: 180, minWidth: 180, sorter: false, headerSort: false, formatter: actionFormatter, cssClass: "adm-col-actions" }
-        ];
-
-        function initTable() {
-            table = new Tabulator("#admissionTable", {
-                ajaxURL: "/Admission/Index",
-                ajaxParams: function () {
-                    return { pageSize: 10, search: currentSearchTerm, classId: currentClassId, status: currentStatus };
-                },
-                paginationDataReceived: { "last_page": "last_page", "last_row": "total_records", "data": "data" },
-                tableBuilt: function () { attachPaginationFooter(); updateTableInfo(0, 0, currentTotalRecords); },
-                ajaxResponse: function (url, params, response) {
-                    var total = response.total_records || 0;
-                    var pageSize = params.pageSize || 10;
-                    currentPageSize = pageSize;
-                    var lastPage = total > 0 ? Math.ceil(total / pageSize) : 1;
-                    var currentPage = params.page || 1;
-                    var startRow = total === 0 ? 0 : ((currentPage - 1) * pageSize) + 1;
-                    var endRow = total === 0 ? 0 : Math.min(currentPage * pageSize, total);
-                    currentTotalRecords = total;
-                    updateTabCounts(response.counts || {});
-                    updateFilterBadges();
-                    updateTableInfo(startRow, endRow, total);
-                    return { data: response.data || [], last_page: lastPage, total_records: total };
-                },
-                columns: columnDefs,
-                layout: "fitDataTable",
-                responsiveLayout: false,
-                pagination: true,
-                paginationMode: "remote",
-                paginationSize: 15,
-                paginationSizeSelector: [15,25,50,100],
-                paginationDataSent: { page: "page", size: "pageSize" },
-                paginationInitialPage: 1,
-                paginationCounter: false
-            });
-        }
-
-        function attachPaginationFooter() {
-            var footer = document.querySelector('#admissionTable .tabulator-footer');
-            var wrapper = document.getElementById('paginationWrapper');
-            if (!footer || !wrapper) return;
-            if (footer.parentElement !== wrapper) {
-                wrapper.innerHTML = '';
-                wrapper.appendChild(footer);
-                footer.classList.add('table-pagination');
-            }
-        }
-
-        function updateTableInfo(startRow, endRow, totalRows) {
-            var info = document.getElementById('tableInfo');
-            if (!info) return;
-            if (!totalRows) { info.textContent = 'No admissions found'; return; }
-            info.innerHTML = 'Showing <strong>' + startRow + '</strong> to <strong>' + endRow + '</strong> of <strong>' + totalRows + '</strong> admissions';
-        }
-
-        function reloadTable() {
-            if (!table) return;
-            showLoadingOverlay(true);
-            table.setPage(1).then(function () {
-                table.replaceData().then(function () { showLoadingOverlay(false); }).catch(function () { showLoadingOverlay(false); });
-            });
-        }
-
-        function showLoadingOverlay(show) {
-            var el = document.getElementById('loadingOverlay');
-            if (show) { el.classList.remove('adm-loading--hidden'); el.classList.add('adm-loading--visible'); }
-            else { el.classList.remove('adm-loading--visible'); el.classList.add('adm-loading--hidden'); }
-        }
 
         function updateTabCounts(counts) {
             var pending = counts.pending || counts.Pending || 0;
@@ -385,6 +207,110 @@
                 container.appendChild(b);
             }
         }
+
+        var table = new Tabulator("#admissionTable", {
+            height: "calc(100vh - 280px)",
+            layout: "fitColumns",
+            pagination: true,
+            paginationMode: "remote",
+            paginationSize: 15,
+            paginationSizeSelector: [15,25,50,100],
+            ajaxURL: "/Admission/Index",
+            ajaxConfig: {
+                method: "GET",
+                headers: { "X-Requested-With": "XMLHttpRequest" }
+            },
+            paginationDataSent: { "page": "page", "size": "pageSize" },
+            ajaxResponse: function(url, params, response) {
+                var total = response.total_records || 0;
+                updateTabCounts(response.counts || {});
+                updateFilterBadges();
+                return { data: response.data || [], last_page: Math.max(Math.ceil(total / (params.pageSize || 10)), 1) };
+            },
+            ajaxParams: function() {
+                return { pageSize: 10, search: currentSearchTerm, classId: currentClassId, status: currentStatus };
+            },
+            placeholder: "<div class='dash-empty'><i class='bi bi-file-earmark-text fs-1'></i><div class='dash-empty__title'>No admission records found</div><div class='dash-empty__sub'>Try adjusting your filters or search.</div></div>",
+            columns: [
+                {
+                    title: "Applicant", field: "applicantName", widthGrow: 2,
+                    cssClass: "adm-col-entity",
+                    formatter: function(cell) {
+                        return renderPersonCell(cell.getData(), { nameField: 'applicantName', codeField: 'applicationNo', avatarField: 'profilePicturePath' });
+                    }
+                },
+                { title: "Class", field: "className", width: 140, hozAlign: "center" },
+                { title: "Gender", field: "gender", width: 90, hozAlign: "center" },
+                { title: "Phone", field: "applicantMobileNumber", width: 140, hozAlign: "center", cssClass: "adm-cell-phone" },
+                {
+                    title: "Status", field: "status", width: 120, hozAlign: "center",
+                    cssClass: "adm-col-status",
+                    formatter: function(cell) { return renderStatusBadge(cell.getValue()); }
+                },
+                {
+                    title: "Actions", field: "id", hozAlign: "center", headerSort: false, width: 220,
+                    cssClass: "adm-col-actions",
+                    formatter: function(cell) {
+                        var d = cell.getRow().getData();
+                        var actions = [
+                            { url: '/Admission/Details/' + d.id, className: 'action-btn--view', icon: 'eye', title: 'View' },
+                            { url: '/Admission/CreateEdit/' + d.id, className: 'action-btn--edit', icon: 'pencil', title: 'Edit' }
+                        ];
+                        if (d.status === 'Pending') {
+                            actions.push({ className: 'action-btn--success', icon: 'check-lg', title: 'Convert', onClick: 'openApproveModal(' + d.id + ', ' + d.appliedClassId + ')' });
+                            actions.push({ className: 'action-btn--delete', icon: 'x-lg', title: 'Reject', onClick: 'rejectItem(' + d.id + ')' });
+                        }
+                        return buildActionGroup(actions);
+                    }
+                }
+            ]
+        });
+
+        function activateTab(status) {
+            document.querySelectorAll('.adm-tab').forEach(function(t) { t.classList.remove('adm-tab--active'); });
+            var tabId = status ? 'tab-' + status.toLowerCase() : 'tab-all';
+            var tab = document.getElementById(tabId);
+            if (tab) tab.classList.add('adm-tab--active');
+        }
+
+        document.getElementById('btn-reset').addEventListener('click', function() {
+            currentSearchTerm = '';
+            currentClassId = '';
+            currentStatus = '';
+            document.getElementById('searchInput').value = '';
+            document.getElementById('classFilter').value = '';
+            document.getElementById('statusFilter').value = '';
+            activateTab('');
+            table.setData();
+        });
+
+        document.getElementById('searchInput').addEventListener('keyup', function(e) {
+            if (e.key === "Enter") {
+                currentSearchTerm = this.value;
+                table.setData();
+            }
+        });
+
+        document.getElementById('classFilter').addEventListener('change', function() {
+            currentClassId = this.value;
+            table.setData();
+        });
+
+        document.getElementById('statusFilter').addEventListener('change', function() {
+            currentStatus = this.value;
+            activateTab(currentStatus);
+            table.setData();
+        });
+
+        document.querySelectorAll('.adm-tab').forEach(function(tab) {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.adm-tab').forEach(function(t) { t.classList.remove('adm-tab--active'); });
+                this.classList.add('adm-tab--active');
+                currentStatus = this.dataset.status || '';
+                document.getElementById('statusFilter').value = currentStatus;
+                table.setData();
+            });
+        });
 
         function fetchAllFilteredRows() {
             return $.ajax({
@@ -451,6 +377,9 @@
             .always(function () { $('#exportPdf').prop('disabled', false); });
         }
 
+        $('#exportExcel').click(exportToExcel);
+        $('#exportPdf').click(exportToPdf);
+
         function openApproveModal(applicationId, classId) {
             document.getElementById('approveApplicationId').value = applicationId;
             var errEl = document.getElementById('approveError');
@@ -468,6 +397,9 @@
         }
 
         document.addEventListener('click', function (e) { if (e.target.id === 'approveModal') closeApproveModal(); });
+
+        var currentClassIdForSection = 0;
+        var loadedSectionData = [];
 
         function getIsGroupBased(classId) {
             var opt = document.querySelector('#classFilter option[value="' + classId + '"]');
@@ -516,7 +448,7 @@
                     var sec = data.find(function (s) { return s.id == $(this).val(); });
                     if (sec) {
                         var free = sec.capacity - sec.studentCount;
-                        document.getElementById('capacityInfoText').textContent = sec.studentCount + ' / ' + sec.capacity + ' students assigned — ' + free + ' spot(s) remaining.';
+                        document.getElementById('capacityInfoText').textContent = sec.studentCount + ' / ' + sec.capacity + ' students assigned \u2014 ' + free + ' spot(s) remaining.';
                         document.getElementById('sectionCapacityInfo').style.display = 'flex';
                     } else {
                         document.getElementById('sectionCapacityInfo').style.display = 'none';
@@ -542,7 +474,7 @@
                 success: function (res) {
                     btn.disabled = false;
                     btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Convert to Student';
-                    if (res.success) { closeApproveModal(); alert(res.message || 'Student created successfully!'); reloadTable(); }
+                    if (res.success) { closeApproveModal(); table.setData(); }
                     else { var errEl = document.getElementById('approveError'); errEl.textContent = res.message || 'Conversion failed.'; errEl.style.display = 'block'; }
                 },
                 error: function () {
@@ -558,7 +490,7 @@
             if (!confirm('Reject this application? This action cannot be undone.')) return;
             $.ajax({
                 url: '/Admission/Reject/' + id, type: 'POST',
-                success: function (res) { if (res.success) reloadTable(); else alert(res.message || 'Rejection failed.'); },
+                success: function (res) { if (res.success) table.setData(); else alert(res.message || 'Rejection failed.'); },
                 error: function () { alert('Network error.'); }
             });
         }
@@ -574,48 +506,5 @@
                 });
             }
         }
-
-        $(document).ready(function () {
-            initTable();
-
-            $('#searchBtn').click(function () {
-                currentSearchTerm = $('#searchInput').val();
-                reloadTable();
-            });
-
-            $('#searchInput').keypress(function (e) { if (e.which === 13) $('#searchBtn').click(); });
-
-            $('#classFilter').change(function () {
-                currentClassId = $(this).val();
-                reloadTable();
-            });
-
-            $('#statusFilter').change(function () {
-                currentStatus = $(this).val();
-                $('.adm-tab').removeClass('adm-tab--active');
-                var tabId = currentStatus ? 'tab-' + currentStatus.toLowerCase() : 'tab-all';
-                $('#' + tabId).addClass('adm-tab--active');
-                reloadTable();
-            });
-
-            $('.adm-tab').click(function () {
-                $('.adm-tab').removeClass('adm-tab--active');
-                $(this).addClass('adm-tab--active');
-                currentStatus = $(this).data('status') || '';
-                $('#statusFilter').val(currentStatus);
-                reloadTable();
-            });
-
-            $('#refreshBtn').click(function () {
-                $('#searchInput').val(''); $('#classFilter').val(''); $('#statusFilter').val('');
-                currentSearchTerm = ''; currentClassId = ''; currentStatus = '';
-                $('.adm-tab').removeClass('adm-tab--active');
-                $('#tab-all').addClass('adm-tab--active');
-                reloadTable();
-            });
-
-            $('#exportExcel').click(exportToExcel);
-            $('#exportPdf').click(exportToPdf);
-        });
     </script>
 }

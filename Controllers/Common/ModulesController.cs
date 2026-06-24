@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
@@ -22,7 +21,9 @@ using NotificationMessageEntity = SchoolManagementSystem.Models.Entities.Notific
 
 namespace SchoolManagementSystem.Controllers.Common;
 
-[Authorize(Roles = "Admin,Super Admin,Principal")]
+using SchoolManagementSystem.Filters;
+
+[RequirePermission("Modules.Manage")]
 public class ModulesController : Controller
 {
     private static readonly HashSet<string> KnownModules = new(StringComparer.OrdinalIgnoreCase)

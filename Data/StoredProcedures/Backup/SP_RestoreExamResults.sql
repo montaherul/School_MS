@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[SP_RestoreExamResults]
+﻿CREATE OR ALTER PROCEDURE [dbo].[SP_RestoreExamResults]
     @ExamId           INT,
     @BackupId         INT           = NULL,
     @RestoredBy       NVARCHAR(64)  = N'System_Restore',

@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SchoolManagementSystem.Controllers.Common;
 using SchoolManagementSystem.Filters;
@@ -8,8 +7,7 @@ using SchoolManagementSystem.Services.Interfaces.Base;
 
 namespace SchoolManagementSystem.Controllers.Admin;
 
-[Authorize(Roles = "Admin,Super Admin")]
-[RequirePermission("Roles.View")]
+[RequirePermission("Role.Manage")]
 public class RoleController : GenericCrudController<Role>
 {
     private readonly IRoleService _roleService;
@@ -48,7 +46,6 @@ public class RoleController : GenericCrudController<Role>
     }
 
     [HttpPost("{id}/Permissions")]
-    [Authorize(Roles = "Admin,Super Admin")]
     [RequirePermission("Roles.AssignPermissions")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AssignPermissions(int id, [FromBody] List<int> permissionIds, CancellationToken ct)

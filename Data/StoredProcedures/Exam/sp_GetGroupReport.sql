@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[sp_GetGroupReport]
+﻿CREATE OR ALTER PROCEDURE [dbo].[sp_GetGroupReport]
     @ExamGroupKey NVARCHAR(100)
 AS
 BEGIN
@@ -21,9 +21,9 @@ BEGIN
         ROUND(
             (SELECT AVG(ser.Gpa) FROM StudentExamResults ser WHERE ser.ExamId = e.Id AND ser.IsDeleted = 0)
         , 2) AS AverageGPA
-    FROM Exams e
-    INNER JOIN Classes c ON e.ClassId = c.Id
-    LEFT JOIN StudentGroups sg ON e.StudentGroupId = sg.Id
+FROM Exams e WITH(NOLOCK)
+INNER JOIN Classes c WITH(NOLOCK) ON e.ClassId = c.Id
+LEFT JOIN StudentGroups sg WITH(NOLOCK) ON e.StudentGroupId = sg.Id
     WHERE 1=1
       AND (@ExamGroupKey IS NULL OR e.Name LIKE '%' + @ExamGroupKey + '%')
       AND e.IsDeleted = 0

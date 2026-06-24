@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[SP_BackupExamResults]
+﻿CREATE OR ALTER PROCEDURE [dbo].[SP_BackupExamResults]
     @ExamId           INT,
     @BackupLabel      NVARCHAR(200) = NULL,
     @BackupId         INT OUTPUT
@@ -9,7 +9,7 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = 'backup')
         EXEC('CREATE SCHEMA [backup]');
 
-    -- StudentExamResults backup — stores all columns including audit
+    -- StudentExamResults backup â€” stores all columns including audit
     IF NOT EXISTS (SELECT 1 FROM sys.tables WHERE name = 'StudentExamResults_Backup' AND SCHEMA_NAME(schema_id) = 'backup')
     BEGIN
         CREATE TABLE [backup].[StudentExamResults_Backup] (

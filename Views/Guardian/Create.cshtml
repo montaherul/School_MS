@@ -4,84 +4,98 @@
     ViewData["Title"] = "Create Guardian";
 }
 
-<div class="container-fluid">
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Create Guardian</h1>
-        <a asp-action="Index" class="btn btn-outline-secondary btn-sm">Back to List</a>
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <i class="bi bi-person-badge"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Create Guardian</h1>
+                <p class="adm-header__sub">Register a new guardian with contact and relationship details</p>
+            </div>
+        </div>
+        <a asp-action="Index" class="adm-btn adm-btn--ghost">
+            <i class="bi bi-arrow-left"></i> <span>Back to List</span>
+        </a>
     </div>
 
-    <div class="card shadow mb-4">
-        <div class="card-body">
-            <form asp-action="Create" method="post">
-                @Html.AntiForgeryToken()
-                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post">
+                        @Html.AntiForgeryToken()
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label asp-for="FirstName" class="form-label"></label>
-                        <input asp-for="FirstName" class="form-control" />
-                        <span asp-validation-for="FirstName" class="text-danger small"></span>
-                    </div>
-                    <div class="col-md-6">
-                        <label asp-for="LastName" class="form-label"></label>
-                        <input asp-for="LastName" class="form-control" />
-                        <span asp-validation-for="LastName" class="text-danger small"></span>
-                    </div>
-                    <div class="col-md-4">
-                        <label asp-for="Gender" class="form-label"></label>
-                        <select asp-for="Gender" class="form-select">
-                            <option value="">Select Gender</option>
-                            <option>Male</option>
-                            <option>Female</option>
-                            <option>Other</option>
-                        </select>
-                        <span asp-validation-for="Gender" class="text-danger small"></span>
-                    </div>
-                    <div class="col-md-4">
-                        <label asp-for="RelationType" class="form-label">Relation</label>
-                        <select asp-for="RelationType" asp-items="Html.GetEnumSelectList<GuardianRelationshipType>()" class="form-select"></select>
-                        <span asp-validation-for="RelationType" class="text-danger small"></span>
-                    </div>
-                    <div class="col-md-4">
-                        <label asp-for="MobileNumber" class="form-label"></label>
-                        <input asp-for="MobileNumber" class="form-control" />
-                        <span asp-validation-for="MobileNumber" class="text-danger small"></span>
-                    </div>
-                    <div class="col-md-6">
-                        <label asp-for="Email" class="form-label"></label>
-                        <input asp-for="Email" class="form-control" />
-                        <span asp-validation-for="Email" class="text-danger small"></span>
-                    </div>
-                    <div class="col-md-6">
-                        <label asp-for="NationalId" class="form-label">National ID</label>
-                        <input asp-for="NationalId" class="form-control" />
-                        <span asp-validation-for="NationalId" class="text-danger small"></span>
-                    </div>
-                    <div class="col-md-6">
-                        <label asp-for="Occupation" class="form-label"></label>
-                        <input asp-for="Occupation" class="form-control" />
-                    </div>
-                    <div class="col-md-6 d-flex align-items-end">
-                        <div class="form-check mb-2">
-                            <input asp-for="PortalAccessEnabled" class="form-check-input" />
-                            <label asp-for="PortalAccessEnabled" class="form-check-label">Enable portal access</label>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="FirstName" class="form-label"></label>
+                                <input asp-for="FirstName" class="form-control" />
+                                <span asp-validation-for="FirstName" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="LastName" class="form-label"></label>
+                                <input asp-for="LastName" class="form-control" />
+                                <span asp-validation-for="LastName" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="Gender" class="form-label"></label>
+                                <select asp-for="Gender" class="form-select">
+                                    <option value="">Select Gender</option>
+                                    <option>Male</option>
+                                    <option>Female</option>
+                                    <option>Other</option>
+                                </select>
+                                <span asp-validation-for="Gender" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="RelationType" class="form-label">Relation</label>
+                                <select asp-for="RelationType" asp-items="Html.GetEnumSelectList<GuardianRelationshipType>()" class="form-select"></select>
+                                <span asp-validation-for="RelationType" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="MobileNumber" class="form-label"></label>
+                                <input asp-for="MobileNumber" class="form-control" />
+                                <span asp-validation-for="MobileNumber" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Email" class="form-label"></label>
+                                <input asp-for="Email" class="form-control" />
+                                <span asp-validation-for="Email" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="NationalId" class="form-label">National ID</label>
+                                <input asp-for="NationalId" class="form-control" />
+                                <span asp-validation-for="NationalId" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Occupation" class="form-label"></label>
+                                <input asp-for="Occupation" class="form-control" />
+                            </div>
+                            <div class="col-md-6 d-flex align-items-end">
+                                <div class="form-check mb-2">
+                                    <input asp-for="PortalAccessEnabled" class="form-check-input" />
+                                    <label asp-for="PortalAccessEnabled" class="form-check-label">Enable portal access</label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="PresentAddress" class="form-label"></label>
+                                <textarea asp-for="PresentAddress" class="form-control" rows="3"></textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="PermanentAddress" class="form-label"></label>
+                                <textarea asp-for="PermanentAddress" class="form-control" rows="3"></textarea>
+                            </div>
                         </div>
-                    </div>
-                    <div class="col-md-6">
-                        <label asp-for="PresentAddress" class="form-label"></label>
-                        <textarea asp-for="PresentAddress" class="form-control" rows="3"></textarea>
-                    </div>
-                    <div class="col-md-6">
-                        <label asp-for="PermanentAddress" class="form-label"></label>
-                        <textarea asp-for="PermanentAddress" class="form-control" rows="3"></textarea>
-                    </div>
-                </div>
 
-                <div class="mt-4">
-                    <button type="submit" class="btn btn-primary">Save Guardian</button>
-                    <a asp-action="Index" class="btn btn-outline-secondary ms-2">Cancel</a>
+                        <div class="mt-4 d-flex gap-2">
+                            <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-save"></i> Save Guardian</button>
+                            <a asp-action="Index" class="adm-btn adm-btn--ghost">Cancel</a>
+                        </div>
+                    </form>
                 </div>
-            </form>
+            </div>
         </div>
     </div>
 </div>

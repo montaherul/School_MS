@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.Services.Interfaces.Students;
 using SchoolManagementSystem.Services.Interfaces.Teachers;
@@ -25,7 +26,7 @@ public class TranscriptController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller,Teacher,Senior Lecturer,Lecturer")]
+    [RequirePermission("Transcript.View")]
     public async Task<IActionResult> Index(int studentId, int academicYearId)
     {
         var isAdmin = User.IsInRole("Admin") || User.IsInRole("Super Admin") || User.IsInRole("Principal") || User.IsInRole("Exam Controller");
@@ -43,7 +44,7 @@ public class TranscriptController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Student")]
+    [RequirePermission("Transcript.View")]
     public async Task<IActionResult> MyTranscript(int academicYearId)
     {
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
@@ -57,7 +58,7 @@ public class TranscriptController : Controller
     }
 
     [HttpGet]
-    [Authorize(Roles = "Admin,Super Admin,Principal,Exam Controller,Teacher,Senior Lecturer,Lecturer,Student,Guardian")]
+    [RequirePermission("Transcript.Download")]
     public async Task<IActionResult> DownloadPdf(int studentId, int academicYearId)
     {
         var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");

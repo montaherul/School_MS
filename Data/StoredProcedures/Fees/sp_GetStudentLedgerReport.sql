@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE sp_GetStudentLedgerReport
+﻿CREATE OR ALTER PROCEDURE sp_GetStudentLedgerReport
     @StudentId INT,
     @PageNumber INT = 1,
     @PageSize INT = 50
@@ -12,10 +12,10 @@ BEGIN
            CAST(fi.Status AS NVARCHAR(20)) AS Status,
            agg.PaidAt, agg.ReferenceNo, fi.LateFee, fi.DiscountAmount,
            COUNT(*) OVER() AS TotalRecords
-    FROM FeeInvoices fi
+FROM FeeInvoices fi WITH(NOLOCK)
     OUTER APPLY (
         SELECT TOP 1 p.PaidAt, p.ReferenceNo
-        FROM Payments p
+FROM Payments p WITH(NOLOCK)
         WHERE p.FeeInvoiceId = fi.Id AND p.IsDeleted = 0
         ORDER BY p.PaidAt DESC
     ) agg

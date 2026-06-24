@@ -1,4 +1,4 @@
--- ============================================================================
+﻿-- ============================================================================
 -- Stored Procedure: sp_GetRoleList
 -- Purpose: Get paginated role list with permission counts
 -- Author: School Management System
@@ -15,17 +15,17 @@ BEGIN
 
     DECLARE @Offset INT = (@PageNumber - 1) * @PageSize;
 
-    WITH RoleData AS (
+
         SELECT 
             r.Id,
             r.Name,
             r.Description,
             (SELECT COUNT(*) FROM RolePermissions WHERE RoleId = r.Id) AS PermissionCount,
             (SELECT COUNT(*) FROM UserRoles WHERE RoleId = r.Id) AS UserCount,
-            ROW_NUMBER() OVER (ORDER BY r.Id DESC) AS RowNum,
-            COUNT(*) OVER () AS TotalCount
+
+            COUNT(*) OVER () AS TotalRecords
         FROM 
-            Roles r
+Roles r WITH(NOLOCK)
         WHERE 
             r.IsDeleted = 0
             AND (
@@ -33,20 +33,9 @@ BEGIN
                 OR r.Name LIKE '%' + @SearchTerm + '%'
                 OR r.Description LIKE '%' + @SearchTerm + '%'
             )
-    )
-    SELECT 
-        Id,
-        Name,
-        Description,
-        PermissionCount,
-        UserCount,
-        TotalCount AS TotalRecords
-    FROM 
-        RoleData
-    WHERE 
-        RowNum > @Offset 
-        AND RowNum <= @Offset + @PageSize
-    ORDER BY 
-        RowNum;
+    
+ORDER BY r.Id DESC
+OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
+
 END;
 GO

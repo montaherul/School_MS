@@ -2,14 +2,15 @@ using System;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SchoolManagementSystem.Services.Interfaces.Attendance;
 using SchoolManagementSystem.Services.Interfaces.Teachers;
 
 namespace SchoolManagementSystem.Controllers.Attendance
 {
-    [Authorize(Roles = "Super Admin,Admin,Principal,Assistant Head,Senior Lecturer,Lecturer,Teacher")]
+    using SchoolManagementSystem.Filters;
+
+    [RequirePermission("Attendance.Report")]
     public class AttendanceReportController : Controller
     {
         private readonly IAttendanceReportService _service;
@@ -39,7 +40,7 @@ namespace SchoolManagementSystem.Controllers.Attendance
             return View(summary);
         }
 
-        [Authorize(Roles = "Super Admin,Admin,Principal,Assistant Head,Senior Lecturer,Lecturer,Teacher")]
+        [RequirePermission("Attendance.Report")]
         public async Task<IActionResult> Overview(CancellationToken ct)
         {
             var summary = await _service.GetDashboardSummaryAsync(ct);

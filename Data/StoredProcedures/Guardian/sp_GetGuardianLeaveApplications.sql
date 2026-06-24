@@ -1,4 +1,4 @@
-/*
+﻿/*
    Stored Procedure: sp_GetGuardianLeaveApplications
    Description: Retrieves leave applications submitted by a guardian for their children.
    Parameters:
@@ -19,8 +19,8 @@ BEGIN
     SET NOCOUNT ON;
 
     SELECT COUNT(*)
-    FROM dbo.StudentLeaveApplication sla
-    INNER JOIN dbo.StudentGuardian sg ON sg.StudentId = sla.StudentId
+FROM dbo WITH(NOLOCK).StudentLeaveApplication sla
+INNER JOIN dbo WITH(NOLOCK).StudentGuardian sg ON sg.StudentId = sla.StudentId
     WHERE sg.GuardianId = @GuardianId
       AND (@StudentId IS NULL OR sla.StudentId = @StudentId)
       AND (@Status IS NULL OR sla.ApprovalStatus = @Status);
@@ -41,10 +41,10 @@ BEGIN
            sla.ApprovedAt,
            sla.Remarks,
            sla.CreatedAt
-    FROM dbo.StudentLeaveApplication sla
-    INNER JOIN dbo.StudentGuardian sg ON sg.StudentId = sla.StudentId
-    LEFT JOIN dbo.Students s ON sla.StudentId = s.Id
-    LEFT JOIN dbo.LeaveTypes lt ON sla.LeaveTypeId = lt.Id
+FROM dbo WITH(NOLOCK).StudentLeaveApplication sla
+INNER JOIN dbo WITH(NOLOCK).StudentGuardian sg ON sg.StudentId = sla.StudentId
+LEFT JOIN dbo WITH(NOLOCK).Students s ON sla.StudentId = s.Id
+LEFT JOIN dbo WITH(NOLOCK).LeaveTypes lt ON sla.LeaveTypeId = lt.Id
     WHERE sg.GuardianId = @GuardianId
       AND (@StudentId IS NULL OR sla.StudentId = @StudentId)
       AND (@Status IS NULL OR sla.ApprovalStatus = @Status)

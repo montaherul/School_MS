@@ -36,8 +36,7 @@ public class UserController : Controller
 
         // TABULATOR AJAX REQUEST
         if (Request.Headers["X-Requested-With"] == "XMLHttpRequest"
-            || Request.Headers["Accept"].ToString().Contains("application/json")
-            || Request.Query.ContainsKey("pageNumber"))
+            || Request.Headers["Accept"].ToString().Contains("application/json"))
         {
             return Json(new
             {

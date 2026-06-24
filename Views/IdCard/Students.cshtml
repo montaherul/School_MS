@@ -163,7 +163,8 @@
                 paginationSizeSelector: [15, 25, 50, 100],
                 selectable: true,
                 selectableRangeMode: "click",
-                ajaxParams: getFilters(),
+                paginationDataSent: { "page": "page", "size": "pageSize" },
+                ajaxParams: function() { return getFilters(); },
                 ajaxResponse: function (url, params, response) {
                     return {
                         data: response.data || [],

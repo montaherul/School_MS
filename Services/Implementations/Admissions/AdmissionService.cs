@@ -11,6 +11,7 @@ using SchoolManagementSystem.Models.Entities.Guardian;
 using SchoolManagementSystem.Models.Entities.Fees;
 using SchoolManagementSystem.Models.Entities.Website;
 using SchoolManagementSystem.Models.Enums;
+using SchoolManagementSystem.Helpers.Email;
 using SchoolManagementSystem.Services.Interfaces.Email;
 using SchoolManagementSystem.Services.Interfaces.Admissions;
 using SchoolManagementSystem.Services.Interfaces.Students;
@@ -31,6 +32,7 @@ public class AdmissionService : IAdmissionService
     private readonly IAdmissionRepository _admissionRepository;
     private readonly IStudentService _studentService;
     private readonly IEmailService _emailService;
+    private readonly IEmailSender _emailSender;
     private readonly IUserRepository _userRepository;
     private readonly IRoleRepository _roleRepository;
     private readonly IUserRoleRepository _userRoleRepository;
@@ -47,6 +49,7 @@ public class AdmissionService : IAdmissionService
         IAdmissionRepository admissionRepository,
         IStudentService studentService,
         IEmailService emailService,
+        IEmailSender emailSender,
         IUserRepository userRepository,
         IRoleRepository roleRepository,
         IUserRoleRepository userRoleRepository,
@@ -62,6 +65,7 @@ public class AdmissionService : IAdmissionService
         _admissionRepository = admissionRepository;
         _studentService = studentService;
         _emailService = emailService;
+        _emailSender = emailSender;
         _userRepository = userRepository;
         _roleRepository = roleRepository;
         _userRoleRepository = userRoleRepository;
@@ -580,7 +584,7 @@ public class AdmissionService : IAdmissionService
         await _unitOfWork.SaveChangesAsync(cancellationToken);
     }
 
-    public async Task RejectAsync(int applicationId, string rejectedBy, CancellationToken cancellationToken = default)
+    public async Task RejectAsync(int applicationId, string rejectedBy, string? rejectionReason = null, CancellationToken cancellationToken = default)
     {
         var application = await _admissionRepository.FirstOrDefaultAsync(x => x.Id == applicationId && !x.IsDeleted, cancellationToken)
             ?? throw new InvalidOperationException("Admission application not found.");
@@ -598,6 +602,26 @@ public class AdmissionService : IAdmissionService
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         await LogAuditAsync("Admission", "Admission.Reject", applicationId.ToString(), $"Application rejected: {application.ApplicantName} ({application.ApplicationNo})", cancellationToken);
+
+        if (!string.IsNullOrWhiteSpace(application.ApplicantEmail))
+        {
+            try
+            {
+                var subject = $"Admission Application {application.ApplicationNo} - Status Update";
+                var htmlBody = $@"<h2>Admission Application Status</h2>
+<p>Dear {application.ApplicantName},</p>
+<p>Thank you for your interest in our school.</p>
+<p>After careful review, we regret to inform you that your admission application ({application.ApplicationNo}) has been <strong>rejected</strong>.</p>
+<p>Reason: {rejectionReason ?? "Not specified"}</p>
+<p>We encourage you to apply again in the future.</p>
+<p>Regards,<br/>Admission Office</p>";
+                await _emailSender.SendAsync(application.ApplicantEmail, subject, htmlBody, cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Rejection email failed for application {ApplicationNo}", application.ApplicationNo);
+            }
+        }
     }
 
     public async Task<AdmissionApplication?> GetByIdAsync(int id, CancellationToken ct = default)

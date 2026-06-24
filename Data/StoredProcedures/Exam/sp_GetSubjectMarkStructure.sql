@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[sp_GetSubjectMarkStructure]
+﻿CREATE OR ALTER PROCEDURE [dbo].[sp_GetSubjectMarkStructure]
     @SubjectId INT,
     @ClassId INT = NULL,
     @StudentGroupId INT = NULL
@@ -22,8 +22,8 @@ BEGIN
         c.DefaultPassMarks,
         c.IsPractical,
         c.IsOptional
-    FROM SubjectMarkStructures s
-    INNER JOIN ExamComponents c ON c.Id = s.ComponentId AND c.IsDeleted = 0
+FROM SubjectMarkStructures s WITH(NOLOCK)
+INNER JOIN ExamComponents c WITH(NOLOCK) ON c.Id = s.ComponentId AND c.IsDeleted = 0
     WHERE s.IsDeleted = 0
       AND s.IsActive = 1
       AND c.IsActive = 1

@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[SP_System_VerifyStoredProcedures]
+﻿CREATE OR ALTER PROCEDURE [dbo].[SP_System_VerifyStoredProcedures]
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -7,7 +7,7 @@ BEGIN
     DECLARE @TotalProcedures INT;
 
     SELECT @TotalProcedures = COUNT(*)
-    FROM sys.procedures
+FROM sys WITH(NOLOCK).procedures
     WHERE is_ms_shipped = 0;
 
     -- Compare against expected list
@@ -18,7 +18,7 @@ BEGIN
         sp.modify_date AS ModifiedDate,
         CASE WHEN sp.type_desc = 'PROCEDURE' THEN 'Present' ELSE 'Unknown' END AS DeploymentStatus
     INTO #ActualProcs
-    FROM sys.procedures sp
+FROM sys WITH(NOLOCK).procedures sp
     WHERE sp.is_ms_shipped = 0;
 
     DECLARE @ExpectedProcs TABLE (ProcName NVARCHAR(255));

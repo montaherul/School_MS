@@ -26,8 +26,8 @@ public class Phase38B_RbacFixTests
         Assert.Equal("Exam Controller", role.Name);
     }
 
-    [Fact(DisplayName = "2. Exam Controller role referenced in all expected controllers")]
-    public void ExamControllerRole_ReferencedInAllExpectedControllers()
+    [Fact(DisplayName = "2. All 8 exam/result controllers use RequirePermission instead of Authorize(Roles)")]
+    public void ExamControllers_UseRequirePermission()
     {
         var controllerTypes = new[]
         {
@@ -43,31 +43,18 @@ public class Phase38B_RbacFixTests
 
         foreach (var controllerType in controllerTypes)
         {
+            var classPermAttrs = controllerType.GetCustomAttributes<RequirePermissionAttribute>();
             var methods = controllerType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly);
             if (methods.Length == 0)
                 methods = controllerType.GetMethods(BindingFlags.Public | BindingFlags.Instance);
 
-            bool found = false;
-            foreach (var method in methods)
-            {
-                var authAttrs = method.GetCustomAttributes<AuthorizeAttribute>();
-                foreach (var attr in authAttrs)
-                {
-                    if (!string.IsNullOrEmpty(attr.Roles) && attr.Roles.Contains("Exam Controller"))
-                    {
-                        found = true;
-                        break;
-                    }
-                }
-                if (found) break;
-            }
-
+            bool found = classPermAttrs.Any();
             if (!found)
             {
-                var classAttrs = controllerType.GetCustomAttributes<AuthorizeAttribute>();
-                foreach (var attr in classAttrs)
+                foreach (var method in methods)
                 {
-                    if (!string.IsNullOrEmpty(attr.Roles) && attr.Roles.Contains("Exam Controller"))
+                    var permAttrs = method.GetCustomAttributes<RequirePermissionAttribute>();
+                    if (permAttrs.Any())
                     {
                         found = true;
                         break;
@@ -75,7 +62,7 @@ public class Phase38B_RbacFixTests
                 }
             }
 
-            Assert.True(found, $"{controllerType.Name} must reference 'Exam Controller' in [Authorize]");
+            Assert.True(found, $"{controllerType.Name} must use [RequirePermission] (was previously [Authorize(Roles)])");
         }
     }
 
@@ -338,24 +325,60 @@ public class Phase38B_RbacFixTests
 
     // ─── Authorization attribute audit ─────────────────────────────
 
-    [Fact(DisplayName = "19. ExamAdminController class-level Authorize includes Exam Controller (fixed)")]
-    public void ExamAdminController_ClassLevel_HasExamController()
+    [Fact(DisplayName = "19. Controllers use RequirePermission (no longer Authorize(Roles))")]
+    public void Controllers_UseRequirePermission_NotAuthorizeRoles()
     {
-        var classAttr = typeof(SchoolManagementSystem.Controllers.Result.ExamAdminController)
-            .GetCustomAttribute<AuthorizeAttribute>();
-        Assert.NotNull(classAttr);
-        Assert.NotNull(classAttr.Roles);
-        Assert.Contains("Exam Controller", classAttr.Roles);
-        Assert.Contains("Admin", classAttr.Roles);
+        var types = new[]
+        {
+            typeof(SchoolManagementSystem.Controllers.Result.ExamAdminController),
+            typeof(SchoolManagementSystem.Controllers.Exam.ExamScheduleController),
+            typeof(SchoolManagementSystem.Controllers.Admin.PermissionController),
+            typeof(SchoolManagementSystem.Controllers.Admin.RoleController)
+        };
+
+        foreach (var t in types)
+        {
+            var authorizeAttrs = t.GetCustomAttributes<AuthorizeAttribute>();
+            foreach (var attr in authorizeAttrs)
+            {
+                Assert.True(string.IsNullOrEmpty(attr.Roles),
+                    $"{t.Name} should not have [Authorize(Roles=...)]; use [RequirePermission] instead");
+            }
+
+            var requirAttrs = t.GetCustomAttributes<RequirePermissionAttribute>();
+            Assert.True(requirAttrs.Any(),
+                $"{t.Name} must have at least one [RequirePermission] attribute");
+        }
     }
 
-    [Fact(DisplayName = "20. ExamScheduleController has Exam Controller in class-level Authorize")]
-    public void ExamScheduleController_ClassLevel_HasExamController()
+    [Fact(DisplayName = "20. All RequirePermission controllers still have some authorization")]
+    public void AllControllers_HaveAuthorization()
     {
-        var classAttr = typeof(SchoolManagementSystem.Controllers.Exam.ExamScheduleController)
-            .GetCustomAttribute<AuthorizeAttribute>();
-        Assert.NotNull(classAttr);
-        Assert.NotNull(classAttr.Roles);
-        Assert.Contains("Exam Controller", classAttr.Roles);
+        var controllerTypes = new[]
+        {
+            typeof(SchoolManagementSystem.Controllers.Result.ExamAdminController),
+            typeof(SchoolManagementSystem.Controllers.Exam.ExamScheduleController),
+            typeof(SchoolManagementSystem.Controllers.Admin.PermissionController),
+            typeof(SchoolManagementSystem.Controllers.Admin.RoleController),
+            typeof(SchoolManagementSystem.Controllers.Admin.MonitoringController),
+            typeof(SchoolManagementSystem.Controllers.Admin.SystemSettingsController),
+            typeof(SchoolManagementSystem.Controllers.Admin.SystemHealthController),
+            typeof(SchoolManagementSystem.Controllers.Attendance.AutoAbsentController),
+            typeof(SchoolManagementSystem.Controllers.Attendance.AttendanceReportController),
+            typeof(SchoolManagementSystem.Controllers.Attendance.AttendanceSessionController),
+            typeof(SchoolManagementSystem.Controllers.Attendance.StudentAttendanceController),
+            typeof(SchoolManagementSystem.Controllers.Exam.ExamController),
+            typeof(SchoolManagementSystem.Controllers.Student.StudentClassAssignmentController),
+            typeof(SchoolManagementSystem.Controllers.Common.ModulesController)
+        };
+
+        foreach (var t in controllerTypes)
+        {
+            var authorizeAttrs = t.GetCustomAttributes<AuthorizeAttribute>();
+            var requirAttrs = t.GetCustomAttributes<RequirePermissionAttribute>();
+
+            Assert.True(authorizeAttrs.Any() || requirAttrs.Any(),
+                $"{t.Name} has no authorization attributes");
+        }
     }
 }

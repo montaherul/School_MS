@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[sp_GetExamDashboard]
+﻿CREATE OR ALTER PROCEDURE [dbo].[sp_GetExamDashboard]
     @AcademicYearId INT
 AS
 BEGIN
@@ -15,12 +15,12 @@ BEGIN
         (SELECT COUNT(*) FROM Exams WHERE AcademicYearId = @AcademicYearId AND IsDeleted = 0 AND Status = 6) AS LockedExams,
         (SELECT COUNT(*) FROM Exams WHERE AcademicYearId = @AcademicYearId AND IsDeleted = 0 AND Status = 7) AS UnpublishedExams,
         (SELECT COUNT(DISTINCT StudentId) FROM StudentExamResults ser
-            INNER JOIN Exams e ON ser.ExamId = e.Id
+INNER JOIN Exams e WITH(NOLOCK) ON ser.ExamId = e.Id
             WHERE e.AcademicYearId = @AcademicYearId AND ser.IsDeleted = 0) AS StudentsAppeared;
 
     -- Status distribution (for chart)
     SELECT Status, COUNT(*) AS Count
-    FROM Exams
+FROM Exams WITH(NOLOCK)
     WHERE AcademicYearId = @AcademicYearId AND IsDeleted = 0
     GROUP BY Status
     ORDER BY Status;
@@ -29,7 +29,7 @@ BEGIN
     SELECT TOP 10
         e.Id, e.Name, e.Term, e.StartsOn, e.EndsOn, e.Status, e.CreatedAt,
         (SELECT COUNT(*) FROM ExamSubjects es WHERE es.ExamId = e.Id) AS SubjectCount
-    FROM Exams e
+FROM Exams e WITH(NOLOCK)
     WHERE e.AcademicYearId = @AcademicYearId AND e.IsDeleted = 0
     ORDER BY e.CreatedAt DESC;
 
@@ -44,8 +44,8 @@ BEGIN
             THEN ROUND(100.0 * SUM(CASE WHEN ser.IsPassed = 1 THEN 1 ELSE 0 END) / COUNT(ser.Id), 1)
             ELSE 0 
         END AS PassPercentage
-    FROM Exams e
-    LEFT JOIN StudentExamResults ser ON e.Id = ser.ExamId AND ser.IsDeleted = 0
+FROM Exams e WITH(NOLOCK)
+LEFT JOIN StudentExamResults ser WITH(NOLOCK) ON e.Id = ser.ExamId AND ser.IsDeleted = 0
     WHERE e.AcademicYearId = @AcademicYearId AND e.IsDeleted = 0
     GROUP BY e.Id, e.Name
     ORDER BY e.Name;

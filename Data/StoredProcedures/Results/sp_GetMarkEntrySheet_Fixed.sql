@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[sp_GetMarkEntrySheet]
+﻿CREATE OR ALTER PROCEDURE [dbo].[sp_GetMarkEntrySheet]
     @ExamId INT,
     @ClassId INT,
     @SectionId INT,
@@ -16,12 +16,12 @@ BEGIN
         m.Grade,
         m.IsLocked
 
-    FROM Students s
+FROM Students s WITH(NOLOCK)
 
-    INNER JOIN Subjects sub
+INNER JOIN Subjects sub WITH(NOLOCK)
         ON sub.Id = @SubjectId
 
-    LEFT JOIN Marks m 
+LEFT JOIN Marks m WITH(NOLOCK) 
         ON s.Id = m.StudentId 
         AND m.ExamId = @ExamId 
         AND m.SubjectId = @SubjectId

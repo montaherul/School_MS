@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[sp_SaveMarks]
+﻿CREATE OR ALTER PROCEDURE [dbo].[sp_SaveMarks]
     @ExamId INT,
     @StudentId INT,
     @SubjectId INT,
@@ -24,7 +24,7 @@ BEGIN
     DECLARE @OldGpa DECIMAL(18,2);
 
     SELECT @ExistingId = Id, @OldMarks = MarksObtained, @OldGrade = Grade
-    FROM Marks
+FROM Marks WITH(NOLOCK)
     WHERE ExamId = @ExamId AND StudentId = @StudentId AND SubjectId = @SubjectId AND IsDeleted = 0;
 
     IF @MarksObtained IS NOT NULL AND @MarksObtained > @FullMarks

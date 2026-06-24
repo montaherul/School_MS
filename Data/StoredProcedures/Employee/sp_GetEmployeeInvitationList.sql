@@ -1,4 +1,4 @@
--- ============================================================================
+﻿-- ============================================================================
 -- Stored Procedure: sp_GetEmployeeInvitationList
 -- Purpose: Get paginated employee onboarding invitations with search
 -- Author: School Management System
@@ -39,9 +39,9 @@ BEGIN
 			i.IsApproved,
 			i.InvitationStatus,
 			i.CreatedAt
-		FROM EmployeeInvitations i
-		LEFT JOIN Departments dept ON i.DepartmentId = dept.Id
-		LEFT JOIN Designations desig ON i.DesignationId = desig.Id
+FROM EmployeeInvitations i WITH(NOLOCK)
+LEFT JOIN Departments dept WITH(NOLOCK) ON i.DepartmentId = dept.Id
+LEFT JOIN Designations desig WITH(NOLOCK) ON i.DesignationId = desig.Id
 		WHERE i.IsDeleted = 0
 		AND (
 			@SearchTerm IS NULL OR 
@@ -56,8 +56,8 @@ BEGIN
 	SELECT 
 		i.*,
 		c.TotalRecords
-	FROM InvitationData i
-	CROSS JOIN CountData c
+FROM InvitationData i WITH(NOLOCK)
+CROSS JOIN CountData c WITH(NOLOCK)
 	ORDER BY i.CreatedAt DESC, i.Id DESC
 	OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
 END

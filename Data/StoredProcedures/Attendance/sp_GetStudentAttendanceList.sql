@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE sp_GetStudentAttendanceList
+﻿CREATE OR ALTER PROCEDURE sp_GetStudentAttendanceList
     @PageNumber     INT            = 1,
     @PageSize       INT            = 10,
     @SearchTerm     NVARCHAR(MAX)  = NULL,
@@ -27,10 +27,10 @@ BEGIN
             std.StudentGroupId,
             ISNULL(g.Name, '') AS StudentGroupName
         FROM
-            Students std
-            JOIN Classes c ON std.ClassId = c.Id
-            JOIN Sections sec ON std.SectionId = sec.Id
-            LEFT JOIN StudentGroups g ON std.StudentGroupId = g.Id
+Students std WITH(NOLOCK)
+JOIN Classes c WITH(NOLOCK) ON std.ClassId = c.Id
+JOIN Sections sec WITH(NOLOCK) ON std.SectionId = sec.Id
+LEFT JOIN StudentGroups g WITH(NOLOCK) ON std.StudentGroupId = g.Id
         WHERE
             std.IsDeleted = 0
             AND std.Status = 1 -- Active
@@ -62,11 +62,11 @@ BEGIN
             a.AttendanceDate,
             sess.Status AS SessionStatus
         FROM
-            FilteredStudents fs
-            LEFT JOIN Attendance a ON a.StudentId = fs.StudentId 
+FilteredStudents fs WITH(NOLOCK)
+LEFT JOIN Attendance a WITH(NOLOCK) ON a.StudentId = fs.StudentId 
                 AND a.IsDeleted = 0
                 AND a.AttendanceDate = @TargetDate
-            LEFT JOIN AttendanceSessions sess ON sess.SchoolClassId = fs.ClassId
+LEFT JOIN AttendanceSessions sess WITH(NOLOCK) ON sess.SchoolClassId = fs.ClassId
                 AND sess.SectionId = fs.SectionId
                 AND sess.AttendanceDate = @TargetDate
                 AND sess.IsDeleted = 0
@@ -99,7 +99,7 @@ BEGIN
         SessionStatus = ISNULL(aws.SessionStatus, 1), -- Default Draft = 1
         TotalRecords = fc.TotalCount
     FROM
-        AttendanceWithSession aws,
+AttendanceWithSession aws WITH(NOLOCK),
         FinalCount fc
     ORDER BY
         TRY_CAST(aws.RollNumber AS INT) ASC,

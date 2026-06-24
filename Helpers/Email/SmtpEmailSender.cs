@@ -3,49 +3,59 @@ using MailKit.Security;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MimeKit;
+using SchoolManagementSystem.Repositories.Interfaces.Website;
 
 namespace SchoolManagementSystem.Helpers.Email;
 
 public class SmtpEmailSender : IEmailSender
 {
-    private readonly EmailOptions _options;
+    private readonly EmailOptions _fileOptions;
+    private readonly ISchoolSettingRepository _settingRepo;
     private readonly ILogger<SmtpEmailSender> _logger;
 
-    public SmtpEmailSender(IOptions<EmailOptions> options, ILogger<SmtpEmailSender> logger)
+    public SmtpEmailSender(IOptions<EmailOptions> options, ISchoolSettingRepository settingRepo, ILogger<SmtpEmailSender> logger)
     {
-        _options = options.Value;
+        _fileOptions = options.Value;
+        _settingRepo = settingRepo;
         _logger = logger;
     }
 
     public async Task SendAsync(string to, string subject, string htmlBody, CancellationToken cancellationToken = default)
     {
+        var settings = await _settingRepo.GetCurrentSettingsAsync(cancellationToken);
+        var host = settings?.SmtpHost ?? _fileOptions.Host;
+        var port = settings?.SmtpPort > 0 ? settings.SmtpPort : _fileOptions.Port;
+        var enableSsl = settings?.SmtpEnableSsl ?? _fileOptions.EnableSsl;
+        var userName = settings?.SmtpUserName ?? _fileOptions.UserName;
+        var password = settings?.SmtpPassword ?? _fileOptions.Password;
+        var from = settings?.SmtpFromEmail ?? _fileOptions.From;
+
         using var client = new SmtpClient();
         try
         {
-            ValidateConfiguration();
+            ValidateConfiguration(host, port, from);
 
             var message = new MimeMessage();
-            message.From.Add(new MailboxAddress("School Management System", _options.From));
+            message.From.Add(new MailboxAddress("School Management System", from));
             message.To.Add(MailboxAddress.Parse(to));
             message.Subject = subject;
             message.Body = new BodyBuilder { HtmlBody = htmlBody }.ToMessageBody();
 
-            var security = ResolveSecurity();
+            var security = ResolveSecurity(enableSsl, port);
 
-            _logger.LogInformation("Opening SMTP connection to {Host}:{Port} using {Security} for recipient {Recipient}", _options.Host, _options.Port, security, to);
+            _logger.LogInformation("Opening SMTP connection to {Host}:{Port} for recipient {Recipient}", host, port, to);
 
-            // For common local development/server issues with SSL certificates
             client.ServerCertificateValidationCallback = (s, c, h, e) => true;
             client.CheckCertificateRevocation = false;
-            client.Timeout = 10000; // 10 seconds timeout
+            client.Timeout = 10000;
 
-            await client.ConnectAsync(_options.Host, _options.Port, security, cancellationToken);
-            _logger.LogInformation("SMTP connection opened successfully to {Host}:{Port}", _options.Host, _options.Port);
+            await client.ConnectAsync(host, port, security, cancellationToken);
+            _logger.LogInformation("SMTP connection opened successfully to {Host}:{Port}", host, port);
 
-            if (!string.IsNullOrWhiteSpace(_options.UserName))
+            if (!string.IsNullOrWhiteSpace(userName))
             {
-                await client.AuthenticateAsync(_options.UserName, _options.Password, cancellationToken);
-                _logger.LogInformation("SMTP authentication succeeded for {UserName}", _options.UserName);
+                await client.AuthenticateAsync(userName, password, cancellationToken);
+                _logger.LogInformation("SMTP authentication succeeded for {UserName}", userName);
             }
 
             await client.SendAsync(message, cancellationToken);
@@ -61,31 +71,31 @@ public class SmtpEmailSender : IEmailSender
         }
     }
 
-    private void ValidateConfiguration()
+    private static void ValidateConfiguration(string host, int port, string from)
     {
-        if (string.IsNullOrWhiteSpace(_options.Host))
+        if (string.IsNullOrWhiteSpace(host))
         {
             throw new InvalidOperationException("Email SMTP host is missing.");
         }
 
-        if (_options.Port <= 0)
+        if (port <= 0)
         {
             throw new InvalidOperationException("Email SMTP port is invalid.");
         }
 
-        if (string.IsNullOrWhiteSpace(_options.From))
+        if (string.IsNullOrWhiteSpace(from))
         {
             throw new InvalidOperationException("Email sender address is missing.");
         }
     }
 
-    private SecureSocketOptions ResolveSecurity()
+    private static SecureSocketOptions ResolveSecurity(bool enableSsl, int port)
     {
-        if (!_options.EnableSsl)
+        if (!enableSsl)
         {
             return SecureSocketOptions.None;
         }
 
-        return _options.Port == 465 ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.StartTls;
+        return port == 465 ? SecureSocketOptions.SslOnConnect : SecureSocketOptions.StartTls;
     }
 }

@@ -1265,6 +1265,270 @@ img {
     }
 }
 
+/* ============================================
+   PHASE 15 — ENTITY MOBILE CARDS
+   ============================================ */
+
+/* Tablet: show card-style rows */
+@media (max-width: 991.98px) {
+    .entity-mobile-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 4px 0;
+    }
+
+    .entity-mobile-card {
+        background: #fff;
+        border: 1px solid var(--clr-border, #e2e8f0);
+        border-radius: var(--radius-md, 10px);
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        transition: box-shadow 0.2s ease;
+    }
+
+    .entity-mobile-card:active {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .entity-mobile-card__top {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 14px 14px 10px;
+    }
+
+    .entity-mobile-card__photo {
+        width: 60px;
+        height: 60px;
+        min-width: 60px;
+        border-radius: 50%;
+        overflow: hidden;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+        background: var(--adm-primary-bg, #f0fdfa);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .entity-mobile-card__photo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 50%;
+    }
+
+    .entity-mobile-card__photo .entity-mobile-card__initials {
+        font-size: 20px;
+        font-weight: 700;
+        color: var(--adm-primary, #0F766E);
+        line-height: 60px;
+        text-align: center;
+        width: 100%;
+    }
+
+    .entity-mobile-card__identity {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .entity-mobile-card__name {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--clr-text, #0f172a);
+        line-height: 1.3;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .entity-mobile-card__code {
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--clr-text-muted, #64748b);
+        font-family: 'Courier New', monospace;
+    }
+
+    .entity-mobile-card__status {
+        margin-top: 2px;
+    }
+
+    .entity-mobile-card__details {
+        padding: 2px 14px 10px;
+    }
+
+    .entity-mobile-card__expand-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        width: 100%;
+        padding: 6px;
+        border: none;
+        background: transparent;
+        color: var(--clr-text-muted, #64748b);
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+
+    .entity-mobile-card__expand-btn:hover {
+        color: var(--clr-text, #0f172a);
+    }
+
+    .entity-mobile-card__expand-btn i {
+        font-size: 10px;
+        transition: transform 0.2s ease;
+    }
+
+    .entity-mobile-card__expand-btn.is-open i {
+        transform: rotate(180deg);
+    }
+
+    .entity-mobile-card__body {
+        padding: 0 14px;
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.28s ease, padding 0.28s ease;
+    }
+
+    .entity-mobile-card__body.is-open {
+        max-height: 600px;
+        padding: 4px 14px 10px;
+    }
+
+    .entity-mobile-card__info-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 6px 0;
+        border-bottom: 1px solid var(--clr-border, #e2e8f0);
+    }
+
+    .entity-mobile-card__info-row:last-child {
+        border-bottom: none;
+    }
+
+    .entity-mobile-card__label {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--clr-text-muted, #64748b);
+        flex-shrink: 0;
+    }
+
+    .entity-mobile-card__value {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--clr-text, #0f172a);
+        text-align: right;
+    }
+
+    .entity-mobile-card__actions {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1px;
+        border-top: 1px solid var(--clr-border, #e2e8f0);
+        background: var(--clr-border, #e2e8f0);
+    }
+
+    .entity-mobile-card__action {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+        padding: 10px 6px;
+        font-size: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        background: #fff;
+        transition: background 0.15s ease, color 0.15s ease;
+        border: none;
+        cursor: pointer;
+        min-height: 40px;
+    }
+
+    .entity-mobile-card__action i {
+        font-size: 14px;
+    }
+
+    .entity-mobile-card__action--view {
+        color: var(--clr-primary, #1e40af);
+    }
+    .entity-mobile-card__action--view:hover {
+        background: var(--clr-primary-soft, #eff6ff);
+    }
+
+    .entity-mobile-card__action--edit {
+        color: #ca8a04;
+    }
+    .entity-mobile-card__action--edit:hover {
+        background: #fefce8;
+    }
+
+    .entity-mobile-card__action--success {
+        color: var(--adm-success, #059669);
+    }
+    .entity-mobile-card__action--success:hover {
+        background: var(--adm-success-bg, #ecfdf5);
+    }
+
+    .entity-mobile-card__action--delete {
+        color: #dc2626;
+    }
+    .entity-mobile-card__action--delete:hover {
+        background: #fef2f2;
+    }
+
+    .entity-mobile-card__action--primary {
+        color: var(--adm-primary, #0F766E);
+    }
+    .entity-mobile-card__action--primary:hover {
+        background: var(--adm-primary-bg, #f0fdfa);
+    }
+
+    /* Mobile: cards shown via JS toggle, table hidden via JS toggle */
+    .entity-mobile-view.active {
+        display: block !important;
+    }
+
+    .entity-desktop-table.hidden {
+        display: none !important;
+    }
+}
+
+/* Desktop: hide mobile view by default */
+.entity-mobile-view {
+    display: none !important;
+}
+
+/* Tiny phones */
+@media (max-width: 419.98px) {
+    .entity-mobile-card__photo {
+        width: 48px;
+        height: 48px;
+        min-width: 48px;
+    }
+    .entity-mobile-card__photo .entity-mobile-card__initials {
+        font-size: 16px;
+        line-height: 48px;
+    }
+    .entity-mobile-card__name {
+        font-size: 14px;
+    }
+    .entity-mobile-card__actions {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .entity-mobile-card__action {
+        font-size: 11px;
+        padding: 8px 4px;
+        min-height: 36px;
+    }
+}
+
 /* ── Small phones ── */
 @media (max-width: 480px) {
     .adm-page {

@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE [dbo].[sp_CalculateMerit]
+﻿CREATE OR ALTER PROCEDURE [dbo].[sp_CalculateMerit]
     @ExamGroupKey NVARCHAR(100) = NULL
 AS
 BEGIN
@@ -9,15 +9,15 @@ BEGIN
 
     INSERT INTO @Exams
     SELECT Id, ClassId, StudentGroupId, Name
-    FROM Exams
+FROM Exams WITH(NOLOCK)
     WHERE IsDeleted = 0
       AND (@ExamGroupKey IS NULL OR Name LIKE '%' + @ExamGroupKey + '%');
 
-    -- Process ALL classes in the exam group — no FirstOrDefault
+    -- Process ALL classes in the exam group â€” no FirstOrDefault
     -- Class Position: rank within each (ExamId, ClassId)
     UPDATE ser
     SET ClassPosition = ranked.NewPosition
-    FROM StudentExamResults ser
+FROM StudentExamResults ser WITH(NOLOCK)
     INNER JOIN (
         SELECT
             r.Id,
@@ -25,8 +25,8 @@ BEGIN
                 PARTITION BY r.ExamId, s.ClassId
                 ORDER BY r.Gpa DESC, r.TotalMarks DESC
             ) AS NewPosition
-        FROM StudentExamResults r
-        INNER JOIN Students s ON r.StudentId = s.Id
+FROM StudentExamResults r WITH(NOLOCK)
+INNER JOIN Students s WITH(NOLOCK) ON r.StudentId = s.Id
         WHERE r.ExamId IN (SELECT Id FROM @Exams)
           AND r.IsDeleted = 0
           AND s.IsDeleted = 0
@@ -35,7 +35,7 @@ BEGIN
     -- Section Position: rank within (ExamId, SectionId)
     UPDATE ser
     SET Position = ranked.NewPosition
-    FROM StudentExamResults ser
+FROM StudentExamResults ser WITH(NOLOCK)
     INNER JOIN (
         SELECT
             r.Id,
@@ -43,8 +43,8 @@ BEGIN
                 PARTITION BY r.ExamId, s.SectionId
                 ORDER BY r.Gpa DESC, r.TotalMarks DESC
             ) AS NewPosition
-        FROM StudentExamResults r
-        INNER JOIN Students s ON r.StudentId = s.Id
+FROM StudentExamResults r WITH(NOLOCK)
+INNER JOIN Students s WITH(NOLOCK) ON r.StudentId = s.Id
         WHERE r.ExamId IN (SELECT Id FROM @Exams)
           AND r.IsDeleted = 0
           AND s.IsDeleted = 0
@@ -53,7 +53,7 @@ BEGIN
     -- Group Position: rank within (ExamId, StudentGroupId)
     UPDATE ser
     SET GroupPosition = ranked.NewPosition
-    FROM StudentExamResults ser
+FROM StudentExamResults ser WITH(NOLOCK)
     INNER JOIN (
         SELECT
             r.Id,
@@ -61,8 +61,8 @@ BEGIN
                 PARTITION BY r.ExamId, s.StudentGroupId
                 ORDER BY r.Gpa DESC, r.TotalMarks DESC
             ) AS NewPosition
-        FROM StudentExamResults r
-        INNER JOIN Students s ON r.StudentId = s.Id
+FROM StudentExamResults r WITH(NOLOCK)
+INNER JOIN Students s WITH(NOLOCK) ON r.StudentId = s.Id
         WHERE r.ExamId IN (SELECT Id FROM @Exams)
           AND r.IsDeleted = 0
           AND s.IsDeleted = 0
@@ -70,7 +70,7 @@ BEGIN
     ) ranked ON ser.Id = ranked.Id;
 
     SELECT COUNT(*) AS MeritPositionsCalculated
-    FROM StudentExamResults
+FROM StudentExamResults WITH(NOLOCK)
     WHERE ExamId IN (SELECT Id FROM @Exams) AND IsDeleted = 0;
 END;
 GO

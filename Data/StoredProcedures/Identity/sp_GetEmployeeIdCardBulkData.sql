@@ -1,4 +1,4 @@
--- ============================================================================
+﻿-- ============================================================================
 -- Stored Procedure: sp_GetEmployeeIdCardBulkData
 -- Purpose: Get full employee data for ID card PDF generation by comma-separated IDs
 -- Author: School Management System
@@ -15,7 +15,7 @@ BEGIN
 
     INSERT INTO @IdsTable (Id)
     SELECT CAST(value AS INT)
-    FROM STRING_SPLIT(@Ids, ',')
+FROM STRING_SPLIT WITH(NOLOCK)(@Ids, ',')
     WHERE LTRIM(RTRIM(value)) <> '' AND ISNUMERIC(value) = 1;
 
     SELECT
@@ -52,10 +52,10 @@ BEGIN
         e.CardPrintedAt,
         e.CardVersion,
         e.QRVerificationCode
-    FROM Employees e
+FROM Employees e WITH(NOLOCK)
     INNER JOIN @IdsTable t ON e.Id = t.Id
-    LEFT JOIN Departments d ON e.DepartmentId = d.Id AND d.IsDeleted = 0
-    LEFT JOIN Designations desig ON e.DesignationId = desig.Id AND desig.IsDeleted = 0
+LEFT JOIN Departments d WITH(NOLOCK) ON e.DepartmentId = d.Id AND d.IsDeleted = 0
+LEFT JOIN Designations desig WITH(NOLOCK) ON e.DesignationId = desig.Id AND desig.IsDeleted = 0
     WHERE e.IsDeleted = 0;
 END;
 GO

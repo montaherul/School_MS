@@ -1,4 +1,4 @@
--- ============================================================================
+﻿-- ============================================================================
 -- Stored Procedure: sp_GetEmployeeIdCardList
 -- Purpose: Get paginated employee records for ID Card management with filters
 -- Author: School Management System
@@ -22,7 +22,7 @@ BEGIN
     DECLARE @Offset INT;
     SET @Offset = (@PageNumber - 1) * @PageSize;
 
-    ;WITH FilteredEmployees AS (
+
         SELECT 
             e.Id,
             e.EmployeeCode,
@@ -41,14 +41,14 @@ BEGIN
             e.CardVersion,
             COALESCE(d.Name, '') AS DepartmentName,
             COALESCE(desig.Name, '') AS DesignationName,
-            ROW_NUMBER() OVER (ORDER BY e.Id DESC) AS RowNum,
-            COUNT(*) OVER () AS TotalCount
+
+            COUNT(*) OVER () AS TotalRecords
         FROM 
-            Employees e
+Employees e WITH(NOLOCK)
         LEFT JOIN 
-            Departments d ON e.DepartmentId = d.Id AND d.IsDeleted = 0
+Departments d WITH(NOLOCK) ON e.DepartmentId = d.Id AND d.IsDeleted = 0
         LEFT JOIN 
-            Designations desig ON e.DesignationId = desig.Id AND desig.IsDeleted = 0
+Designations desig WITH(NOLOCK) ON e.DesignationId = desig.Id AND desig.IsDeleted = 0
         WHERE 
             e.IsDeleted = 0
             AND (@DepartmentId = 0 OR e.DepartmentId = @DepartmentId)
@@ -66,32 +66,9 @@ BEGIN
                 OR COALESCE(d.Name, '') LIKE '%' + @SearchTerm + '%'
                 OR COALESCE(desig.Name, '') LIKE '%' + @SearchTerm + '%'
             )
-    )
-    SELECT 
-        Id,
-        EmployeeCode,
-        EmployeeName,
-        PhotoPath,
-        Phone,
-        Email,
-        Status,
-        IsTeachingStaff,
-        EmploymentType,
-        JoiningDate,
-        EmployeeCardNumber,
-        CardIssueDate,
-        CardExpiryDate,
-        CardPrintedAt,
-        CardVersion,
-        DepartmentName,
-        DesignationName,
-        TotalCount AS TotalRecords
-    FROM 
-        FilteredEmployees
-    WHERE 
-        RowNum > @Offset 
-        AND RowNum <= @Offset + @PageSize
-    ORDER BY 
-        RowNum;
+    
+ORDER BY e.Id DESC
+OFFSET @Offset ROWS FETCH NEXT @PageSize ROWS ONLY;
+
 END;
 GO

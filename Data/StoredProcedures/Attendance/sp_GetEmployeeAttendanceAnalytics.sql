@@ -1,4 +1,4 @@
-CREATE OR ALTER PROCEDURE sp_GetEmployeeAttendanceAnalytics
+﻿CREATE OR ALTER PROCEDURE sp_GetEmployeeAttendanceAnalytics
     @Date DATE = NULL
 AS
 BEGIN
@@ -15,9 +15,9 @@ BEGIN
              THEN CAST(SUM(CASE WHEN a.Status = 1 OR a.Status = 3 THEN 1 ELSE 0 END) AS DECIMAL(18,2)) / COUNT(a.Id) * 100
              ELSE 100.00 
         END
-    FROM Departments d
-    LEFT JOIN Employees e ON e.DepartmentId = d.Id AND e.IsDeleted = 0
-    LEFT JOIN EmployeeAttendances a ON e.Id = a.EmployeeId AND a.IsDeleted = 0 AND CAST(a.AttendanceDate AS DATE) = @TargetDate
+FROM Departments d WITH(NOLOCK)
+LEFT JOIN Employees e WITH(NOLOCK) ON e.DepartmentId = d.Id AND e.IsDeleted = 0
+LEFT JOIN EmployeeAttendances a WITH(NOLOCK) ON e.Id = a.EmployeeId AND a.IsDeleted = 0 AND CAST(a.AttendanceDate AS DATE) = @TargetDate
     WHERE d.IsDeleted = 0
     GROUP BY d.Id, d.Name;
 END;
