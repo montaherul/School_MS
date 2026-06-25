@@ -209,12 +209,13 @@
         }
 
         var table = new Tabulator("#admissionTable", {
-            height: "calc(100vh - 280px)",
+            height: false,
             layout: "fitColumns",
             pagination: true,
             paginationMode: "remote",
-            paginationSize: 15,
-            paginationSizeSelector: [15,25,50,100],
+            movableColumns: false,
+            paginationSize: 10,
+            paginationSizeSelector: [10,25,50,100],
             ajaxURL: "/Admission/Index",
             ajaxConfig: {
                 method: "GET",
@@ -228,7 +229,7 @@
                 return { data: response.data || [], last_page: Math.max(Math.ceil(total / (params.pageSize || 10)), 1) };
             },
             ajaxParams: function() {
-                return { pageSize: 10, search: currentSearchTerm, classId: currentClassId, status: currentStatus };
+                return { search: currentSearchTerm, classId: currentClassId, status: currentStatus };
             },
             placeholder: "<div class='dash-empty'><i class='bi bi-file-earmark-text fs-1'></i><div class='dash-empty__title'>No admission records found</div><div class='dash-empty__sub'>Try adjusting your filters or search.</div></div>",
             columns: [

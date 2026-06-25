@@ -95,11 +95,16 @@
 
         function initTable() {
             table = new Tabulator("#holidayTable", {
-                height: "calc(100vh - 280px)",
+                height: false,
                 layout: "fitColumns",
+                movableColumns: false,
+                pagination: true,
+                paginationMode: "remote",
+                paginationSize: 20,
+                paginationSizeSelector: [10,25,50,100],
                 ajaxURL: "/HolidayMaster/GetList",
-                ajaxParams: { page: 1, pageSize: 100 },
-                ajaxResponse: function(url, params, response) { return { data: response.data, last_page: Math.ceil(response.total / params.pageSize) }; },
+                paginationDataSent: { "page": "page", "size": "pageSize" },
+                ajaxResponse: function(url, params, response) { return { data: response.data, last_page: response.last_page || 1 }; },
                 columns: [
                     {
                         title: "Name", field: "name", minWidth: 180,

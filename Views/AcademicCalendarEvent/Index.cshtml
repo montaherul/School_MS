@@ -40,7 +40,7 @@
             document.getElementById('btnAdd').href = '/AcademicCalendarEvent/Create?calendarId=' + calendarId;
             if (table) table.destroy();
             table = new Tabulator("#eventsTable", {
-                height: 400, layout: "fitColumns",
+                height: false, layout: "fitColumns", movableColumns: false,
                 ajaxURL: '/AcademicCalendarEvent/GetList?calendarId=' + calendarId,
                 ajaxResponse: function(url, params, response) { return response.data; },
                 columns: [

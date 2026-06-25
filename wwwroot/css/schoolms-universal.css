@@ -1205,12 +1205,10 @@ body {
     border-top: none;
     border-radius: 0 0 var(--adm-radius-lg) var(--adm-radius-lg);
     box-shadow: var(--adm-shadow);
-    overflow: hidden;
 }
 
 .adm-table-card__body {
     position: relative;
-    min-height: 200px;
 }
 
 .table-shell {
@@ -1222,7 +1220,6 @@ body {
 .table-responsive {
     width: 100%;
     overflow-x: auto;
-    overflow-y: hidden;
     border: 1px solid var(--adm-border);
     border-radius: var(--adm-radius-lg);
     background: var(--adm-surface);
@@ -1328,7 +1325,6 @@ body {
 
     .tabulator .tabulator-tableHolder {
         overflow-x: auto !important;
-        overflow-y: auto !important;
         -webkit-overflow-scrolling: touch;
     }
     .tabulator .tabulator-table {
@@ -1931,7 +1927,6 @@ body {
     align-items: center;
     gap: 14px;
     padding: 4px 0;
-    min-height: 64px;
 }
 
 .entity-cell__identity {
@@ -2051,11 +2046,6 @@ body {
         color: var(--adm-pending);
         border-color: var(--adm-pending);
     }
-
-/* ── Tabulator Row Height Override ── */
-.tabulator .tabulator-row {
-    min-height: 72px !important;
-}
 
     .tabulator .tabulator-row .tabulator-cell {
         padding: 8px 12px !important;

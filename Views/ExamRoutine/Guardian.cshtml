@@ -135,11 +135,12 @@
             data: scheduleData,
             layout: "fitColumns",
             responsiveLayout: "collapse",
+            movableColumns: false,
             height: "auto",
             placeholder: "<div class='er-empty'><div class='er-empty__title'>No schedules found</div></div>",
             pagination: true,
             paginationSize: 10,
-            paginationSizeSelector: [10, 20, 50],
+            paginationSizeSelector: [10, 25, 50, 100],
             columns: [
                 {
                     title: "Date", field: "examDate", width: 130,

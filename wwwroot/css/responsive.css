@@ -1114,7 +1114,6 @@ img {
 
     .entity-cell {
         gap: 10px !important;
-        min-height: 52px !important;
         padding: 2px 0 !important;
     }
 
@@ -1559,7 +1558,6 @@ img {
 
     .entity-cell {
         gap: 8px !important;
-        min-height: 44px !important;
     }
 
     .entity-cell__name {

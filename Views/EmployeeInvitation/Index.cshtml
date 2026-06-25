@@ -47,12 +47,13 @@
     <script>
         var table = new Tabulator("#invitationTable", {
             ajaxURL: "/EmployeeInvitation/Index",
-            height: "calc(100vh - 280px)",
+            height: false,
             layout: "fitColumns",
             pagination: true,
             paginationMode: "remote",
-            paginationSize: 15,
-            paginationSizeSelector: [15,25,50,100],
+            movableColumns: false,
+            paginationSize: 10,
+            paginationSizeSelector: [10,25,50,100],
             paginationDataSent: { "page": "page", "size": "pageSize" },
             ajaxParams: function () {
                 return { search: document.getElementById("invitationSearch").value };

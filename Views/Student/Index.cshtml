@@ -128,12 +128,13 @@
         document.getElementById('cancelDeleteBtn').addEventListener('click', closeDeleteModal);
 
         var table = new Tabulator("#data-table", {
-            height: "calc(100vh - 280px)",
+            height: false,
             layout: "fitColumns",
+            movableColumns: false,
             pagination: true,
             paginationMode: "remote",
-            paginationSize: 15,
-            paginationSizeSelector: [15,25,50,100],
+            paginationSize: 10,
+            paginationSizeSelector: [10,25,50,100],
             ajaxURL: '@Url.Action("GetList", "Student")',
             paginationDataSent: { "page": "page", "size": "pageSize" },
             ajaxResponse: function(url, params, response) {

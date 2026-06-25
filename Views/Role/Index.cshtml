@@ -53,13 +53,14 @@
 @section Scripts {
     <script>
         var table = new Tabulator("#role-table", {
-            height: "calc(100vh - 250px)",
+            height: false,
             layout: "fitColumns",
             pagination: true,
             paginationMode: "remote",
+            movableColumns: false,
             ajaxURL: "/Role/Index",
-            paginationSize: 15,
-            paginationSizeSelector: [15, 25, 50, 100],
+            paginationSize: 10,
+            paginationSizeSelector: [10, 25, 50, 100],
             paginationDataSent: { "page": "page", "size": "pageSize" },
             ajaxResponse: function (url, params, response) {
                 return { data: response.data, last_page: response.last_page };

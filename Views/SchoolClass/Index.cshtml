@@ -106,13 +106,14 @@
         document.getElementById('cancelDeleteBtn').addEventListener('click', closeDeleteModal);
 
         var table = new Tabulator("#class-table", {
-            height: "calc(100vh - 280px)",
+            height: false,
             layout: "fitColumns",
+            movableColumns: false,
             pagination: true,
             paginationMode: "remote",
             ajaxURL: '@Url.Action("GetList", "SchoolClass")',
-            paginationSize: 15,
-            paginationSizeSelector: [15,25,50,100],
+            paginationSize: 10,
+            paginationSizeSelector: [10,25,50,100],
             paginationDataSent: { "page": "page", "size": "pageSize" },
             ajaxResponse: function(url, params, response) {
                 return { data: response.data, last_page: response.last_page };

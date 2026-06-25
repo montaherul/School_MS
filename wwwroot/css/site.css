@@ -159,7 +159,6 @@ body {
 
 .tabulator {
   border-radius: 8px;
-  overflow: hidden;
 }
 
 @media (max-width: 1000px) {

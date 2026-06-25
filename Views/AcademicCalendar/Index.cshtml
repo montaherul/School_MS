@@ -259,8 +259,9 @@
                 var canManage = @Json.Serialize(canManage);
 
                 tabulatorTable = new Tabulator("#calendarTable", {
-                    height: 420,
+                    height: false,
                     layout: "fitColumns",
+                    movableColumns: false,
                     placeholder: "<div class='er-empty'><div class='er-empty__icon'><i class='bi bi-calendar-x fs-2'></i></div><div class='er-empty__title'>No entries found</div><div class='er-empty__desc'>Try adjusting your date range or filters.</div></div>",
                     columns: [
                         { title: "Date", field: "date", width: 120, sorter: "string", hozAlign: "center",

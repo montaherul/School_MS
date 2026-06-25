@@ -95,14 +95,15 @@
         var sessionsUrl = '@Url.Action("GetSessions", "AttendanceSession")';
 
         var table = new Tabulator("#sessionGrid", {
-            height: "calc(100vh - 280px)",
+            height: false,
             layout: "fitColumns",
+            movableColumns: false,
             ajaxURL: sessionsUrl,
             ajaxParams: getSessionParams,
             pagination: true,
             paginationMode: "remote",
-            paginationSize: 15,
-            paginationSizeSelector: [15,25,50,100],
+            paginationSize: 25,
+            paginationSizeSelector: [10,25,50,100],
             paginationDataSent: { "page": "page", "size": "pageSize" },
             ajaxResponse: function(url, params, response) {
                 return { data: response.data || [], last_page: response.last_page || 1 };

@@ -241,15 +241,15 @@
             }
 
             var table = new Tabulator('#employeeAttendanceTable', {
-                height: 'calc(100vh - 430px)',
-                minHeight: 420,
+                height: false,
                 layout: 'fitColumns',
+                movableColumns: false,
                 responsiveLayout: 'collapse',
                 selectableRows: true,
                 pagination: true,
                 paginationMode: 'local',
-                paginationSize: 15,
-                paginationSizeSelector: [15, 25, 50, 100],
+                paginationSize: 10,
+                paginationSizeSelector: [10, 25, 50, 100],
                 cellEdited: updateVisibleSummary,
                 columns: [
                     { formatter: 'rowSelection', titleFormatter: 'rowSelection', hozAlign: 'center', headerSort: false, width: 52 },
@@ -281,7 +281,7 @@
             });
 
             var historyTable = new Tabulator('#historyTable', {
-                height: 360, layout: 'fitColumns', placeholder: 'No attendance history found.',
+                height: false, layout: 'fitColumns', movableColumns: false, placeholder: 'No attendance history found.',
                 columns: [
                     { title: 'Date', field: 'attendanceDate', minWidth: 130, formatter: function(c) { return String(c.getValue()).substring(0, 10); } },
                     { title: 'Status', field: 'statusName', formatter: statusFormatter, minWidth: 130 },

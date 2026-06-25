@@ -19,7 +19,7 @@ public class GuardianController : Controller
     }
 
     [Permission("Students", "View")]
-    public async Task<IActionResult> Index(string? searchTerm, string? status, int page = 1, int pageSize = 15)
+    public async Task<IActionResult> Index(string? searchTerm, string? status, int page = 1, int pageSize = 10)
     {
         if (Request.Headers.XRequestedWith == "XMLHttpRequest")
         {
@@ -27,7 +27,7 @@ public class GuardianController : Controller
             var lastPage = (int)Math.Ceiling((double)totalCount / pageSize);
             return Json(new { data = items, last_page = lastPage });
         }
-        var (allItems, total) = await _guardianService.GetGuardianListAsync(searchTerm, status, page, 20);
+        var (allItems, total) = await _guardianService.GetGuardianListAsync(searchTerm, status, page, 10);
         ViewBag.SearchTerm = searchTerm;
         ViewBag.Status = status;
         ViewBag.TotalCount = total;

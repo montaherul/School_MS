@@ -203,13 +203,14 @@
 
     /* ── Tabulator init ── */
     var table = new Tabulator('#attendance-table', {
-        height         : 'calc(100vh - 380px)',
+        height         : false,
         layout         : 'fitColumns',
+        movableColumns : false,
         pagination     : true,
         paginationMode : 'remote',
         ajaxURL        : buildListUrl(),     /* set initially; updated on filter apply */
-        paginationSize : 15,
-        paginationSizeSelector: [10, 15, 25, 50],
+        paginationSize : 10,
+        paginationSizeSelector: [10, 25, 50, 100],
         ajaxConfig     : {
             method  : 'GET',
             headers : { 'X-Requested-With': 'XMLHttpRequest' }

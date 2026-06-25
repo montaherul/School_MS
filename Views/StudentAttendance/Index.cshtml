@@ -153,10 +153,10 @@
 
         function initializeTable() {
             tabulatorTable = new Tabulator("#studentAttendanceTable", {
-                height: 500,
+                height: false,
                 layout: "fitColumns",
                 selectableRows: true,
-                movableColumns: true,
+                movableColumns: false,
                 index: "studentId",
                 columns: [
                     { formatter: "rowSelection", titleFormatter: "rowSelection", hozAlign: "center", headerSort: false, width: 52 },
@@ -188,7 +188,7 @@
                 ],
                 data: [],
                 pagination: "local",
-                paginationSize: 25
+                paginationSize: 10
             });
         }
 
@@ -284,7 +284,7 @@
 
         function initStudentHistoryTable() {
             if (studentHistoryTable) return;
-            studentHistoryTable = new Tabulator("#studentHistoryTable", { height: 360, layout: "fitColumns", placeholder: "No attendance history found.", columns: [
+            studentHistoryTable = new Tabulator("#studentHistoryTable", { height: false, layout: "fitColumns", movableColumns: false, placeholder: "No attendance history found.", columns: [
                 { title: "Date", field: "attendanceDate", minWidth: 130, formatter: function(c) { return String(c.getValue()).substring(0, 10); } },
                 { title: "Status", field: "statusName", minWidth: 130, formatter: function(c) { var v = c.getValue() || "Present"; var cls = v === 'Present' ? 'adm-status--approved' : v === 'Absent' ? 'adm-status--rejected' : v === 'Late' ? 'adm-badge--warning' : 'adm-badge--info'; return '<span class="adm-status ' + cls + '">' + v + '</span>'; } },
                 { title: "Remarks", field: "remarks", minWidth: 220 }

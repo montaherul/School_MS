@@ -82,7 +82,7 @@
                 <label class="adm-label">Size</label>
                 <select id="pageSizeFilter" class="adm-select">
                     <option value="10">10</option>
-                    <option value="20">20</option>
+                    <option value="25">25</option>
                     <option value="50">50</option>
                     <option value="100">100</option>
                 </select>
@@ -106,13 +106,14 @@
 @section Scripts {
     <script>
         var table = new Tabulator("#user-table", {
-            height: "calc(100vh - 280px)",
+            height: false,
             layout: "fitColumns",
+            movableColumns: false,
             placeholder: "<div class='dash-empty'><i class='bi bi-people fs-1'></i><div class='dash-empty__title'>No Users Found</div><div class='dash-empty__sub'>Try adjusting your search or filters.</div></div>",
             pagination: true,
             paginationMode: "remote",
             paginationSize: 10,
-            paginationSizeSelector: [10, 20, 50, 100],
+            paginationSizeSelector: [10, 25, 50, 100],
             ajaxURL: "/User/Index",
             ajaxConfig: {
                 method: "GET",
