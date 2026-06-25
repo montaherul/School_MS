@@ -1,0 +1,117 @@
+@model RoomUpsertDto
+@{
+    ViewData["Title"] = Model.Id > 0 ? "Edit Room" : "Add Room";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap" style="background: linear-gradient(135deg, #D97706, #F59E0B); box-shadow: 0 4px 12px rgba(217,119,6,0.3);">
+                <i class="bi bi-building"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">@ViewData["Title"]</h1>
+                <p class="adm-header__sub">@(Model.Id > 0 ? "Modify room details" : "Add a new classroom or lab room")</p>
+            </div>
+        </div>
+        <a href="/Routine/Rooms" class="adm-btn adm-btn--ghost">
+            <i class="bi bi-arrow-left"></i> <span>Back to Rooms</span>
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <form asp-action="CreateEditRoom" method="post">
+                        <input type="hidden" asp-for="Id" />
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="RoomNo" class="form-label">Room No <span class="text-danger">*</span></label>
+                                <input asp-for="RoomNo" class="form-control" placeholder="e.g. 101, Lab-A" />
+                                <span asp-validation-for="RoomNo" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Name" class="form-label">Name</label>
+                                <input asp-for="Name" class="form-control" placeholder="e.g. Physics Lab" />
+                                <span asp-validation-for="Name" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Capacity" class="form-label">Capacity <span class="text-danger">*</span></label>
+                                <input asp-for="Capacity" type="number" class="form-control" min="1" placeholder="e.g. 40" />
+                                <span asp-validation-for="Capacity" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Floor" class="form-label">Floor</label>
+                                <input asp-for="Floor" type="number" class="form-control" min="0" placeholder="e.g. 1" />
+                                <span asp-validation-for="Floor" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Building" class="form-label">Building</label>
+                            <input asp-for="Building" class="form-control" placeholder="e.g. Main Campus, Science Block" />
+                            <span asp-validation-for="Building" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="RoomType" class="form-label">Room Type <span class="text-danger">*</span></label>
+                            <select asp-for="RoomType" class="form-select">
+                                <option value="">Select Room Type</option>
+                                @if (ViewBag.RoomTypes is List<string> roomTypes)
+                                {
+                                    foreach (var rt in roomTypes)
+                                    {
+                                        <option value="@rt">@rt</option>
+                                    }
+                                }
+                                else
+                                {
+                                    <option value="Classroom">Classroom</option>
+                                    <option value="Laboratory">Laboratory</option>
+                                    <option value="ComputerLab">Computer Lab</option>
+                                    <option value="PhysicsLab">Physics Lab</option>
+                                    <option value="ChemistryLab">Chemistry Lab</option>
+                                    <option value="BiologyLab">Biology Lab</option>
+                                    <option value="SeminarHall">Seminar Hall</option>
+                                    <option value="Auditorium">Auditorium</option>
+                                    <option value="Library">Library</option>
+                                    <option value="StaffRoom">Staff Room</option>
+                                }
+                            </select>
+                            <span asp-validation-for="RoomType" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input asp-for="IsLab" class="form-check-input" type="checkbox" />
+                            <label asp-for="IsLab" class="form-check-label fw-semibold">Is Lab</label>
+                        </div>
+
+                        <div class="mb-3 form-check">
+                            <input asp-for="RequiresDoublePeriod" class="form-check-input" type="checkbox" />
+                            <label asp-for="RequiresDoublePeriod" class="form-check-label fw-semibold">Requires Double Period</label>
+                        </div>
+
+                        <div class="mb-4 form-check">
+                            <input asp-for="IsActive" class="form-check-input" type="checkbox" />
+                            <label asp-for="IsActive" class="form-check-label fw-semibold">Active</label>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-save"></i> Save</button>
+                            <a href="/Routine/Rooms" class="adm-btn adm-btn--ghost">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

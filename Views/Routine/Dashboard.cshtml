@@ -1,0 +1,288 @@
+@{
+    ViewData["Title"] = "Routine Management Dashboard";
+}
+
+@Html.AntiForgeryToken()
+
+<div class="adm-page">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="adm-alert adm-alert--success mb-3">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap" style="background: linear-gradient(135deg, #7C3AED, #A78BFA); box-shadow: 0 4px 12px rgba(124,58,237,0.3);">
+                <i class="bi bi-calendar-week"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Routine Management Dashboard</h1>
+                <p class="adm-header__sub">Manage timetables, periods, rooms and generation</p>
+            </div>
+        </div>
+        <div>
+            <a href="/Routine/Settings" class="adm-btn adm-btn--ghost me-2">
+                <i class="bi bi-gear"></i> <span>Settings</span>
+            </a>
+            <a href="/Routine/Analytics?academicYearId=0" class="adm-btn adm-btn--ghost">
+                <i class="bi bi-bar-chart"></i> <span>Analytics</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="dash-stat-card">
+                <div class="dash-stat-card__icon dash-stat-card__icon--primary">
+                    <i class="bi bi-mortarboard"></i>
+                </div>
+                <div class="dash-stat-card__body">
+                    <div class="dash-stat-card__value">@ViewBag.TotalTeachers</div>
+                    <div class="dash-stat-card__label">Total Teachers</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dash-stat-card">
+                <div class="dash-stat-card__icon dash-stat-card__icon--success">
+                    <i class="bi bi-building"></i>
+                </div>
+                <div class="dash-stat-card__body">
+                    <div class="dash-stat-card__value">@ViewBag.TotalRooms</div>
+                    <div class="dash-stat-card__label">Total Rooms</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dash-stat-card">
+                <div class="dash-stat-card__icon dash-stat-card__icon--warning">
+                    <i class="bi bi-layers"></i>
+                </div>
+                <div class="dash-stat-card__body">
+                    <div class="dash-stat-card__value">@ViewBag.TotalClasses</div>
+                    <div class="dash-stat-card__label">Total Classes</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dash-stat-card">
+                <div class="dash-stat-card__icon dash-stat-card__icon--info">
+                    <i class="bi bi-table"></i>
+                </div>
+                <div class="dash-stat-card__body">
+                    <div class="dash-stat-card__value">@ViewBag.TotalEntries</div>
+                    <div class="dash-stat-card__label">Total Entries</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-8">
+            <div class="adm-card">
+                <div class="adm-card__header">
+                    <h3>Quick Actions</h3>
+                </div>
+                <div class="adm-card__body">
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="/Routine/Timetable" class="adm-btn adm-btn--primary">
+                            <i class="bi bi-table"></i> <span>Go to Timetable</span>
+                        </a>
+                        <a href="/Routine/Generation" class="adm-btn adm-btn--success">
+                            <i class="bi bi-magic"></i> <span>Auto Generate</span>
+                        </a>
+                        <a href="/Routine/Periods" class="adm-btn adm-btn--info">
+                            <i class="bi bi-clock"></i> <span>Manage Periods</span>
+                        </a>
+                        <a href="/Routine/Rooms" class="adm-btn adm-btn--warning">
+                            <i class="bi bi-building"></i> <span>Manage Rooms</span>
+                        </a>
+                        <a href="/Routine/SubjectRequirements" class="adm-btn adm-btn--neutral">
+                            <i class="bi bi-journal-text"></i> <span>Subject Requirements</span>
+                        </a>
+                        <a href="/Routine/Versions" class="adm-btn adm-btn--ghost">
+                            <i class="bi bi-tags"></i> <span>Versions</span>
+                        </a>
+                        <a href="/Routine/Conflicts" class="adm-btn adm-btn--danger">
+                            <i class="bi bi-exclamation-triangle"></i> <span>Conflicts</span>
+                        </a>
+                        <a href="/Routine/WorkingDays" class="adm-btn adm-btn--ghost">
+                            <i class="bi bi-calendar-check"></i> <span>Working Days</span>
+                        </a>
+                        <a href="/Routine/TeacherAvailabilities" class="adm-btn adm-btn--ghost">
+                            <i class="bi bi-person-check"></i> <span>Teacher Availabilities</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="adm-card">
+                <div class="adm-card__header">
+                    <h3>Last Generation</h3>
+                </div>
+                <div class="adm-card__body">
+                    @if (ViewBag.LastGeneration != null)
+                    {
+                        <div class="mb-2">
+                            <span class="text-muted small">Status:</span>
+                            <span class="adm-status adm-status--@(ViewBag.LastGeneration.Status == "Completed" ? "approved" : "rejected")">@ViewBag.LastGeneration.Status</span>
+                        </div>
+                        <div class="mb-2">
+                            <span class="text-muted small">Generated At:</span>
+                            <span>@ViewBag.LastGeneration.GeneratedAt</span>
+                        </div>
+                        <div class="mb-2">
+                            <span class="text-muted small">Entries Created:</span>
+                            <span>@ViewBag.LastGeneration.EntryCount</span>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="dash-empty">
+                            <i class="bi bi-clock-history fs-1"></i>
+                            <div class="dash-empty__title">No Generation Run</div>
+                            <div class="dash-empty__sub">Run auto-generation to see results here.</div>
+                        </div>
+                    }
+                </div>
+            </div>
+            <div class="adm-card mt-3">
+                <div class="adm-card__header">
+                    <h3>Published Version</h3>
+                </div>
+                <div class="adm-card__body">
+                    @if (ViewBag.PublishedVersion != null)
+                    {
+                        <div class="mb-2">
+                            <span class="fw-semibold">@ViewBag.PublishedVersion.Name</span>
+                            <span class="adm-status adm-status--approved ms-2">Published</span>
+                        </div>
+                        <div class="small text-muted">
+                            @ViewBag.PublishedVersion.EntryCount entries
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="dash-empty">
+                            <i class="bi bi-bookmark-x fs-1"></i>
+                            <div class="dash-empty__title">No Published Version</div>
+                            <div class="dash-empty__sub">Publish a timetable version to make it live.</div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-6">
+            <div class="adm-card">
+                <div class="adm-card__header">
+                    <h3>Teacher Load Distribution</h3>
+                </div>
+                <div class="adm-card__body">
+                    <canvas id="dashboardTeacherChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="adm-card">
+                <div class="adm-card__header">
+                    <h3>Room Utilization</h3>
+                </div>
+                <div class="adm-card__body">
+                    <canvas id="dashboardRoomChart" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var currentYearId = @(ViewBag.AcademicYearId ?? 0);
+
+        function refreshDashboardCharts(yearId) {
+            currentYearId = yearId || @(ViewBag.AcademicYearId ?? 0);
+            fetch('/Routine/GetDashboardData?academicYearId=' + currentYearId)
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    document.querySelectorAll('.dash-stat-card__value')[0].textContent = data.totalTeachers;
+                    document.querySelectorAll('.dash-stat-card__value')[1].textContent = data.totalRooms;
+                    document.querySelectorAll('.dash-stat-card__value')[2].textContent = data.totalClasses;
+                    document.querySelectorAll('.dash-stat-card__value')[3].textContent = data.totalEntries;
+                    if (data.teacherLoadSummary) {
+                        renderTeacherChart(data.teacherLoadSummary);
+                    }
+                    if (data.roomUtilization) {
+                        renderRoomChart(data.roomUtilization);
+                    }
+                });
+        }
+
+        function renderTeacherChart(teachers) {
+            var labels = teachers.map(function(t) { return t.teacherName; }).slice(0, 15);
+            var values = teachers.map(function(t) { return t.totalPeriodsPerWeek; }).slice(0, 15);
+
+            var ctx = document.getElementById('dashboardTeacherChart');
+            if (window._teacherChart) window._teacherChart.destroy();
+            window._teacherChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Periods/Week',
+                        data: values,
+                        backgroundColor: 'rgba(124, 58, 237, 0.6)',
+                        borderColor: 'rgb(124, 58, 237)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'Periods' } },
+                        x: { ticks: { maxRotation: 30, font: { size: 9 } } }
+                    }
+                }
+            });
+        }
+
+        function renderRoomChart(rooms) {
+            var labels = rooms.map(function(r) { return r.roomNo; }).slice(0, 15);
+            var values = rooms.map(function(r) { return r.utilizationPercent; }).slice(0, 15);
+
+            var ctx = document.getElementById('dashboardRoomChart');
+            if (window._roomChart) window._roomChart.destroy();
+            window._roomChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Utilization %',
+                        data: values,
+                        backgroundColor: 'rgba(16, 185, 129, 0.6)',
+                        borderColor: 'rgb(16, 185, 129)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, max: 100, title: { display: true, text: '%' } },
+                        x: { ticks: { maxRotation: 30, font: { size: 9 } } }
+                    }
+                }
+            });
+        }
+
+        refreshDashboardCharts(0);
+    </script>
+}

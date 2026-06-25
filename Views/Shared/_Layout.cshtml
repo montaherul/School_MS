@@ -252,7 +252,7 @@
                             }
                         }
 
-                        @if (Can("Academic.View") || Can("Classes.View") || Can("Subjects.View") || Can("Attendance.View") || Can("Exams.View") || Can("Exam.View") || Can("Marks.View") || Can("Result.View") || Can("Assignments.View"))
+                        @if (Can("Academic.View") || Can("Classes.View") || Can("Subjects.View") || Can("Attendance.View") || Can("Exams.View") || Can("Exam.View") || Can("Marks.View") || Can("Result.View") || Can("Assignments.View") || Can("Routine.View"))
                         {
                             <span class="nav-section-label"><span class="nav-text">Academics</span></span>
                             @if (Can("Academic.View") || Can("Classes.View") || Can("Subjects.View"))
@@ -303,6 +303,24 @@
                             @if (Can("Assignments.View"))
                             {
                                 <a asp-controller="StudentClassAssignment" asp-action="Index" data-title="Assignments"><i class="bi bi-journal-text"></i><span class="nav-text">Assignments</span></a>
+                            }
+                            @if (Can("Routine.View"))
+                            {
+                                <a href="/Routine/Dashboard" data-title="Routine Dashboard"><i class="bi bi-calendar-range"></i><span class="nav-text">Routine Dashboard</span></a>
+                                <a href="/Routine/Timetable" data-title="Timetable Editor"><i class="bi bi-pencil-square"></i><span class="nav-text">Timetable Editor</span></a>
+                                <a href="/Routine/Generation" data-title="Auto Generation"><i class="bi bi-magic"></i><span class="nav-text">Auto Generation</span></a>
+                                <a href="/Routine/Versions" data-title="Version Management"><i class="bi bi-clock-history"></i><span class="nav-text">Version Management</span></a>
+                                <a href="/Routine/Conflicts" data-title="Conflict Center"><i class="bi bi-exclamation-triangle"></i><span class="nav-text">Conflict Center</span></a>
+                                <a href="/Routine/Periods" data-title="Periods"><i class="bi bi-clock"></i><span class="nav-text">Periods</span></a>
+                                <a href="/Routine/Rooms" data-title="Rooms"><i class="bi bi-building"></i><span class="nav-text">Rooms</span></a>
+                                <a href="/Routine/SubjectRequirements" data-title="Subject Requirements"><i class="bi bi-bookmark-check"></i><span class="nav-text">Subject Requirements</span></a>
+                                <a href="/Routine/WorkingDays" data-title="Working Days"><i class="bi bi-calendar2-week"></i><span class="nav-text">Working Days</span></a>
+                                <a href="/Routine/TeacherAvailabilities" data-title="Teacher Availability"><i class="bi bi-person-check"></i><span class="nav-text">Teacher Availability</span></a>
+                                <a href="/Routine/SubstituteAssignments" data-title="Substitute Teachers"><i class="bi bi-people"></i><span class="nav-text">Substitute Teachers</span></a>
+                                <a href="/Routine/StudentView" data-title="Student View"><i class="bi bi-eye"></i><span class="nav-text">Student View</span></a>
+                                <a href="/Routine/TeacherView" data-title="Teacher View"><i class="bi bi-person-badge"></i><span class="nav-text">Teacher View</span></a>
+                                <a href="/Routine/ClassView" data-title="Class View"><i class="bi bi-people"></i><span class="nav-text">Class View</span></a>
+                                <a href="/Routine/RoomView" data-title="Room View"><i class="bi bi-door-open"></i><span class="nav-text">Room View</span></a>
                             }
                         }
 
@@ -548,6 +566,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.9/dist/chart.umd.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/people-grid.js" asp-append-version="true"></script>
+    <script src="~/js/routine-grid.js" asp-append-version="true"></script>
 
     <!-- CENTRALIZED RESPONSIVE: Tabulator default config & mobile utilities -->
     <script>

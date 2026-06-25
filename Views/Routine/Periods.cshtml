@@ -1,0 +1,146 @@
+@{
+    ViewData["Title"] = "Routine Periods";
+}
+
+@Html.AntiForgeryToken()
+
+<div class="adm-page">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="adm-alert adm-alert--success mb-3">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap" style="background: linear-gradient(135deg, #0891B2, #22D3EE); box-shadow: 0 4px 12px rgba(8,145,178,0.3);">
+                <i class="bi bi-clock"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Routine Periods</h1>
+                <p class="adm-header__sub">Manage class periods, timings and break slots</p>
+            </div>
+        </div>
+        <a href="/Routine/CreateEditPeriod" class="adm-btn adm-btn--primary">
+            <i class="bi bi-plus-circle"></i> <span>Add Period</span>
+        </a>
+    </div>
+
+    <div class="adm-table-card">
+        <div class="adm-table-card__body">
+            <div id="periods-grid"></div>
+        </div>
+    </div>
+</div>
+
+<div class="adm-modal-backdrop d-none" id="deleteModalBackdrop">
+    <div class="adm-modal">
+        <div class="adm-modal__header">
+            <div class="adm-modal__header-left">
+                <div class="adm-modal__header-icon adm-modal__header-icon--danger">
+                    <i class="bi bi-trash"></i>
+                </div>
+                <div>
+                    <h5 class="adm-modal__title">Confirm Delete</h5>
+                    <p class="adm-modal__subtitle">This action cannot be undone</p>
+                </div>
+            </div>
+            <button type="button" class="adm-modal__close" id="closeDeleteModal">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <div class="adm-modal__body">
+            Are you sure you want to delete <strong id="deleteName"></strong>?
+            <br><small class="text-muted">This action cannot be undone.</small>
+        </div>
+        <div class="adm-modal__footer">
+            <button class="adm-btn adm-btn--ghost" id="cancelDeleteBtn">Cancel</button>
+            <button class="adm-btn adm-btn--danger" id="confirmDeleteBtn">
+                <i class="bi bi-trash"></i> Delete
+            </button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var pendingDeleteId = null;
+        var deleteModal = document.getElementById('deleteModalBackdrop');
+
+        function openDeleteModal(name, id) {
+            pendingDeleteId = id;
+            document.getElementById('deleteName').textContent = name;
+            deleteModal.classList.remove('d-none');
+        }
+
+        function closeDeleteModal() {
+            deleteModal.classList.add('d-none');
+            pendingDeleteId = null;
+        }
+
+        document.getElementById('closeDeleteModal').addEventListener('click', closeDeleteModal);
+        document.getElementById('cancelDeleteBtn').addEventListener('click', closeDeleteModal);
+
+        var columns = [
+            { title: "#", formatter: "rownum", hozAlign: "center", width: 50, headerSort: false },
+            { title: "Name", field: "name", widthGrow: 2, cssClass: "entity-cell__name" },
+            { title: "Start Time", field: "startTime", width: 120, hozAlign: "center", cssClass: "adm-cell-mono" },
+            { title: "End Time", field: "endTime", width: 120, hozAlign: "center", cssClass: "adm-cell-mono" },
+            { title: "Period #", field: "periodNumber", width: 100, hozAlign: "center" },
+            { title: "Is Break", field: "isBreak", width: 100, hozAlign: "center",
+                formatter: function(cell) {
+                    return cell.getValue()
+                        ? '<span class="adm-badge adm-badge--warning">Break</span>'
+                        : '<span class="adm-badge adm-badge--neutral">Class</span>';
+                }
+            },
+            { title: "Status", field: "isActive", width: 100, hozAlign: "center",
+                formatter: function(cell) {
+                    return cell.getValue()
+                        ? '<span class="adm-status adm-status--approved">Active</span>'
+                        : '<span class="adm-status adm-status--rejected">Inactive</span>';
+                }
+            },
+            { title: "Actions", field: "id", hozAlign: "center", headerSort: false, width: 140,
+                formatter: function(cell) {
+                    var d = cell.getRow().getData();
+                    return buildActionGroup([
+                        { url: '/Routine/CreateEditPeriod/' + d.id, className: 'action-btn--edit', icon: 'pencil', title: 'Edit' },
+                        { className: 'action-btn--delete', icon: 'trash', title: 'Delete', onClick: 'openDeleteModal("' + d.name.replace(/"/g, '&quot;') + '", ' + d.id + ')' }
+                    ]);
+                }
+            }
+        ];
+
+        var table = new Tabulator("#periods-grid", {
+            height: false,
+            layout: "fitColumns",
+            movableColumns: false,
+            pagination: true,
+            paginationMode: "remote",
+            paginationSize: 10,
+            paginationSizeSelector: [10, 25, 50, 100],
+            ajaxURL: '/Routine/GetPeriods',
+            paginationDataSent: { "page": "page", "size": "pageSize" },
+            ajaxResponse: function(url, params, response) {
+                return { data: response.data, last_page: response.last_page };
+            },
+            columns: columns,
+            placeholder: "<div class='dash-empty'><i class='bi bi-clock fs-1'></i><div class='dash-empty__title'>No Periods Found</div><div class='dash-empty__sub'>Create a new period to get started.</div></div>"
+        });
+
+        document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+            if (!pendingDeleteId) return;
+            fetch('/Routine/DeletePeriod/' + pendingDeleteId, {
+                method: 'POST',
+                headers: {
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                }
+            }).then(function(res) { return res.json(); }).then(function(data) {
+                closeDeleteModal();
+                if (data.success) { table.replaceData(); }
+            });
+        });
+    </script>
+}

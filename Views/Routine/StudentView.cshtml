@@ -1,0 +1,136 @@
+@model RoutineStudentViewModel
+@{
+    ViewData["Title"] = "My Timetable";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap" style="background: linear-gradient(135deg, #7C3AED, #A78BFA); box-shadow: 0 4px 12px rgba(124,58,237,0.3);">
+                <i class="bi bi-calendar-week"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">My Timetable</h1>
+                <p class="adm-header__sub">
+                    @Model.ClassName @if (!string.IsNullOrEmpty(Model.SectionName))
+                    {
+                        <span>- @Model.SectionName</span>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.GroupName))
+                    {
+                        <span>(@Model.GroupName)</span>
+                    }
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        @foreach (var stat in Model.Statistics)
+        {
+            <div class="col-md-3">
+                <div class="dash-stat-card">
+                    <div class="dash-stat-card__icon dash-stat-card__icon--@stat.IconClass">
+                        <i class="bi bi-@stat.Icon"></i>
+                    </div>
+                    <div class="dash-stat-card__body">
+                        <div class="dash-stat-card__value">@stat.Value</div>
+                        <div class="dash-stat-card__label">@stat.Label</div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="adm-card mb-4">
+        <div class="adm-card__header">
+            <h3>Weekly Timetable</h3>
+            <div class="d-flex gap-2">
+                <button type="button" class="adm-btn adm-btn--ghost adm-btn--sm" onclick="window.print()">
+                    <i class="bi bi-printer"></i> Print
+                </button>
+            </div>
+        </div>
+        <div class="adm-card__body">
+            <div id="student-routine-grid"></div>
+        </div>
+    </div>
+
+    @if (Model.TodayClasses != null && Model.TodayClasses.Count > 0)
+    {
+        <div class="adm-card">
+            <div class="adm-card__header">
+                <h3>Today's Classes</h3>
+            </div>
+            <div class="adm-card__body">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="small py-3">Period</th>
+                                <th class="small py-3">Subject</th>
+                                <th class="small py-3">Teacher</th>
+                                <th class="small py-3">Room</th>
+                                <th class="small py-3">Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var cls in Model.TodayClasses)
+                            {
+                                <tr>
+                                    <td class="fw-semibold">@cls.PeriodName</td>
+                                    <td>@cls.SubjectName</td>
+                                    <td>@cls.TeacherName</td>
+                                    <td>@cls.RoomNo</td>
+                                    <td class="adm-cell-mono">@cls.StartTime - @cls.EndTime</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        var today = new Date();
+        var dayMap = { 0: 'Sunday', 1: 'Monday', 2: 'Tuesday', 3: 'Wednesday', 4: 'Thursday', 5: 'Friday', 6: 'Saturday' };
+        var dayNumMap = { 'Saturday': 1, 'Sunday': 2, 'Monday': 3, 'Tuesday': 4, 'Wednesday': 5, 'Thursday': 6, 'Friday': 7 };
+
+        var columns = [
+            { title: "Period", field: "periodName", width: 100, cssClass: "fw-semibold" },
+            { title: "Saturday", field: "sat", widthGrow: 1, hozAlign: "center",
+                formatter: function(cell) { return cell.getValue() || '—'; }
+            },
+            { title: "Sunday", field: "sun", widthGrow: 1, hozAlign: "center",
+                formatter: function(cell) { return cell.getValue() || '—'; }
+            },
+            { title: "Monday", field: "mon", widthGrow: 1, hozAlign: "center",
+                formatter: function(cell) { return cell.getValue() || '—'; }
+            },
+            { title: "Tuesday", field: "tue", widthGrow: 1, hozAlign: "center",
+                formatter: function(cell) { return cell.getValue() || '—'; }
+            },
+            { title: "Wednesday", field: "wed", widthGrow: 1, hozAlign: "center",
+                formatter: function(cell) { return cell.getValue() || '—'; }
+            },
+            { title: "Thursday", field: "thu", widthGrow: 1, hozAlign: "center",
+                formatter: function(cell) { return cell.getValue() || '—'; }
+            },
+            { title: "Friday", field: "fri", widthGrow: 1, hozAlign: "center",
+                formatter: function(cell) { return cell.getValue() || '—'; }
+            }
+        ];
+
+        var table = new Tabulator("#student-routine-grid", {
+            height: false,
+            layout: "fitColumns",
+            movableColumns: false,
+            data: @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(Model.WeeklyGrid)),
+            columns: columns,
+            placeholder: "<div class='dash-empty'><i class='bi bi-calendar-week fs-1'></i><div class='dash-empty__title'>No Timetable Found</div><div class='dash-empty__sub'>Your timetable has not been published yet.</div></div>"
+        });
+    </script>
+}

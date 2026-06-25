@@ -1,0 +1,109 @@
+@using SchoolManagementSystem.Models.DTOs.Routine
+@model RoutineSettingsViewModel
+@{
+    ViewData["Title"] = "Routine Settings";
+}
+
+@Html.AntiForgeryToken()
+
+<div class="adm-page">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="adm-alert adm-alert--success mb-3">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap" style="background: linear-gradient(135deg, #2563EB, #60A5FA); box-shadow: 0 4px 12px rgba(37,99,235,0.3);">
+                <i class="bi bi-gear"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Routine Settings</h1>
+                <p class="adm-header__sub">Configure timetable generation parameters and constraints</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-8">
+            <form method="post" class="adm-card">
+                <div class="adm-card__header">
+                    <h3>Generation Constraints</h3>
+                </div>
+                <div class="adm-card__body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="adm-form-label">Max Periods Per Day (Teacher)</label>
+                            <input type="number" class="adm-input" name="maxTeacherPeriodsPerDay" value="@Model.MaxTeacherPeriodsPerDay" min="1" max="12" required />
+                            <span class="text-muted small">Maximum number of periods a teacher can have in a single day</span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="adm-form-label">Max Periods Per Week (Teacher)</label>
+                            <input type="number" class="adm-input" name="maxTeacherPeriodsPerWeek" value="@Model.MaxTeacherPeriodsPerWeek" min="1" max="60" required />
+                            <span class="text-muted small">Maximum total periods per week for a teacher</span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="adm-form-label">Working Days Per Week</label>
+                            <input type="number" class="adm-input" name="workingDaysPerWeek" value="@Model.WorkingDaysPerWeek" min="1" max="7" required />
+                            <span class="text-muted small">Number of working days in the academic week</span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="adm-form-label">Algorithm Version</label>
+                            <select class="adm-select" name="generationAlgorithmVersion">
+                                <option value="V1" selected="@(Model.GenerationAlgorithmVersion == "V1")">V1 - Standard</option>
+                                <option value="V2" selected="@(Model.GenerationAlgorithmVersion == "V2")">V2 - Optimized</option>
+                            </select>
+                            <span class="text-muted small">Which scheduling algorithm to use</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="adm-card__header mt-3">
+                    <h3>Behavior</h3>
+                </div>
+                <div class="adm-card__body">
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" id="autoPublish" name="autoPublishAfterGeneration" value="true" checked="@Model.AutoPublishAfterGeneration" />
+                        <input type="hidden" name="autoPublishAfterGeneration" value="false" />
+                        <label class="form-check-label" for="autoPublish">Auto-publish after generation</label>
+                        <div class="text-muted small ms-4">Automatically publish the generated timetable as the active version</div>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input type="checkbox" class="form-check-input" id="enableConflict" name="enableConflictDetection" value="true" checked="@Model.EnableConflictDetection" />
+                        <input type="hidden" name="enableConflictDetection" value="false" />
+                        <label class="form-check-label" for="enableConflict">Enable conflict detection</label>
+                        <div class="text-muted small ms-4">Check for scheduling conflicts during and after generation</div>
+                    </div>
+                </div>
+
+                <div class="adm-card__footer">
+                    <button type="submit" class="adm-btn adm-btn--primary">
+                        <i class="bi bi-check-lg"></i> <span>Save Settings</span>
+                    </button>
+                    <a href="/Routine/Dashboard" class="adm-btn adm-btn--ghost ms-2">Cancel</a>
+                </div>
+            </form>
+        </div>
+        <div class="col-md-4">
+            <div class="adm-card">
+                <div class="adm-card__header">
+                    <h3>Info</h3>
+                </div>
+                <div class="adm-card__body">
+                    <p class="small text-muted mb-2">
+                        <i class="bi bi-info-circle me-1"></i>
+                        These settings control the auto-generation algorithm behavior.
+                    </p>
+                    <ul class="small text-muted mb-0" style="padding-left:1.2rem;">
+                        <li class="mb-1"><strong>Max periods per day</strong> prevents teacher overload</li>
+                        <li class="mb-1"><strong>Working days</strong> defines the available slots per week</li>
+                        <li class="mb-1"><strong>Algorithm version</strong> selects the scheduling strategy</li>
+                        <li class="mb-1"><strong>Conflict detection</strong> validates the timetable after generation</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,99 @@
+@model List<RoutineEntryListItemDto>
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Timetable Export</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 10pt;
+            color: #222;
+            margin: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            background: #1a73e8;
+            color: #fff;
+            padding: 6px 8px;
+            text-align: left;
+            font-size: 9pt;
+            white-space: nowrap;
+        }
+        td {
+            padding: 4px 8px;
+            border: 1px solid #ccc;
+            vertical-align: top;
+        }
+        tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        .header-title {
+            font-size: 14pt;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-title">Timetable Entries</div>
+    <div style="margin-bottom:10px;font-size:9pt;color:#666;">
+        @(ViewBag.SchoolName ?? "School Name")
+        @if (!string.IsNullOrEmpty(ViewBag.AcademicYearName as string))
+        {
+            <text> | @ViewBag.AcademicYearName</text>
+        }
+        | Generated: @DateTime.Now.ToString("dd MMM yyyy hh:mm tt")
+    </div>
+
+    @if (Model.Count == 0)
+    {
+        <p style="color:#888;">No timetable entries found.</p>
+    }
+    else
+    {
+        <table>
+            <thead>
+                <tr>
+                    <th>Day</th>
+                    <th>Period</th>
+                    <th>Class</th>
+                    <th>Section</th>
+                    <th>Group</th>
+                    <th>Subject</th>
+                    <th>Teacher</th>
+                    <th>Room</th>
+                    <th>Type</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var entry in Model.OrderBy(e => e.DayNumber).ThenBy(e => e.RoutinePeriodId))
+                {
+                    <tr>
+                        <td>@entry.DayName</td>
+                        <td>@entry.PeriodName</td>
+                        <td>@entry.ClassName</td>
+                        <td>@(entry.SectionName ?? "")</td>
+                        <td>@(entry.GroupName ?? "")</td>
+                        <td><strong>@entry.SubjectName</strong></td>
+                        <td>@entry.TeacherName</td>
+                        <td>@entry.RoomNo</td>
+                        <td>@(entry.IsLab ? "Lab" : "Regular")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    <div style="margin-top:12px;font-size:8pt;color:#999;text-align:center;">
+        @(ViewBag.SchoolName ?? "School Name") — Timetable Export — Page 1 of 1
+    </div>
+</body>
+</html>

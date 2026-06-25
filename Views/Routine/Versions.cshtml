@@ -1,0 +1,209 @@
+@{
+    ViewData["Title"] = "Timetable Versions";
+}
+
+@Html.AntiForgeryToken()
+
+<div class="adm-page">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="adm-alert adm-alert--success mb-3">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap" style="background: linear-gradient(135deg, #9333EA, #C084FC); box-shadow: 0 4px 12px rgba(147,51,234,0.3);">
+                <i class="bi bi-tags"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Timetable Versions</h1>
+                <p class="adm-header__sub">Manage timetable versions — draft, approve, publish and archive</p>
+            </div>
+        </div>
+        <button type="button" class="adm-btn adm-btn--primary" onclick="openCreateVersionModal()">
+            <i class="bi bi-plus-circle"></i> <span>Create Version</span>
+        </button>
+    </div>
+
+    <div class="adm-table-card">
+        <div class="adm-table-card__body">
+            <div id="versions-grid"></div>
+        </div>
+    </div>
+</div>
+
+<div class="adm-modal-backdrop d-none" id="createVersionModalBackdrop">
+    <div class="adm-modal">
+        <div class="adm-modal__header">
+            <div class="adm-modal__header-left">
+                <div class="adm-modal__header-icon adm-modal__header-icon--primary">
+                    <i class="bi bi-tag"></i>
+                </div>
+                <div>
+                    <h5 class="adm-modal__title">Create New Version</h5>
+                    <p class="adm-modal__subtitle">Create a new timetable version</p>
+                </div>
+            </div>
+            <button type="button" class="adm-modal__close" onclick="closeCreateVersionModal()">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <div class="adm-modal__body">
+            <div class="mb-3">
+                <label class="adm-form-label">Version Name <span class="adm-required">*</span></label>
+                <input type="text" id="versionName" class="adm-input" placeholder="e.g. Term 1 Timetable" maxlength="100" />
+            </div>
+            <div class="mb-3">
+                <label class="adm-form-label">Academic Year <span class="adm-required">*</span></label>
+                <select id="versionAcademicYearId" class="adm-select"><option value="">Select Year</option></select>
+            </div>
+        </div>
+        <div class="adm-modal__footer">
+            <button class="adm-btn adm-btn--ghost" onclick="closeCreateVersionModal()">Cancel</button>
+            <button class="adm-btn adm-btn--primary" id="confirmCreateVersionBtn">
+                <i class="bi bi-check-lg"></i> Create
+            </button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function openCreateVersionModal() {
+            document.getElementById('createVersionModalBackdrop').classList.remove('d-none');
+            document.getElementById('versionName').value = '';
+            if (document.getElementById('versionAcademicYearId').options.length <= 1) {
+                loadAcademicYearsForVersion();
+            }
+        }
+
+        function closeCreateVersionModal() {
+            document.getElementById('createVersionModalBackdrop').classList.add('d-none');
+        }
+
+        function loadAcademicYearsForVersion() {
+            fetch('/api/ExamAdmin/academic-years')
+                .then(function(r) { return r.json(); })
+                .then(function(resp) {
+                    if (resp.success && resp.data) {
+                        var sel = document.getElementById('versionAcademicYearId');
+                        sel.innerHTML = '<option value="">Select Year</option>';
+                        resp.data.forEach(function(y) {
+                            sel.innerHTML += '<option value="' + y.id + '">' + y.name + '</option>';
+                        });
+                    }
+                });
+        }
+
+        document.getElementById('confirmCreateVersionBtn').addEventListener('click', function() {
+            var name = document.getElementById('versionName').value.trim();
+            var yearId = document.getElementById('versionAcademicYearId').value;
+            if (!name) { alert('Please enter a version name.'); return; }
+            if (!yearId) { alert('Please select an academic year.'); return; }
+
+            var btn = this;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Creating...';
+
+            fetch('/Routine/CreateVersion', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                },
+                body: JSON.stringify({ name: name, academicYearId: parseInt(yearId) })
+            }).then(function(r) { return r.json(); }).then(function(d) {
+                closeCreateVersionModal();
+                if (d.success) { if (table) table.replaceData(); }
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-check-lg"></i> Create';
+            }).catch(function() {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-check-lg"></i> Create';
+            });
+        });
+
+        function publishVersion(id) {
+            if (!confirm('Publish this version? It will become the active timetable.')) return;
+            fetch('/Routine/PublishVersion/' + id, {
+                method: 'POST',
+                headers: { 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value }
+            }).then(function(r) { return r.json(); }).then(function(d) {
+                if (d.success) table.replaceData();
+            });
+        }
+
+        function approveVersion(id) {
+            if (!confirm('Approve this version?')) return;
+            fetch('/Routine/ApproveVersion/' + id, {
+                method: 'POST',
+                headers: { 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value }
+            }).then(function(r) { return r.json(); }).then(function(d) {
+                if (d.success) table.replaceData();
+            });
+        }
+
+        function archiveVersion(id) {
+            if (!confirm('Archive this version? It will no longer be active.')) return;
+            fetch('/Routine/ArchiveVersion/' + id, {
+                method: 'POST',
+                headers: { 'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value }
+            }).then(function(r) { return r.json(); }).then(function(d) {
+                if (d.success) table.replaceData();
+            });
+        }
+
+        var columns = [
+            { title: "#", formatter: "rownum", hozAlign: "center", width: 50, headerSort: false },
+            { title: "Name", field: "name", widthGrow: 2, cssClass: "entity-cell__name" },
+            { title: "Status", field: "status", width: 120, hozAlign: "center",
+                formatter: function(cell) {
+                    var v = cell.getValue();
+                    if (v === 'Published') return '<span class="adm-status adm-status--approved">Published</span>';
+                    if (v === 'Approved') return '<span class="adm-status adm-status--approved">Approved</span>';
+                    if (v === 'Archived') return '<span class="adm-status adm-status--rejected">Archived</span>';
+                    return '<span class="adm-status adm-status--pending">Draft</span>';
+                }
+            },
+            { title: "Entries", field: "entryCount", width: 100, hozAlign: "center" },
+            { title: "Published At", field: "publishedAt", width: 160 },
+            { title: "Approved At", field: "approvedAt", width: 160 },
+            { title: "Actions", field: "id", hozAlign: "center", headerSort: false, width: 220,
+                formatter: function(cell) {
+                    var d = cell.getRow().getData();
+                    var btns = [];
+                    btns.push({ className: 'action-btn--edit', icon: 'pencil', title: 'Edit', onClick: 'alert("Edit version is not available in this version.")' });
+                    if (d.status === 'Draft') {
+                        btns.push({ className: 'action-btn--approve', icon: 'check2', title: 'Approve', onClick: 'approveVersion(' + d.id + ')' });
+                    }
+                    if (d.status === 'Approved' || d.status === 'Draft') {
+                        btns.push({ className: 'action-btn--publish', icon: 'megaphone', title: 'Publish', onClick: 'publishVersion(' + d.id + ')' });
+                    }
+                    if (d.status !== 'Archived') {
+                        btns.push({ className: 'action-btn--archive', icon: 'archive', title: 'Archive', onClick: 'archiveVersion(' + d.id + ')' });
+                    }
+                    return buildActionGroup(btns);
+                }
+            }
+        ];
+
+        var table = new Tabulator("#versions-grid", {
+            height: false,
+            layout: "fitColumns",
+            movableColumns: false,
+            pagination: true,
+            paginationMode: "remote",
+            paginationSize: 10,
+            paginationSizeSelector: [10, 25, 50, 100],
+            ajaxURL: '/Routine/GetVersions',
+            paginationDataSent: { "page": "page", "size": "pageSize" },
+            ajaxResponse: function(url, params, response) {
+                return { data: response.data, last_page: response.last_page };
+            },
+            columns: columns,
+            placeholder: "<div class='dash-empty'><i class='bi bi-tags fs-1'></i><div class='dash-empty__title'>No Versions Found</div><div class='dash-empty__sub'>Create a new timetable version to get started.</div></div>"
+        });
+    </script>
+}

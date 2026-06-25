@@ -1,0 +1,218 @@
+@model List<RoutineEntryListItemDto>
+@{
+    Layout = null;
+    var generatedDate = DateTime.Now;
+    var dayAbbr = new[] { "Sat", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri" };
+    var dayFull = new[] { "Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday" };
+    var periods = Model
+        .GroupBy(e => new { e.RoutinePeriodId, e.PeriodName })
+        .OrderBy(g => g.Key.RoutinePeriodId)
+        .Select(g => g.Key)
+        .ToList();
+    var entriesByPeriodDay = Model
+        .GroupBy(e => new { e.RoutinePeriodId, e.DayNumber })
+        .ToDictionary(g => g.Key, g => g.First());
+    var shownClass = Model.FirstOrDefault()?.ClassName;
+    var shownSection = Model.FirstOrDefault()?.SectionName;
+    var shownGroup = Model.FirstOrDefault()?.GroupName;
+    var hasFilter = Model.Select(e => e.ClassName).Distinct().Count() <= 2;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Weekly Timetable</title>
+    <style>
+        @@page {
+            size: A4 portrait;
+            margin: 12mm 10mm;
+        }
+        @@page :first {
+            margin-top: 12mm;
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 9pt;
+            color: #222;
+            margin: 0;
+            padding: 0;
+            line-height: 1.3;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #1a73e8;
+        }
+        .header .school-name {
+            font-size: 14pt;
+            font-weight: bold;
+            margin: 2px 0;
+        }
+        .header .school-addr {
+            font-size: 8pt;
+            color: #666;
+            margin: 2px 0;
+        }
+        .header .title {
+            font-size: 12pt;
+            font-weight: 600;
+            margin: 6px 0 2px;
+            color: #1a73e8;
+        }
+        .header .subtitle {
+            font-size: 9pt;
+            color: #555;
+            margin: 2px 0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 6px;
+            font-size: 8pt;
+        }
+        thead {
+            display: table-header-group;
+        }
+        th {
+            background: #1a73e8;
+            color: #fff;
+            padding: 6px 4px;
+            text-align: center;
+            font-size: 7.5pt;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        th:first-child {
+            text-align: left;
+            padding-left: 8px;
+        }
+        td {
+            padding: 4px 6px;
+            border: 1px solid #d0d0d0;
+            vertical-align: middle;
+            text-align: center;
+        }
+        td:first-child {
+            text-align: left;
+            font-weight: 600;
+            background: #f0f4ff;
+            width: 70px;
+            padding-left: 8px;
+        }
+        tr:nth-child(even) td:first-child {
+            background: #e8edf6;
+        }
+        .cell-empty {
+            color: #ccc;
+        }
+        .cell-subject {
+            font-weight: 600;
+            font-size: 8pt;
+        }
+        .cell-detail {
+            font-size: 7pt;
+            color: #555;
+        }
+        .cell-lab {
+            display: inline-block;
+            background: #fef3c7;
+            color: #92400e;
+            padding: 1px 6px;
+            border-radius: 3px;
+            font-size: 6.5pt;
+            font-weight: 600;
+        }
+        .footer {
+            margin-top: 10px;
+            padding-top: 6px;
+            border-top: 1px solid #ccc;
+            display: flex;
+            justify-content: space-between;
+            font-size: 7.5pt;
+            color: #888;
+        }
+        .footer .generated {
+            text-align: right;
+        }
+        @@media print {
+            thead { display: table-header-group; }
+            tbody { display: table-row-group; }
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="school-name">@(ViewBag.SchoolName ?? "School Name")</div>
+        @if (!string.IsNullOrEmpty(ViewBag.SchoolAddress as string))
+        {
+            <div class="school-addr">@ViewBag.SchoolAddress</div>
+        }
+        <div class="title">Weekly Timetable</div>
+        <div class="subtitle">
+            @if (!string.IsNullOrEmpty(shownClass))
+            {
+                @shownClass
+                if (!string.IsNullOrEmpty(shownSection)) { <text> - @shownSection</text> }
+                if (!string.IsNullOrEmpty(shownGroup)) { <text> (@shownGroup)</text> }
+                <text> | </text>
+            }
+            @Model.Count entries
+        </div>
+    </div>
+
+    @if (Model.Count == 0)
+    {
+        <p style="text-align:center;color:#888;padding:40px;">No timetable entries found.</p>
+    }
+    else
+    {
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:10%;">Period</th>
+                    @for (int d = 0; d < 7; d++)
+                    {
+                        <th style="width:12.86%;">@dayAbbr[d]</th>
+                    }
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var period in periods)
+                {
+                    <tr>
+                        <td>@period.PeriodName</td>
+                        @for (int d = 1; d <= 7; d++)
+                        {
+                            var key = new { period.RoutinePeriodId, DayNumber = d };
+                            if (entriesByPeriodDay.TryGetValue(key, out var entry))
+                            {
+                                <td>
+                                    <div class="cell-subject">@entry.SubjectName</div>
+                                    <div class="cell-detail">@entry.TeacherName</div>
+                                    <div class="cell-detail">@entry.RoomNo</div>
+                                    @if (entry.IsLab)
+                                    {
+                                        <div><span class="cell-lab">Lab</span></div>
+                                    }
+                                </td>
+                            }
+                            else
+                            {
+                                <td><span class="cell-empty">—</span></td>
+                            }
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    <div class="footer">
+        <span>@(ViewBag.SchoolName ?? "School Name") | @(ViewBag.AcademicYearName ?? "")</span>
+        <span class="generated">Generated: @generatedDate.ToString("dd MMM yyyy hh:mm tt")</span>
+    </div>
+</body>
+</html>

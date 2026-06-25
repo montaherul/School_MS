@@ -18,8 +18,12 @@ using SchoolManagementSystem.Repositories.Implementations.Result;
 using SchoolManagementSystem.Repositories.Implementations.Students;
 using SchoolManagementSystem.Repositories.Implementations.Teachers;
 using SchoolManagementSystem.Repositories.Implementations.Website;
+using SchoolManagementSystem.Repositories.Implementations.Routine;
+using SchoolManagementSystem.Repositories.Interfaces.Routine;
 using SchoolManagementSystem.Repositories.Interfaces;
 using SchoolManagementSystem.Services.Implementations.Exam;
+using SchoolManagementSystem.Services.Interfaces.Routine;
+using SchoolManagementSystem.Services.Implementations.Routine;
 using SchoolManagementSystem.Services.Interfaces.Exam;
 using SchoolManagementSystem.Repositories.Interfaces.Academic;
 using SchoolManagementSystem.Repositories.Interfaces.Admission;
@@ -265,7 +269,37 @@ public static class ServiceRegistration
         services.AddHostedService<SchoolManagementSystem.Services.Implementations.Website.EventNotificationWorker>();
         services.AddHostedService<SchoolManagementSystem.Services.Implementations.Website.EventReminderWorker>();
 
-       
+        // Routine Module
+        services.AddScoped<IRoutinePeriodRepository, RoutinePeriodRepository>();
+        services.AddScoped<IRoomRepository, RoomRepository>();
+        services.AddScoped<ISubjectRequirementRepository, SubjectRequirementRepository>();
+        services.AddScoped<IRoutineEntryRepository, RoutineEntryRepository>();
+        services.AddScoped<IWorkingDayRepository, WorkingDayRepository>();
+        services.AddScoped<ITeacherAvailabilityRepository, TeacherAvailabilityRepository>();
+        services.AddScoped<IRoutineGenerationRepository, RoutineGenerationRepository>();
+        services.AddScoped<IRoutineConflictRepository, RoutineConflictRepository>();
+        services.AddScoped<IRoutineVersionRepository, RoutineVersionRepository>();
+        services.AddScoped<ISubstituteAssignmentRepository, SubstituteAssignmentRepository>();
+
+        services.AddScoped<IRoutineDashboardRepository, RoutineDashboardRepository>();
+        services.AddScoped<IRoutineAnalyticsRepository, RoutineAnalyticsRepository>();
+        services.AddScoped<ITeacherLoadRepository, TeacherLoadRepository>();
+        services.AddScoped<IRoomUtilizationRepository, RoomUtilizationRepository>();
+
+        services.AddScoped<IRoutinePeriodService, RoutinePeriodService>();
+        services.AddScoped<IRoomService, RoomService>();
+        services.AddScoped<ISubjectRequirementService, SubjectRequirementService>();
+        services.AddScoped<IRoutineEntryService, RoutineEntryService>();
+        services.AddScoped<IWorkingDayService, WorkingDayService>();
+        services.AddScoped<ITeacherAvailabilityService, TeacherAvailabilityService>();
+        services.AddScoped<IRoutineGenerationService, RoutineGenerationService>();
+        services.AddScoped<IRoutineVersionService, RoutineVersionService>();
+        services.AddScoped<IRoutineEngineService, RoutineEngineService>();
+        services.AddScoped<ISubstituteService, SubstituteService>();
+
+        services.AddSingleton<RoutineGenerationQueue>();
+        services.AddHostedService<RoutineGenerationWorker>();
+
         return services;
     }
 }

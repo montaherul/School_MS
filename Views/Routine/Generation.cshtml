@@ -1,0 +1,262 @@
+@{
+    ViewData["Title"] = "Auto Generate Timetable";
+    var academicYears = ViewBag.AcademicYears as IEnumerable<dynamic>;
+}
+
+@Html.AntiForgeryToken()
+
+<div class="adm-page">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="adm-alert adm-alert--success mb-3">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap" style="background: linear-gradient(135deg, #DC2626, #F87171); box-shadow: 0 4px 12px rgba(220,38,38,0.3);">
+                <i class="bi bi-magic"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Auto Generate Timetable</h1>
+                <p class="adm-header__sub">Generate timetable automatically based on subject requirements and constraints</p>
+            </div>
+        </div>
+        <a href="/Routine/Timetable" class="adm-btn adm-btn--ghost">
+            <i class="bi bi-table"></i> <span>View Timetable</span>
+        </a>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-8">
+            <div class="adm-card">
+                <div class="adm-card__header">
+                    <h3>Generation Parameters</h3>
+                </div>
+                <div class="adm-card__body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="adm-form-label">Academic Year <span class="adm-required">*</span></label>
+                            <select id="academicYearId" class="adm-select">
+                                <option value="">Select Year</option>
+                                @if (academicYears != null)
+                                {
+                                    foreach (var y in academicYears)
+                                    {
+                                        <option value="@y.Id">@y.Name</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6 d-flex align-items-end">
+                            <button type="button" id="runGeneration" class="adm-btn adm-btn--primary adm-btn--lg">
+                                <i class="bi bi-play-fill"></i> <span>Run Generation</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="generationProgress" class="mt-3 d-none">
+                        <div class="progress" style="height: 24px;">
+                            <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%;">0%</div>
+                        </div>
+                        <p id="progressStatus" class="text-muted small mt-2">Initializing...</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="adm-card mt-3">
+                <div class="adm-card__header">
+                    <h3>Generation History</h3>
+                </div>
+                <div class="adm-card__body">
+                    <div id="generation-grid"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="adm-card">
+                <div class="adm-card__header">
+                    <h3>Conflicts</h3>
+                </div>
+                <div class="adm-card__body">
+                    <div id="conflictDisplay">
+                        <div class="dash-empty">
+                            <i class="bi bi-check-circle fs-1 text-success"></i>
+                            <div class="dash-empty__title">No Conflicts</div>
+                            <div class="dash-empty__sub">Run generation to check for conflicts.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var genTable;
+        var genPollTimer = null;
+
+        function loadGenHistory() {
+            if (genTable) { genTable.replaceData(); return; }
+            genTable = new Tabulator("#generation-grid", {
+                height: false,
+                layout: "fitColumns",
+                movableColumns: false,
+                pagination: true,
+                paginationMode: "remote",
+                paginationSize: 5,
+                ajaxURL: '/Routine/GetGenerations',
+                paginationDataSent: { "page": "page", "size": "pageSize" },
+                ajaxResponse: function(url, params, response) {
+                    return { data: response.data, last_page: response.last_page };
+                },
+                columns: [
+                    { title: "#", formatter: "rownum", hozAlign: "center", width: 50, headerSort: false },
+                    { title: "Status", field: "status", width: 120, hozAlign: "center",
+                        formatter: function(cell) {
+                            var v = cell.getValue();
+                            if (v === 'Completed' || v === 'Success') return '<span class="adm-status adm-status--approved">Completed</span>';
+                            if (v === 'Failed') return '<span class="adm-status adm-status--rejected">Failed</span>';
+                            if (v === 'Running') return '<span class="adm-status adm-status--pending">Running</span>';
+                            if (v === 'Partial') return '<span class="adm-status adm-status--pending">Partial</span>';
+                            return '<span class="adm-status adm-status--pending">' + (v || '—') + '</span>';
+                        }
+                    },
+                    { title: "Total", field: "totalAssignments", width: 80, hozAlign: "center" },
+                    { title: "Successful", field: "successfulAssignments", width: 100, hozAlign: "center" },
+                    { title: "Failed", field: "failedAssignments", width: 80, hozAlign: "center" },
+                    { title: "Conflicts", field: "conflictsDetected", width: 100, hozAlign: "center",
+                        formatter: function(cell) {
+                            var v = cell.getValue();
+                            return v > 0 ? '<span class="adm-badge adm-badge--danger">' + v + '</span>' : '<span class="adm-badge adm-badge--neutral">0</span>';
+                        }
+                    },
+                    { title: "Started", field: "startedAt", width: 160 },
+                    { title: "Completed", field: "completedAt", width: 160 }
+                ],
+                placeholder: "<div class='dash-empty'><i class='bi bi-clock-history fs-1'></i><div class='dash-empty__title'>No Generation History</div><div class='dash-empty__sub'>Run auto-generation to see history here.</div></div>"
+            });
+        }
+
+        function pollGenerationStatus(genId) {
+            if (genPollTimer) clearInterval(genPollTimer);
+            genPollTimer = setInterval(function() {
+                fetch('/Routine/GetGenerations?page=1&size=1')
+                    .then(function(r) { return r.json(); })
+                    .then(function(resp) {
+                        var list = resp.data || [];
+                        var gen = list.length > 0 ? list[0] : null;
+                        if (!gen) return;
+                        var progressBar = document.getElementById('progressBar');
+                        var progressStatus = document.getElementById('progressStatus');
+                        var status = gen.status || '';
+
+                        if (status === 'Running') {
+                            progressBar.style.width = '50%';
+                            progressBar.textContent = 'Processing...';
+                            progressStatus.textContent = 'Generation in progress...';
+                        } else if (status === 'Completed' || status === 'Success') {
+                            progressBar.style.width = '100%';
+                            progressBar.textContent = '100%';
+                            progressBar.classList.remove('progress-bar-animated', 'progress-bar-striped');
+                            progressStatus.textContent = 'Generation completed successfully!';
+                            clearInterval(genPollTimer);
+                            genPollTimer = null;
+                            if (genTable) genTable.replaceData();
+                            if (genId) {
+                                fetch('/Routine/GetGenerationConflicts/' + genId)
+                                    .then(function(r) { return r.json(); })
+                                    .then(function(conflicts) {
+                                        var arr = Array.isArray(conflicts) ? conflicts : [];
+                                        if (arr.length > 0) {
+                                            var html = '<div class="adm-alert adm-alert--warning"><strong><i class="bi bi-exclamation-triangle"></i> ' + arr.length + ' Conflicts Detected</strong><ul>';
+                                            arr.forEach(function(c) { html += '<li>' + (c.description || '') + '</li>'; });
+                                            html += '</ul></div>';
+                                            document.getElementById('conflictDisplay').innerHTML = html;
+                                        } else {
+                                            document.getElementById('conflictDisplay').innerHTML = '<div class="dash-empty"><i class="bi bi-check-circle fs-1 text-success"></i><div class="dash-empty__title">No Conflicts</div><div class="dash-empty__sub">Generation completed with zero conflicts.</div></div>';
+                                        }
+                                    });
+                            }
+                            var btn = document.getElementById('runGeneration');
+                            btn.disabled = false;
+                            btn.innerHTML = '<i class="bi bi-play-fill"></i> <span>Run Generation</span>';
+                        } else if (status === 'Failed') {
+                            progressBar.style.width = '100%';
+                            progressBar.textContent = 'Failed';
+                            progressBar.classList.remove('progress-bar-animated', 'progress-bar-striped');
+                            progressBar.classList.add('bg-danger');
+                            progressStatus.textContent = 'Generation failed: ' + (gen.errorMessage || 'Unknown error');
+                            clearInterval(genPollTimer);
+                            genPollTimer = null;
+                            if (genTable) genTable.replaceData();
+                            var btn = document.getElementById('runGeneration');
+                            btn.disabled = false;
+                            btn.innerHTML = '<i class="bi bi-play-fill"></i> <span>Run Generation</span>';
+                        } else if (status === 'Partial') {
+                            progressBar.style.width = '100%';
+                            progressBar.textContent = 'Partial';
+                            progressBar.classList.remove('progress-bar-animated', 'progress-bar-striped');
+                            progressBar.classList.add('bg-warning');
+                            progressStatus.textContent = 'Generation completed partially. Some entries could not be assigned.';
+                            clearInterval(genPollTimer);
+                            genPollTimer = null;
+                            if (genTable) genTable.replaceData();
+                            var btn = document.getElementById('runGeneration');
+                            btn.disabled = false;
+                            btn.innerHTML = '<i class="bi bi-play-fill"></i> <span>Run Generation</span>';
+                        }
+                    });
+            }, 2000);
+        }
+
+        loadGenHistory();
+
+        document.getElementById('runGeneration').addEventListener('click', function() {
+            var yearId = document.getElementById('academicYearId').value;
+            if (!yearId) { alert('Please select an academic year.'); return; }
+
+            var btn = this;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Generating...';
+
+            var progress = document.getElementById('generationProgress');
+            progress.classList.remove('d-none');
+            var progressBar = document.getElementById('progressBar');
+            var progressStatus = document.getElementById('progressStatus');
+            progressBar.style.width = '0%';
+            progressBar.textContent = '0%';
+            progressBar.classList.remove('bg-danger', 'bg-warning');
+            progressBar.classList.add('progress-bar-animated', 'progress-bar-striped');
+            progressStatus.textContent = 'Starting generation...';
+
+            fetch('/Routine/Generate?academicYearId=' + yearId, {
+                method: 'POST',
+                headers: {
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                }
+            }).then(function(r) { return r.json(); }).then(function(data) {
+                if (data.success) {
+                    progressBar.style.width = '30%';
+                    progressBar.textContent = '30%';
+                    progressStatus.textContent = 'Generation started, monitoring progress...';
+                    pollGenerationStatus(data.generationId);
+                } else {
+                    progressBar.style.width = '100%';
+                    progressBar.textContent = 'Failed';
+                    progressBar.classList.remove('progress-bar-animated', 'progress-bar-striped');
+                    progressBar.classList.add('bg-danger');
+                    progressStatus.textContent = 'Generation failed: ' + (data.message || 'Unknown error');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-play-fill"></i> <span>Run Generation</span>';
+                    if (genTable) genTable.replaceData();
+                }
+            }).catch(function(err) {
+                progressStatus.textContent = 'Error: ' + err.message;
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-play-fill"></i> <span>Run Generation</span>';
+            });
+        });
+    </script>
+}

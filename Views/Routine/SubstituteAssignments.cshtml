@@ -1,0 +1,185 @@
+@{
+    ViewData["Title"] = "Substitute Assignments";
+}
+
+@Html.AntiForgeryToken()
+
+<div class="adm-page">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="adm-alert adm-alert--success mb-3">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap" style="background: linear-gradient(135deg, #F59E0B, #FBBF24); box-shadow: 0 4px 12px rgba(245,158,11,0.3);">
+                <i class="bi bi-people"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Substitute Assignments</h1>
+                <p class="adm-header__sub">Manage substitute teacher assignments for routine periods</p>
+            </div>
+        </div>
+        <a href="/Routine/CreateEditSubstituteAssignment" class="adm-btn adm-btn--primary">
+            <i class="bi bi-plus-circle"></i> <span>Add Substitute</span>
+        </a>
+    </div>
+
+    <div class="adm-table-card">
+        <div class="adm-table-card__body">
+            <div id="substitutes-grid"></div>
+        </div>
+    </div>
+</div>
+
+<div class="adm-modal-backdrop d-none" id="deleteModalBackdrop">
+    <div class="adm-modal">
+        <div class="adm-modal__header">
+            <div class="adm-modal__header-left">
+                <div class="adm-modal__header-icon adm-modal__header-icon--danger">
+                    <i class="bi bi-trash"></i>
+                </div>
+                <div>
+                    <h5 class="adm-modal__title">Confirm Delete</h5>
+                    <p class="adm-modal__subtitle">This action cannot be undone</p>
+                </div>
+            </div>
+            <button type="button" class="adm-modal__close" id="closeDeleteModal">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <div class="adm-modal__body">
+            Are you sure you want to delete this substitute assignment?
+            <br><small class="text-muted">This action cannot be undone.</small>
+        </div>
+        <div class="adm-modal__footer">
+            <button class="adm-btn adm-btn--ghost" id="cancelDeleteBtn">Cancel</button>
+            <button class="adm-btn adm-btn--danger" id="confirmDeleteBtn">
+                <i class="bi bi-trash"></i> Delete
+            </button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var pendingDeleteId = null;
+        var pendingAction = null;
+        var deleteModal = document.getElementById('deleteModalBackdrop');
+
+        function openDeleteModal(id) {
+            pendingDeleteId = id;
+            pendingAction = 'delete';
+            deleteModal.classList.remove('d-none');
+        }
+
+        function closeDeleteModal() {
+            deleteModal.classList.add('d-none');
+            pendingDeleteId = null;
+            pendingAction = null;
+        }
+
+        document.getElementById('closeDeleteModal').addEventListener('click', closeDeleteModal);
+        document.getElementById('cancelDeleteBtn').addEventListener('click', closeDeleteModal);
+
+        var columns = [
+            { title: "#", formatter: "rownum", hozAlign: "center", width: 50, headerSort: false },
+            { title: "Subject", field: "subjectName", widthGrow: 2, cssClass: "entity-cell__name" },
+            { title: "Class", field: "className", width: 120 },
+            { title: "Original Teacher", field: "originalTeacherName", width: 150 },
+            { title: "Substitute Teacher", field: "substituteTeacherName", width: 150 },
+            { title: "Status", field: "status", width: 100, hozAlign: "center",
+                formatter: function(cell) {
+                    var s = cell.getValue();
+                    if (s === 'Approved') return '<span class="adm-status adm-status--approved">Approved</span>';
+                    if (s === 'Declined') return '<span class="adm-status adm-status--rejected">Declined</span>';
+                    if (s === 'Completed') return '<span class="adm-badge adm-badge--success">Completed</span>';
+                    return '<span class="adm-badge adm-badge--warning">Pending</span>';
+                }
+            },
+            { title: "Assigned Date", field: "assignmentDate", width: 140, hozAlign: "center",
+                formatter: function(cell) {
+                    return new Date(cell.getValue()).toLocaleDateString();
+                }
+            },
+            { title: "Effective Date", field: "effectiveDate", width: 140, hozAlign: "center",
+                formatter: function(cell) {
+                    return cell.getValue() ? new Date(cell.getValue()).toLocaleDateString() : '-';
+                }
+            },
+            { title: "Actions", field: "id", hozAlign: "center", headerSort: false, width: 200,
+                formatter: function(cell) {
+                    var d = cell.getRow().getData();
+                    var btns = buildActionGroup([
+                        { url: '/Routine/CreateEditSubstituteAssignment/' + d.id, className: 'action-btn--edit', icon: 'pencil', title: 'Edit' },
+                        { className: 'action-btn--delete', icon: 'trash', title: 'Delete', onClick: 'openDeleteModal(' + d.id + ')' }
+                    ]);
+                    if (d.status === 'Pending') {
+                        btns += ' <button class="action-btn action-btn--approve" title="Approve" onclick="approveSub(' + d.id + ')"><i class="bi bi-check-circle"></i></button>';
+                        btns += ' <button class="action-btn action-btn--reject" title="Decline" onclick="declineSub(' + d.id + ')"><i class="bi bi-x-circle"></i></button>';
+                    }
+                    return btns;
+                }
+            }
+        ];
+
+        var table = new Tabulator("#substitutes-grid", {
+            height: false,
+            layout: "fitColumns",
+            movableColumns: false,
+            pagination: true,
+            paginationMode: "remote",
+            paginationSize: 10,
+            paginationSizeSelector: [10, 25, 50, 100],
+            ajaxURL: '/Routine/GetSubstituteAssignments',
+            paginationDataSent: { "page": "page", "size": "pageSize" },
+            ajaxResponse: function(url, params, response) {
+                return { data: response.data, last_page: response.last_page };
+            },
+            columns: columns,
+            placeholder: "<div class='dash-empty'><i class='bi bi-people fs-1'></i><div class='dash-empty__title'>No Substitute Assignments</div><div class='dash-empty__sub'>Create a substitute assignment to get started.</div></div>"
+        });
+
+        function approveSub(id) {
+            if (!confirm('Approve this substitute assignment?')) return;
+            fetch('/Routine/ApproveSubstituteAssignment/' + id, {
+                method: 'POST',
+                headers: {
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                }
+            }).then(function(r) { return r.json(); }).then(function(d) {
+                if (d.success) { table.replaceData(); }
+                else { location.reload(); }
+            }).catch(function() { location.reload(); });
+        }
+
+        function declineSub(id) {
+            var reason = prompt('Enter reason for declining:');
+            if (reason === null) return;
+            fetch('/Routine/DeclineSubstituteAssignment/' + id + '?reason=' + encodeURIComponent(reason), {
+                method: 'POST',
+                headers: {
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                }
+            }).then(function(r) { return r.json(); }).then(function(d) {
+                if (d.success) { table.replaceData(); }
+                else { location.reload(); }
+            }).catch(function() { location.reload(); });
+        }
+
+        document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+            if (!pendingDeleteId) return;
+            fetch('/Routine/DeleteSubstituteAssignment/' + pendingDeleteId, {
+                method: 'POST',
+                headers: {
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                }
+            }).then(function(res) { return res.json(); }).then(function(data) {
+                closeDeleteModal();
+                if (data.success) { table.replaceData(); }
+            });
+        });
+    </script>
+}

@@ -1,0 +1,260 @@
+@using SchoolManagementSystem.Models.DTOs.Routine
+@model RoutineAnalyticsViewModel
+@{
+    ViewData["Title"] = "Routine Analytics";
+}
+
+@Html.AntiForgeryToken()
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap" style="background: linear-gradient(135deg, #0891B2, #22D3EE); box-shadow: 0 4px 12px rgba(8,145,178,0.3);">
+                <i class="bi bi-bar-chart"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Routine Analytics</h1>
+                <p class="adm-header__sub">Teacher load, room utilization, subject distribution and conflict summary</p>
+            </div>
+        </div>
+        <a href="/Routine/Dashboard" class="adm-btn adm-btn--ghost">
+            <i class="bi bi-arrow-left"></i> <span>Back to Dashboard</span>
+        </a>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="dash-stat-card">
+                <div class="dash-stat-card__icon dash-stat-card__icon--primary">
+                    <i class="bi bi-people"></i>
+                </div>
+                <div class="dash-stat-card__body">
+                    <div class="dash-stat-card__value">@Model.TeacherLoadSummary.Count</div>
+                    <div class="dash-stat-card__label">Teachers Scheduled</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dash-stat-card">
+                <div class="dash-stat-card__icon dash-stat-card__icon--success">
+                    <i class="bi bi-building"></i>
+                </div>
+                <div class="dash-stat-card__body">
+                    <div class="dash-stat-card__value">@Model.RoomUtilization.Count</div>
+                    <div class="dash-stat-card__label">Rooms Utilized</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dash-stat-card">
+                <div class="dash-stat-card__icon dash-stat-card__icon--warning">
+                    <i class="bi bi-book"></i>
+                </div>
+                <div class="dash-stat-card__body">
+                    <div class="dash-stat-card__value">@Model.SubjectDistribution.Count</div>
+                    <div class="dash-stat-card__label">Subjects</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dash-stat-card">
+                <div class="dash-stat-card__icon dash-stat-card__icon--info">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+                <div class="dash-stat-card__body">
+                    <div class="dash-stat-card__value">@Model.TotalConflicts</div>
+                    <div class="dash-stat-card__label">Total Conflicts</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="adm-card">
+                <div class="adm-card__header">
+                    <h3>Teacher Load Distribution</h3>
+                </div>
+                <div class="adm-card__body">
+                    <canvas id="teacherLoadChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="adm-card">
+                <div class="adm-card__header">
+                    <h3>Room Utilization (%)</h3>
+                </div>
+                <div class="adm-card__body">
+                    <canvas id="roomUtilChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-6">
+            <div class="adm-card">
+                <div class="adm-card__header">
+                    <h3>Subject Distribution</h3>
+                </div>
+                <div class="adm-card__body">
+                    <canvas id="subjectDistChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="adm-card">
+                <div class="adm-card__header">
+                    <h3>Conflict Summary</h3>
+                </div>
+                <div class="adm-card__body">
+                    <canvas id="conflictChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-12">
+            <div class="adm-card">
+                <div class="adm-card__header">
+                    <h3>Teacher Load Detail</h3>
+                </div>
+                <div class="adm-card__body">
+                    <div class="table-responsive">
+                        <table class="table table-sm adm-table">
+                            <thead>
+                                <tr>
+                                    <th>Teacher</th>
+                                    <th class="text-center">Periods/Week</th>
+                                    <th class="text-center">Max/Day</th>
+                                    <th class="text-center">Working Days</th>
+                                    <th class="text-center">Avg/Day</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var t in Model.TeacherLoadSummary)
+                                {
+                                    <tr>
+                                        <td>@t.TeacherName</td>
+                                        <td class="text-center">@t.TotalPeriodsPerWeek</td>
+                                        <td class="text-center">@t.MaxPeriodsPerDay</td>
+                                        <td class="text-center">@t.WorkingDays</td>
+                                        <td class="text-center">@t.AveragePerDay</td>
+                                    </tr>
+                                }
+                                @if (Model.TeacherLoadSummary.Count == 0)
+                                {
+                                    <tr><td colspan="5" class="text-center text-muted">No teacher load data available.</td></tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var teacherNames = @Html.Raw(Json.Serialize(Model.TeacherLoadSummary.Select(t => t.TeacherName).Take(20)));
+        var teacherLoads = @Html.Raw(Json.Serialize(Model.TeacherLoadSummary.Select(t => t.TotalPeriodsPerWeek).Take(20)));
+        var roomLabels = @Html.Raw(Json.Serialize(Model.RoomUtilization.Select(r => r.RoomNo).Take(15)));
+        var roomUtilPct = @Html.Raw(Json.Serialize(Model.RoomUtilization.Select(r => r.UtilizationPercent).Take(15)));
+        var subjectLabels = @Html.Raw(Json.Serialize(Model.SubjectDistribution.Select(s => s.SubjectName).Take(15)));
+        var subjectPeriods = @Html.Raw(Json.Serialize(Model.SubjectDistribution.Select(s => s.TotalPeriods).Take(15)));
+
+        new Chart(document.getElementById('teacherLoadChart'), {
+            type: 'bar',
+            data: {
+                labels: teacherNames,
+                datasets: [{
+                    label: 'Periods / Week',
+                    data: teacherLoads,
+                    backgroundColor: 'rgba(99, 102, 241, 0.7)',
+                    borderColor: 'rgb(99, 102, 241)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, title: { display: true, text: 'Periods' } },
+                    x: { ticks: { maxRotation: 45, font: { size: 10 } } }
+                }
+            }
+        });
+
+        new Chart(document.getElementById('roomUtilChart'), {
+            type: 'bar',
+            data: {
+                labels: roomLabels,
+                datasets: [{
+                    label: 'Utilization %',
+                    data: roomUtilPct,
+                    backgroundColor: 'rgba(16, 185, 129, 0.7)',
+                    borderColor: 'rgb(16, 185, 129)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, max: 100, title: { display: true, text: '%' } },
+                    x: { ticks: { maxRotation: 45, font: { size: 10 } } }
+                }
+            }
+        });
+
+        new Chart(document.getElementById('subjectDistChart'), {
+            type: 'doughnut',
+            data: {
+                labels: subjectLabels,
+                datasets: [{
+                    data: subjectPeriods,
+                    backgroundColor: [
+                        'rgba(99, 102, 241, 0.7)', 'rgba(16, 185, 129, 0.7)',
+                        'rgba(245, 158, 11, 0.7)', 'rgba(239, 68, 68, 0.7)',
+                        'rgba(59, 130, 246, 0.7)', 'rgba(139, 92, 246, 0.7)',
+                        'rgba(236, 72, 153, 0.7)', 'rgba(20, 184, 166, 0.7)',
+                        'rgba(249, 115, 22, 0.7)', 'rgba(34, 211, 238, 0.7)',
+                        'rgba(168, 85, 247, 0.7)', 'rgba(34, 197, 94, 0.7)',
+                        'rgba(251, 146, 60, 0.7)', 'rgba(14, 165, 233, 0.7)',
+                        'rgba(244, 63, 94, 0.7)'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'right', labels: { font: { size: 10 }, boxWidth: 12 } }
+                }
+            }
+        });
+
+        new Chart(document.getElementById('conflictChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Teacher Conflicts', 'Room Conflicts', 'Student Conflicts'],
+                datasets: [{
+                    data: [@Model.TeacherConflicts, @Model.RoomConflicts, @Model.StudentConflicts],
+                    backgroundColor: ['rgba(239, 68, 68, 0.7)', 'rgba(245, 158, 11, 0.7)', 'rgba(59, 130, 246, 0.7)']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom', labels: { font: { size: 11 } } }
+                }
+            }
+        });
+    </script>
+}

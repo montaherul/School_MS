@@ -195,6 +195,18 @@ public class SchoolDbContext : DbContext
     // Student Group DbSet
     public DbSet<StudentGroupAssignment> StudentGroupAssignments => Set<StudentGroupAssignment>();
 
+    // Routine Module DbSets
+    public DbSet<Models.Entities.Routine.RoutinePeriod> RoutinePeriods => Set<Models.Entities.Routine.RoutinePeriod>();
+    public DbSet<Models.Entities.Routine.Room> Rooms => Set<Models.Entities.Routine.Room>();
+    public DbSet<Models.Entities.Routine.SubjectRequirement> SubjectRequirements => Set<Models.Entities.Routine.SubjectRequirement>();
+    public DbSet<Models.Entities.Routine.RoutineEntry> RoutineEntries => Set<Models.Entities.Routine.RoutineEntry>();
+    public DbSet<Models.Entities.Routine.WorkingDay> WorkingDays => Set<Models.Entities.Routine.WorkingDay>();
+    public DbSet<Models.Entities.Routine.TeacherAvailability> TeacherAvailabilities => Set<Models.Entities.Routine.TeacherAvailability>();
+    public DbSet<Models.Entities.Routine.RoutineGeneration> RoutineGenerations => Set<Models.Entities.Routine.RoutineGeneration>();
+    public DbSet<Models.Entities.Routine.RoutineConflict> RoutineConflicts => Set<Models.Entities.Routine.RoutineConflict>();
+    public DbSet<Models.Entities.Routine.RoutineVersion> RoutineVersions => Set<Models.Entities.Routine.RoutineVersion>();
+    public DbSet<Models.Entities.Routine.SubstituteAssignment> SubstituteAssignments => Set<Models.Entities.Routine.SubstituteAssignment>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -544,6 +556,103 @@ modelBuilder.Entity<AdmitCard>()
     .HasIndex(a => a.AdmitCardNumber)
     .IsUnique()
     .HasFilter("[IsDeleted] = 0 AND [AdmitCardNumber] IS NOT NULL");
+
+// Routine Module Indexes
+        modelBuilder.Entity<Models.Entities.Routine.RoutineEntry>()
+            .HasIndex(x => new { x.AcademicYearId, x.DayNumber, x.RoutinePeriodId, x.RoomId })
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
+
+        modelBuilder.Entity<Models.Entities.Routine.RoutineEntry>()
+            .HasIndex(x => new { x.AcademicYearId, x.DayNumber, x.RoutinePeriodId, x.TeacherId })
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
+
+        modelBuilder.Entity<Models.Entities.Routine.RoutineEntry>()
+            .HasIndex(x => new { x.AcademicYearId, x.DayNumber, x.RoutinePeriodId, x.ClassId, x.SectionId, x.GroupId })
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
+
+        modelBuilder.Entity<Models.Entities.Routine.RoutinePeriod>()
+            .HasIndex(x => new { x.PeriodNumber, x.IsBreak });
+
+        modelBuilder.Entity<Models.Entities.Routine.Room>()
+            .HasIndex(x => x.RoomNo)
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
+
+        modelBuilder.Entity<Models.Entities.Routine.SubjectRequirement>()
+            .HasIndex(x => new { x.AcademicYearId, x.ClassId, x.SectionId, x.GroupId, x.SubjectId, x.TeacherId })
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
+
+        modelBuilder.Entity<Models.Entities.Routine.TeacherAvailability>()
+            .HasIndex(x => new { x.TeacherId, x.DayNumber, x.RoutinePeriodId })
+            .IsUnique();
+
+        modelBuilder.Entity<Models.Entities.Routine.WorkingDay>()
+            .HasIndex(x => new { x.AcademicYearId, x.DayNumber })
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
+
+        // RoutineEntry relationships
+        modelBuilder.Entity<Models.Entities.Routine.RoutineEntry>()
+            .HasOne(e => e.AcademicYear).WithMany()
+            .HasForeignKey(e => e.AcademicYearId).OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Models.Entities.Routine.RoutineEntry>()
+            .HasOne(e => e.Class).WithMany()
+            .HasForeignKey(e => e.ClassId).OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Models.Entities.Routine.RoutineEntry>()
+            .HasOne(e => e.Section).WithMany()
+            .HasForeignKey(e => e.SectionId).OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Models.Entities.Routine.RoutineEntry>()
+            .HasOne(e => e.Group).WithMany()
+            .HasForeignKey(e => e.GroupId).OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Models.Entities.Routine.RoutineEntry>()
+            .HasOne(e => e.Subject).WithMany()
+            .HasForeignKey(e => e.SubjectId).OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Models.Entities.Routine.RoutineEntry>()
+            .HasOne(e => e.Teacher).WithMany()
+            .HasForeignKey(e => e.TeacherId).OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Models.Entities.Routine.RoutineEntry>()
+            .HasOne(e => e.Room).WithMany()
+            .HasForeignKey(e => e.RoomId).OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Models.Entities.Routine.RoutineEntry>()
+            .HasOne(e => e.RoutinePeriod).WithMany()
+            .HasForeignKey(e => e.RoutinePeriodId).OnDelete(DeleteBehavior.Restrict);
+
+        // TeacherAvailability relationships
+        modelBuilder.Entity<Models.Entities.Routine.TeacherAvailability>()
+            .HasOne(a => a.Teacher).WithMany()
+            .HasForeignKey(a => a.TeacherId).OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Models.Entities.Routine.TeacherAvailability>()
+            .HasOne(a => a.RoutinePeriod).WithMany()
+            .HasForeignKey(a => a.RoutinePeriodId).OnDelete(DeleteBehavior.Restrict);
+
+        // SubstituteAssignment relationships
+        modelBuilder.Entity<Models.Entities.Routine.SubstituteAssignment>()
+            .HasOne(a => a.RoutineEntry).WithMany()
+            .HasForeignKey(a => a.RoutineEntryId).OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Models.Entities.Routine.SubstituteAssignment>()
+            .HasOne(a => a.OriginalTeacher).WithMany()
+            .HasForeignKey(a => a.OriginalTeacherId).OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Models.Entities.Routine.SubstituteAssignment>()
+            .HasOne(a => a.SubstituteTeacher).WithMany()
+            .HasForeignKey(a => a.SubstituteTeacherId).OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Models.Entities.Routine.SubstituteAssignment>()
+            .HasOne(a => a.AssignedBy).WithMany()
+            .HasForeignKey(a => a.AssignedById).OnDelete(DeleteBehavior.Restrict);
 
 DbInitializer.Seed(modelBuilder);
     }

@@ -1,0 +1,122 @@
+@{
+    ViewData["Title"] = "Timetable Conflicts";
+}
+
+@Html.AntiForgeryToken()
+
+<div class="adm-page">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="adm-alert adm-alert--success mb-3">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap" style="background: linear-gradient(135deg, #DC2626, #F87171); box-shadow: 0 4px 12px rgba(220,38,38,0.3);">
+                <i class="bi bi-exclamation-triangle"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Timetable Conflicts</h1>
+                <p class="adm-header__sub">View and resolve scheduling conflicts in the timetable</p>
+            </div>
+        </div>
+        <a href="/Routine/Generation" class="adm-btn adm-btn--ghost">
+            <i class="bi bi-magic"></i> <span>Re-generate</span>
+        </a>
+    </div>
+
+    <div class="adm-filters mb-3">
+        <div class="adm-filters__row">
+            <div class="adm-filters__field">
+                <label class="adm-label">Generation</label>
+                <select id="generationSelect" class="adm-select" onchange="loadConflicts()">
+                    <option value="">Select Generation</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="adm-table-card">
+        <div class="adm-table-card__body">
+            <div id="conflicts-grid"></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function resolveConflict(id) {
+            alert('Conflict resolution is not yet implemented. Please use the Timetable to manually resolve conflicts.');
+        }
+
+        var columns = [
+            { title: "#", formatter: "rownum", hozAlign: "center", width: 50, headerSort: false },
+            { title: "Conflict Type", field: "conflictType", width: 140, hozAlign: "center",
+                formatter: function(cell) {
+                    var v = cell.getValue();
+                    if (v === 'Room') return '<span class="adm-badge adm-badge--warning">Room Conflict</span>';
+                    if (v === 'Teacher') return '<span class="adm-badge adm-badge--danger">Teacher Conflict</span>';
+                    if (v === 'Time') return '<span class="adm-badge adm-badge--info">Time Conflict</span>';
+                    if (v === 'Duplicate') return '<span class="adm-badge adm-badge--neutral">Duplicate</span>';
+                    return '<span class="adm-badge adm-badge--neutral">' + (v || '—') + '</span>';
+                }
+            },
+            { title: "Description", field: "description", widthGrow: 2 },
+            { title: "Teacher", field: "teacherName", width: 150 },
+            { title: "Room", field: "roomNo", width: 100, hozAlign: "center" },
+            { title: "Subject", field: "subjectName", width: 150 },
+            { title: "Day", field: "dayName", width: 100 },
+            { title: "Resolved", field: "isResolved", width: 110, hozAlign: "center",
+                formatter: function(cell) {
+                    return cell.getValue()
+                        ? '<span class="adm-status adm-status--approved">Resolved</span>'
+                        : '<span class="adm-status adm-status--rejected">Unresolved</span>';
+                }
+            },
+            { title: "Actions", field: "id", hozAlign: "center", headerSort: false, width: 140,
+                formatter: function(cell) {
+                    var d = cell.getRow().getData();
+                    if (d.isResolved) return '<span class="text-muted small">—</span>';
+                    return buildActionGroup([
+                        { className: 'action-btn--resolve', icon: 'check2', title: 'Resolve', onClick: 'resolveConflict(' + d.id + ')' }
+                    ]);
+                }
+            }
+        ];
+
+        var table = new Tabulator("#conflicts-grid", {
+            height: false,
+            layout: "fitColumns",
+            movableColumns: false,
+            pagination: false,
+            columns: columns,
+            placeholder: "<div class='dash-empty'><i class='bi bi-check-circle fs-1 text-success'></i><div class='dash-empty__title'>No Conflicts Found</div><div class='dash-empty__sub'>The timetable is conflict-free.</div></div>"
+        });
+
+        function loadConflicts() {
+            var genId = document.getElementById('generationSelect').value;
+            if (!genId) { table.setData([]); return; }
+            fetch('/Routine/GetGenerationConflicts/' + genId)
+                .then(function(r) { return r.json(); })
+                .then(function(data) { table.setData(data); });
+        }
+
+        function loadGenerations() {
+            fetch('/Routine/GetGenerations?page=1&size=100')
+                .then(function(r) { return r.json(); })
+                .then(function(resp) {
+                    if (resp.data) {
+                        var sel = document.getElementById('generationSelect');
+                        sel.innerHTML = '<option value="">Select Generation</option>';
+                        resp.data.forEach(function(g) {
+                            sel.innerHTML += '<option value="' + g.id + '">' + (g.startedAt || 'Generation #' + g.id) + ' - ' + (g.status || '') + '</option>';
+                        });
+                    }
+                });
+        }
+
+        loadGenerations();
+    </script>
+}

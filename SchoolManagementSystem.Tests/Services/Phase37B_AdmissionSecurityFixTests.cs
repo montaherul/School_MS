@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Xunit;
 using Moq;
+using SchoolManagementSystem.Helpers.Email;
 using SchoolManagementSystem.Models.Entities.Admission;
 using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Services.Implementations.Admissions;
@@ -31,6 +32,7 @@ public class Phase37B_AdmissionSecurityFixTests
     private readonly Mock<IAdmissionRepository> _admissionRepoMock = new(MockBehavior.Loose);
     private readonly Mock<IStudentService> _studentServiceMock = new(MockBehavior.Loose);
     private readonly Mock<IEmailService> _emailServiceMock = new(MockBehavior.Loose);
+    private readonly Mock<IEmailSender> _emailSenderMock = new(MockBehavior.Loose);
     private readonly Mock<IUserRepository> _userRepoMock = new(MockBehavior.Loose);
     private readonly Mock<IRoleRepository> _roleRepoMock = new(MockBehavior.Loose);
     private readonly Mock<IUserRoleRepository> _userRoleRepoMock = new(MockBehavior.Loose);
@@ -46,7 +48,7 @@ public class Phase37B_AdmissionSecurityFixTests
     {
         return new AdmissionService(
             _uowMock.Object, _admissionRepoMock.Object,
-            _studentServiceMock.Object, _emailServiceMock.Object,
+            _studentServiceMock.Object, _emailServiceMock.Object, _emailSenderMock.Object,
             _userRepoMock.Object, _roleRepoMock.Object,
             _userRoleRepoMock.Object, _classRepoMock.Object,
             _studentRepoMock.Object, _sectionRepoMock.Object,

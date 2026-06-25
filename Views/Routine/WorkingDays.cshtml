@@ -1,0 +1,174 @@
+@{
+    ViewData["Title"] = "Working Days";
+}
+
+@Html.AntiForgeryToken()
+
+<div class="adm-page">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="adm-alert adm-alert--success mb-3">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap" style="background: linear-gradient(135deg, #16A34A, #4ADE80); box-shadow: 0 4px 12px rgba(22,163,74,0.3);">
+                <i class="bi bi-calendar-check"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Working Days</h1>
+                <p class="adm-header__sub">Configure which days of the week are working days for timetable generation</p>
+            </div>
+        </div>
+        <a href="/Routine/CreateEditWorkingDay" class="adm-btn adm-btn--primary">
+            <i class="bi bi-plus-circle"></i> <span>Add Working Day</span>
+        </a>
+    </div>
+
+    <div class="adm-filters mb-3">
+        <div class="adm-filters__row">
+            <div class="adm-filters__field">
+                <label class="adm-label">Academic Year</label>
+                <select id="academicYearFilter" class="adm-select">
+                    <option value="">Select Year</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="adm-table-card">
+        <div class="adm-table-card__body">
+            <div id="workingdays-grid"></div>
+        </div>
+    </div>
+</div>
+
+<div class="adm-modal-backdrop d-none" id="deleteModalBackdrop">
+    <div class="adm-modal">
+        <div class="adm-modal__header">
+            <div class="adm-modal__header-left">
+                <div class="adm-modal__header-icon adm-modal__header-icon--danger">
+                    <i class="bi bi-trash"></i>
+                </div>
+                <div>
+                    <h5 class="adm-modal__title">Confirm Delete</h5>
+                    <p class="adm-modal__subtitle">This action cannot be undone</p>
+                </div>
+            </div>
+            <button type="button" class="adm-modal__close" id="closeDeleteModal">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <div class="adm-modal__body">
+            Are you sure you want to delete this working day configuration?
+            <br><small class="text-muted">This action cannot be undone.</small>
+        </div>
+        <div class="adm-modal__footer">
+            <button class="adm-btn adm-btn--ghost" id="cancelDeleteBtn">Cancel</button>
+            <button class="adm-btn adm-btn--danger" id="confirmDeleteBtn">
+                <i class="bi bi-trash"></i> Delete
+            </button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var pendingDeleteId = null;
+        var deleteModal = document.getElementById('deleteModalBackdrop');
+
+        function openDeleteModal(id) {
+            pendingDeleteId = id;
+            deleteModal.classList.remove('d-none');
+        }
+
+        function closeDeleteModal() {
+            deleteModal.classList.add('d-none');
+            pendingDeleteId = null;
+        }
+
+        document.getElementById('closeDeleteModal').addEventListener('click', closeDeleteModal);
+        document.getElementById('cancelDeleteBtn').addEventListener('click', closeDeleteModal);
+
+        var columns = [
+            { title: "#", formatter: "rownum", hozAlign: "center", width: 50, headerSort: false },
+            { title: "Day Name", field: "dayName", widthGrow: 2, cssClass: "fw-semibold" },
+            { title: "Day Number", field: "dayNumber", width: 120, hozAlign: "center" },
+            { title: "Is Working Day", field: "isWorkingDay", width: 140, hozAlign: "center",
+                formatter: function(cell) {
+                    return cell.getValue()
+                        ? '<span class="adm-status adm-status--approved">Working Day</span>'
+                        : '<span class="adm-status adm-status--rejected">Holiday</span>';
+                }
+            },
+            { title: "Actions", field: "id", hozAlign: "center", headerSort: false, width: 140,
+                formatter: function(cell) {
+                    var d = cell.getRow().getData();
+                    return buildActionGroup([
+                        { url: '/Routine/CreateEditWorkingDay/' + d.id, className: 'action-btn--edit', icon: 'pencil', title: 'Edit' },
+                        { className: 'action-btn--delete', icon: 'trash', title: 'Delete', onClick: 'openDeleteModal(' + d.id + ')' }
+                    ]);
+                }
+            }
+        ];
+
+        function loadAcademicYears() {
+            fetch('/api/ExamAdmin/academic-years')
+                .then(function(r) { return r.json(); })
+                .then(function(resp) {
+                    if (resp.success && resp.data) {
+                        var sel = document.getElementById('academicYearFilter');
+                        resp.data.forEach(function(y) {
+                            sel.innerHTML += '<option value="' + y.id + '">' + y.name + '</option>';
+                        });
+                        var active = resp.data.find(function(y) { return y.isActive; });
+                        if (active) { sel.value = active.id; }
+                        table.setData();
+                    }
+                });
+        }
+
+        function getAjaxParams() {
+            return { academicYearId: document.getElementById('academicYearFilter').value };
+        }
+
+        var table = new Tabulator("#workingdays-grid", {
+            height: false,
+            layout: "fitColumns",
+            movableColumns: false,
+            pagination: true,
+            paginationMode: "remote",
+            paginationSize: 10,
+            paginationSizeSelector: [10, 25, 50, 100],
+            ajaxURL: '/Routine/GetWorkingDays',
+            ajaxParams: getAjaxParams,
+            paginationDataSent: { "page": "page", "size": "pageSize" },
+            ajaxResponse: function(url, params, response) {
+                return { data: response.data, last_page: response.last_page };
+            },
+            columns: columns,
+            placeholder: "<div class='dash-empty'><i class='bi bi-calendar-check fs-1'></i><div class='dash-empty__title'>No Working Days Configured</div><div class='dash-empty__sub'>Add working days for the academic year.</div></div>"
+        });
+
+        document.getElementById('academicYearFilter').addEventListener('change', function() {
+            table.setData();
+        });
+
+        loadAcademicYears();
+
+        document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+            if (!pendingDeleteId) return;
+            fetch('/Routine/DeleteWorkingDay/' + pendingDeleteId, {
+                method: 'POST',
+                headers: {
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                }
+            }).then(function(res) { return res.json(); }).then(function(data) {
+                closeDeleteModal();
+                if (data.success) { table.replaceData(); }
+            });
+        });
+    </script>
+}

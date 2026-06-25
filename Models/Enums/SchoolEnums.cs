@@ -48,3 +48,9 @@ public enum PromotionMethod { GpaBased = 1, MarksBased = 2, PositionBased = 3, A
 public enum RollGenerationStrategy { MeritBased = 1, Alphabetical = 2, PreviousRoll = 3, Manual = 4 }
 public enum RankingTieBreaker { GpaDesc = 1, MarksDesc = 2, PassedSubjectsDesc = 3, AttendanceDesc = 4, RollAsc = 5, NameAsc = 6 }
 public enum GroupAssignmentMethod { StudentChoice = 1, MeritBased = 2, SubjectGpaBased = 3, AdminAssignment = 4 }
+
+public enum RoutineGenerationStatus { Pending = 1, Running = 2, Completed = 3, Failed = 4, Partial = 5 }
+public enum RoutineVersionStatus { Draft = 1, Approved = 2, Published = 3, Archived = 4 }
+public enum ConflictType { TeacherConflict = 1, RoomConflict = 2, StudentConflict = 3, LabConflict = 4, SectionConflict = 5, GroupConflict = 6, Duplicate = 7, UnavailableTeacher = 8, UnavailableRoom = 9, HolidayConflict = 10, BreakConflict = 11 }
+public enum RoomType { Classroom = 1, Laboratory = 2, ComputerLab = 3, PhysicsLab = 4, ChemistryLab = 5, BiologyLab = 6, SeminarHall = 7, Auditorium = 8, Library = 9, StaffRoom = 10 }
+public enum DayOfWeek { Sunday = 0, Monday = 1, Tuesday = 2, Wednesday = 3, Thursday = 4, Friday = 5, Saturday = 6 }

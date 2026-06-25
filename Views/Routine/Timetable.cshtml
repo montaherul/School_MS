@@ -1,0 +1,349 @@
+@{
+    ViewData["Title"] = "Routine Timetable";
+}
+
+@Html.AntiForgeryToken()
+
+<div class="adm-page">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="adm-alert adm-alert--success mb-3">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap" style="background: linear-gradient(135deg, #7C3AED, #A78BFA); box-shadow: 0 4px 12px rgba(124,58,237,0.3);">
+                <i class="bi bi-table"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Routine Timetable</h1>
+                <p class="adm-header__sub">Manage class-wise timetable entries and schedules</p>
+            </div>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="/Routine/Dashboard" class="adm-btn adm-btn--ghost">
+                <i class="bi bi-grid"></i> <span>Dashboard</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="adm-filters mb-3">
+        <div class="adm-filters__row">
+            <div class="adm-filters__field">
+                <label class="adm-label">Academic Year</label>
+                <select id="academicYearFilter" class="adm-select">
+                    <option value="">Select Year</option>
+                </select>
+            </div>
+            <div class="adm-filters__field">
+                <label class="adm-label">Class</label>
+                <select id="classFilter" class="adm-select">
+                    <option value="">All Classes</option>
+                </select>
+            </div>
+            <div class="adm-filters__field">
+                <label class="adm-label">Section</label>
+                <select id="sectionFilter" class="adm-select">
+                    <option value="">All Sections</option>
+                </select>
+            </div>
+            <div class="adm-filters__field">
+                <label class="adm-label">Teacher</label>
+                <select id="teacherFilter" class="adm-select">
+                    <option value="">All Teachers</option>
+                </select>
+            </div>
+            <div class="adm-filters__field adm-filters__field--actions">
+                <label class="adm-label">Day</label>
+                <div class="d-flex gap-1" id="dayFilter">
+                    <button type="button" class="adm-btn adm-btn--ghost adm-btn--sm day-btn active" data-value="">All</button>
+                    <button type="button" class="adm-btn adm-btn--ghost adm-btn--sm day-btn" data-value="1">Sat</button>
+                    <button type="button" class="adm-btn adm-btn--ghost adm-btn--sm day-btn" data-value="2">Sun</button>
+                    <button type="button" class="adm-btn adm-btn--ghost adm-btn--sm day-btn" data-value="3">Mon</button>
+                    <button type="button" class="adm-btn adm-btn--ghost adm-btn--sm day-btn" data-value="4">Tue</button>
+                    <button type="button" class="adm-btn adm-btn--ghost adm-btn--sm day-btn" data-value="5">Wed</button>
+                    <button type="button" class="adm-btn adm-btn--ghost adm-btn--sm day-btn" data-value="6">Thu</button>
+                    <button type="button" class="adm-btn adm-btn--ghost adm-btn--sm day-btn" data-value="7">Fri</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex gap-2 mb-3 align-items-center">
+        <a href="/Routine/Generation" class="adm-btn adm-btn--success">
+            <i class="bi bi-magic"></i> <span>Auto Generate</span>
+        </a>
+        <button type="button" class="adm-btn adm-btn--primary" onclick="openEntryModal()">
+            <i class="bi bi-plus-circle"></i> <span>Add Entry</span>
+        </button>
+        <button type="button" class="adm-btn adm-btn--info" onclick="exportPdf()">
+            <i class="bi bi-download"></i> <span>Export</span>
+        </button>
+        <button type="button" id="reset-filters" class="adm-btn adm-btn--ghost">
+            <i class="bi bi-x-circle"></i> Reset
+        </button>
+        <div class="ms-auto d-flex gap-2" id="bulkToolbar">
+            <button type="button" class="adm-btn adm-btn--danger" id="bulkDeleteBtn" disabled>
+                <i class="bi bi-trash"></i> <span>Delete Selected</span>
+            </button>
+            <button type="button" class="adm-btn adm-btn--info" id="bulkAssignRoomBtn" disabled>
+                <i class="bi bi-door-open"></i> <span>Assign Room</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="adm-table-card">
+        <div class="adm-table-card__body">
+            <div id="routine-grid"></div>
+        </div>
+    </div>
+</div>
+
+<div class="adm-modal-backdrop d-none" id="deleteModalBackdrop">
+    <div class="adm-modal">
+        <div class="adm-modal__header">
+            <div class="adm-modal__header-left">
+                <div class="adm-modal__header-icon adm-modal__header-icon--danger">
+                    <i class="bi bi-trash"></i>
+                </div>
+                <div>
+                    <h5 class="adm-modal__title">Confirm Delete</h5>
+                    <p class="adm-modal__subtitle">This action cannot be undone</p>
+                </div>
+            </div>
+            <button type="button" class="adm-modal__close" id="closeDeleteModal">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <div class="adm-modal__body">
+            Are you sure you want to delete this timetable entry?
+            <br><small class="text-muted">This action cannot be undone.</small>
+        </div>
+        <div class="adm-modal__footer">
+            <button class="adm-btn adm-btn--ghost" id="cancelDeleteBtn">Cancel</button>
+            <button class="adm-btn adm-btn--danger" id="confirmDeleteBtn">
+                <i class="bi bi-trash"></i> Delete
+            </button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        var pendingDeleteId = null;
+        var deleteModal = document.getElementById('deleteModalBackdrop');
+        var table;
+
+        function openDeleteModal(id) {
+            pendingDeleteId = id;
+            deleteModal.classList.remove('d-none');
+        }
+
+        function closeDeleteModal() {
+            deleteModal.classList.add('d-none');
+            pendingDeleteId = null;
+        }
+
+        document.getElementById('closeDeleteModal').addEventListener('click', closeDeleteModal);
+        document.getElementById('cancelDeleteBtn').addEventListener('click', closeDeleteModal);
+
+        function editEntry(id) {
+            alert('Edit entry is not available in this view. Please use the Timetable grid to modify entries directly.');
+        }
+
+        function deleteEntry(id) {
+            openDeleteModal(id);
+        }
+
+        function getFilterParams() {
+            return {
+                academicYearId: document.getElementById('academicYearFilter').value,
+                classId: document.getElementById('classFilter').value,
+                sectionId: document.getElementById('sectionFilter').value,
+                teacherId: document.getElementById('teacherFilter').value,
+                dayNumber: document.querySelector('#dayFilter .active')?.getAttribute('data-value') || ''
+            };
+        }
+
+        function loadFilters() {
+            fetch('/api/ExamAdmin/academic-years')
+                .then(r => r.json())
+                .then(resp => {
+                    if (resp.success && resp.data) {
+                        var yearSel = document.getElementById('academicYearFilter');
+                        resp.data.forEach(function(y) {
+                            yearSel.innerHTML += '<option value="' + y.id + '">' + y.name + '</option>';
+                        });
+                    }
+                });
+            fetch('/api/ExamAdmin/classes')
+                .then(r => r.json())
+                .then(resp => {
+                    if (resp.success && resp.data) {
+                        var classSel = document.getElementById('classFilter');
+                        resp.data.forEach(function(c) {
+                            classSel.innerHTML += '<option value="' + c.id + '">' + c.name + '</option>';
+                        });
+                    }
+                });
+        }
+
+        loadFilters();
+
+        document.querySelectorAll('#dayFilter .day-btn').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('#dayFilter .day-btn').forEach(function(b) { b.classList.remove('active'); });
+                this.classList.add('active');
+                table.setData();
+            });
+        });
+
+        document.getElementById('classFilter').addEventListener('change', function() {
+            var classId = this.value;
+            var sectionSel = document.getElementById('sectionFilter');
+            sectionSel.innerHTML = '<option value="">All Sections</option>';
+            if (classId) {
+                fetch('/Routine/GetSectionsByClass?classId=' + classId)
+                    .then(r => r.json())
+                    .then(function(sections) {
+                        sections.forEach(function(s) {
+                            sectionSel.innerHTML += '<option value="' + s.id + '">' + s.name + '</option>';
+                        });
+                    });
+            }
+            table.setData();
+        });
+
+        document.getElementById('academicYearFilter').addEventListener('change', function() { table.setData(); });
+        document.getElementById('sectionFilter').addEventListener('change', function() { table.setData(); });
+        document.getElementById('teacherFilter').addEventListener('change', function() { table.setData(); });
+
+        document.getElementById('reset-filters').addEventListener('click', function() {
+            document.getElementById('academicYearFilter').value = '';
+            document.getElementById('classFilter').value = '';
+            document.getElementById('sectionFilter').value = '';
+            document.getElementById('teacherFilter').value = '';
+            document.querySelectorAll('#dayFilter .day-btn').forEach(function(b) { b.classList.remove('active'); });
+            document.querySelector('#dayFilter .day-btn[data-value=""]').classList.add('active');
+            table.setData();
+        });
+
+        function exportPdf() {
+            var params = getFilterParams();
+            var qs = Object.keys(params).map(function(k) { return k + '=' + encodeURIComponent(params[k]); }).join('&');
+            window.open('/Routine/ExportPdf?' + qs, '_blank');
+        }
+
+        function exportExcel() {
+            var params = getFilterParams();
+            var qs = Object.keys(params).map(function(k) { return k + '=' + encodeURIComponent(params[k]); }).join('&');
+            window.open('/Routine/ExportExcel?' + qs, '_blank');
+        }
+
+        var columns = [
+            { formatter: "rowSelection", titleFormatter: "rowSelection", hozAlign: "center", width: 50, headerSort: false },
+            { title: "Day", field: "dayName", width: 100 },
+            { title: "Period", field: "periodName", width: 100 },
+            { title: "Class", field: "className", width: 120 },
+            { title: "Section", field: "sectionName", width: 100 },
+            { title: "Group", field: "groupName", width: 100 },
+            { title: "Subject", field: "subjectName", widthGrow: 2,
+                formatter: function(cell) { return '<span class="fw-semibold">' + cell.getValue() + '</span>'; }
+            },
+            { title: "Teacher", field: "teacherName", width: 150 },
+            { title: "Room", field: "roomNo", width: 100, hozAlign: "center" },
+            { title: "Type", field: "isLab", width: 80, hozAlign: "center",
+                formatter: function(cell) { return cell.getValue() ? '<span class="adm-badge adm-badge--warning">Lab</span>' : ''; }
+            },
+            { title: "Actions", width: 120, hozAlign: "center", headerSort: false,
+                formatter: function(cell) {
+                    var d = cell.getRow().getData();
+                    return buildActionGroup([
+                        { className: 'action-btn--edit', icon: 'pencil', title: 'Edit', onClick: 'editEntry(' + d.id + ')' },
+                        { className: 'action-btn--delete', icon: 'trash', title: 'Delete', onClick: 'deleteEntry(' + d.id + ')' }
+                    ]);
+                }
+            }
+        ];
+
+        function onRowDropped(fromRow, toRow) {
+            var fromData = fromRow.getData();
+            var toData = toRow ? toRow.getData() : null;
+            if (!toData || fromData.id === toData.id) return;
+            if (fromData.dayNumber === toData.dayNumber && fromData.routinePeriodId === toData.routinePeriodId) {
+                RoutineGrid.swapEntries(fromData.id, toData.id, function (err) {
+                    if (err) { RoutineGrid.showToast('error', err); table.replaceData(); }
+                });
+            } else {
+                RoutineGrid.moveEntry(fromData.id, toData.routinePeriodId, toData.dayNumber, function (err) {
+                    if (err) { RoutineGrid.showToast('error', err); table.replaceData(); }
+                });
+            }
+        }
+
+        table = new Tabulator("#routine-grid", {
+            height: false,
+            layout: "fitColumns",
+            movableColumns: false,
+            movableRows: true,
+            movableRowsEnd: function (fromRow, toRow) {
+                onRowDropped(fromRow, toRow);
+            },
+            selectable: true,
+            selectableRangeMode: "click",
+            pagination: true,
+            paginationMode: "remote",
+            paginationSize: 25,
+            paginationSizeSelector: [10, 25, 50, 100],
+            ajaxURL: '/Routine/GetTimetableEntries',
+            ajaxParams: getFilterParams,
+            paginationDataSent: { "page": "page", "size": "pageSize" },
+            ajaxResponse: function(url, params, response) {
+                return { data: response.data, last_page: response.last_page };
+            },
+            columns: columns,
+            placeholder: "<div class='dash-empty'><i class='bi bi-table fs-1'></i><div class='dash-empty__title'>No Timetable Entries Found</div><div class='dash-empty__sub'>Try adjusting your filters or generate a new timetable.</div></div>"
+        });
+
+        document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+            if (!pendingDeleteId) return;
+            fetch('/Routine/DeleteEntry/' + pendingDeleteId, {
+                method: 'POST',
+                headers: {
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                }
+            }).then(function(res) { return res.json(); }).then(function(data) {
+                closeDeleteModal();
+                if (data.success) { table.replaceData(); }
+            });
+        });
+
+        document.getElementById('bulkDeleteBtn').addEventListener('click', function() {
+            var ids = RoutineGrid.getSelectedIds();
+            if (!ids.length) return;
+            if (!confirm('Delete ' + ids.length + ' selected entries?')) return;
+            RoutineGrid.bulkDelete(ids);
+        });
+
+        document.getElementById('bulkAssignRoomBtn').addEventListener('click', function() {
+            var ids = RoutineGrid.getSelectedIds();
+            if (!ids.length) return;
+            var roomId = prompt('Enter Room ID to assign:');
+            if (!roomId) return;
+            RoutineGrid.bulkUpdate(ids, parseInt(roomId), 0, 0, function(err) {
+                if (err) RoutineGrid.showToast('error', err);
+            });
+        });
+
+        table.on('rowSelectionChanged', function(data) {
+            var btn = document.getElementById('bulkDeleteBtn');
+            var btn2 = document.getElementById('bulkAssignRoomBtn');
+            var hasSelection = data.length > 0;
+            btn.disabled = !hasSelection;
+            btn2.disabled = !hasSelection;
+        });
+    </script>
+}
+<script src="~/js/routine-grid.js"></script>

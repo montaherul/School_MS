@@ -1,0 +1,92 @@
+@model SubstituteAssignmentUpsertDto
+@{
+    ViewData["Title"] = Model.Id > 0 ? "Edit Substitute Assignment" : "Add Substitute Assignment";
+    var routineEntries = ViewBag.RoutineEntries as IEnumerable<dynamic>;
+    var teachers = ViewBag.Teachers as IEnumerable<dynamic>;
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap" style="background: linear-gradient(135deg, #F59E0B, #FBBF24); box-shadow: 0 4px 12px rgba(245,158,11,0.3);">
+                <i class="bi bi-people"></i>
+            </div>
+            <div>
+                <h1 class="adm-header__title">@ViewData["Title"]</h1>
+                <p class="adm-header__sub">@(Model.Id > 0 ? "Modify substitute assignment details" : "Assign a substitute teacher for a routine period")</p>
+            </div>
+        </div>
+        <a href="/Routine/SubstituteAssignments" class="adm-btn adm-btn--ghost">
+            <i class="bi bi-arrow-left"></i> <span>Back to Substitutes</span>
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <form asp-action="CreateEditSubstituteAssignment" method="post">
+                        <input type="hidden" asp-for="Id" />
+
+                        <div class="mb-3">
+                            <label asp-for="RoutineEntryId" class="form-label">Routine Entry <span class="text-danger">*</span></label>
+                            <select asp-for="RoutineEntryId" class="form-select">
+                                <option value="">Select Routine Entry</option>
+                                @if (routineEntries != null)
+                                {
+                                    foreach (var re in routineEntries)
+                                    {
+                                        <option value="@re.Id">@re.Display</option>
+                                    }
+                                }
+                            </select>
+                            <span asp-validation-for="RoutineEntryId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="SubstituteTeacherId" class="form-label">Substitute Teacher <span class="text-danger">*</span></label>
+                            <select asp-for="SubstituteTeacherId" class="form-select">
+                                <option value="">Select Teacher</option>
+                                @if (teachers != null)
+                                {
+                                    foreach (var t in teachers)
+                                    {
+                                        <option value="@t.Id">@t.Name</option>
+                                    }
+                                }
+                            </select>
+                            <span asp-validation-for="SubstituteTeacherId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="EffectiveDate" class="form-label">Effective Date</label>
+                            <input asp-for="EffectiveDate" type="date" class="form-control" />
+                            <span asp-validation-for="EffectiveDate" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Reason" class="form-label">Reason</label>
+                            <textarea asp-for="Reason" class="form-control" rows="3" placeholder="Reason for substitution (e.g. teacher on leave)"></textarea>
+                            <span asp-validation-for="Reason" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="Notes" class="form-label">Notes</label>
+                            <textarea asp-for="Notes" class="form-control" rows="2" placeholder="Additional notes"></textarea>
+                            <span asp-validation-for="Notes" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="adm-btn adm-btn--primary"><i class="bi bi-save"></i> Save</button>
+                            <a href="/Routine/SubstituteAssignments" class="adm-btn adm-btn--ghost">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

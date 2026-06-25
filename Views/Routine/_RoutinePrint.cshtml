@@ -1,0 +1,207 @@
+@model RoutinePrintViewModel
+@{
+    Layout = null;
+    var dayNames = new[] { "Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday" };
+    var dayShort = new[] { "Sat", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri" };
+    var grouped = Model.Entries
+        .GroupBy(e => new { e.RoutinePeriodId, e.DayNumber })
+        .ToDictionary(g => g.Key, g => g.ToList());
+    var orderedPeriods = Model.Periods.OrderBy(p => p.PeriodNumber).ToList();
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Weekly Routine Timetable</title>
+    <style>
+        @@page {
+            size: A4 landscape;
+            margin: 8mm;
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            font-size: 8pt;
+            color: #222;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 6px;
+            padding-bottom: 4px;
+            border-bottom: 2px solid #1a73e8;
+        }
+        .header h1 {
+            font-size: 14pt;
+            margin: 2px 0;
+            color: #1a73e8;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+        thead {
+            display: table-header-group;
+        }
+        th {
+            background: #1a73e8;
+            color: #fff;
+            padding: 5px 4px;
+            text-align: center;
+            font-size: 7.5pt;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        th:first-child {
+            width: 10%;
+        }
+        th {
+            width: 12.857%;
+        }
+        td {
+            padding: 3px 4px;
+            border: 1px solid #d0d0d0;
+            vertical-align: top;
+            font-size: 7.5pt;
+            line-height: 1.3;
+        }
+        td:first-child {
+            text-align: center;
+            font-weight: 600;
+            background: #f0f4ff;
+            font-size: 7pt;
+            vertical-align: middle;
+        }
+        td.time {
+            font-size: 6.5pt;
+            color: #666;
+            display: block;
+        }
+        tr:nth-child(even) td:not(:first-child) {
+            background: #fafbfc;
+        }
+        .entry {
+            margin-bottom: 2px;
+            padding: 1px 2px;
+            border-radius: 2px;
+        }
+        .entry .subject {
+            font-weight: 600;
+            color: #1a1a2e;
+        }
+        .entry .teacher {
+            font-size: 6.5pt;
+            color: #555;
+        }
+        .entry .room {
+            font-size: 6pt;
+            color: #888;
+        }
+        .entry .class-info {
+            font-size: 6pt;
+            color: #666;
+        }
+        .entry.lab {
+            border-left: 2px solid #e67e22;
+        }
+        .footer {
+            margin-top: 6px;
+            padding-top: 4px;
+            border-top: 1px solid #ccc;
+            display: flex;
+            justify-content: space-between;
+            font-size: 7pt;
+            color: #888;
+        }
+        .empty-cell {
+            color: #ccc;
+            text-align: center;
+            font-size: 7pt;
+        }
+        @@media print {
+            thead { display: table-header-group; }
+            tbody { display: table-row-group; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Weekly Routine Timetable</h1>
+    </div>
+
+    @if (Model.Entries.Count == 0)
+    {
+        <p style="text-align:center;color:#888;padding:40px;">No timetable entries found.</p>
+    }
+    else
+    {
+        <table>
+            <thead>
+                <tr>
+                    <th>Period</th>
+                    <th>Sat</th>
+                    <th>Sun</th>
+                    <th>Mon</th>
+                    <th>Tue</th>
+                    <th>Wed</th>
+                    <th>Thu</th>
+                    <th>Fri</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var period in orderedPeriods)
+                {
+                    <tr>
+                        <td>
+                            @period.Name
+                            @if (!string.IsNullOrEmpty(period.StartTime) && !string.IsNullOrEmpty(period.EndTime))
+                            {
+                                <span class="time">@period.StartTime - @period.EndTime</span>
+                            }
+                        </td>
+                        @for (int d = 1; d <= 7; d++)
+                        {
+                            var key = new { RoutinePeriodId = period.Id, DayNumber = d };
+                            if (grouped.TryGetValue(key, out var entries))
+                            {
+                                <td>
+                                    @foreach (var e in entries)
+                                    {
+                                        <div class="entry@(e.IsLab ? " lab" : "")">
+                                            <div class="subject">@e.SubjectName</div>
+                                            <div class="teacher">@e.TeacherName</div>
+                                            <div class="room">@e.RoomNo</div>
+                                            <div class="class-info">
+                                                @e.ClassName
+                                                @if (!string.IsNullOrEmpty(e.SectionName))
+                                                {
+                                                    <text> - @e.SectionName</text>
+                                                }
+                                                @if (!string.IsNullOrEmpty(e.GroupName))
+                                                {
+                                                    <text> (@e.GroupName)</text>
+                                                }
+                                            </div>
+                                        </div>
+                                    }
+                                </td>
+                            }
+                            else
+                            {
+                                <td><div class="empty-cell">-</div></td>
+                            }
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    <div class="footer">
+        <span>School Management System</span>
+        <span>Generated: @DateTime.Now.ToString("dd MMM yyyy hh:mm tt")</span>
+    </div>
+</body>
+</html>

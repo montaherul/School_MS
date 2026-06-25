@@ -46,7 +46,8 @@ public static class DbInitializer
         "Notice.View",
         "Calendar.View",
         "Profile.View",
-        "Notification.View"
+        "Notification.View",
+        "Routine.View"
     };
 
     private static string GetClassName(int i)
@@ -113,6 +114,7 @@ public static class DbInitializer
             "Admission", "Student", "Exam", "Result", "Communication", "System", "AuditLogs",
             "FeeStructures", "Invoices", "Scholarships", "Waivers", "StudentDues", "FinancialTransactions",
             "FinanceReports", "FinanceConfiguration", "FinanceDashboard", "Receipts",
+            "Routine",
             // Guardian portal modules (added for Guardian Management System)
             "Results", "Leave", "Notice", "Calendar", "Profile", "Notification"
         };
@@ -140,17 +142,17 @@ public static class DbInitializer
         // roles but absent from the 46x13 matrix above.
         var customPermissions = new Permission[]
         {
-            new() { Id = 599, Module = "Library", ModuleName = "Library", Action = "Issue", Code = "Library.Issue",
+            new() { Id = 612, Module = "Library", ModuleName = "Library", Action = "Issue", Code = "Library.Issue",
                 CanCreate = false, CanRead = true, CanUpdate = true, CanDelete = false, CreatedAt = createdAt },
-            new() { Id = 600, Module = "Library", ModuleName = "Library", Action = "Return", Code = "Library.Return",
+            new() { Id = 613, Module = "Library", ModuleName = "Library", Action = "Return", Code = "Library.Return",
                 CanCreate = false, CanRead = true, CanUpdate = true, CanDelete = false, CreatedAt = createdAt },
-            new() { Id = 601, Module = "Laboratory", ModuleName = "Laboratory", Action = "View", Code = "Laboratory.View",
+            new() { Id = 614, Module = "Laboratory", ModuleName = "Laboratory", Action = "View", Code = "Laboratory.View",
                 CanCreate = false, CanRead = true, CanUpdate = false, CanDelete = false, CreatedAt = createdAt },
-            new() { Id = 602, Module = "Laboratory", ModuleName = "Laboratory", Action = "Manage", Code = "Laboratory.Manage",
+            new() { Id = 615, Module = "Laboratory", ModuleName = "Laboratory", Action = "Manage", Code = "Laboratory.Manage",
                 CanCreate = true, CanRead = true, CanUpdate = true, CanDelete = true, CreatedAt = createdAt },
-            new() { Id = 603, Module = "Calendar", ModuleName = "Calendar", Action = "Regenerate", Code = "Calendar.Regenerate",
+            new() { Id = 616, Module = "Calendar", ModuleName = "Calendar", Action = "Regenerate", Code = "Calendar.Regenerate",
                 CanCreate = true, CanRead = true, CanUpdate = true, CanDelete = false, CreatedAt = createdAt },
-            new() { Id = 604, Module = "Calendar", ModuleName = "Calendar", Action = "Repair", Code = "Calendar.Repair",
+            new() { Id = 617, Module = "Calendar", ModuleName = "Calendar", Action = "Repair", Code = "Calendar.Repair",
                 CanCreate = true, CanRead = true, CanUpdate = true, CanDelete = false, CreatedAt = createdAt },
         };
         var allPermissions = permissions.Concat(customPermissions).ToArray();
