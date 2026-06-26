@@ -161,15 +161,19 @@ builder.Services.AddScoped<SchoolManagementSystem.Services.Implementations.Resul
 builder.Services.AddScoped<IAttendanceRecordService, AttendanceRecordService>();
 builder.Services.AddScoped<IStudentAttendanceService, StudentAttendanceService>();
 
-var port = Environment.GetEnvironmentVariable("PORT");
-
-if (!string.IsNullOrEmpty(port))
+builder.WebHost.ConfigureKestrel(serverOptions =>
 {
-    builder.WebHost.ConfigureKestrel(serverOptions =>
+    // Increase max request header total size from default 32KB to 64KB
+    // to accommodate large auth cookies containing all permission claims.
+    // Prevents HTTP 431 (Request Header Fields Too Large).
+    serverOptions.Limits.MaxRequestHeadersTotalSize = 65536;
+
+    var port = Environment.GetEnvironmentVariable("PORT");
+    if (!string.IsNullOrEmpty(port))
     {
         serverOptions.ListenAnyIP(int.Parse(port));
-    });
-}
+    }
+});
 builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();

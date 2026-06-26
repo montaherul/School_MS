@@ -1,0 +1,27 @@
+✅ Seeded: RoutinePeriods (12)
+✅ Seeded: WorkingDays (7)
+✅ Seeded: Rooms (30)
+✅ Seeded: TeacherAvailabilities
+✅ Seeded: SubjectRequirements
+✅ Seeded: RoutineVersions (3)
+✅ Seeded: RoutineGenerations (8)
+Msg 2601, Level 14, State 1, Server Montaherul\SQLEXPRESS, Line 433
+Cannot insert duplicate key row in object 'dbo.RoutineEntries' with unique index 'IX_RoutineEntries_AcademicYearId_DayNumber_RoutinePeriodId_TeacherId'. The duplicate key value is (1, 1, 6, 5).
+The statement has been terminated.
+Msg 2601, Level 14, State 1, Server Montaherul\SQLEXPRESS, Line 464
+Cannot insert duplicate key row in object 'dbo.RoutineEntries' with unique index 'IX_RoutineEntries_AcademicYearId_DayNumber_RoutinePeriodId_TeacherId'. The duplicate key value is (1, 1, 1, 1).
+The statement has been terminated.
+Msg 2601, Level 14, State 1, Server Montaherul\SQLEXPRESS, Line 476
+Cannot insert duplicate key row in object 'dbo.RoutineEntries' with unique index 'IX_RoutineEntries_AcademicYearId_DayNumber_RoutinePeriodId_TeacherId'. The duplicate key value is (1, 2, 5, 4).
+The statement has been terminated.
+Msg 2601, Level 14, State 1, Server Montaherul\SQLEXPRESS, Line 494
+Cannot insert duplicate key row in object 'dbo.RoutineEntries' with unique index 'IX_RoutineEntries_AcademicYearId_DayNumber_RoutinePeriodId_TeacherId'. The duplicate key value is (1, 4, 1, 1).
+The statement has been terminated.
+✅ Seeded: RoutineEntries
+✅ Seeded: RoutineConflicts (7)
+✅ Seeded: SubstituteAssignments (10)
+ 
+============================================
+✅ ROUTINE MASTER SEED DATA COMPLETE
+============================================
+ 

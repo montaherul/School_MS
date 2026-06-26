@@ -160,6 +160,7 @@
                         <a href="/ResultManagement/StudentDashboard" data-title="Results"><i class="bi bi-bar-chart-line"></i><span class="nav-text">My Results</span></a>
                         <a href="/Student/ExamRoutine" data-title="Exam Routine"><i class="bi bi-calendar-event"></i><span class="nav-text">Exam Routine</span></a>
                         <a href="/AttendanceRecord" data-title="Attendance"><i class="bi bi-calendar-check"></i><span class="nav-text">Attendance</span></a>
+                        <a href="/Routine/StudentView" data-title="My Timetable"><i class="bi bi-calendar-range"></i><span class="nav-text">My Timetable</span></a>
                         <a asp-controller="StudentClassAssignment" asp-action="Index" data-title="Assignments"><i class="bi bi-journal-text"></i><span class="nav-text">Assignments</span></a>
 
                         @if (CanAny("Invoices.Read", "Payments.Read", "StudentDues.Read", "Receipts.Read"))
@@ -307,6 +308,7 @@
                             @if (Can("Routine.View"))
                             {
                                 <a href="/Routine/Dashboard" data-title="Routine Dashboard"><i class="bi bi-calendar-range"></i><span class="nav-text">Routine Dashboard</span></a>
+                                <a href="/Routine/TeacherView" data-title="My Timetable"><i class="bi bi-calendar-range"></i><span class="nav-text">My Timetable</span></a>
                             }
                         }
 
