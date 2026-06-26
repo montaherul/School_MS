@@ -307,7 +307,7 @@ public class RoutineDashboardDto
     public int TotalEntries { get; set; }
     public int TotalConflicts { get; set; }
     public int? LastGenerationId { get; set; }
-    public string LastGenerationStatus { get; set; } = string.Empty;
+    public string? LastGenerationStatus { get; set; }
     public int? PublishedVersionId { get; set; }
     public string? PublishedVersionName { get; set; }
     [NotMapped]

@@ -1131,96 +1131,180 @@ namespace SchoolManagementSystem.Migrations
                 columns: new[] { "Action", "CanCreate", "CanDelete", "CanRead", "CanUpdate", "Code", "Module", "ModuleName" },
                 values: new object[] { "Delete", false, true, false, false, "Notification.Delete", "Notification", "Notification" });
 
-            migrationBuilder.InsertData(
-                table: "Permissions",
-                columns: new[] { "Id", "Action", "CanCreate", "CanDelete", "CanRead", "CanUpdate", "Code", "CreatedAt", "CreatedBy", "IsDeleted", "Module", "ModuleName", "UpdatedAt", "UpdatedBy" },
-                values: new object[,]
-                {
-                    { 605, "Approve", false, false, false, true, "Notification.Approve", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "system", false, "Notification", "Notification", null, null },
-                    { 606, "Assign", false, false, false, true, "Notification.Assign", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "system", false, "Notification", "Notification", null, null },
-                    { 607, "Publish", false, false, false, true, "Notification.Publish", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "system", false, "Notification", "Notification", null, null },
-                    { 608, "Export", false, false, true, false, "Notification.Export", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "system", false, "Notification", "Notification", null, null },
-                    { 609, "Print", false, false, true, false, "Notification.Print", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "system", false, "Notification", "Notification", null, null },
-                    { 610, "Generate", true, false, true, false, "Notification.Generate", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "system", false, "Notification", "Notification", null, null },
-                    { 611, "Manage", true, true, true, true, "Notification.Manage", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "system", false, "Notification", "Notification", null, null },
-                    { 612, "Issue", false, false, true, true, "Library.Issue", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "system", false, "Library", "Library", null, null },
-                    { 613, "Return", false, false, true, true, "Library.Return", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "system", false, "Library", "Library", null, null },
-                    { 614, "View", false, false, true, false, "Laboratory.View", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "system", false, "Laboratory", "Laboratory", null, null },
-                    { 615, "Manage", true, true, true, true, "Laboratory.Manage", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "system", false, "Laboratory", "Laboratory", null, null },
-                    { 616, "Regenerate", true, false, true, true, "Calendar.Regenerate", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "system", false, "Calendar", "Calendar", null, null },
-                    { 617, "Repair", true, false, true, true, "Calendar.Repair", new DateTime(2026, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), "system", false, "Calendar", "Calendar", null, null }
-                });
+            migrationBuilder.Sql(@"
+SET IDENTITY_INSERT [Permissions] ON;
+IF NOT EXISTS (SELECT 1 FROM [Permissions] WHERE [Id] = 605)
+    INSERT INTO [Permissions] ([Id], [Action], [CanCreate], [CanDelete], [CanRead], [CanUpdate], [Code], [CreatedAt], [CreatedBy], [IsDeleted], [Module], [ModuleName], [UpdatedAt], [UpdatedBy])
+    VALUES (605, 'Approve', 0, 0, 0, 1, 'Notification.Approve', '2026-01-01T00:00:00.0000000Z', 'system', 0, 'Notification', 'Notification', NULL, NULL);
+IF NOT EXISTS (SELECT 1 FROM [Permissions] WHERE [Id] = 606)
+    INSERT INTO [Permissions] ([Id], [Action], [CanCreate], [CanDelete], [CanRead], [CanUpdate], [Code], [CreatedAt], [CreatedBy], [IsDeleted], [Module], [ModuleName], [UpdatedAt], [UpdatedBy])
+    VALUES (606, 'Assign', 0, 0, 0, 1, 'Notification.Assign', '2026-01-01T00:00:00.0000000Z', 'system', 0, 'Notification', 'Notification', NULL, NULL);
+IF NOT EXISTS (SELECT 1 FROM [Permissions] WHERE [Id] = 607)
+    INSERT INTO [Permissions] ([Id], [Action], [CanCreate], [CanDelete], [CanRead], [CanUpdate], [Code], [CreatedAt], [CreatedBy], [IsDeleted], [Module], [ModuleName], [UpdatedAt], [UpdatedBy])
+    VALUES (607, 'Publish', 0, 0, 0, 1, 'Notification.Publish', '2026-01-01T00:00:00.0000000Z', 'system', 0, 'Notification', 'Notification', NULL, NULL);
+IF NOT EXISTS (SELECT 1 FROM [Permissions] WHERE [Id] = 608)
+    INSERT INTO [Permissions] ([Id], [Action], [CanCreate], [CanDelete], [CanRead], [CanUpdate], [Code], [CreatedAt], [CreatedBy], [IsDeleted], [Module], [ModuleName], [UpdatedAt], [UpdatedBy])
+    VALUES (608, 'Export', 0, 0, 1, 0, 'Notification.Export', '2026-01-01T00:00:00.0000000Z', 'system', 0, 'Notification', 'Notification', NULL, NULL);
+IF NOT EXISTS (SELECT 1 FROM [Permissions] WHERE [Id] = 609)
+    INSERT INTO [Permissions] ([Id], [Action], [CanCreate], [CanDelete], [CanRead], [CanUpdate], [Code], [CreatedAt], [CreatedBy], [IsDeleted], [Module], [ModuleName], [UpdatedAt], [UpdatedBy])
+    VALUES (609, 'Print', 0, 0, 1, 0, 'Notification.Print', '2026-01-01T00:00:00.0000000Z', 'system', 0, 'Notification', 'Notification', NULL, NULL);
+IF NOT EXISTS (SELECT 1 FROM [Permissions] WHERE [Id] = 610)
+    INSERT INTO [Permissions] ([Id], [Action], [CanCreate], [CanDelete], [CanRead], [CanUpdate], [Code], [CreatedAt], [CreatedBy], [IsDeleted], [Module], [ModuleName], [UpdatedAt], [UpdatedBy])
+    VALUES (610, 'Generate', 1, 0, 1, 0, 'Notification.Generate', '2026-01-01T00:00:00.0000000Z', 'system', 0, 'Notification', 'Notification', NULL, NULL);
+IF NOT EXISTS (SELECT 1 FROM [Permissions] WHERE [Id] = 611)
+    INSERT INTO [Permissions] ([Id], [Action], [CanCreate], [CanDelete], [CanRead], [CanUpdate], [Code], [CreatedAt], [CreatedBy], [IsDeleted], [Module], [ModuleName], [UpdatedAt], [UpdatedBy])
+    VALUES (611, 'Manage', 1, 1, 1, 1, 'Notification.Manage', '2026-01-01T00:00:00.0000000Z', 'system', 0, 'Notification', 'Notification', NULL, NULL);
+IF NOT EXISTS (SELECT 1 FROM [Permissions] WHERE [Id] = 612)
+    INSERT INTO [Permissions] ([Id], [Action], [CanCreate], [CanDelete], [CanRead], [CanUpdate], [Code], [CreatedAt], [CreatedBy], [IsDeleted], [Module], [ModuleName], [UpdatedAt], [UpdatedBy])
+    VALUES (612, 'Issue', 0, 0, 1, 1, 'Library.Issue', '2026-01-01T00:00:00.0000000Z', 'system', 0, 'Library', 'Library', NULL, NULL);
+IF NOT EXISTS (SELECT 1 FROM [Permissions] WHERE [Id] = 613)
+    INSERT INTO [Permissions] ([Id], [Action], [CanCreate], [CanDelete], [CanRead], [CanUpdate], [Code], [CreatedAt], [CreatedBy], [IsDeleted], [Module], [ModuleName], [UpdatedAt], [UpdatedBy])
+    VALUES (613, 'Return', 0, 0, 1, 1, 'Library.Return', '2026-01-01T00:00:00.0000000Z', 'system', 0, 'Library', 'Library', NULL, NULL);
+IF NOT EXISTS (SELECT 1 FROM [Permissions] WHERE [Id] = 614)
+    INSERT INTO [Permissions] ([Id], [Action], [CanCreate], [CanDelete], [CanRead], [CanUpdate], [Code], [CreatedAt], [CreatedBy], [IsDeleted], [Module], [ModuleName], [UpdatedAt], [UpdatedBy])
+    VALUES (614, 'View', 0, 0, 1, 0, 'Laboratory.View', '2026-01-01T00:00:00.0000000Z', 'system', 0, 'Laboratory', 'Laboratory', NULL, NULL);
+IF NOT EXISTS (SELECT 1 FROM [Permissions] WHERE [Id] = 615)
+    INSERT INTO [Permissions] ([Id], [Action], [CanCreate], [CanDelete], [CanRead], [CanUpdate], [Code], [CreatedAt], [CreatedBy], [IsDeleted], [Module], [ModuleName], [UpdatedAt], [UpdatedBy])
+    VALUES (615, 'Manage', 1, 1, 1, 1, 'Laboratory.Manage', '2026-01-01T00:00:00.0000000Z', 'system', 0, 'Laboratory', 'Laboratory', NULL, NULL);
+IF NOT EXISTS (SELECT 1 FROM [Permissions] WHERE [Id] = 616)
+    INSERT INTO [Permissions] ([Id], [Action], [CanCreate], [CanDelete], [CanRead], [CanUpdate], [Code], [CreatedAt], [CreatedBy], [IsDeleted], [Module], [ModuleName], [UpdatedAt], [UpdatedBy])
+    VALUES (616, 'Regenerate', 1, 0, 1, 1, 'Calendar.Regenerate', '2026-01-01T00:00:00.0000000Z', 'system', 0, 'Calendar', 'Calendar', NULL, NULL);
+IF NOT EXISTS (SELECT 1 FROM [Permissions] WHERE [Id] = 617)
+    INSERT INTO [Permissions] ([Id], [Action], [CanCreate], [CanDelete], [CanRead], [CanUpdate], [Code], [CreatedAt], [CreatedBy], [IsDeleted], [Module], [ModuleName], [UpdatedAt], [UpdatedBy])
+    VALUES (617, 'Repair', 1, 0, 1, 1, 'Calendar.Repair', '2026-01-01T00:00:00.0000000Z', 'system', 0, 'Calendar', 'Calendar', NULL, NULL);
+SET IDENTITY_INSERT [Permissions] OFF;
+");
 
-            migrationBuilder.InsertData(
-                table: "RolePermissions",
-                columns: new[] { "PermissionId", "RoleId" },
-                values: new object[,]
-                {
-                    { 573, 3 },
-                    { 574, 3 },
-                    { 575, 3 },
-                    { 576, 3 },
-                    { 577, 3 },
-                    { 578, 3 },
-                    { 579, 3 },
-                    { 580, 3 },
-                    { 581, 3 },
-                    { 582, 3 },
-                    { 583, 3 },
-                    { 584, 3 },
-                    { 585, 3 },
-                    { 534, 4 },
-                    { 599, 25 },
-                    { 534, 27 },
-                    { 535, 27 },
-                    { 540, 27 },
-                    { 542, 27 },
-                    { 605, 1 },
-                    { 606, 1 },
-                    { 607, 1 },
-                    { 608, 1 },
-                    { 609, 1 },
-                    { 610, 1 },
-                    { 611, 1 },
-                    { 612, 1 },
-                    { 613, 1 },
-                    { 614, 1 },
-                    { 615, 1 },
-                    { 616, 1 },
-                    { 617, 1 },
-                    { 605, 2 },
-                    { 606, 2 },
-                    { 607, 2 },
-                    { 608, 2 },
-                    { 609, 2 },
-                    { 610, 2 },
-                    { 611, 2 },
-                    { 612, 2 },
-                    { 613, 2 },
-                    { 614, 2 },
-                    { 615, 2 },
-                    { 616, 2 },
-                    { 617, 2 },
-                    { 616, 3 },
-                    { 617, 3 },
-                    { 612, 21 },
-                    { 613, 21 },
-                    { 614, 22 },
-                    { 615, 22 },
-                    { 605, 26 },
-                    { 606, 26 },
-                    { 607, 26 },
-                    { 608, 26 },
-                    { 609, 26 },
-                    { 610, 26 },
-                    { 611, 26 },
-                    { 612, 26 },
-                    { 613, 26 },
-                    { 614, 26 },
-                    { 615, 26 },
-                    { 616, 26 },
-                    { 617, 26 }
-                });
+            migrationBuilder.Sql(@"
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 573 AND [RoleId] = 3)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (573, 3);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 574 AND [RoleId] = 3)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (574, 3);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 575 AND [RoleId] = 3)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (575, 3);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 576 AND [RoleId] = 3)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (576, 3);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 577 AND [RoleId] = 3)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (577, 3);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 578 AND [RoleId] = 3)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (578, 3);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 579 AND [RoleId] = 3)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (579, 3);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 580 AND [RoleId] = 3)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (580, 3);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 581 AND [RoleId] = 3)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (581, 3);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 582 AND [RoleId] = 3)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (582, 3);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 583 AND [RoleId] = 3)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (583, 3);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 584 AND [RoleId] = 3)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (584, 3);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 585 AND [RoleId] = 3)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (585, 3);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 534 AND [RoleId] = 4)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (534, 4);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 599 AND [RoleId] = 25)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (599, 25);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 534 AND [RoleId] = 27)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (534, 27);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 535 AND [RoleId] = 27)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (535, 27);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 540 AND [RoleId] = 27)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (540, 27);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 542 AND [RoleId] = 27)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (542, 27);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 605 AND [RoleId] = 1)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (605, 1);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 606 AND [RoleId] = 1)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (606, 1);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 607 AND [RoleId] = 1)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (607, 1);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 608 AND [RoleId] = 1)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (608, 1);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 609 AND [RoleId] = 1)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (609, 1);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 610 AND [RoleId] = 1)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (610, 1);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 611 AND [RoleId] = 1)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (611, 1);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 612 AND [RoleId] = 1)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (612, 1);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 613 AND [RoleId] = 1)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (613, 1);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 614 AND [RoleId] = 1)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (614, 1);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 615 AND [RoleId] = 1)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (615, 1);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 616 AND [RoleId] = 1)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (616, 1);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 617 AND [RoleId] = 1)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (617, 1);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 605 AND [RoleId] = 2)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (605, 2);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 606 AND [RoleId] = 2)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (606, 2);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 607 AND [RoleId] = 2)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (607, 2);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 608 AND [RoleId] = 2)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (608, 2);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 609 AND [RoleId] = 2)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (609, 2);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 610 AND [RoleId] = 2)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (610, 2);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 611 AND [RoleId] = 2)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (611, 2);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 612 AND [RoleId] = 2)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (612, 2);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 613 AND [RoleId] = 2)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (613, 2);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 614 AND [RoleId] = 2)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (614, 2);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 615 AND [RoleId] = 2)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (615, 2);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 616 AND [RoleId] = 2)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (616, 2);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 617 AND [RoleId] = 2)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (617, 2);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 616 AND [RoleId] = 3)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (616, 3);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 617 AND [RoleId] = 3)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (617, 3);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 612 AND [RoleId] = 21)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (612, 21);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 613 AND [RoleId] = 21)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (613, 21);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 614 AND [RoleId] = 22)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (614, 22);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 615 AND [RoleId] = 22)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (615, 22);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 605 AND [RoleId] = 26)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (605, 26);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 606 AND [RoleId] = 26)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (606, 26);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 607 AND [RoleId] = 26)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (607, 26);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 608 AND [RoleId] = 26)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (608, 26);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 609 AND [RoleId] = 26)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (609, 26);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 610 AND [RoleId] = 26)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (610, 26);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 611 AND [RoleId] = 26)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (611, 26);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 612 AND [RoleId] = 26)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (612, 26);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 613 AND [RoleId] = 26)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (613, 26);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 614 AND [RoleId] = 26)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (614, 26);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 615 AND [RoleId] = 26)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (615, 26);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 616 AND [RoleId] = 26)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (616, 26);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 617 AND [RoleId] = 26)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (617, 26);
+");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Rooms_RoomNo",
@@ -2397,36 +2481,56 @@ namespace SchoolManagementSystem.Migrations
                 columns: new[] { "Action", "CanCreate", "CanDelete", "CanRead", "CanUpdate", "Code", "Module", "ModuleName" },
                 values: new object[] { "Repair", true, false, true, true, "Calendar.Repair", "Calendar", "Calendar" });
 
-            migrationBuilder.InsertData(
-                table: "RolePermissions",
-                columns: new[] { "PermissionId", "RoleId" },
-                values: new object[,]
-                {
-                    { 560, 3 },
-                    { 561, 3 },
-                    { 562, 3 },
-                    { 563, 3 },
-                    { 564, 3 },
-                    { 565, 3 },
-                    { 566, 3 },
-                    { 567, 3 },
-                    { 568, 3 },
-                    { 569, 3 },
-                    { 570, 3 },
-                    { 571, 3 },
-                    { 572, 3 },
-                    { 603, 3 },
-                    { 604, 3 },
-                    { 521, 4 },
-                    { 599, 21 },
-                    { 600, 21 },
-                    { 601, 22 },
-                    { 602, 22 },
-                    { 521, 27 },
-                    { 522, 27 },
-                    { 527, 27 },
-                    { 529, 27 }
-                });
+            migrationBuilder.Sql(@"
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 560 AND [RoleId] = 3)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (560, 3);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 561 AND [RoleId] = 3)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (561, 3);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 562 AND [RoleId] = 3)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (562, 3);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 563 AND [RoleId] = 3)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (563, 3);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 564 AND [RoleId] = 3)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (564, 3);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 565 AND [RoleId] = 3)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (565, 3);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 566 AND [RoleId] = 3)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (566, 3);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 567 AND [RoleId] = 3)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (567, 3);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 568 AND [RoleId] = 3)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (568, 3);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 569 AND [RoleId] = 3)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (569, 3);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 570 AND [RoleId] = 3)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (570, 3);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 571 AND [RoleId] = 3)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (571, 3);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 572 AND [RoleId] = 3)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (572, 3);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 603 AND [RoleId] = 3)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (603, 3);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 604 AND [RoleId] = 3)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (604, 3);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 521 AND [RoleId] = 4)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (521, 4);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 599 AND [RoleId] = 21)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (599, 21);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 600 AND [RoleId] = 21)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (600, 21);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 601 AND [RoleId] = 22)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (601, 22);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 602 AND [RoleId] = 22)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (602, 22);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 521 AND [RoleId] = 27)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (521, 27);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 522 AND [RoleId] = 27)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (522, 27);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 527 AND [RoleId] = 27)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (527, 27);
+IF NOT EXISTS (SELECT 1 FROM [RolePermissions] WHERE [PermissionId] = 529 AND [RoleId] = 27)
+    INSERT INTO [RolePermissions] ([PermissionId], [RoleId]) VALUES (529, 27);
+");
         }
     }
 }
