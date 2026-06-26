@@ -1161,9 +1161,10 @@ public class RoutineDashboardRepository : IRoutineDashboardRepository
 
     public async Task<RoutineDashboardDto> GetDashboardAsync(int academicYearId)
     {
-        var result = await _db.Database
+        var result = _db.Database
             .SqlQueryRaw<RoutineDashboardDto>("EXEC sp_GetRoutineDashboard @p0", academicYearId)
-            .FirstOrDefaultAsync();
+            .AsEnumerable()
+            .FirstOrDefault();
 
         return result ?? new RoutineDashboardDto();
     }

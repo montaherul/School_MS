@@ -1,11 +1,17 @@
 using ClosedXML.Excel;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using SchoolManagementSystem.Filters;
 using SchoolManagementSystem.Helpers.Pdf;
 using SchoolManagementSystem.Models.DTOs.Common;
 using SchoolManagementSystem.Models.DTOs.Routine;
+using SchoolManagementSystem.Models.Entities.Academic;
+using SchoolManagementSystem.Models.Entities.Auth;
+using SchoolManagementSystem.Models.Entities.Routine;
+using SchoolManagementSystem.Models.Entities.Student;
+using SchoolManagementSystem.Models.Entities.Teachers;
 using SchoolManagementSystem.Services.Implementations.Routine;
 using SchoolManagementSystem.Services.Interfaces.Routine;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
@@ -1112,7 +1118,7 @@ public class RoutineController : Controller
     {
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
-        var student = await _unitOfWork.Repository<StudentEntity>().Query()
+        var student = await _unitOfWork.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query()
             .AsNoTracking()
             .Include(s => s.Class)
             .Include(s => s.Section)
@@ -1197,7 +1203,7 @@ public class RoutineController : Controller
         if (user?.EmployeeId == null)
             return View(new RoutineTeacherViewModel());
 
-        var teacher = await _unitOfWork.Repository<TeacherEntity>().Query()
+        var teacher = await _unitOfWork.Repository<SchoolManagementSystem.Models.Entities.Teachers.Teacher>().Query()
             .AsNoTracking()
             .Include(t => t.Employee)
             .FirstOrDefaultAsync(t => t.EmployeeId == user.EmployeeId, ct);

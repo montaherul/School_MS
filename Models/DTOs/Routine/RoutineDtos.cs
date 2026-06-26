@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SchoolManagementSystem.Models.DTOs.Routine;
 
@@ -309,7 +310,9 @@ public class RoutineDashboardDto
     public string LastGenerationStatus { get; set; } = string.Empty;
     public int? PublishedVersionId { get; set; }
     public string? PublishedVersionName { get; set; }
+    [NotMapped]
     public List<TeacherLoadDto>? TeacherLoadSummary { get; set; }
+    [NotMapped]
     public List<RoomUtilizationDto>? RoomUtilization { get; set; }
 }
 

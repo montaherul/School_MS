@@ -8,6 +8,7 @@ using SchoolManagementSystem.Models.Entities.Auth;
 using SchoolManagementSystem.Models.Entities.Student;
 using SchoolManagementSystem.Models.Entities.Teachers;
 using SchoolManagementSystem.Models.Enums;
+using SchoolManagementSystem.Models.Entities.Routine;
 using SchoolManagementSystem.Repositories.Interfaces.Routine;
 using SchoolManagementSystem.Services.Interfaces.Routine;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
@@ -1431,7 +1432,7 @@ public class RoutineEngineService : IRoutineEngineService
 
     public async Task<PagedResult<RoutineConflictListItemDto>> GetConflictsPagedAsync(int page, int size, bool? unresolvedOnly, CancellationToken ct)
     {
-        var query = _unitOfWork.Repository<RoutineEnt.RoutineConflict>().Query()
+        IQueryable<RoutineEnt.RoutineConflict> query = _unitOfWork.Repository<RoutineEnt.RoutineConflict>().Query()
             .AsNoTracking()
             .Include(x => x.Teacher).ThenInclude(x => x.Employee)
             .Include(x => x.Room)
@@ -1467,7 +1468,7 @@ public class RoutineEngineService : IRoutineEngineService
             Items = conflicts,
             TotalItems = totalItems,
             PageSize = size,
-            CurrentPage = page
+            Page = page
         };
     }
 
