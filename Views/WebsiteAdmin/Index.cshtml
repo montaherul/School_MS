@@ -41,6 +41,7 @@
                 <button class="adm-tab" id="messages-tab" onclick="switchTab('messages-pane', this)" type="button" role="tab"><i class="bi bi-chat-dots-fill" style="margin-right:4px;"></i> Contact Inbox</button>
                 <button class="adm-tab" id="templates-tab" onclick="switchTab('templates-pane', this)" type="button" role="tab"><i class="bi bi-envelope-paper-fill" style="margin-right:4px;"></i> Email Templates</button>
                 <button class="adm-tab" id="announcements-tab" onclick="switchTab('announcements-pane', this)" type="button" role="tab"><i class="bi bi-megaphone" style="margin-right:4px;"></i> Announcements</button>
+                <button class="adm-tab" id="eventcategories-tab" onclick="switchTab('eventcategories-pane', this)" type="button" role="tab"><i class="bi bi-tags-fill" style="margin-right:4px;"></i> Event Categories</button>
                 <button class="adm-tab" id="fees-tab" onclick="switchTab('fees-pane', this)" type="button" role="tab"><i class="bi bi-cash-stack" style="margin-right:4px;"></i> Admission Fees</button>
             </div>
         </div>
@@ -117,7 +118,16 @@
                 <div id="announcementsGrid"></div>
             </div>
 
-            <!-- ── 9. Admission Fee Structures Pane ── -->
+            <!-- ── 9. Event Categories Pane ── -->
+            <div id="eventcategories-pane" style="display:none;">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
+                    <h5 style="font-weight:700;margin:0;">Event Categories</h5>
+                    <a href="/Admin/Website/EventCategories/CreateEdit" class="adm-btn adm-btn--primary"><i class="bi bi-plus-lg" style="margin-right:4px;"></i> Add Category</a>
+                </div>
+                <div id="eventcategoriesGrid"></div>
+            </div>
+
+            <!-- ── 10. Admission Fee Structures Pane ── -->
             <div id="fees-pane" style="display:none;">
                 <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:16px;">
                     <h5 style="font-weight:700;margin:0;">Admission Fee Structure</h5>
@@ -232,6 +242,10 @@
                 }},
                 { title: "Event Title", field: "title" },
                 { title: "Venue", field: "eventLocation", width: 200 },
+                { title: "Category", field: "eventCategory", width: 150, formatter: function(cell) {
+                    const val = cell.getValue();
+                    return val && val.name ? val.name : `<span style="color:var(--adm-text-3);">Uncategorized</span>`;
+                }},
                 { title: "Status", field: "isPublished", width: 120, horizAlign: "center", formatter: function(cell) {
                     return cell.getValue() ? `<span class="adm-badge adm-badge--success">Active</span>` : `<span class="adm-badge adm-badge--neutral">Draft</span>`;
                 }},
@@ -365,6 +379,10 @@
             columns: [
                 { title: "Template Name", field: "templateName" },
                 { title: "Subject", field: "subject" },
+                { title: "Category", field: "category", width: 140, formatter: function(cell) {
+                    const val = cell.getValue();
+                    return val ? val : `<span style="color:var(--adm-text-3);">-</span>`;
+                }},
                 { title: "Active", field: "isActive", width: 100, horizAlign: "center", formatter: function(cell) {
                     return cell.getValue() ? `<span class="adm-badge adm-badge--success">Active</span>` : `<span class="adm-badge adm-badge--neutral">Inactive</span>`;
                 }},
@@ -400,6 +418,29 @@
                         <div style="display:inline-flex;gap:4px;">
                             <a href="/Admin/Website/Announcements/CreateEdit/${row.id}" style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--adm-border);border-radius:var(--adm-radius-sm);color:var(--adm-text-3);text-decoration:none;" title="Edit"><i class="bi bi-pencil"></i></a>
                             <button style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--adm-border);border-radius:var(--adm-radius-sm);background:var(--adm-surface);color:var(--adm-text-3);cursor:pointer;" onclick="deleteObject('/Admin/Website/Announcements/Delete/${row.id}', announcementsTable)" title="Delete"><i class="bi bi-trash"></i></button>
+                        </div>
+                    `;
+                }}
+            ]
+        });
+
+        const eventCategoriesTable = new Tabulator("#eventcategoriesGrid", {
+            ajaxURL: "/Admin/Website/EventCategories/List",
+            layout: "fitColumns",
+            responsiveLayout: "collapse",
+            placeholder: "No event categories created",
+            columns: [
+                { title: "Name", field: "name" },
+                { title: "Slug", field: "slug", width: 180 },
+                { title: "Active", field: "isActive", width: 100, horizAlign: "center", formatter: function(cell) {
+                    return cell.getValue() ? `<span class="adm-badge adm-badge--success">Active</span>` : `<span class="adm-badge adm-badge--neutral">Inactive</span>`;
+                }},
+                { title: "Actions", width: 150, horizAlign: "center", headerSort: false, formatter: function(cell) {
+                    const row = cell.getRow().getData();
+                    return `
+                        <div style="display:inline-flex;gap:4px;">
+                            <a href="/Admin/Website/EventCategories/CreateEdit/${row.id}" style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--adm-border);border-radius:var(--adm-radius-sm);color:var(--adm-text-3);text-decoration:none;" title="Edit"><i class="bi bi-pencil"></i></a>
+                            <button style="width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--adm-border);border-radius:var(--adm-radius-sm);background:var(--adm-surface);color:var(--adm-text-3);cursor:pointer;" onclick="deleteObject('/Admin/Website/EventCategories/Delete/${row.id}', eventCategoriesTable)" title="Delete"><i class="bi bi-trash"></i></button>
                         </div>
                     `;
                 }}

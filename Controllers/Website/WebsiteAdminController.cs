@@ -12,6 +12,7 @@ using SchoolManagementSystem.Models.Entities.Website;
 using SchoolManagementSystem.Models.Entities.Communication;
 using SchoolManagementSystem.Services.Interfaces.Website;
 using SchoolManagementSystem.Models.Entities.Website;
+using System.Collections.Generic;
 
 namespace SchoolManagementSystem.Controllers.Website;
 
@@ -30,6 +31,7 @@ public class WebsiteAdminController : Controller
     private readonly IAdmissionFeeStructureService _feeService;
     private readonly IAnnouncementService _announcementService;
     private readonly IEventNotificationService _eventNotificationService;
+    private readonly IEventCategoryService _eventCategoryService;
     private readonly IFileStorageService _fileService;
 
     public WebsiteAdminController(
@@ -44,6 +46,7 @@ public class WebsiteAdminController : Controller
         IAdmissionFeeStructureService feeService,
         IAnnouncementService announcementService,
         IEventNotificationService eventNotificationService,
+        IEventCategoryService eventCategoryService,
         IFileStorageService fileService)
     {
         _settingsService = settingsService;
@@ -57,6 +60,7 @@ public class WebsiteAdminController : Controller
         _feeService = feeService;
         _announcementService = announcementService;
         _eventNotificationService = eventNotificationService;
+        _eventCategoryService = eventCategoryService;
         _fileService = fileService;
     }
 
@@ -268,6 +272,7 @@ public class WebsiteAdminController : Controller
     [RequirePermission("Website.Events")]
     public async Task<IActionResult> EventCreateEdit(int? id, CancellationToken ct)
     {
+        ViewBag.Categories = await _eventCategoryService.GetActiveCategoriesAsync(ct);
         if (id.HasValue && id > 0)
         {
             var ev = await _eventService.GetEventByIdAsync(id.Value, ct);
@@ -308,6 +313,57 @@ public class WebsiteAdminController : Controller
     public async Task<IActionResult> EventDelete(int id, CancellationToken ct)
     {
         await _eventService.DeleteEventAsync(id, ct);
+        return Json(new { success = true });
+    }
+
+    // ── Event Categories ──
+    [HttpGet("EventCategories/List")]
+    [RequirePermission("Website.Events")]
+    public async Task<IActionResult> EventCategoriesList(CancellationToken ct)
+    {
+        var list = await _eventCategoryService.GetAllCategoriesAsync(ct);
+        return Json(list);
+    }
+
+    [HttpGet("EventCategories/CreateEdit/{id?}")]
+    [RequirePermission("Website.Events")]
+    public async Task<IActionResult> EventCategoryCreateEdit(int? id, CancellationToken ct)
+    {
+        if (id.HasValue && id > 0)
+        {
+            var cat = await _eventCategoryService.GetCategoryByIdAsync(id.Value, ct);
+            if (cat == null) return NotFound();
+            return View(cat);
+        }
+        return View(new EventCategory());
+    }
+
+    [HttpPost("EventCategories/CreateEdit/{id?}")]
+    [RequirePermission("Website.Events")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EventCategoryCreateEdit(int? id, EventCategory model, CancellationToken ct)
+    {
+        if (id.HasValue && id > 0)
+        {
+            model.Id = id.Value;
+            await _eventCategoryService.UpdateCategoryAsync(model, ct);
+            TempData["SuccessMessage"] = "Event category updated successfully.";
+        }
+        else
+        {
+            await _eventCategoryService.CreateCategoryAsync(model, ct);
+            TempData["SuccessMessage"] = "Event category created successfully.";
+        }
+
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost("EventCategories/Delete/{id}")]
+    [RequirePermission("Website.Events")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EventCategoryDelete(int id, CancellationToken ct)
+    {
+        await _eventCategoryService.DeleteCategoryAsync(id, ct);
         return Json(new { success = true });
     }
 
@@ -446,6 +502,7 @@ public class WebsiteAdminController : Controller
     [HttpGet("EmailTemplates/CreateEdit/{id?}")]
     public async Task<IActionResult> EmailTemplateCreateEdit(int? id, CancellationToken ct)
     {
+        ViewBag.EmailTemplateCategories = GetEmailTemplateCategories();
         if (id.HasValue && id > 0)
         {
             var tpl = await _emailTemplateService.GetTemplateByIdAsync(id.Value, ct);
@@ -453,6 +510,17 @@ public class WebsiteAdminController : Controller
             return View(tpl);
         }
         return View(new EmailTemplate());
+    }
+
+    public static List<string> GetEmailTemplateCategories()
+    {
+        return new List<string>
+        {
+            "HR",
+            "Security", 
+            "Attendance",
+            "General"
+        };
     }
 
     [HttpPost("EmailTemplates/CreateEdit/{id?}")]

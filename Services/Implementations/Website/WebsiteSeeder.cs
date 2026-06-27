@@ -123,6 +123,23 @@ public class WebsiteSeeder
             await _db.Notices.AddRangeAsync(notices);
         }
 
+        // 3b. Seed Event Categories
+        if (!await _db.EventCategories.AnyAsync(c => !c.IsDeleted))
+        {
+            var categories = new[]
+            {
+                new EventCategory { Name = "General Event", Slug = "general-event", IsActive = true, CreatedBy = "seeder", CreatedAt = DateTime.UtcNow },
+                new EventCategory { Name = "Parent-Teacher Meeting", Slug = "parent-meeting", IsActive = true, CreatedBy = "seeder", CreatedAt = DateTime.UtcNow },
+                new EventCategory { Name = "Sports Event", Slug = "sports-event", IsActive = true, CreatedBy = "seeder", CreatedAt = DateTime.UtcNow },
+                new EventCategory { Name = "Academic Event", Slug = "academic-event", IsActive = true, CreatedBy = "seeder", CreatedAt = DateTime.UtcNow },
+                new EventCategory { Name = "Exam Announcement", Slug = "exam-announcement", IsActive = true, CreatedBy = "seeder", CreatedAt = DateTime.UtcNow },
+                new EventCategory { Name = "Holiday Notice", Slug = "holiday-notice", IsActive = true, CreatedBy = "seeder", CreatedAt = DateTime.UtcNow },
+                new EventCategory { Name = "Emergency Notice", Slug = "emergency-notice", IsActive = true, CreatedBy = "seeder", CreatedAt = DateTime.UtcNow },
+                new EventCategory { Name = "Admission Event", Slug = "admission-event", IsActive = true, CreatedBy = "seeder", CreatedAt = DateTime.UtcNow }
+            };
+            await _db.EventCategories.AddRangeAsync(categories);
+        }
+
         // 4. Seed Events
         if (!await _db.Events.AnyAsync(e => !e.IsDeleted))
         {
@@ -258,10 +275,11 @@ public class WebsiteSeeder
         {
             var templates = new[]
             {
-                new EmailTemplate
+new EmailTemplate
                 {
                     TemplateName = "EmployeeInvitation",
-                    Subject = "You're invited to join {SchoolName}",
+                    Subject = "You\'re invited to join {SchoolName}",
+                    Category = "HR",
                     Body = @"<h2>Welcome to {SchoolName}!</h2>
 <p>Dear {EmployeeName},</p>
 <p>You have been invited to join {SchoolName}. Please click the link below to complete your onboarding and set up your account:</p>
@@ -278,6 +296,7 @@ public class WebsiteSeeder
                 {
                     TemplateName = "PasswordReset",
                     Subject = "Password Reset Request - {SchoolName}",
+                    Category = "Security",
                     Body = @"<h2>Password Reset</h2>
 <p>Dear {UserName},</p>
 <p>We received a request to reset your password for your {SchoolName} account.</p>
@@ -294,6 +313,7 @@ public class WebsiteSeeder
                 {
                     TemplateName = "AttendanceAbsent",
                     Subject = "Attendance Alert - {EmployeeName} was absent on {Date}",
+                    Category = "Attendance",
                     Body = @"<h2>Attendance Notification</h2>
 <p>This is an automated notification regarding attendance.</p>
 <p><strong>Employee:</strong> {EmployeeName}<br/>
@@ -311,6 +331,7 @@ public class WebsiteSeeder
                 {
                     TemplateName = "WelcomeEmail",
                     Subject = "Welcome to {SchoolName}!",
+                    Category = "General",
                     Body = @"<h2>Welcome Aboard!</h2>
 <p>Dear {UserName},</p>
 <p>Welcome to <strong>{SchoolName}</strong>! We are delighted to have you as part of our community.</p>
@@ -326,7 +347,7 @@ public class WebsiteSeeder
                     IsActive = true,
                     CreatedBy = "seeder",
                     CreatedAt = DateTime.UtcNow
-                }
+                },
             };
             await _db.EmailTemplates.AddRangeAsync(templates);
         }
@@ -506,6 +527,7 @@ public class WebsiteSeeder
                     Subject = subject,
                     Body = body,
                     Placeholders = placeholders,
+                    Category = "General",
                     IsActive = true,
                     CreatedBy = "seeder",
                     CreatedAt = DateTime.UtcNow
@@ -521,6 +543,7 @@ public class WebsiteSeeder
             {
                 TemplateName = "ContactNotification",
                 Subject = "New Contact Form Submission - {SchoolName}",
+                Category = "General",
                 Body = @"<h2>New Contact Form Submission</h2>
 <p><strong>School:</strong> {SchoolName}</p>
 <p><strong>From:</strong> {Name} ({Email})</p>

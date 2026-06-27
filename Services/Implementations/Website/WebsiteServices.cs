@@ -302,6 +302,7 @@ public class EmailTemplateService : IEmailTemplateService
             existing.Subject = template.Subject;
             existing.Body = template.Body;
             existing.Placeholders = template.Placeholders;
+            existing.Category = template.Category;
             existing.IsActive = template.IsActive;
             existing.UpdatedAt = DateTime.UtcNow;
             existing.UpdatedBy = "admin";
@@ -578,6 +579,7 @@ public class EventService : IEventService
             existing.EventLocation = ev.EventLocation;
             existing.IsUpcoming = ev.IsUpcoming;
             existing.IsPublished = ev.IsPublished;
+            existing.EventCategoryId = ev.EventCategoryId;
             if (!string.IsNullOrEmpty(ev.CoverImagePath)) existing.CoverImagePath = ev.CoverImagePath;
             existing.UpdatedAt = DateTime.UtcNow;
             existing.UpdatedBy = "admin";
@@ -707,6 +709,69 @@ public class EventService : IEventService
         ev.UpdatedBy = "admin";
         _repo.Update(ev);
         await _uow.SaveChangesAsync(cancellationToken);
+    }
+}
+
+public class EventCategoryService : IEventCategoryService
+{
+    private readonly IEventCategoryRepository _repo;
+    private readonly IUnitOfWork _uow;
+
+    public EventCategoryService(IEventCategoryRepository repo, IUnitOfWork uow)
+    {
+        _repo = repo;
+        _uow = uow;
+    }
+
+    public async Task<IReadOnlyList<EventCategory>> GetAllCategoriesAsync(CancellationToken cancellationToken = default)
+    {
+        return await _repo.ListAsync(c => !c.IsDeleted, cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<EventCategory>> GetActiveCategoriesAsync(CancellationToken cancellationToken = default)
+    {
+        return await _repo.ListAsync(c => !c.IsDeleted && c.IsActive, cancellationToken);
+    }
+
+    public async Task<EventCategory?> GetCategoryByIdAsync(int id, CancellationToken cancellationToken = default)
+    {
+        return await _repo.GetByIdAsync(id, cancellationToken);
+    }
+
+    public async Task CreateCategoryAsync(EventCategory category, CancellationToken cancellationToken = default)
+    {
+        category.CreatedAt = DateTime.UtcNow;
+        category.CreatedBy = "admin";
+        await _repo.AddAsync(category, cancellationToken);
+        await _uow.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task UpdateCategoryAsync(EventCategory category, CancellationToken cancellationToken = default)
+    {
+        var existing = await _repo.GetByIdAsync(category.Id, cancellationToken);
+        if (existing != null)
+        {
+            existing.Name = category.Name;
+            existing.Slug = category.Slug;
+            existing.IsActive = category.IsActive;
+            existing.UpdatedAt = DateTime.UtcNow;
+            existing.UpdatedBy = "admin";
+            _repo.Update(existing);
+            await _uow.SaveChangesAsync(cancellationToken);
+        }
+    }
+
+    public async Task DeleteCategoryAsync(int id, CancellationToken cancellationToken = default)
+    {
+        var existing = await _repo.GetByIdAsync(id, cancellationToken);
+        if (existing != null)
+        {
+            existing.IsDeleted = true;
+            existing.UpdatedAt = DateTime.UtcNow;
+            existing.UpdatedBy = "admin";
+            _repo.Update(existing);
+            await _uow.SaveChangesAsync(cancellationToken);
+        }
     }
 }
 

@@ -46,6 +46,16 @@ public interface IEventService
     Task RejectEventAsync(int id, string reason, CancellationToken cancellationToken = default);
 }
 
+public interface IEventCategoryService
+{
+    Task<IReadOnlyList<EventCategory>> GetAllCategoriesAsync(CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<EventCategory>> GetActiveCategoriesAsync(CancellationToken cancellationToken = default);
+    Task<EventCategory?> GetCategoryByIdAsync(int id, CancellationToken cancellationToken = default);
+    Task CreateCategoryAsync(EventCategory category, CancellationToken cancellationToken = default);
+    Task UpdateCategoryAsync(EventCategory category, CancellationToken cancellationToken = default);
+    Task DeleteCategoryAsync(int id, CancellationToken cancellationToken = default);
+}
+
 public interface IGalleryService
 {
     Task<IReadOnlyList<Gallery>> GetAllAlbumsAsync(CancellationToken cancellationToken = default);

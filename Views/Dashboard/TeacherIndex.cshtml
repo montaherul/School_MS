@@ -6,6 +6,15 @@
     ViewData["Title"] = "Teacher Dashboard";
 }
 
+@if (Model == null)
+{
+    <div class="alert alert-danger">
+        <h4>Error</h4>
+        <p>Unable to load teacher dashboard data. Please contact support.</p>
+    </div>
+    return;
+}
+
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabulator/6.2.1/css/tabulator_bootstrap5.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tabulator/6.2.1/js/tabulator.min.js"></script>
 
@@ -165,7 +174,7 @@
                             <div class="dash-section__header p-4 border-bottom"><h5 class="dash-section__title">Class Teacher Area</h5></div>
                             <div class="p-4">
                                 <h6 class="fw-bold mb-2">My Classes</h6>
-                                @if (Model.MyClasses.Any())
+                                @if (Model.MyClasses != null && Model.MyClasses.Any())
                                 {
                                     <ul class="list-unstyled">
                                         @foreach (var cls in Model.MyClasses)
@@ -193,7 +202,7 @@
                             <div class="dash-section__header p-4 border-bottom"><h5 class="dash-section__title">Subject Teacher Area</h5></div>
                             <div class="p-4">
                                 <h6 class="fw-bold mb-2">My Subjects</h6>
-                                @if (Model.MySubjects.Any())
+                                @if (Model.MySubjects != null && Model.MySubjects.Any())
                                 {
                                     <ul class="list-unstyled">
                                         @foreach (var sub in Model.MySubjects)
@@ -250,7 +259,7 @@
                         <a href="#" onclick="switchTab('schedule'); return false;" class="adm-btn adm-btn--ghost adm-btn--sm">View Full Week</a>
                     </div>
                     <div class="p-4">
-                        @if (Model.TodaySchedule.Any())
+                        @if (Model.TodaySchedule != null && Model.TodaySchedule.Any())
                         {
                             <div class="d-flex flex-column gap-3">
                                 @foreach (var item in Model.TodaySchedule)
@@ -291,7 +300,7 @@
                         <h5 class="dash-section__title">Latest Notices</h5>
                     </div>
                     <div>
-                        @if (Model.RecentNotices.Any())
+                        @if (Model.RecentNotices != null && Model.RecentNotices.Any())
                         {
                             @foreach (var notice in Model.RecentNotices)
                             {
@@ -328,7 +337,7 @@
                         </h5>
                     </div>
                     <div>
-                        @if (Model.TeacherRecentNotifications.Any())
+@if (Model.TeacherRecentNotifications != null && Model.TeacherRecentNotifications.Any())
                         {
                             @foreach (var n in Model.TeacherRecentNotifications)
                             {
@@ -383,7 +392,7 @@
                     var dayOrder = new[] { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
                     var grouped = Model.WeeklySchedule.GroupBy(s => s.DayOfWeek).OrderBy(g => Array.IndexOf(dayOrder, g.Key));
                 }
-                @if (Model.WeeklySchedule.Any())
+                @if (Model.WeeklySchedule != null && Model.WeeklySchedule.Any())
                 {
                     <div class="row g-4">
                         @foreach (var dayGroup in grouped)
@@ -445,7 +454,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @if (Model.MarkEntryStatus.Any())
+                        @if (Model.MarkEntryStatus != null && Model.MarkEntryStatus.Any())
                         {
                             @foreach (var item in Model.MarkEntryStatus)
                             {
@@ -509,7 +518,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @if (Model.RecentAssignments.Any())
+                        @if (Model.RecentAssignments != null && Model.RecentAssignments.Any())
                         {
                             @foreach (var a in Model.RecentAssignments)
                             {
@@ -562,7 +571,7 @@
                 </h5>
             </div>
             <div>
-                @if (Model.TeacherRecentNotifications.Any())
+                @if (Model.TeacherRecentNotifications != null && Model.TeacherRecentNotifications.Any())
                 {
                     @foreach (var n in Model.TeacherRecentNotifications)
                     {

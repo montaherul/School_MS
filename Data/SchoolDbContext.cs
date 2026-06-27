@@ -150,6 +150,7 @@ public class SchoolDbContext : DbContext
     public DbSet<WebsitePage> WebsitePages => Set<WebsitePage>();
     public DbSet<Slider> Sliders => Set<Slider>();
     public DbSet<Event> Events => Set<Event>();
+    public DbSet<EventCategory> EventCategories => Set<EventCategory>();
     public DbSet<Gallery> Galleries => Set<Gallery>();
     public DbSet<GalleryImage> GalleryImages => Set<GalleryImage>();
     public DbSet<Announcement> Announcements => Set<Announcement>();

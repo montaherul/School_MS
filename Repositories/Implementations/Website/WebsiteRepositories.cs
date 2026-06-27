@@ -47,6 +47,13 @@ public class EventRepository : BaseRepository<Event>, IEventRepository
     }
 }
 
+public class EventCategoryRepository : BaseRepository<EventCategory>, IEventCategoryRepository
+{
+    public EventCategoryRepository(SchoolDbContext context) : base(context)
+    {
+    }
+}
+
 public class GalleryRepository : BaseRepository<Gallery>, IGalleryRepository
 {
     public GalleryRepository(SchoolDbContext context) : base(context)

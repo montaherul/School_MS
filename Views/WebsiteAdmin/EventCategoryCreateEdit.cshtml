@@ -1,0 +1,46 @@
+@model SchoolManagementSystem.Models.Entities.Website.EventCategory
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    bool isEdit = Model.Id > 0;
+    ViewData["Title"] = isEdit ? "Edit Event Category" : "Create Event Category";
+}
+
+<div class="adm-page">
+    <div style="margin-bottom:16px;">
+        <a href="/Admin/Website" class="adm-btn adm-btn--ghost"><i style="margin-right:4px;" class="bi bi-arrow-left"></i> Back to Console</a>
+    </div>
+
+    <div style="max-width:600px;margin:0 auto;background:var(--adm-surface);border:1px solid var(--adm-border);border-radius:var(--adm-radius-lg);box-shadow:var(--adm-shadow);overflow:hidden;">
+        <div style="padding:16px 20px;border-bottom:1px solid var(--adm-border);">
+            <h5 style="font-size:16px;font-weight:700;color:var(--adm-primary);margin:0;"><i style="margin-right:8px;" class="bi bi-tags-fill"></i> @(isEdit ? "Update Event Category" : "Create Event Category")</h5>
+        </div>
+        <div style="padding:20px;">
+            <form action="/Admin/Website/EventCategories/CreateEdit/@(isEdit ? Model.Id.ToString() : "")" method="post">
+                @Html.AntiForgeryToken()
+
+                <div style="margin-bottom:12px;">
+                    <label class="adm-form-label">Category Name</label>
+                    <input type="text" name="Name" value="@Model.Name" class="adm-input" placeholder="e.g. Sports Event, Academic Event" required/>
+                </div>
+
+                <div style="margin-bottom:12px;">
+                    <label class="adm-form-label">Slug (URL-friendly identifier)</label>
+                    <input type="text" name="Slug" value="@Model.Slug" class="adm-input" placeholder="sports-event" required/>
+                    <span style="font-size:12px;color:var(--adm-text-3);">Lowercase, no spaces. Used for URL routing.</span>
+                </div>
+
+                <div style="margin-bottom:12px;">
+                    <label class="adm-form-label">Status</label>
+                    <select name="IsActive" class="adm-select" style="max-width:200px;">
+                        <option value="true" selected="@(Model.IsActive)">Active</option>
+                        <option value="false" selected="@(!Model.IsActive)">Inactive</option>
+                    </select>
+                </div>
+
+                <div style="text-align:right;padding-top:12px;border-top:1px solid var(--adm-border);">
+                    <button type="submit" class="adm-btn adm-btn--primary"><i style="margin-right:4px;" class="bi bi-save"></i> Save Category</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

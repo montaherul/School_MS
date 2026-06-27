@@ -139,6 +139,7 @@ public static class ServiceRegistration
         services.AddScoped<IWebsitePageRepository, WebsitePageRepository>();
         services.AddScoped<ISliderRepository, SliderRepository>();
         services.AddScoped<IEventRepository, EventRepository>();
+        services.AddScoped<IEventCategoryRepository, EventCategoryRepository>();
         services.AddScoped<IGalleryRepository, GalleryRepository>();
         services.AddScoped<IGalleryImageRepository, GalleryImageRepository>();
         services.AddScoped<INoticeRepository, NoticeRepository>();
@@ -228,6 +229,7 @@ public static class ServiceRegistration
         services.AddScoped<ISliderService, SliderService>();
         services.AddScoped<INoticeService, NoticeService>();
         services.AddScoped<IEventService, EventService>();
+        services.AddScoped<IEventCategoryService, EventCategoryService>();
         services.AddScoped<IGalleryService, GalleryService>();
         services.AddScoped<IWebsitePageService, WebsitePageService>();
         services.AddScoped<IContactMessageService, ContactMessageService>();

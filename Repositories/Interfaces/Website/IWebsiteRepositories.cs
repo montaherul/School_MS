@@ -23,6 +23,10 @@ public interface IEventRepository : IBaseRepository<Event>
 {
 }
 
+public interface IEventCategoryRepository : IBaseRepository<EventCategory>
+{
+}
+
 public interface IGalleryRepository : IBaseRepository<Gallery>
 {
     Task<Gallery?> GetWithImagesAsync(int id, CancellationToken cancellationToken = default);

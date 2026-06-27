@@ -387,8 +387,8 @@ public class Event : BaseEntity
     [MaxLength(500)]
     public string? RejectionReason { get; set; }
 
-    [MaxLength(60)]
-    public string Category { get; set; } = "EventPublished";
+    public int? EventCategoryId { get; set; }
+    public EventCategory? EventCategory { get; set; }
 
     public ICollection<ReminderConfig> ReminderConfigs { get; set; } = new List<ReminderConfig>();
 }
@@ -466,5 +466,21 @@ public class EmailTemplate : BaseEntity
     [MaxLength(500)]
     public string? Placeholders { get; set; }
 
+    [MaxLength(60)]
+    public string Category { get; set; } = "General";
+
     public bool IsActive { get; set; } = true;
+}
+
+public class EventCategory : BaseEntity
+{
+    [MaxLength(100)]
+    public string Name { get; set; } = string.Empty;
+
+    [MaxLength(120)]
+    public string Slug { get; set; } = string.Empty;
+
+    public bool IsActive { get; set; } = true;
+
+    public ICollection<Event> Events { get; set; } = new List<Event>();
 }
