@@ -84,7 +84,7 @@
                         if (val === 'Completed') return '<span class="adm-status adm-status--approved">Completed</span>';
                         if (val === 'Sent') return '<span class="adm-status adm-status--converted">Sent</span>';
                         if (val === 'Expired') return '<span class="adm-status adm-status--rejected">Expired</span>';
-                        if (val === 'Cancelled') return '<span class="adm-status adm-status--pending">Cancelled</span>';
+                        if (val === 'Cancelled') return '<span class="adm-status adm-status--rejected">Cancelled</span>';
                         return '<span class="adm-status adm-status--neutral">' + val + '</span>';
                     }
                 },
@@ -108,10 +108,10 @@
                         var d = cell.getData();
                         var status = d.invitationStatus;
                         var items = [];
-                        if (status === "Sent" || status === "Expired") {
+                        if (status === "Sent" || status === "Expired" || status === "EmailFailed" || status === "Opened") {
                             items.push({ className: 'action-btn--view', icon: 'arrow-clockwise', title: 'Resend', onClick: 'resendInvite(' + d.id + ')' });
                         }
-                        if (status === "Sent") {
+                        if (status === "Sent" || status === "Expired") {
                             items.push({ className: 'action-btn--delete', icon: 'x-circle', title: 'Cancel', onClick: 'cancelInvite(' + d.id + ')' });
                         }
                         return items.length ? buildActionGroup(items) : '<span class="text-muted small">Done</span>';

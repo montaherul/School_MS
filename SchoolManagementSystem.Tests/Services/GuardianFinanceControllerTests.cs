@@ -5,8 +5,6 @@ using SchoolManagementSystem.Controllers.Dashboard;
 using SchoolManagementSystem.Models.DTOs.Common;
 using SchoolManagementSystem.Models.DTOs.Dashboard;
 using SchoolManagementSystem.Models.DTOs.Fees;
-using SchoolManagementSystem.Models.Entities.Website;
-using SchoolManagementSystem.Repositories.Interfaces.Website;
 using SchoolManagementSystem.Services.Interfaces.Fees;
 using SchoolManagementSystem.Services.Interfaces.Guardian;
 using System.Security.Claims;
@@ -19,13 +17,10 @@ public class GuardianFinanceControllerTests
     private readonly Mock<IStudentFinanceService> _financeMock = new(MockBehavior.Strict);
     private readonly Mock<IFeeReceiptService> _receiptMock = new(MockBehavior.Strict);
     private readonly Mock<IGuardianService> _guardianMock = new(MockBehavior.Strict);
-    private readonly Mock<ISchoolSettingRepository> _settingRepoMock = new(MockBehavior.Loose);
 
     private GuardianFinanceController CreateController(int userId = 1)
     {
-        _settingRepoMock.Setup(s => s.GetCurrentSettingsAsync(It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new SchoolSetting { EnableGuardianPortal = true });
-        var controller = new GuardianFinanceController(_financeMock.Object, _receiptMock.Object, _guardianMock.Object, _settingRepoMock.Object);
+        var controller = new GuardianFinanceController(_financeMock.Object, _receiptMock.Object, _guardianMock.Object);
         var user = new ClaimsPrincipal(new ClaimsIdentity(new[]
         {
             new Claim(ClaimTypes.NameIdentifier, userId.ToString()),

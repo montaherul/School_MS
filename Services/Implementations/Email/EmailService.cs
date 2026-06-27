@@ -1,8 +1,11 @@
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Diagnostics;
 using System.Text.Encodings.Web;
 using SchoolManagementSystem.Helpers.Email;
 using SchoolManagementSystem.Repositories.Interfaces.Website;
 using SchoolManagementSystem.Services.Interfaces.Email;
+using SchoolManagementSystem.Services.Interfaces.Website;
 
 namespace SchoolManagementSystem.Services.Implementations.Email;
 
@@ -10,18 +13,24 @@ public class EmailService : IEmailService
 {
     private readonly IEmailSender _emailSender;
     private readonly EmailOptions _options;
+    private readonly EmailUrlResolver _urlResolver;
     private readonly ISchoolSettingRepository _settingRepo;
+    private readonly IEmailTemplateService _templateService;
     private readonly ILogger<EmailService> _logger;
 
     public EmailService(
         IEmailSender emailSender,
         IOptions<EmailOptions> options,
         ISchoolSettingRepository settingRepo,
+        EmailUrlResolver urlResolver,
+        IEmailTemplateService templateService,
         ILogger<EmailService> logger)
     {
         _emailSender = emailSender;
         _options = options.Value;
         _settingRepo = settingRepo;
+        _urlResolver = urlResolver;
+        _templateService = templateService;
         _logger = logger;
     }
 
@@ -32,7 +41,7 @@ public class EmailService : IEmailService
       string token,
       CancellationToken cancellationToken = default)
     {
-        var baseUrl = ResolveBaseUrl();
+        var baseUrl = await _urlResolver.ResolveAsync();
         var activationUrl = $"{baseUrl}/Auth/Activate?token={Uri.EscapeDataString(token)}";
 
         var htmlBody = $@"
@@ -50,7 +59,7 @@ public class EmailService : IEmailService
 
 <p>This activation link expires in 24 hours.</p>";
 
-        await SendWorkflowEmailAsync("Student activation", toEmail, "Admission Approved - Set Your Password", htmlBody, cancellationToken);
+        await SendWorkflowEmailAsync("StudentActivation", toEmail, "Admission Approved - Set Your Password", htmlBody, cancellationToken);
     }
 
     public async Task SendAdmissionReceivedAsync(string toEmail, string applicantName, string applicationNo, CancellationToken cancellationToken = default)
@@ -62,7 +71,7 @@ public class EmailService : IEmailService
 <p>Our admission team will review your application and get back to you shortly.</p>
 <p>Regards,<br/>Admission Team</p>";
 
-        await SendWorkflowEmailAsync("Admission received", toEmail, "Admission Application Received", htmlBody, cancellationToken);
+        await SendWorkflowEmailAsync("AdmissionReceived", toEmail, "Admission Application Received", htmlBody, cancellationToken);
     }
 
     public async Task SendTeacherAccountAsync(
@@ -72,8 +81,9 @@ public class EmailService : IEmailService
     string password,
     CancellationToken cancellationToken = default)
 {
-    var baseUrl = ResolveBaseUrl();
+    var baseUrl = await _urlResolver.ResolveAsync();
     var loginUrl = $"{baseUrl}/Auth/Login";
+    var schoolName = await ResolveSchoolNameAsync();
 
     var htmlBody = $@"
 <p>Dear <strong>{teacherName}</strong>,</p>
@@ -93,9 +103,9 @@ public class EmailService : IEmailService
 
 <p>Please change your password after first login.</p>
 
-<p>Regards,<br/>School Administration</p>";
+<p>Regards,<br/>{schoolName}</p>";
 
-    await SendWorkflowEmailAsync("Teacher account creation", toEmail, "Teacher Account Created", htmlBody, cancellationToken);
+    await SendWorkflowEmailAsync("TeacherAccount", toEmail, "Teacher Account Created", htmlBody, cancellationToken);
 }
 
     public async Task SendEmployeeAccountAsync(
@@ -105,8 +115,9 @@ public class EmailService : IEmailService
         string password,
         CancellationToken cancellationToken = default)
     {
-        var baseUrl = ResolveBaseUrl();
+        var baseUrl = await _urlResolver.ResolveAsync();
         var loginUrl = $"{baseUrl}/Auth/Login";
+        var schoolName = await ResolveSchoolNameAsync();
 
         var htmlBody = $@"
 <p>Dear <strong>{employeeName}</strong>,</p>
@@ -126,9 +137,9 @@ public class EmailService : IEmailService
 
 <p>Please change your password after first login.</p>
 
-<p>Regards,<br/>School Administration</p>";
+<p>Regards,<br/>{schoolName}</p>";
 
-        await SendWorkflowEmailAsync("Employee account creation", toEmail, "Employee Account Created", htmlBody, cancellationToken);
+        await SendWorkflowEmailAsync("EmployeeAccount", toEmail, "Employee Account Created", htmlBody, cancellationToken);
     }
 
     public async Task SendEmployeeInvitationAsync(
@@ -138,12 +149,39 @@ public class EmailService : IEmailService
         DateTime expiresAt,
         CancellationToken cancellationToken = default)
     {
-        var baseUrl = ResolveBaseUrl();
+        var baseUrl = await _urlResolver.ResolveAsync();
         var onboardingUrl = $"{baseUrl}/Onboarding/Start?token={Uri.EscapeDataString(invitationToken)}";
+        var schoolName = await ResolveSchoolNameAsync();
 
-        var htmlBody = $@"
+        string? principalName = null;
+        try
+        {
+            var settings = await _settingRepo.GetCurrentSettingsAsync();
+            principalName = settings?.PrincipalName;
+        }
+        catch { }
+
+        var placeholders = new Dictionary<string, string>
+        {
+            ["SchoolName"] = schoolName,
+            ["EmployeeName"] = employeeName,
+            ["OnboardingUrl"] = onboardingUrl,
+            ["Token"] = invitationToken,
+            ["PortalUrl"] = baseUrl,
+            ["ExpiresAt"] = expiresAt.ToString("dd MMM yyyy, hh:mm tt"),
+            ["PrincipalName"] = principalName ?? schoolName
+        };
+
+        var subject = await _templateService.RenderTemplateSubjectAsync("EmployeeInvitation", placeholders, cancellationToken);
+        if (string.IsNullOrEmpty(subject))
+            subject = "Invitation to Join Our School Team";
+
+        var body = await _templateService.RenderTemplateAsync("EmployeeInvitation", placeholders, cancellationToken);
+        if (string.IsNullOrEmpty(body))
+        {
+            body = $@"
 <div style=""font-family: Arial, sans-serif; line-height: 1.6; color: #333;"">
-    <h2 style=""color: #1a56db;"">Welcome to Our School Team!</h2>
+    <h2 style=""color: #1a56db;"">Welcome to {schoolName}!</h2>
     <p>Dear <strong>{employeeName}</strong>,</p>
     <p>We are excited to invite you to join our team. To complete your onboarding process, please click the button below to fill out your employee profile and set up your account.</p>
 
@@ -159,10 +197,11 @@ public class EmailService : IEmailService
     <p style=""font-size: 0.9em; color: #666;"">{onboardingUrl}</p>
 
     <hr style=""border: 0; border-top: 1px solid #eee; margin: 20px 0;"" />
-    <p>Regards,<br/>School Administration</p>
+    <p>Regards,<br/>{schoolName}</p>
 </div>";
+        }
 
-        await SendWorkflowEmailAsync("Employee invitation", toEmail, "Invitation to Join Our School Team", htmlBody, cancellationToken);
+        await SendWorkflowEmailAsync("EmployeeInvitation", toEmail, subject, body, cancellationToken);
     }
 
     public async Task SendPasswordResetAsync(string toEmail, string userName, string otp, CancellationToken cancellationToken = default)
@@ -172,7 +211,7 @@ public class EmailService : IEmailService
 
         var htmlBody = $@"<div style='font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;'><h2>Password Reset</h2><p>Hello, {safeUserName}.</p><p>You requested a password reset for your account.</p><div style='background: #f0f7ff; padding: 15px; text-align: center; border-radius: 8px; margin: 20px 0;'><span style='font-size: 24px; font-weight: bold; letter-spacing: 5px; color: #1a56db;'>{safeOtp}</span></div><p>This code will expire in 10 minutes.</p></div>";
 
-        await SendWorkflowEmailAsync("Password reset", toEmail, "Password Reset Code", htmlBody, cancellationToken);
+        await SendWorkflowEmailAsync("PasswordReset", toEmail, "Password Reset Code", htmlBody, cancellationToken);
     }
 
     public async Task SendAttendanceNotificationAsync(string toEmail, string studentName, string rollNumber, string className, string sectionName, DateOnly attendanceDate, string schoolName, CancellationToken cancellationToken = default)
@@ -193,7 +232,7 @@ public class EmailService : IEmailService
 <p>Please contact the school office if you believe this was recorded in error.</p>
 <p>Regards,<br/>{enc.Encode(schoolName)}</p>";
 
-        await SendWorkflowEmailAsync("Attendance notification", toEmail, "Student Absence Notification", htmlBody, cancellationToken);
+        await SendWorkflowEmailAsync("AttendanceNotification", toEmail, "Student Absence Notification", htmlBody, cancellationToken);
     }
 
     public async Task SendGuardianActivationAsync(
@@ -205,10 +244,11 @@ public class EmailService : IEmailService
       CancellationToken cancellationToken = default)
     {
         var baseUrl = string.IsNullOrWhiteSpace(activationBaseUrl)
-            ? ResolveBaseUrl()
+            ? await _urlResolver.ResolveAsync()
             : activationBaseUrl.TrimEnd('/');
 
         var activationUrl = $"{baseUrl}/Guardian/Activate?token={Uri.EscapeDataString(token)}";
+        var schoolName = await ResolveSchoolNameAsync();
 
         var enc = HtmlEncoder.Default;
         var safeName = enc.Encode(guardianName);
@@ -216,7 +256,7 @@ public class EmailService : IEmailService
 
         var htmlBody = $@"
 <div style=""font-family: Arial, sans-serif; line-height: 1.6; color: #333;"">
-    <h2 style=""color: #1a56db;"">Welcome to Our School Portal</h2>
+    <h2 style=""color: #1a56db;"">Welcome to {safeName} Portal</h2>
     <p>Dear <strong>{safeName}</strong>,</p>
     <p>Your Guardian portal account has been created. You can now view your child's attendance, results, fees, and more.</p>
     <table style=""border-collapse:collapse;width:100%;max-width:520px;margin:14px 0"">
@@ -231,42 +271,61 @@ public class EmailService : IEmailService
     <p>Or copy this link: <br/><span style=""font-size:0.9em;color:#666;word-break:break-all"">{activationUrl}</span></p>
     <p>This activation link expires in 24 hours.</p>
     <hr style=""border:0;border-top:1px solid #eee;margin:20px 0"" />
-    <p>Regards,<br/>School Administration</p>
+    <p>Regards,<br/>{schoolName}</p>
 </div>";
 
-        await SendWorkflowEmailAsync("Guardian activation", toEmail, "Guardian Portal - Activate Your Account", htmlBody, cancellationToken);
+        await SendWorkflowEmailAsync("GuardianActivation", toEmail, "Guardian Portal - Activate Your Account", htmlBody, cancellationToken);
+    }
+
+    private async Task<string> ResolveSchoolNameAsync()
+    {
+        try
+        {
+            var settings = await _settingRepo.GetCurrentSettingsAsync();
+            if (settings != null && !string.IsNullOrWhiteSpace(settings.SchoolName))
+                return settings.SchoolName;
+        }
+        catch { }
+        return "School Management System";
     }
 
     private async Task SendWorkflowEmailAsync(string workflowName, string toEmail, string subject, string htmlBody, CancellationToken cancellationToken)
     {
         await ValidateEmailConfigurationAsync();
+
+        var unresolved = TemplatePlaceholderValidator.FindUnresolved(htmlBody);
+        if (unresolved.Count > 0)
+        {
+            _logger.LogWarning(
+                "Email template {WorkflowName} has {Count} unresolved placeholders: {Placeholders}. Body preview: {Preview}",
+                workflowName, unresolved.Count, string.Join(", ", unresolved),
+                TemplatePlaceholderValidator.SanitizeForLog(htmlBody));
+        }
+
         ValidateRecipient(toEmail);
         ValidateSubjectAndBody(subject, htmlBody);
 
-        _logger.LogInformation("Sending email workflow {WorkflowName} to {Recipient} with subject {Subject}", workflowName, toEmail, subject);
+        var sw = Stopwatch.StartNew();
+        _logger.LogInformation(
+            "Sending email workflow {WorkflowName} to {Recipient} with subject {Subject}",
+            workflowName, toEmail, subject);
 
         try
         {
             await _emailSender.SendAsync(toEmail, subject, htmlBody, cancellationToken);
-            _logger.LogInformation("Email workflow {WorkflowName} sent successfully to {Recipient} with subject {Subject}", workflowName, toEmail, subject);
+            sw.Stop();
+            _logger.LogInformation(
+                "Email workflow {WorkflowName} sent successfully to {Recipient} with subject {Subject} in {DurationMs}ms",
+                workflowName, toEmail, subject, sw.ElapsedMilliseconds);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Email workflow {WorkflowName} failed for {Recipient} with subject {Subject}", workflowName, toEmail, subject);
+            sw.Stop();
+            _logger.LogError(ex,
+                "Email workflow {WorkflowName} failed for {Recipient} with subject {Subject} after {DurationMs}ms",
+                workflowName, toEmail, subject, sw.ElapsedMilliseconds);
             throw;
         }
-    }
-
-    private string ResolveBaseUrl()
-    {
-        try
-        {
-            var settings = _settingRepo.GetCurrentSettingsAsync().GetAwaiter().GetResult();
-            if (settings?.BaseUrl != null) return settings.BaseUrl.TrimEnd('/');
-        }
-        catch { }
-
-        return _options.BaseUrl;
     }
 
     private async Task ValidateEmailConfigurationAsync()
@@ -313,5 +372,3 @@ public class EmailService : IEmailService
         }
     }
 }
-
-

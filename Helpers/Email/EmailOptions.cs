@@ -10,4 +10,5 @@ public class EmailOptions
     public string From { get; set; } = string.Empty;
     public string BaseUrl { get; set; } = string.Empty;
     public string LocalUrl { get; set; } = string.Empty;
+    public string? PublicUrl { get; set; }
 }

@@ -50,6 +50,21 @@
                     </div>
                     <div style="flex:1 1 calc(50% - 16px);min-width:280px;">
                         <div style="margin-bottom:12px;">
+                            <label class="adm-form-label">Event Category</label>
+                            <select name="Category" class="adm-select">
+                                <option value="EventPublished" selected="@(Model.Category == "EventPublished")">General Event</option>
+                                <option value="ParentMeeting" selected="@(Model.Category == "ParentMeeting")">Parent-Teacher Meeting</option>
+                                <option value="SportsEvent" selected="@(Model.Category == "SportsEvent")">Sports Event</option>
+                                <option value="AcademicEvent" selected="@(Model.Category == "AcademicEvent")">Academic Event</option>
+                                <option value="ExamAnnouncement" selected="@(Model.Category == "ExamAnnouncement")">Exam Announcement</option>
+                                <option value="HolidayNotice" selected="@(Model.Category == "HolidayNotice")">Holiday Notice</option>
+                                <option value="EmergencyNotice" selected="@(Model.Category == "EmergencyNotice")">Emergency Notice</option>
+                                <option value="AdmissionEvent" selected="@(Model.Category == "AdmissionEvent")">Admission Event</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="flex:1 1 calc(50% - 16px);min-width:280px;">
+                        <div style="margin-bottom:12px;">
                             <label class="adm-form-label">Status Visibility</label>
                             <select name="IsPublished" class="adm-select">
                                 <option value="true" selected="@(Model.IsPublished)">Visible (Published)</option>

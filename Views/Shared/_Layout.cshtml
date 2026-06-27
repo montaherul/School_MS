@@ -52,7 +52,10 @@
     bool isTeacherLike = User.IsInRole("Teacher") || User.IsInRole("Senior Lecturer") ||
                            User.IsInRole("Lecturer") || User.IsInRole("Assistant Head") ||
                            User.IsInRole("Principal") || User.IsInRole("Office Staff");
+    bool isTeacher = User.IsInRole("Teacher") || User.IsInRole("Senior Lecturer") ||
+                     User.IsInRole("Lecturer") || User.IsInRole("Assistant Head");
     bool IsAdmin() => User.IsInRole("Super Admin");
+    bool IsElevated() => IsAdmin() || User.IsInRole("Admin") || User.IsInRole("Principal");
     bool Can(string c) => IsAdmin() || User.HasClaim("Permission", c);
     bool CanAny(params string[] permissions) => permissions.Any(Can);
 
@@ -130,38 +133,102 @@
                 </div>
 
                 <nav class="sidebar-nav" id="sidebarNav">
+                    @* ────────────────────────────────────────────────
+                       GUARDIAN — Portal Enabled
+                       ──────────────────────────────────────────────── *@
                     @if (isGuardian && guardianPortalEnabled)
                     {
-                        <span class="nav-section-label"><span class="nav-text">Guardian Portal</span></span>
-                        <a href="/Guardian/Portal/Dashboard" data-title="Dashboard"><i class="bi bi-grid-1x2"></i><span class="nav-text">My Dashboard</span></a>
-                        <a href="/Guardian/Portal/Attendance" data-title="Attendance"><i class="bi bi-calendar-check"></i><span class="nav-text">Attendance</span></a>
-                        <a href="/Guardian/Portal/Results" data-title="Results"><i class="bi bi-bar-chart-line"></i><span class="nav-text">Results</span></a>
-                        <a href="/Guardian/ExamRoutine" data-title="Exam Routine"><i class="bi bi-calendar-event"></i><span class="nav-text">Exam Routine</span></a>
-                        <a href="/Guardian/Portal/Fees" data-title="Fees"><i class="bi bi-cash-coin"></i><span class="nav-text">Fees</span></a>
-                        <a href="/Guardian/Portal/Leaves" data-title="Leave"><i class="bi bi-file-earmark-medical"></i><span class="nav-text">Leave</span></a>
-                        <a href="/Guardian/Portal/Notices" data-title="Notices"><i class="bi bi-megaphone"></i><span class="nav-text">Notices</span></a>
-                        <a href="/Guardian/Portal/Calendar" data-title="Calendar"><i class="bi bi-calendar3"></i><span class="nav-text">Calendar</span></a>
-                        <a href="/Guardian/Portal/Notifications" data-title="Notifications"><i class="bi bi-bell"></i><span class="nav-text">Notifications</span></a>
-                        <a href="/Guardian/Portal/Profile" data-title="Profile"><i class="bi bi-person-circle"></i><span class="nav-text">My Profile</span></a>
+                        @if (CanAny("Dashboard.View","Attendance.View","Results.View","Fees.View","Leave.View","Notice.View","Calendar.View","Profile.View","Notification.View","Routine.View"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">Guardian Portal</span></span>
+                            @if (Can("Dashboard.View"))
+                            {
+                                <a href="/Guardian/Portal/Dashboard" data-title="Dashboard"><i class="bi bi-grid-1x2"></i><span class="nav-text">My Dashboard</span></a>
+                            }
+                            @if (Can("Attendance.View"))
+                            {
+                                <a href="/Guardian/Portal/Attendance" data-title="Attendance"><i class="bi bi-calendar-check"></i><span class="nav-text">Attendance</span></a>
+                            }
+                            @if (Can("Results.View"))
+                            {
+                                <a href="/Guardian/Portal/Results" data-title="Results"><i class="bi bi-bar-chart-line"></i><span class="nav-text">Results</span></a>
+                            }
+                            @if (Can("Routine.View"))
+                            {
+                                <a href="/Guardian/ExamRoutine" data-title="Exam Routine"><i class="bi bi-calendar-event"></i><span class="nav-text">Exam Routine</span></a>
+                            }
+                            @if (Can("Fees.View"))
+                            {
+                                <a href="/Guardian/Portal/Fees" data-title="Fees"><i class="bi bi-cash-coin"></i><span class="nav-text">Fees</span></a>
+                            }
+                            @if (Can("Leave.View"))
+                            {
+                                <a href="/Guardian/Portal/Leaves" data-title="Leave"><i class="bi bi-file-earmark-medical"></i><span class="nav-text">Leave</span></a>
+                            }
+                            @if (Can("Notice.View"))
+                            {
+                                <a href="/Guardian/Portal/Notices" data-title="Notices"><i class="bi bi-megaphone"></i><span class="nav-text">Notices</span></a>
+                            }
+                            @if (Can("Calendar.View"))
+                            {
+                                <a href="/Guardian/Portal/Calendar" data-title="Calendar"><i class="bi bi-calendar3"></i><span class="nav-text">Calendar</span></a>
+                            }
+                            @if (Can("Notification.View"))
+                            {
+                                <a href="/Guardian/Portal/Notifications" data-title="Notifications"><i class="bi bi-bell"></i><span class="nav-text">Notifications</span></a>
+                            }
+                            @if (Can("Profile.View"))
+                            {
+                                <a href="/Guardian/Portal/Profile" data-title="Profile"><i class="bi bi-person-circle"></i><span class="nav-text">My Profile</span></a>
+                            }
+                        }
                     }
+                    @* ────────────────────────────────────────────────
+                       GUARDIAN — Portal Disabled
+                       ──────────────────────────────────────────────── *@
                     else if (isGuardian && !guardianPortalEnabled)
                     {
-                        <span class="nav-section-label"><span class="nav-text">Guardian Portal</span></span>
+                        <span class="nav-section-label"><span class="nav-text">Guardian</span></span>
                         <a asp-controller="Dashboard" asp-action="Index" data-title="Dashboard"><i class="bi bi-grid-1x2"></i><span class="nav-text">Dashboard</span></a>
+                        <a asp-controller="Dashboard" asp-action="Index" data-title="Fees"><i class="bi bi-cash-coin"></i><span class="nav-text">Finance</span></a>
                         <a href="/Details" data-title="My Profile"><i class="bi bi-person-circle"></i><span class="nav-text">My Profile</span></a>
                     }
+                    @* ────────────────────────────────────────────────
+                       STUDENT
+                       ──────────────────────────────────────────────── *@
                     else if (isStudent)
                     {
-                        <span class="nav-section-label"><span class="nav-text">Main</span></span>
-                        <a href="/Details" data-title="My Profile"><i class="bi bi-person-circle"></i><span class="nav-text">My Profile</span></a>
-                        <a asp-controller="Dashboard" asp-action="Index" data-title="Dashboard"><i class="bi bi-grid-1x2"></i><span class="nav-text">My Dashboard</span></a>
+                        @if (Can("Dashboard.View"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">Main</span></span>
+                            <a asp-controller="Dashboard" asp-action="Index" data-title="Dashboard"><i class="bi bi-grid-1x2"></i><span class="nav-text">My Dashboard</span></a>
+                        }
+                        @if (Can("Students.View"))
+                        {
+                            <a href="/Details" data-title="My Profile"><i class="bi bi-person-circle"></i><span class="nav-text">My Profile</span></a>
+                        }
 
-                        <span class="nav-section-label"><span class="nav-text">Academics</span></span>
-                        <a href="/ResultManagement/StudentDashboard" data-title="Results"><i class="bi bi-bar-chart-line"></i><span class="nav-text">My Results</span></a>
-                        <a href="/Student/ExamRoutine" data-title="Exam Routine"><i class="bi bi-calendar-event"></i><span class="nav-text">Exam Routine</span></a>
-                        <a href="/AttendanceRecord" data-title="Attendance"><i class="bi bi-calendar-check"></i><span class="nav-text">Attendance</span></a>
-                        <a href="/Routine/StudentView" data-title="My Timetable"><i class="bi bi-calendar-range"></i><span class="nav-text">My Timetable</span></a>
-                        <a asp-controller="StudentClassAssignment" asp-action="Index" data-title="Assignments"><i class="bi bi-journal-text"></i><span class="nav-text">Assignments</span></a>
+                        @if (CanAny("Results.View","Routine.View","Attendance.View","Assignments.View"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">Academics</span></span>
+                            @if (Can("Results.View"))
+                            {
+                                <a href="/ResultManagement/StudentDashboard" data-title="Results"><i class="bi bi-bar-chart-line"></i><span class="nav-text">My Results</span></a>
+                                <a href="/Student/ExamRoutine" data-title="Exam Routine"><i class="bi bi-calendar-event"></i><span class="nav-text">Exam Routine</span></a>
+                            }
+                            @if (Can("Attendance.View"))
+                            {
+                                <a href="/AttendanceRecord" data-title="Attendance"><i class="bi bi-calendar-check"></i><span class="nav-text">Attendance</span></a>
+                            }
+                            @if (Can("Routine.View"))
+                            {
+                                <a href="/Routine/StudentView" data-title="My Timetable"><i class="bi bi-calendar-range"></i><span class="nav-text">My Timetable</span></a>
+                            }
+                            @if (Can("Assignments.View"))
+                            {
+                                <a asp-controller="StudentClassAssignment" asp-action="Index" data-title="Assignments"><i class="bi bi-journal-text"></i><span class="nav-text">Assignments</span></a>
+                            }
+                        }
 
                         @if (CanAny("Invoices.Read", "Payments.Read", "StudentDues.Read", "Receipts.Read"))
                         {
@@ -172,147 +239,104 @@
                                 <a asp-controller="Payment" asp-action="Index" data-title="Payment History"><i class="bi bi-credit-card"></i><span class="nav-text">Payment History</span></a>
                             }
                         }
-                        <span class="nav-section-label"><span class="nav-text">Communication</span></span>
-                        <a href="/Communication" data-title="Notices"><i class="bi bi-megaphone"></i><span class="nav-text">Notices</span></a>
+                        @if (Can("Notifications.View"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">Communication</span></span>
+                            <a href="/Communication" data-title="Notices"><i class="bi bi-megaphone"></i><span class="nav-text">Notices</span></a>
+                        }
                     }
+                    @* ────────────────────────────────────────────────
+                       EXAM CONTROLLER
+                       ──────────────────────────────────────────────── *@
                     else if (User.IsInRole("Exam Controller"))
                     {
-                        <span class="nav-section-label"><span class="nav-text">Overview</span></span>
-                        <a asp-controller="Dashboard" asp-action="Index" data-title="Dashboard"><i class="bi bi-grid-1x2"></i><span class="nav-text">Dashboard</span></a>
-
-                        <span class="nav-section-label"><span class="nav-text">Exams</span></span>
-                        <a asp-controller="Exam" asp-action="Index" data-title="Exam List"><i class="bi bi-pencil-square"></i><span class="nav-text">Exam List</span></a>
-                        <a asp-controller="Exam" asp-action="Create" data-title="Create Exam"><i class="bi bi-plus-circle"></i><span class="nav-text">Create Exam</span></a>
-                        <a asp-controller="ExamSchedule" asp-action="Index" data-title="Exam Schedule"><i class="bi bi-calendar4-event"></i><span class="nav-text">Exam Schedule</span></a>
-                        <a asp-controller="ExamComponents" asp-action="Index" data-title="Subject Configuration"><i class="bi bi-layers"></i><span class="nav-text">Subject Config</span></a>
-
-                        <span class="nav-section-label"><span class="nav-text">Marks</span></span>
-                        <a asp-controller="Marks" asp-action="EntryStatus" data-title="Marks Progress"><i class="bi bi-bar-chart-steps"></i><span class="nav-text">Marks Progress</span></a>
-                        <a asp-controller="Marks" asp-action="AuditLog" data-title="Audit Log"><i class="bi bi-clipboard-data"></i><span class="nav-text">Audit Log</span></a>
-
-                        <span class="nav-section-label"><span class="nav-text">Results</span></span>
-                        <a asp-controller="AdminResult" asp-action="Dashboard" data-title="Result Dashboard"><i class="bi bi-graph-up"></i><span class="nav-text">Result Dashboard</span></a>
-                        <a asp-controller="AdminResult" asp-action="AllResults" data-title="All Results"><i class="bi bi-list-check"></i><span class="nav-text">All Results</span></a>
-                        <a asp-controller="AdminResult" asp-action="TabulationSheet" data-title="Tabulation"><i class="bi bi-table"></i><span class="nav-text">Tabulation</span></a>
-                        <a asp-controller="MeritList" asp-action="Index" data-title="Merit List"><i class="bi bi-trophy"></i><span class="nav-text">Merit List</span></a>
-                        <a asp-controller="AdminResult" asp-action="ResultPublishing" data-title="Publish Results"><i class="bi bi-megaphone"></i><span class="nav-text">Publish Results</span></a>
-
-                        <span class="nav-section-label"><span class="nav-text">Promotion</span></span>
-                        <a asp-controller="Promotion" asp-action="Index" data-title="Promotion Dashboard"><i class="bi bi-arrow-up-circle"></i><span class="nav-text">Promotion</span></a>
-                        <a asp-controller="Promotion" asp-action="Policies" data-title="Promotion Policies"><i class="bi bi-shield-check"></i><span class="nav-text">Promotion Policies</span></a>
-                        <a asp-controller="Promotion" asp-action="RollGeneration" data-title="Roll Generation"><i class="bi bi-list-ol"></i><span class="nav-text">Roll Generation</span></a>
-
-                        <span class="nav-section-label"><span class="nav-text">Reports</span></span>
-                        <a asp-controller="AdminResult" asp-action="SubjectAnalysis" data-title="Subject Analysis"><i class="bi bi-file-earmark-bar-graph"></i><span class="nav-text">Subject Analysis</span></a>
-                        <a asp-controller="Transcript" asp-action="Index" data-title="Transcript"><i class="bi bi-file-text"></i><span class="nav-text">Transcript</span></a>
-                        <a asp-controller="ReportCard" asp-action="Index" data-title="Report Cards"><i class="bi bi-card-list"></i><span class="nav-text">Report Cards</span></a>
-                    }
-                    else
-                    {
-                        @if (isTeacherLike)
-                        {
-                            <span class="nav-section-label"><span class="nav-text">Account</span></span>
-                            <a href="/Details" data-title="My Profile"><i class="bi bi-person-circle"></i><span class="nav-text">My Profile</span></a>
-                        }
-
                         @if (Can("Dashboard.View"))
                         {
                             <span class="nav-section-label"><span class="nav-text">Overview</span></span>
                             <a asp-controller="Dashboard" asp-action="Index" data-title="Dashboard"><i class="bi bi-grid-1x2"></i><span class="nav-text">Dashboard</span></a>
                         }
 
-                        @if (Can("Admissions.View") || Can("Admission.View") || Can("Students.View") || Can("Student.View") || Can("Teachers.View"))
+                        @if (CanAny("Exams.View","Exams.Create","ExamSchedule.View","ExamComponents.View"))
                         {
-                            <span class="nav-section-label"><span class="nav-text">People</span></span>
-                            @if (Can("Admissions.View") || Can("Admission.View"))
+                            <span class="nav-section-label"><span class="nav-text">Exams</span></span>
+                            @if (Can("Exams.View"))
                             {
-                                <a asp-controller="Admission" asp-action="Index" data-title="Students"><i class="bi bi-people"></i><span class="nav-text">Admissions</span></a>
-                                @* <a href="/Admission/Index" data-title="Admissions"><i class="bi bi-person-plus"></i><span class="nav-text">Admissions</span></a>
-                            *@
+                                <a asp-controller="Exam" asp-action="Index" data-title="Exam List"><i class="bi bi-pencil-square"></i><span class="nav-text">Exam List</span></a>
                             }
-
-                            @if (Can("Students.View") || Can("Student.View"))
+                            @if (Can("Exams.Create"))
                             {
-                                <a asp-controller="Student" asp-action="Index" data-title="Students"><i class="bi bi-people"></i><span class="nav-text">Students</span></a>
+                                <a asp-controller="Exam" asp-action="Create" data-title="Create Exam"><i class="bi bi-plus-circle"></i><span class="nav-text">Create Exam</span></a>
                             }
-                            @if (Can("Teachers.View"))
+                            @if (Can("ExamSchedule.View"))
                             {
-                                <a asp-controller="Teacher" asp-action="Index" data-title="Teachers"><i class="bi bi-person-badge"></i><span class="nav-text">Teachers</span></a>
+                                <a asp-controller="ExamSchedule" asp-action="Index" data-title="Exam Schedule"><i class="bi bi-calendar4-event"></i><span class="nav-text">Exam Schedule</span></a>
                             }
-                            @if (Can("Students.View"))
+                            @if (Can("ExamComponents.View"))
                             {
-                                <a asp-controller="Guardian" asp-action="Index" data-title="Guardians"><i class="bi bi-shield-check"></i><span class="nav-text">Guardians</span></a>
-                            }
-                            @if (Can("Employees.Invite"))
-                            {
-                                <a asp-controller="EmployeeInvitation" asp-action="Index" data-title="Onboarding"><i class="bi bi-envelope-paper"></i><span class="nav-text">Onboarding</span></a>
-                            }
-                            @if (Can("Employees.View"))
-                            {
-                                <a asp-controller="Employee" asp-action="Index" data-title="Employees"><i class="bi bi-person-badge"></i><span class="nav-text">Employees</span></a>
+                                <a asp-controller="ExamComponents" asp-action="Index" data-title="Subject Configuration"><i class="bi bi-layers"></i><span class="nav-text">Subject Config</span></a>
                             }
                         }
 
-                        @if (Can("Academic.View") || Can("Classes.View") || Can("Subjects.View") || Can("Attendance.View") || Can("Exams.View") || Can("Exam.View") || Can("Marks.View") || Can("Result.View") || Can("Assignments.View") || Can("Routine.View"))
+                        @if (CanAny("Marks.View","Marks.Approve"))
                         {
-                            <span class="nav-section-label"><span class="nav-text">Academics</span></span>
-                            @if (Can("Academic.View") || Can("Classes.View") || Can("Subjects.View"))
+                            <span class="nav-section-label"><span class="nav-text">Marks</span></span>
+                            @if (Can("Marks.View") || Can("Marks.Approve"))
                             {
-                                <a asp-controller="SchoolClass" asp-action="Index" data-title="Classes"><i class="bi bi-building"></i><span class="nav-text">Classes</span></a>
-                                <a asp-controller="Subject" asp-action="Index" data-title="Subjects Master"><i class="bi bi-book"></i><span class="nav-text">Subjects Master</span></a>
-                                <a asp-controller="ClassSubjectMapping" asp-action="Index" data-title="Subject Mapping"><i class="bi bi-diagram-3-fill"></i><span class="nav-text">Subject Mapping</span></a>
+                                <a asp-controller="Marks" asp-action="EntryStatus" data-title="Marks Progress"><i class="bi bi-bar-chart-steps"></i><span class="nav-text">Marks Progress</span></a>
+                                <a asp-controller="Marks" asp-action="AuditLog" data-title="Audit Log"><i class="bi bi-clipboard-data"></i><span class="nav-text">Audit Log</span></a>
                             }
-                            @if (Can("Attendance.View") || IsAdmin() || isTeacherLike)
-                            {
-                                <a asp-controller="AttendanceReport" asp-action="Dashboard" data-title="Attendance Dashboard"><i class="bi bi-calendar2-range"></i><span class="nav-text">Attendance Dashboard</span></a>
-                                <a asp-controller="StudentAttendance" asp-action="Index" data-title="Student Attendance"><i class="bi bi-calendar-check"></i><span class="nav-text">Student Attendance</span></a>
-                                <a asp-controller="EmployeeAttendance" asp-action="Index" data-title="Employee Attendance"><i class="bi bi-person-lines-fill"></i><span class="nav-text">Employee Attendance</span></a>
-                                <a asp-controller="Leave" asp-action="Index" data-title="Leave Applications"><i class="bi bi-file-earmark-medical"></i><span class="nav-text">Leave Applications</span></a>
-                                <a asp-controller="AcademicCalendar" asp-action="Index" data-title="Academic Calendar"><i class="bi bi-calendar3"></i><span class="nav-text">Academic Calendar</span></a>
-                            }
-                            @if (IsAdmin() || User.IsInRole("Admin") || User.IsInRole("Principal"))
-                            {
-                                <a asp-controller="AttendanceSetting" asp-action="Index" data-title="Attendance Settings"><i class="bi bi-sliders2"></i><span class="nav-text">Attendance Settings</span></a>
-                            }
+                        }
 
-                            @if (Can("Exams.View") || Can("Exam.View"))
+                        @if (CanAny("Results.View","Results.Publish"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">Results</span></span>
+                            @if (Can("Results.View"))
                             {
-                                <a asp-controller="Exam" asp-action="Index" data-title="Exams"><i class="bi bi-pencil-square"></i><span class="nav-text">Exams</span></a>
-                                <a asp-controller="ExamComponents" asp-action="Index" data-title="Exam Components"><i class="bi bi-layers"></i><span class="nav-text">Exam Components</span></a>
-                                <a asp-controller="ExamSchedule" asp-action="Index" data-title="Schedule"><i class="bi bi-calendar4-event"></i><span class="nav-text">Schedule</span></a>
-                                <a href="/Teacher/ExamRoutine" data-title="Exam Routine"><i class="bi bi-calendar-event"></i><span class="nav-text">Exam Routine</span></a>
-                            }
-                            @if (IsAdmin())
-                            {
-                                <a href="/ResultManagement/AdminIndex" data-title="Manage Results"><i class="bi bi-shield-check"></i><span class="nav-text">Manage Results</span></a>
                                 <a asp-controller="AdminResult" asp-action="Dashboard" data-title="Result Dashboard"><i class="bi bi-graph-up"></i><span class="nav-text">Result Dashboard</span></a>
                                 <a asp-controller="AdminResult" asp-action="AllResults" data-title="All Results"><i class="bi bi-list-check"></i><span class="nav-text">All Results</span></a>
-                                <a asp-controller="AdminResult" asp-action="AllSubjects" data-title="All Subjects"><i class="bi bi-book"></i><span class="nav-text">All Subjects</span></a>
-                                <a href="/ResultManagement/ReEvaluationDashboard" data-title="Re-evaluations"><i class="bi bi-search"></i><span class="nav-text">Re-evaluations</span></a>
-                                <a href="/Admin/ExamRoutine" data-title="Exam Routine"><i class="bi bi-calendar-event"></i><span class="nav-text">Exam Routine</span></a>
-                                <a asp-controller="Promotion" asp-action="Index" data-title="Promotion"><i class="bi bi-arrow-up-circle"></i><span class="nav-text">Promotion</span></a>
-                                <a asp-controller="Promotion" asp-action="Policies" data-title="Promotion Policies"><i class="bi bi-shield-check"></i><span class="nav-text">Promotion Policies</span></a>
+                                <a asp-controller="AdminResult" asp-action="TabulationSheet" data-title="Tabulation"><i class="bi bi-table"></i><span class="nav-text">Tabulation</span></a>
+                                <a asp-controller="MeritList" asp-action="Index" data-title="Merit List"><i class="bi bi-trophy"></i><span class="nav-text">Merit List</span></a>
                             }
-                            else if (isTeacherLike)
+                            @if (Can("Results.Publish"))
                             {
-                                <a href="/ResultManagement/TeacherEntry" data-title="Mark Entry"><i class="bi bi-pencil-square"></i><span class="nav-text">Mark Entry</span></a>
-                            }
-                            else if (Can("Marks.View") || Can("Result.View"))
-                            {
-                                <a asp-controller="Result" asp-action="Index" data-title="Results"><i class="bi bi-bar-chart-line"></i><span class="nav-text">Results</span></a>
-                            }
-                            @if (Can("Assignments.View"))
-                            {
-                                <a asp-controller="StudentClassAssignment" asp-action="Index" data-title="Assignments"><i class="bi bi-journal-text"></i><span class="nav-text">Assignments</span></a>
-                            }
-                            @if (Can("Routine.View"))
-                            {
-                                <a href="/Routine/Dashboard" data-title="Routine Dashboard"><i class="bi bi-calendar-range"></i><span class="nav-text">Routine Dashboard</span></a>
-                                <a href="/Routine/TeacherView" data-title="My Timetable"><i class="bi bi-calendar-range"></i><span class="nav-text">My Timetable</span></a>
+                                <a asp-controller="AdminResult" asp-action="ResultPublishing" data-title="Publish Results"><i class="bi bi-megaphone"></i><span class="nav-text">Publish Results</span></a>
                             }
                         }
 
-                        @if (CanAny("FeeCategories.Read","FeeStructures.Read","StudentFeeAssignments.Read","FeeInvoices.Read","FeeInvoiceItems.Read","FeePayments.Read","FeeDiscounts.Read","FeeWaivers.Read","FeeRefunds.Read","FeeLedger.Read","FeeCollectionSummaries.Read","LateFeeRules.Read","FineRules.Read","FeeDashboard.Read","Payments.Read","FinanceReports.Read"))
+                        @if (CanAny("Promotion.View","Promotion.Create"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">Promotion</span></span>
+                            @if (Can("Promotion.View"))
+                            {
+                                <a asp-controller="Promotion" asp-action="Index" data-title="Promotion Dashboard"><i class="bi bi-arrow-up-circle"></i><span class="nav-text">Promotion</span></a>
+                                <a asp-controller="Promotion" asp-action="Policies" data-title="Promotion Policies"><i class="bi bi-shield-check"></i><span class="nav-text">Promotion Policies</span></a>
+                                <a asp-controller="Promotion" asp-action="RollGeneration" data-title="Roll Generation"><i class="bi bi-list-ol"></i><span class="nav-text">Roll Generation</span></a>
+                            }
+                        }
+
+                        @if (CanAny("Reports.View","Reports.Export"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">Reports</span></span>
+                            @if (Can("Reports.View"))
+                            {
+                                <a asp-controller="AdminResult" asp-action="SubjectAnalysis" data-title="Subject Analysis"><i class="bi bi-file-earmark-bar-graph"></i><span class="nav-text">Subject Analysis</span></a>
+                                <a asp-controller="Transcript" asp-action="Index" data-title="Transcript"><i class="bi bi-file-text"></i><span class="nav-text">Transcript</span></a>
+                                <a asp-controller="ReportCard" asp-action="Index" data-title="Report Cards"><i class="bi bi-card-list"></i><span class="nav-text">Report Cards</span></a>
+                            }
+                        }
+                    }
+                    @* ────────────────────────────────────────────────
+                       ACCOUNTANT
+                       ──────────────────────────────────────────────── *@
+                    else if (isAccountant)
+                    {
+                        @if (Can("Dashboard.View"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">Overview</span></span>
+                            <a asp-controller="Dashboard" asp-action="Index" data-title="Dashboard"><i class="bi bi-grid-1x2"></i><span class="nav-text">Dashboard</span></a>
+                        }
+
+                        @if (CanAny("FeeDashboard.Read","FeeCategories.Read","FeeStructures.Read","StudentFeeAssignments.Read","FeeInvoices.Read","FeeInvoiceItems.Read","FeePayments.Read","FeeDiscounts.Read","FeeWaivers.Read","FeeRefunds.Read","FeeLedger.Read","FeeCollectionSummaries.Read","LateFeeRules.Read","FineRules.Read","FinanceReports.Read"))
                         {
                             <span class="nav-section-label"><span class="nav-text">Finance</span></span>
                             @if (Can("FeeDashboard.Read"))
@@ -377,16 +401,76 @@
                             }
                         }
 
-                        @if (Can("Library.View") || Can("Transport.View") || Can("Health.View"))
+                        @if (Can("Students.View"))
                         {
-                            <span class="nav-section-label"><span class="nav-text">Services</span></span>
-                            @if (Can("Library.View"))
+                            <span class="nav-section-label"><span class="nav-text">People</span></span>
+                            <a asp-controller="Student" asp-action="Index" data-title="Students"><i class="bi bi-people"></i><span class="nav-text">Students</span></a>
+                        }
+
+                        @if (Can("Reports.View"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">Reports</span></span>
+                            <a asp-controller="Report" asp-action="Index" data-title="Reports"><i class="bi bi-file-earmark-bar-graph"></i><span class="nav-text">Reports</span></a>
+                        }
+                    }
+                    @* ────────────────────────────────────────────────
+                       ADMIN / PRINCIPAL — Full Enterprise Sidebar
+                       ──────────────────────────────────────────────── *@
+                    else if (IsElevated())
+                    {
+                        @* ── 1. Dashboard ── *@
+                        @if (Can("Dashboard.View"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">Dashboard</span></span>
+                            <a asp-controller="Dashboard" asp-action="Index" data-title="Dashboard"><i class="bi bi-grid-1x2"></i><span class="nav-text">My Dashboard</span></a>
+                        }
+
+                        @* ── 2. Academic Management ── *@
+                        @if (CanAny("Academic.View","Classes.View","Subjects.View"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">Academic Management</span></span>
+                            <a asp-controller="SchoolClass" asp-action="Index" data-title="Classes"><i class="bi bi-building"></i><span class="nav-text">Classes</span></a>
+                            @if (Can("Academic.View"))
                             {
-                                <a asp-controller="Library" asp-action="Index" data-title="Library"><i class="bi bi-book"></i><span class="nav-text">Library</span></a>
+                                <a asp-controller="Section" asp-action="Index" data-title="Sections"><i class="bi bi-columns"></i><span class="nav-text">Sections</span></a>
                             }
-                            @if (Can("Transport.View"))
+                            @if (Can("Subjects.View"))
                             {
-                                <a asp-controller="Transport" asp-action="Index" data-title="Transport"><i class="bi bi-bus-front"></i><span class="nav-text">Transport</span></a>
+                                <a asp-controller="Subject" asp-action="Index" data-title="Subjects"><i class="bi bi-book"></i><span class="nav-text">Subjects</span></a>
+                            }
+                            @if (Can("Classes.View"))
+                            {
+                                <a asp-controller="ClassSubjectMapping" asp-action="Index" data-title="Subject Mapping"><i class="bi bi-diagram-3-fill"></i><span class="nav-text">Subject Mapping</span></a>
+                            }
+                            @if (Can("Academic.View"))
+                            {
+                                <a asp-controller="AcademicYear" asp-action="Index" data-title="Academic Years"><i class="bi bi-calendar-range"></i><span class="nav-text">Academic Years</span></a>
+                                <a asp-controller="AcademicCalendar" asp-action="Index" data-title="Academic Calendar"><i class="bi bi-calendar3"></i><span class="nav-text">Academic Calendar</span></a>
+                                <a asp-controller="HolidayMaster" asp-action="Index" data-title="Holidays"><i class="bi bi-sun"></i><span class="nav-text">Holidays</span></a>
+                            }
+                        }
+
+                        @* ── 3. Admission Management ── *@
+                        @if (CanAny("Admissions.View","Admission.View"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">Admission Management</span></span>
+                            <a asp-controller="Admission" asp-action="Index" data-title="Admissions"><i class="bi bi-person-plus"></i><span class="nav-text">Applications</span></a>
+                        }
+
+                        @* ── 4. Student Management ── *@
+                        @if (CanAny("Students.View","Student.View","Promotion.View","StudentIdCard.View","Health.View"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">Student Management</span></span>
+                            <a asp-controller="Student" asp-action="Index" data-title="Students"><i class="bi bi-people"></i><span class="nav-text">Students</span></a>
+                            @if (Can("Promotion.View"))
+                            {
+                                <a asp-controller="Promotion" asp-action="Index" data-title="Promotions"><i class="bi bi-arrow-up-circle"></i><span class="nav-text">Promotions</span></a>
+                                <a asp-controller="Promotion" asp-action="Policies" data-title="Promo Policies"><i class="bi bi-shield-check"></i><span class="nav-text">Promo Policies</span></a>
+                                <a asp-controller="Promotion" asp-action="RollGeneration" data-title="Roll Gen"><i class="bi bi-list-ol"></i><span class="nav-text">Roll Generation</span></a>
+                            }
+                            @if (Can("StudentIdCard.View"))
+                            {
+                                <a asp-controller="IdCard" asp-action="Students" data-title="ID Cards"><i class="bi bi-person-vcard"></i><span class="nav-text">ID Cards</span></a>
                             }
                             @if (Can("Health.View"))
                             {
@@ -394,39 +478,224 @@
                             }
                         }
 
-                        @if (Can("StudentIdCard.View") || Can("EmployeeIdCard.View"))
+                        @* ── 5. Teacher Management ── *@
+                        @if (CanAny("Teachers.View","Assignments.View"))
                         {
-                            <span class="nav-section-label"><span class="nav-text">ID Card Management</span></span>
-                            @if (Can("StudentIdCard.View"))
+                            <span class="nav-section-label"><span class="nav-text">Teacher Management</span></span>
+                            @if (Can("Teachers.View"))
                             {
-                                <a asp-controller="IdCard" asp-action="Students" data-title="Student ID Cards"><i class="bi bi-person-vcard"></i><span class="nav-text">Student ID Cards</span></a>
+                                <a asp-controller="Teacher" asp-action="Index" data-title="Teachers"><i class="bi bi-person-badge"></i><span class="nav-text">Teachers</span></a>
+                            }
+                            @if (Can("Assignments.View"))
+                            {
+                                <a asp-controller="TeacherAssignment" asp-action="Index" data-title="Assignments"><i class="bi bi-journal-text"></i><span class="nav-text">Assignments</span></a>
+                            }
+                        }
+
+                        @* ── 6. Employee Management ── *@
+                        @if (CanAny("Employees.View","Employees.Invite","EmployeeIdCard.View"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">Employee Management</span></span>
+                            @if (Can("Employees.View"))
+                            {
+                                <a asp-controller="Employee" asp-action="Index" data-title="Employees"><i class="bi bi-person-badge"></i><span class="nav-text">Employees</span></a>
+                            }
+                            @if (Can("Employees.Invite"))
+                            {
+                                <a asp-controller="EmployeeInvitation" asp-action="Index" data-title="Onboarding"><i class="bi bi-envelope-paper"></i><span class="nav-text">Onboarding</span></a>
                             }
                             @if (Can("EmployeeIdCard.View"))
                             {
-                                <a asp-controller="IdCard" asp-action="Employees" data-title="Employee ID Cards"><i class="bi bi-person-badge"></i><span class="nav-text">Employee ID Cards</span></a>
+                                <a asp-controller="IdCard" asp-action="Employees" data-title="Emp ID Cards"><i class="bi bi-person-vcard"></i><span class="nav-text">Emp ID Cards</span></a>
                             }
                         }
 
-                        @if (Can("Communication.View") || Can("Reports.View") || IsAdmin())
+                        @* ── 7. Guardian Management ── *@
+                        @if (Can("Students.View"))
                         {
-                            <span class="nav-section-label"><span class="nav-text">Communicate</span></span>
-                            @if (Can("Communication.View"))
+                            <span class="nav-section-label"><span class="nav-text">Guardian Management</span></span>
+                            <a asp-controller="Guardian" asp-action="Index" data-title="Guardians"><i class="bi bi-shield-check"></i><span class="nav-text">Guardians</span></a>
+                        }
+
+                        @* ── 8. Attendance Management ── *@
+                        @if (Can("Attendance.View"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">Attendance Management</span></span>
+                            <a asp-controller="AttendanceReport" asp-action="Dashboard" data-title="Attendance Dashboard"><i class="bi bi-calendar2-range"></i><span class="nav-text">Dashboard</span></a>
+                            <a asp-controller="StudentAttendance" asp-action="Index" data-title="Student Attendance"><i class="bi bi-calendar-check"></i><span class="nav-text">Student Attendance</span></a>
+                            <a asp-controller="EmployeeAttendance" asp-action="Index" data-title="Employee Attendance"><i class="bi bi-person-lines-fill"></i><span class="nav-text">Employee Attendance</span></a>
+                            <a asp-controller="Leave" asp-action="Index" data-title="Leave"><i class="bi bi-file-earmark-medical"></i><span class="nav-text">Leave Applications</span></a>
+                            <a asp-controller="AttendanceSetting" asp-action="Index" data-title="Settings"><i class="bi bi-sliders2"></i><span class="nav-text">Settings</span></a>
+                        }
+
+                        @* ── 9. Routine Management ── *@
+                        @if (Can("Routine.View"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">Routine Management</span></span>
+                            <a href="/Routine/Dashboard" data-title="Routine Dashboard"><i class="bi bi-calendar-range"></i><span class="nav-text">Dashboard</span></a>
+                            <a href="/Routine/Timetable" data-title="Timetable"><i class="bi bi-table"></i><span class="nav-text">Timetable</span></a>
+                            <a href="/Routine/Periods" data-title="Periods"><i class="bi bi-clock"></i><span class="nav-text">Time Slots</span></a>
+                            <a href="/Routine/Rooms" data-title="Rooms"><i class="bi bi-door-open"></i><span class="nav-text">Rooms</span></a>
+                            <a href="/Routine/WorkingDays" data-title="Working Days"><i class="bi bi-calendar-day"></i><span class="nav-text">Working Days</span></a>
+                            <a href="/Routine/TeacherAvailabilities" data-title="Teacher Availability"><i class="bi bi-person-check"></i><span class="nav-text">Teacher Availability</span></a>
+                            <a href="/Routine/SubjectRequirements" data-title="Subject Requirements"><i class="bi bi-list-check"></i><span class="nav-text">Subject Reqs</span></a>
+                            <a href="/Routine/Generation" data-title="Auto Generator"><i class="bi bi-gear"></i><span class="nav-text">Auto Generator</span></a>
+                            <a href="/Routine/Conflicts" data-title="Conflicts"><i class="bi bi-exclamation-triangle"></i><span class="nav-text">Conflicts</span></a>
+                            <a href="/Routine/Versions" data-title="Versions"><i class="bi bi-clock-history"></i><span class="nav-text">Versions</span></a>
+                            <a href="/Routine/Settings" data-title="Routine Settings"><i class="bi bi-sliders2"></i><span class="nav-text">Settings</span></a>
+                        }
+
+                        @* ── 10. Examination & Results ── *@
+                        @if (CanAny("Exams.View","Exam.View","Marks.View","Results.View","Result.View","Reports.View"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">Examination & Results</span></span>
+                            @if (Can("Exams.View") || Can("Exam.View"))
                             {
-                                <a asp-controller="Communication" asp-action="Index" data-title="Communication"><i class="bi bi-megaphone"></i><span class="nav-text">Communication</span></a>
+                                <a asp-controller="Exam" asp-action="Index" data-title="Exams"><i class="bi bi-pencil-square"></i><span class="nav-text">Exams</span></a>
+                                <a asp-controller="ExamSchedule" asp-action="Index" data-title="Schedule"><i class="bi bi-calendar4-event"></i><span class="nav-text">Exam Schedule</span></a>
+                                <a asp-controller="ExamComponents" asp-action="Index" data-title="Subject Config"><i class="bi bi-layers"></i><span class="nav-text">Subject Config</span></a>
+                                <a href="/Teacher/ExamRoutine" data-title="Exam Routine"><i class="bi bi-calendar-event"></i><span class="nav-text">Exam Routine</span></a>
+                                <a href="/Admin/ExamRoutine" data-title="Admin Exam Routine"><i class="bi bi-calendar-event"></i><span class="nav-text">Admin Exam Routine</span></a>
                             }
-                            @if (IsAdmin() || Can("Website.View"))
+                            @if (Can("Marks.View"))
                             {
-                                <a href="/Admin/Website" data-title="Public Website"><i class="bi bi-globe"></i><span class="nav-text">Public Website</span></a>
+                                <a asp-controller="Marks" asp-action="EntryStatus" data-title="Marks Progress"><i class="bi bi-bar-chart-steps"></i><span class="nav-text">Marks Progress</span></a>
+                                <a href="/ResultManagement/TeacherEntry" data-title="Mark Entry"><i class="bi bi-pencil-square"></i><span class="nav-text">Mark Entry</span></a>
+                            }
+                            @if (Can("Results.View"))
+                            {
+                                <a asp-controller="AdminResult" asp-action="Dashboard" data-title="Result Dashboard"><i class="bi bi-graph-up"></i><span class="nav-text">Result Dashboard</span></a>
+                                <a asp-controller="AdminResult" asp-action="AllResults" data-title="All Results"><i class="bi bi-list-check"></i><span class="nav-text">All Results</span></a>
+                                <a href="/ResultManagement/AdminIndex" data-title="Manage Results"><i class="bi bi-shield-check"></i><span class="nav-text">Manage Results</span></a>
+                                <a href="/ResultManagement/ReEvaluationDashboard" data-title="Re-evaluations"><i class="bi bi-search"></i><span class="nav-text">Re-evaluations</span></a>
+                                <a asp-controller="AdminResult" asp-action="ResultPublishing" data-title="Publish"><i class="bi bi-megaphone"></i><span class="nav-text">Publish Results</span></a>
+                                <a asp-controller="AdminResult" asp-action="TabulationSheet" data-title="Tabulation"><i class="bi bi-table"></i><span class="nav-text">Tabulation Sheet</span></a>
+                            }
+                            @if (Can("Results.View"))
+                            {
+                                <a asp-controller="MeritList" asp-action="Index" data-title="Merit List"><i class="bi bi-trophy"></i><span class="nav-text">Merit List</span></a>
+                                <a asp-controller="Promotion" asp-action="Index" data-title="Promotion"><i class="bi bi-arrow-up-circle"></i><span class="nav-text">Promotion</span></a>
+                                <a asp-controller="Transcript" asp-action="Index" data-title="Transcript"><i class="bi bi-file-text"></i><span class="nav-text">Transcript</span></a>
+                                <a asp-controller="ReportCard" asp-action="Index" data-title="Report Cards"><i class="bi bi-card-list"></i><span class="nav-text">Report Cards</span></a>
                             }
                             @if (Can("Reports.View"))
                             {
-                                <a asp-controller="Report" asp-action="Index" data-title="Reports"><i class="bi bi-file-earmark-bar-graph"></i><span class="nav-text">Reports</span></a>
+                                <a asp-controller="AdminResult" asp-action="SubjectAnalysis" data-title="Result Analytics"><i class="bi bi-file-earmark-bar-graph"></i><span class="nav-text">Result Analytics</span></a>
                             }
                         }
 
-                        @if (Can("Users.View") || Can("Roles.View") || Can("Permissions.View") || Can("Notifications.View") || Can("Settings.View") || Can("System.View"))
+                        @* ── 11. Fees & Finance ── *@
+                        @if (CanAny("FeeDashboard.Read","FeeCategories.Read","FeeStructures.Read","FeeInvoices.Read","FeePayments.Read","FinanceReports.Read"))
                         {
-                            <span class="nav-section-label"><span class="nav-text">System</span></span>
+                            <span class="nav-section-label"><span class="nav-text">Fees & Finance</span></span>
+                            @if (Can("FeeDashboard.Read"))
+                            {
+                                <a asp-controller="FeeDashboard" asp-action="Index" data-title="Finance Dashboard"><i class="bi bi-graph-up-arrow"></i><span class="nav-text">Dashboard</span></a>
+                            }
+                            @if (Can("FeeCategories.Read"))
+                            {
+                                <a asp-controller="FeeCategory" asp-action="Index" data-title="Categories"><i class="bi bi-tags"></i><span class="nav-text">Fee Categories</span></a>
+                            }
+                            @if (Can("FeeStructures.Read"))
+                            {
+                                <a asp-controller="FeeStructure" asp-action="Index" data-title="Structures"><i class="bi bi-cash-coin"></i><span class="nav-text">Fee Structures</span></a>
+                            }
+                            @if (Can("StudentFeeAssignments.Read"))
+                            {
+                                <a asp-controller="StudentFeeAssignment" asp-action="Index" data-title="Student Assignments"><i class="bi bi-person-plus"></i><span class="nav-text">Student Fees</span></a>
+                            }
+                            @if (Can("FeeInvoices.Read"))
+                            {
+                                <a asp-controller="FeeInvoice" asp-action="Index" data-title="Invoices"><i class="bi bi-file-text"></i><span class="nav-text">Invoices</span></a>
+                            }
+                            @if (Can("FeeInvoiceItems.Read"))
+                            {
+                                <a asp-controller="FeeInvoiceItem" asp-action="Index" data-title="Invoice Items"><i class="bi bi-list-check"></i><span class="nav-text">Invoice Items</span></a>
+                            }
+                            @if (Can("FeePayments.Read"))
+                            {
+                                <a asp-controller="FeePayment" asp-action="Index" data-title="Payments"><i class="bi bi-credit-card"></i><span class="nav-text">Payments</span></a>
+                            }
+                            @if (Can("FeeDiscounts.Read"))
+                            {
+                                <a asp-controller="FeeDiscount" asp-action="Index" data-title="Discounts"><i class="bi bi-percent"></i><span class="nav-text">Discounts</span></a>
+                            }
+                            @if (Can("FeeWaivers.Read"))
+                            {
+                                <a asp-controller="FeeWaiver" asp-action="Index" data-title="Waivers"><i class="bi bi-gift"></i><span class="nav-text">Waivers</span></a>
+                            }
+                            @if (Can("FeeRefunds.Read"))
+                            {
+                                <a asp-controller="FeeRefund" asp-action="Index" data-title="Refunds"><i class="bi bi-arrow-return-left"></i><span class="nav-text">Refunds</span></a>
+                            }
+                            @if (Can("FeeLedger.Read"))
+                            {
+                                <a asp-controller="FeeLedger" asp-action="Index" data-title="Ledger"><i class="bi bi-journal"></i><span class="nav-text">Ledger</span></a>
+                            }
+                            @if (Can("FeeCollectionSummaries.Read"))
+                            {
+                                <a asp-controller="FeeCollectionSummary" asp-action="Index" data-title="Collections"><i class="bi bi-calendar-check"></i><span class="nav-text">Collections</span></a>
+                            }
+                            @if (Can("LateFeeRules.Read"))
+                            {
+                                <a asp-controller="LateFeeRule" asp-action="Index" data-title="Late Fee Rules"><i class="bi bi-clock-history"></i><span class="nav-text">Late Fee Rules</span></a>
+                            }
+                            @if (Can("FineRules.Read"))
+                            {
+                                <a asp-controller="FineRule" asp-action="Index" data-title="Fine Rules"><i class="bi bi-exclamation-triangle"></i><span class="nav-text">Fine Rules</span></a>
+                            }
+                            @if (Can("FinanceReports.Read"))
+                            {
+                                <a asp-controller="FeeReport" asp-action="Index" data-title="Finance Reports"><i class="bi bi-file-earmark-spreadsheet"></i><span class="nav-text">Finance Reports</span></a>
+                            }
+                        }
+
+                        @* ── 12. Library ── *@
+                        @if (Can("Library.View"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">Library</span></span>
+                            <a asp-controller="Library" asp-action="Index" data-title="Library"><i class="bi bi-book"></i><span class="nav-text">Library</span></a>
+                        }
+
+                        @* ── 13. Transport ── *@
+                        @if (Can("Transport.View"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">Transport</span></span>
+                            <a asp-controller="Transport" asp-action="Index" data-title="Transport"><i class="bi bi-bus-front"></i><span class="nav-text">Transport</span></a>
+                        }
+
+                        @* ── 14. Website CMS ── *@
+                        @if (CanAny("Website.View"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">Website CMS</span></span>
+                            <a href="/Admin/Website" data-title="Website"><i class="bi bi-globe"></i><span class="nav-text">Website</span></a>
+                            <a asp-controller="Notice" asp-action="Index" data-title="Notices"><i class="bi bi-megaphone"></i><span class="nav-text">Notices</span></a>
+                            <a asp-controller="Gallery" asp-action="Index" data-title="Gallery"><i class="bi bi-images"></i><span class="nav-text">Gallery</span></a>
+                            <a asp-controller="Event" asp-action="Index" data-title="Events"><i class="bi bi-calendar-event"></i><span class="nav-text">Events</span></a>
+                        }
+
+                        @* ── 15. Communication ── *@
+                        @if (Can("Communication.View"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">Communication</span></span>
+                            <a asp-controller="Communication" asp-action="Index" data-title="Notices"><i class="bi bi-megaphone"></i><span class="nav-text">Notices</span></a>
+                            @if (Can("Notifications.View"))
+                            {
+                                <a asp-controller="Notification" asp-action="Index" data-title="Notifications"><i class="bi bi-bell"></i><span class="nav-text">Notifications</span></a>
+                            }
+                        }
+
+                        @* ── 16. Reports & Analytics ── *@
+                        @if (Can("Reports.View"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">Reports & Analytics</span></span>
+                            <a asp-controller="Report" asp-action="Index" data-title="Reports"><i class="bi bi-file-earmark-bar-graph"></i><span class="nav-text">Reports</span></a>
+                        }
+
+                        @* ── 17. System Administration ── *@
+                        @if (CanAny("Users.View","Roles.View","Permissions.View","AuditLogs.View","Settings.View","System.View"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">System Administration</span></span>
                             @if (Can("Users.View"))
                             {
                                 <a asp-controller="User" asp-action="Index" data-title="Users"><i class="bi bi-person-gear"></i><span class="nav-text">Users</span></a>
@@ -439,18 +708,99 @@
                             {
                                 <a asp-controller="Permission" asp-action="Index" data-title="Permissions"><i class="bi bi-key"></i><span class="nav-text">Permissions</span></a>
                             }
+                            @if (Can("AuditLogs.View"))
+                            {
+                                <a asp-controller="AuditLog" asp-action="Index" data-title="Audit Logs"><i class="bi bi-clipboard-data"></i><span class="nav-text">Audit Logs</span></a>
+                            }
                             @if (Can("Notifications.View"))
                             {
                                 <a asp-controller="Notification" asp-action="Index" data-title="Notifications"><i class="bi bi-bell"></i><span class="nav-text">Notifications</span></a>
                             }
                             @if (Can("Settings.View") || Can("System.View"))
                             {
-                                <a asp-controller="SystemSettings" asp-action="Index" data-title="System Settings"><i class="bi bi-gear"></i><span class="nav-text">System</span></a>
+                                <a asp-controller="SystemSettings" asp-action="Index" data-title="Settings"><i class="bi bi-gear"></i><span class="nav-text">System Settings</span></a>
                             }
-                            @if (Can("AuditLogs.View"))
+                        }
+                    }
+                    @* ────────────────────────────────────────────────
+                       TEACHER — Teaching-Focused Sidebar
+                       ──────────────────────────────────────────────── *@
+                    else if (isTeacher)
+                    {
+                        <span class="nav-section-label"><span class="nav-text">Account</span></span>
+                        <a href="/Details" data-title="My Profile"><i class="bi bi-person-circle"></i><span class="nav-text">My Profile</span></a>
+
+                        @if (Can("Dashboard.View"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">Overview</span></span>
+                            <a asp-controller="Dashboard" asp-action="Index" data-title="Dashboard"><i class="bi bi-grid-1x2"></i><span class="nav-text">My Dashboard</span></a>
+                        }
+
+                        @if (CanAny("Classes.View","Subjects.View","Marks.View","Routine.View","Assignments.View","Results.View"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">Teaching</span></span>
+                            @if (Can("Marks.View"))
                             {
-                                <a asp-controller="AuditLog" asp-action="Index" data-title="Audit Logs"><i class="bi bi-clipboard-data"></i><span class="nav-text">Audit Logs</span></a>
+                                <a href="/ResultManagement/TeacherEntry" data-title="Mark Entry"><i class="bi bi-pencil-square"></i><span class="nav-text">Mark Entry</span></a>
                             }
+                            @if (Can("Routine.View"))
+                            {
+                                <a href="/Routine/TeacherView" data-title="My Timetable"><i class="bi bi-calendar-range"></i><span class="nav-text">My Timetable</span></a>
+                            }
+                            @if (Can("Assignments.View"))
+                            {
+                                <a asp-controller="StudentClassAssignment" asp-action="Index" data-title="Assignments"><i class="bi bi-journal-text"></i><span class="nav-text">Assignments</span></a>
+                            }
+                            @if (Can("Results.View") || Can("Result.View"))
+                            {
+                                <a asp-controller="Result" asp-action="Index" data-title="Results"><i class="bi bi-bar-chart-line"></i><span class="nav-text">Results</span></a>
+                            }
+                        }
+
+                        @if (Can("Attendance.View"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">Attendance</span></span>
+                            <a asp-controller="StudentAttendance" asp-action="Index" data-title="Take Attendance"><i class="bi bi-calendar-check"></i><span class="nav-text">Take Attendance</span></a>
+                            <a asp-controller="AttendanceReport" asp-action="Dashboard" data-title="Attendance Reports"><i class="bi bi-calendar2-range"></i><span class="nav-text">Reports</span></a>
+                        }
+
+                        @if (Can("Students.View"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">Students</span></span>
+                            <a asp-controller="Student" asp-action="Index" data-title="Students"><i class="bi bi-people"></i><span class="nav-text">Students</span></a>
+                        }
+
+                        @if (Can("Communication.View"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">Communication</span></span>
+                            <a asp-controller="Communication" asp-action="Index" data-title="Notices"><i class="bi bi-megaphone"></i><span class="nav-text">Notices</span></a>
+                        }
+                    }
+                    @* ────────────────────────────────────────────────
+                       EMPLOYEE / STAFF — Self-Service Sidebar
+                       ──────────────────────────────────────────────── *@
+                    else
+                    {
+                        <span class="nav-section-label"><span class="nav-text">Account</span></span>
+                        <a href="/Details" data-title="My Profile"><i class="bi bi-person-circle"></i><span class="nav-text">My Profile</span></a>
+
+                        @if (Can("Dashboard.View"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">Overview</span></span>
+                            <a asp-controller="Dashboard" asp-action="Index" data-title="Dashboard"><i class="bi bi-grid-1x2"></i><span class="nav-text">My Dashboard</span></a>
+                        }
+
+                        @if (Can("Attendance.View"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">Attendance</span></span>
+                            <a asp-controller="EmployeeAttendance" asp-action="Index" data-title="My Attendance"><i class="bi bi-calendar-check"></i><span class="nav-text">My Attendance</span></a>
+                            <a asp-controller="Leave" asp-action="Index" data-title="Leave"><i class="bi bi-file-earmark-medical"></i><span class="nav-text">Leave</span></a>
+                        }
+
+                        @if (Can("Communication.View"))
+                        {
+                            <span class="nav-section-label"><span class="nav-text">Communication</span></span>
+                            <a asp-controller="Communication" asp-action="Index" data-title="Notices"><i class="bi bi-megaphone"></i><span class="nav-text">Notices</span></a>
                         }
                     }
                 </nav>
@@ -512,7 +862,7 @@
                             <i class="bi bi-search"></i>
                             <input type="text" placeholder="Search anything..." aria-label="Search">
                         </div>
-                        @if (Can("Notifications.View") || (isGuardian && guardianPortalEnabled) || isStudent || isTeacherLike)
+                        @if (Can("Notifications.View") || (isGuardian && guardianPortalEnabled) || isStudent || isTeacherLike || isAccountant)
                         {
                             <a class="topbar-icon-btn" href="@(isGuardian && guardianPortalEnabled ? "/Guardian/Portal/Notifications" : Url.Action("Index", "Notification"))" title="Notifications">
                                 <i class="bi bi-bell"></i>

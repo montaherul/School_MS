@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using SchoolManagementSystem.Service.Interfaces.Dashboard;
-using SchoolManagementSystem.Repositories.Interfaces.Website;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 
@@ -10,12 +9,10 @@ namespace SchoolManagementSystem.Controllers.Dashboard;
 public class DashboardController : Controller
 {
     private readonly IDashboardService _service;
-    private readonly ISchoolSettingRepository _settingRepo;
 
-    public DashboardController(IDashboardService service, ISchoolSettingRepository settingRepo)
+    public DashboardController(IDashboardService service)
     {
         _service = service;
-        _settingRepo = settingRepo;
     }
 
     public async Task<IActionResult> Index()
@@ -32,25 +29,21 @@ public class DashboardController : Controller
 
         if (User.IsInRole("Guardian") || User.IsInRole("Parent"))
         {
-            var settings = await _settingRepo.GetCurrentSettingsAsync();
-            if (settings?.EnableGuardianPortal == true)
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (int.TryParse(userIdStr, out var userId))
             {
-                var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (int.TryParse(userIdStr, out var userId))
+                try
                 {
-                    try
-                    {
-                        var viewName = User.IsInRole("Parent") ? "ParentIndex" : "GuardianIndex";
-                        var parentData = await _service.GetGuardianDashboardAsync(userId);
-                        return View(viewName, parentData);
-                    }
-                    catch (InvalidOperationException)
-                    {
-                        // Guardian profile not found — fall through to default dashboard
-                    }
+                    var viewName = User.IsInRole("Parent") ? "ParentIndex" : "GuardianIndex";
+                    var parentData = await _service.GetGuardianDashboardAsync(userId);
+                    return View(viewName, parentData);
+                }
+                catch (InvalidOperationException)
+                {
+                    // Guardian profile not found — fall through to default dashboard
                 }
             }
-            // Guardian portal disabled or profile not found — fall through to default dashboard
+            // Guardian profile not found — fall through to default dashboard
         }
 
         if (User.IsInRole("Teacher") || User.IsInRole("Senior Lecturer") || User.IsInRole("Lecturer") || 

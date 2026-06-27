@@ -47,15 +47,22 @@ public class ReportCardService : IReportCardService
     }
 
     public async Task<byte[]?> GenerateReportCardPdfAsync(int examId, int studentId, CancellationToken ct = default)
+        => await GenerateReportCardPdfAsync(examId, studentId, false, ct);
+
+    public async Task<byte[]?> GenerateReportCardPdfAsync(int examId, int studentId, bool isAdmin, CancellationToken ct = default)
     {
         if (await IsResultBlockedForStudentAsync(studentId, ct))
             return null;
 
-        var result = await _examResultRepository.Query()
+        var query = _examResultRepository.Query()
             .Include(r => r.Student)
             .Include(r => r.Exam)
-            .FirstOrDefaultAsync(r => r.ExamId == examId && r.StudentId == studentId && !r.IsDeleted
-                && (r.Status == ResultWorkflowStatus.Published || r.Status == ResultWorkflowStatus.Locked), ct);
+            .Where(r => r.ExamId == examId && r.StudentId == studentId && !r.IsDeleted);
+
+        if (!isAdmin)
+            query = query.Where(r => r.Status == ResultWorkflowStatus.Published || r.Status == ResultWorkflowStatus.Locked);
+
+        var result = await query.FirstOrDefaultAsync(ct);
 
         if (result == null) return null;
 

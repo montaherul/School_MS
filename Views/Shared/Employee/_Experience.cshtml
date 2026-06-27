@@ -1,37 +1,37 @@
 @model SchoolManagementSystem.Models.DTOs.Employee.EmployeeUpsertDto
 
 <div class="tab-pane fade" id="experience" role="tabpanel">
-    <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-3">
-        <h5 class="card-title text-primary mb-0"><i class="bi bi-award-fill me-2"></i>Previous Employment History</h5>
-        <button type="button" class="btn btn-primary btn-sm" id="btnAddExp"><i class="bi bi-plus-lg"></i> Add Experience</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:8px;border-bottom:1px solid var(--adm-border);margin-bottom:16px">
+        <h5 style="font-weight:700;color:var(--adm-text);margin:0"><i class="bi bi-award-fill me-2"></i>Previous Employment History</h5>
+        <button type="button" class="adm-btn adm-btn--primary" id="btnAddExp"><i class="bi bi-plus-lg"></i> Add Experience</button>
     </div>
-    <div class="table-responsive">
-        <table class="table table-bordered table-hover align-middle" id="tblExperience">
-            <thead class="table-light">
-                <tr>
-                    <th>Organization <span class="text-danger">*</span></th>
-                    <th>Designation <span class="text-danger">*</span></th>
-                    <th style="width:160px;">Start Date <span class="text-danger">*</span></th>
-                    <th style="width:160px;">End Date</th>
-                    <th>Key Responsibilities / Remarks</th>
-                    <th style="width:50px;">Action</th>
+    <div style="border:1px solid var(--adm-border);border-radius:var(--adm-radius-lg);overflow-x:auto;background:var(--adm-surface);box-shadow:inset 0 1px 0 rgba(255,255,255,0.65)">
+        <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:900px" id="tblExperience">
+            <thead>
+                <tr style="background:var(--adm-surface-2);border-bottom:1px solid var(--adm-border)">
+                    <th style="padding:10px 12px;text-align:left;font-weight:600;color:var(--adm-text-2)">Organization <span class="adm-required">*</span></th>
+                    <th style="padding:10px 12px;text-align:left;font-weight:600;color:var(--adm-text-2)">Designation <span class="adm-required">*</span></th>
+                    <th style="padding:10px 12px;text-align:left;font-weight:600;color:var(--adm-text-2);width:160px">Start Date <span class="adm-required">*</span></th>
+                    <th style="padding:10px 12px;text-align:left;font-weight:600;color:var(--adm-text-2);width:160px">End Date</th>
+                    <th style="padding:10px 12px;text-align:left;font-weight:600;color:var(--adm-text-2)">Key Responsibilities / Remarks</th>
+                    <th style="padding:10px 12px;text-align:left;font-weight:600;color:var(--adm-text-2);width:50px">Action</th>
                 </tr>
             </thead>
             <tbody>
                 @for (int i = 0; i < Model.Experiences.Count; i++)
                 {
-                    <tr>
-                        <td>
+                    <tr style="border-bottom:1px solid var(--adm-border)">
+                        <td style="padding:8px 12px">
                             <input type="hidden" name="Experiences[@i].Id" value="@Model.Experiences[i].Id" />
                             <input type="hidden" name="Experiences[@i].EmployeeId" value="@Model.Experiences[i].EmployeeId" />
-                            <input name="Experiences[@i].OrganizationName" class="form-control form-control-sm" value="@Model.Experiences[i].OrganizationName" required />
+                            <input name="Experiences[@i].OrganizationName" class="adm-input" style="padding:6px 10px;font-size:12px" value="@Model.Experiences[i].OrganizationName" required />
                         </td>
-                        <td><input name="Experiences[@i].Designation" class="form-control form-control-sm" value="@Model.Experiences[i].Designation" required /></td>
-                        <td><input name="Experiences[@i].StartDate" type="date" class="form-control form-control-sm" value="@Model.Experiences[i].StartDate.ToString("yyyy-MM-dd")" required /></td>
-                        <td><input name="Experiences[@i].EndDate" type="date" class="form-control form-control-sm" value="@(Model.Experiences[i].EndDate?.ToString("yyyy-MM-dd"))" /></td>
-                        <td><input name="Experiences[@i].Remarks" class="form-control form-control-sm" value="@Model.Experiences[i].Remarks" /></td>
-                        <td class="text-center">
-                            <button type="button" class="btn btn-outline-danger btn-sm btn-delete-row"><i class="bi bi-trash"></i></button>
+                        <td style="padding:8px 12px"><input name="Experiences[@i].Designation" class="adm-input" style="padding:6px 10px;font-size:12px" value="@Model.Experiences[i].Designation" required /></td>
+                        <td style="padding:8px 12px"><input name="Experiences[@i].StartDate" type="date" class="adm-input" style="padding:6px 10px;font-size:12px" value="@Model.Experiences[i].StartDate.ToString("yyyy-MM-dd")" required /></td>
+                        <td style="padding:8px 12px"><input name="Experiences[@i].EndDate" type="date" class="adm-input" style="padding:6px 10px;font-size:12px" value="@(Model.Experiences[i].EndDate?.ToString("yyyy-MM-dd"))" /></td>
+                        <td style="padding:8px 12px"><input name="Experiences[@i].Remarks" class="adm-input" style="padding:6px 10px;font-size:12px" value="@Model.Experiences[i].Remarks" /></td>
+                        <td style="padding:8px 12px;text-align:center">
+                            <button type="button" class="adm-btn adm-btn--danger" style="padding:4px 8px;font-size:12px"><i class="bi bi-trash"></i></button>
                         </td>
                     </tr>
                 }

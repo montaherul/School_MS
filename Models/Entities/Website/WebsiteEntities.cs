@@ -225,6 +225,12 @@ public class SchoolSetting : BaseEntity
     [MaxLength(260)]
     public string? BaseUrl { get; set; }
 
+    [MaxLength(260)]
+    public string? LocalUrl { get; set; }
+
+    [MaxLength(260)]
+    public string? PublicUrl { get; set; }
+
     // Event Approval Workflow Settings
     public bool EnableEventApprovalWorkflow { get; set; } = false;
 
@@ -380,6 +386,9 @@ public class Event : BaseEntity
 
     [MaxLength(500)]
     public string? RejectionReason { get; set; }
+
+    [MaxLength(60)]
+    public string Category { get; set; } = "EventPublished";
 
     public ICollection<ReminderConfig> ReminderConfigs { get; set; } = new List<ReminderConfig>();
 }

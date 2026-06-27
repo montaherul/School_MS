@@ -51,6 +51,7 @@ Migrate ID card PDF rendering from DinkToPdf/wkhtmltopdf to Microsoft Playwright
 ## Next Steps
 1. Run `Data\FinanceInitialization.sql` against production SQL Server to initialize finance data.
 2. (Future) Implement Phase 42H.6 — email-based guardian activation flow (activation controller already scaffolded).
+3. Fix the separate `DashboardRepositories.cs:390` `Array.IndexOf` LINQ translation error (resolved).
 
 ## Relevant Files
 - `Models/Entities/Website/WebsiteEntities.cs`: Added 4 guardian portal toggle fields.

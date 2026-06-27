@@ -1,7 +1,7 @@
 @model SchoolManagementSystem.Models.ViewModels.Exam.ExamSubjectSetupViewModel
 @{
     ViewData["Title"] = "Setup Subjects";
-    Layout = "_AdminLayout";
+    Layout = "_Layout";
 
     var allComponentNames = Model.Subjects
         .Where(s => s.ComponentPreview != null)

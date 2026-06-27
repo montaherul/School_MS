@@ -121,14 +121,18 @@ public class ReportCardController : Controller
             }
         }
 
-        var examResult = await _uow.Repository<StudentExamResult>()
-            .FirstOrDefaultAsync(r => r.ExamId == examId && r.StudentId == studentId && !r.IsDeleted
-                && (r.Status == ResultWorkflowStatus.Published || r.Status == ResultWorkflowStatus.Locked), ct);
+        var examResultQuery = _uow.Repository<StudentExamResult>().Query()
+            .Where(r => r.ExamId == examId && r.StudentId == studentId && !r.IsDeleted);
+
+        if (!isAdmin)
+            examResultQuery = examResultQuery.Where(r => r.Status == ResultWorkflowStatus.Published || r.Status == ResultWorkflowStatus.Locked);
+
+        var examResult = await examResultQuery.FirstOrDefaultAsync(ct);
 
         if (examResult == null)
             return NotFound("Report card has not been calculated or published yet.");
 
-        var pdfBytes = await _reportCardService.GenerateReportCardPdfAsync(examId, studentId, ct);
+        var pdfBytes = await _reportCardService.GenerateReportCardPdfAsync(examId, studentId, isAdmin, ct);
         if (pdfBytes == null)
             return NotFound("Report card has not been calculated or published yet.");
 
@@ -180,9 +184,13 @@ public class ReportCardController : Controller
             return RedirectToAction("Index", "Dashboard");
         }
 
-        var examResult = await _uow.Repository<StudentExamResult>()
-            .FirstOrDefaultAsync(r => r.ExamId == examId && r.StudentId == studentId && !r.IsDeleted
-                && (r.Status == ResultWorkflowStatus.Published || r.Status == ResultWorkflowStatus.Locked), ct);
+        var examResultQuery = _uow.Repository<StudentExamResult>().Query()
+            .Where(r => r.ExamId == examId && r.StudentId == studentId && !r.IsDeleted);
+
+        if (!isAdmin)
+            examResultQuery = examResultQuery.Where(r => r.Status == ResultWorkflowStatus.Published || r.Status == ResultWorkflowStatus.Locked);
+
+        var examResult = await examResultQuery.FirstOrDefaultAsync(ct);
 
         if (examResult == null)
             return NotFound("Report card has not been calculated or published yet.");

@@ -8,27 +8,27 @@
 <input type="hidden" asp-for="ProfilePicturePath" />
 <input type="hidden" asp-for="SignaturePath" />
 
-<div asp-validation-summary="All" class="alert alert-danger mb-4" id="validationSummary" style="display:none;"></div>
+<div asp-validation-summary="All" class="adm-alert adm-alert--error" id="validationSummary"></div>
 
-<ul class="nav nav-tabs nav-justified mb-4" id="employeeTabs" role="tablist">
+<ul class="nav nav-tabs nav-justified mb-4" id="employeeTabs" role="tablist" style="border-bottom:1px solid var(--adm-border);gap:4px">
     <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="personal-tab" data-bs-toggle="tab" data-bs-target="#personal" type="button" role="tab"><i class="bi bi-person-fill me-1"></i>1. Personal Info</button>
+        <button class="nav-link active" id="personal-tab" data-bs-toggle="tab" data-bs-target="#personal" type="button" role="tab" style="font-weight:600;color:var(--adm-text-2);border:1px solid transparent;border-radius:var(--adm-radius) var(--adm-radius) 0 0"><i class="bi bi-person-fill me-1"></i>1. Personal Info</button>
     </li>
     <li class="nav-item" role="presentation">
-        <button class="nav-link" id="professional-tab" data-bs-toggle="tab" data-bs-target="#professional" type="button" role="tab"><i class="bi bi-briefcase-fill me-1"></i>2. Professional & Contact</button>
+        <button class="nav-link" id="professional-tab" data-bs-toggle="tab" data-bs-target="#professional" type="button" role="tab" style="font-weight:600;color:var(--adm-text-2);border:1px solid transparent;border-radius:var(--adm-radius) var(--adm-radius) 0 0"><i class="bi bi-briefcase-fill me-1"></i>2. Professional & Contact</button>
     </li>
     <li class="nav-item" role="presentation">
-        <button class="nav-link" id="qualifications-tab" data-bs-toggle="tab" data-bs-target="#qualifications" type="button" role="tab"><i class="bi bi-mortarboard-fill me-1"></i>3. Qualifications</button>
+        <button class="nav-link" id="qualifications-tab" data-bs-toggle="tab" data-bs-target="#qualifications" type="button" role="tab" style="font-weight:600;color:var(--adm-text-2);border:1px solid transparent;border-radius:var(--adm-radius) var(--adm-radius) 0 0"><i class="bi bi-mortarboard-fill me-1"></i>3. Qualifications</button>
     </li>
     <li class="nav-item" role="presentation">
-        <button class="nav-link" id="experience-tab" data-bs-toggle="tab" data-bs-target="#experience" type="button" role="tab"><i class="bi bi-award-fill me-1"></i>4. Work Experience</button>
+        <button class="nav-link" id="experience-tab" data-bs-toggle="tab" data-bs-target="#experience" type="button" role="tab" style="font-weight:600;color:var(--adm-text-2);border:1px solid transparent;border-radius:var(--adm-radius) var(--adm-radius) 0 0"><i class="bi bi-award-fill me-1"></i>4. Work Experience</button>
     </li>
     <li class="nav-item" role="presentation">
-        <button class="nav-link" id="documents-tab" data-bs-toggle="tab" data-bs-target="#documents" type="button" role="tab"><i class="bi bi-file-earmark-arrow-up-fill me-1"></i>5. Attachments</button>
+        <button class="nav-link" id="documents-tab" data-bs-toggle="tab" data-bs-target="#documents" type="button" role="tab" style="font-weight:600;color:var(--adm-text-2);border:1px solid transparent;border-radius:var(--adm-radius) var(--adm-radius) 0 0"><i class="bi bi-file-earmark-arrow-up-fill me-1"></i>5. Attachments</button>
     </li>
 </ul>
 
-<div class="tab-content card shadow-sm p-4 mb-4" id="employeeTabsContent" style="background-color: var(--bs-card-bg, #fff);">
+<div class="tab-content" id="employeeTabsContent" style="border:1px solid var(--adm-border);border-radius:var(--adm-radius-lg);background:var(--adm-surface);padding:24px">
     @await Html.PartialAsync("~/Views/Shared/Employee/_PersonalInfo.cshtml", Model)
     @await Html.PartialAsync("~/Views/Shared/Employee/_ProfessionalContact.cshtml", Model)
     @await Html.PartialAsync("~/Views/Shared/Employee/_Qualifications.cshtml", Model)

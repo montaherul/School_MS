@@ -1,0 +1,24 @@
+@{
+    ViewData["Title"] = "Invalid Invitation";
+    Layout = "_AuthLayout";
+}
+
+<div class="text-center p-4">
+    <div class="mb-4">
+        <div class="bg-danger bg-opacity-10 text-danger rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+            <i class="bi bi-exclamation-triangle fs-1"></i>
+        </div>
+    </div>
+
+    <h2 class="fw-bold mb-3">Invalid Invitation Link</h2>
+    <p class="text-muted mb-4">
+        The invitation link you have used is not valid. This may happen if the link was incorrectly copied or if the invitation was cancelled.
+        Please check the link and try again, or contact the HR department for a new invitation.
+    </p>
+
+    <div class="d-grid gap-2">
+        <a asp-controller="Auth" asp-action="Login" class="btn btn-primary p-3 fw-bold">
+            Go to Login Portal
+        </a>
+    </div>
+</div>

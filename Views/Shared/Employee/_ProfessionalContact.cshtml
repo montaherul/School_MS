@@ -6,36 +6,36 @@
 }
 
 <div class="tab-pane fade" id="professional" role="tabpanel">
-    <h5 class="card-title text-primary border-bottom pb-2 mb-3"><i class="bi bi-telephone-fill me-2"></i>Contact Information</h5>
-    <div class="row g-3 mb-4">
-        <div class="col-md-4">
-            <label asp-for="Phone" class="form-label fw-bold">Primary Phone <span class="text-danger">*</span></label>
-            <input asp-for="Phone" class="form-control" placeholder="e.g. 017XXXXXXXX" required />
-            <span asp-validation-for="Phone" class="text-danger small"></span>
+    <h5 style="font-weight:700;color:var(--adm-text);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--adm-border)"><i class="bi bi-telephone-fill me-2"></i>Contact Information</h5>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px">
+        <div class="adm-form-group">
+            <label asp-for="Phone" class="adm-form-label">Primary Phone <span class="adm-required">*</span></label>
+            <input asp-for="Phone" class="adm-input" placeholder="e.g. 017XXXXXXXX" required />
+            <span asp-validation-for="Phone" style="font-size:12px;color:var(--adm-rejected)"></span>
         </div>
-        <div class="col-md-4">
-            <label asp-for="Email" class="form-label fw-bold">Email Address</label>
-            <input asp-for="Email" type="email" class="form-control" placeholder="e.g. email@school.local" />
-            <span asp-validation-for="Email" class="text-danger small"></span>
+        <div class="adm-form-group">
+            <label asp-for="Email" class="adm-form-label">Email Address</label>
+            <input asp-for="Email" type="email" class="adm-input" placeholder="e.g. email@school.local" />
+            <span asp-validation-for="Email" style="font-size:12px;color:var(--adm-rejected)"></span>
         </div>
-        <div class="col-md-4">
-            <label asp-for="EmergencyContactName" class="form-label">Emergency Contact Name</label>
-            <input asp-for="EmergencyContactName" class="form-control" placeholder="Contact Person" />
+        <div class="adm-form-group">
+            <label asp-for="EmergencyContactName" class="adm-form-label">Emergency Contact Name</label>
+            <input asp-for="EmergencyContactName" class="adm-input" placeholder="Contact Person" />
         </div>
-        <div class="col-md-4">
-            <label asp-for="EmergencyContactPhone" class="form-label">Emergency Contact Phone</label>
-            <input asp-for="EmergencyContactPhone" class="form-control" placeholder="Contact Phone" />
+        <div class="adm-form-group">
+            <label asp-for="EmergencyContactPhone" class="adm-form-label">Emergency Contact Phone</label>
+            <input asp-for="EmergencyContactPhone" class="adm-input" placeholder="Contact Phone" />
         </div>
     </div>
 
-    <h5 class="card-title text-success border-bottom pb-2 mb-3"><i class="bi bi-briefcase-fill me-2"></i>Professional Particulars</h5>
-    <div class="row g-3">
-        <div class="col-md-4">
-            <label asp-for="DepartmentId" class="form-label fw-bold">Department <span class="text-danger">*</span></label>
+    <h5 style="font-weight:700;color:var(--adm-text);margin-bottom:16px;padding-bottom:8px;border-bottom:1px solid var(--adm-border)"><i class="bi bi-briefcase-fill me-2"></i>Professional Particulars</h5>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:24px">
+        <div class="adm-form-group">
+            <label asp-for="DepartmentId" class="adm-form-label">Department <span class="adm-required">*</span></label>
             @if (isOnboarding)
             {
                 <input type="hidden" asp-for="DepartmentId" />
-                <select asp-for="DepartmentId" class="form-select" required disabled="disabled">
+                <select asp-for="DepartmentId" class="adm-select" required disabled="disabled">
                     <option value="">Select Department</option>
                     @foreach (var d in departments)
                     {
@@ -45,7 +45,7 @@
             }
             else
             {
-                <select asp-for="DepartmentId" class="form-select" required>
+                <select asp-for="DepartmentId" class="adm-select" required>
                     <option value="">Select Department</option>
                     @foreach (var d in departments)
                     {
@@ -53,14 +53,14 @@
                     }
                 </select>
             }
-            <span asp-validation-for="DepartmentId" class="text-danger small"></span>
+            <span asp-validation-for="DepartmentId" style="font-size:12px;color:var(--adm-rejected)"></span>
         </div>
-        <div class="col-md-4">
-            <label asp-for="DesignationId" class="form-label fw-bold">Designation <span class="text-danger">*</span></label>
+        <div class="adm-form-group">
+            <label asp-for="DesignationId" class="adm-form-label">Designation <span class="adm-required">*</span></label>
             @if (isOnboarding)
             {
                 <input type="hidden" asp-for="DesignationId" />
-                <select asp-for="DesignationId" class="form-select" required disabled="disabled">
+                <select asp-for="DesignationId" class="adm-select" required disabled="disabled">
                     <option value="">Select Designation</option>
                     @foreach (var d in designations)
                     {
@@ -70,7 +70,7 @@
             }
             else
             {
-                <select asp-for="DesignationId" class="form-select" required>
+                <select asp-for="DesignationId" class="adm-select" required>
                     <option value="">Select Designation</option>
                     @foreach (var d in designations)
                     {
@@ -78,28 +78,27 @@
                     }
                 </select>
             }
-            <span asp-validation-for="DesignationId" class="text-danger small"></span>
+            <span asp-validation-for="DesignationId" style="font-size:12px;color:var(--adm-rejected)"></span>
         </div>
-        <div class="col-md-4">
-            <label asp-for="JoiningDate" class="form-label fw-bold">Joining Date <span class="text-danger">*</span></label>
+        <div class="adm-form-group">
+            <label asp-for="JoiningDate" class="adm-form-label">Joining Date <span class="adm-required">*</span></label>
             @if (isOnboarding)
             {
                 <input type="hidden" asp-for="JoiningDate" />
-                <input asp-for="JoiningDate" type="date" class="form-control" required readonly="readonly" />
+                <input asp-for="JoiningDate" type="date" class="adm-input" required readonly="readonly" />
             }
             else
             {
-                <input asp-for="JoiningDate" type="date" class="form-control" required />
+                <input asp-for="JoiningDate" type="date" class="adm-input" required />
             }
-            <span asp-validation-for="JoiningDate" class="text-danger small"></span>
+            <span asp-validation-for="JoiningDate" style="font-size:12px;color:var(--adm-rejected)"></span>
         </div>
-
-        <div class="col-md-4">
-            <label asp-for="EmployeeType" class="form-label fw-bold">Employment Type <span class="text-danger">*</span></label>
+        <div class="adm-form-group">
+            <label asp-for="EmployeeType" class="adm-form-label">Employment Type <span class="adm-required">*</span></label>
             @if (isOnboarding)
             {
                 <input type="hidden" asp-for="EmployeeType" />
-                <select asp-for="EmployeeType" class="form-select" required disabled="disabled">
+                <select asp-for="EmployeeType" class="adm-select" required disabled="disabled">
                     <option value="Full-Time">Full-Time</option>
                     <option value="Part-Time">Part-Time</option>
                     <option value="Contractual">Contractual</option>
@@ -108,7 +107,7 @@
             }
             else
             {
-                <select asp-for="EmployeeType" class="form-select" required>
+                <select asp-for="EmployeeType" class="adm-select" required>
                     <option value="Full-Time">Full-Time</option>
                     <option value="Part-Time">Part-Time</option>
                     <option value="Contractual">Contractual</option>
@@ -116,12 +115,12 @@
                 </select>
             }
         </div>
-        <div class="col-md-4">
-            <label asp-for="Status" class="form-label fw-bold">Status <span class="text-danger">*</span></label>
+        <div class="adm-form-group">
+            <label asp-for="Status" class="adm-form-label">Status <span class="adm-required">*</span></label>
             @if (isOnboarding)
             {
                 <input type="hidden" asp-for="Status" />
-                <select asp-for="Status" class="form-select" required disabled="disabled">
+                <select asp-for="Status" class="adm-select" required disabled="disabled">
                     <option value="Active">Active</option>
                     <option value="Inactive">Inactive</option>
                     <option value="Resigned">Resigned</option>
@@ -131,7 +130,7 @@
             }
             else
             {
-                <select asp-for="Status" class="form-select" required>
+                <select asp-for="Status" class="adm-select" required>
                     <option value="Active">Active</option>
                     <option value="Inactive">Inactive</option>
                     <option value="Resigned">Resigned</option>
@@ -140,30 +139,29 @@
                 </select>
             }
         </div>
-        <div class="col-md-4 d-flex align-items-center mt-4">
-            <div class="form-check form-switch p-3 border rounded w-100" style="background-color: var(--bs-tertiary-bg, #f8f9fa);">
+        <div class="adm-form-group" style="display:flex;align-items:flex-end">
+            <div style="width:100%;border:1px solid var(--adm-border);border-radius:var(--adm-radius);padding:12px;background:var(--adm-surface-2);display:flex;align-items:center;gap:8px">
                 @if (isOnboarding)
                 {
                     <input type="hidden" asp-for="IsTeachingStaff" />
-                    <input class="form-check-input ms-0 me-2" type="checkbox" asp-for="IsTeachingStaff" id="chkIsTeaching" disabled="disabled">
+                    <input type="checkbox" asp-for="IsTeachingStaff" id="chkIsTeaching" disabled="disabled" style="accent-color:var(--adm-primary);width:18px;height:18px">
                 }
                 else
                 {
-                    <input class="form-check-input ms-0 me-2" type="checkbox" asp-for="IsTeachingStaff" id="chkIsTeaching">
+                    <input type="checkbox" asp-for="IsTeachingStaff" id="chkIsTeaching" style="accent-color:var(--adm-primary);width:18px;height:18px">
                 }
-                <label class="form-check-label fw-bold" for="chkIsTeaching">Is Teaching Staff?</label>
+                <label for="chkIsTeaching" style="font-weight:600;font-size:13px;color:var(--adm-text);cursor:pointer">Is Teaching Staff?</label>
             </div>
         </div>
-
-        <div class="col-md-12">
-            <label asp-for="Remarks" class="form-label">Remarks / Special Notes</label>
+        <div class="adm-form-group" style="grid-column:1/-1">
+            <label asp-for="Remarks" class="adm-form-label">Remarks / Special Notes</label>
             @if (isOnboarding)
             {
-                <textarea asp-for="Remarks" class="form-control" rows="2" readonly="readonly"></textarea>
+                <textarea asp-for="Remarks" class="adm-input" rows="2" readonly="readonly"></textarea>
             }
             else
             {
-                <textarea asp-for="Remarks" class="form-control" rows="2"></textarea>
+                <textarea asp-for="Remarks" class="adm-input" rows="2"></textarea>
             }
         </div>
     </div>

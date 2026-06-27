@@ -264,16 +264,12 @@ public class WebsiteSeeder
                     Subject = "You're invited to join {SchoolName}",
                     Body = @"<h2>Welcome to {SchoolName}!</h2>
 <p>Dear {EmployeeName},</p>
-<p>You have been invited to join {SchoolName} as a <strong>{Designation}</strong>.</p>
-<p>Please use the following credentials to log in and complete your profile:</p>
-<ul>
-<li><strong>Portal URL:</strong> <a href=""{PortalUrl}"">{PortalUrl}</a></li>
-<li><strong>Email:</strong> {Email}</li>
-<li><strong>Temporary Password:</strong> {Password}</li>
-</ul>
-<p>For security reasons, please change your password after your first login.</p>
+<p>You have been invited to join {SchoolName}. Please click the link below to complete your onboarding and set up your account:</p>
+<p><a href=""{OnboardingUrl}"">{OnboardingUrl}</a></p>
+<p>This invitation link will expire on <strong>{ExpiresAt}</strong>.</p>
+<p>If you have any questions, please contact the administration.</p>
 <p>Best regards,<br/>{PrincipalName}<br/>Principal, {SchoolName}</p>",
-                    Placeholders = "{SchoolName},{EmployeeName},{Designation},{PortalUrl},{Email},{Password},{PrincipalName}",
+                    Placeholders = "{SchoolName},{EmployeeName},{OnboardingUrl},{Token},{ExpiresAt},{PortalUrl},{PrincipalName}",
                     IsActive = true,
                     CreatedBy = "seeder",
                     CreatedAt = DateTime.UtcNow

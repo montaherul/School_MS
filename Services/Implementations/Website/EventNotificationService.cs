@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using SchoolManagementSystem.Helpers.Email;
 using SchoolManagementSystem.Models.Entities.Guardian;
 using SchoolManagementSystem.Models.Entities.Website;
@@ -30,6 +31,8 @@ public class EventNotificationService : IEventNotificationService
     private readonly ISchoolSettingRepository _settingRepo;
     private readonly IEmailTemplateService _templateService;
     private readonly IEmailSender _emailSender;
+    private readonly EmailUrlResolver _urlResolver;
+    private readonly ILogger<EventNotificationService> _logger;
     private readonly IUnitOfWork _uow;
 
     public EventNotificationService(
@@ -46,6 +49,8 @@ public class EventNotificationService : IEventNotificationService
         ISchoolSettingRepository settingRepo,
         IEmailTemplateService templateService,
         IEmailSender emailSender,
+        EmailUrlResolver urlResolver,
+        ILogger<EventNotificationService> logger,
         IUnitOfWork uow)
     {
         _notificationRepo = notificationRepo;
@@ -61,6 +66,8 @@ public class EventNotificationService : IEventNotificationService
         _settingRepo = settingRepo;
         _templateService = templateService;
         _emailSender = emailSender;
+        _urlResolver = urlResolver;
+        _logger = logger;
         _uow = uow;
     }
 
@@ -137,6 +144,7 @@ public class EventNotificationService : IEventNotificationService
         var settings = await _settingRepo.GetCurrentSettingsAsync(ct);
         var schoolName = settings?.SchoolName ?? "School";
         var senderName = settings?.NotificationSenderName ?? schoolName;
+        var portalUrl = await _urlResolver.ResolveAsync();
         var ev = await _eventRepo.GetByIdAsync(notification.EventId, ct);
 
         var recipients = await ResolveRecipientsAsync(notification, ct);
@@ -164,11 +172,22 @@ public class EventNotificationService : IEventNotificationService
             {
                 ["SchoolName"] = schoolName,
                 ["GuardianName"] = r.RecipientName,
+                ["StudentName"] = r.StudentName,
                 ["EventTitle"] = ev?.Title ?? "",
                 ["EventDate"] = ev?.EventDate.ToString("dddd, dd MMMM yyyy") ?? "",
                 ["EventTime"] = ev?.EventDate.ToString("hh:mm tt") ?? "",
                 ["Venue"] = ev?.EventLocation ?? "",
-                ["Description"] = ev?.Description ?? ""
+                ["Description"] = ev?.Description ?? "",
+                ["PortalUrl"] = portalUrl,
+                ["LoginUrl"] = $"{portalUrl}/Auth/Login",
+                ["SchoolWebsite"] = settings?.Website ?? portalUrl,
+                ["SchoolAddress"] = settings?.Address ?? "",
+                ["PrincipalName"] = settings?.PrincipalName ?? "",
+                ["SupportEmail"] = settings?.Email ?? "",
+                ["SupportPhone"] = settings?.Phone ?? "",
+                ["AcademicYear"] = DateTime.UtcNow.Year.ToString(),
+                ["CurrentYear"] = DateTime.UtcNow.Year.ToString(),
+                ["CurrentDate"] = DateTime.UtcNow.ToString("dddd, dd MMMM yyyy")
             };
 
             var subject = await _templateService.RenderTemplateSubjectAsync(templateName, placeholders, ct);
@@ -249,6 +268,15 @@ public class EventNotificationService : IEventNotificationService
         {
             try
             {
+                var unresolved = TemplatePlaceholderValidator.FindUnresolved(item.Body);
+                if (unresolved.Count > 0)
+                {
+                    _logger.LogWarning(
+                        "EventNotification {Id} to {Recipient} has {Count} unresolved placeholders: {Placeholders}. Body preview: {Preview}",
+                        notificationId, item.RecipientEmail, unresolved.Count, string.Join(", ", unresolved),
+                        TemplatePlaceholderValidator.SanitizeForLog(item.Body));
+                }
+
                 item.Status = "Processing";
                 _queueRepo.Update(item);
                 await _uow.SaveChangesAsync(ct);
@@ -382,6 +410,7 @@ public class EventNotificationService : IEventNotificationService
 
         var settings = await _settingRepo.GetCurrentSettingsAsync(ct);
         var schoolName = settings?.SchoolName ?? "School";
+        var portalUrl = await _urlResolver.ResolveAsync();
         var ev = await _eventRepo.GetByIdAsync(notification.EventId, ct);
 
         var template = notification.EmailTemplateId.HasValue
@@ -394,11 +423,22 @@ public class EventNotificationService : IEventNotificationService
         {
             ["SchoolName"] = schoolName,
             ["GuardianName"] = "[Guardian Name]",
+            ["StudentName"] = "[Student Name]",
             ["EventTitle"] = ev?.Title ?? "",
             ["EventDate"] = ev?.EventDate.ToString("dddd, dd MMMM yyyy") ?? "",
             ["EventTime"] = ev?.EventDate.ToString("hh:mm tt") ?? "",
             ["Venue"] = ev?.EventLocation ?? "",
-            ["Description"] = ev?.Description ?? ""
+            ["Description"] = ev?.Description ?? "",
+            ["PortalUrl"] = portalUrl,
+            ["LoginUrl"] = $"{portalUrl}/Auth/Login",
+            ["SchoolWebsite"] = settings?.Website ?? portalUrl,
+            ["SchoolAddress"] = settings?.Address ?? "",
+            ["PrincipalName"] = settings?.PrincipalName ?? "",
+            ["SupportEmail"] = settings?.Email ?? "",
+            ["SupportPhone"] = settings?.Phone ?? "",
+            ["AcademicYear"] = DateTime.UtcNow.Year.ToString(),
+            ["CurrentYear"] = DateTime.UtcNow.Year.ToString(),
+            ["CurrentDate"] = DateTime.UtcNow.ToString("dddd, dd MMMM yyyy")
         };
 
         var body = await _templateService.RenderTemplateAsync(templateName, placeholders, ct);
@@ -897,8 +937,10 @@ public class EventNotificationService : IEventNotificationService
                     recipients.Add(new RecipientInfo
                     {
                         GuardianId = sg.GuardianId,
+                        StudentId = sg.StudentId,
                         RecipientEmail = sg.Guardian.Email,
-                        RecipientName = sg.Guardian.FullName
+                        RecipientName = sg.Guardian.FullName,
+                        StudentName = sg.Student?.FullName ?? ""
                     });
                 }
 
@@ -908,7 +950,8 @@ public class EventNotificationService : IEventNotificationService
                     {
                         StudentId = sg.StudentId,
                         RecipientEmail = sg.Student.EmailAddress,
-                        RecipientName = sg.Student.FullName
+                        RecipientName = sg.Student.FullName,
+                        StudentName = sg.Student.FullName
                     });
                 }
             }
@@ -950,5 +993,6 @@ public class EventNotificationService : IEventNotificationService
         public int? StudentId { get; set; }
         public string RecipientEmail { get; set; } = string.Empty;
         public string RecipientName { get; set; } = string.Empty;
+        public string StudentName { get; set; } = string.Empty;
     }
 }

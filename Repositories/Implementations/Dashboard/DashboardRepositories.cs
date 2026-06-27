@@ -385,15 +385,18 @@ public class DashboardRepository : IDashboardRepository
 
     public async Task<List<TeacherScheduleItemDto>> GetTeacherTimetableAsync(int teacherId, CancellationToken ct)
     {
-        var dayNames = new[] { "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday" };
-
         return await _db.Set<SchoolManagementSystem.Models.Entities.Teachers.TeacherTimetable>()
             .AsNoTracking()
             .Include(r => r.Subject)
             .Include(r => r.Class)
             .Include(r => r.Section)
             .Where(r => r.TeacherId == teacherId && !r.IsDeleted)
-            .OrderBy(r => Array.IndexOf(dayNames, r.DayOfWeek))
+            .OrderBy(r => r.DayOfWeek == "Sunday" ? 0 :
+                         r.DayOfWeek == "Monday" ? 1 :
+                         r.DayOfWeek == "Tuesday" ? 2 :
+                         r.DayOfWeek == "Wednesday" ? 3 :
+                         r.DayOfWeek == "Thursday" ? 4 :
+                         r.DayOfWeek == "Friday" ? 5 : 6)
             .ThenBy(r => r.StartTime)
             .Select(r => new TeacherScheduleItemDto
             {

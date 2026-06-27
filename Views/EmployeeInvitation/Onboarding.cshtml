@@ -1,51 +1,463 @@
 @model SchoolManagementSystem.Models.DTOs.Employee.EmployeeUpsertDto
+@using SchoolManagementSystem.Models.DTOs.Employee
 @{
     ViewData["Title"] = "Employee Onboarding";
     ViewData["IsOnboarding"] = true;
     var token = ViewData["InvitationToken"] as string ?? string.Empty;
     Layout = "~/Views/Shared/_Layout.cshtml";
+    var departments = ViewBag.Departments as IReadOnlyList<DepartmentDto> ?? new List<DepartmentDto>();
+    var designations = ViewBag.Designations as IReadOnlyList<DesignationDto> ?? new List<DesignationDto>();
 }
 
-<div class="row justify-content-center">
-    <div class="col-lg-11">
-        <div class="d-flex align-items-center justify-content-between mb-4">
-            <div class="d-flex align-items-center">
-                <a asp-controller="Auth" asp-action="Login" class="btn btn-outline-secondary btn-sm me-3"><i class="bi bi-arrow-left"></i> Back to Login</a>
-                <h2 class="mb-0 text-gradient"><i class="bi bi-person-badge-fill me-2"></i>Complete Employee Onboarding</h2>
-            </div>
-            <span class="badge bg-secondary p-2 fs-6">Invitation</span>
+<link rel="stylesheet" href="~/css/onboarding.css" asp-append-version="true" />
+
+<div class="onboarding-wizard">
+    @* ─── Hero Header ─── *@
+    <div class="onboarding-hero">
+        <div class="onboarding-hero-avatar">
+            <i class="bi bi-person-fill"></i>
         </div>
+        <div class="onboarding-hero-body">
+            <h1><i class="bi bi-person-badge-fill"></i>Complete Employee Onboarding</h1>
+            <p>Set your password and complete your profile to activate your staff account</p>
+            <div class="onboarding-hero-meta">
+                <span><i class="bi bi-person-vcard"></i>@Model.FullName</span>
+                <span><i class="bi bi-envelope"></i>@Model.Email</span>
+                <span><i class="bi bi-telephone"></i>@Model.Phone</span>
+                <span class="badge" style="background:rgba(255,255,255,0.2);color:#fff;font-weight:600">Invitation</span>
+            </div>
+        </div>
+        <div class="hero-progress-ring">
+            <div class="ring-value" id="heroPct">0%</div>
+            <div class="ring-label">Complete</div>
+        </div>
+    </div>
 
-        <form asp-action="Submit" method="post" enctype="multipart/form-data" id="employeeForm">
-            @Html.AntiForgeryToken()
-            <input type="hidden" name="token" value="@token" />
+    @* ─── Progress Bar ─── *@
+    <div class="wizard-progress">
+        <div class="wizard-progress-track">
+            <div class="wizard-progress-fill" id="wizardProgressFill" style="width:0%"></div>
+            <div class="wizard-progress-step" data-step="1">
+                <div class="step-dot">1</div>
+                <span class="step-label">Security</span>
+            </div>
+            <div class="wizard-progress-step" data-step="2">
+                <div class="step-dot">2</div>
+                <span class="step-label">Personal</span>
+            </div>
+            <div class="wizard-progress-step" data-step="3">
+                <div class="step-dot">3</div>
+                <span class="step-label">Professional</span>
+            </div>
+            <div class="wizard-progress-step" data-step="4">
+                <div class="step-dot">4</div>
+                <span class="step-label">Qualifications</span>
+            </div>
+            <div class="wizard-progress-step" data-step="5">
+                <div class="step-dot">5</div>
+                <span class="step-label">Experience</span>
+            </div>
+            <div class="wizard-progress-step" data-step="6">
+                <div class="step-dot">6</div>
+                <span class="step-label">Review</span>
+            </div>
+        </div>
+    </div>
 
-            <div class="card shadow-sm p-4 mb-4">
-                <h5 class="card-title text-primary border-bottom pb-2 mb-3"><i class="bi bi-shield-lock-fill me-2"></i>Account Security</h5>
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label for="password" class="form-label fw-bold">Password <span class="text-danger">*</span></label>
-                        <input name="password" id="password" type="password" class="form-control" required minlength="6" />
+    @* ─── Wizard Body ─── *@
+    <form asp-action="Submit" method="post" enctype="multipart/form-data" id="employeeOnboardingForm" data-steps="6">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="token" value="@token" />
+
+        <div asp-validation-summary="All" class="adm-alert adm-alert--error" style="margin-bottom:20px;display:none" id="validationSummary"></div>
+
+        <div class="wizard-body">
+            @* ─── Sidebar Navigation ─── *@
+            <nav class="wizard-nav" aria-label="Onboarding steps">
+                <div class="wizard-nav-item active" data-step="1" onclick="goToStep(1)" role="button" tabindex="0" aria-current="step">
+                    <span class="nav-icon"><i class="bi bi-shield-lock"></i></span>
+                    <span class="nav-text">Security</span>
+                </div>
+                <div class="wizard-nav-item" data-step="2" onclick="goToStep(2)" role="button" tabindex="0">
+                    <span class="nav-icon"><i class="bi bi-person-vcard"></i></span>
+                    <span class="nav-text">Personal</span>
+                </div>
+                <div class="wizard-nav-item" data-step="3" onclick="goToStep(3)" role="button" tabindex="0">
+                    <span class="nav-icon"><i class="bi bi-briefcase"></i></span>
+                    <span class="nav-text">Professional</span>
+                </div>
+                <div class="wizard-nav-item" data-step="4" onclick="goToStep(4)" role="button" tabindex="0">
+                    <span class="nav-icon"><i class="bi bi-mortarboard"></i></span>
+                    <span class="nav-text">Qualifications</span>
+                </div>
+                <div class="wizard-nav-item" data-step="5" onclick="goToStep(5)" role="button" tabindex="0">
+                    <span class="nav-icon"><i class="bi bi-award"></i></span>
+                    <span class="nav-text">Experience</span>
+                </div>
+                <div class="wizard-nav-item" data-step="6" onclick="goToStep(6)" role="button" tabindex="0">
+                    <span class="nav-icon"><i class="bi bi-check2-all"></i></span>
+                    <span class="nav-text">Review</span>
+                </div>
+            </nav>
+
+            @* ─── Content Panel ─── *@
+            <div class="wizard-content">
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="EmployeeCode" />
+                <input type="hidden" asp-for="ProfilePicturePath" />
+                <input type="hidden" asp-for="SignaturePath" />
+
+                @* ────── Step 1: Security ────── *@
+                <div class="wizard-step-panel active" data-step="1">
+                    <div class="wizard-step-header">
+                        <h2><i class="bi bi-shield-lock-fill" style="color:var(--adm-primary)"></i>Account Security</h2>
+                        <p>Create a strong password to secure your account. Use at least 6 characters with a mix of letters, numbers, and symbols.</p>
                     </div>
-                    <div class="col-md-6">
-                        <label for="confirmPassword" class="form-label fw-bold">Confirm Password <span class="text-danger">*</span></label>
-                        <input name="confirmPassword" id="confirmPassword" type="password" class="form-control" required minlength="6" />
+
+                    <div class="wizard-card">
+                        <div class="wizard-card-title">
+                            <i class="bi bi-key"></i> Set Your Password <span class="adm-required">*</span>
+                        </div>
+                        <div class="wizard-card-body">
+                            <div class="wizard-form-grid">
+                                <div class="wizard-floating-group">
+                                    <input name="password" id="password" type="password" class="adm-input" placeholder=" " required minlength="6" />
+                                    <label for="password" class="wizard-floating-label">Create Password <span class="adm-required">*</span></label>
+                                    <button type="button" class="password-toggle" id="pwdToggle" tabindex="-1" aria-label="Toggle password visibility">
+                                        <i class="bi bi-eye-slash"></i>
+                                    </button>
+                                    <span class="wizard-floating-error" id="pwdError"></span>
+                                    <div class="password-meter" id="pwdMeter">
+                                        <div class="password-meter-bar"><div class="password-meter-fill" id="pwdMeterFill"></div></div>
+                                        <div class="password-meter-text" id="pwdMeterText"></div>
+                                    </div>
+                                    <div class="security-checklist-card">
+                                        <div style="font-size:12px;font-weight:600;color:var(--adm-text-2);margin-bottom:6px">Password Requirements</div>
+                                        <ul class="password-requirements">
+                                            <li id="pwdReqLength"><i class="bi bi-circle"></i> At least 6 characters</li>
+                                            <li id="pwdReqUpper"><i class="bi bi-circle"></i> One uppercase letter</li>
+                                            <li id="pwdReqLower"><i class="bi bi-circle"></i> One lowercase letter</li>
+                                            <li id="pwdReqDigit"><i class="bi bi-circle"></i> One number</li>
+                                            <li id="pwdReqSpecial"><i class="bi bi-circle"></i> One special character</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="wizard-floating-group">
+                                    <input name="confirmPassword" id="confirmPassword" type="password" class="adm-input" placeholder=" " required minlength="6" />
+                                    <label for="confirmPassword" class="wizard-floating-label">Confirm Password <span class="adm-required">*</span></label>
+                                    <span class="wizard-floating-error" id="confirmPwdError"></span>
+                                    <div class="wizard-floating-hint">Re-enter your password to confirm</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* ────── Step 2: Personal Info ────── *@
+                <div class="wizard-step-panel" data-step="2">
+                    <div class="wizard-step-header">
+                        <h2><i class="bi bi-person-vcard-fill" style="color:var(--adm-primary)"></i>Personal Information</h2>
+                        <p>Provide your personal details. Fields marked with <span class="adm-required">*</span> are required.</p>
+                    </div>
+
+                    <div class="wizard-card">
+                        <div class="wizard-card-title">
+                            <i class="bi bi-person-badge"></i> Personal Particulars
+                        </div>
+                        <div class="wizard-card-body">
+                            <div class="wizard-form-grid">
+                                <div class="wizard-floating-group">
+                                    <input asp-for="FullName" class="adm-input" placeholder=" " required />
+                                    <label asp-for="FullName" class="wizard-floating-label">Full Name <span class="adm-required">*</span></label>
+                                    <span asp-validation-for="FullName" class="wizard-floating-error"></span>
+                                </div>
+                                <div class="wizard-floating-group">
+                                    <select asp-for="Gender" class="adm-select" required>
+                                        <option value=""></option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                    <label asp-for="Gender" class="wizard-floating-label">Gender <span class="adm-required">*</span></label>
+                                    <span asp-validation-for="Gender" class="wizard-floating-error"></span>
+                                </div>
+                                <div class="wizard-floating-group">
+                                    <input asp-for="DateOfBirth" type="date" class="adm-input" placeholder=" " required />
+                                    <label asp-for="DateOfBirth" class="wizard-floating-label">Date of Birth <span class="adm-required">*</span></label>
+                                    <span asp-validation-for="DateOfBirth" class="wizard-floating-error"></span>
+                                </div>
+                                <div class="wizard-floating-group">
+                                    <input asp-for="FatherName" class="adm-input" placeholder=" " />
+                                    <label asp-for="FatherName" class="wizard-floating-label">Father's Name</label>
+                                    <span asp-validation-for="FatherName" class="wizard-floating-error"></span>
+                                </div>
+                                <div class="wizard-floating-group">
+                                    <input asp-for="MotherName" class="adm-input" placeholder=" " />
+                                    <label asp-for="MotherName" class="wizard-floating-label">Mother's Name</label>
+                                    <span asp-validation-for="MotherName" class="wizard-floating-error"></span>
+                                </div>
+                                <div class="wizard-floating-group">
+                                    <select asp-for="BloodGroup" class="adm-select">
+                                        <option value=""></option>
+                                        <option value="A+">A+</option>
+                                        <option value="A-">A-</option>
+                                        <option value="B+">B+</option>
+                                        <option value="B-">B-</option>
+                                        <option value="O+">O+</option>
+                                        <option value="O-">O-</option>
+                                        <option value="AB+">AB+</option>
+                                        <option value="AB-">AB-</option>
+                                    </select>
+                                    <label asp-for="BloodGroup" class="wizard-floating-label">Blood Group</label>
+                                </div>
+                                <div class="wizard-floating-group">
+                                    <input asp-for="Religion" class="adm-input" placeholder=" " />
+                                    <label asp-for="Religion" class="wizard-floating-label">Religion</label>
+                                    <span class="wizard-floating-hint">e.g. Islam, Hinduism, Christianity</span>
+                                </div>
+                                <div class="wizard-floating-group">
+                                    <input asp-for="Nationality" class="adm-input" placeholder=" " />
+                                    <label asp-for="Nationality" class="wizard-floating-label">Nationality</label>
+                                </div>
+                                <div class="wizard-floating-group">
+                                    <input asp-for="NIDNumber" class="adm-input" placeholder=" " />
+                                    <label asp-for="NIDNumber" class="wizard-floating-label">NID Number</label>
+                                    <span asp-validation-for="NIDNumber" class="wizard-floating-error"></span>
+                                    <span class="wizard-floating-hint">10 or 17 digit National ID</span>
+                                </div>
+                                <div class="wizard-floating-group">
+                                    <input asp-for="BirthCertificateNo" class="adm-input" placeholder=" " />
+                                    <label asp-for="BirthCertificateNo" class="wizard-floating-label">Birth Certificate No</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="wizard-card">
+                        <div class="wizard-card-title">
+                            <i class="bi bi-geo-alt"></i> Residential Addresses
+                        </div>
+                        <div class="wizard-card-body">
+                            <div class="wizard-form-grid">
+                                <div class="wizard-floating-group">
+                                    <textarea asp-for="PresentAddress" class="adm-input" placeholder=" " rows="2"></textarea>
+                                    <label asp-for="PresentAddress" class="wizard-floating-label">Present Address</label>
+                                </div>
+                                <div class="wizard-floating-group">
+                                    <textarea asp-for="PermanentAddress" class="adm-input" placeholder=" " rows="2"></textarea>
+                                    <label asp-for="PermanentAddress" class="wizard-floating-label">Permanent Address</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* ────── Step 3: Professional & Contact ────── *@
+                <div class="wizard-step-panel" data-step="3">
+                    <div class="wizard-step-header">
+                        <h2><i class="bi bi-briefcase-fill" style="color:var(--adm-primary)"></i>Professional & Contact Info</h2>
+                        <p>Enter your contact details and employment information.</p>
+                    </div>
+
+                    <div class="wizard-card">
+                        <div class="wizard-card-title">
+                            <i class="bi bi-telephone"></i> Contact Information
+                        </div>
+                        <div class="wizard-card-body">
+                            <div class="wizard-form-grid">
+                                <div class="wizard-floating-group">
+                                    <input asp-for="Phone" type="tel" class="adm-input" placeholder=" " required />
+                                    <label asp-for="Phone" class="wizard-floating-label">Primary Phone <span class="adm-required">*</span></label>
+                                    <span asp-validation-for="Phone" class="wizard-floating-error"></span>
+                                </div>
+                                <div class="wizard-floating-group">
+                                    <input asp-for="Email" type="email" class="adm-input" placeholder=" " />
+                                    <label asp-for="Email" class="wizard-floating-label">Email Address</label>
+                                    <span asp-validation-for="Email" class="wizard-floating-error"></span>
+                                </div>
+                                <div class="wizard-floating-group">
+                                    <input asp-for="EmergencyContactName" class="adm-input" placeholder=" " />
+                                    <label asp-for="EmergencyContactName" class="wizard-floating-label">Emergency Contact Name</label>
+                                </div>
+                                <div class="wizard-floating-group">
+                                    <input asp-for="EmergencyContactPhone" type="tel" class="adm-input" placeholder=" " />
+                                    <label asp-for="EmergencyContactPhone" class="wizard-floating-label">Emergency Contact Phone</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="wizard-card">
+                        <div class="wizard-card-title">
+                            <i class="bi bi-building"></i> Employment Details
+                        </div>
+                        <div class="wizard-card-body">
+                            <div class="wizard-form-grid">
+                                <div class="wizard-floating-group">
+                                    <select asp-for="DepartmentId" class="adm-select" required>
+                                        <option value=""></option>
+                                        @foreach (var d in departments)
+                                        {
+                                            <option value="@d.Id">@d.Name</option>
+                                        }
+                                    </select>
+                                    <label asp-for="DepartmentId" class="wizard-floating-label">Department <span class="adm-required">*</span></label>
+                                    <span asp-validation-for="DepartmentId" class="wizard-floating-error"></span>
+                                </div>
+                                <div class="wizard-floating-group">
+                                    <select asp-for="DesignationId" class="adm-select" required>
+                                        <option value=""></option>
+                                        @foreach (var d in designations)
+                                        {
+                                            <option value="@d.Id">@d.Name</option>
+                                        }
+                                    </select>
+                                    <label asp-for="DesignationId" class="wizard-floating-label">Designation <span class="adm-required">*</span></label>
+                                    <span asp-validation-for="DesignationId" class="wizard-floating-error"></span>
+                                </div>
+                                <div class="wizard-floating-group">
+                                    <input asp-for="JoiningDate" type="date" class="adm-input" placeholder=" " required />
+                                    <label asp-for="JoiningDate" class="wizard-floating-label">Joining Date <span class="adm-required">*</span></label>
+                                    <span asp-validation-for="JoiningDate" class="wizard-floating-error"></span>
+                                </div>
+                                <div class="wizard-floating-group">
+                                    <select asp-for="EmployeeType" class="adm-select" required>
+                                        <option value="Full-Time">Full-Time</option>
+                                        <option value="Part-Time">Part-Time</option>
+                                        <option value="Contractual">Contractual</option>
+                                        <option value="Substitute">Substitute</option>
+                                    </select>
+                                    <label asp-for="EmployeeType" class="wizard-floating-label">Employment Type <span class="adm-required">*</span></label>
+                                </div>
+                                <div class="wizard-floating-group">
+                                    <select asp-for="Status" class="adm-select" required>
+                                        <option value="Active">Active</option>
+                                        <option value="Inactive">Inactive</option>
+                                        <option value="Resigned">Resigned</option>
+                                        <option value="Retired">Retired</option>
+                                        <option value="On Leave">On Leave</option>
+                                    </select>
+                                    <label asp-for="Status" class="wizard-floating-label">Status <span class="adm-required">*</span></label>
+                                </div>
+                                <div class="wizard-floating-group">
+                                    <label style="display:flex;align-items:center;gap:8px;padding-top:22px;font-size:13px;color:var(--adm-text-2);cursor:pointer">
+                                        <input type="checkbox" asp-for="IsTeachingStaff" style="accent-color:var(--adm-primary);width:18px;height:18px" />
+                                        Is Teaching Staff?
+                                    </label>
+                                </div>
+                                <div class="wizard-floating-group full-width">
+                                    <textarea asp-for="Remarks" class="adm-input" placeholder=" " rows="2"></textarea>
+                                    <label asp-for="Remarks" class="wizard-floating-label">Remarks / Special Notes</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* ────── Step 4: Qualifications ────── *@
+                <div class="wizard-step-panel" data-step="4">
+                    <div class="wizard-step-header">
+                        <h2><i class="bi bi-mortarboard-fill" style="color:var(--adm-primary)"></i>Educational Qualifications</h2>
+                        <p>Add your educational background. Start with your highest degree.</p>
+                    </div>
+
+                    <div class="wizard-card">
+                        <div class="wizard-card-title">
+                            <i class="bi bi-book"></i> Qualifications
+                            <button type="button" class="adm-btn adm-btn--primary" style="margin-left:auto;padding:4px 12px;font-size:12px" id="btnAddQual"><i class="bi bi-plus-lg"></i> Add</button>
+                        </div>
+                        <div class="wizard-card-body">
+                            <div class="wizard-table-wrap">
+                                @await Html.PartialAsync("~/Views/Shared/Employee/_Qualifications.cshtml", Model)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* ────── Step 5: Experience ────── *@
+                <div class="wizard-step-panel" data-step="5">
+                    <div class="wizard-step-header">
+                        <h2><i class="bi bi-award-fill" style="color:var(--adm-primary)"></i>Work Experience</h2>
+                        <p>List your previous employment history.</p>
+                    </div>
+
+                    <div class="wizard-card">
+                        <div class="wizard-card-title">
+                            <i class="bi bi-briefcase"></i> Employment History
+                            <button type="button" class="adm-btn adm-btn--primary" style="margin-left:auto;padding:4px 12px;font-size:12px" id="btnAddExp"><i class="bi bi-plus-lg"></i> Add</button>
+                        </div>
+                        <div class="wizard-card-body">
+                            <div class="wizard-table-wrap">
+                                @await Html.PartialAsync("~/Views/Shared/Employee/_Experience.cshtml", Model)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* ────── Step 6: Review & Submit ────── *@
+                <div class="wizard-step-panel" data-step="6">
+                    <div class="wizard-step-header">
+                        <h2><i class="bi bi-check2-all" style="color:var(--adm-success)"></i>Review & Submit</h2>
+                        <p>Review all your information before submitting.</p>
+                    </div>
+
+                    <div class="wizard-card">
+                        <div class="wizard-card-title">
+                            <i class="bi bi-cloud-arrow-up"></i> Profile Photo & Documents
+                        </div>
+                        <div class="wizard-card-body">
+                            @await Html.PartialAsync("~/Views/Shared/Employee/_Documents.cshtml", Model)
+                        </div>
+                    </div>
+
+                    <div class="wizard-card" style="border-color:var(--adm-primary, #1a56db);background:rgba(26,86,219,0.03)">
+                        <div style="display:flex;align-items:center;gap:10px">
+                            <input type="checkbox" id="chkAgreed" required style="accent-color:var(--adm-primary);width:20px;height:20px;flex-shrink:0" />
+                            <label for="chkAgreed" style="font-size:13px;color:var(--adm-text-2);cursor:pointer">
+                                I confirm that all the information provided above is accurate and complete.
+                            </label>
+                        </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            @await Html.PartialAsync("~/Views/Shared/Employee/_EmployeeTabs.cshtml", Model)
-
-            <div class="d-flex justify-content-end gap-2 mt-3">
-                <a asp-controller="Auth" asp-action="Login" class="btn btn-outline-secondary">Back to Login</a>
-                <button type="submit" name="submitAction" value="save" class="btn btn-outline-primary">Save</button>
-                <button type="submit" name="submitAction" value="done" class="btn btn-primary">Complete Onboarding</button>
+        @* ─── Sticky Footer ─── *@
+        <div class="wizard-footer">
+            <div class="wizard-footer-left">
+                <span class="unsaved-badge"><i class="bi bi-exclamation-circle"></i> Unsaved changes</span>
             </div>
-        </form>
-    </div>
+            <div class="wizard-footer-right">
+                <button type="button" class="adm-btn adm-btn--ghost" id="btnPrev" onclick="prevStep()" style="display:none">
+                    <i class="bi bi-chevron-left"></i> Previous
+                </button>
+                <button type="button" class="adm-btn adm-btn--ghost" id="btnSave" onclick="saveDraft()">
+                    <i class="bi bi-cloud-arrow-up"></i> Save Draft
+                </button>
+                <button type="button" class="adm-btn adm-btn--primary" id="btnNext" onclick="nextStep()">
+                    Next <i class="bi bi-chevron-right"></i>
+                </button>
+                <button type="submit" name="submitAction" value="done" class="adm-btn adm-btn--success" id="btnSubmit" style="display:none" onclick="return document.getElementById('chkAgreed')?.checked || (alert('Please confirm the declaration.'), false)">
+                    <i class="bi bi-check2-circle"></i> Complete Onboarding
+                </button>
+            </div>
+        </div>
+    </form>
 </div>
 
 @section Scripts {
     @await Html.PartialAsync("~/Views/Shared/Employee/_EmployeeScripts.cshtml")
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script src="~/js/onboarding.js" asp-append-version="true"></script>
+    <script>
+        $(function () {
+            // Re-bind qualifying add/remove for partials
+            $('#btnAddQual').on('click', function () {
+                // handled by _EmployeeScripts
+            });
+            $('#btnAddExp').on('click', function () {
+                // handled by _EmployeeScripts
+            });
+        });
+    </script>
 }

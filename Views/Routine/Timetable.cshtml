@@ -130,6 +130,107 @@
     </div>
 </div>
 
+<div class="adm-modal-backdrop d-none" id="entryModal">
+    <div class="adm-modal adm-modal--lg">
+        <div class="adm-modal__header">
+            <div class="adm-modal__header-left">
+                <div class="adm-modal__header-icon adm-modal__header-icon--primary">
+                    <i class="bi bi-pencil-square"></i>
+                </div>
+                <div>
+                    <h5 class="adm-modal__title">Timetable Entry</h5>
+                    <p class="adm-modal__subtitle">Add or edit a timetable entry</p>
+                </div>
+            </div>
+            <button type="button" class="adm-modal__close" onclick="RoutineGrid.closeModal('entryModal')">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+        <div class="adm-modal__body">
+            <input type="hidden" id="entryId" />
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="adm-label">Academic Year</label>
+                    <select id="entryAcademicYearId" class="adm-select">
+                        <option value="">-- Select --</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="adm-label">Day</label>
+                    <select id="entryDayNumber" class="adm-select">
+                        <option value="">-- Select --</option>
+                        <option value="1">Saturday</option>
+                        <option value="2">Sunday</option>
+                        <option value="3">Monday</option>
+                        <option value="4">Tuesday</option>
+                        <option value="5">Wednesday</option>
+                        <option value="6">Thursday</option>
+                        <option value="7">Friday</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="adm-label">Period</label>
+                    <select id="entryPeriodId" class="adm-select">
+                        <option value="">-- Select --</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="adm-label">Class</label>
+                    <select id="entryClassId" class="adm-select">
+                        <option value="">-- Select --</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="adm-label">Section</label>
+                    <select id="entrySectionId" class="adm-select" disabled>
+                        <option value="">-- Select --</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="adm-label">Group</label>
+                    <select id="entryGroupId" class="adm-select" disabled>
+                        <option value="">-- Select --</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="adm-label">Subject</label>
+                    <select id="entrySubjectId" class="adm-select" disabled>
+                        <option value="">-- Select --</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="adm-label">Teacher</label>
+                    <select id="entryTeacherId" class="adm-select">
+                        <option value="">-- Select --</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="adm-label">Room</label>
+                    <select id="entryRoomId" class="adm-select">
+                        <option value="">-- Select --</option>
+                    </select>
+                </div>
+                <div class="col-md-6 d-flex align-items-end pb-2">
+                    <div class="form-check">
+                        <input type="checkbox" id="entryIsLab" class="form-check-input" />
+                        <label class="form-check-label" for="entryIsLab">Is Lab</label>
+                    </div>
+                </div>
+                <div class="col-12">
+                    <label class="adm-label">Note</label>
+                    <textarea id="entryNote" class="adm-textarea" rows="2"></textarea>
+                </div>
+            </div>
+        </div>
+        <div class="adm-modal__footer">
+            <button class="adm-btn adm-btn--ghost" onclick="RoutineGrid.closeModal('entryModal')">Cancel</button>
+            <button class="adm-btn adm-btn--primary" onclick="RoutineGrid.saveEntry()">
+                <i class="bi bi-check-lg"></i> Save
+            </button>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <script>
         var pendingDeleteId = null;
@@ -150,12 +251,51 @@
         document.getElementById('cancelDeleteBtn').addEventListener('click', closeDeleteModal);
 
         function editEntry(id) {
-            alert('Edit entry is not available in this view. Please use the Timetable grid to modify entries directly.');
+            RoutineGrid.editEntry(id);
         }
 
         function deleteEntry(id) {
             openDeleteModal(id);
         }
+
+        function openEntryModal() {
+            RoutineGrid.resetModalForm('entryModal');
+            $('#entryModal').addClass('adm-modal--open');
+        }
+
+        function loadEntryModalData() {
+            $.get('/api/ExamAdmin/academic-years', function(resp) {
+                if (resp.success && resp.data) {
+                    RoutineGrid.populateSelect('entryAcademicYearId', resp.data, 'id', 'name', '-- Select --');
+                }
+            });
+            $.get('/api/ExamAdmin/classes', function(resp) {
+                if (resp.success && resp.data) {
+                    RoutineGrid.populateSelect('entryClassId', resp.data, 'id', 'name', '-- Select --');
+                }
+            });
+            $.get('/Routine/GetTeachers', function(resp) {
+                var teachers = resp.data || resp;
+                RoutineGrid.populateSelect('entryTeacherId', teachers, 'id', 'name', '-- Select --');
+            });
+            $.get('/Routine/GetActiveRooms', function(resp) {
+                var rooms = resp.data || resp;
+                RoutineGrid.populateSelect('entryRoomId', rooms, 'id', 'roomNo', '-- Select --');
+            });
+            $.get('/Routine/GetActivePeriods', function(resp) {
+                var periods = resp.data || resp;
+                RoutineGrid.populateSelect('entryPeriodId', periods, 'id', 'name', '-- Select --');
+            });
+        }
+
+        loadEntryModalData();
+
+        RoutineGrid.cascadeSelects({
+            classSelect: 'entryClassId',
+            sectionSelect: 'entrySectionId',
+            groupSelect: 'entryGroupId',
+            subjectSelect: 'entrySubjectId'
+        });
 
         function getFilterParams() {
             return {

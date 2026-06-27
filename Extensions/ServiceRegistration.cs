@@ -240,6 +240,7 @@ public static class ServiceRegistration
         services.AddScoped<IFileStorageService, LocalFileStorageService>();
         services.AddScoped<IEmailSender, SmtpEmailSender>();
         services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<EmailUrlResolver>();
         services.AddMemoryCache();
         services.AddSingleton<PlaywrightPdfEngine>();
         services.AddSingleton<IPermissionCacheService, PermissionCacheService>();

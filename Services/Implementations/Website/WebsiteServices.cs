@@ -184,6 +184,8 @@ public class SchoolWebsiteService : ISchoolWebsiteService
             existing.SmtpPassword = settings.SmtpPassword;
             existing.SmtpFromEmail = settings.SmtpFromEmail;
             existing.BaseUrl = settings.BaseUrl;
+            existing.LocalUrl = settings.LocalUrl;
+            existing.PublicUrl = settings.PublicUrl;
 
             existing.UpdatedAt = DateTime.UtcNow;
             existing.UpdatedBy = "admin";

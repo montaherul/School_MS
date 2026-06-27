@@ -124,6 +124,64 @@ window.RoutineGrid = (function () {
         });
     }
 
+    function fullUpdateEntry(data, callback) {
+        $.ajax({
+            url: '/Routine/FullUpdateEntry',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(data),
+            headers: { RequestVerificationToken: getAntiForgeryToken() },
+            success: function (response) {
+                if (response.success) {
+                    if (table) table.replaceData();
+                    if (callback) callback(null, response);
+                } else {
+                    showToast('error', response.message || 'Full update failed');
+                    if (callback) callback(response.message);
+                }
+            }
+        });
+    }
+
+    function saveEntry() {
+        var id = $('#entryId').val();
+        var data = {
+            id: id || 0,
+            academicYearId: parseInt($('#entryAcademicYearId').val()) || 0,
+            classId: parseInt($('#entryClassId').val()) || 0,
+            sectionId: parseInt($('#entrySectionId').val()) || 0,
+            groupId: parseInt($('#entryGroupId').val()) || null,
+            subjectId: parseInt($('#entrySubjectId').val()) || 0,
+            teacherId: parseInt($('#entryTeacherId').val()) || 0,
+            roomId: parseInt($('#entryRoomId').val()) || 0,
+            routinePeriodId: parseInt($('#entryPeriodId').val()) || 0,
+            dayNumber: parseInt($('#entryDayNumber').val()) || 1,
+            isLab: $('#entryIsLab').is(':checked'),
+            note: $('#entryNote').val() || ''
+        };
+
+        if (!data.classId || !data.subjectId || !data.teacherId || !data.routinePeriodId) {
+            showToast('error', 'Please fill all required fields.');
+            return;
+        }
+
+        var success = function(err, resp) {
+            if (err) {
+                showToast('error', err);
+                return;
+            }
+            closeModal('entryModal');
+            showToast('success', resp.message || (id ? 'Entry updated' : 'Entry created'));
+            if (!id && table) table.replaceData();
+        };
+
+        if (id) {
+            fullUpdateEntry(data, success);
+        } else {
+            createEntry(data, success);
+        }
+    }
+
     function deleteEntry(id, callback) {
         $.ajax({
             url: '/Routine/DeleteEntry/' + id,
@@ -706,6 +764,8 @@ window.RoutineGrid = (function () {
         deleteEntry: deleteEntry,
         validateEntry: validateEntry,
         editEntry: editEntry,
+        saveEntry: saveEntry,
+        fullUpdateEntry: fullUpdateEntry,
         bulkDelete: bulkDelete,
         bulkUpdate: bulkUpdate,
 

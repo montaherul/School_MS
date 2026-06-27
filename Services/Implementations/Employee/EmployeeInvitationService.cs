@@ -65,6 +65,7 @@ public class EmployeeInvitationService : IEmployeeInvitationService
     public async Task<EmployeeInvitationDto?> GetInvitationByTokenAsync(string token, CancellationToken ct)
     {
         var i = await _uow.Repository<EmployeeInvitation>().Query()
+            .AsNoTracking()
             .Include(i => i.Department)
             .Include(i => i.Designation)
             .FirstOrDefaultAsync(x => x.InvitationToken == token && !x.IsDeleted, ct);
@@ -131,6 +132,9 @@ public class EmployeeInvitationService : IEmployeeInvitationService
         var invite = await _uow.Repository<EmployeeInvitation>().GetByIdAsync(id, ct);
         if (invite == null || invite.IsUsed || invite.IsDeleted) return false;
 
+        if (invite.InvitationStatus is "Completed" or "Cancelled" or "Approved")
+            return false;
+
         invite.InvitationToken = GenerateInvitationToken();
         invite.ExpiresAt = DateTime.UtcNow.AddHours(72);
         invite.InvitationStatus = "Sent";
@@ -160,10 +164,13 @@ public class EmployeeInvitationService : IEmployeeInvitationService
     public async Task<bool> CancelInvitationAsync(int id, CancellationToken ct)
     {
         var invite = await _uow.Repository<EmployeeInvitation>().GetByIdAsync(id, ct);
-        if (invite == null || invite.IsDeleted) return false;
+        if (invite == null || invite.IsDeleted || invite.IsUsed) return false;
+
+        if (invite.InvitationStatus is "Completed" or "Cancelled" or "Approved")
+            return false;
 
         invite.InvitationStatus = "Cancelled";
-        invite.IsDeleted = true;
+        invite.UpdatedAt = DateTime.UtcNow;
         _uow.Repository<EmployeeInvitation>().Update(invite);
         await _uow.SaveChangesAsync(ct);
         return true;

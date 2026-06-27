@@ -74,7 +74,7 @@ public class EmployeeInvitationController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     [RequirePermission("Employees.Invite")]
-    public async Task<IActionResult> Resend(int id, CancellationToken ct)
+    public async Task<IActionResult> Resend([FromBody] int id, CancellationToken ct)
     {
         var result = await _invitationService.ResendInvitationAsync(id, ct);
         if (result)
@@ -86,7 +86,7 @@ public class EmployeeInvitationController : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     [RequirePermission("Employees.Invite")]
-    public async Task<IActionResult> Cancel(int id, CancellationToken ct)
+    public async Task<IActionResult> Cancel([FromBody] int id, CancellationToken ct)
     {
         var result = await _invitationService.CancelInvitationAsync(id, ct);
         if (result)

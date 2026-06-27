@@ -4,129 +4,229 @@
     Layout = "_Layout";
 }
 
-<div class="row justify-content-center">
-    <div class="col-lg-11">
-        <div class="d-flex align-items-center justify-content-between mb-4">
-            <div class="d-flex align-items-center gap-3">
-                <a asp-controller="Auth" asp-action="Login" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> Back</a>
-                <div>
-                    <h2 class="mb-0 text-gradient"><i class="bi bi-person-check-fill me-2"></i>Complete Employee Onboarding</h2>
-                    <div class="text-muted small mt-1">Set your password and finish your profile to activate your staff account</div>
-                </div>
-            </div>
-            <span class="badge onboarding-badge">Invitation Link</span>
+<link rel="stylesheet" href="~/css/onboarding.css" asp-append-version="true" />
+
+<div class="onboarding-wizard">
+    @* ─── Hero Header ─── *@
+    <div class="onboarding-hero">
+        <div class="onboarding-hero-avatar">
+            <i class="bi bi-person-fill"></i>
         </div>
+        <div class="onboarding-hero-body">
+            <h1><i class="bi bi-person-check-fill"></i>Complete Your Onboarding</h1>
+            <p>Set up your profile and activate your staff account</p>
+            <div class="onboarding-hero-meta">
+                <span><i class="bi bi-building"></i>@Model.DepartmentName</span>
+                <span><i class="bi bi-briefcase"></i>@Model.DesignationName</span>
+                <span><i class="bi bi-calendar"></i>Joins @Model.JoiningDate.ToString("dd MMM yyyy")</span>
+                @if (!string.IsNullOrEmpty(Model.EmploymentType))
+                {
+                    <span><i class="bi bi-clock"></i>@Model.EmploymentType</span>
+                }
+                <span><i class="bi bi-person-vcard"></i>@Model.FullName</span>
+                <span class="badge" style="background:rgba(255,255,255,0.2);color:#fff;font-weight:600">
+                    @(Model.IsTeachingStaff ? "Teaching" : "Non-Teaching")
+                </span>
+            </div>
+        </div>
+        <div class="hero-progress-ring">
+            <div class="ring-value" id="heroPct">0%</div>
+            <div class="ring-label">Complete</div>
+        </div>
+    </div>
 
-        <div class="card shadow-sm border-0 onboarding-card">
-            <div class="card-body p-4">
-                <div class="alert alert-info d-flex align-items-center gap-2 mb-4 onboarding-note">
-                    <i class="bi bi-info-circle-fill"></i>
-                    <div>Complete the details below and set your password to activate your staff account.</div>
+    @* ─── Progress Bar ─── *@
+    <div class="wizard-progress">
+        <div class="wizard-progress-track">
+            <div class="wizard-progress-fill" id="wizardProgressFill" style="width:0%"></div>
+            <div class="wizard-progress-step" data-step="1">
+                <div class="step-dot">1</div>
+                <span class="step-label">Security</span>
+            </div>
+            <div class="wizard-progress-step" data-step="2">
+                <div class="step-dot">2</div>
+                <span class="step-label">Personal</span>
+            </div>
+            <div class="wizard-progress-step" data-step="3">
+                <div class="step-dot">3</div>
+                <span class="step-label">Contact</span>
+            </div>
+            <div class="wizard-progress-step" data-step="4">
+                <div class="step-dot">4</div>
+                <span class="step-label">Qualifications</span>
+            </div>
+            <div class="wizard-progress-step" data-step="5">
+                <div class="step-dot">5</div>
+                <span class="step-label">Experience</span>
+            </div>
+            <div class="wizard-progress-step" data-step="6">
+                <div class="step-dot">6</div>
+                <span class="step-label">Review</span>
+            </div>
+        </div>
+    </div>
+
+    @* ─── Wizard Body ─── *@
+    <form asp-action="Submit" method="post" enctype="multipart/form-data" id="employeeOnboardingForm" data-steps="6" autocomplete="off">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Token" />
+        <div asp-validation-summary="ModelOnly" class="adm-alert adm-alert--error" style="margin-bottom:20px;display:none" id="validationSummary"></div>
+
+        <div class="wizard-body">
+            @* ─── Sidebar Navigation ─── *@
+            <nav class="wizard-nav" aria-label="Onboarding steps">
+                <div class="wizard-nav-item active" data-step="1" onclick="goToStep(1)" role="button" tabindex="0" aria-current="step">
+                    <span class="nav-icon"><i class="bi bi-shield-lock"></i></span>
+                    <span class="nav-text">Security</span>
                 </div>
+                <div class="wizard-nav-item" data-step="2" onclick="goToStep(2)" role="button" tabindex="0">
+                    <span class="nav-icon"><i class="bi bi-person-vcard"></i></span>
+                    <span class="nav-text">Personal</span>
+                </div>
+                <div class="wizard-nav-item" data-step="3" onclick="goToStep(3)" role="button" tabindex="0">
+                    <span class="nav-icon"><i class="bi bi-telephone"></i></span>
+                    <span class="nav-text">Contact</span>
+                </div>
+                <div class="wizard-nav-item" data-step="4" onclick="goToStep(4)" role="button" tabindex="0">
+                    <span class="nav-icon"><i class="bi bi-mortarboard"></i></span>
+                    <span class="nav-text">Qualifications</span>
+                </div>
+                <div class="wizard-nav-item" data-step="5" onclick="goToStep(5)" role="button" tabindex="0">
+                    <span class="nav-icon"><i class="bi bi-award"></i></span>
+                    <span class="nav-text">Experience</span>
+                </div>
+                <div class="wizard-nav-item" data-step="6" onclick="goToStep(6)" role="button" tabindex="0">
+                    <span class="nav-icon"><i class="bi bi-check2-all"></i></span>
+                    <span class="nav-text">Review</span>
+                </div>
+            </nav>
 
-                <form asp-action="Submit" method="post" enctype="multipart/form-data" id="employeeOnboardingForm">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" asp-for="Token" />
+            @* ─── Content Panel ─── *@
+            <div class="wizard-content">
 
-                    <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-4"></div>
+                @* ────── Step 1: Security ────── *@
+                <div class="wizard-step-panel active" data-step="1">
+                    <div class="wizard-step-header">
+                        <h2><i class="bi bi-shield-lock-fill" style="color:var(--adm-primary)"></i>Account Security</h2>
+                        <p>Create a strong password to secure your account. Use at least 6 characters with a mix of letters, numbers, and symbols.</p>
+                    </div>
 
-                    <ul class="nav nav-tabs nav-justified mb-4 onboarding-tabs" id="onboardingTabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="security-tab" data-bs-toggle="tab" data-bs-target="#security" type="button" role="tab">1. Security</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="personal-tab" data-bs-toggle="tab" data-bs-target="#personal" type="button" role="tab">2. Personal Info</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact" type="button" role="tab">3. Contact</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="career-tab" data-bs-toggle="tab" data-bs-target="#career" type="button" role="tab">4. Career</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="documents-tab" data-bs-toggle="tab" data-bs-target="#documents" type="button" role="tab">5. Documents</button>
-                        </li>
-                    </ul>
-
-                    <div class="tab-content onboarding-panel mb-4" id="onboardingTabsContent">
-                        <div class="tab-pane fade show active" id="security" role="tabpanel">
-                            <h5 class="card-title text-primary border-bottom pb-2 mb-3"><i class="bi bi-shield-lock me-2"></i>Account Security</h5>
-                            <div class="row g-3 mb-4">
-                                <div class="col-md-6">
-                                    <label asp-for="Password" class="form-label fw-bold">Create Password <span class="text-danger">*</span></label>
-                                    <input asp-for="Password" class="form-control" placeholder="Min 6 characters" />
-                                    <span asp-validation-for="Password" class="text-danger small"></span>
-                                </div>
-                                <div class="col-md-6">
-                                    <label asp-for="ConfirmPassword" class="form-label fw-bold">Confirm Password <span class="text-danger">*</span></label>
-                                    <input asp-for="ConfirmPassword" class="form-control" placeholder="Repeat password" />
-                                    <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
-                                </div>
-                            </div>
-
-                            <h5 class="card-title text-primary border-bottom pb-2 mb-3"><i class="bi bi-building me-2"></i>Invitation Details</h5>
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label fw-bold">Department</label>
-                                    <input asp-for="DepartmentName" class="form-control" readonly />
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label fw-bold">Designation</label>
-                                    <input asp-for="DesignationName" class="form-control" readonly />
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label fw-bold">Joining Date</label>
-                                    <input asp-for="JoiningDate" type="date" class="form-control" readonly />
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label fw-bold">Employment Type</label>
-                                    <input asp-for="EmploymentType" class="form-control" readonly />
-                                </div>
-                                <div class="col-md-4 d-flex align-items-end">
-                                    <div class="form-check mt-2">
-                                        <input asp-for="IsTeachingStaff" class="form-check-input" type="checkbox" disabled />
-                                        <label class="form-check-label">Teaching Staff</label>
+                    <div class="wizard-card">
+                        <div class="wizard-card-title">
+                            <i class="bi bi-key"></i> Password <span class="adm-required">*</span>
+                        </div>
+                        <div class="wizard-card-body">
+                            <div class="wizard-form-grid">
+                                <div class="wizard-floating-group">
+                                    <input asp-for="Password" type="password" class="adm-input" placeholder=" " required minlength="6" id="Password" />
+                                    <label asp-for="Password" class="wizard-floating-label">Create Password <span class="adm-required">*</span></label>
+                                    <button type="button" class="password-toggle" id="pwdToggle" tabindex="-1" aria-label="Toggle password visibility">
+                                        <i class="bi bi-eye-slash"></i>
+                                    </button>
+                                    <span asp-validation-for="Password" class="wizard-floating-error"></span>
+                                    <div class="password-meter" id="pwdMeter">
+                                        <div class="password-meter-bar"><div class="password-meter-fill" id="pwdMeterFill"></div></div>
+                                        <div class="password-meter-text" id="pwdMeterText"></div>
                                     </div>
+                                    <div class="security-checklist-card">
+                                        <div style="font-size:12px;font-weight:600;color:var(--adm-text-2);margin-bottom:6px">Password Requirements</div>
+                                        <ul class="password-requirements">
+                                            <li id="pwdReqLength"><i class="bi bi-circle"></i> At least 6 characters</li>
+                                            <li id="pwdReqUpper"><i class="bi bi-circle"></i> One uppercase letter</li>
+                                            <li id="pwdReqLower"><i class="bi bi-circle"></i> One lowercase letter</li>
+                                            <li id="pwdReqDigit"><i class="bi bi-circle"></i> One number</li>
+                                            <li id="pwdReqSpecial"><i class="bi bi-circle"></i> One special character</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="wizard-floating-group">
+                                    <input asp-for="ConfirmPassword" type="password" class="adm-input" placeholder=" " required minlength="6" id="ConfirmPassword" />
+                                    <label asp-for="ConfirmPassword" class="wizard-floating-label">Confirm Password <span class="adm-required">*</span></label>
+                                    <span asp-validation-for="ConfirmPassword" class="wizard-floating-error"></span>
+                                    <div class="wizard-floating-hint">Re-enter your password to confirm</div>
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="tab-pane fade" id="personal" role="tabpanel">
-                            <h5 class="card-title text-primary border-bottom pb-2 mb-3"><i class="bi bi-person-vcard me-2"></i>Personal Particulars</h5>
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label asp-for="FullName" class="form-label fw-bold">Full Name <span class="text-danger">*</span></label>
-                                    <input asp-for="FullName" class="form-control" readonly />
+                    <div class="wizard-card">
+                        <div class="wizard-card-title">
+                            <i class="bi bi-building"></i> Invitation Details
+                        </div>
+                        <div class="wizard-card-body">
+                            <div class="wizard-form-grid">
+                                <div class="wizard-floating-group">
+                                    <input asp-for="DepartmentName" class="adm-input" placeholder=" " readonly />
+                                    <label class="wizard-floating-label">Department</label>
                                 </div>
-                                <div class="col-md-3">
-                                    <label asp-for="Gender" class="form-label fw-bold">Gender <span class="text-danger">*</span></label>
-                                    <select asp-for="Gender" class="form-select">
-                                        <option value="">Select Gender</option>
+                                <div class="wizard-floating-group">
+                                    <input asp-for="DesignationName" class="adm-input" placeholder=" " readonly />
+                                    <label class="wizard-floating-label">Designation</label>
+                                </div>
+                                <div class="wizard-floating-group">
+                                    <input asp-for="JoiningDate" type="date" class="adm-input" placeholder=" " readonly />
+                                    <label class="wizard-floating-label">Joining Date</label>
+                                </div>
+                                <div class="wizard-floating-group">
+                                    <input asp-for="EmploymentType" class="adm-input" placeholder=" " readonly />
+                                    <label class="wizard-floating-label">Employment Type</label>
+                                </div>
+                                <div class="wizard-floating-group">
+                                    <input asp-for="FullName" class="adm-input" placeholder=" " readonly />
+                                    <label class="wizard-floating-label">Full Name</label>
+                                </div>
+                                <div class="wizard-floating-group" style="display:flex;align-items:center;padding-top:6px">
+                                    <label style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--adm-text-2)">
+                                        <input asp-for="IsTeachingStaff" type="checkbox" disabled style="accent-color:var(--adm-primary);width:18px;height:18px" />
+                                        Teaching Staff
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* ────── Step 2: Personal Info ────── *@
+                <div class="wizard-step-panel" data-step="2">
+                    <div class="wizard-step-header">
+                        <h2><i class="bi bi-person-vcard-fill" style="color:var(--adm-primary)"></i>Personal Information</h2>
+                        <p>Provide your personal details. Fields marked with <span class="adm-required">*</span> are required.</p>
+                    </div>
+
+                    <div class="wizard-card">
+                        <div class="wizard-card-title">
+                            <i class="bi bi-person-badge"></i> Personal Particulars
+                        </div>
+                        <div class="wizard-card-body">
+                            <div class="wizard-form-grid">
+                                <div class="wizard-floating-group">
+                                    <select asp-for="Gender" class="adm-select" required id="Gender">
+                                        <option value=""></option>
                                         <option value="Male">Male</option>
                                         <option value="Female">Female</option>
                                         <option value="Other">Other</option>
                                     </select>
-                                    <span asp-validation-for="Gender" class="text-danger small"></span>
+                                    <label asp-for="Gender" class="wizard-floating-label">Gender <span class="adm-required">*</span></label>
+                                    <span asp-validation-for="Gender" class="wizard-floating-error"></span>
                                 </div>
-                                <div class="col-md-3">
-                                    <label asp-for="DateOfBirth" class="form-label fw-bold">Date of Birth <span class="text-danger">*</span></label>
-                                    <input asp-for="DateOfBirth" type="date" class="form-control" />
-                                    <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
+                                <div class="wizard-floating-group">
+                                    <input asp-for="DateOfBirth" type="date" class="adm-input" placeholder=" " required id="DateOfBirth" />
+                                    <label asp-for="DateOfBirth" class="wizard-floating-label">Date of Birth <span class="adm-required">*</span></label>
+                                    <span asp-validation-for="DateOfBirth" class="wizard-floating-error"></span>
                                 </div>
-                                <div class="col-md-4">
-                                    <label asp-for="FatherName" class="form-label fw-bold">Father's Name <span class="text-danger">*</span></label>
-                                    <input asp-for="FatherName" class="form-control" />
-                                    <span asp-validation-for="FatherName" class="text-danger small"></span>
+                                <div class="wizard-floating-group">
+                                    <input asp-for="FatherName" class="adm-input" placeholder=" " required />
+                                    <label asp-for="FatherName" class="wizard-floating-label">Father's Name <span class="adm-required">*</span></label>
+                                    <span asp-validation-for="FatherName" class="wizard-floating-error"></span>
                                 </div>
-                                <div class="col-md-4">
-                                    <label asp-for="MotherName" class="form-label fw-bold">Mother's Name <span class="text-danger">*</span></label>
-                                    <input asp-for="MotherName" class="form-control" />
-                                    <span asp-validation-for="MotherName" class="text-danger small"></span>
+                                <div class="wizard-floating-group">
+                                    <input asp-for="MotherName" class="adm-input" placeholder=" " required />
+                                    <label asp-for="MotherName" class="wizard-floating-label">Mother's Name <span class="adm-required">*</span></label>
+                                    <span asp-validation-for="MotherName" class="wizard-floating-error"></span>
                                 </div>
-                                <div class="col-md-4">
-                                    <label asp-for="BloodGroup" class="form-label fw-bold">Blood Group</label>
-                                    <select asp-for="BloodGroup" class="form-select">
-                                        <option value="">Select</option>
+                                <div class="wizard-floating-group">
+                                    <select asp-for="BloodGroup" class="adm-select" id="BloodGroup">
+                                        <option value=""></option>
                                         <option value="A+">A+</option>
                                         <option value="A-">A-</option>
                                         <option value="B+">B+</option>
@@ -136,264 +236,323 @@
                                         <option value="AB+">AB+</option>
                                         <option value="AB-">AB-</option>
                                     </select>
+                                    <label asp-for="BloodGroup" class="wizard-floating-label">Blood Group</label>
                                 </div>
-                                <div class="col-md-4">
-                                    <label asp-for="Religion" class="form-label fw-bold">Religion</label>
-                                    <input asp-for="Religion" class="form-control" />
+                                <div class="wizard-floating-group">
+                                    <input asp-for="Religion" class="adm-input" placeholder=" " />
+                                    <label asp-for="Religion" class="wizard-floating-label">Religion</label>
+                                    <span class="wizard-floating-hint">e.g. Islam, Hinduism, Christianity</span>
                                 </div>
-                                <div class="col-md-4">
-                                    <label asp-for="Nationality" class="form-label fw-bold">Nationality</label>
-                                    <input asp-for="Nationality" class="form-control" />
+                                <div class="wizard-floating-group">
+                                    <input asp-for="Nationality" class="adm-input" placeholder=" " />
+                                    <label asp-for="Nationality" class="wizard-floating-label">Nationality</label>
                                 </div>
-                                <div class="col-md-4">
-                                    <label asp-for="NIDNumber" class="form-label fw-bold">NID Number <span class="text-danger">*</span></label>
-                                    <input asp-for="NIDNumber" class="form-control" />
-                                    <span asp-validation-for="NIDNumber" class="text-danger small"></span>
+                                <div class="wizard-floating-group">
+                                    <input asp-for="NIDNumber" class="adm-input" placeholder=" " required />
+                                    <label asp-for="NIDNumber" class="wizard-floating-label">NID Number <span class="adm-required">*</span></label>
+                                    <span asp-validation-for="NIDNumber" class="wizard-floating-error"></span>
+                                    <span class="wizard-floating-hint">10 or 17 digit National ID</span>
                                 </div>
-                                <div class="col-md-4">
-                                    <label asp-for="BirthCertificateNo" class="form-label fw-bold">Birth Certificate No</label>
-                                    <input asp-for="BirthCertificateNo" class="form-control" />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="tab-pane fade" id="contact" role="tabpanel">
-                            <h5 class="card-title text-primary border-bottom pb-2 mb-3"><i class="bi bi-telephone-forward me-2"></i>Contact Details</h5>
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label asp-for="MobileNumber" class="form-label fw-bold">Mobile Number <span class="text-danger">*</span></label>
-                                    <input asp-for="MobileNumber" class="form-control" readonly />
-                                </div>
-                                <div class="col-md-6">
-                                    <label asp-for="PersonalEmail" class="form-label fw-bold">Personal Email <span class="text-danger">*</span></label>
-                                    <input asp-for="PersonalEmail" class="form-control" readonly />
-                                </div>
-                                <div class="col-12">
-                                    <label asp-for="PresentAddress" class="form-label fw-bold">Present Address <span class="text-danger">*</span></label>
-                                    <textarea asp-for="PresentAddress" class="form-control" rows="2"></textarea>
-                                    <span asp-validation-for="PresentAddress" class="text-danger small"></span>
-                                </div>
-                                <div class="col-12">
-                                    <label asp-for="PermanentAddress" class="form-label fw-bold">Permanent Address <span class="text-danger">*</span></label>
-                                    <textarea asp-for="PermanentAddress" class="form-control" rows="2"></textarea>
-                                    <span asp-validation-for="PermanentAddress" class="text-danger small"></span>
-                                </div>
-                                <div class="col-md-6">
-                                    <label asp-for="EmergencyContactName" class="form-label fw-bold">Emergency Contact Name <span class="text-danger">*</span></label>
-                                    <input asp-for="EmergencyContactName" class="form-control" />
-                                    <span asp-validation-for="EmergencyContactName" class="text-danger small"></span>
-                                </div>
-                                <div class="col-md-6">
-                                    <label asp-for="EmergencyContactPhone" class="form-label fw-bold">Emergency Contact Phone <span class="text-danger">*</span></label>
-                                    <input asp-for="EmergencyContactPhone" class="form-control" />
-                                    <span asp-validation-for="EmergencyContactPhone" class="text-danger small"></span>
+                                <div class="wizard-floating-group">
+                                    <input asp-for="BirthCertificateNo" class="adm-input" placeholder=" " />
+                                    <label asp-for="BirthCertificateNo" class="wizard-floating-label">Birth Certificate No</label>
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
 
-                        <div class="tab-pane fade" id="career" role="tabpanel">
-                            <div class="d-flex align-items-center justify-content-between border-bottom pb-2 mb-3">
-                                <h5 class="card-title text-primary mb-0"><i class="bi bi-mortarboard me-2"></i>Qualifications & Experience</h5>
-                                <div>
-                                    <button type="button" class="btn btn-outline-primary btn-sm me-2" id="btnAddQual"><i class="bi bi-plus-lg me-1"></i>Add Qualification</button>
-                                    <button type="button" class="btn btn-outline-primary btn-sm" id="btnAddExp"><i class="bi bi-plus-lg me-1"></i>Add Experience</button>
+                @* ────── Step 3: Contact ────── *@
+                <div class="wizard-step-panel" data-step="3">
+                    <div class="wizard-step-header">
+                        <h2><i class="bi bi-telephone-forward-fill" style="color:var(--adm-primary)"></i>Contact Details</h2>
+                        <p>Enter your contact information and emergency contact details.</p>
+                    </div>
+
+                    <div class="wizard-card">
+                        <div class="wizard-card-title">
+                            <i class="bi bi-telephone"></i> Contact Information
+                        </div>
+                        <div class="wizard-card-body">
+                            <div class="wizard-form-grid">
+                                <div class="wizard-floating-group">
+                                    <input asp-for="MobileNumber" class="adm-input" placeholder=" " readonly />
+                                    <label class="wizard-floating-label">Mobile Number <span class="adm-required">*</span></label>
+                                    <span class="wizard-floating-hint">Provided in invitation</span>
+                                </div>
+                                <div class="wizard-floating-group">
+                                    <input asp-for="PersonalEmail" type="email" class="adm-input" placeholder=" " readonly />
+                                    <label class="wizard-floating-label">Personal Email <span class="adm-required">*</span></label>
+                                    <span class="wizard-floating-hint">Provided in invitation</span>
+                                </div>
+                                <div class="wizard-floating-group full-width">
+                                    <textarea asp-for="PresentAddress" class="adm-input" placeholder=" " required rows="2"></textarea>
+                                    <label asp-for="PresentAddress" class="wizard-floating-label">Present Address <span class="adm-required">*</span></label>
+                                    <span asp-validation-for="PresentAddress" class="wizard-floating-error"></span>
+                                </div>
+                                <div class="wizard-floating-group full-width">
+                                    <textarea asp-for="PermanentAddress" class="adm-input" placeholder=" " required rows="2"></textarea>
+                                    <label asp-for="PermanentAddress" class="wizard-floating-label">Permanent Address <span class="adm-required">*</span></label>
+                                    <span asp-validation-for="PermanentAddress" class="wizard-floating-error"></span>
+                                </div>
+                                <div class="wizard-floating-group">
+                                    <input asp-for="EmergencyContactName" class="adm-input" placeholder=" " required />
+                                    <label asp-for="EmergencyContactName" class="wizard-floating-label">Emergency Contact Name <span class="adm-required">*</span></label>
+                                    <span asp-validation-for="EmergencyContactName" class="wizard-floating-error"></span>
+                                </div>
+                                <div class="wizard-floating-group">
+                                    <input asp-for="EmergencyContactPhone" type="tel" class="adm-input" placeholder=" " required />
+                                    <label asp-for="EmergencyContactPhone" class="wizard-floating-label">Emergency Contact Phone <span class="adm-required">*</span></label>
+                                    <span asp-validation-for="EmergencyContactPhone" class="wizard-floating-error"></span>
+                                    <span class="wizard-floating-hint">Phone number of your emergency contact</span>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
 
-                            <div class="table-responsive mb-4">
-                                <table class="table table-sm align-middle" id="tblQuals">
-                                    <thead class="table-light">
+                @* ────── Step 4: Qualifications ────── *@
+                <div class="wizard-step-panel" data-step="4">
+                    <div class="wizard-step-header">
+                        <h2><i class="bi bi-mortarboard-fill" style="color:var(--adm-primary)"></i>Educational Qualifications</h2>
+                        <p>Add your educational background. Start with your highest degree.</p>
+                    </div>
+
+                    <div class="wizard-card">
+                        <div class="wizard-card-title">
+                            <i class="bi bi-book"></i> Qualifications
+                            <button type="button" class="adm-btn adm-btn--primary" style="margin-left:auto;padding:4px 12px;font-size:12px" id="btnAddQual"><i class="bi bi-plus-lg"></i> Add</button>
+                        </div>
+                        <div class="wizard-card-body">
+                            <div class="wizard-table-wrap">
+                                <table class="wizard-table" id="tblQuals">
+                                    <thead>
                                         <tr>
-                                            <th>Exam Name</th>
+                                            <th>Exam Name <span class="adm-required">*</span></th>
                                             <th>Board/Uni</th>
                                             <th>Institute</th>
                                             <th>Year</th>
                                             <th>Result</th>
-                                            <th></th>
+                                            <th style="width:50px"></th>
                                         </tr>
                                     </thead>
                                     <tbody></tbody>
                                 </table>
                             </div>
+                        </div>
+                    </div>
+                </div>
 
-                            <div class="table-responsive">
-                                <table class="table table-sm align-middle" id="tblExp">
-                                    <thead class="table-light">
+                @* ────── Step 5: Experience ────── *@
+                <div class="wizard-step-panel" data-step="5">
+                    <div class="wizard-step-header">
+                        <h2><i class="bi bi-award-fill" style="color:var(--adm-primary)"></i>Work Experience</h2>
+                        <p>List your previous employment history. Include your most recent position first.</p>
+                    </div>
+
+                    <div class="wizard-card">
+                        <div class="wizard-card-title">
+                            <i class="bi bi-briefcase"></i> Employment History
+                            <button type="button" class="adm-btn adm-btn--primary" style="margin-left:auto;padding:4px 12px;font-size:12px" id="btnAddExp"><i class="bi bi-plus-lg"></i> Add</button>
+                        </div>
+                        <div class="wizard-card-body">
+                            <div class="wizard-table-wrap">
+                                <table class="wizard-table" id="tblExp">
+                                    <thead>
                                         <tr>
-                                            <th>Organization</th>
-                                            <th>Designation</th>
+                                            <th>Organization <span class="adm-required">*</span></th>
+                                            <th>Designation <span class="adm-required">*</span></th>
                                             <th>Start</th>
                                             <th>End</th>
                                             <th>Remarks</th>
-                                            <th></th>
+                                            <th style="width:50px"></th>
                                         </tr>
                                     </thead>
                                     <tbody></tbody>
                                 </table>
                             </div>
                         </div>
+                    </div>
+                </div>
 
-                        <div class="tab-pane fade" id="documents" role="tabpanel">
-                            <h5 class="card-title text-primary border-bottom pb-2 mb-3"><i class="bi bi-file-earmark-arrow-up me-2"></i>Documents & Photo</h5>
-                            <div class="row g-4">
-                                <div class="col-md-6 text-center">
-                                    <label asp-for="ProfilePhoto" class="form-label d-block text-start fw-bold">Profile Photo</label>
-                                    <div class="border border-dashed rounded-3 bg-light p-4 upload-box" onclick="$('#ProfilePhoto').click()">
-                                        <i class="bi bi-cloud-arrow-up fs-1 text-primary"></i>
-                                        <p class="mb-0 small mt-2">Click to upload photo</p>
-                                    </div>
-                                    <input asp-for="ProfilePhoto" type="file" class="d-none" accept="image/*" />
-                                    <div id="photoPreview" class="mt-3 d-none">
-                                        <img src="" class="rounded-circle border" style="width: 110px; height: 110px; object-fit: cover;" />
+                @* ────── Step 6: Review & Submit ────── *@
+                <div class="wizard-step-panel" data-step="6">
+                    <div class="wizard-step-header">
+                        <h2><i class="bi bi-check2-all" style="color:var(--adm-success)"></i>Review & Submit</h2>
+                        <p>Review all your information before submitting. Make sure everything is accurate.</p>
+                    </div>
+
+                    <div class="wizard-card">
+                        <div class="wizard-card-title">
+                            <i class="bi bi-cloud-arrow-up"></i> Profile Photo & Signature
+                        </div>
+                        <div class="wizard-card-body">
+                            <div class="wizard-form-grid">
+                                <div>
+                                    <div class="wizard-upload-zone" id="photoZone">
+                                        <div class="upload-icon"><i class="bi bi-camera"></i></div>
+                                        <div class="upload-text">Upload Profile Photo</div>
+                                        <div class="upload-hint">Click or drag & drop. Square images work best.</div>
+                                        <input asp-for="ProfilePhoto" type="file" accept="image/*" />
                                     </div>
                                 </div>
-
-                                <div class="col-md-6 text-center">
-                                    <label asp-for="Signature" class="form-label d-block text-start fw-bold">Signature Scan</label>
-                                    <div class="border border-dashed rounded-3 bg-light p-4 upload-box" onclick="$('#Signature').click()">
-                                        <i class="bi bi-pen-fill fs-1 text-primary"></i>
-                                        <p class="mb-0 small mt-2">Click to upload signature</p>
+                                <div>
+                                    <div class="wizard-upload-zone" id="sigZone">
+                                        <div class="upload-icon"><i class="bi bi-pen"></i></div>
+                                        <div class="upload-text">Upload Signature</div>
+                                        <div class="upload-hint">Click or drag & drop. Transparent PNG preferred.</div>
+                                        <input asp-for="Signature" type="file" accept="image/*" />
                                     </div>
-                                    <input asp-for="Signature" type="file" class="d-none" accept="image/*" />
-                                </div>
-                            </div>
-
-                            <div class="mt-4 p-3 bg-light rounded-3 small text-muted border">
-                                <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="chkAgreed" required>
-                                    <label class="form-check-label" for="chkAgreed">
-                                        I confirm the details above are accurate and I am ready to activate my account.
-                                    </label>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div class="d-flex justify-content-end gap-2 mt-4">
-                        <a asp-action="Welcome" asp-route-token="@Model.Token" class="btn btn-outline-secondary px-4">Back</a>
-                        <button type="submit" class="btn btn-success px-5 fw-bold" id="btnSubmit"><i class="bi bi-check2-circle me-1"></i> Save & Activate</button>
+                    <div class="wizard-card">
+                        <div class="wizard-card-title">
+                            <i class="bi bi-file-text"></i> Summary
+                        </div>
+                        <div class="wizard-card-body" id="reviewSummary"></div>
                     </div>
-                </form>
+
+                    <div class="wizard-card">
+                        <div class="wizard-card-title">
+                            <i class="bi bi-checklist"></i> Checklist
+                        </div>
+                        <div class="wizard-card-body" id="reviewChecklist"></div>
+                    </div>
+
+                    <div class="wizard-card" style="border-color:var(--adm-primary, #1a56db);background:rgba(26,86,219,0.03)">
+                        <div style="display:flex;align-items:center;gap:10px">
+                            <input type="checkbox" id="chkAgreed" required style="accent-color:var(--adm-primary);width:20px;height:20px;flex-shrink:0" />
+                            <label for="chkAgreed" style="font-size:13px;color:var(--adm-text-2);cursor:pointer">
+                                I confirm that all the information provided above is accurate and complete. I understand that providing false information may result in disqualification.
+                            </label>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-    </div>
 
-<style>
-    .onboarding-card {
-        width: 100%;
-        border-radius: 16px;
-    }
-
-    .auth-icon-wrap {
-        width: 64px;
-        height: 64px;
-        background: #1a56db;
-        color: #fff;
-        border-radius: 16px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 32px;
-        box-shadow: 0 4px 12px rgba(26, 86, 219, 0.2);
-    }
-
-    .auth-title {
-        font-size: 26px;
-        font-weight: 700;
-        color: #1e293b;
-        margin-bottom: 8px;
-    }
-
-    .auth-subtitle {
-        font-size: 14px;
-    }
-
-    .onboarding-badge {
-        background: rgba(26, 86, 219, 0.08);
-        color: #1a56db;
-        border: 1px solid rgba(26, 86, 219, 0.18);
-        font-weight: 700;
-        padding: 0.55rem 0.85rem;
-        border-radius: 999px;
-    }
-
-    .onboarding-note {
-        border-radius: 12px;
-    }
-
-    .onboarding-panel {
-        background: #fff;
-        border: 1px solid #e2e8f0;
-        border-radius: 16px;
-        padding: 28px;
-        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
-    }
-
-    .onboarding-tabs .nav-link {
-        font-weight: 600;
-    }
-
-    .upload-box { cursor: pointer; transition: background 0.2s ease; border-style: dashed !important; }
-    .upload-box:hover { background-color: #e9ecef !important; }
-</style>
+        @* ─── Sticky Footer ─── *@
+        <div class="wizard-footer">
+            <div class="wizard-footer-left">
+                <span class="unsaved-badge"><i class="bi bi-exclamation-circle"></i> Unsaved changes</span>
+            </div>
+            <div class="wizard-footer-right">
+                <button type="button" class="adm-btn adm-btn--ghost" id="btnPrev" onclick="prevStep()" style="display:none">
+                    <i class="bi bi-chevron-left"></i> Previous
+                </button>
+                <button type="button" class="adm-btn adm-btn--ghost" id="btnSave" onclick="saveDraft()">
+                    <i class="bi bi-cloud-arrow-up"></i> Save Draft
+                </button>
+                <button type="button" class="adm-btn adm-btn--primary" id="btnNext" onclick="nextStep()">
+                    Next <i class="bi bi-chevron-right"></i>
+                </button>
+                <button type="submit" class="adm-btn adm-btn--success" id="btnSubmit" style="display:none" onclick="return document.getElementById('chkAgreed')?.checked || (alert('Please confirm the declaration.'), false)">
+                    <i class="bi bi-check2-circle"></i> Complete Onboarding
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/onboarding.js" asp-append-version="true"></script>
     <script>
         $(function () {
             let qualIndex = 0;
             let expIndex = 0;
 
-            function addQualificationRow() {
-                const row = `
-                    <tr>
-                        <td><input class="form-control form-control-sm" name="Qualifications[${qualIndex}].ExamName" /></td>
-                        <td><input class="form-control form-control-sm" name="Qualifications[${qualIndex}].BoardOrUniversity" /></td>
-                        <td><input class="form-control form-control-sm" name="Qualifications[${qualIndex}].InstituteName" /></td>
-                        <td><input class="form-control form-control-sm" name="Qualifications[${qualIndex}].PassingYear" /></td>
-                        <td><input class="form-control form-control-sm" name="Qualifications[${qualIndex}].Result" /></td>
-                        <td><button type="button" class="btn btn-sm btn-outline-danger remove-row">Remove</button></td>
-                    </tr>`;
-                $("#tblQuals tbody").append(row);
+            function addQualRow() {
+                const row =
+                    '<tr>' +
+                        '<td style="padding:6px 10px"><input class="adm-input" style="padding:6px 8px;font-size:12px;height:32px" name="Qualifications[' + qualIndex + '].ExamName" required /></td>' +
+                        '<td style="padding:6px 10px"><input class="adm-input" style="padding:6px 8px;font-size:12px;height:32px" name="Qualifications[' + qualIndex + '].BoardOrUniversity" /></td>' +
+                        '<td style="padding:6px 10px"><input class="adm-input" style="padding:6px 8px;font-size:12px;height:32px" name="Qualifications[' + qualIndex + '].InstituteName" /></td>' +
+                        '<td style="padding:6px 10px"><input class="adm-input" style="padding:6px 8px;font-size:12px;height:32px" name="Qualifications[' + qualIndex + '].PassingYear" /></td>' +
+                        '<td style="padding:6px 10px"><input class="adm-input" style="padding:6px 8px;font-size:12px;height:32px" name="Qualifications[' + qualIndex + '].Result" /></td>' +
+                        '<td style="padding:6px 10px;text-align:center"><button type="button" class="adm-btn adm-btn--danger" style="padding:2px 6px;font-size:11px" onclick="$(this).closest(\'tr\').remove()"><i class="bi bi-trash"></i></button></td>' +
+                    '</tr>';
+                $('#tblQuals tbody').append(row);
                 qualIndex++;
             }
 
-            function addExperienceRow() {
-                const row = `
-                    <tr>
-                        <td><input class="form-control form-control-sm" name="Experiences[${expIndex}].OrganizationName" /></td>
-                        <td><input class="form-control form-control-sm" name="Experiences[${expIndex}].Designation" /></td>
-                        <td><input type="date" class="form-control form-control-sm" name="Experiences[${expIndex}].StartDate" /></td>
-                        <td><input type="date" class="form-control form-control-sm" name="Experiences[${expIndex}].EndDate" /></td>
-                        <td><input class="form-control form-control-sm" name="Experiences[${expIndex}].Remarks" /></td>
-                        <td><button type="button" class="btn btn-sm btn-outline-danger remove-row">Remove</button></td>
-                    </tr>`;
-                $("#tblExp tbody").append(row);
+            function addExpRow() {
+                const row =
+                    '<tr>' +
+                        '<td style="padding:6px 10px"><input class="adm-input" style="padding:6px 8px;font-size:12px;height:32px" name="Experiences[' + expIndex + '].OrganizationName" required /></td>' +
+                        '<td style="padding:6px 10px"><input class="adm-input" style="padding:6px 8px;font-size:12px;height:32px" name="Experiences[' + expIndex + '].Designation" required /></td>' +
+                        '<td style="padding:6px 10px"><input type="date" class="adm-input" style="padding:6px 8px;font-size:12px;height:32px" name="Experiences[' + expIndex + '].StartDate" /></td>' +
+                        '<td style="padding:6px 10px"><input type="date" class="adm-input" style="padding:6px 8px;font-size:12px;height:32px" name="Experiences[' + expIndex + '].EndDate" /></td>' +
+                        '<td style="padding:6px 10px"><input class="adm-input" style="padding:6px 8px;font-size:12px;height:32px" name="Experiences[' + expIndex + '].Remarks" /></td>' +
+                        '<td style="padding:6px 10px;text-align:center"><button type="button" class="adm-btn adm-btn--danger" style="padding:2px 6px;font-size:11px" onclick="$(this).closest(\'tr\').remove()"><i class="bi bi-trash"></i></button></td>' +
+                    '</tr>';
+                $('#tblExp tbody').append(row);
                 expIndex++;
             }
 
-            $("#btnAddQual").on("click", addQualificationRow);
-            $("#btnAddExp").on("click", addExperienceRow);
+            $('#btnAddQual').on('click', addQualRow);
+            $('#btnAddExp').on('click', addExpRow);
 
-            $(document).on("click", ".remove-row", function () {
-                $(this).closest("tr").remove();
-            });
+            addQualRow();
+            addExpRow();
 
-            $("#ProfilePhoto").on("change", function () {
-                const file = this.files && this.files[0];
+            // Profile photo preview
+            $('#ProfilePhoto').on('change', function () {
+                var file = this.files && this.files[0];
                 if (!file) return;
-
-                const reader = new FileReader();
-                reader.onload = function (event) {
-                    $("#photoPreview img").attr("src", event.target.result);
-                    $("#photoPreview").removeClass("d-none");
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    var zone = document.getElementById('photoZone');
+                    var preview = zone.parentNode.querySelector('.wizard-upload-preview');
+                    if (!preview) {
+                        preview = document.createElement('div');
+                        preview.className = 'wizard-upload-preview';
+                        zone.parentNode.insertBefore(preview, zone.nextSibling);
+                    }
+                    preview.innerHTML =
+                        '<img src="' + e.target.result + '" alt="Photo"/>' +
+                        '<div class="file-info"><div class="file-name">' + file.name + '</div><div class="file-size">' + (file.size / 1024).toFixed(1) + ' KB</div></div>' +
+                        '<button type="button" class="file-remove" onclick="this.closest(\'.wizard-upload-preview\').remove();document.getElementById(\'photoZone\').style.display=\'\';this.closest(\'input\').value=\'\'"><i class="bi bi-x-circle"></i></button>';
+                    zone.style.display = 'none';
                 };
                 reader.readAsDataURL(file);
             });
 
-            addQualificationRow();
-            addExperienceRow();
+            // Signature preview
+            $('#Signature').on('change', function () {
+                var file = this.files && this.files[0];
+                if (!file) return;
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    var zone = document.getElementById('sigZone');
+                    var preview = zone.parentNode.querySelector('.wizard-upload-preview');
+                    if (!preview) {
+                        preview = document.createElement('div');
+                        preview.className = 'wizard-upload-preview';
+                        zone.parentNode.insertBefore(preview, zone.nextSibling);
+                    }
+                    preview.innerHTML =
+                        '<img src="' + e.target.result + '" alt="Signature"/>' +
+                        '<div class="file-info"><div class="file-name">' + file.name + '</div><div class="file-size">' + (file.size / 1024).toFixed(1) + ' KB</div></div>' +
+                        '<button type="button" class="file-remove" onclick="this.closest(\'.wizard-upload-preview\').remove();document.getElementById(\'sigZone\').style.display=\'\';this.closest(\'input\').value=\'\'"><i class="bi bi-x-circle"></i></button>';
+                    zone.style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            });
+
+            // Build review summary on step 6 show
+            var observer = new MutationObserver(function () {
+                var step6 = document.querySelector('.wizard-step-panel[data-step="6"].active');
+                if (step6 && typeof window.buildReviewSummary === 'function') {
+                    window.buildReviewSummary();
+                }
+            });
+            document.querySelectorAll('.wizard-step-panel').forEach(function (el) {
+                observer.observe(el, { attributes: true, attributeFilter: ['class'] });
+            });
         });
     </script>
 }

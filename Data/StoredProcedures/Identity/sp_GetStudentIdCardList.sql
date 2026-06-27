@@ -36,7 +36,14 @@ BEGIN
             s.Gender,
             s.MobileNumber AS Phone,
             s.EmailAddress AS Email,
-            s.Status,
+            CASE s.[Status]
+                WHEN 1 THEN 'Active'
+                WHEN 2 THEN 'Inactive'
+                WHEN 3 THEN 'Graduated'
+                WHEN 4 THEN 'Transferred'
+                WHEN 5 THEN 'Dropped'
+                ELSE 'Unknown'
+            END AS Status,
             s.CreatedAt AS AdmissionDate,
             COALESCE(g.FullName, s.FatherName, '') AS GuardianName,
 

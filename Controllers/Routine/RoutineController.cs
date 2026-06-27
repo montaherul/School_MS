@@ -142,6 +142,14 @@ public class RoutineController : Controller
     }
 
     [HttpGet]
+    [RequirePermission("Routine.View")]
+    public async Task<IActionResult> GetActivePeriods(CancellationToken ct = default)
+    {
+        var periods = await _periodService.GetActivePeriodsAsync(ct);
+        return Json(periods);
+    }
+
+    [HttpGet]
     [RequirePermission("Routine.Create")]
     public async Task<IActionResult> CreateEditPeriod(int? id, CancellationToken ct = default)
     {
@@ -792,7 +800,32 @@ public class RoutineController : Controller
     }
 
     [HttpPost]
-    [RequirePermission("Routine.Generate")]
+    [RequirePermission("Routine.Edit")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> FullUpdateEntry([FromBody] RoutineEntryUpsertDto dto, CancellationToken ct = default)
+    {
+        if (!ModelState.IsValid || dto.Id <= 0)
+            return Json(new { success = false, message = "Invalid data." });
+
+        var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
+
+        try
+        {
+            await _unitOfWork.ExecuteInTransactionAsync(async () =>
+            {
+                await _entryService.UpdateAsync(dto, userId, ct);
+            });
+
+            return Json(new { success = true, message = "Entry updated successfully." });
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Json(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpPost]
+    [RequirePermission("Routine.Edit")]
     [ValidateAntiForgeryToken]
     public IActionResult Generate(int academicYearId)
     {

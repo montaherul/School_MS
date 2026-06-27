@@ -1,0 +1,24 @@
+@{
+    ViewData["Title"] = "Invitation Already Used";
+    Layout = "_AuthLayout";
+}
+
+<div class="text-center p-4">
+    <div class="mb-4">
+        <div class="bg-info bg-opacity-10 text-info rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+            <i class="bi bi-check-circle fs-1"></i>
+        </div>
+    </div>
+
+    <h2 class="fw-bold mb-3">Invitation Already Used</h2>
+    <p class="text-muted mb-4">
+        This invitation link has already been used to complete onboarding.
+        If you believe this is an error, please contact the HR department for assistance.
+    </p>
+
+    <div class="d-grid gap-2">
+        <a asp-controller="Auth" asp-action="Login" class="btn btn-primary p-3 fw-bold">
+            Go to Login Portal
+        </a>
+    </div>
+</div>

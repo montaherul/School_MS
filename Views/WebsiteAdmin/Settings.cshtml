@@ -420,6 +420,14 @@
                                 <label class="adm-form-label">Base URL</label>
                                 <input type="text" class="adm-input" name="BaseUrl" value="@Model.BaseUrl" placeholder="https://school-ms-7l3e.onrender.com/" />
                             </div>
+                            <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
+                                <label class="adm-form-label">Local URL (Dev)</label>
+                                <input type="text" class="adm-input" name="LocalUrl" value="@Model.LocalUrl" placeholder="https://localhost:7192/" />
+                            </div>
+                            <div style="flex:1 1 calc(25% - 12px);min-width:280px;">
+                                <label class="adm-form-label">Public URL (Prod)</label>
+                                <input type="text" class="adm-input" name="PublicUrl" value="@Model.PublicUrl" placeholder="https://school-ms-7l3e.onrender.com/" />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -458,9 +466,17 @@
                                 <label class="form-label">From Email</label>
                                 <input type="email" class="form-control" name="SmtpFromEmail" value="@Model.SmtpFromEmail" placeholder="noreply@school.com" />
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label class="form-label">Base URL</label>
                                 <input type="text" class="form-control" name="BaseUrl" value="@Model.BaseUrl" placeholder="https://school-ms-7l3e.onrender.com/" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Local URL (Dev)</label>
+                                <input type="text" class="form-control" name="LocalUrl" value="@Model.LocalUrl" placeholder="https://localhost:7192/" />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Public URL (Prod)</label>
+                                <input type="text" class="form-control" name="PublicUrl" value="@Model.PublicUrl" placeholder="https://school-ms-7l3e.onrender.com/" />
                             </div>
                         </div>
                     </div>

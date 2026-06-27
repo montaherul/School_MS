@@ -73,12 +73,11 @@ if (!Directory.Exists(dataProtectionKeysPath))
 builder.Logging.ClearProviders();
 builder.Logging.AddConsole();
 builder.Logging.AddDebug();
-builder.Services.AddDataProtection()
-    .PersistKeysToFileSystem(new DirectoryInfo("/tmp/keys"))
-    .SetApplicationName("SchoolManagementSystem");
+
 // Add services to the container.
 builder.Services.AddControllersWithViews(options =>
 {
+    // Anti-forgery enforced globally — individual actions can opt out with [IgnoreAntiforgeryToken]
     options.Filters.Add(new Microsoft.AspNetCore.Mvc.AutoValidateAntiforgeryTokenAttribute());
 })
 .AddJsonOptions(options =>
@@ -91,7 +90,8 @@ builder.Services.AddControllersWithViews(options =>
     options.ViewLocationExpanders.Add(new SchoolManagementSystem.Extensions.FeeViewLocationExpander());
 });
 builder.Services.AddDataProtection()
-    .PersistKeysToFileSystem(new DirectoryInfo(dataProtectionKeysPath));
+    .PersistKeysToFileSystem(new DirectoryInfo(dataProtectionKeysPath))
+    .SetApplicationName("SchoolManagementSystem");
 builder.Services.AddDbContext<SchoolDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("SchoolDb"),
@@ -129,6 +129,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 builder.Services.Configure<CookiePolicyOptions>(options =>
 {
     options.MinimumSameSitePolicy = SameSiteMode.Lax;
+    options.Secure = CookieSecurePolicy.SameAsRequest;
 });
 builder.Services.AddAuthorization();
 builder.Services.AddSession(options =>
@@ -203,8 +204,8 @@ app.UseRouting();
 
 app.UseCookiePolicy(new CookiePolicyOptions
 {
-    MinimumSameSitePolicy = SameSiteMode.Strict,
-    Secure = CookieSecurePolicy.Always
+    MinimumSameSitePolicy = SameSiteMode.Lax,
+    Secure = CookieSecurePolicy.SameAsRequest
 });
 
 app.UseSession();

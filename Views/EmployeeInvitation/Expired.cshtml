@@ -1,0 +1,24 @@
+@{
+    ViewData["Title"] = "Invitation Expired";
+    Layout = "_AuthLayout";
+}
+
+<div class="text-center p-4">
+    <div class="mb-4">
+        <div class="bg-warning bg-opacity-10 text-warning rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px;">
+            <i class="bi bi-clock-history fs-1"></i>
+        </div>
+    </div>
+
+    <h2 class="fw-bold mb-3">Invitation Link Expired</h2>
+    <p class="text-muted mb-4">
+        This invitation link has expired. Invitation links are only valid for a limited time.
+        Please contact the HR department to request a new invitation.
+    </p>
+
+    <div class="d-grid gap-2">
+        <a asp-controller="Auth" asp-action="Login" class="btn btn-primary p-3 fw-bold">
+            Go to Login Portal
+        </a>
+    </div>
+</div>
