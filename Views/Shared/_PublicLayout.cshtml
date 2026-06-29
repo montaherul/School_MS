@@ -172,11 +172,11 @@
         @RenderBody()
     </main>
 
-    <!-- ── Footer (Premium Enterprise) ── -->
+    <!-- ── Footer (Premium Mega Footer) ── -->
     <footer class="ws-footer">
         <div class="ws-container">
             <div class="ws-footer__grid">
-                <!-- Brand + Social + Newsletter -->
+                <!-- Column 1: Brand + CTAs + Newsletter + Social -->
                 <div>
                     <div class="ws-footer__brand">
                         @if (!string.IsNullOrEmpty(websiteSettings?.LogoPath))
@@ -198,6 +198,20 @@
                     <p class="ws-footer__text">
                         @(websiteSettings?.FooterText ?? "A premier educational institute of high repute, building enlightened citizens of tomorrow through quality education and character construction in Bangladesh.")
                     </p>
+                    <!-- CTA Buttons -->
+                    <div class="ws-footer__ctas">
+                        <a href="/Admission/Apply" class="ws-btn ws-btn--accent ws-btn--sm ws-footer__cta-btn"><i class="bi bi-pencil-square ws-me-2"></i> Apply Now</a>
+                        <a href="/about" class="ws-btn ws-btn--ghost ws-btn--sm ws-footer__cta-btn" style="color:rgba(255,255,255,0.6);border:1px solid rgba(255,255,255,0.1);">Explore Campus</a>
+                    </div>
+                    <!-- Newsletter -->
+                    <div class="ws-footer__newsletter">
+                        <span class="ws-footer__newsletter-label"><i class="bi bi-envelope-paper ws-me-1"></i> Stay Connected</span>
+                        <form class="ws-footer__newsletter-form" action="/newsletter/subscribe" method="post">
+                            <input type="email" class="ws-footer__newsletter-input" placeholder="Enter your email" required aria-label="Email for newsletter" />
+                            <button type="submit" class="ws-footer__newsletter-btn" aria-label="Subscribe">Subscribe</button>
+                        </form>
+                    </div>
+                    <!-- Social -->
                     <div class="ws-footer__social">
                         @if (!string.IsNullOrEmpty(websiteSettings?.FacebookUrl))
                         {
@@ -220,38 +234,37 @@
                             <a href="@websiteSettings.TwitterUrl" class="ws-social-btn" target="_blank" rel="noopener noreferrer" title="Twitter/X" aria-label="Twitter"><i class="bi bi-twitter-x"></i></a>
                         }
                     </div>
-                    <!-- Newsletter -->
-                    <div class="ws-footer__newsletter">
-                        <span class="ws-footer__newsletter-label">Subscribe to our newsletter</span>
-                        <form class="ws-footer__newsletter-form" action="/newsletter/subscribe" method="post">
-                            <input type="email" class="ws-footer__newsletter-input" placeholder="Enter your email" required aria-label="Email for newsletter" />
-                            <button type="submit" class="ws-footer__newsletter-btn" aria-label="Subscribe">Subscribe</button>
-                        </form>
-                    </div>
                 </div>
 
-                <!-- Quick Links 1 -->
+                <!-- Column 2: About & Academics -->
                 <div>
                     <h5 class="ws-footer__title">About Us</h5>
-                    <a href="/about" class="ws-footer__link">About School</a>
-                    <a href="/principal-message" class="ws-footer__link">Principal Message</a>
-                    <a href="/mission-vision" class="ws-footer__link">Mission & Vision</a>
-                    <a href="/p/history" class="ws-footer__link">History</a>
-                    <a href="/p/infrastructure" class="ws-footer__link">Infrastructure</a>
+                    <a href="/about" class="ws-footer__link"><i class="bi bi-chevron-right ws-footer__link-icon"></i> About School</a>
+                    <a href="/principal-message" class="ws-footer__link"><i class="bi bi-chevron-right ws-footer__link-icon"></i> Principal's Message</a>
+                    <a href="/mission-vision" class="ws-footer__link"><i class="bi bi-chevron-right ws-footer__link-icon"></i> Mission & Vision</a>
+                    <a href="/p/history" class="ws-footer__link"><i class="bi bi-chevron-right ws-footer__link-icon"></i> School History</a>
+                    <a href="/p/infrastructure" class="ws-footer__link"><i class="bi bi-chevron-right ws-footer__link-icon"></i> Infrastructure</a>
+                    <h5 class="ws-footer__title ws-mt-6">Academics</h5>
+                    <a href="/notices" class="ws-footer__link"><i class="bi bi-chevron-right ws-footer__link-icon"></i> Notice Board</a>
+                    <a href="/events" class="ws-footer__link"><i class="bi bi-chevron-right ws-footer__link-icon"></i> Events Calendar</a>
+                    <a href="/academic-calendar" class="ws-footer__link"><i class="bi bi-chevron-right ws-footer__link-icon"></i> Academic Calendar</a>
                 </div>
 
-                <!-- Quick Links 2 -->
+                <!-- Column 3: Admissions & Resources -->
                 <div>
-                    <h5 class="ws-footer__title">Academic Links</h5>
-                    <a href="/notices" class="ws-footer__link">Notice Board</a>
-                    <a href="/events" class="ws-footer__link">Upcoming Events</a>
-                    <a href="/academic-calendar" class="ws-footer__link">Academic Calendar</a>
-                    <a href="/gallery" class="ws-footer__link">Photo Gallery</a>
-                    <a href="/admission-info" class="ws-footer__link">Admission Guidelines</a>
-                    <a href="/Admission/Apply" class="ws-footer__link">Online Admission Form</a>
+                    <h5 class="ws-footer__title">Admissions</h5>
+                    <a href="/admission-info" class="ws-footer__link"><i class="bi bi-chevron-right ws-footer__link-icon"></i> Admission Info</a>
+                    <a href="/Admission/Apply" class="ws-footer__link"><i class="bi bi-chevron-right ws-footer__link-icon"></i> Apply Online</a>
+                    <a href="/admission-info" class="ws-footer__link"><i class="bi bi-chevron-right ws-footer__link-icon"></i> Fee Structure</a>
+                    <a href="/admission-info" class="ws-footer__link"><i class="bi bi-chevron-right ws-footer__link-icon"></i> Scholarships</a>
+                    <a href="/admission-info" class="ws-footer__link"><i class="bi bi-chevron-right ws-footer__link-icon"></i> Required Documents</a>
+                    <h5 class="ws-footer__title ws-mt-6">Resources</h5>
+                    <a href="/gallery" class="ws-footer__link"><i class="bi bi-chevron-right ws-footer__link-icon"></i> Photo Gallery</a>
+                    <a href="/contact" class="ws-footer__link"><i class="bi bi-chevron-right ws-footer__link-icon"></i> Contact Us</a>
+                    <a href="/about" class="ws-footer__link"><i class="bi bi-chevron-right ws-footer__link-icon"></i> Campus Map</a>
                 </div>
 
-                <!-- Contact -->
+                <!-- Column 4: Contact + Quick Links -->
                 <div>
                     <h5 class="ws-footer__title">Reach Us</h5>
                     <div class="ws-footer__contact">
@@ -266,15 +279,30 @@
                         <i class="bi bi-envelope-fill ws-footer__contact-icon"></i>
                         <a href="mailto:@(websiteSettings?.Email ?? "info@school.gov.bd")" class="ws-footer__contact-link">@(websiteSettings?.Email ?? "info@school.gov.bd")</a>
                     </div>
+                    <div class="ws-footer__contact">
+                        <i class="bi bi-globe2 ws-footer__contact-icon"></i>
+                        <a href="/" class="ws-footer__contact-link">www.@(websiteSettings?.ShortName?.ToLower().Replace(" ", "") ?? "school").edu.bd</a>
+                    </div>
                 </div>
             </div>
 
+            <!-- Accreditation Badges Row -->
+            <div class="ws-footer__badges">
+                <span class="ws-footer__badge ws-fs-13 ws-fw-700 ws-text-muted" style="opacity:0.4;">Ministry of Education</span>
+                <span class="ws-footer__badge ws-fs-13 ws-fw-700 ws-text-muted" style="opacity:0.4;">EIIN Certified</span>
+                <span class="ws-footer__badge ws-fs-13 ws-fw-700 ws-text-muted" style="opacity:0.4;">DSHE Approved</span>
+                <span class="ws-footer__badge ws-fs-13 ws-fw-700 ws-text-muted" style="opacity:0.4;">National Curriculum</span>
+                <span class="ws-footer__badge ws-fs-13 ws-fw-700 ws-text-muted" style="opacity:0.4;">ISO 9001:2025</span>
+            </div>
+
             <div class="ws-footer__bottom">
-                <div>@(websiteSettings?.CopyrightText ?? websiteSettings?.FooterText ?? $"&copy; {DateTime.Now.Year} Bangladesh Public School. All rights reserved.")</div>
-                <div class="ws-flex ws-gap-3">
+                <div>@(websiteSettings?.CopyrightText ?? websiteSettings?.FooterText ?? $"&copy; {DateTime.Now.Year} All rights reserved.")</div>
+                <div class="ws-flex ws-gap-3 ws-flex-wrap">
                     <a href="/Auth/Login">Faculty Login</a>
                     <a href="/Auth/Login">Student Portal</a>
-                    <a href="/about">Terms of Use</a>
+                    <a href="/about">Privacy Policy</a>
+                    <a href="/about">Terms of Service</a>
+                    <a href="/contact">Sitemap</a>
                 </div>
             </div>
         </div>

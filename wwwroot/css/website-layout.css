@@ -604,6 +604,36 @@
 }
 
 /* ═══════════════════════════════════════════
+   LAYOUT PATTERNS — Editorial & Magazine
+   ═══════════════════════════════════════════ */
+.ws-layout-split {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 0;
+}
+.ws-layout-split--60-40 { grid-template-columns: 3fr 2fr; }
+.ws-layout-split--40-60 { grid-template-columns: 2fr 3fr; }
+.ws-layout-split--70-30 { grid-template-columns: 7fr 3fr; }
+.ws-layout-split--30-70 { grid-template-columns: 3fr 7fr; }
+
+.ws-split-image {
+  position: relative; overflow: hidden; min-height: 400px;
+}
+.ws-split-image img {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover;
+}
+.ws-split-content {
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 48px;
+}
+
+@media (max-width: 991px) {
+  .ws-layout-split, .ws-layout-split--60-40, .ws-layout-split--40-60,
+  .ws-layout-split--70-30, .ws-layout-split--30-70 { grid-template-columns: 1fr; }
+  .ws-split-image { min-height: 280px; order: -1; }
+  .ws-split-content { padding: 32px 24px; }
+}
+
+/* ═══════════════════════════════════════════
    ANNOUNCEMENT BAR
    ═══════════════════════════════════════════ */
 .ws-announcement {
@@ -960,6 +990,21 @@
 }
 .ws-footer__bottom a:hover,
 .ws-footer__bottom a:focus-visible { color: var(--ws-accent); outline: none; }
+
+/* ═══════════════════════════════════════════
+   MEGA FOOTER UPGRADES
+   ═══════════════════════════════════════════ */
+.ws-footer__ctas { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+.ws-footer__cta-btn { width: 100%; justify-content: center; }
+.ws-footer__badges { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; justify-content: center; padding: 24px 0; border-top: 1px solid rgba(255,255,255,0.06); }
+.ws-footer__badge { height: 36px; opacity: 0.4; transition: var(--ws-transition); filter: grayscale(1); }
+.ws-footer__badge:hover { opacity: 0.7; filter: grayscale(0); }
+.ws-footer__link-icon { margin-right: 6px; font-size: 0.625rem; color: var(--ws-accent); opacity: 0.6; }
+.ws-footer__divider { display: none; }
+@media (min-width: 1024px) {
+  .ws-footer__divider { display: block; position: absolute; top: 0; bottom: 48px; width: 1px; background: rgba(255,255,255,0.06); }
+  .ws-footer__divider--1 { left: calc(2fr + 24px); }
+}
 
 /* Footer Responsive */
 @media (max-width: 1023px) {

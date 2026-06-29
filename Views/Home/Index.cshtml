@@ -5,24 +5,23 @@
     var settings = Model.Settings;
 }
 
-<!-- ── 1. Hero Slider ── -->
+<!-- 1. HERO SLIDER — Fullscreen Cinematic -->
 @if (settings.ShowSlider)
 {
 var totalSlides = Model.Sliders.Count > 0 ? Model.Sliders.Count : 1;
-<div class="ws-hero-slider" id="heroCarousel">
-    <div class="ws-hero-dots" id="heroDots">
-        @for (int i = 0; i < totalSlides; i++)
-        {
-            <button class="ws-hero-dot @(i == 0 ? "active" : "")" data-index="@i"></button>
-        }
-    </div>
-    <!-- Floating decorative shapes -->
+<section class="ws-hero-slider" id="heroCarousel" aria-label="Hero banner">
     <div class="ws-hero-shape ws-hero-shape--1" aria-hidden="true"></div>
     <div class="ws-hero-shape ws-hero-shape--2" aria-hidden="true"></div>
+    <div class="ws-hero-dots" id="heroDots" role="tablist">
+        @for (int i = 0; i < totalSlides; i++)
+        {
+            <button class="ws-hero-dot @(i == 0 ? "active" : "")" data-index="@i" role="tab" aria-selected="@(i == 0 ? "true" : "false")" aria-label="Slide @(i + 1)"></button>
+        }
+    </div>
     @for (int i = 0; i < Model.Sliders.Count; i++)
     {
         var slider = Model.Sliders[i];
-        <div class="ws-hero-slide @(i == 0 ? "active" : "")">
+        <div class="ws-hero-slide @(i == 0 ? "active" : "")" role="tabpanel">
             <div class="ws-hero-bg" style="background-image: url('@(!string.IsNullOrWhiteSpace(slider.ImagePath) ? slider.ImagePath : "/images/hero-fallback.jpg")');"></div>
             <div class="ws-container ws-hero-slide__content">
                 <div class="ws-hero-slide__inner">
@@ -41,12 +40,12 @@ var totalSlides = Model.Sliders.Count > 0 ? Model.Sliders.Count : 1;
     }
     @if (Model.Sliders.Count == 0)
     {
-        <div class="ws-hero-slide active">
+        <div class="ws-hero-slide active" role="tabpanel">
             <div class="ws-hero-bg" style="background-image: url('/images/hero-fallback.jpg');"></div>
             <div class="ws-container ws-hero-slide__content">
                 <div class="ws-hero-slide__inner">
                     <span class="ws-hero-slide__badge">Gateway to Knowledge</span>
-                    <h1 class="ws-hero-slide__title">Shaping the Future of Education</h1>
+                    <h1 class="ws-hero-slide__title ws-title-hero">Shaping the Future of Education</h1>
                     <p class="ws-hero-slide__text">Welcome to our integrated educational portal. Register today for open admissions and dynamic classrooms.</p>
                     <div class="ws-hero-cta-group">
                         <a href="/Admission/Apply" class="ws-btn ws-btn--accent ws-btn--lg">Apply Online Now <i class="bi bi-chevron-right ws-ms-2"></i></a>
@@ -58,18 +57,24 @@ var totalSlides = Model.Sliders.Count > 0 ? Model.Sliders.Count : 1;
     }
     <div class="ws-hero-progress" id="heroProgress"></div>
     <div class="ws-hero-counter" id="heroCounter">01 / @totalSlides</div>
-    <!-- Scroll-down indicator -->
     <div class="ws-hero-scroll" aria-hidden="true">
         <div class="ws-hero-scroll__mouse"></div>
         <span>Scroll</span>
     </div>
     <button class="ws-hero-btn ws-hero-btn--prev" onclick="slideHero(-1)" type="button" aria-label="Previous slide"><i class="bi bi-chevron-left"></i></button>
     <button class="ws-hero-btn ws-hero-btn--next" onclick="slideHero(1)" type="button" aria-label="Next slide"><i class="bi bi-chevron-right"></i></button>
-</div>
+</section>
 }
 
-<!-- ── 2. Announcement Marquee ── -->
-<div class="ws-announcement">
+<!-- DIVIDER: Wave -->
+<div class="ws-divider-wave" aria-hidden="true">
+    <svg viewBox="0 0 1200 80" preserveAspectRatio="none" style="height: 80px; width: 100%;">
+        <path d="M0,40 C200,0 400,80 600,40 C800,0 1000,80 1200,40 L1200,80 L0,80 Z" fill="var(--ws-accent)" opacity="0.06"/>
+    </svg>
+</div>
+
+<!-- 2. ANNOUNCEMENT MARQUEE — Full-width ticker -->
+<div class="ws-announcement ws-reveal">
     <div class="ws-container ws-flex ws-gap-3">
         <span class="ws-announcement__label"><i class="bi bi-megaphone-fill"></i> Latest:</span>
         <div class="ws-announcement__track">
@@ -78,81 +83,76 @@ var totalSlides = Model.Sliders.Count > 0 ? Model.Sliders.Count : 1;
                 {
                     @foreach (var a in Model.Announcements)
                     {
-                        <span class="ws-announcement__item"><i class="bi bi-megaphone-fill ws-text-danger me-1"></i> <strong>@a.Title:</strong> @a.Content</span>
+                        <span class="ws-announcement__item"><i class="bi bi-megaphone-fill ws-text-danger ws-me-1"></i> <strong>@a.Title:</strong> @a.Content</span>
                     }
                 }
                 else
                 {
-                    @foreach (var n in Model.LatestNotices)
+                    @foreach (var n in Model.LatestNotices.Take(3))
                     {
-                        <span class="ws-announcement__item"><a href="/notice/details/@n.Id"><i class="bi bi-dot ws-fs-20 me-1 ws-align-middle"></i> @n.Title (@n.PublishAt.ToString("dd MMM yyyy"))</a></span>
+                        <span class="ws-announcement__item"><a href="/notice/details/@n.Id"><i class="bi bi-dot ws-fs-20 ws-me-1 ws-align-middle"></i> @n.Title (@n.PublishAt.ToString("dd MMM yyyy"))</a></span>
                     }
                     @if (Model.LatestNotices.Count == 0)
                     {
                         <span class="ws-announcement__item">Welcome to our new school portal system! Admissions for the current academic session are now officially open.</span>
                     }
                 }
+                @if (Model.Announcements.Count > 0)
+                {
+                    foreach (var a in Model.Announcements)
+                    {
+                        <span class="ws-announcement__item"><i class="bi bi-megaphone-fill ws-text-danger ws-me-1"></i> <strong>@a.Title:</strong> @a.Content</span>
+                    }
+                }
+                else
+                {
+                    foreach (var n in Model.LatestNotices.Take(3))
+                    {
+                        <span class="ws-announcement__item"><a href="/notice/details/@n.Id"><i class="bi bi-dot ws-fs-20 ws-me-1 ws-align-middle"></i> @n.Title (@n.PublishAt.ToString("dd MMM yyyy"))</a></span>
+                    }
+                }
             </div>
         </div>
     </div>
 </div>
-<!-- ── 3. Welcome & Principal Message ── -->
-@if (settings.ShowWelcomeSection || settings.ShowPrincipalMessage)
+
+<!-- DIVIDER: Slant -->
+<div class="ws-divider-slant" aria-hidden="true" style="background: var(--ws-accent);"></div>
+
+<!-- 3. FLOATING STATISTICS — Cinematic Dark Section -->
+@if (settings.ShowStatistics)
 {
-<section class="ws-section ws-section--tertiary ws-reveal">
+<section class="ws-section ws-section--dark ws-stats ws-reveal">
     <div class="ws-container">
-        <div class="ws-row ws-g-6 ws-items-center">
-            <div class="ws-col-12 ws-col-lg-7">
-                <span class="ws-section__label">@(settings.WelcomeTagline ?? "Welcome Address")</span>
-                <h2 class="ws-section__title ws-fs-42">@(settings.WelcomeHeading ?? "Nurturing Brilliance, Cultivating Leadership")</h2>
-                <p class="ws-fs-17 ws-text-light ws-mb-6 ws-lh-lg">
-                    @(settings.WelcomeText ?? "On behalf of the students, faculty, and administration, we welcome you to the official gateway of our historic institution. We believe in providing an educational foundation that couples rigorous academic challenges with moral values.")
-                </p>
-                <div class="ws-row ws-g-4 ws-mb-6">
-                    <div class="ws-col-12 ws-col-sm-6">
-                        <div class="ws-feature">
-                            <div class="ws-feature__icon"><i class="bi bi-shield-check"></i></div>
-                            <div>
-                                <h5 class="ws-feature__title">Government EIIN</h5>
-                                <p class="ws-feature__text">Registered Code: @Model.Settings.EIIN</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="ws-col-12 ws-col-sm-6">
-                        <div class="ws-feature">
-                            <div class="ws-feature__icon"><i class="bi bi-clock-history"></i></div>
-                            <div>
-                                <h5 class="ws-feature__title">Office Hours</h5>
-                                <p class="ws-feature__text">@(settings.OfficeHours ?? "Sat - Thu (8:00 AM - 2:00 PM)")</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="ws-flex ws-gap-3 ws-flex-wrap">
-                    <a href="/about" class="ws-btn ws-btn--primary">Read Full History</a>
-                    <a href="/mission-vision" class="ws-btn ws-btn--outline">Our Values</a>
+        <span class="ws-title-label ws-title-label--light ws-text-center ws-d-block ws-mb-4">Our Impact By The Numbers</span>
+        <h2 class="ws-title-anchor ws-text-center ws-text-white ws-mb-8">Excellence in Every Metric</h2>
+        <div class="ws-row ws-g-6 ws-text-center ws-justify-center ws-stagger ws-reveal">
+            <div class="ws-col-6 ws-col-md-3">
+                <div class="ws-stat">
+                    <div class="ws-stat__icon"><i class="bi bi-people-fill"></i></div>
+                    <div class="ws-stat__number" data-target="@Model.StudentCount">0</div>
+                    <div class="ws-stat__label">@(settings.StudentLabel ?? "Active Students")</div>
                 </div>
             </div>
-            <div class="ws-col-12 ws-col-lg-5">
-                <div class="ws-card ws-card--bordered-top ws-text-center ws-p-8">
-                    <div class="ws-mb-4">
-                        @if (!string.IsNullOrEmpty(Model.Settings.PrincipalImagePath))
-                        {
-                            <img src="@Model.Settings.PrincipalImagePath" class="ws-avatar ws-avatar--140 ws-mx-auto" alt="Principal" />
-                        }
-                        else
-                        {
-                            <div class="ws-icon-circle">
-                                <i class="bi bi-person-fill"></i>
-                            </div>
-                        }
-                    </div>
-                    <h4 class="ws-fw-700 ws-mb-1">@Model.Settings.PrincipalName</h4>
-                    <p class="ws-text-accent ws-fw-600 ws-mb-3">@(Model.Settings.PrincipalDesignation ?? "Head Teacher / Principal")</p>
-                    <p class="ws-text-muted ws-fst-italic ws-fs-14 ws-mb-5">
-                        "@(Model.Settings.PrincipalMessage?.Length > 200 ? Model.Settings.PrincipalMessage.Substring(0, 197) + "..." : Model.Settings.PrincipalMessage)"
-                    </p>
-                    <a href="/principal-message" class="ws-btn ws-btn--primary ws-btn--sm">Read Full Message</a>
+            <div class="ws-col-6 ws-col-md-3">
+                <div class="ws-stat">
+                    <div class="ws-stat__icon"><i class="bi bi-person-workspace"></i></div>
+                    <div class="ws-stat__number" data-target="@Model.TeacherCount">0</div>
+                    <div class="ws-stat__label">@(settings.TeacherLabel ?? "Honorable Teachers")</div>
+                </div>
+            </div>
+            <div class="ws-col-6 ws-col-md-3">
+                <div class="ws-stat">
+                    <div class="ws-stat__icon"><i class="bi bi-building"></i></div>
+                    <div class="ws-stat__number" data-target="@Model.ClassCount">0</div>
+                    <div class="ws-stat__label">@(settings.ClassLabel ?? "Classrooms")</div>
+                </div>
+            </div>
+            <div class="ws-col-6 ws-col-md-3">
+                <div class="ws-stat">
+                    <div class="ws-stat__icon"><i class="bi bi-mortarboard"></i></div>
+                    <div class="ws-stat__number" data-target="@Model.EmployeeCount">0</div>
+                    <div class="ws-stat__label">@(settings.EmployeeLabel ?? "Staff Members")</div>
                 </div>
             </div>
         </div>
@@ -160,184 +160,312 @@ var totalSlides = Model.Sliders.Count > 0 ? Model.Sliders.Count : 1;
 </section>
 }
 
-<!-- ── 4. Notices & Events ── -->
-@if (settings.ShowNotices || settings.ShowEvents)
+<!-- DIVIDER: Curve -->
+<div class="ws-divider-curve" aria-hidden="true" style="background: var(--ws-bg-tertiary);"></div>
+
+<!-- 4. WELCOME STORY — Editorial Split Layout -->
+@if (settings.ShowWelcomeSection)
+{
+<section class="ws-section ws-section--tertiary ws-reveal">
+    <div class="ws-layout-split ws-layout-split--60-40">
+        <div class="ws-split-image">
+            <div style="position:absolute;inset:0;background:linear-gradient(135deg,var(--ws-primary-dark),var(--ws-primary));display:flex;align-items:center;justify-content:center;color:var(--ws-text-inverse);font-size:3rem;opacity:0.6;"><i class="bi bi-building"></i></div>
+        </div>
+        <div class="ws-split-content">
+            <span class="ws-title-label">@(settings.WelcomeTagline ?? "Welcome Address")</span>
+            <h2 class="ws-title-anchor ws-mb-4">@(settings.WelcomeHeading ?? "Nurturing Brilliance, Cultivating Leadership")</h2>
+            <div class="ws-accent-divider ws-mb-5"></div>
+            <p class="ws-fs-17 ws-text-light ws-lh-lg ws-mb-6">
+                @(settings.WelcomeText ?? "On behalf of the students, faculty, and administration, we welcome you to the official gateway of our historic institution. We believe in providing an educational foundation that couples rigorous academic challenges with moral values.")
+            </p>
+            <div class="ws-flex ws-gap-3 ws-flex-wrap">
+                <a href="/about" class="ws-btn ws-btn--primary">Explore Our Story</a>
+                <a href="/mission-vision" class="ws-btn ws-btn--outline">Our Mission & Values</a>
+            </div>
+        </div>
+    </div>
+</section>
+}
+
+<!-- DIVIDER: Arrow -->
+<div class="ws-divider-arrow" aria-hidden="true"></div>
+
+<!-- 5. PRINCIPAL MESSAGE — Magazine Feature -->
+@if (settings.ShowPrincipalMessage)
+{
+<section class="ws-section ws-reveal">
+    <div class="ws-container">
+        <div class="ws-row ws-items-center ws-g-6">
+            <div class="ws-col-12 ws-col-lg-5">
+                <div class="ws-text-center ws-text-md-left">
+                    @if (!string.IsNullOrEmpty(Model.Settings.PrincipalImagePath))
+                    {
+                        <img src="@Model.Settings.PrincipalImagePath" alt="Principal" class="ws-rounded-xl ws-shadow-lg ws-w-full ws-max-w-400 ws-h-auto" style="aspect-ratio:3/4;object-fit:cover;" />
+                    }
+                    else
+                    {
+                        <div class="ws-rounded-xl ws-shadow-lg ws-bg-secondary-bg ws-flex-center ws-text-muted ws-fs-64" style="aspect-ratio:3/4;max-width:400px;margin:0 auto;"><i class="bi bi-person-fill"></i></div>
+                    }
+                </div>
+            </div>
+            <div class="ws-col-12 ws-col-lg-7">
+                <span class="ws-title-label ws-title-label--primary">From the Principal's Desk</span>
+                <h2 class="ws-title-anchor ws-mb-4">A Message of Vision & Commitment</h2>
+                <div class="ws-accent-divider ws-mb-5"></div>
+                <blockquote class="ws-fs-20 ws-fst-italic ws-text-light ws-lh-lg ws-mb-6" style="border-left:3px solid var(--ws-accent);padding-left:24px;">
+                    "@(Model.Settings.PrincipalMessage?.Length > 300 ? Model.Settings.PrincipalMessage.Substring(0, 297) + "..." : Model.Settings.PrincipalMessage)"
+                </blockquote>
+                <div class="ws-flex ws-items-center ws-gap-4 ws-flex-wrap">
+                    <div>
+                        <h4 class="ws-fw-700 ws-mb-1">@Model.Settings.PrincipalName</h4>
+                        <p class="ws-text-accent ws-fw-600 ws-fs-14 ws-mb-0">@(Model.Settings.PrincipalDesignation ?? "Head Teacher / Principal")</p>
+                    </div>
+                    <a href="/principal-message" class="ws-btn ws-btn--accent ws-btn--sm">Read Full Message <i class="bi bi-arrow-right ws-ms-1"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+}
+
+<!-- DIVIDER: Glow -->
+<div class="ws-divider-glow" aria-hidden="true"></div>
+
+<!-- 6. WHY CHOOSE US — Value Proposition Grid -->
+<section class="ws-section ws-section--alt ws-reveal">
+    <div class="ws-container ws-text-center">
+        <span class="ws-title-label">Why Families Choose Us</span>
+        <h2 class="ws-title-section ws-mb-8">The School of Choice for Excellence</h2>
+        <div class="ws-row ws-g-6 ws-stagger ws-reveal">
+            <div class="ws-col-12 ws-col-sm-6 ws-col-lg-3">
+                <div class="ws-value-card">
+                    <div class="ws-value-card__icon"><i class="bi bi-award"></i></div>
+                    <h4 class="ws-value-card__title">Academic Excellence</h4>
+                    <p class="ws-value-card__text">Consistent top results in public examinations with a 98% pass rate and multiple national awards.</p>
+                </div>
+            </div>
+            <div class="ws-col-12 ws-col-sm-6 ws-col-lg-3">
+                <div class="ws-value-card">
+                    <div class="ws-value-card__icon"><i class="bi bi-people"></i></div>
+                    <h4 class="ws-value-card__title">Expert Faculty</h4>
+                    <p class="ws-value-card__text">Dedicated teachers with advanced degrees, continuous professional development, and a passion for mentoring.</p>
+                </div>
+            </div>
+            <div class="ws-col-12 ws-col-sm-6 ws-col-lg-3">
+                <div class="ws-value-card">
+                    <div class="ws-value-card__icon"><i class="bi bi-building-gear"></i></div>
+                    <h4 class="ws-value-card__title">Modern Facilities</h4>
+                    <p class="ws-value-card__text">State-of-the-art laboratories, digital classrooms, extensive library, and sports infrastructure.</p>
+                </div>
+            </div>
+            <div class="ws-col-12 ws-col-sm-6 ws-col-lg-3">
+                <div class="ws-value-card">
+                    <div class="ws-value-card__icon"><i class="bi bi-person-hearts"></i></div>
+                    <h4 class="ws-value-card__title">Holistic Growth</h4>
+                    <p class="ws-value-card__text">Beyond academics — sports, arts, debate, scouting, and leadership programs for well-rounded development.</p>
+                </div>
+            </div>
+        </div>
+        <div class="ws-mt-8">
+            <a href="/about" class="ws-btn ws-btn--primary ws-btn--lg">Discover More <i class="bi bi-arrow-right ws-ms-2"></i></a>
+        </div>
+    </div>
+</section>
+
+<!-- DIVIDER: Layered -->
+<div class="ws-divider-layered" aria-hidden="true"></div>
+
+<!-- 7. ACADEMIC EXCELLENCE — Achievement Numbers -->
+<section class="ws-section ws-reveal">
+    <div class="ws-container ws-text-center">
+        <span class="ws-title-label">Proven Track Record</span>
+        <h2 class="ws-title-section ws-mb-8">Academic Achievements</h2>
+        <div class="ws-row ws-g-6 ws-stagger ws-reveal">
+            <div class="ws-col-6 ws-col-md-3">
+                <div class="ws-stat-large">
+                    <div class="ws-stat-large__number" data-target="@Model.StudentCount">0</div>
+                    <div class="ws-stat-large__label">Students Enrolled</div>
+                    <div class="ws-stat-large__context">Across all classes from Play to XII</div>
+                </div>
+            </div>
+            <div class="ws-col-6 ws-col-md-3">
+                <div class="ws-stat-large">
+                    <div class="ws-stat-large__number" data-target="@Model.TeacherCount">0</div>
+                    <div class="ws-stat-large__label">Qualified Teachers</div>
+                    <div class="ws-stat-large__context">Dedicated to academic excellence</div>
+                </div>
+            </div>
+            <div class="ws-col-6 ws-col-md-3">
+                <div class="ws-stat-large">
+                    <div class="ws-stat-large__number" data-target="@Model.ClassCount">0</div>
+                    <div class="ws-stat-large__label">Active Classrooms</div>
+                    <div class="ws-stat-large__context">Modern, well-equipped learning spaces</div>
+                </div>
+            </div>
+            <div class="ws-col-6 ws-col-md-3">
+                <div class="ws-stat-large">
+                    <div class="ws-stat-large__number" data-target="@Model.EmployeeCount">0</div>
+                    <div class="ws-stat-large__label">Staff Members</div>
+                    <div class="ws-stat-large__context">Supporting our educational mission</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- DIVIDER: Slant reverse -->
+<div class="ws-divider-slant ws-divider-slant--reverse" aria-hidden="true" style="background: var(--ws-bg-secondary);"></div>
+
+<!-- 8. NOTICES — Editorial News Cards -->
+@if (settings.ShowNotices)
 {
 <section class="ws-section ws-section--alt ws-reveal">
     <div class="ws-container">
-        <div class="ws-row ws-g-6">
-            <div class="ws-col-12 ws-col-lg-7">
-                <div class="ws-flex-between ws-flex-wrap ws-mb-6">
-                    <div>
-                        <span class="ws-section__label">Bulletin Board</span>
-                        <h3 class="ws-fs-28 ws-fw-800">Latest School Notices</h3>
-                    </div>
-                    <a href="/notices" class="ws-btn ws-btn--outline ws-btn--sm ws-btn--pill">View All <i class="bi bi-arrow-right ws-ms-1"></i></a>
-                </div>
-                <div class="ws-flex ws-flex-col ws-gap-3">
-                    @foreach (var notice in Model.LatestNotices)
-                    {
-                        <div class="ws-notice-card">
-                            <div class="ws-notice-card__meta">
-                                <span class="ws-badge ws-badge--light"><i class="bi bi-bookmark-fill me-1"></i> @notice.AudienceRole</span>
-                                <span class="ws-fs-13 ws-text-muted"><i class="bi bi-calendar-event me-1"></i> @notice.PublishAt.ToString("dd MMM yyyy")</span>
-                            </div>
-                            <h5 class="ws-notice-card__title"><a href="/notice/details/@notice.Id">@notice.Title</a></h5>
-                            <p class="ws-notice-card__body">@notice.Body</p>
-                            <div class="ws-notice-card__footer">
-                                <a href="/notice/details/@notice.Id" class="ws-btn ws-btn--accent ws-btn--sm">Read More <i class="bi bi-arrow-right ws-ms-1"></i></a>
-                            </div>
-                        </div>
-                    }
-                    @if (Model.LatestNotices.Count == 0)
-                    {
-                        <div class="ws-empty"><div class="ws-empty__icon"><i class="bi bi-journal-x"></i></div><h5 class="ws-empty__title">No Notices</h5><p class="ws-empty__text">No active notices available currently.</p></div>
-                    }
-                </div>
-            </div>
-            <div class="ws-col-12 ws-col-lg-5">
-                <div class="ws-flex-between ws-flex-wrap ws-mb-6">
-                    <div>
-                        <span class="ws-section__label">Calendar Events</span>
-                        <h3 class="ws-fs-28 ws-fw-800">Upcoming Events</h3>
-                    </div>
-                    <a href="/events" class="ws-btn ws-btn--outline ws-btn--sm ws-btn--pill">View All</a>
-                </div>
-                <div class="ws-flex ws-flex-col ws-gap-3">
-                    @foreach (var ev in Model.UpcomingEvents)
-                    {
-                        <div class="ws-event-item">
-                            <div class="ws-event-item__date">
-                                <div class="ws-event-item__day">@ev.EventDate.ToString("dd")</div>
-                                <div class="ws-event-item__month">@ev.EventDate.ToString("MMM")</div>
-                            </div>
-                            <div>
-                                <span class="ws-badge ws-badge--accent ws-fs-11 ws-mb-2"><i class="bi bi-geo-alt-fill me-1"></i> @ev.EventLocation</span>
-                                <h6 class="ws-fw-700 ws-mb-1"><a href="/event/details/@ev.Id" class="ws-text-body">@ev.Title</a></h6>
-                                <p class="ws-fs-13 ws-text-muted ws-m-0 ws-text-truncate ws-max-w-280">@ev.Description</p>
-                            </div>
-                        </div>
-                    }
-                    @if (Model.UpcomingEvents.Count == 0)
-                    {
-                        <div class="ws-empty"><div class="ws-empty__icon"><i class="bi bi-calendar-x"></i></div><h5 class="ws-empty__title">No Events</h5><p class="ws-empty__text">No upcoming events scheduled at this time.</p></div>
-                    }
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-}
-
-<!-- ── 5. Academic Calendar ── -->
-<section class="ws-section ws-reveal">
-    <div class="ws-container">
-        <div class="ws-flex-between ws-flex-wrap ws-mb-6">
+        <div class="ws-flex ws-flex-between ws-flex-wrap ws-mb-6">
             <div>
-                <span class="ws-section__label">Mark Your Dates</span>
-                <h3 class="ws-fs-28 ws-fw-800">Academic Calendar</h3>
+                <span class="ws-title-label">Bulletin Board</span>
+                <h2 class="ws-title-section">Latest News & Notices</h2>
             </div>
-            <a href="/academic-calendar" class="ws-btn ws-btn--outline ws-btn--sm ws-btn--pill">Full Calendar <i class="bi bi-arrow-right ws-ms-1"></i></a>
+            <a href="/notices" class="ws-btn ws-btn--outline ws-btn--sm ws-btn--pill">View All <i class="bi bi-arrow-right ws-ms-1"></i></a>
         </div>
-        <div class="ws-row ws-g-4">
-            @if (Model.UpcomingCalendarEvents.Count > 0)
+        <div class="ws-row ws-g-6 ws-stagger ws-reveal">
+            @{
+                var featuredNotice = Model.LatestNotices.FirstOrDefault();
+                var otherNotices = Model.LatestNotices.Skip(1).Take(3).ToList();
+            }
+            @if (featuredNotice != null)
             {
-                @foreach (var cal in Model.UpcomingCalendarEvents)
-                {
-                    var style = cal.IsHoliday ? "--ws-danger" : cal.IsExamDay ? "--ws-secondary" : "--ws-warning";
-                    var t = cal.IsHoliday ? "Holiday" : cal.IsExamDay ? "Exam" : "Event";
-                    <div class="ws-col-6 ws-col-md-4 ws-col-lg">
-                        <div class="ws-cal-card" style="border-top-color:var(@style);">
-                            <div class="ws-cal-card__day">@cal.Date.Day</div>
-                            <div class="ws-cal-card__month">@cal.Date.ToString("MMM yyyy")</div>
-                            <h6 class="ws-cal-card__title">@cal.Title</h6>
-                            <span class="ws-badge ws-text-white" style="background:var(@style);">@t@(cal.HolidayType != null ? " - " + cal.HolidayType : "")</span>
+                <div class="ws-col-12 ws-col-lg-6">
+                    <div class="ws-news-card ws-news-card--featured">
+                        <div class="ws-news-card__image ws-bg-secondary-bg ws-flex-center ws-text-muted ws-fs-36">
+                            <i class="bi bi-megaphone"></i>
+                            <span class="ws-news-card__category">@((featuredNotice.AudienceRole ?? "General").ToString())</span>
+                        </div>
+                        <div class="ws-news-card__body">
+                            <div class="ws-news-card__meta">
+                                <span><i class="bi bi-calendar-event ws-me-1"></i> @featuredNotice.PublishAt.ToString("dd MMM yyyy")</span>
+                            </div>
+                            <h3 class="ws-news-card__title"><a href="/notice/details/@featuredNotice.Id">@featuredNotice.Title</a></h3>
+                            <p class="ws-news-card__excerpt">@featuredNotice.Body</p>
                         </div>
                     </div>
-                }
+                </div>
+                <div class="ws-col-12 ws-col-lg-6">
+                    <div class="ws-flex ws-flex-col ws-gap-4">
+                        @foreach (var notice in otherNotices)
+                        {
+                            <div class="ws-notice-card">
+                                <div class="ws-notice-card__meta">
+                                    <span class="ws-badge ws-badge--light"><i class="bi bi-bookmark-fill ws-me-1"></i> @(notice.AudienceRole ?? "General")</span>
+                                    <span class="ws-fs-13 ws-text-muted"><i class="bi bi-calendar-event ws-me-1"></i> @notice.PublishAt.ToString("dd MMM yyyy")</span>
+                                </div>
+                                <h5 class="ws-notice-card__title"><a href="/notice/details/@notice.Id">@notice.Title</a></h5>
+                                <p class="ws-notice-card__body">@notice.Body</p>
+                                <div class="ws-notice-card__footer">
+                                    <a href="/notice/details/@notice.Id" class="ws-btn ws-btn--accent ws-btn--sm">Read More <i class="bi bi-arrow-right ws-ms-1"></i></a>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
             }
             else
             {
-                <div class="ws-col-12"><div class="ws-empty"><div class="ws-empty__icon"><i class="bi bi-calendar-check"></i></div><h5 class="ws-empty__title">No Events</h5><p class="ws-empty__text"><a href="/academic-calendar">View full calendar</a></p></div></div>
+                <div class="ws-col-12"><div class="ws-empty"><div class="ws-empty__icon"><i class="bi bi-journal-x"></i></div><h5 class="ws-empty__title">No Notices</h5><p class="ws-empty__text">No active notices available currently.</p></div></div>
             }
-        </div>
-    </div>
-</section>
-
-<!-- ── 6. Statistics ── -->
-@if (settings.ShowStatistics)
-{
-<section class="ws-section ws-section--dark ws-stats">
-    <div class="ws-container">
-        <div class="ws-row ws-g-4 ws-text-center ws-justify-center">
-            <div class="ws-col-6 ws-col-md-3">
-                    <div class="ws-stat">
-                        <div class="ws-stat__icon"><i class="bi bi-people-fill"></i></div>
-                        <div class="ws-stat__number" data-target="@Model.StudentCount">0</div>
-                        <div class="ws-stat__label">@(settings.StudentLabel ?? "Active Students")</div>
-                    </div>
-                </div>
-                <div class="ws-col-6 ws-col-md-3">
-                    <div class="ws-stat">
-                        <div class="ws-stat__icon"><i class="bi bi-person-workspace"></i></div>
-                        <div class="ws-stat__number" data-target="@Model.TeacherCount">0</div>
-                        <div class="ws-stat__label">@(settings.TeacherLabel ?? "Honorable Teachers")</div>
-                    </div>
-                </div>
-                <div class="ws-col-6 ws-col-md-3">
-                    <div class="ws-stat">
-                        <div class="ws-stat__icon"><i class="bi bi-building"></i></div>
-                        <div class="ws-stat__number" data-target="@Model.ClassCount">0</div>
-                        <div class="ws-stat__label">@(settings.ClassLabel ?? "Classrooms")</div>
-                    </div>
-                </div>
-                <div class="ws-col-6 ws-col-md-3">
-                    <div class="ws-stat">
-                        <div class="ws-stat__icon"><i class="bi bi-mortarboard"></i></div>
-                        <div class="ws-stat__number" data-target="@Model.EmployeeCount">0</div>
-                        <div class="ws-stat__label">@(settings.EmployeeLabel ?? "Staff Members")</div>
-                    </div>
-                </div>
         </div>
     </div>
 </section>
 }
 
-<!-- ── 7. Gallery Preview ── -->
+<!-- DIVIDER: Wave -->
+<div class="ws-divider-wave" aria-hidden="true">
+    <svg viewBox="0 0 1200 80" preserveAspectRatio="none" style="height: 80px; width: 100%;">
+        <path d="M0,40 C200,0 400,80 600,40 C800,0 1000,80 1200,40 L1200,0 L0,0 Z" fill="var(--ws-bg-secondary)" opacity="0.5"/>
+    </svg>
+</div>
+
+<!-- 9. UPCOMING EVENTS — Timeline & Cards -->
+@if (settings.ShowEvents)
+{
+<section class="ws-section ws-reveal">
+    <div class="ws-container">
+        <div class="ws-flex ws-flex-between ws-flex-wrap ws-mb-6">
+            <div>
+                <span class="ws-title-label ws-title-label--secondary">Calendar Events</span>
+                <h2 class="ws-title-section">Upcoming Events</h2>
+            </div>
+            <a href="/events" class="ws-btn ws-btn--outline ws-btn--sm ws-btn--pill">View All</a>
+        </div>
+        <div class="ws-row ws-g-6 ws-stagger ws-reveal">
+            @foreach (var ev in Model.UpcomingEvents.Take(4))
+            {
+                <div class="ws-col-12 ws-col-sm-6 ws-col-lg-3">
+                    <div class="ws-event-card">
+                        <div class="ws-event-card__image ws-bg-secondary-bg ws-flex-center ws-text-muted ws-fs-28">
+                            @if (!string.IsNullOrEmpty(ev.CoverImagePath))
+                            {
+                                <img src="@ev.CoverImagePath" alt="@ev.Title" loading="lazy" />
+                            }
+                            else
+                            {
+                                <i class="bi bi-calendar-event"></i>
+                            }
+                            <span class="ws-event-card__status"><span class="ws-badge ws-badge--accent ws-badge--white">Upcoming</span></span>
+                        </div>
+                        <div class="ws-event-card__body">
+                            <div class="ws-event-card__meta">
+                                <span><i class="bi bi-calendar3 ws-me-1"></i> @ev.EventDate.ToString("dd MMM yyyy")</span>
+                                <span><i class="bi bi-geo-alt ws-me-1"></i> @ev.EventLocation</span>
+                            </div>
+                            <h5 class="ws-event-card__title"><a href="/event/details/@ev.Id" class="ws-text-body">@ev.Title</a></h5>
+                            <p class="ws-event-card__desc">@ev.Description</p>
+                        </div>
+                    </div>
+                </div>
+            }
+            @if (Model.UpcomingEvents.Count == 0)
+            {
+                <div class="ws-col-12"><div class="ws-empty"><div class="ws-empty__icon"><i class="bi bi-calendar-x"></i></div><h5 class="ws-empty__title">No Events</h5><p class="ws-empty__text">No upcoming events scheduled at this time.</p></div></div>
+            }
+        </div>
+    </div>
+</section>
+}
+
+<!-- DIVIDER: Gradient -->
+<div class="ws-divider-gradient" aria-hidden="true"></div>
+
+<!-- 10. CAMPUS GALLERY — Masonry Style -->
 @if (settings.ShowGallery)
 {
 <section class="ws-section ws-section--alt ws-reveal">
     <div class="ws-container">
-        <div class="ws-flex-between ws-flex-wrap ws-mb-6">
+        <div class="ws-flex ws-flex-between ws-flex-wrap ws-mb-6">
             <div>
-                <span class="ws-section__label">Campus Life</span>
-                <h2 class="ws-fs-28 ws-fw-800">Our Photo Gallery</h2>
+                <span class="ws-title-label">Campus Life</span>
+                <h2 class="ws-title-section">Photo Gallery</h2>
             </div>
             <a href="/gallery" class="ws-btn ws-btn--primary">View All Albums</a>
         </div>
-        <div class="ws-row ws-g-4">
-            @foreach (var album in Model.Albums)
+        <div class="ws-row ws-g-6 ws-stagger ws-reveal">
+            @foreach (var album in Model.Albums.Take(4))
             {
-                <div class="ws-col-12 ws-col-md-4">
+                <div class="ws-col-12 ws-col-sm-6 ws-col-lg-3">
                     <div class="ws-album-card">
                         <div class="ws-album-card__image">
                             @if (!string.IsNullOrEmpty(album.CoverImagePath))
                             {
-                                <img src="@album.CoverImagePath" alt="album cover" />
+                                <img src="@album.CoverImagePath" alt="@album.AlbumName" loading="lazy" />
                             }
                             else
                             {
-                                <div class="ws-w-full ws-h-full ws-flex-center ws-text-muted ws-fs-36 ws-bg-secondary-bg">
-                                    <i class="bi bi-image"></i>
-                                </div>
+                                <div class="ws-w-full ws-h-full ws-flex-center ws-text-muted ws-fs-36 ws-bg-secondary-bg"><i class="bi bi-image"></i></div>
                             }
                             <div class="ws-album-card__overlay">
                                 <h4>@album.AlbumName</h4>
                                 <span>@album.Description</span>
                             </div>
-                        </div>
-                        <div class="ws-card__footer ws-text-center">
-                            <a href="/gallery/album/@album.Id" class="ws-btn ws-btn--outline ws-btn--sm ws-btn--pill ws-w-full">Open Album</a>
                         </div>
                     </div>
                 </div>
@@ -351,42 +479,209 @@ var totalSlides = Model.Sliders.Count > 0 ? Model.Sliders.Count : 1;
 </section>
 }
 
-<!-- ── 8. Admission Fees ── -->
+<!-- DIVIDER: Curve -->
+<div class="ws-divider-curve ws-divider-curve--bottom" aria-hidden="true" style="background: var(--ws-bg);"></div>
+
+<!-- 11. ACADEMIC CALENDAR — Horizontal Scroll -->
+<section class="ws-section ws-reveal">
+    <div class="ws-container">
+        <div class="ws-flex ws-flex-between ws-flex-wrap ws-mb-6">
+            <div>
+                <span class="ws-title-label ws-title-label--secondary">Mark Your Dates</span>
+                <h2 class="ws-title-section">Academic Calendar</h2>
+            </div>
+            <a href="/academic-calendar" class="ws-btn ws-btn--outline ws-btn--sm ws-btn--pill">Full Calendar <i class="bi bi-arrow-right ws-ms-1"></i></a>
+        </div>
+        <div class="ws-hscroll ws-hscroll--lg ws-stagger ws-reveal">
+            @if (Model.UpcomingCalendarEvents.Count > 0)
+            {
+                @foreach (var cal in Model.UpcomingCalendarEvents)
+                {
+                    var cssClass = cal.IsHoliday ? "ws-border-top-danger" : cal.IsExamDay ? "ws-border-top-secondary" : "ws-border-top-warning";
+                    var badgeClass = cal.IsHoliday ? "ws-badge--danger" : cal.IsExamDay ? "ws-badge--primary" : "ws-badge--warning";
+                    var t = cal.IsHoliday ? "Holiday" : cal.IsExamDay ? "Exam" : "Event";
+                    <div class="ws-cal-card @cssClass">
+                        <div class="ws-cal-card__day">@cal.Date.Day</div>
+                        <div class="ws-cal-card__month">@cal.Date.ToString("MMM yyyy")</div>
+                        <h6 class="ws-cal-card__title">@cal.Title</h6>
+                        <span class="ws-badge @badgeClass">@t@(cal.HolidayType != null ? " - " + cal.HolidayType : "")</span>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="ws-empty ws-w-full"><div class="ws-empty__icon"><i class="bi bi-calendar-check"></i></div><h5 class="ws-empty__title">No Events</h5><p class="ws-empty__text"><a href="/academic-calendar">View full calendar</a></p></div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- DIVIDER: Glow -->
+<div class="ws-divider-glow" aria-hidden="true"></div>
+
+<!-- 12. TESTIMONIALS — Glass Carousel -->
+<section class="ws-section ws-section--dark ws-reveal">
+    <div class="ws-container ws-text-center">
+        <span class="ws-title-label ws-title-label--light">What People Say</span>
+        <h2 class="ws-title-section ws-text-white ws-mb-8">Voices of Our Community</h2>
+        <div class="ws-row ws-g-6 ws-stagger ws-reveal">
+            <div class="ws-col-12 ws-col-md-6 ws-col-lg-4">
+                <div class="ws-testimonial-card">
+                    <div class="ws-testimonial-card__stars">★★★★★</div>
+                    <p class="ws-testimonial-card__quote">"This school has transformed my child's academic journey. The teachers are incredibly dedicated and the learning environment is exceptional."</p>
+                    <div class="ws-testimonial-card__author">
+                        <div class="ws-testimonial-card__avatar--placeholder">S</div>
+                        <div>
+                            <div class="ws-testimonial-card__name">Sarah Rahman</div>
+                            <div class="ws-testimonial-card__role">Parent of Class 8 Student</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="ws-col-12 ws-col-md-6 ws-col-lg-4">
+                <div class="ws-testimonial-card">
+                    <div class="ws-testimonial-card__stars">★★★★★</div>
+                    <p class="ws-testimonial-card__quote">"The quality of education here is outstanding. I'm grateful for the opportunities and guidance I received. Proud to be an alum."</p>
+                    <div class="ws-testimonial-card__author">
+                        <div class="ws-testimonial-card__avatar--placeholder">A</div>
+                        <div>
+                            <div class="ws-testimonial-card__name">Ahmed Hassan</div>
+                            <div class="ws-testimonial-card__role">Alumnus, Class of 2020</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="ws-col-12 ws-col-md-6 ws-col-lg-4">
+                <div class="ws-testimonial-card">
+                    <div class="ws-testimonial-card__stars">★★★★★</div>
+                    <p class="ws-testimonial-card__quote">"A wonderful institution that nurtures both academic excellence and character development. My children love coming to school every day."</p>
+                    <div class="ws-testimonial-card__author">
+                        <div class="ws-testimonial-card__avatar--placeholder">F</div>
+                        <div>
+                            <div class="ws-testimonial-card__name">Fatima Begum</div>
+                            <div class="ws-testimonial-card__role">Parent of Class 5 & 10 Students</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- DIVIDER: Arrow -->
+<div class="ws-divider-arrow" aria-hidden="true"></div>
+
+<!-- 13. STUDENT ACHIEVEMENTS — Photo Wall -->
+<section class="ws-section ws-section--alt ws-reveal">
+    <div class="ws-container ws-text-center">
+        <span class="ws-title-label">Student Success</span>
+        <h2 class="ws-title-section ws-mb-8">Achievements & Accolades</h2>
+        <div class="ws-row ws-g-6 ws-stagger ws-reveal">
+            <div class="ws-col-6 ws-col-md-3">
+                <div class="ws-achievement-card">
+                    <div class="ws-achievement-card__icon"><i class="bi bi-trophy"></i></div>
+                    <h4 class="ws-achievement-card__title">National Champions</h4>
+                    <p class="ws-achievement-card__text">First place in National Science Olympiad 2025</p>
+                </div>
+            </div>
+            <div class="ws-col-6 ws-col-md-3">
+                <div class="ws-achievement-card">
+                    <div class="ws-achievement-card__icon"><i class="bi bi-award"></i></div>
+                    <h4 class="ws-achievement-card__title">100% Pass Rate</h4>
+                    <p class="ws-achievement-card__text">SSC Examination 2025 — outstanding results</p>
+                </div>
+            </div>
+            <div class="ws-col-6 ws-col-md-3">
+                <div class="ws-achievement-card">
+                    <div class="ws-achievement-card__icon"><i class="bi bi-mic"></i></div>
+                    <h4 class="ws-achievement-card__title">Debate Champions</h4>
+                    <p class="ws-achievement-card__text">Inter-school debate competition winners 2024</p>
+                </div>
+            </div>
+            <div class="ws-col-6 ws-col-md-3">
+                <div class="ws-achievement-card">
+                    <div class="ws-achievement-card__icon"><i class="bi bi-basketball"></i></div>
+                    <h4 class="ws-achievement-card__title">Sports Excellence</h4>
+                    <p class="ws-achievement-card__text">Regional athletics championship gold medalists</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- DIVIDER: Blur -->
+<div class="ws-divider-blur" aria-hidden="true"></div>
+
+<!-- 14. ADMISSION JOURNEY — Pricing + Process -->
 @if (settings.ShowAdmissionFees)
 {
 <section class="ws-section ws-reveal">
     <div class="ws-container">
-        <div class="ws-flex-between ws-flex-wrap ws-mb-6">
-            <div>
-                <span class="ws-section__label">Fee Structure</span>
-                <h2 class="ws-fs-28 ws-fw-800">Admission & Tuition Fees</h2>
-            </div>
-            <a href="/admission-info" class="ws-btn ws-btn--primary">View All Fees</a>
+        <div class="ws-text-center ws-mb-8">
+            <span class="ws-title-label">Fee Structure</span>
+            <h2 class="ws-title-section">Admission & Tuition Fees</h2>
+            <p class="ws-section__subtitle">Transparent pricing with no hidden costs. View the fee structure for each class.</p>
         </div>
-        <div class="ws-row ws-g-4">
+        <div class="ws-process-steps ws-mb-8">
+            <div class="ws-process-step">
+                <div class="ws-process-step__circle">1</div>
+                <h5 class="ws-process-step__title">Submit Application</h5>
+                <p class="ws-process-step__text">Fill out the online form</p>
+            </div>
+            <div class="ws-process-step">
+                <div class="ws-process-step__circle">2</div>
+                <h5 class="ws-process-step__title">Document Review</h5>
+                <p class="ws-process-step__text">Upload required documents</p>
+            </div>
+            <div class="ws-process-step">
+                <div class="ws-process-step__circle">3</div>
+                <h5 class="ws-process-step__title">Pay Admission Fee</h5>
+                <p class="ws-process-step__text">Complete the payment</p>
+            </div>
+            <div class="ws-process-step">
+                <div class="ws-process-step__circle">4</div>
+                <h5 class="ws-process-step__title">Confirm Enrollment</h5>
+                <p class="ws-process-step__text">Receive your confirmation</p>
+            </div>
+        </div>
+        <div class="ws-row ws-g-6 ws-stagger ws-reveal">
             @if (Model.AdmissionFees != null && Model.AdmissionFees.Any())
             {
-                @foreach (var fee in Model.AdmissionFees.OrderBy(f => f.DisplayOrder).Take(6))
+                @foreach (var fee in Model.AdmissionFees.OrderBy(f => f.DisplayOrder).Take(3))
                 {
+                    var isPopular = fee.DisplayOrder == 2;
                     <div class="ws-col-12 ws-col-md-4">
-                        <div class="ws-card ws-card--lift ws-card--bordered-top">
-                            <div class="ws-card__body">
-                                <div class="ws-flex-between ws-mb-4">
-                                    <h5 class="ws-fw-700 ws-m-0">@fee.ClassName</h5>
-                                    <span class="ws-badge ws-badge--accent">@fee.DisplayOrder</span>
+                        <div class="ws-pricing-card @(isPopular ? "ws-pricing-card--popular" : "")">
+                            @if (isPopular) { <div class="ws-pricing-card__badge">Most Popular</div> }
+                            <div class="ws-pricing-card__header">
+                                <div class="ws-pricing-card__class">Class Level</div>
+                                <div class="ws-pricing-card__amount"><span class="ws-pricing-card__currency">BDT</span> @fee.AdmissionFee.ToString("N0")</div>
+                                <div class="ws-pricing-card__period">One-time admission fee</div>
+                            </div>
+                            <div class="ws-pricing-card__body">
+                                <div class="ws-pricing-card__item">
+                                    <span class="ws-pricing-card__label">@fee.ClassName</span>
+                                    <span class="ws-pricing-card__value">@fee.DisplayOrder</span>
                                 </div>
-                                <div class="ws-flex ws-flex-col ws-gap-2">
-                                    <div class="ws-flex-between"><span class="ws-fs-14 ws-text-muted">Admission:</span><span class="ws-fw-700 ws-text-secondary">BDT @fee.AdmissionFee.ToString("N0")</span></div>
-                                    <div class="ws-flex-between"><span class="ws-fs-14 ws-text-muted">Monthly:</span><span class="ws-fw-700">BDT @fee.MonthlyFee.ToString("N0")</span></div>
-                                    <div class="ws-flex-between"><span class="ws-fs-14 ws-text-muted">Session:</span><span class="ws-fw-700">BDT @fee.SessionFee.ToString("N0")</span></div>
-                                    <div class="ws-flex-between"><span class="ws-fs-14 ws-text-muted">Exam:</span><span class="ws-fw-700">BDT @fee.ExamFee.ToString("N0")</span></div>
+                                <div class="ws-pricing-card__item">
+                                    <span class="ws-pricing-card__label">Monthly Tuition</span>
+                                    <span class="ws-pricing-card__value">BDT @fee.MonthlyFee.ToString("N0")</span>
                                 </div>
-                                <div class="ws-mt-4 ws-pt-3 ws-border-top">
-                                    <div class="ws-flex-between">
-                                        <span class="ws-fw-700">Total First Year:</span>
-                                        <span class="ws-fs-22 ws-fw-800 ws-text-success">BDT @((fee.AdmissionFee + (fee.MonthlyFee * 12) + fee.SessionFee + fee.ExamFee).ToString("N0"))</span>
-                                    </div>
+                                <div class="ws-pricing-card__item">
+                                    <span class="ws-pricing-card__label">Session Fee</span>
+                                    <span class="ws-pricing-card__value">BDT @fee.SessionFee.ToString("N0")</span>
                                 </div>
+                                <div class="ws-pricing-card__item">
+                                    <span class="ws-pricing-card__label">Exam Fee</span>
+                                    <span class="ws-pricing-card__value">BDT @fee.ExamFee.ToString("N0")</span>
+                                </div>
+                            </div>
+                            <div class="ws-pricing-card__total">
+                                <span class="ws-pricing-card__total-label">Total First Year</span>
+                                <span class="ws-pricing-card__total-value">BDT @((fee.AdmissionFee + (fee.MonthlyFee * 12) + fee.SessionFee + fee.ExamFee).ToString("N0"))</span>
+                            </div>
+                            <div class="ws-pricing-card__footer ws-text-center">
+                                <a href="/Admission/Apply" class="ws-btn ws-btn--accent ws-btn--sm ws-w-full">Apply Now</a>
                             </div>
                         </div>
                     </div>
@@ -397,34 +692,96 @@ var totalSlides = Model.Sliders.Count > 0 ? Model.Sliders.Count : 1;
                 <div class="ws-col-12"><div class="ws-empty"><div class="ws-empty__icon"><i class="bi bi-cash-stack"></i></div><h5 class="ws-empty__title">No Fee Data</h5><p class="ws-empty__text">Contact the admission office for fee information.</p></div></div>
             }
         </div>
-    </div>
-</section>
-}
-
-<!-- ── 9. Admission CTA ── -->
-@if (settings.ShowAdmissionCTA)
-{
-<section class="ws-section ws-section--glass ws-reveal">
-    <div class="ws-container">
-        <div class="ws-cta-box">
-            <div class="ws-row ws-g-4 ws-items-center">
-                <div class="ws-col-12 ws-col-lg-8">
-                    <div class="ws-cta__badge">@(settings.AdmissionCtaTitle ?? "Admission is Ongoing")</div>
-                    <h2 class="ws-cta__title">@(Model.Settings.AdmissionTitle ?? "Apply for Admission")</h2>
-                    <p class="ws-cta__text">@(settings.AdmissionCtaText ?? "Quick and seamless online registration. Connects directly to our centralized admission processing system. Review the requirements and get enrolled.")</p>
-                </div>
-                <div class="ws-col-12 ws-col-lg-4 ws-text-left ws-text-md-right">
-                    <div class="ws-flex ws-flex-col ws-gap-2">
-                        <a href="/Admission/Apply" class="ws-btn ws-btn--accent ws-btn--lg"><i class="bi bi-pencil-square ws-me-2"></i> Apply Online Now</a>
-                        <a href="/admission-info" class="ws-btn ws-btn--outline ws-btn--lg"><i class="bi bi-info-circle ws-me-2"></i> Admission Info</a>
-                    </div>
-                </div>
-            </div>
+        <div class="ws-text-center ws-mt-8">
+            <a href="/admission-info" class="ws-btn ws-btn--outline">View Complete Fee Structure <i class="bi bi-arrow-right ws-ms-2"></i></a>
         </div>
     </div>
 </section>
 }
 
+<!-- DIVIDER: Wave -->
+<div class="ws-divider-wave" aria-hidden="true">
+    <svg viewBox="0 0 1200 80" preserveAspectRatio="none" style="height: 80px; width: 100%;">
+        <path d="M0,40 C200,0 400,80 600,40 C800,0 1000,80 1200,40 L1200,80 L0,80 Z" fill="var(--ws-accent)" opacity="0.06"/>
+    </svg>
+</div>
+
+<!-- 15. PARTNERS / ACCREDITATIONS — Logo Marquee -->
+<section class="ws-section ws-section--tertiary ws-reveal">
+    <div class="ws-container ws-text-center">
+        <span class="ws-title-label ws-mb-4 ws-d-block">Our Partners & Accreditations</span>
+        <h2 class="ws-title-sub ws-mb-6">Recognized & Affiliated With</h2>
+        <div class="ws-partner-marquee">
+            <div class="ws-partner-track">
+                <span class="ws-partner-item ws-fs-20 ws-fw-700 ws-text-muted">Ministry of Education</span>
+                <span class="ws-partner-item ws-fs-20 ws-fw-700 ws-text-muted">National Curriculum Board</span>
+                <span class="ws-partner-item ws-fs-20 ws-fw-700 ws-text-muted">Bangladesh Bureau of Education</span>
+                <span class="ws-partner-item ws-fs-20 ws-fw-700 ws-text-muted">UNESCO Associated Schools</span>
+                <span class="ws-partner-item ws-fs-20 ws-fw-700 ws-text-muted">DSHE Registered</span>
+                <span class="ws-partner-item ws-fs-20 ws-fw-700 ws-text-muted">EIIN Certified</span>
+                <span class="ws-partner-item ws-fs-20 ws-fw-700 ws-text-muted">Ministry of Education</span>
+                <span class="ws-partner-item ws-fs-20 ws-fw-700 ws-text-muted">National Curriculum Board</span>
+                <span class="ws-partner-item ws-fs-20 ws-fw-700 ws-text-muted">Bangladesh Bureau of Education</span>
+                <span class="ws-partner-item ws-fs-20 ws-fw-700 ws-text-muted">UNESCO Associated Schools</span>
+                <span class="ws-partner-item ws-fs-20 ws-fw-700 ws-text-muted">DSHE Registered</span>
+                <span class="ws-partner-item ws-fs-20 ws-fw-700 ws-text-muted">EIIN Certified</span>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- DIVIDER: Arrow -->
+<div class="ws-divider-arrow" aria-hidden="true"></div>
+
+<!-- 16. CTA BANNER — Full-Width Cinematic Climax -->
+@if (settings.ShowAdmissionCTA)
+{
+<section class="ws-section ws-section--dark ws-section--xl ws-reveal" aria-labelledby="cta-heading">
+    <div class="ws-container ws-text-center">
+        <span class="ws-cta__badge ws-mb-5">@(settings.AdmissionCtaTitle ?? "Admission Open 2026-27")</span>
+        <h2 id="cta-heading" class="ws-title-anchor ws-text-white ws-mb-4">@(Model.Settings.AdmissionTitle ?? "Begin Your Journey at Our School")</h2>
+        <p class="ws-text-inverse-secondary ws-fs-17 ws-lh-lg ws-mx-auto ws-max-w-620 ws-mb-8">@(settings.AdmissionCtaText ?? "Quick and seamless online registration. Connects directly to our centralized admission processing system.")</p>
+        <div class="ws-flex ws-justify-center ws-gap-3 ws-flex-wrap">
+            <a href="/Admission/Apply" class="ws-btn ws-btn--accent ws-btn--lg"><i class="bi bi-pencil-square ws-me-2"></i> Apply Online Now</a>
+            <a href="/admission-info" class="ws-btn ws-btn--ghost ws-btn--lg"><i class="bi bi-info-circle ws-me-2"></i> Admission Info</a>
+        </div>
+    </div>
+</section>
+}
+
+<!-- DIVIDER: Gradient -->
+<div class="ws-divider-gradient" aria-hidden="true"></div>
+
+<!-- 17. FEATURES ROW (School Info Strip) -->
+<section class="ws-section ws-section--sm ws-section--tertiary ws-reveal">
+    <div class="ws-container">
+        <div class="ws-row ws-g-6 ws-text-center ws-stagger ws-reveal">
+            <div class="ws-col-12 ws-col-md-4">
+                <div class="ws-feature ws-border-none ws-text-center ws-p-6 ws-flex-col ws-items-center">
+                    <div class="ws-feature__icon"><i class="bi bi-shield-check"></i></div>
+                    <h5 class="ws-feature__title">Government Registered</h5>
+                    <p class="ws-feature__text">EIIN: @Model.Settings.EIIN</p>
+                </div>
+            </div>
+            <div class="ws-col-12 ws-col-md-4">
+                <div class="ws-feature ws-border-none ws-text-center ws-p-6 ws-flex-col ws-items-center">
+                    <div class="ws-feature__icon"><i class="bi bi-clock-history"></i></div>
+                    <h5 class="ws-feature__title">Office Hours</h5>
+                    <p class="ws-feature__text">@(settings.OfficeHours ?? "Sat - Thu (8:00 AM - 2:00 PM)")</p>
+                </div>
+            </div>
+            <div class="ws-col-12 ws-col-md-4">
+                <div class="ws-feature ws-border-none ws-text-center ws-p-6 ws-flex-col ws-items-center">
+                    <div class="ws-feature__icon"><i class="bi bi-telephone"></i></div>
+                    <h5 class="ws-feature__title">Contact Us</h5>
+                    <p class="ws-feature__text">@(settings.Phone ?? "+8801700000000")</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── Full Hero Slider JavaScript ── -->
 <script>
 (function() {
   var currentSlide = 0,
@@ -459,7 +816,6 @@ var totalSlides = Model.Sliders.Count > 0 ? Model.Sliders.Count : 1;
     goToSlide((currentSlide + dir + totalSlides) % totalSlides);
   }
 
-  // Dot click handlers
   dots.forEach(function(dot) {
     dot.addEventListener('click', function() {
       var idx = parseInt(this.getAttribute('data-index'), 10);
@@ -467,7 +823,6 @@ var totalSlides = Model.Sliders.Count > 0 ? Model.Sliders.Count : 1;
     });
   });
 
-  // Progress bar
   function resetProgress() {
     if (!progressBar) return;
     clearInterval(progressBar._interval);
@@ -481,10 +836,8 @@ var totalSlides = Model.Sliders.Count > 0 ? Model.Sliders.Count : 1;
   }
   resetProgress();
 
-  // Auto-advance
   heroInterval = setInterval(function() { slideHero(1); }, 6000);
 
-  // Pause on hover
   if (slider) {
     slider.addEventListener('mouseenter', function() { clearInterval(heroInterval); clearInterval(progressBar._interval); });
     slider.addEventListener('mouseleave', function() {
@@ -493,13 +846,11 @@ var totalSlides = Model.Sliders.Count > 0 ? Model.Sliders.Count : 1;
     });
   }
 
-  // Keyboard nav
   document.addEventListener('keydown', function(e) {
     if (e.key === 'ArrowLeft') { slideHero(-1); e.preventDefault(); }
     if (e.key === 'ArrowRight') { slideHero(1); e.preventDefault(); }
   });
 
-  // Touch/swipe
   if (slider) {
     slider.addEventListener('touchstart', function(e) { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
     slider.addEventListener('touchend', function(e) {
