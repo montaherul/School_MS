@@ -231,24 +231,31 @@
                 <div class="adm-table-card mb-4">
                     <div class="dash-section__header p-4 border-bottom"><h5 class="dash-section__title">Leave Status</h5></div>
                     <div class="p-4">
-                        <div class="row g-3 text-center">
-                            <div class="col-3">
-                                <div class="fw-bold fs-4 text-primary">@Model.LeaveStatus.TotalLeaves</div>
-                                <small class="text-muted">Total</small>
+                        @if (Model.LeaveStatus != null)
+                        {
+                            <div class="row g-3 text-center">
+                                <div class="col-3">
+                                    <div class="fw-bold fs-4 text-primary">@Model.LeaveStatus.TotalLeaves</div>
+                                    <small class="text-muted">Total</small>
+                                </div>
+                                <div class="col-3">
+                                    <div class="fw-bold fs-4 text-success">@Model.LeaveStatus.ApprovedLeaves</div>
+                                    <small class="text-muted">Approved</small>
+                                </div>
+                                <div class="col-3">
+                                    <div class="fw-bold fs-4 text-warning">@Model.LeaveStatus.PendingLeaves</div>
+                                    <small class="text-muted">Pending</small>
+                                </div>
+                                <div class="col-3">
+                                    <div class="fw-bold fs-4 text-danger">@Model.LeaveStatus.RejectedLeaves</div>
+                                    <small class="text-muted">Rejected</small>
+                                </div>
                             </div>
-                            <div class="col-3">
-                                <div class="fw-bold fs-4 text-success">@Model.LeaveStatus.ApprovedLeaves</div>
-                                <small class="text-muted">Approved</small>
-                            </div>
-                            <div class="col-3">
-                                <div class="fw-bold fs-4 text-warning">@Model.LeaveStatus.PendingLeaves</div>
-                                <small class="text-muted">Pending</small>
-                            </div>
-                            <div class="col-3">
-                                <div class="fw-bold fs-4 text-danger">@Model.LeaveStatus.RejectedLeaves</div>
-                                <small class="text-muted">Rejected</small>
-                            </div>
-                        </div>
+                        }
+                        else
+                        {
+                            <div class="text-center text-muted small">Leave data not available.</div>
+                        }
                     </div>
                 </div>
 

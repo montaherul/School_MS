@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using SchoolManagementSystem.Models.DTOs.Admission;
 using SchoolManagementSystem.Models.DTOs.Student;
@@ -22,6 +23,9 @@ using SchoolManagementSystem.Repositories.Interfaces.Students;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using SchoolManagementSystem.Repositories.Interfaces.Admission;
 using SchoolManagementSystem.Repositories.Interfaces.Website;
+using SchoolManagementSystem.Services.Interfaces.Admissions;
+using SchoolManagementSystem.Models.DTOs.Admission;
+using SchoolManagementSystem.Models.Entities.Admission;
 using System.Data;
 
 namespace SchoolManagementSystem.Services.Implementations.Admissions;
@@ -43,6 +47,13 @@ public class AdmissionService : IAdmissionService
     private readonly ISchoolSettingRepository _settingRepo;
     private readonly ILogger<AdmissionService> _logger;
     private readonly IHttpContextAccessor _httpContextAccessor;
+    private readonly IWorkflowService _workflowService;
+    private readonly IAdmissionFinanceService _admissionFinanceService;
+    private readonly IConversionPipelineService _conversionPipeline;
+    private readonly IMemoryCache _cache;
+    private const string CacheKeyClasses = "AdmissionClasses";
+    private const string CacheKeyGroups = "AdmissionGroups";
+    private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(5);
 
     public AdmissionService(
         IUnitOfWork unitOfWork,
@@ -59,7 +70,11 @@ public class AdmissionService : IAdmissionService
         IGuardianService guardianService,
         ISchoolSettingRepository settingRepo,
         ILogger<AdmissionService> logger,
-        IHttpContextAccessor httpContextAccessor)
+        IHttpContextAccessor httpContextAccessor,
+        IWorkflowService workflowService,
+        IAdmissionFinanceService admissionFinanceService,
+        IConversionPipelineService conversionPipeline,
+        IMemoryCache cache)
     {
         _unitOfWork = unitOfWork;
         _admissionRepository = admissionRepository;
@@ -76,6 +91,10 @@ public class AdmissionService : IAdmissionService
         _settingRepo = settingRepo;
         _logger = logger;
         _httpContextAccessor = httpContextAccessor;
+        _workflowService = workflowService;
+        _admissionFinanceService = admissionFinanceService;
+        _conversionPipeline = conversionPipeline;
+        _cache = cache;
     }
 
     public async Task<(List<AdmissionListResultDto> items, int totalRecords, object counts)> GetListByStoredProcedureAsync(
@@ -140,25 +159,32 @@ public class AdmissionService : IAdmissionService
             admissionFee = feeStructure.AdmissionFee;
 
         string applicationNo;
-        await _unitOfWork.BeginTransactionAsync(cancellationToken);
-        try
+        const int maxRetries = 3;
+        for (int attempt = 1; attempt <= maxRetries; attempt++)
         {
-            var year = DateTime.UtcNow.Year;
-            var maxAppNo = await _admissionRepository.Query()
-                .Where(x => x.CreatedAt.Year == year && !x.IsDeleted)
-                .MaxAsync(x => (string?)x.ApplicationNo, cancellationToken);
-
-            var nextSeq = 1;
-            if (!string.IsNullOrEmpty(maxAppNo))
+            await _unitOfWork.BeginTransactionAsync(cancellationToken);
+            try
             {
-                var lastDash = maxAppNo.LastIndexOf('-');
-                if (lastDash >= 0 && int.TryParse(maxAppNo[(lastDash + 1)..], out var lastSeq))
-                    nextSeq = lastSeq + 1;
-            }
+                var year = DateTime.UtcNow.Year;
+                var prefix = $"APP-{year}-";
+                var maxAppNo = await _admissionRepository.Query().AsNoTracking()
+                    .Where(x => x.ApplicationNo.StartsWith(prefix) && !x.IsDeleted)
+                    .OrderByDescending(x => x.ApplicationNo.Length)
+                    .ThenByDescending(x => x.ApplicationNo)
+                    .Select(x => x.ApplicationNo)
+                    .FirstOrDefaultAsync(cancellationToken);
 
-            applicationNo = $"APP-{year}-{nextSeq:0000}";
+                var nextSeq = 1;
+                if (!string.IsNullOrEmpty(maxAppNo))
+                {
+                    var dash = maxAppNo.LastIndexOf('-');
+                    if (dash >= 0 && int.TryParse(maxAppNo.AsSpan(dash + 1), out var lastSeq))
+                        nextSeq = lastSeq + 1;
+                }
 
-            var application = new AdmissionApplication
+                applicationNo = $"APP-{year}-{nextSeq:0000}";
+
+                var application = new AdmissionApplication
             {
                 ApplicationNo = applicationNo,
             ApplicantName = dto.ApplicantName.Trim(),
@@ -214,6 +240,9 @@ public class AdmissionService : IAdmissionService
             await _unitOfWork.SaveChangesAsync(cancellationToken);
             await _unitOfWork.CommitTransactionAsync(cancellationToken);
 
+            try { await _workflowService.InitializeWorkflowAsync(application.Id, cancellationToken); }
+            catch (Exception ex) { _logger.LogWarning(ex, "Workflow initialization failed for application {AppNo}", applicationNo); }
+
             await LogAuditAsync("Admission", "Admission.Apply", application.Id.ToString(), $"Application submitted: {application.ApplicantName} ({application.ApplicationNo})", cancellationToken);
 
             if (!string.IsNullOrWhiteSpace(application.ApplicantEmail))
@@ -224,6 +253,11 @@ public class AdmissionService : IAdmissionService
 
             return application.ApplicationNo;
         }
+        catch (DbUpdateException ex) when (attempt < maxRetries && ex.InnerException is SqlException sqlEx && (sqlEx.Number == 2601 || sqlEx.Number == 2627))
+        {
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            continue;
+        }
         catch
         {
             await _unitOfWork.RollbackTransactionAsync(cancellationToken);
@@ -231,280 +265,20 @@ public class AdmissionService : IAdmissionService
         }
     }
 
+    throw new InvalidOperationException("Failed to generate unique application number after multiple retries.");
+    }
+
     public async Task<int> ApproveAndConvertAsync(int applicationId, int sectionId, string approvedBy, CancellationToken cancellationToken = default)
     {
-        await _unitOfWork.BeginTransactionAsync(cancellationToken);
-        try
-        {
-            var application = await _admissionRepository.FirstOrDefaultAsync(x => x.Id == applicationId && !x.IsDeleted, cancellationToken)
-                ?? throw new InvalidOperationException("Admission application not found.");
+        var pipelineResult = await _conversionPipeline.ExecuteAsync(applicationId, sectionId, approvedBy, cancellationToken);
 
-            if (application.Status == AdmissionStatus.Converted)
-                throw new InvalidOperationException("Application has already been converted.");
+        if (!pipelineResult.Success)
+            throw new InvalidOperationException(pipelineResult.ErrorMessage ?? "Conversion failed.");
 
-            // Inner idempotency check: re-read status within the transaction to prevent race conditions
-            var currentStatus = await _admissionRepository.Query()
-                .Where(x => x.Id == applicationId)
-                .Select(x => x.Status)
-                .FirstOrDefaultAsync(cancellationToken);
-            if (currentStatus == AdmissionStatus.Converted)
-                throw new InvalidOperationException("Application was already converted by another admin.");
+        await LogAuditAsync("Admission", "Admission.Approve", applicationId.ToString(),
+            $"Application approved & converted to student: {pipelineResult.StudentNo} ({pipelineResult.StudentId})", cancellationToken);
 
-            if (currentStatus == AdmissionStatus.Rejected)
-                throw new InvalidOperationException("Cannot convert a rejected application.");
-
-            if (!application.AdmissionFeePaid)
-                throw new InvalidOperationException($"Admission fee (BDT {application.AdmissionFee:N2}) must be paid before conversion.");
-
-            var studentEmail = application.ApplicantEmail?.Trim();
-            if (string.IsNullOrWhiteSpace(studentEmail))
-            {
-                var sanitizedName = application.ApplicantName.Replace(" ", ".").ToLower();
-                studentEmail = $"{sanitizedName}.{application.Id}@school.com";
-            }
-
-            if (await _userRepository.AnyAsync(u => u.Email == studentEmail, cancellationToken))
-                throw new InvalidOperationException($"A user account already exists for '{studentEmail}'.");
-
-            var studentRole = await _roleRepository.FirstOrDefaultAsync(r => !r.IsDeleted && r.Name == "Student", cancellationToken)
-                ?? throw new InvalidOperationException("Student role not found.");
-
-            var year = DateTime.UtcNow.Year;
-            var count = await _studentRepository.CountAsync(x => x.CreatedAt.Year == year, cancellationToken) + 1;
-            var candidateUserName = $"STU-{year}{count:D3}";
-
-            while (await _userRepository.AnyAsync(u => u.UserName == candidateUserName, cancellationToken))
-            {
-                count++;
-                candidateUserName = $"STU-{year}{count:D3}";
-            }
-
-            var activationToken = Guid.NewGuid().ToString("N");
-            var pendingUser = new ApplicationUser
-            {
-                UserName = candidateUserName,
-                Email = studentEmail,
-                PhoneNumber = application.ApplicantMobileNumber?.Trim(),
-                Status = AccountStatus.Pending,
-                PasswordHash = string.Empty,
-                IsEmailConfirmed = false,
-                ActivationToken = activationToken,
-                ActivationTokenExpiry = DateTime.UtcNow.AddHours(24),
-                CreatedBy = approvedBy,
-                CreatedAt = DateTime.UtcNow
-            };
-
-            await _userRepository.AddAsync(pendingUser, cancellationToken);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-            await _userRoleRepository.AddAsync(new UserRole { UserId = pendingUser.Id, RoleId = studentRole.Id }, cancellationToken);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-            var rollNumber = await NextRollAsync(application.AppliedClassId, sectionId, cancellationToken);
-
-            // Derive group from section's StudentGroupId or application preference
-            var section = await _sectionRepository.FirstOrDefaultAsync(x => x.Id == sectionId && !x.IsDeleted, cancellationToken)
-                ?? throw new InvalidOperationException("Selected section not found or has been deleted.");
-            var studentGroupId = section.StudentGroupId ?? application.AppliedStudentGroupId;
-
-            // Fallback: if no group set and exactly one StudentGroup matches this class, auto-assign
-            if (!studentGroupId.HasValue)
-            {
-                var schoolClass = await _classRepository.FirstOrDefaultAsync(x => x.Id == application.AppliedClassId && !x.IsDeleted, cancellationToken);
-                if (schoolClass != null)
-                {
-                    var matchingGroups = await _unitOfWork.Repository<StudentGroup>().Query()
-                        .Where(g => g.IsActive && !g.IsDeleted
-                            && g.MinClass <= schoolClass.SortOrder
-                            && g.MaxClass >= schoolClass.SortOrder)
-                        .ToListAsync(cancellationToken);
-                    if (matchingGroups.Count == 1)
-                        studentGroupId = matchingGroups[0].Id;
-                }
-            }
-
-            // PHASE 42H.2: Optional Guardian Portal — check settings before creating guardian
-            var settings = await _settingRepo.GetCurrentSettingsAsync(cancellationToken);
-            bool guardianPortalEnabled = settings?.EnableGuardianPortal ?? false;
-            bool guardianActivationEnabled = settings?.EnableGuardianActivation ?? false;
-
-            int? linkedGuardianId = null;
-            string? guardianActivationToken = null;
-            string? guardianEmail = null;
-            string? guardianFullName = null;
-            string? guardianCode = null;
-
-            if (guardianPortalEnabled)
-            {
-                // PHASE 6: Ensure Guardian — with name-verification to prevent impersonation
-                var guardian = await EnsureGuardianFromAdmissionSafeAsync(application, cancellationToken);
-                application.LinkedGuardianId = guardian.Id;
-                linkedGuardianId = guardian.Id;
-                guardianEmail = guardian.Email;
-                guardianFullName = guardian.FullName;
-                guardianCode = guardian.GuardianCode;
-
-                // PHASE 6/7: Create a Guardian portal user (gdn-{Code}) + activation link
-                if (guardianActivationEnabled)
-                {
-                    try
-                    {
-                        guardianActivationToken = await _guardianService.EnsureGuardianUserAsync(guardian.Id, cancellationToken);
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Guardian user provisioning failed for admission {ApplicationNo}", application.ApplicationNo);
-                    }
-                }
-            }
-            else
-            {
-                // Guardian portal disabled — skip guardian creation entirely
-                application.LinkedGuardianId = null;
-            }
-
-            // When guardian portal is off, prevent StudentService from creating inline guardians
-            var studentDto = new StudentUpsertDto
-            {
-                StudentNo = candidateUserName, FullName = application.ApplicantName, FullNameBangla = application.ApplicantNameBangla,
-                DateOfBirth = application.DateOfBirth, Gender = application.Gender, FatherName = application.FatherName,
-                FatherOccupation = application.FatherOccupation, MotherName = application.MotherName, MotherOccupation = application.MotherOccupation,
-                GuardianName = application.GuardianName, GuardianOccupation = application.GuardianOccupation,
-                MobileNumber = application.ApplicantMobileNumber ?? string.Empty, AlternativeNumber = application.AlternativeNumber,
-                FatherOrGuardianMobileNo = guardianPortalEnabled ? application.FatherOrGuardianMobileNo : null,
-                EmailAddress = studentEmail,
-                Nationality = application.Nationality, Country = application.Country, MaritalStatus = application.MaritalStatus,
-                Religion = application.Religion, BloodGroup = application.BloodGroup,
-                BirthCertificateNo = application.BirthCertificateNo,
-                ProfilePicturePath = application.ProfilePicturePath, PresentVillage = application.PresentVillage,
-                PresentPostOffice = application.PresentPostOffice, PresentThana = application.PresentThana,
-                PresentDistrict = application.PresentDistrict, PermanentVillage = application.PermanentVillage,
-                PermanentPostOffice = application.PermanentPostOffice, PermanentThana = application.PermanentThana,
-                PermanentDistrict = application.PermanentDistrict, ClassId = application.AppliedClassId,
-                SectionId = sectionId, StudentGroupId = studentGroupId, RollNumber = rollNumber, UserId = pendingUser.Id,
-                LinkedGuardianId = linkedGuardianId
-            };
-
-            var studentId = await _studentService.CreateAsync(studentDto, approvedBy, cancellationToken);
-
-            application.Status = AdmissionStatus.Converted;
-            application.ReviewedAt = DateTime.UtcNow;
-            if (int.TryParse(approvedBy, out var reviewerId)) application.ReviewedByUserId = reviewerId;
-            application.UpdatedBy = approvedBy;
-            application.UpdatedAt = DateTime.UtcNow;
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-            // --- Fee invoice creation for admission ---
-            var feeStructure = await _unitOfWork.Repository<AdmissionFeeStructure>()
-                .FirstOrDefaultAsync(f => f.SchoolClassId == application.AppliedClassId && f.IsActive && !f.IsDeleted, cancellationToken);
-
-            var admissionFee = feeStructure?.AdmissionFee ?? application.AdmissionFee;
-            var invoiceKey = $"AdmissionApp_{applicationId}";
-
-            if (!await _unitOfWork.Repository<FeeInvoice>().AnyAsync(i => i.Remarks == invoiceKey && !i.IsDeleted, cancellationToken))
-            {
-                var invoiceNo = $"INV-ADM-{DateTime.UtcNow:yyyyMMdd}-{Random.Shared.Next(1000, 9999):D4}";
-                var isPaid = application.AdmissionFeePaid;
-
-                var invoice = new FeeInvoice
-                {
-                    InvoiceNo = invoiceNo,
-                    StudentId = studentId,
-                    DueDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(30)),
-                    TotalAmount = admissionFee,
-                    PaidAmount = isPaid ? admissionFee : 0,
-                    Status = isPaid ? PaymentStatus.Paid : PaymentStatus.Unpaid,
-                    Remarks = invoiceKey,
-                    CreatedBy = approvedBy,
-                    CreatedAt = DateTime.UtcNow
-                };
-
-                await _unitOfWork.Repository<FeeInvoice>().AddAsync(invoice, cancellationToken);
-                await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-                var className = feeStructure?.ClassName ?? $"Class-{application.AppliedClassId}";
-
-                await _unitOfWork.Repository<FeeInvoiceItem>().AddAsync(new FeeInvoiceItem
-                {
-                    FeeInvoiceId = invoice.Id,
-                    Description = $"Admission Fee - {className}",
-                    Amount = admissionFee,
-                    NetAmount = admissionFee,
-                    CreatedBy = approvedBy,
-                    CreatedAt = DateTime.UtcNow
-                }, cancellationToken);
-
-                await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-                await _unitOfWork.Repository<FeeLedger>().AddAsync(new FeeLedger
-                {
-                    StudentId = studentId,
-                    FeeInvoiceId = invoice.Id,
-                    TransactionType = FeeLedgerType.Invoice,
-                    Debit = isPaid ? 0 : admissionFee,
-                    Credit = 0,
-                    Balance = isPaid ? 0 : admissionFee,
-                    Description = $"Invoice created: {invoiceNo}",
-                    TransactionDate = DateTime.UtcNow,
-                    CreatedBy = approvedBy,
-                    CreatedAt = DateTime.UtcNow
-                }, cancellationToken);
-
-                await _unitOfWork.SaveChangesAsync(cancellationToken);
-
-                if (isPaid)
-                {
-                    await _unitOfWork.Repository<FeeLedger>().AddAsync(new FeeLedger
-                    {
-                        StudentId = studentId,
-                        FeeInvoiceId = invoice.Id,
-                        TransactionType = FeeLedgerType.Payment,
-                        Debit = 0,
-                        Credit = admissionFee,
-                        Balance = 0,
-                        Description = $"Payment for admission invoice: {invoiceNo}",
-                        TransactionDate = DateTime.UtcNow,
-                        CreatedBy = approvedBy,
-                        CreatedAt = DateTime.UtcNow
-                    }, cancellationToken);
-
-                    await _unitOfWork.SaveChangesAsync(cancellationToken);
-                }
-            }
-
-            await _unitOfWork.CommitTransactionAsync(cancellationToken);
-
-            await LogAuditAsync("Admission", "Admission.Approve", applicationId.ToString(), $"Application approved & converted to student: {application.ApplicantName} ({application.ApplicationNo})", cancellationToken);
-
-            try { await _emailService.SendStudentActivationAsync(studentEmail, application.ApplicantName, pendingUser.UserName, activationToken, cancellationToken); }
-            catch (Exception ex) { _logger.LogError(ex, "Student activation email failed for application {ApplicationNo}", application.ApplicationNo); }
-
-            if (!string.IsNullOrEmpty(guardianActivationToken) && !string.IsNullOrWhiteSpace(guardianEmail))
-            {
-                try
-                {
-                    // The EmailService falls back to its own configured BaseUrl/LocalUrl when an empty string is passed.
-                    await _emailService.SendGuardianActivationAsync(
-                        guardianEmail,
-                        guardianFullName ?? application.GuardianName ?? application.FatherName ?? "Guardian",
-                        $"gdn-{(guardianCode ?? "guardian").Replace("-", string.Empty)}",
-                        guardianActivationToken,
-                        string.Empty,
-                        cancellationToken);
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Guardian activation email failed for admission {ApplicationNo}", application.ApplicationNo);
-                }
-            }
-
-            return studentId;
-        }
-        catch
-        {
-            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
-            throw;
-        }
+        return pipelineResult.StudentId ?? throw new InvalidOperationException("Student ID not returned from pipeline.");
     }
 
     public async Task UpdateAsync(int id, AdmissionCreateDto dto, string updatedBy, CancellationToken cancellationToken)
@@ -581,7 +355,10 @@ public class AdmissionService : IAdmissionService
         application.UpdatedAt = DateTime.UtcNow;
         application.UpdatedBy = updatedBy;
 
+        _admissionRepository.Update(application);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await LogAuditAsync("Admission", "Admission.Update", id.ToString(), $"Admission updated: {application.ApplicationNo} ({application.ApplicantName})", cancellationToken);
     }
 
     public async Task RejectAsync(int applicationId, string rejectedBy, string? rejectionReason = null, CancellationToken cancellationToken = default)
@@ -594,14 +371,26 @@ public class AdmissionService : IAdmissionService
         if (application.Status == AdmissionStatus.Rejected)
             throw new InvalidOperationException("Application has already been rejected.");
 
-        application.Status = AdmissionStatus.Rejected;
-        application.ReviewedAt = DateTime.UtcNow;
-        if (int.TryParse(rejectedBy, out var reviewerId)) application.ReviewedByUserId = reviewerId;
-        application.UpdatedBy = rejectedBy;
-        application.UpdatedAt = DateTime.UtcNow;
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _unitOfWork.BeginTransactionAsync(cancellationToken);
+        try
+        {
+            application.Status = AdmissionStatus.Rejected;
+            application.ReviewedAt = DateTime.UtcNow;
+            if (int.TryParse(rejectedBy, out var reviewerId)) application.ReviewedByUserId = reviewerId;
+            application.UpdatedBy = rejectedBy;
+            application.UpdatedAt = DateTime.UtcNow;
+            _admissionRepository.Update(application);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        await LogAuditAsync("Admission", "Admission.Reject", applicationId.ToString(), $"Application rejected: {application.ApplicantName} ({application.ApplicationNo})", cancellationToken);
+            await LogAuditAsync("Admission", "Admission.Reject", applicationId.ToString(), $"Application rejected: {application.ApplicantName} ({application.ApplicationNo})", cancellationToken);
+
+            await _unitOfWork.CommitTransactionAsync(cancellationToken);
+        }
+        catch
+        {
+            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
+            throw;
+        }
 
         if (!string.IsNullOrWhiteSpace(application.ApplicantEmail))
         {
@@ -637,44 +426,253 @@ public class AdmissionService : IAdmissionService
         if (application.Status == AdmissionStatus.Converted)
             throw new InvalidOperationException("Cannot delete a converted application.");
 
-        // Cascade soft-delete to associated documents to prevent orphans
-        var docs = await _unitOfWork.Repository<AdmissionDocument>().Query()
-            .Where(d => d.AdmissionApplicationId == id && !d.IsDeleted)
-            .ToListAsync(ct);
-        foreach (var doc in docs)
+        await _unitOfWork.BeginTransactionAsync(ct);
+        try
         {
-            doc.IsDeleted = true;
-            DeleteFile(doc.FilePath);
+            // Cascade soft-delete to associated documents to prevent orphans
+            var docs = await _unitOfWork.Repository<AdmissionDocument>().Query()
+                .Where(d => d.AdmissionApplicationId == id && !d.IsDeleted)
+                .ToListAsync(ct);
+            foreach (var doc in docs)
+            {
+                doc.IsDeleted = true;
+                DeleteFile(doc.FilePath);
+            }
+
+            // Also clean up uploaded files for this application
+            DeleteFile(application.ProfilePicturePath);
+            DeleteFile(application.BirthCertificatePath);
+            DeleteFile(application.PaymentSlipPath);
+            DeleteFile(application.GuardianPhoto);
+
+            application.IsDeleted = true;
+            application.UpdatedBy = updatedBy;
+            application.UpdatedAt = DateTime.UtcNow;
+            _admissionRepository.Update(application);
+            await _unitOfWork.SaveChangesAsync(ct);
+
+            await LogAuditAsync("Admission", "Admission.Delete", id.ToString(), $"Admission deleted: {application.ApplicationNo} ({application.ApplicantName})", ct);
+
+            await _unitOfWork.CommitTransactionAsync(ct);
         }
-
-        // Also clean up uploaded files for this application
-        DeleteFile(application.ProfilePicturePath);
-        DeleteFile(application.BirthCertificatePath);
-        DeleteFile(application.PaymentSlipPath);
-        DeleteFile(application.GuardianPhoto);
-
-        application.IsDeleted = true;
-        application.UpdatedBy = updatedBy;
-        application.UpdatedAt = DateTime.UtcNow;
-        await _unitOfWork.SaveChangesAsync(ct);
-
-        await LogAuditAsync("Admission", "Admission.Delete", id.ToString(), $"Application deleted: {application.ApplicantName} ({application.ApplicationNo})", ct);
+        catch
+        {
+            await _unitOfWork.RollbackTransactionAsync(ct);
+            throw;
+        }
     }
 
     public async Task<IEnumerable<dynamic>> GetAvailableClassesAsync(CancellationToken ct = default)
     {
-        return await _classRepository.Query().AsNoTracking()
+        if (_cache.TryGetValue(CacheKeyClasses, out IEnumerable<dynamic>? cached) && cached != null)
+            return cached;
+
+        var classes = await _classRepository.Query().AsNoTracking()
             .Where(c => !c.IsDeleted)
             .Select(c => new { c.Id, c.Name, c.IsGroupBased, c.SortOrder })
             .ToListAsync(ct);
+
+        _cache.Set(CacheKeyClasses, classes, CacheDuration);
+        return classes;
+    }
+
+    public async Task<WorkflowInstance> InitializeWorkflowAsync(int applicationId, CancellationToken ct = default)
+    {
+        return await _workflowService.InitializeWorkflowAsync(applicationId, ct);
+    }
+
+    public async Task<AdmissionTimelineDto> GetTimelineAsync(int applicationId, CancellationToken ct = default)
+    {
+        return await _workflowService.GetTimelineAsync(applicationId, ct);
     }
 
     public async Task<IEnumerable<dynamic>> GetActiveStudentGroupsAsync(CancellationToken ct = default)
     {
-        return await _unitOfWork.Repository<StudentGroup>().Query().AsNoTracking()
+        if (_cache.TryGetValue(CacheKeyGroups, out IEnumerable<dynamic>? cached) && cached != null)
+            return cached;
+
+        var groups = await _unitOfWork.Repository<StudentGroup>().Query().AsNoTracking()
             .Where(g => g.IsActive && !g.IsDeleted)
             .Select(g => new { g.Id, g.Name, g.MinClass, g.MaxClass })
             .ToListAsync(ct);
+
+        _cache.Set(CacheKeyGroups, groups, CacheDuration);
+        return groups;
+    }
+
+    public async Task<BulkOperationProgress> BulkApproveAsync(List<int> ids, int sectionId, string approvedBy, CancellationToken ct = default)
+    {
+        var progress = new BulkOperationProgress { Total = ids.Count };
+        foreach (var id in ids)
+        {
+            progress.CurrentItem = $"Processing ID: {id}";
+            try
+            {
+                await ApproveAndConvertAsync(id, sectionId, approvedBy, ct);
+                progress.Succeeded++;
+            }
+            catch (Exception ex)
+            {
+                progress.Failed++;
+                progress.Errors.Add($"ID {id}: {ex.Message}");
+            }
+            progress.Processed++;
+        }
+        progress.IsCompleted = true;
+        return progress;
+    }
+
+    public async Task<BulkOperationProgress> BulkRejectAsync(List<int> ids, string rejectedBy, string? reason = null, CancellationToken ct = default)
+    {
+        var progress = new BulkOperationProgress { Total = ids.Count };
+        foreach (var id in ids)
+        {
+            progress.CurrentItem = $"Processing ID: {id}";
+            try
+            {
+                await RejectAsync(id, rejectedBy, reason, ct);
+                progress.Succeeded++;
+            }
+            catch (Exception ex)
+            {
+                progress.Failed++;
+                progress.Errors.Add($"ID {id}: {ex.Message}");
+            }
+            progress.Processed++;
+        }
+        progress.IsCompleted = true;
+        return progress;
+    }
+
+    public async Task<BulkOperationProgress> BulkDeleteAsync(List<int> ids, string updatedBy, CancellationToken ct = default)
+    {
+        var progress = new BulkOperationProgress { Total = ids.Count };
+        foreach (var id in ids)
+        {
+            progress.CurrentItem = $"Processing ID: {id}";
+            try
+            {
+                await DeleteAsync(id, updatedBy, ct);
+                progress.Succeeded++;
+            }
+            catch (Exception ex)
+            {
+                progress.Failed++;
+                progress.Errors.Add($"ID {id}: {ex.Message}");
+            }
+            progress.Processed++;
+        }
+        progress.IsCompleted = true;
+        return progress;
+    }
+
+    public async Task<BulkOperationProgress> BulkRestoreAsync(List<int> ids, string updatedBy, CancellationToken ct = default)
+    {
+        var progress = new BulkOperationProgress { Total = ids.Count };
+        foreach (var id in ids)
+        {
+            progress.CurrentItem = $"Processing ID: {id}";
+            try
+            {
+                var app = await _admissionRepository.FirstOrDefaultAsync(x => x.Id == id && x.IsDeleted, ct);
+                if (app != null)
+                {
+                    app.IsDeleted = false;
+                    app.UpdatedBy = updatedBy;
+                    app.UpdatedAt = DateTime.UtcNow;
+                    _admissionRepository.Update(app);
+                    await _unitOfWork.SaveChangesAsync(ct);
+                    progress.Succeeded++;
+                }
+            }
+            catch (Exception ex)
+            {
+                progress.Failed++;
+                progress.Errors.Add($"ID {id}: {ex.Message}");
+            }
+            progress.Processed++;
+        }
+        progress.IsCompleted = true;
+        return progress;
+    }
+
+    public async Task<BulkOperationProgress> BulkExportAsync(List<int> ids, CancellationToken ct = default)
+    {
+        var progress = new BulkOperationProgress { Total = ids.Count };
+        foreach (var id in ids)
+        {
+            progress.CurrentItem = $"Exporting ID: {id}";
+            try
+            {
+                var app = await GetByIdAsync(id, ct);
+                if (app != null) progress.Succeeded++;
+            }
+            catch (Exception ex)
+            {
+                progress.Failed++;
+                progress.Errors.Add($"ID {id}: {ex.Message}");
+            }
+            progress.Processed++;
+        }
+        progress.IsCompleted = true;
+        return progress;
+    }
+
+    public async Task<byte[]> BulkExportExcelAsync(List<int>? ids = null, CancellationToken ct = default)
+    {
+        var query = _admissionRepository.Query().AsNoTracking().Where(a => !a.IsDeleted);
+        if (ids != null && ids.Any())
+            query = query.Where(a => ids.Contains(a.Id));
+
+        var apps = await query.OrderByDescending(a => a.CreatedAt).ToListAsync(ct);
+
+        using var workbook = new ClosedXML.Excel.XLWorkbook();
+        var ws = workbook.Worksheets.Add("Admissions");
+
+        // Headers
+        ws.Cell(1, 1).Value = "Application No";
+        ws.Cell(1, 2).Value = "Applicant Name";
+        ws.Cell(1, 3).Value = "Name (Bangla)";
+        ws.Cell(1, 4).Value = "Date of Birth";
+        ws.Cell(1, 5).Value = "Gender";
+        ws.Cell(1, 6).Value = "Father Name";
+        ws.Cell(1, 7).Value = "Mother Name";
+        ws.Cell(1, 8).Value = "Mobile";
+        ws.Cell(1, 9).Value = "Email";
+        ws.Cell(1, 10).Value = "Religion";
+        ws.Cell(1, 11).Value = "Status";
+        ws.Cell(1, 12).Value = "Applied Class";
+        ws.Cell(1, 13).Value = "Submitted At";
+
+        var headerRange = ws.Range(1, 1, 1, 13);
+        headerRange.Style.Font.Bold = true;
+        headerRange.Style.Fill.BackgroundColor = ClosedXML.Excel.XLColor.FromArgb(15, 118, 110);
+        headerRange.Style.Font.FontColor = ClosedXML.Excel.XLColor.White;
+
+        int row = 2;
+        foreach (var app in apps)
+        {
+            ws.Cell(row, 1).Value = app.ApplicationNo;
+            ws.Cell(row, 2).Value = app.ApplicantName;
+            ws.Cell(row, 3).Value = app.ApplicantNameBangla ?? string.Empty;
+            ws.Cell(row, 4).Value = app.DateOfBirth.ToString("dd-MMM-yyyy");
+            ws.Cell(row, 5).Value = app.Gender;
+            ws.Cell(row, 6).Value = app.FatherName;
+            ws.Cell(row, 7).Value = app.MotherName;
+            ws.Cell(row, 8).Value = app.ApplicantMobileNumber ?? string.Empty;
+            ws.Cell(row, 9).Value = app.ApplicantEmail ?? string.Empty;
+            ws.Cell(row, 10).Value = app.Religion;
+            ws.Cell(row, 11).Value = app.Status.ToString();
+            ws.Cell(row, 12).Value = app.AppliedClassId.ToString();
+            ws.Cell(row, 13).Value = app.CreatedAt.ToString("dd-MMM-yyyy HH:mm");
+            row++;
+        }
+
+        ws.Columns().AdjustToContents();
+
+        using var ms = new MemoryStream();
+        workbook.SaveAs(ms);
+        return ms.ToArray();
     }
 
     private static readonly HashSet<string> _allowedExtensions = new(StringComparer.OrdinalIgnoreCase)
@@ -795,18 +793,15 @@ public class AdmissionService : IAdmissionService
     private async Task<string> GenerateNextGuardianCodeAsync(CancellationToken ct)
     {
         var lastCode = await _unitOfWork.Repository<Models.Entities.Guardian.Guardian>().Query()
-            .OrderByDescending(g => g.GuardianCode)
+            .Where(g => g.GuardianCode.StartsWith("GRD-"))
+            .OrderByDescending(g => g.GuardianCode.Length)
+            .ThenByDescending(g => g.GuardianCode)
             .Select(g => g.GuardianCode)
             .FirstOrDefaultAsync(ct);
 
         int nextNum = 1;
-        if (lastCode != null && lastCode.StartsWith("GRD-", StringComparison.OrdinalIgnoreCase))
-        {
-            if (int.TryParse(lastCode.Substring(4), out int lastNum))
-            {
-                nextNum = lastNum + 1;
-            }
-        }
+        if (lastCode != null && lastCode.Length > 4 && int.TryParse(lastCode.AsSpan(4), out int lastNum))
+            nextNum = lastNum + 1;
 
         return $"GRD-{nextNum:D5}";
     }
@@ -825,23 +820,30 @@ public class AdmissionService : IAdmissionService
 
     private async Task LogAuditAsync(string module, string action, string entityId, string details, CancellationToken ct = default)
     {
-        var httpContext = _httpContextAccessor?.HttpContext;
-        var userIdStr = httpContext?.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
-        int? userId = userIdStr != null && int.TryParse(userIdStr, out var uid) ? uid : null;
-
-        var log = new AuditLog
+        try
         {
-            UserId = userId,
-            Module = module,
-            Action = action,
-            IpAddress = httpContext?.Connection?.RemoteIpAddress?.ToString(),
-            Details = details.Length > 1000 ? details[..1000] : details,
-            CreatedBy = httpContext?.User?.Identity?.Name ?? "system",
-            CreatedAt = DateTime.UtcNow
-        };
+            var httpContext = _httpContextAccessor?.HttpContext;
+            var userIdStr = httpContext?.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            int? userId = userIdStr != null && int.TryParse(userIdStr, out var uid) ? uid : null;
 
-        await _unitOfWork.Repository<AuditLog>().AddAsync(log, ct);
-        await _unitOfWork.SaveChangesAsync(ct);
+            var log = new AuditLog
+            {
+                UserId = userId,
+                Module = module,
+                Action = action,
+                IpAddress = httpContext?.Connection?.RemoteIpAddress?.ToString(),
+                Details = (details ?? string.Empty).Length > 1000 ? (details ?? string.Empty)[..1000] : details ?? string.Empty,
+                CreatedBy = httpContext?.User?.Identity?.Name ?? "system",
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _unitOfWork.Repository<AuditLog>().AddAsync(log, ct);
+            await _unitOfWork.SaveChangesAsync(ct);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to log audit: {Module}/{Action} for {EntityId}", module, action, entityId);
+        }
     }
 }
 

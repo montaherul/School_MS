@@ -40,6 +40,10 @@ public class SchoolDbContext : DbContext
     public DbSet<AdmissionApplication> Admissions => Set<AdmissionApplication>();
     public DbSet<AdmissionDocument> AdmissionDocuments => Set<AdmissionDocument>();
     public DbSet<AdmissionListResultDto> AdmissionListResults => Set<AdmissionListResultDto>();
+    public DbSet<WorkflowDefinition> WorkflowDefinitions => Set<WorkflowDefinition>();
+    public DbSet<WorkflowTransition> WorkflowTransitions => Set<WorkflowTransition>();
+    public DbSet<WorkflowInstance> WorkflowInstances => Set<WorkflowInstance>();
+    public DbSet<WorkflowHistoryEntry> WorkflowHistoryEntries => Set<WorkflowHistoryEntry>();
     public DbSet<Student> Students => Set<Student>();
     public DbSet<Guardian> Guardians => Set<Guardian>();
     public DbSet<StudentGuardian> StudentGuardians => Set<StudentGuardian>();
@@ -654,6 +658,49 @@ modelBuilder.Entity<AdmitCard>()
         modelBuilder.Entity<Models.Entities.Routine.SubstituteAssignment>()
             .HasOne(a => a.AssignedBy).WithMany()
             .HasForeignKey(a => a.AssignedById).OnDelete(DeleteBehavior.Restrict);
+
+// Workflow Entity Configurations
+        modelBuilder.Entity<WorkflowDefinition>()
+            .HasIndex(x => x.Name)
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
+
+        modelBuilder.Entity<WorkflowTransition>()
+            .HasIndex(x => new { x.WorkflowDefinitionId, x.FromState, x.ToState })
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
+
+        modelBuilder.Entity<WorkflowTransition>()
+            .HasOne(x => x.WorkflowDefinition)
+            .WithMany(x => x.Transitions)
+            .HasForeignKey(x => x.WorkflowDefinitionId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<WorkflowInstance>()
+            .HasIndex(x => x.AdmissionApplicationId)
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
+
+        modelBuilder.Entity<WorkflowInstance>()
+            .HasOne(x => x.AdmissionApplication)
+            .WithMany()
+            .HasForeignKey(x => x.AdmissionApplicationId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<WorkflowInstance>()
+            .HasOne(x => x.WorkflowDefinition)
+            .WithMany()
+            .HasForeignKey(x => x.WorkflowDefinitionId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<WorkflowHistoryEntry>()
+            .HasIndex(x => new { x.WorkflowInstanceId, x.ActionedAt });
+
+        modelBuilder.Entity<WorkflowHistoryEntry>()
+            .HasOne(x => x.WorkflowInstance)
+            .WithMany(x => x.History)
+            .HasForeignKey(x => x.WorkflowInstanceId)
+            .OnDelete(DeleteBehavior.Cascade);
 
 DbInitializer.Seed(modelBuilder);
     }

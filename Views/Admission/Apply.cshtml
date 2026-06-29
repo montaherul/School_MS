@@ -2,15 +2,25 @@
 @{
     Layout = "_PublicLayout";
     ViewData["Title"] = "Admission Application Form";
+    var stepList = new[] {
+        ("Personal", "Personal Information"),
+        ("Family", "Family Information"),
+        ("Guardian", "Guardian Information"),
+        ("Contact", "Contact Details"),
+        ("Address", "Address Information"),
+        ("Documents", "Document Upload"),
+        ("Finance", "Finance &amp; Fee"),
+        ("Review", "Review &amp; Submit")
+    };
 }
 
 <div class="ws-page-hero">
     <div class="ws-container">
-        <span class="ws-badge ws-badge--accent" style="margin-bottom:12px;font-size:13px;padding:6px 18px;">
+        <span class="ws-badge ws-badge--accent ws-mb-1" style="font-size:13px;padding:6px 18px;">
             <i class="bi bi-pencil-square me-1"></i> Online Admission
         </span>
         <h1>Student Admission Form</h1>
-        <p>Please fill in all the required information accurately to begin your journey with us.</p>
+        <p>Complete the 8-step wizard below to submit your application.</p>
     </div>
 </div>
 
@@ -18,426 +28,589 @@
     <div class="ws-container">
         <div class="ws-row" style="justify-content:center;">
             <div class="ws-col-12 ws-col-lg-10">
-                <form asp-action="Apply" method="post" enctype="multipart/form-data">
+                <form id="admissionForm" asp-action="Apply" asp-controller="Admission" method="post" enctype="multipart/form-data" novalidate>
                     @Html.AntiForgeryToken()
-                    <div asp-validation-summary="ModelOnly" class="ws-form-alert ws-form-alert--error" style="margin-bottom:24px;"></div>
+                    <div asp-validation-summary="ModelOnly" class="ws-form-alert ws-form-alert--error ws-mb-4" style="display:block;"></div>
 
-                    <!-- ── Section 1: Personal Information ── -->
-                    <div class="ws-card ws-card--bordered-top ws-mb-6">
-                        <div class="ws-card__header" style="background:var(--ws-primary);color:#fff;border-radius:12px 12px 0 0;">
-                            <i class="bi bi-person-fill"></i> Personal Information
+                    <div class="adm-wizard">
+                        <!-- Progress Bar (Sticky Top) -->
+                        <div class="adm-wizard__progress" role="tablist" aria-label="Application steps">
+                            <div class="adm-wizard__steps">
+                                @for (int i = 0; i < stepList.Length; i++)
+                                {
+                                    var step = stepList[i];
+                                    <button type="button"
+                                            class="adm-wizard__step@(i == 0 ? " active" : "")"
+                                            data-step="@i"
+                                            role="tab"
+                                            aria-selected="@(i == 0 ? "true" : "false")"
+                                            aria-label="Step @(i + 1): @step.Item2"
+                                            tabindex="@(i == 0 ? "0" : "-1")">
+                                        <span class="adm-wizard__step-indicator" aria-hidden="true">@(i + 1)</span>
+                                        <span class="adm-wizard__step-label">@step.Item1</span>
+                                    </button>
+                                    @if (i < stepList.Length - 1)
+                                    {
+                                        <div class="adm-wizard__step-connector" aria-hidden="true"></div>
+                                    }
+                                }
+                            </div>
                         </div>
-                        <div class="ws-card__body">
-                            <div class="ws-row ws-g-3">
-                                <div class="ws-col-12 ws-col-md-6">
-                                    <div class="ws-form-group">
-                                        <label asp-for="ApplicantName" class="ws-form-label">Applicant's Name (English) <span style="color:var(--ws-danger);">*</span></label>
-                                        <input asp-for="ApplicantName" class="ws-form-input" placeholder="e.g. John Doe" />
-                                        <span asp-validation-for="ApplicantName" style="color:var(--ws-danger);font-size:13px;"></span>
+
+                        <!-- Body: Panels + Sidebar -->
+                        <div class="adm-wizard__body">
+                            <!-- Panels -->
+                            <div class="adm-wizard__panels">
+                                @* Step 1: Personal Information *@
+                                <div class="adm-wizard__panel active" data-panel="0" role="tabpanel" aria-label="Step 1: Personal Information">
+                                    <div class="adm-wizard__panel-header">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                                        </svg>
+                                        <div>
+                                            <h2>Personal Information</h2>
+                                            <p>Tell us about the applicant</p>
+                                        </div>
+                                    </div>
+                                    <div class="ws-card ws-card">
+                                        <div class="ws-card__body">
+                                            <div class="adm-form-grid">
+                                                <div class="ws-form-group">
+                                                    <label class="ws-form-label" for="ApplicantName">Applicant's Name (English) <span class="adm-required">*</span></label>
+                                                    <input asp-for="ApplicantName" class="ws-form-input" placeholder="e.g. John Doe" required />
+                                                    <span asp-validation-for="ApplicantName" class="adm-field-error"></span>
+                                                </div>
+                                                <div class="ws-form-group">
+                                                    <label class="ws-form-label" for="ApplicantNameBangla">Applicant's Name (Bangla)</label>
+                                                    <input asp-for="ApplicantNameBangla" class="ws-form-input" placeholder="বাংলায় নাম" />
+                                                    <span asp-validation-for="ApplicantNameBangla" class="adm-field-error"></span>
+                                                </div>
+                                                <div class="ws-form-group">
+                                                    <label class="ws-form-label" for="DateOfBirth">Date of Birth <span class="adm-required">*</span></label>
+                                                    <input asp-for="DateOfBirth" type="date" class="ws-form-input" required />
+                                                    <span asp-validation-for="DateOfBirth" class="adm-field-error"></span>
+                                                </div>
+                                                <div class="ws-form-group">
+                                                    <label class="ws-form-label" for="Gender">Gender <span class="adm-required">*</span></label>
+                                                    <select asp-for="Gender" class="ws-form-select" required>
+                                                        <option value="">Select</option>
+                                                        <option value="Male">Male</option>
+                                                        <option value="Female">Female</option>
+                                                        <option value="Other">Other</option>
+                                                    </select>
+                                                    <span asp-validation-for="Gender" class="adm-field-error"></span>
+                                                </div>
+                                                <div class="ws-form-group">
+                                                    <label class="ws-form-label" for="BloodGroup">Blood Group</label>
+                                                    <select asp-for="BloodGroup" class="ws-form-select">
+                                                        <option value="">Select</option>
+                                                        <option value="A+">A+</option>
+                                                        <option value="A-">A-</option>
+                                                        <option value="B+">B+</option>
+                                                        <option value="B-">B-</option>
+                                                        <option value="AB+">AB+</option>
+                                                        <option value="AB-">AB-</option>
+                                                        <option value="O+">O+</option>
+                                                        <option value="O-">O-</option>
+                                                    </select>
+                                                </div>
+                                                <div class="ws-form-group">
+                                                    <label class="ws-form-label" for="MaritalStatus">Marital Status <span class="adm-required">*</span></label>
+                                                    <select asp-for="MaritalStatus" class="ws-form-select" required>
+                                                        <option value="">Select</option>
+                                                        <option value="Single">Single</option>
+                                                        <option value="Married">Married</option>
+                                                        <option value="Widowed">Widowed</option>
+                                                        <option value="Divorced">Divorced</option>
+                                                    </select>
+                                                    <span asp-validation-for="MaritalStatus" class="adm-field-error"></span>
+                                                </div>
+                                                <div class="ws-form-group">
+                                                    <label class="ws-form-label" for="Religion">Religion <span class="adm-required">*</span></label>
+                                                    <select asp-for="Religion" class="ws-form-select" required>
+                                                        <option value="">Select</option>
+                                                        <option value="Islam">Islam</option>
+                                                        <option value="Hinduism">Hinduism</option>
+                                                        <option value="Christianity">Christianity</option>
+                                                        <option value="Buddhism">Buddhism</option>
+                                                        <option value="Other">Other</option>
+                                                    </select>
+                                                    <span asp-validation-for="Religion" class="adm-field-error"></span>
+                                                </div>
+                                                <div class="ws-form-group">
+                                                    <label class="ws-form-label">Profile Picture</label>
+                                                    <div class="adm-photo-upload">
+                                                        <div class="adm-photo-upload__preview">
+                                                            <img id="previewAdmissionImg" src="/images/default-user.png" alt="Profile preview" />
+                                                        </div>
+                                                        <div class="adm-photo-upload__actions">
+                                                            <input asp-for="ProfilePicture" type="file" class="adm-file-input" accept="image/*" onchange="previewAdmissionImage(event)" aria-label="Upload profile picture" />
+                                                            <p class="ws-text-muted ws-mt-1" style="font-size:12px;">Accepted: JPG, PNG. Max 2MB. 120&times;120px recommended.</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="ws-col-12 ws-col-md-6">
-                                    <div class="ws-form-group">
-                                        <label asp-for="ApplicantNameBangla" class="ws-form-label">Applicant's Name (Bangla)</label>
-                                        <input asp-for="ApplicantNameBangla" class="ws-form-input" placeholder="বাংলায় নাম" />
-                                        <span asp-validation-for="ApplicantNameBangla" style="color:var(--ws-danger);font-size:13px;"></span>
+
+                                @* Step 2: Family Information *@
+                                <div class="adm-wizard__panel" data-panel="1" role="tabpanel" aria-label="Step 2: Family Information">
+                                    <div class="adm-wizard__panel-header">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                                        </svg>
+                                        <div>
+                                            <h2>Family Information</h2>
+                                            <p>Parent and guardian details</p>
+                                        </div>
+                                    </div>
+                                    <div class="ws-card ws-card">
+                                        <div class="ws-card__body">
+                                            <div class="adm-form-grid">
+                                                <div class="ws-form-group">
+                                                    <label class="ws-form-label" for="FatherName">Father's Name <span class="adm-required">*</span></label>
+                                                    <input asp-for="FatherName" class="ws-form-input" placeholder="Father's full name" required />
+                                                    <span asp-validation-for="FatherName" class="adm-field-error"></span>
+                                                </div>
+                                                <div class="ws-form-group">
+                                                    <label class="ws-form-label" for="FatherOccupation">Father's Occupation</label>
+                                                    <input asp-for="FatherOccupation" class="ws-form-input" placeholder="e.g. Business, Service" />
+                                                </div>
+                                                <div class="ws-form-group">
+                                                    <label class="ws-form-label" for="MotherName">Mother's Name <span class="adm-required">*</span></label>
+                                                    <input asp-for="MotherName" class="ws-form-input" placeholder="Mother's full name" required />
+                                                    <span asp-validation-for="MotherName" class="adm-field-error"></span>
+                                                </div>
+                                                <div class="ws-form-group">
+                                                    <label class="ws-form-label" for="MotherOccupation">Mother's Occupation</label>
+                                                    <input asp-for="MotherOccupation" class="ws-form-input" placeholder="e.g. Housewife, Service" />
+                                                </div>
+                                                <div class="ws-form-group">
+                                                    <label class="ws-form-label" for="GuardianName">Guardian's Name</label>
+                                                    <input asp-for="GuardianName" class="ws-form-input" placeholder="If different from parents" />
+                                                </div>
+                                                <div class="ws-form-group">
+                                                    <label class="ws-form-label" for="GuardianOccupation">Guardian's Occupation</label>
+                                                    <input asp-for="GuardianOccupation" class="ws-form-input" />
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="ws-col-12 ws-col-md-4">
-                                    <div class="ws-form-group">
-                                        <label asp-for="DateOfBirth" class="ws-form-label">Date of Birth <span style="color:var(--ws-danger);">*</span></label>
-                                        <input asp-for="DateOfBirth" type="date" class="ws-form-input" />
-                                        <span asp-validation-for="DateOfBirth" style="color:var(--ws-danger);font-size:13px;"></span>
+
+                                @* Step 3: Guardian Information *@
+                                <div class="adm-wizard__panel" data-panel="2" role="tabpanel" aria-label="Step 3: Guardian Information">
+                                    <div class="adm-wizard__panel-header">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                                        </svg>
+                                        <div>
+                                            <h2>Guardian Information</h2>
+                                            <p>Contact details for the guardian</p>
+                                        </div>
+                                    </div>
+                                    <div class="ws-card ws-card">
+                                        <div class="ws-card__body">
+                                            <div class="adm-form-grid">
+                                                <div class="ws-form-group">
+                                                    <label class="ws-form-label" for="GuardianEmail">Guardian Email</label>
+                                                    <input asp-for="GuardianEmail" type="email" class="ws-form-input" placeholder="guardian@mail.com" />
+                                                </div>
+                                                <div class="ws-form-group">
+                                                    <label class="ws-form-label" for="GuardianMobileNumber">Guardian Mobile Number</label>
+                                                    <input asp-for="GuardianMobileNumber" class="ws-form-input" placeholder="01XXXXXXXXX" />
+                                                </div>
+                                                <div class="ws-form-group">
+                                                    <label class="ws-form-label" for="GuardianRelationship">Guardian Relationship</label>
+                                                    <select asp-for="GuardianRelationship" class="ws-form-select">
+                                                        <option value="">Select</option>
+                                                        <option value="Father">Father</option>
+                                                        <option value="Mother">Mother</option>
+                                                        <option value="LegalGuardian">Legal Guardian</option>
+                                                        <option value="Grandfather">Grandfather</option>
+                                                        <option value="Grandmother">Grandmother</option>
+                                                        <option value="Uncle">Uncle</option>
+                                                        <option value="Aunt">Aunt</option>
+                                                        <option value="Brother">Brother</option>
+                                                        <option value="Sister">Sister</option>
+                                                        <option value="Other">Other</option>
+                                                    </select>
+                                                </div>
+                                                <div class="ws-form-group">
+                                                    <label class="ws-form-label" for="GuardianNationalId">Guardian National ID</label>
+                                                    <input asp-for="GuardianNationalId" class="ws-form-input" placeholder="National ID / NID number" />
+                                                </div>
+                                                <div class="ws-form-group">
+                                                    <label class="ws-form-label" for="GuardianAddress">Guardian Address</label>
+                                                    <textarea asp-for="GuardianAddress" class="ws-form-textarea" rows="2" placeholder="Full address of guardian"></textarea>
+                                                </div>
+                                                <div class="ws-form-group">
+                                                    <label class="ws-form-label" for="GuardianPhoto">Guardian Photo</label>
+                                                    <input asp-for="GuardianPhoto" type="file" class="adm-file-input" accept="image/*" aria-label="Upload guardian photo" />
+                                                </div>
+                                                <div class="ws-form-group" style="grid-column:1 / -1;">
+                                                    <label class="ws-form-label" for="GuardianRemarks">Guardian Remarks</label>
+                                                    <textarea asp-for="GuardianRemarks" class="ws-form-textarea" rows="2" placeholder="Additional notes about guardian"></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="ws-col-12 ws-col-md-4">
-                                    <div class="ws-form-group">
-                                        <label asp-for="Gender" class="ws-form-label">Gender <span style="color:var(--ws-danger);">*</span></label>
-                                        <select asp-for="Gender" class="ws-form-select">
-                                            <option value="">Select</option>
-                                            <option value="Male">Male</option>
-                                            <option value="Female">Female</option>
-                                            <option value="Other">Other</option>
-                                        </select>
-                                        <span asp-validation-for="Gender" style="color:var(--ws-danger);font-size:13px;"></span>
+
+                                @* Step 4: Contact Details *@
+                                <div class="adm-wizard__panel" data-panel="3" role="tabpanel" aria-label="Step 4: Contact Details">
+                                    <div class="adm-wizard__panel-header">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                                        </svg>
+                                        <div>
+                                            <h2>Contact Details</h2>
+                                            <p>How to reach the applicant</p>
+                                        </div>
+                                    </div>
+                                    <div class="ws-card ws-card">
+                                        <div class="ws-card__body">
+                                            <div class="adm-form-grid">
+                                                <div class="ws-form-group">
+                                                    <label class="ws-form-label" for="ApplicantMobileNumber">Applicant's Mobile <span class="adm-required">*</span></label>
+                                                    <input asp-for="ApplicantMobileNumber" class="ws-form-input" placeholder="01XXXXXXXXX" required />
+                                                    <span asp-validation-for="ApplicantMobileNumber" class="adm-field-error"></span>
+                                                </div>
+                                                <div class="ws-form-group">
+                                                    <label class="ws-form-label" for="FatherOrGuardianMobileNo">Father/Guardian Mobile <span class="adm-required">*</span></label>
+                                                    <input asp-for="FatherOrGuardianMobileNo" class="ws-form-input" placeholder="01XXXXXXXXX" required />
+                                                    <span asp-validation-for="FatherOrGuardianMobileNo" class="adm-field-error"></span>
+                                                </div>
+                                                <div class="ws-form-group">
+                                                    <label class="ws-form-label" for="AlternativeNumber">Alternative Number</label>
+                                                    <input asp-for="AlternativeNumber" class="ws-form-input" placeholder="Optional alternate contact" />
+                                                </div>
+                                                <div class="ws-form-group">
+                                                    <label class="ws-form-label" for="ApplicantEmail">Email Address <span class="adm-required">*</span></label>
+                                                    <input asp-for="ApplicantEmail" type="email" class="ws-form-input" placeholder="example@mail.com" required />
+                                                    <span asp-validation-for="ApplicantEmail" class="adm-field-error"></span>
+                                                </div>
+                                                <div class="ws-form-group">
+                                                    <label class="ws-form-label" for="Nationality">Nationality <span class="adm-required">*</span></label>
+                                                    <input asp-for="Nationality" class="ws-form-input" placeholder="e.g. Bangladeshi" required />
+                                                </div>
+                                                <div class="ws-form-group">
+                                                    <label class="ws-form-label" for="Country">Country <span class="adm-required">*</span></label>
+                                                    <input asp-for="Country" class="ws-form-input" placeholder="e.g. Bangladesh" required />
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="ws-col-12 ws-col-md-4">
-                                    <div class="ws-form-group">
-                                        <label asp-for="BloodGroup" class="ws-form-label">Blood Group</label>
-                                        <select asp-for="BloodGroup" class="ws-form-select">
-                                            <option value="">Select</option>
-                                            <option value="A+">A+</option>
-                                            <option value="A-">A-</option>
-                                            <option value="B+">B+</option>
-                                            <option value="B-">B-</option>
-                                            <option value="AB+">AB+</option>
-                                            <option value="AB-">AB-</option>
-                                            <option value="O+">O+</option>
-                                            <option value="O-">O-</option>
-                                        </select>
+
+                                @* Step 5: Address Information *@
+                                <div class="adm-wizard__panel" data-panel="4" role="tabpanel" aria-label="Step 5: Address Information">
+                                    <div class="adm-wizard__panel-header">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+                                        </svg>
+                                        <div>
+                                            <h2>Address Information</h2>
+                                            <p>Present and permanent address</p>
+                                        </div>
+                                    </div>
+                                    <div class="ws-card ws-card">
+                                        <div class="ws-card__body">
+                                            <div class="adm-form-grid">
+                                                <div>
+                                                    <h6 class="ws-text-primary ws-mb-3">Present Address</h6>
+                                                    <div class="ws-form-group ws-mb-2">
+                                                        <label class="ws-form-label" for="PresentVillage">Village</label>
+                                                        <input asp-for="PresentVillage" class="ws-form-input" />
+                                                    </div>
+                                                    <div class="ws-form-group ws-mb-2">
+                                                        <label class="ws-form-label" for="PresentPostOffice">Area/Post Office <span class="adm-required">*</span></label>
+                                                        <input asp-for="PresentPostOffice" class="ws-form-input" required />
+                                                    </div>
+                                                    <div class="ws-form-group ws-mb-2">
+                                                        <label class="ws-form-label" for="PresentThana">Thana/Upazila <span class="adm-required">*</span></label>
+                                                        <input asp-for="PresentThana" class="ws-form-input" required />
+                                                    </div>
+                                                    <div class="ws-form-group">
+                                                        <label class="ws-form-label" for="PresentDistrict">District <span class="adm-required">*</span></label>
+                                                        <input asp-for="PresentDistrict" class="ws-form-input" required />
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <h6 class="ws-text-primary ws-mb-3">
+                                                        Permanent Address
+                                                        <label class="ws-text-muted" style="display:inline-flex;align-items:center;gap:4px;margin-left:8px;font-weight:400;font-size:12px;cursor:pointer;">
+                                                            <input type="checkbox" id="sameAddress" style="width:16px;height:16px;" />
+                                                            Same as Present
+                                                        </label>
+                                                    </h6>
+                                                    <div class="ws-form-group ws-mb-2">
+                                                        <label class="ws-form-label" for="PermanentVillage">Village</label>
+                                                        <input asp-for="PermanentVillage" class="ws-form-input" />
+                                                    </div>
+                                                    <div class="ws-form-group ws-mb-2">
+                                                        <label class="ws-form-label" for="PermanentPostOffice">Area/Post Office <span class="adm-required">*</span></label>
+                                                        <input asp-for="PermanentPostOffice" class="ws-form-input" required />
+                                                    </div>
+                                                    <div class="ws-form-group ws-mb-2">
+                                                        <label class="ws-form-label" for="PermanentThana">Thana/Upazila <span class="adm-required">*</span></label>
+                                                        <input asp-for="PermanentThana" class="ws-form-input" required />
+                                                    </div>
+                                                    <div class="ws-form-group">
+                                                        <label class="ws-form-label" for="PermanentDistrict">District <span class="adm-required">*</span></label>
+                                                        <input asp-for="PermanentDistrict" class="ws-form-input" required />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="ws-col-12 ws-col-md-4">
-                                    <div class="ws-form-group">
-                                        <label asp-for="MaritalStatus" class="ws-form-label">Marital Status <span style="color:var(--ws-danger);">*</span></label>
-                                        <select asp-for="MaritalStatus" class="ws-form-select">
-                                            <option value="">Select</option>
-                                            <option value="Single">Single</option>
-                                            <option value="Married">Married</option>
-                                            <option value="Widowed">Widowed</option>
-                                            <option value="Divorced">Divorced</option>
-                                        </select>
-                                        <span asp-validation-for="MaritalStatus" style="color:var(--ws-danger);font-size:13px;"></span>
+
+                                @* Step 6: Document Upload *@
+                                <div class="adm-wizard__panel" data-panel="5" role="tabpanel" aria-label="Step 6: Document Upload">
+                                    <div class="adm-wizard__panel-header">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/>
+                                        </svg>
+                                        <div>
+                                            <h2>Document Upload</h2>
+                                            <p>Upload required documents</p>
+                                        </div>
+                                    </div>
+                                    <div class="ws-card ws-card">
+                                        <div class="ws-card__body">
+                                            <div class="adm-form-grid">
+                                                <div class="ws-form-group">
+                                                    <label class="ws-form-label" for="BirthCertificateNo">Birth Certificate No.</label>
+                                                    <input asp-for="BirthCertificateNo" class="ws-form-input" placeholder="Birth certificate reference number" />
+                                                </div>
+                                            </div>
+                                            <div class="ws-form-group ws-mt-4">
+                                                <label class="ws-form-label" for="BirthCertificateFile">Birth Certificate (Document)</label>
+                                                <div class="adm-upload-zone" data-for="BirthCertificateFile" role="button" tabindex="0" aria-label="Upload birth certificate">
+                                                    <svg class="adm-upload-zone__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                                                    </svg>
+                                                    <div class="adm-upload-zone__title">Drop file here or click to upload</div>
+                                                    <div class="adm-upload-zone__subtitle">PDF, JPG, PNG (max 5MB)</div>
+                                                    <div class="adm-upload-zone__files" id="birthCertFiles"></div>
+                                                </div>
+                                                <input asp-for="BirthCertificateFile" type="file" class="adm-file-input" accept=".pdf,.jpg,.jpeg,.png" style="display:none;" />
+                                                <span asp-validation-for="BirthCertificateFile" class="adm-field-error"></span>
+                                            </div>
+                                            <div class="ws-form-group ws-mt-3">
+                                                <label class="ws-form-label" for="PaymentSlipFile">Payment Slip / Receipt (Document)</label>
+                                                <div class="adm-upload-zone" data-for="PaymentSlipFile" role="button" tabindex="0" aria-label="Upload payment slip">
+                                                    <svg class="adm-upload-zone__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/>
+                                                    </svg>
+                                                    <div class="adm-upload-zone__title">Drop file here or click to upload</div>
+                                                    <div class="adm-upload-zone__subtitle">PDF, JPG, PNG (max 5MB)</div>
+                                                    <div class="adm-upload-zone__files" id="paymentSlipFiles"></div>
+                                                </div>
+                                                <input asp-for="PaymentSlipFile" type="file" class="adm-file-input" accept=".pdf,.jpg,.jpeg,.png" style="display:none;" />
+                                                <span asp-validation-for="PaymentSlipFile" class="adm-field-error"></span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="ws-col-12 ws-col-md-4">
-                                    <div class="ws-form-group">
-                                        <label asp-for="Religion" class="ws-form-label">Religion <span style="color:var(--ws-danger);">*</span></label>
-                                        <select asp-for="Religion" class="ws-form-select">
-                                            <option value="">Select</option>
-                                            <option value="Islam">Islam</option>
-                                            <option value="Hinduism">Hinduism</option>
-                                            <option value="Christianity">Christianity</option>
-                                            <option value="Buddhism">Buddhism</option>
-                                            <option value="Other">Other</option>
-                                        </select>
-                                        <span asp-validation-for="Religion" style="color:var(--ws-danger);font-size:13px;"></span>
+
+                                @* Step 7: Finance & Admission Fee *@
+                                <div class="adm-wizard__panel" data-panel="6" role="tabpanel" aria-label="Step 7: Finance &amp; Admission Fee">
+                                    <div class="adm-wizard__panel-header">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                                            <path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 2 4 3 6 3s6-1 6-3v-5"/>
+                                        </svg>
+                                        <div>
+                                            <h2>Academic &amp; Payment</h2>
+                                            <p>Select class and payment method</p>
+                                        </div>
+                                    </div>
+                                    <div class="ws-card ws-card">
+                                        <div class="ws-card__body">
+                                            <div class="adm-form-grid">
+                                                <div class="ws-form-group">
+                                                    <label class="ws-form-label" for="AppliedClassId">Select Class <span class="adm-required">*</span></label>
+                                                    <select asp-for="AppliedClassId" class="ws-form-select ws-form-select" id="AppliedClassId" required>
+                                                        <option value="">Select Class</option>
+                                                        @if (ViewBag.Classes != null)
+                                                        {
+                                                            foreach (var c in ViewBag.Classes)
+                                                            {
+                                                                <option value="@c.Id" data-is-group-based="@(c.IsGroupBased.ToString().ToLower())" data-sort-order="@c.SortOrder">@c.Name</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                    <span asp-validation-for="AppliedClassId" class="adm-field-error"></span>
+                                                </div>
+                                                <div class="ws-form-group" id="sectionContainer" style="display:none;">
+                                                    <label class="ws-form-label" for="AppliedStudentGroupId">Select Section / Group</label>
+                                                    <select asp-for="AppliedStudentGroupId" class="ws-form-select ws-form-select" id="AppliedStudentGroupId">
+                                                        <option value="">Select Group</option>
+                                                        @if (ViewBag.StudentGroups != null)
+                                                        {
+                                                            foreach (var g in ViewBag.StudentGroups)
+                                                            {
+                                                                <option value="@g.Id" data-min-class="@g.MinClass" data-max-class="@g.MaxClass">@g.Name</option>
+                                                            }
+                                                        }
+                                                    </select>
+                                                    <span asp-validation-for="AppliedStudentGroupId" class="adm-field-error"></span>
+                                                </div>
+                                                <div class="ws-form-group">
+                                                    <label class="ws-form-label" for="PaymentMethod">Payment Method</label>
+                                                    <select asp-for="PaymentMethod" class="ws-form-select ws-form-select">
+                                                        <option value="">Select</option>
+                                                        <option value="Cash">Cash</option>
+                                                        <option value="Bank Transfer">Bank Transfer</option>
+                                                        <option value="bKash">bKash</option>
+                                                        <option value="Nagad">Nagad</option>
+                                                        <option value="Rocket">Rocket</option>
+                                                    </select>
+                                                </div>
+                                                <div class="ws-form-group">
+                                                    <label class="ws-form-label" for="TransactionDetails">Transaction Details</label>
+                                                    <input asp-for="TransactionDetails" class="ws-form-input ws-form-input" placeholder="Transaction ID / Receipt No." />
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="ws-col-12 ws-col-md-4">
-                                    <div class="ws-form-group">
-                                        <label asp-for="ProfilePicture" class="ws-form-label">Profile Picture</label>
-                                        <input asp-for="ProfilePicture" type="file" class="ws-form-input" accept="image/*" onchange="previewAdmissionImage(event)" />
-                                        <div style="margin-top:8px;text-align:center;">
-                                            <img id="previewAdmissionImg" src="/images/default-user.png" style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:2px solid var(--ws-border);" />
+
+                                @* Step 8: Review & Submit *@
+                                <div class="adm-wizard__panel" data-panel="7" role="tabpanel" aria-label="Step 8: Review &amp; Submit">
+                                    <div class="adm-wizard__panel-header">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                                            <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                                        </svg>
+                                        <div>
+                                            <h2>Review &amp; Submit</h2>
+                                            <p>Verify all information before submitting</p>
+                                        </div>
+                                    </div>
+
+                                    <div id="reviewSummary" class="ws-card ws-card ws-mb-4">
+                                        <div class="ws-card__body">
+                                            <div style="text-align:center;padding:24px 0;">
+                                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--clr-text-muted)" stroke-width="1.5" aria-hidden="true">
+                                                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
+                                                </svg>
+                                                <p class="ws-text-muted ws-mt-2">Review data will appear here once all steps are completed.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="ws-card ws-card">
+                                        <div class="ws-card__body">
+                                            <label class="ws-form-label" style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;font-weight:400;font-size:14px;">
+                                                <input type="checkbox" id="termsAccepted" required style="width:18px;height:18px;margin-top:2px;flex-shrink:0;" />
+                                                <span>
+                                                    I confirm that all the information provided above is accurate and complete to the best of my knowledge.
+                                                    I understand that any false information may result in rejection of this application.
+                                                    <span class="adm-required">*</span>
+                                                </span>
+                                            </label>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </div>
 
-                    <!-- ── Section 2: Family Information ── -->
-                    <div class="ws-card ws-card--bordered-top ws-mb-6" style="border-top-color:var(--ws-success);">
-                        <div class="ws-card__header" style="background:var(--ws-success);color:#fff;border-radius:12px 12px 0 0;">
-                            <i class="bi bi-people-fill"></i> Family Information
+                            <!-- Sidebar Summary -->
+                            <aside class="adm-wizard__sidebar" aria-label="Application summary">
+                                <div class="adm-wizard__sidebar-inner">
+                                    <div class="adm-auto-save" id="autoSaveIndicator">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+                                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                                            <polyline points="17 21 17 13 7 13 7 21"/>
+                                            <polyline points="7 3 7 8 15 8"/>
+                                        </svg>
+                                        <span id="autoSaveText">Auto-save ready</span>
+                                    </div>
+
+                                    <div class="adm-wizard__sidebar-title">Application Summary</div>
+
+                                    <div class="adm-wizard__summary-section">
+                                        <div class="adm-wizard__summary-section-title">Personal</div>
+                                        <div class="adm-wizard__summary-item">
+                                            <span class="adm-wizard__summary-label">Name</span>
+                                            <span class="adm-wizard__summary-value" id="summaryName">—</span>
+                                        </div>
+                                        <div class="adm-wizard__summary-item">
+                                            <span class="adm-wizard__summary-label">DOB</span>
+                                            <span class="adm-wizard__summary-value" id="summaryDob">—</span>
+                                        </div>
+                                        <div class="adm-wizard__summary-item">
+                                            <span class="adm-wizard__summary-label">Gender</span>
+                                            <span class="adm-wizard__summary-value" id="summaryGender">—</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="adm-wizard__summary-section">
+                                        <div class="adm-wizard__summary-section-title">Contact</div>
+                                        <div class="adm-wizard__summary-item">
+                                            <span class="adm-wizard__summary-label">Mobile</span>
+                                            <span class="adm-wizard__summary-value" id="summaryMobile">—</span>
+                                        </div>
+                                        <div class="adm-wizard__summary-item">
+                                            <span class="adm-wizard__summary-label">Email</span>
+                                            <span class="adm-wizard__summary-value" id="summaryEmail">—</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="adm-wizard__summary-section">
+                                        <div class="adm-wizard__summary-section-title">Academic</div>
+                                        <div class="adm-wizard__summary-item">
+                                            <span class="adm-wizard__summary-label">Class</span>
+                                            <span class="adm-wizard__summary-value" id="summaryClass">—</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="adm-wizard__summary-section">
+                                        <div class="adm-wizard__summary-section-title">Documents</div>
+                                        <div class="adm-wizard__summary-item">
+                                            <span class="adm-wizard__summary-label">Birth Cert.</span>
+                                            <span class="adm-wizard__summary-value" id="summaryBirthCert">—</span>
+                                        </div>
+                                        <div class="adm-wizard__summary-item">
+                                            <span class="adm-wizard__summary-label">Payment Slip</span>
+                                            <span class="adm-wizard__summary-value" id="summaryPaymentSlip">—</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="adm-wizard__summary-status" id="summaryComplete">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                                            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                                        </svg>
+                                        <span id="summaryStepLabel">Step 1 of 8</span>
+                                    </div>
+                                </div>
+                            </aside>
                         </div>
-                        <div class="ws-card__body">
-                            <div class="ws-row ws-g-3">
-                                <div class="ws-col-12 ws-col-md-6">
-                                    <div class="ws-form-group">
-                                        <label asp-for="FatherName" class="ws-form-label">Father's Name <span style="color:var(--ws-danger);">*</span></label>
-                                        <input asp-for="FatherName" class="ws-form-input" placeholder="Father's full name" />
-                                        <span asp-validation-for="FatherName" style="color:var(--ws-danger);font-size:13px;"></span>
-                                    </div>
-                                </div>
-                                <div class="ws-col-12 ws-col-md-6">
-                                    <div class="ws-form-group">
-                                        <label asp-for="FatherOccupation" class="ws-form-label">Father's Occupation</label>
-                                        <input asp-for="FatherOccupation" class="ws-form-input" />
-                                    </div>
-                                </div>
-                                <div class="ws-col-12 ws-col-md-6">
-                                    <div class="ws-form-group">
-                                        <label asp-for="MotherName" class="ws-form-label">Mother's Name <span style="color:var(--ws-danger);">*</span></label>
-                                        <input asp-for="MotherName" class="ws-form-input" placeholder="Mother's full name" />
-                                        <span asp-validation-for="MotherName" style="color:var(--ws-danger);font-size:13px;"></span>
-                                    </div>
-                                </div>
-                                <div class="ws-col-12 ws-col-md-6">
-                                    <div class="ws-form-group">
-                                        <label asp-for="MotherOccupation" class="ws-form-label">Mother's Occupation</label>
-                                        <input asp-for="MotherOccupation" class="ws-form-input" />
-                                    </div>
-                                </div>
-                                <div class="ws-col-12 ws-col-md-6">
-                                    <div class="ws-form-group">
-                                        <label asp-for="GuardianName" class="ws-form-label">Guardian's Name</label>
-                                        <input asp-for="GuardianName" class="ws-form-input" />
-                                    </div>
-                                </div>
-                                <div class="ws-col-12 ws-col-md-6">
-                                    <div class="ws-form-group">
-                                        <label asp-for="GuardianOccupation" class="ws-form-label">Guardian's Occupation</label>
-                                        <input asp-for="GuardianOccupation" class="ws-form-input" />
-                                    </div>
-                                </div>
+
+                        <!-- Actions Bar -->
+                        <div class="adm-wizard__actions">
+                            <div class="adm-wizard__actions-left">
+                                <button type="button" class="adm-btn adm-btn--outline" id="prevBtn" style="display:none;" aria-label="Previous step">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true" style="margin-right:4px;"><polyline points="15 18 9 12 15 6"/></svg>
+                                    Previous
+                                </button>
+                            </div>
+                            <div class="adm-wizard__actions-right">
+                                <button type="button" class="adm-btn adm-btn--outline" id="saveDraftBtn" aria-label="Save draft">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="margin-right:4px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                                    Save Draft
+                                </button>
+                                <button type="button" class="adm-btn adm-btn--primary" id="nextBtn" aria-label="Next step">
+                                    Next
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true" style="margin-left:4px;"><polyline points="9 18 15 12 9 6"/></svg>
+                                </button>
+                                <button type="submit" class="adm-btn adm-btn--success" id="submitBtn" style="display:none;" aria-label="Submit application">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true" style="margin-right:4px;"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                                    Submit Application
+                                </button>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- ── Section 3: Guardian Information ── -->
-                    <div class="ws-card ws-card--bordered-top ws-mb-6" style="border-top-color:#6f42c1;">
-                        <div class="ws-card__header" style="background:#6f42c1;color:#fff;border-radius:12px 12px 0 0;">
-                            <i class="bi bi-shield-fill"></i> Guardian Information
-                        </div>
-                        <div class="ws-card__body">
-                            <div class="ws-row ws-g-3">
-                                <div class="ws-col-12 ws-col-md-4">
-                                    <div class="ws-form-group">
-                                        <label asp-for="GuardianEmail" class="ws-form-label">Guardian Email</label>
-                                        <input asp-for="GuardianEmail" type="email" class="ws-form-input" placeholder="guardian@mail.com" />
-                                    </div>
-                                </div>
-                                <div class="ws-col-12 ws-col-md-4">
-                                    <div class="ws-form-group">
-                                        <label asp-for="GuardianMobileNumber" class="ws-form-label">Guardian Mobile Number</label>
-                                        <input asp-for="GuardianMobileNumber" class="ws-form-input" placeholder="01XXXXXXXXX" />
-                                    </div>
-                                </div>
-                                <div class="ws-col-12 ws-col-md-4">
-                                    <div class="ws-form-group">
-                                        <label asp-for="GuardianRelationship" class="ws-form-label">Guardian Relationship</label>
-                                        <select asp-for="GuardianRelationship" class="ws-form-select">
-                                            <option value="">Select</option>
-                                            <option value="Father">Father</option>
-                                            <option value="Mother">Mother</option>
-                                            <option value="LegalGuardian">Legal Guardian</option>
-                                            <option value="Grandfather">Grandfather</option>
-                                            <option value="Grandmother">Grandmother</option>
-                                            <option value="Uncle">Uncle</option>
-                                            <option value="Aunt">Aunt</option>
-                                            <option value="Brother">Brother</option>
-                                            <option value="Sister">Sister</option>
-                                            <option value="Other">Other</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="ws-col-12 ws-col-md-6">
-                                    <div class="ws-form-group">
-                                        <label asp-for="GuardianNationalId" class="ws-form-label">Guardian National ID</label>
-                                        <input asp-for="GuardianNationalId" class="ws-form-input" placeholder="National ID / NID number" />
-                                    </div>
-                                </div>
-                                <div class="ws-col-12 ws-col-md-6">
-                                    <div class="ws-form-group">
-                                        <label asp-for="GuardianAddress" class="ws-form-label">Guardian Address</label>
-                                        <textarea asp-for="GuardianAddress" class="ws-form-textarea" rows="2" placeholder="Full address of guardian"></textarea>
-                                    </div>
-                                </div>
-                                <div class="ws-col-12 ws-col-md-6">
-                                    <div class="ws-form-group">
-                                        <label asp-for="GuardianPhoto" class="ws-form-label">Guardian Photo</label>
-                                        <input asp-for="GuardianPhoto" type="file" class="ws-form-input" accept="image/*" />
-                                    </div>
-                                </div>
-                                <div class="ws-col-12 ws-col-md-6">
-                                    <div class="ws-form-group">
-                                        <label asp-for="GuardianRemarks" class="ws-form-label">Guardian Remarks</label>
-                                        <textarea asp-for="GuardianRemarks" class="ws-form-textarea" rows="2" placeholder="Additional notes about guardian"></textarea>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- ── Section 4: Contact Details ── -->
-                    <div class="ws-card ws-card--bordered-top ws-mb-6" style="border-top-color:var(--ws-info);">
-                        <div class="ws-card__header" style="background:var(--ws-info);color:#fff;border-radius:12px 12px 0 0;">
-                            <i class="bi bi-telephone-fill"></i> Contact Details
-                        </div>
-                        <div class="ws-card__body">
-                            <div class="ws-row ws-g-3">
-                                <div class="ws-col-12 ws-col-md-4">
-                                    <div class="ws-form-group">
-                                        <label asp-for="ApplicantMobileNumber" class="ws-form-label">Applicant's Mobile <span style="color:var(--ws-danger);">*</span></label>
-                                        <input asp-for="ApplicantMobileNumber" class="ws-form-input" placeholder="01XXXXXXXXX" />
-                                        <span asp-validation-for="ApplicantMobileNumber" style="color:var(--ws-danger);font-size:13px;"></span>
-                                    </div>
-                                </div>
-                                <div class="ws-col-12 ws-col-md-4">
-                                    <div class="ws-form-group">
-                                        <label asp-for="FatherOrGuardianMobileNo" class="ws-form-label">Father/Guardian Mobile <span style="color:var(--ws-danger);">*</span></label>
-                                        <input asp-for="FatherOrGuardianMobileNo" class="ws-form-input" placeholder="01XXXXXXXXX" />
-                                        <span asp-validation-for="FatherOrGuardianMobileNo" style="color:var(--ws-danger);font-size:13px;"></span>
-                                    </div>
-                                </div>
-                                <div class="ws-col-12 ws-col-md-4">
-                                    <div class="ws-form-group">
-                                        <label asp-for="AlternativeNumber" class="ws-form-label">Alternative Number</label>
-                                        <input asp-for="AlternativeNumber" class="ws-form-input" />
-                                    </div>
-                                </div>
-                                <div class="ws-col-12 ws-col-md-6">
-                                    <div class="ws-form-group">
-                                        <label asp-for="ApplicantEmail" class="ws-form-label">Email Address <span style="color:var(--ws-danger);">*</span></label>
-                                        <input asp-for="ApplicantEmail" type="email" class="ws-form-input" placeholder="example@mail.com" />
-                                        <span asp-validation-for="ApplicantEmail" style="color:var(--ws-danger);font-size:13px;"></span>
-                                    </div>
-                                </div>
-                                <div class="ws-col-12 ws-col-md-3">
-                                    <div class="ws-form-group">
-                                        <label asp-for="Nationality" class="ws-form-label">Nationality <span style="color:var(--ws-danger);">*</span></label>
-                                        <input asp-for="Nationality" class="ws-form-input" />
-                                    </div>
-                                </div>
-                                <div class="ws-col-12 ws-col-md-3">
-                                    <div class="ws-form-group">
-                                        <label asp-for="Country" class="ws-form-label">Country <span style="color:var(--ws-danger);">*</span></label>
-                                        <input asp-for="Country" class="ws-form-input" />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- ── Section 5: Address Information ── -->
-                    <div class="ws-card ws-card--bordered-top ws-mb-6" style="border-top-color:var(--ws-info);">
-                        <div class="ws-card__header" style="background:var(--ws-info);color:#fff;border-radius:12px 12px 0 0;">
-                            <i class="bi bi-geo-alt-fill"></i> Address Information
-                        </div>
-                        <div class="ws-card__body">
-                            <div class="ws-row ws-g-4">
-                                <div class="ws-col-12 ws-col-md-6">
-                                    <h6 style="font-weight:700;color:var(--ws-secondary);margin-bottom:16px;">Present Address</h6>
-                                    <div class="ws-form-group">
-                                        <label asp-for="PresentVillage" class="ws-form-label">Village</label>
-                                        <input asp-for="PresentVillage" class="ws-form-input" />
-                                    </div>
-                                    <div class="ws-form-group">
-                                        <label asp-for="PresentPostOffice" class="ws-form-label">Area/Post Office <span style="color:var(--ws-danger);">*</span></label>
-                                        <input asp-for="PresentPostOffice" class="ws-form-input" />
-                                    </div>
-                                    <div class="ws-form-group">
-                                        <label asp-for="PresentThana" class="ws-form-label">Thana/Upazila <span style="color:var(--ws-danger);">*</span></label>
-                                        <input asp-for="PresentThana" class="ws-form-input" />
-                                    </div>
-                                    <div class="ws-form-group">
-                                        <label asp-for="PresentDistrict" class="ws-form-label">District <span style="color:var(--ws-danger);">*</span></label>
-                                        <input asp-for="PresentDistrict" class="ws-form-input" />
-                                    </div>
-                                </div>
-                                <div class="ws-col-12 ws-col-md-6">
-                                    <h6 style="font-weight:700;color:var(--ws-success);margin-bottom:16px;">
-                                        Permanent Address
-                                        <label style="display:inline-flex;align-items:center;gap:6px;margin-left:8px;font-weight:400;font-size:13px;color:var(--ws-muted);cursor:pointer;">
-                                            <input type="checkbox" id="sameAddress" style="width:16px;height:16px;" />
-                                            Same as Present
-                                        </label>
-                                    </h6>
-                                    <div class="ws-form-group">
-                                        <label asp-for="PermanentVillage" class="ws-form-label">Village</label>
-                                        <input asp-for="PermanentVillage" class="ws-form-input" />
-                                    </div>
-                                    <div class="ws-form-group">
-                                        <label asp-for="PermanentPostOffice" class="ws-form-label">Area/Post Office <span style="color:var(--ws-danger);">*</span></label>
-                                        <input asp-for="PermanentPostOffice" class="ws-form-input" />
-                                    </div>
-                                    <div class="ws-form-group">
-                                        <label asp-for="PermanentThana" class="ws-form-label">Thana/Upazila <span style="color:var(--ws-danger);">*</span></label>
-                                        <input asp-for="PermanentThana" class="ws-form-input" />
-                                    </div>
-                                    <div class="ws-form-group">
-                                        <label asp-for="PermanentDistrict" class="ws-form-label">District <span style="color:var(--ws-danger);">*</span></label>
-                                        <input asp-for="PermanentDistrict" class="ws-form-input" />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- ── Section 6: ID Documents ── -->
-                    <div class="ws-card ws-card--bordered-top ws-mb-6" style="border-top-color:var(--ws-warning);">
-                        <div class="ws-card__header" style="background:var(--ws-warning);color:#fff;border-radius:12px 12px 0 0;">
-                            <i class="bi bi-card-text"></i> ID Documents
-                        </div>
-                        <div class="ws-card__body">
-                            <div class="ws-row ws-g-3">
-                                <div class="ws-col-12 ws-col-md-6">
-                                    <div class="ws-form-group">
-                                        <label asp-for="BirthCertificateNo" class="ws-form-label">Birth Certificate No.</label>
-                                        <input asp-for="BirthCertificateNo" class="ws-form-input" />
-                                    </div>
-                                </div>
-                                <div class="ws-col-12 ws-col-md-6">
-                                    <div class="ws-form-group">
-                                        <label asp-for="BirthCertificateFile" class="ws-form-label">Birth Certificate (Document)</label>
-                                        <input asp-for="BirthCertificateFile" type="file" class="ws-form-input" accept=".pdf,.jpg,.jpeg,.png" />
-                                        <span asp-validation-for="BirthCertificateFile" style="color:var(--ws-danger);font-size:13px;"></span>
-                                    </div>
-                                </div>
-                                <div class="ws-col-12 ws-col-md-6">
-                                    <div class="ws-form-group">
-                                        <label asp-for="PaymentSlipFile" class="ws-form-label">Payment Slip / Receipt (Document)</label>
-                                        <input asp-for="PaymentSlipFile" type="file" class="ws-form-input" accept=".pdf,.jpg,.jpeg,.png" />
-                                        <span asp-validation-for="PaymentSlipFile" style="color:var(--ws-danger);font-size:13px;"></span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- ── Section 7: Academic & Payment ── -->
-                    <div class="ws-card ws-card--bordered-top ws-mb-6" style="border-top-color:var(--ws-secondary);">
-                        <div class="ws-card__header" style="background:var(--ws-secondary);color:#fff;border-radius:12px 12px 0 0;">
-                            <i class="bi bi-mortarboard-fill"></i> Academic & Payment
-                        </div>
-                        <div class="ws-card__body">
-                            <div class="ws-row ws-g-3">
-                                <div class="ws-col-12 ws-col-md-4">
-                                    <div class="ws-form-group">
-                                        <label asp-for="AppliedClassId" class="ws-form-label" style="font-weight:700;">
-                                            Select Class <span style="color:var(--ws-danger);">*</span>
-                                        </label>
-                                        <select asp-for="AppliedClassId" class="ws-form-select" id="AppliedClassId" style="padding:12px 16px;font-size:16px;">
-                                            <option value="">Select Class</option>
-                                            @if (ViewBag.Classes != null)
-                                            {
-                                                foreach (var c in ViewBag.Classes)
-                                                {
-                                                    <option value="@c.Id" data-is-group-based="@(c.IsGroupBased.ToString().ToLower())" data-sort-order="@c.SortOrder">@c.Name</option>
-                                                }
-                                            }
-                                        </select>
-                                        <span asp-validation-for="AppliedClassId" style="color:var(--ws-danger);font-size:13px;"></span>
-                                    </div>
-                                </div>
-                                <div class="ws-col-12 ws-col-md-4" id="sectionContainer" style="display:none;">
-                                    <div class="ws-form-group">
-                                        <label class="ws-form-label" style="font-weight:700;">Select Section / Group</label>
-                                        <select asp-for="AppliedStudentGroupId" class="ws-form-select" id="AppliedStudentGroupId" style="padding:12px 16px;font-size:16px;">
-                                            <option value="">Select Group</option>
-                                            @if (ViewBag.StudentGroups != null)
-                                            {
-                                                foreach (var g in ViewBag.StudentGroups)
-                                                {
-                                                    <option value="@g.Id" data-min-class="@g.MinClass" data-max-class="@g.MaxClass">@g.Name</option>
-                                                }
-                                            }
-                                        </select>
-                                        <span asp-validation-for="AppliedStudentGroupId" style="color:var(--ws-danger);font-size:13px;"></span>
-                                    </div>
-                                </div>
-                                <div class="ws-col-12 ws-col-md-4">
-                                    <div class="ws-form-group">
-                                        <label asp-for="PaymentMethod" class="ws-form-label" style="font-weight:700;">Payment Method</label>
-                                        <select asp-for="PaymentMethod" class="ws-form-select" style="padding:12px 16px;font-size:16px;">
-                                            <option value="">Select</option>
-                                            <option value="Cash">Cash</option>
-                                            <option value="Bank Transfer">Bank Transfer</option>
-                                            <option value="bKash">bKash</option>
-                                            <option value="Nagad">Nagad</option>
-                                            <option value="Rocket">Rocket</option>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="ws-col-12 ws-col-md-4">
-                                    <div class="ws-form-group">
-                                        <label asp-for="TransactionDetails" class="ws-form-label" style="font-weight:700;">Transaction Details</label>
-                                        <input asp-for="TransactionDetails" class="ws-form-input" placeholder="Transaction ID / Receipt No." style="padding:12px 16px;font-size:16px;" />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Submit -->
-                    <div class="ws-text-center ws-mb-6">
-                        <button type="submit" class="ws-btn ws-btn--accent ws-btn--lg" style="padding:16px 48px;border-radius:50px;font-size:17px;">
-                            <i class="bi bi-send-fill me-2"></i> Submit Application
-                        </button>
-                        <p style="margin-top:12px;color:var(--ws-muted);font-size:14px;">A confirmation email will be sent upon submission.</p>
                     </div>
                 </form>
             </div>
@@ -445,53 +618,324 @@
     </div>
 </section>
 
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        const checkbox = document.getElementById("sameAddress");
-        if (checkbox) {
-            checkbox.addEventListener("change", function () {
-                if (this.checked) {
-                    document.getElementById("PermanentVillage").value = document.getElementById("PresentVillage").value;
-                    document.getElementById("PermanentPostOffice").value = document.getElementById("PresentPostOffice").value;
-                    document.getElementById("PermanentThana").value = document.getElementById("PresentThana").value;
-                    document.getElementById("PermanentDistrict").value = document.getElementById("PresentDistrict").value;
-                }
-            });
-        }
-    });
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        (function () {
+            'use strict';
 
-    function previewAdmissionImage(event) {
-        const reader = new FileReader();
-        reader.onload = function () {
-            document.getElementById('previewAdmissionImg').src = reader.result;
-        };
-        reader.readAsDataURL(event.target.files[0]);
-    }
+            const STORAGE_KEY = 'admission_draft_apply';
+            const AUTO_SAVE_INTERVAL = 30000;
+            var currentStep = 0;
+            const totalSteps = 8;
 
-    document.addEventListener("DOMContentLoaded", function () {
-        const classDropdown = document.getElementById("AppliedClassId");
-        const sectionContainer = document.getElementById("sectionContainer");
-        const groupSelect = document.getElementById("AppliedStudentGroupId");
+            /* ---- DOM refs ---- */
+            const form = document.getElementById('admissionForm');
+            const panels = document.querySelectorAll('.adm-wizard__panel');
+            const steps = document.querySelectorAll('.adm-wizard__step');
+            const connectors = document.querySelectorAll('.adm-wizard__step-connector');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const submitBtn = document.getElementById('submitBtn');
+            const saveDraftBtn = document.getElementById('saveDraftBtn');
+            const autoSaveText = document.getElementById('autoSaveText');
+            const autoSaveIndicator = document.getElementById('autoSaveIndicator');
+            const summaryStepLabel = document.getElementById('summaryStepLabel');
 
-        classDropdown.addEventListener("change", function () {
-            var selectedOption = this.options[this.selectedIndex];
-            var isGroupBased = selectedOption && selectedOption.dataset.isGroupBased === 'true';
-            sectionContainer.style.display = isGroupBased ? "block" : "none";
+            /* ---- Navigation ---- */
+            function goToStep(index) {
+                if (index < 0 || index >= totalSteps) return;
+                currentStep = index;
 
-            if (isGroupBased && groupSelect) {
-                var sortOrder = parseInt(selectedOption.dataset.sortOrder) || 0;
-                Array.from(groupSelect.options).forEach(function(opt) {
-                    if (opt.value === "") return;
-                    var minClass = parseInt(opt.dataset.minClass) || 0;
-                    var maxClass = parseInt(opt.dataset.maxClass) || 0;
-                    opt.style.display = (sortOrder >= minClass && sortOrder <= maxClass) ? "" : "none";
+                panels.forEach(function (p, i) {
+                    p.classList.toggle('active', i === index);
+                    p.setAttribute('aria-hidden', i !== index);
                 });
-                if (groupSelect.selectedOptions.length > 0 && groupSelect.selectedOptions[0].style.display === "none") {
-                    groupSelect.value = "";
+
+                steps.forEach(function (s, i) {
+                    var isActive = i === index;
+                    var isCompleted = i < index;
+                    s.classList.toggle('active', isActive);
+                    s.classList.toggle('completed', isCompleted);
+                    s.setAttribute('aria-selected', isActive ? 'true' : 'false');
+                    s.setAttribute('tabindex', isActive ? '0' : '-1');
+                });
+
+                prevBtn.style.display = index === 0 ? 'none' : '';
+                nextBtn.style.display = index === totalSteps - 1 ? 'none' : '';
+                submitBtn.style.display = index === totalSteps - 1 ? '' : 'none';
+
+                summaryStepLabel.textContent = 'Step ' + (index + 1) + ' of ' + totalSteps;
+
+                document.querySelector('.adm-wizard__progress').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+
+            function nextStep() {
+                if (currentStep < totalSteps - 1) {
+                    goToStep(currentStep + 1);
                 }
             }
-        });
-    });
-</script>
 
-@section Scripts { @{await Html.RenderPartialAsync("_ValidationScriptsPartial");} }
+            function prevStep() {
+                if (currentStep > 0) {
+                    goToStep(currentStep - 1);
+                }
+            }
+
+            steps.forEach(function (s) {
+                s.addEventListener('click', function () {
+                    var idx = parseInt(s.getAttribute('data-step'));
+                    if (idx < currentStep) {
+                        goToStep(idx);
+                    }
+                });
+            });
+
+            prevBtn.addEventListener('click', prevStep);
+            nextBtn.addEventListener('click', nextStep);
+
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'ArrowRight' && (e.ctrlKey || e.metaKey)) {
+                    e.preventDefault();
+                    nextStep();
+                }
+                if (e.key === 'ArrowLeft' && (e.ctrlKey || e.metaKey)) {
+                    e.preventDefault();
+                    prevStep();
+                }
+            });
+
+            /* ---- Auto-save ---- */
+            function collectFormData() {
+                var data = {};
+                var elements = form.querySelectorAll('input, select, textarea');
+                elements.forEach(function (el) {
+                    if (el.name && el.type !== 'file' && el.type !== 'submit' && el.type !== 'checkbox' && el.type !== 'hidden') {
+                        data[el.name] = el.value;
+                    }
+                    if (el.type === 'checkbox') {
+                        data[el.name] = el.checked ? 'true' : 'false';
+                    }
+                });
+                data._currentStep = currentStep;
+                return data;
+            }
+
+            function restoreFormData(data) {
+                if (!data) return;
+                var elements = form.querySelectorAll('input, select, textarea');
+                elements.forEach(function (el) {
+                    var name = el.name || el.id;
+                    if (!name || !data.hasOwnProperty(name)) return;
+                    if (el.type === 'file' || el.type === 'hidden') return;
+                    if (el.type === 'checkbox') {
+                        el.checked = data[name] === 'true';
+                    } else {
+                        el.value = data[name] || '';
+                    }
+                });
+                if (typeof data._currentStep !== 'undefined' && data._currentStep > 0) {
+                    goToStep(parseInt(data._currentStep));
+                }
+                updateSidebar();
+            }
+
+            function saveDraft() {
+                try {
+                    var data = collectFormData();
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                    autoSaveText.textContent = 'Draft saved';
+                    autoSaveIndicator.classList.remove('adm-auto-save--saving');
+                    autoSaveIndicator.classList.add('adm-auto-save--saved');
+                } catch (e) {
+                    autoSaveText.textContent = 'Save failed';
+                }
+            }
+
+            function loadDraft() {
+                try {
+                    var raw = localStorage.getItem(STORAGE_KEY);
+                    if (raw) {
+                        var data = JSON.parse(raw);
+                        restoreFormData(data);
+                        return data;
+                    }
+                } catch (e) { }
+                return null;
+            }
+
+            setInterval(function () {
+                autoSaveText.textContent = 'Saving...';
+                autoSaveIndicator.classList.remove('adm-auto-save--saved');
+                autoSaveIndicator.classList.add('adm-auto-save--saving');
+                saveDraft();
+            }, AUTO_SAVE_INTERVAL);
+
+            saveDraftBtn.addEventListener('click', saveDraft);
+
+            /* ---- Sidebar summary ---- */
+            function updateSidebar() {
+                function val(id) {
+                    var el = document.getElementById(id);
+                    return el ? el.value || '—' : '—';
+                }
+                function selText(id) {
+                    var el = document.getElementById(id);
+                    return el && el.selectedIndex > 0 ? el.options[el.selectedIndex].text : '—';
+                }
+                document.getElementById('summaryName').textContent = val('ApplicantName');
+                document.getElementById('summaryDob').textContent = val('DateOfBirth');
+                document.getElementById('summaryGender').textContent = selText('Gender');
+                document.getElementById('summaryMobile').textContent = val('ApplicantMobileNumber') || val('FatherOrGuardianMobileNo');
+                document.getElementById('summaryEmail').textContent = val('ApplicantEmail');
+                document.getElementById('summaryClass').textContent = selText('AppliedClassId');
+
+                var bcFile = document.getElementById('BirthCertificateFile');
+                var psFile = document.getElementById('PaymentSlipFile');
+                document.getElementById('summaryBirthCert').textContent = bcFile && bcFile.files.length > 0 ? bcFile.files[0].name : '—';
+                document.getElementById('summaryPaymentSlip').textContent = psFile && psFile.files.length > 0 ? psFile.files[0].name : '—';
+            }
+
+            form.addEventListener('input', updateSidebar);
+            form.addEventListener('change', updateSidebar);
+
+            /* ---- Same address checkbox ---- */
+            var sameAddrCheckbox = document.getElementById('sameAddress');
+            if (sameAddrCheckbox) {
+                sameAddrCheckbox.addEventListener('change', function () {
+                    if (this.checked) {
+                        document.getElementById('PermanentVillage').value = document.getElementById('PresentVillage').value;
+                        document.getElementById('PermanentPostOffice').value = document.getElementById('PresentPostOffice').value;
+                        document.getElementById('PermanentThana').value = document.getElementById('PresentThana').value;
+                        document.getElementById('PermanentDistrict').value = document.getElementById('PresentDistrict').value;
+                        updateSidebar();
+                    }
+                });
+            }
+
+            /* ---- Profile picture preview ---- */
+            window.previewAdmissionImage = function (event) {
+                var file = event.target.files[0];
+                if (file) {
+                    var reader = new FileReader();
+                    reader.onload = function () {
+                        document.getElementById('previewAdmissionImg').src = reader.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+
+            /* ---- Class/Group filter ---- */
+            var classDropdown = document.getElementById('AppliedClassId');
+            var sectionContainer = document.getElementById('sectionContainer');
+            var groupSelect = document.getElementById('AppliedStudentGroupId');
+            if (classDropdown) {
+                classDropdown.addEventListener('change', function () {
+                    var selectedOption = this.options[this.selectedIndex];
+                    var isGroupBased = selectedOption && selectedOption.dataset.isGroupBased === 'true';
+                    sectionContainer.style.display = isGroupBased ? 'block' : 'none';
+                    if (isGroupBased && groupSelect) {
+                        var sortOrder = parseInt(selectedOption.dataset.sortOrder) || 0;
+                        Array.from(groupSelect.options).forEach(function (opt) {
+                            if (opt.value === '') return;
+                            var minClass = parseInt(opt.dataset.minClass) || 0;
+                            var maxClass = parseInt(opt.dataset.maxClass) || 0;
+                            opt.style.display = (sortOrder >= minClass && sortOrder <= maxClass) ? '' : 'none';
+                        });
+                        if (groupSelect.selectedOptions.length > 0 && groupSelect.selectedOptions[0].style.display === 'none') {
+                            groupSelect.value = '';
+                        }
+                    }
+                });
+            }
+
+            /* ---- Upload zone (drag-drop) ---- */
+            function initUploadZone(zone) {
+                var inputId = zone.getAttribute('data-for');
+                var fileInput = document.getElementById(inputId);
+                var filesContainer = zone.querySelector('.adm-upload-zone__files');
+
+                zone.addEventListener('click', function () {
+                    if (fileInput) fileInput.click();
+                });
+
+                zone.addEventListener('keydown', function (e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        if (fileInput) fileInput.click();
+                    }
+                });
+
+                if (fileInput) {
+                    fileInput.addEventListener('change', function () {
+                        showFiles(fileInput.files, filesContainer, fileInput);
+                    });
+                }
+
+                zone.addEventListener('dragover', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    zone.classList.add('dragover');
+                });
+
+                zone.addEventListener('dragleave', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    zone.classList.remove('dragover');
+                });
+
+                zone.addEventListener('drop', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    zone.classList.remove('dragover');
+                    if (fileInput && e.dataTransfer.files.length) {
+                        fileInput.files = e.dataTransfer.files;
+                        showFiles(e.dataTransfer.files, filesContainer, fileInput);
+                    }
+                });
+            }
+
+            function showFiles(files, container, fileInput) {
+                container.innerHTML = '';
+                Array.from(files).forEach(function (file, idx) {
+                    var div = document.createElement('div');
+                    div.className = 'adm-upload-zone__file';
+                    if (file.type.startsWith('image/')) {
+                        var img = document.createElement('img');
+                        var reader = new FileReader();
+                        reader.onload = function (e) {
+                            img.src = e.target.result;
+                        };
+                        reader.readAsDataURL(file);
+                        div.appendChild(img);
+                    } else {
+                        var icon = document.createElement('div');
+                        icon.style.cssText = 'display:flex;align-items:center;justify-content:center;height:100%;font-size:28px;color:var(--clr-text-muted);';
+                        icon.textContent = '📄';
+                        div.appendChild(icon);
+                    }
+                    var name = document.createElement('div');
+                    name.className = 'adm-upload-zone__file-name';
+                    name.textContent = file.name.substring(0, 15) + (file.name.length > 15 ? '...' : '');
+                    div.appendChild(name);
+                    container.appendChild(div);
+                    updateSidebar();
+                });
+            }
+
+            document.querySelectorAll('.adm-upload-zone').forEach(initUploadZone);
+
+            /* ---- Init ---- */
+            var savedData = loadDraft();
+            if (!savedData) {
+                goToStep(0);
+            }
+            updateSidebar();
+
+            /* ---- Beforeunload ---- */
+            window.addEventListener('beforeunload', function () {
+                saveDraft();
+            });
+        })();
+    </script>
+}

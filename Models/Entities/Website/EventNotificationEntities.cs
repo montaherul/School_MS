@@ -34,14 +34,6 @@ public enum EventScope
     SpecificGuardians = 5
 }
 
-public enum EventApprovalStatus
-{
-    Draft = 0,
-    PendingApproval = 1,
-    Approved = 2,
-    Rejected = 3
-}
-
 public enum NotificationChannel
 {
     Email = 0,

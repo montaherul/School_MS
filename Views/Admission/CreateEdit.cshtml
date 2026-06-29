@@ -1,453 +1,496 @@
 @model SchoolManagementSystem.Models.DTOs.Admission.AdmissionCreateDto
-@{ 
-    ViewData["Title"] = ViewBag.IsEdit ? "Edit Admission" : "New Admission Application"; 
+@{
+    ViewData["Title"] = ViewBag.IsEdit ? "Edit Admission" : "New Admission";
     int? formId = ViewBag.Id as int?;
 }
 
-<div class="row justify-content-center">
-    <div class="col-lg-10">
-        <div class="d-flex align-items-center mb-4">
-            <a href="/Admission/Index" class="btn btn-outline-secondary btn-sm me-3"><i class="bi bi-arrow-left"></i> Back</a>
-            <h2 class="mb-0">@(ViewBag.IsEdit ? "Edit Admission" : "New Admission Application")</h2>
+<div class="adm-page">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="adm-alert adm-alert--success">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> @TempData["SuccessMessage"]
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="adm-alert adm-alert--error">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> @TempData["ErrorMessage"]
+        </div>
+    }
+
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 2 4 3 6 3s6-1 6-3v-5"/></svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">@ViewData["Title"]</h1>
+                <p class="adm-header__sub">@(ViewBag.IsEdit ? "Update application details" : "Create a new admission application")</p>
+            </div>
+        </div>
+        <a href="/Admission/Index" class="adm-btn adm-btn--ghost adm-btn--sm">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            Back to List
+        </a>
+    </div>
+
+    <form asp-action="CreateEdit" method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+        @if (ViewBag.IsEdit)
+        {
+            <input type="hidden" name="id" value="@formId" />
+        }
+
+        <div asp-validation-summary="ModelOnly" class="adm-alert adm-alert--error" style="margin-bottom:24px;display:block;"></div>
+
+        <!-- Personal Information -->
+        <div class="adm-card" style="margin-bottom:24px;">
+            <div class="adm-card__header">
+                <div class="adm-card__header-left">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    <h3 class="adm-card__title">Personal Information</h3>
+                </div>
+            </div>
+            <div class="adm-card__body">
+                <div class="adm-form-grid">
+                    <div class="adm-form-group">
+                        <label class="adm-form-label" for="ApplicantName">Applicant Name <span class="adm-required">*</span></label>
+                        <input asp-for="ApplicantName" class="adm-input adm-input--full" placeholder="e.g. John Doe" required />
+                        <span asp-validation-for="ApplicantName" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="adm-form-label" for="ApplicantNameBangla">Name (Bangla)</label>
+                        <input asp-for="ApplicantNameBangla" class="adm-input adm-input--full" placeholder="বাংলায় নাম" />
+                        <span asp-validation-for="ApplicantNameBangla" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="adm-form-label" for="DateOfBirth">Date of Birth <span class="adm-required">*</span></label>
+                        <input asp-for="DateOfBirth" type="date" class="adm-input adm-input--full" required />
+                        <span asp-validation-for="DateOfBirth" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="adm-form-label" for="Gender">Gender <span class="adm-required">*</span></label>
+                        <select asp-for="Gender" class="adm-select adm-select--full" required>
+                            <option value="">-- Select --</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <span asp-validation-for="Gender" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="adm-form-label" for="Religion">Religion <span class="adm-required">*</span></label>
+                        <select asp-for="Religion" class="adm-select adm-select--full" required>
+                            <option value="">-- Select --</option>
+                            <option value="Islam">Islam</option>
+                            <option value="Hinduism">Hinduism</option>
+                            <option value="Christianity">Christianity</option>
+                            <option value="Buddhism">Buddhism</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <span asp-validation-for="Religion" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="adm-form-label" for="BloodGroup">Blood Group</label>
+                        <select asp-for="BloodGroup" class="adm-select adm-select--full">
+                            <option value="">-- Select --</option>
+                            <option value="A+">A+</option>
+                            <option value="A-">A-</option>
+                            <option value="B+">B+</option>
+                            <option value="B-">B-</option>
+                            <option value="AB+">AB+</option>
+                            <option value="AB-">AB-</option>
+                            <option value="O+">O+</option>
+                            <option value="O-">O-</option>
+                        </select>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="adm-form-label" for="MaritalStatus">Marital Status <span class="adm-required">*</span></label>
+                        <select asp-for="MaritalStatus" class="adm-select adm-select--full" required>
+                            <option value="">-- Select --</option>
+                            <option value="Single">Single</option>
+                            <option value="Married">Married</option>
+                            <option value="Widowed">Widowed</option>
+                            <option value="Divorced">Divorced</option>
+                        </select>
+                        <span asp-validation-for="MaritalStatus" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="adm-form-label" for="Nationality">Nationality <span class="adm-required">*</span></label>
+                        <input asp-for="Nationality" class="adm-input adm-input--full" required />
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="adm-form-label">Profile Picture</label>
+                        <input asp-for="ProfilePicture" type="file" class="adm-file-input" accept="image/*" onchange="previewAdmissionImage(event)" />
+                        <img id="previewAdmissionImg" src="@(string.IsNullOrEmpty(Model.ProfilePicturePath) ? "/images/default-user.png" : Model.ProfilePicturePath)" class="adm-thumb" />
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <form asp-action="CreateEdit" method="post" enctype="multipart/form-data">
-            @Html.AntiForgeryToken()
-            @if (ViewBag.IsEdit)
-            {
-                <input type="hidden" name="id" value="@formId" />
-            }
-
-            <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-3"></div>
-
-            @* ── Section 1: Personal Information ── *@
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-primary bg-opacity-10">
-                    <h5 class="mb-0"><i class="bi bi-person-fill me-2"></i>Personal Information</h5>
+        <!-- Family Information -->
+        <div class="adm-card" style="margin-bottom:24px;">
+            <div class="adm-card__header">
+                <div class="adm-card__header-left">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    <h3 class="adm-card__title">Family Information</h3>
                 </div>
-                <div class="card-body p-4">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label asp-for="ApplicantName" class="form-label">Applicant's Name (English) <span class="text-danger">*</span></label>
-                            <input asp-for="ApplicantName" class="form-control" placeholder="e.g. John Doe" />
-                            <span asp-validation-for="ApplicantName" class="text-danger small"></span>
-                        </div>
-                        <div class="col-md-6">
-                            <label asp-for="ApplicantNameBangla" class="form-label">Applicant's Name (Bangla)</label>
-                            <input asp-for="ApplicantNameBangla" class="form-control" placeholder="বাংলায় নাম" />
-                            <span asp-validation-for="ApplicantNameBangla" class="text-danger small"></span>
-                        </div>
-                        <div class="col-md-4">
-                            <label asp-for="DateOfBirth" class="form-label">Date of Birth <span class="text-danger">*</span></label>
-                            <input asp-for="DateOfBirth" type="date" class="form-control" />
-                            <span asp-validation-for="DateOfBirth" class="text-danger small"></span>
-                        </div>
-                        <div class="col-md-4">
-                            <label asp-for="Gender" class="form-label">Gender <span class="text-danger">*</span></label>
-                            <select asp-for="Gender" class="form-select">
-                                <option value="">Select</option>
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                                <option value="Other">Other</option>
-                            </select>
-                            <span asp-validation-for="Gender" class="text-danger small"></span>
-                        </div>
-                        <div class="col-md-4">
-                            <label asp-for="BloodGroup" class="form-label">Blood Group</label>
-                            <select asp-for="BloodGroup" class="form-select">
-                                <option value="">Select</option>
-                                <option value="A+">A+</option>
-                                <option value="A-">A-</option>
-                                <option value="B+">B+</option>
-                                <option value="B-">B-</option>
-                                <option value="AB+">AB+</option>
-                                <option value="AB-">AB-</option>
-                                <option value="O+">O+</option>
-                                <option value="O-">O-</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label asp-for="MaritalStatus" class="form-label">Marital Status <span class="text-danger">*</span></label>
-                            <select asp-for="MaritalStatus" class="form-select">
-                                <option value="">Select</option>
-                                <option value="Single">Single</option>
-                                <option value="Married">Married</option>
-                                <option value="Widowed">Widowed</option>
-                                <option value="Divorced">Divorced</option>
-                            </select>
-                            <span asp-validation-for="MaritalStatus" class="text-danger small"></span>
-                        </div>
-                        <div class="col-md-4">
-                            <label asp-for="Religion" class="form-label">Religion <span class="text-danger">*</span></label>
-                            <select asp-for="Religion" class="form-select">
-                                <option value="">Select</option>
-                                <option value="Islam">Islam</option>
-                                <option value="Hinduism">Hinduism</option>
-                                <option value="Christianity">Christianity</option>
-                                <option value="Buddhism">Buddhism</option>
-                                <option value="Other">Other</option>
-                            </select>
-                            <span asp-validation-for="Religion" class="text-danger small"></span>
-                        </div>
-                        <div class="col-md-4">
-                            <label asp-for="ProfilePicture" class="form-label">Profile Picture</label>
+                <button type="button" class="adm-btn adm-btn--ghost adm-btn--sm" onclick="openGuardianModal()">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    Link Guardian
+                </button>
+            </div>
+            <div class="adm-card__body">
+                <input type="hidden" asp-for="LinkedGuardianId" id="hfLinkedGuardianId" />
+                <div id="linkedGuardianAlert" class="adm-alert adm-alert--success" style="display:none;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;flex:1;">
+                        <span><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:6px;"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>Linked to Guardian: <strong id="lblLinkedGuardianName"></strong></span>
+                        <button type="button" class="adm-btn adm-btn--ghost adm-btn--sm" onclick="unlinkGuardian()" style="color:var(--adm-rejected);">Remove</button>
+                    </div>
+                </div>
+                <div class="adm-form-grid">
+                    <div class="adm-form-group">
+                        <label class="adm-form-label" for="FatherName">Father's Name <span class="adm-required">*</span></label>
+                        <input asp-for="FatherName" class="adm-input adm-input--full" placeholder="Father's full name" required />
+                        <span asp-validation-for="FatherName" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="adm-form-label" for="FatherOccupation">Father's Occupation</label>
+                        <input asp-for="FatherOccupation" class="adm-input adm-input--full" placeholder="e.g. Businessman" />
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="adm-form-label" for="MotherName">Mother's Name <span class="adm-required">*</span></label>
+                        <input asp-for="MotherName" class="adm-input adm-input--full" placeholder="Mother's full name" required />
+                        <span asp-validation-for="MotherName" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="adm-form-label" for="MotherOccupation">Mother's Occupation</label>
+                        <input asp-for="MotherOccupation" class="adm-input adm-input--full" placeholder="e.g. Homemaker" />
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="adm-form-label" for="GuardianName">Guardian's Name</label>
+                        <input asp-for="GuardianName" class="adm-input adm-input--full" placeholder="If different from parents" />
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="adm-form-label" for="GuardianOccupation">Guardian's Occupation</label>
+                        <input asp-for="GuardianOccupation" class="adm-input adm-input--full" placeholder="Guardian's occupation" />
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                            <input asp-for="ProfilePicture" type="file" class="form-control" accept="image/*" onchange="previewAdmissionImage(event)" />
+        <!-- Guardian Information -->
+        <div class="adm-card" style="margin-bottom:24px;">
+            <div class="adm-card__header">
+                <div class="adm-card__header-left">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    <h3 class="adm-card__title">Guardian Information</h3>
+                </div>
+            </div>
+            <div class="adm-card__body">
+                <div class="adm-form-grid">
+                    <div class="adm-form-group">
+                        <label class="adm-form-label" for="GuardianEmail">Guardian Email</label>
+                        <input asp-for="GuardianEmail" type="email" class="adm-input adm-input--full" placeholder="guardian@mail.com" />
+                        <span asp-validation-for="GuardianEmail" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="adm-form-label" for="GuardianMobileNumber">Guardian Mobile Number</label>
+                        <input asp-for="GuardianMobileNumber" class="adm-input adm-input--full" placeholder="01XXXXXXXXX" />
+                        <span asp-validation-for="GuardianMobileNumber" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="adm-form-label" for="GuardianRelationship">Relationship</label>
+                        <select asp-for="GuardianRelationship" class="adm-select adm-select--full">
+                            <option value="">-- Select --</option>
+                            <option value="Father">Father</option>
+                            <option value="Mother">Mother</option>
+                            <option value="LegalGuardian">Legal Guardian</option>
+                            <option value="Grandfather">Grandfather</option>
+                            <option value="Grandmother">Grandmother</option>
+                            <option value="Uncle">Uncle</option>
+                            <option value="Aunt">Aunt</option>
+                            <option value="Brother">Brother</option>
+                            <option value="Sister">Sister</option>
+                            <option value="Other">Other</option>
+                        </select>
+                        <span asp-validation-for="GuardianRelationship" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="adm-form-label" for="GuardianNationalId">Guardian National ID</label>
+                        <input asp-for="GuardianNationalId" class="adm-input adm-input--full" placeholder="National ID / NID number" />
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="adm-form-label" for="GuardianAddress">Guardian Address</label>
+                        <textarea asp-for="GuardianAddress" class="adm-textarea" rows="2" placeholder="Full address of guardian"></textarea>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="adm-form-label" for="GuardianPhoto">Guardian Photo</label>
+                        <input asp-for="GuardianPhoto" type="file" class="adm-file-input" accept="image/*" />
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="adm-form-label" for="GuardianRemarks">Guardian Remarks</label>
+                        <textarea asp-for="GuardianRemarks" class="adm-textarea" rows="2" placeholder="Additional notes about guardian"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-                            <div class="mt-2">
-                                <img id="previewAdmissionImg"
-                                     src="@(string.IsNullOrEmpty(Model.ProfilePicturePath) ? "/images/default-user.png" : Model.ProfilePicturePath)"
-                                     style="width:90px;height:90px;border-radius:50%;object-fit:cover;border:1px solid #ddd;" />
-                            </div>
+        <!-- Contact Details -->
+        <div class="adm-card" style="margin-bottom:24px;">
+            <div class="adm-card__header">
+                <div class="adm-card__header-left">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                    <h3 class="adm-card__title">Contact Details</h3>
+                </div>
+            </div>
+            <div class="adm-card__body">
+                <div class="adm-form-grid">
+                    <div class="adm-form-group">
+                        <label class="adm-form-label" for="ApplicantMobileNumber">Applicant's Mobile <span class="adm-required">*</span></label>
+                        <input asp-for="ApplicantMobileNumber" class="adm-input adm-input--full" placeholder="01XXXXXXXXX" required />
+                        <span asp-validation-for="ApplicantMobileNumber" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="adm-form-label" for="FatherOrGuardianMobileNo">Father/Guardian Mobile <span class="adm-required">*</span></label>
+                        <input asp-for="FatherOrGuardianMobileNo" class="adm-input adm-input--full" placeholder="01XXXXXXXXX" required />
+                        <span asp-validation-for="FatherOrGuardianMobileNo" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="adm-form-label" for="AlternativeNumber">Alternative Number</label>
+                        <input asp-for="AlternativeNumber" class="adm-input adm-input--full" placeholder="01XXXXXXXXX" />
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="adm-form-label" for="ApplicantEmail">Email Address</label>
+                        <input asp-for="ApplicantEmail" type="email" class="adm-input adm-input--full" placeholder="example@mail.com" />
+                        <span asp-validation-for="ApplicantEmail" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="adm-form-label" for="Nationality">Nationality <span class="adm-required">*</span></label>
+                        <input asp-for="Nationality" class="adm-input adm-input--full" required />
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="adm-form-label" for="Country">Country <span class="adm-required">*</span></label>
+                        <input asp-for="Country" class="adm-input adm-input--full" required />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Address Information -->
+        <div class="adm-card" style="margin-bottom:24px;">
+            <div class="adm-card__header">
+                <div class="adm-card__header-left">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                    <h3 class="adm-card__title">Address Information</h3>
+                </div>
+            </div>
+            <div class="adm-card__body">
+                <div class="adm-form-grid">
+                    <div class="adm-form-group">
+                        <label class="adm-form-label" style="font-weight:700;color:var(--adm-primary);margin-bottom:12px;">Present Address</label>
+                        <div style="margin-bottom:8px;">
+                            <label class="adm-form-label" for="PresentVillage">Village</label>
+                            <input asp-for="PresentVillage" class="adm-input adm-input--full" />
+                        </div>
+                        <div style="margin-bottom:8px;">
+                            <label class="adm-form-label" for="PresentPostOffice">Area/Post Office <span class="adm-required">*</span></label>
+                            <input asp-for="PresentPostOffice" class="adm-input adm-input--full" required />
+                        </div>
+                        <div style="margin-bottom:8px;">
+                            <label class="adm-form-label" for="PresentThana">Thana/Upazila <span class="adm-required">*</span></label>
+                            <input asp-for="PresentThana" class="adm-input adm-input--full" required />
+                        </div>
+                        <div>
+                            <label class="adm-form-label" for="PresentDistrict">District <span class="adm-required">*</span></label>
+                            <input asp-for="PresentDistrict" class="adm-input adm-input--full" required />
+                        </div>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="adm-form-label" style="font-weight:700;color:var(--adm-success);margin-bottom:12px;">
+                            Permanent Address
+                            <label style="display:inline-flex;align-items:center;gap:4px;margin-left:8px;font-weight:400;font-size:12px;color:var(--adm-text-3);cursor:pointer;">
+                                <input type="checkbox" id="sameAddress" style="width:16px;height:16px;" />
+                                Same as Present
+                            </label>
+                        </label>
+                        <div style="margin-bottom:8px;">
+                            <label class="adm-form-label" for="PermanentVillage">Village</label>
+                            <input asp-for="PermanentVillage" class="adm-input adm-input--full" />
+                        </div>
+                        <div style="margin-bottom:8px;">
+                            <label class="adm-form-label" for="PermanentPostOffice">Area/Post Office <span class="adm-required">*</span></label>
+                            <input asp-for="PermanentPostOffice" class="adm-input adm-input--full" required />
+                        </div>
+                        <div style="margin-bottom:8px;">
+                            <label class="adm-form-label" for="PermanentThana">Thana/Upazila <span class="adm-required">*</span></label>
+                            <input asp-for="PermanentThana" class="adm-input adm-input--full" required />
+                        </div>
+                        <div>
+                            <label class="adm-form-label" for="PermanentDistrict">District <span class="adm-required">*</span></label>
+                            <input asp-for="PermanentDistrict" class="adm-input adm-input--full" required />
                         </div>
                     </div>
                 </div>
             </div>
+        </div>
 
-            @* ── Section 2: Family Information ── *@
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-success bg-opacity-10 d-flex justify-content-between align-items-center">
-                    <h5 class="mb-0"><i class="bi bi-people-fill me-2"></i>Family Information</h5>
-                    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#guardianSearchModal">
-                        <i class="bi bi-search me-1"></i> Link Existing Guardian
-                    </button>
+        <!-- ID Documents -->
+        <div class="adm-card" style="margin-bottom:24px;">
+            <div class="adm-card__header">
+                <div class="adm-card__header-left">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    <h3 class="adm-card__title">ID Documents</h3>
                 </div>
-                <div class="card-body p-4">
-                    <input type="hidden" asp-for="LinkedGuardianId" id="hfLinkedGuardianId" />
-                    <div id="linkedGuardianAlert" class="alert alert-info d-none mb-3">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span><i class="bi bi-link-45deg me-2"></i>Linked to Guardian: <strong id="lblLinkedGuardianName"></strong></span>
-                            <button type="button" class="btn-close" onclick="unlinkGuardian()"></button>
-                        </div>
+            </div>
+            <div class="adm-card__body">
+                <div class="adm-form-grid">
+                    <div class="adm-form-group">
+                        <label class="adm-form-label" for="BirthCertificateNo">Birth Certificate No.</label>
+                        <input asp-for="BirthCertificateNo" class="adm-input adm-input--full" />
                     </div>
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label asp-for="FatherName" class="form-label">Father's Name <span class="text-danger">*</span></label>
-                            <input asp-for="FatherName" class="form-control" placeholder="Father's full name" />
-                            <span asp-validation-for="FatherName" class="text-danger small"></span>
-                        </div>
-                        <div class="col-md-6">
-                            <label asp-for="FatherOccupation" class="form-label">Father's Occupation</label>
-                            <input asp-for="FatherOccupation" class="form-control" placeholder="e.g. Businessman" />
-                        </div>
-                        <div class="col-md-6">
-                            <label asp-for="MotherName" class="form-label">Mother's Name <span class="text-danger">*</span></label>
-                            <input asp-for="MotherName" class="form-control" placeholder="Mother's full name" />
-                            <span asp-validation-for="MotherName" class="text-danger small"></span>
-                        </div>
-                        <div class="col-md-6">
-                            <label asp-for="MotherOccupation" class="form-label">Mother's Occupation</label>
-                            <input asp-for="MotherOccupation" class="form-control" placeholder="e.g. Homemaker" />
-                        </div>
-                        <div class="col-md-6">
-                            <label asp-for="GuardianName" class="form-label">Guardian's Name</label>
-                            <input asp-for="GuardianName" class="form-control" placeholder="If different from parents" />
-                        </div>
-                        <div class="col-md-6">
-                            <label asp-for="GuardianOccupation" class="form-label">Guardian's Occupation</label>
-                            <input asp-for="GuardianOccupation" class="form-control" placeholder="Guardian's occupation" />
-                        </div>
+                    <div class="adm-form-group">
+                        <label class="adm-form-label" for="BirthCertificateFile">Birth Certificate (Document)</label>
+                        <input asp-for="BirthCertificateFile" type="file" class="adm-file-input" accept=".pdf,.jpg,.jpeg,.png" />
+                        @if (!string.IsNullOrEmpty(Model.BirthCertificatePath))
+                        {
+                            <a href="@Model.BirthCertificatePath" target="_blank" style="display:inline-flex;align-items:center;gap:4px;margin-top:6px;font-size:12px;color:var(--adm-converted);">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                View Current Document
+                            </a>
+                        }
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="adm-form-label" for="PaymentSlipFile">Payment Slip / Receipt</label>
+                        <input asp-for="PaymentSlipFile" type="file" class="adm-file-input" accept=".pdf,.jpg,.jpeg,.png" />
+                        @if (!string.IsNullOrEmpty(Model.PaymentSlipPath))
+                        {
+                            <a href="@Model.PaymentSlipPath" target="_blank" style="display:inline-flex;align-items:center;gap:4px;margin-top:6px;font-size:12px;color:var(--adm-converted);">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                View Current Receipt
+                            </a>
+                        }
                     </div>
                 </div>
             </div>
+        </div>
 
-            @* ── Section 3: Guardian Information ── *@
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-purple bg-opacity-10" style="background-color:rgba(111,66,193,0.08);">
-                    <h5 class="mb-0"><i class="bi bi-shield-fill me-2" style="color:#6f42c1;"></i>Guardian Information</h5>
+        <!-- Academic & Payment -->
+        <div class="adm-card" style="margin-bottom:24px;">
+            <div class="adm-card__header">
+                <div class="adm-card__header-left">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 2 4 3 6 3s6-1 6-3v-5"/></svg>
+                    <h3 class="adm-card__title">Academic & Payment</h3>
                 </div>
-                <div class="card-body p-4">
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <label asp-for="GuardianEmail" class="form-label">Guardian Email</label>
-                            <input asp-for="GuardianEmail" type="email" class="form-control" placeholder="guardian@mail.com" />
-                            <span asp-validation-for="GuardianEmail" class="text-danger small"></span>
-                        </div>
-                        <div class="col-md-4">
-                            <label asp-for="GuardianMobileNumber" class="form-label">Guardian Mobile Number</label>
-                            <input asp-for="GuardianMobileNumber" class="form-control" placeholder="01XXXXXXXXX" />
-                            <span asp-validation-for="GuardianMobileNumber" class="text-danger small"></span>
-                        </div>
-                        <div class="col-md-4">
-                            <label asp-for="GuardianRelationship" class="form-label">Guardian Relationship</label>
-                            <select asp-for="GuardianRelationship" class="form-select">
-                                <option value="">Select</option>
-                                <option value="Father">Father</option>
-                                <option value="Mother">Mother</option>
-                                <option value="LegalGuardian">Legal Guardian</option>
-                                <option value="Grandfather">Grandfather</option>
-                                <option value="Grandmother">Grandmother</option>
-                                <option value="Uncle">Uncle</option>
-                                <option value="Aunt">Aunt</option>
-                                <option value="Brother">Brother</option>
-                                <option value="Sister">Sister</option>
-                                <option value="Other">Other</option>
-                            </select>
-                            <span asp-validation-for="GuardianRelationship" class="text-danger small"></span>
-                        </div>
-                        <div class="col-md-6">
-                            <label asp-for="GuardianNationalId" class="form-label">Guardian National ID</label>
-                            <input asp-for="GuardianNationalId" class="form-control" placeholder="National ID / NID number" />
-                        </div>
-                        <div class="col-md-6">
-                            <label asp-for="GuardianAddress" class="form-label">Guardian Address</label>
-                            <textarea asp-for="GuardianAddress" class="form-control" rows="2" placeholder="Full address of guardian"></textarea>
-                        </div>
-                        <div class="col-md-6">
-                            <label asp-for="GuardianPhoto" class="form-label">Guardian Photo</label>
-                            <input asp-for="GuardianPhoto" type="file" class="form-control" accept="image/*" />
-                            @if (!string.IsNullOrEmpty(Model.GuardianPhotoPath))
+            </div>
+            <div class="adm-card__body">
+                <div class="adm-form-grid">
+                    <div class="adm-form-group">
+                        <label class="adm-form-label" for="AppliedClassId">Select Class <span class="adm-required">*</span></label>
+                        <select asp-for="AppliedClassId" class="adm-select adm-select--full" id="AppliedClassId" style="padding:12px 36px 12px 13px;font-size:15px;" required>
+                            <option value="">Select Class</option>
+                            @if (ViewBag.Classes != null)
                             {
-                                <div class="mt-1"><img src="@Model.GuardianPhotoPath" style="width:60px;height:60px;border-radius:50%;object-fit:cover;" /></div>
+                                foreach (var c in ViewBag.Classes)
+                                {
+                                    <option value="@c.Id" data-is-group-based="@(c.IsGroupBased.ToString().ToLower())">@c.Name</option>
+                                }
                             }
-                        </div>
-                        <div class="col-md-6">
-                            <label asp-for="GuardianRemarks" class="form-label">Guardian Remarks</label>
-                            <textarea asp-for="GuardianRemarks" class="form-control" rows="2" placeholder="Additional notes about guardian"></textarea>
-                        </div>
+                        </select>
+                        <span asp-validation-for="AppliedClassId" class="adm-field-error"></span>
+                    </div>
+                    <div class="adm-form-group" id="sectionContainer" style="display:none;">
+                        <label class="adm-form-label" for="AppliedStudentGroupId">Select Group</label>
+                        <select asp-for="AppliedStudentGroupId" class="adm-select adm-select--full" style="padding:12px 36px 12px 13px;font-size:15px;">
+                            <option value="">Select Group</option>
+                        </select>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="adm-form-label" for="PaymentMethod">Payment Method</label>
+                        <select asp-for="PaymentMethod" class="adm-select adm-select--full">
+                            <option value="">-- Select --</option>
+                            <option value="Cash">Cash</option>
+                            <option value="Bank Transfer">Bank Transfer</option>
+                            <option value="bKash">bKash</option>
+                            <option value="Nagad">Nagad</option>
+                            <option value="Rocket">Rocket</option>
+                        </select>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="adm-form-label" for="TransactionDetails">Transaction Details</label>
+                        <input asp-for="TransactionDetails" class="adm-input adm-input--full" placeholder="Transaction ID / Receipt No." />
                     </div>
                 </div>
             </div>
+        </div>
 
-            @* ── Section 4: Contact Details ── *@
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-info bg-opacity-10">
-                    <h5 class="mb-0"><i class="bi bi-telephone-fill me-2"></i>Contact Details</h5>
+        <div class="adm-form-actions">
+            <button type="submit" class="adm-btn adm-btn--primary adm-btn--lg">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                @(ViewBag.IsEdit ? "Update Application" : "Submit Application")
+            </button>
+            <a href="/Admission/Index" class="adm-btn adm-btn--ghost adm-btn--lg">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<!-- Guardian Search Modal -->
+<div class="adm-modal-backdrop" id="guardianSearchModal" style="display:none;">
+    <div class="adm-modal" role="dialog" aria-labelledby="guardianSearchLabel">
+        <div class="adm-modal__header">
+            <div class="adm-modal__header-left">
+                <div class="adm-modal__header-icon adm-modal__header-icon--success">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                 </div>
-                <div class="card-body p-4">
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <label asp-for="ApplicantMobileNumber" class="form-label">Applicant's Mobile <span class="text-danger">*</span></label>
-                            <input asp-for="ApplicantMobileNumber" class="form-control" placeholder="01XXXXXXXXX" />
-                            <span asp-validation-for="ApplicantMobileNumber" class="text-danger small"></span>
-                        </div>
-                        <div class="col-md-4">
-                            <label asp-for="FatherOrGuardianMobileNo" class="form-label">Father/Guardian Mobile <span class="text-danger">*</span></label>
-                            <input asp-for="FatherOrGuardianMobileNo" class="form-control" placeholder="01XXXXXXXXX" />
-                            <span asp-validation-for="FatherOrGuardianMobileNo" class="text-danger small"></span>
-                        </div>
-                        <div class="col-md-4">
-                            <label asp-for="AlternativeNumber" class="form-label">Alternative Number</label>
-                            <input asp-for="AlternativeNumber" class="form-control" placeholder="01XXXXXXXXX" />
-                        </div>
-                        <div class="col-md-6">
-                            <label asp-for="ApplicantEmail" class="form-label">Email Address</label>
-                            <input asp-for="ApplicantEmail" type="email" class="form-control" placeholder="example@mail.com" />
-                            <span asp-validation-for="ApplicantEmail" class="text-danger small"></span>
-                        </div>
-                        <div class="col-md-3">
-                            <label asp-for="Nationality" class="form-label">Nationality <span class="text-danger">*</span></label>
-                            <input asp-for="Nationality" class="form-control" />
-                        </div>
-                        <div class="col-md-3">
-                            <label asp-for="Country" class="form-label">Country <span class="text-danger">*</span></label>
-                            <input asp-for="Country" class="form-control" />
-                        </div>
-                    </div>
+                <div>
+                    <h3 class="adm-modal__title" id="guardianSearchLabel">Search Existing Guardian</h3>
+                    <p class="adm-modal__subtitle">Find and link a guardian record</p>
                 </div>
             </div>
-
-            @* ── Section 4: Address Information ── *@
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-info bg-opacity-10">
-                    <h5 class="mb-0">
-                        <i class="bi bi-geo-alt-fill me-2"></i>Address Information
-                    </h5>
-                </div>
-
-                <div class="card-body p-4">
-                    <div class="row g-4">
-
-                        @* Present Address *@
-                        <div class="col-md-6">
-                            <h6 class="fw-bold text-primary mb-3">Present Address</h6>
-
-                            <div class="mb-2">
-                                <label asp-for="PresentVillage" class="form-label">Village</label>
-                                <input asp-for="PresentVillage" class="form-control" />
-                            </div>
-
-                            <div class="mb-2">
-                                <label asp-for="PresentPostOffice" class="form-label">Area/Post Office <span class="text-danger">*</span></label>
-                                <input asp-for="PresentPostOffice" class="form-control" />
-                            </div>
-
-                            <div class="mb-2">
-                                <label asp-for="PresentThana" class="form-label">Thana/Upazila <span class="text-danger">*</span></label>
-                                <input asp-for="PresentThana" class="form-control" />
-                            </div>
-
-                            <div class="mb-2">
-                                <label asp-for="PresentDistrict" class="form-label">District <span class="text-danger">*</span></label>
-                                <input asp-for="PresentDistrict" class="form-control" />
-                            </div>
-                        </div>
-
-                        @* Permanent Address *@
-                        <div class="col-md-6">
-                            <h6 class="fw-bold text-success mb-3">
-                                Permanent Address
-                                <input type="checkbox" id="sameAddress" class="ms-2" />
-                                <small class="text-muted">Same as Present</small>
-                            </h6>
-
-                            <div class="mb-2">
-                                <label asp-for="PermanentVillage" class="form-label">Village</label>
-                                <input asp-for="PermanentVillage" class="form-control" />
-                            </div>
-
-                            <div class="mb-2">
-                                <label asp-for="PermanentPostOffice" class="form-label">Area/Post Office <span class="text-danger">*</span></label>
-                                <input asp-for="PermanentPostOffice" class="form-control" />
-                            </div>
-
-                            <div class="mb-2">
-                                <label asp-for="PermanentThana" class="form-label">Thana/Upazila <span class="text-danger">*</span></label>
-                                <input asp-for="PermanentThana" class="form-control" />
-                            </div>
-
-                            <div class="mb-2">
-                                <label asp-for="PermanentDistrict" class="form-label">District <span class="text-danger">*</span></label>
-                                <input asp-for="PermanentDistrict" class="form-control" />
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
+            <button type="button" class="adm-modal__close" onclick="closeGuardianModal()" aria-label="Close">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </button>
+        </div>
+        <div class="adm-modal__body">
+            <div style="display:flex;gap:8px;margin-bottom:16px;">
+                <input type="text" id="txtGuardianSearch" class="adm-input adm-input--full" placeholder="Search by name, code or phone..." style="padding-left:12px;" />
+                <button type="button" class="adm-btn adm-btn--primary" onclick="searchGuardians()">Search</button>
             </div>
-            @* ── Section 4: ID Documents ── *@
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-warning bg-opacity-10">
-                    <h5 class="mb-0"><i class="bi bi-card-text me-2"></i>ID Documents</h5>
-                </div>
-                <div class="card-body p-4">
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            <label asp-for="BirthCertificateNo" class="form-label">Birth Certificate No.</label>
-                            <input asp-for="BirthCertificateNo" class="form-control" />
-                        </div>
-                        <div class="col-md-6">
-                            <label asp-for="BirthCertificateFile" class="form-label">Birth Certificate (Document)</label>
-                            <input asp-for="BirthCertificateFile" type="file" class="form-control" accept=".pdf,.jpg,.jpeg,.png" />
-                            @if (!string.IsNullOrEmpty(Model.BirthCertificatePath))
-                            {
-                                <div class="mt-1"><a href="@Model.BirthCertificatePath" target="_blank" class="text-info small"><i class="bi bi-file-earmark-pdf"></i> View Current Document</a></div>
-                            }
-                        </div>
-                        <div class="col-md-6">
-                            <label asp-for="PaymentSlipFile" class="form-label">Payment Slip / Receipt (Document)</label>
-                            <input asp-for="PaymentSlipFile" type="file" class="form-control" accept=".pdf,.jpg,.jpeg,.png" />
-                            @if (!string.IsNullOrEmpty(Model.PaymentSlipPath))
-                            {
-                                <div class="mt-1"><a href="@Model.PaymentSlipPath" target="_blank" class="text-info small"><i class="bi bi-file-earmark-pdf"></i> View Current Receipt</a></div>
-                            }
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            @* ── Section 5: Academic & Payment ── *@
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-secondary bg-opacity-10">
-                    <h5 class="mb-0"><i class="bi bi-mortarboard-fill me-2"></i>Academic & Payment</h5>
-                </div>
-                <div class="card-body p-4">
-                    <div class="row g-3">
-                        <div class="row g-3">
-
-                            <!-- Class -->
-                            <div class="col-md-4">
-                                <label asp-for="AppliedClassId" class="form-label fw-bold">
-                                    Select Class <span class="text-danger">*</span>
-                                </label>
-                                <select asp-for="AppliedClassId" class="form-select form-select-lg" id="AppliedClassId">
-                                    <option value="">Select Class</option>
-                                    @if (ViewBag.Classes != null)
-                                    {
-                                        foreach (var c in ViewBag.Classes)
-                                        {
-                                            <option value="@c.Id" data-is-group-based="@(c.IsGroupBased.ToString().ToLower())">@c.Name</option>
-                                        }
-                                    }
-                                </select>
-                                <span asp-validation-for="AppliedClassId" class="text-danger small"></span>
-                            </div>
-
-                            <!-- Section / Group -->
-                            <div class="col-md-4" id="sectionContainer" style="display:none;">
-                                <label asp-for="AppliedStudentGroupId" class="form-label fw-bold">Select Group</label>
-                                <select asp-for="AppliedStudentGroupId" class="form-select form-select-lg">
-                                    <option value="">Select Group</option>
-                                </select>
-                            </div>
-
-                        </div>
-                        <div class="col-md-4">
-                            <label asp-for="PaymentMethod" class="form-label">Payment Method</label>
-                            <select asp-for="PaymentMethod" class="form-select">
-                                <option value="">Select</option>
-                                <option value="Cash">Cash</option>
-                                <option value="Bank Transfer">Bank Transfer</option>
-                                <option value="bKash">bKash</option>
-                                <option value="Nagad">Nagad</option>
-                                <option value="Rocket">Rocket</option>
-                            </select>
-                        </div>
-                        <div class="col-md-4">
-                            <label asp-for="TransactionDetails" class="form-label">Transaction Details</label>
-                            <input asp-for="TransactionDetails" class="form-control" placeholder="Transaction ID / Receipt No." />
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-primary px-4"><i class="bi bi-save me-1"></i> Save Application</button>
-                <a href="/Admission/Index" class="btn btn-outline-secondary px-4">Cancel</a>
-            </div>
-        </form>
+            <div id="guardianSearchResults"></div>
+        </div>
     </div>
 </div>
+
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const checkbox = document.getElementById("sameAddress");
-
-        if (!checkbox) return;
-
-        checkbox.addEventListener("change", function () {
-            if (this.checked) {
-                document.getElementById("PermanentVillage").value =
-                    document.getElementById("PresentVillage").value;
-
-                document.getElementById("PermanentPostOffice").value =
-                    document.getElementById("PresentPostOffice").value;
-
-                document.getElementById("PermanentThana").value =
-                    document.getElementById("PresentThana").value;
-
-                document.getElementById("PermanentDistrict").value =
-                    document.getElementById("PresentDistrict").value;
-            }
-        });
+        if (checkbox) {
+            checkbox.addEventListener("change", function () {
+                if (this.checked) {
+                    document.getElementById("PermanentVillage").value = document.getElementById("PresentVillage").value;
+                    document.getElementById("PermanentPostOffice").value = document.getElementById("PresentPostOffice").value;
+                    document.getElementById("PermanentThana").value = document.getElementById("PresentThana").value;
+                    document.getElementById("PermanentDistrict").value = document.getElementById("PresentDistrict").value;
+                }
+            });
+        }
     });
 
-        function previewAdmissionImage(event) {
+    function previewAdmissionImage(event) {
         const reader = new FileReader();
-
         reader.onload = function () {
             document.getElementById('previewAdmissionImg').src = reader.result;
         };
-
         reader.readAsDataURL(event.target.files[0]);
     }
 
     document.addEventListener("DOMContentLoaded", function () {
         const classDropdown = document.getElementById("AppliedClassId");
         const sectionContainer = document.getElementById("sectionContainer");
-        const groupSelect = sectionContainer.querySelector('select');
+        const groupSelect = sectionContainer ? sectionContainer.querySelector('select') : null;
 
         function updateGroups(classId) {
-            if (!classId) { sectionContainer.style.display = "none"; return; }
+            if (!classId || !sectionContainer || !groupSelect) { if (sectionContainer) sectionContainer.style.display = "none"; return; }
             sectionContainer.style.display = "block";
             groupSelect.innerHTML = '<option value="">Loading...</option>';
             fetch(`/Section/GetStudentGroupsForClass?classId=${classId}`)
@@ -459,14 +502,12 @@
                         return;
                     }
                     if (groups.length === 1) {
-                        // Only one group — auto-assign, show as read-only label
                         sectionContainer.style.display = "block";
                         groupSelect.innerHTML = '';
                         var label = document.createElement('div');
-                        label.className = 'form-control-plaintext fw-semibold';
+                        label.style.cssText = 'padding:9px 13px;font-weight:600;color:var(--adm-text);font-size:13.5px;';
                         label.textContent = groups[0].name;
                         groupSelect.appendChild(label);
-                        // Set hidden backing field via a hidden input right after the select
                         var hidden = document.createElement('input');
                         hidden.type = 'hidden';
                         hidden.name = groupSelect.name || 'AppliedStudentGroupId';
@@ -474,7 +515,6 @@
                         groupSelect.appendChild(hidden);
                         return;
                     }
-                    // Multiple groups — show dropdown
                     groupSelect.innerHTML = '<option value="">Select Group</option>';
                     var currentVal = groupSelect.dataset.selectedValue;
                     groups.forEach(g => {
@@ -487,112 +527,68 @@
                 });
         }
 
-        classDropdown.addEventListener("change", function () {
-            updateGroups(parseInt(this.value));
-        });
-        // Store initially selected value for edit mode
-        (function () {
-            var sel = document.querySelector('#sectionContainer select');
-            if (sel && sel.value) sel.dataset.selectedValue = sel.value;
-        })();
-        if (classDropdown.value) updateGroups(parseInt(classDropdown.value));
+        if (classDropdown) {
+            classDropdown.addEventListener("change", function () { updateGroups(parseInt(this.value)); });
+            (function () {
+                var sel = document.querySelector('#sectionContainer select');
+                if (sel && sel.value) sel.dataset.selectedValue = sel.value;
+            })();
+            if (classDropdown.value) updateGroups(parseInt(classDropdown.value));
+        }
     });
 
     function searchGuardians() {
         const term = document.getElementById('txtGuardianSearch').value;
-        if (term.length < 3) {
-            alert('Please enter at least 3 characters');
-            return;
-        }
-
+        if (term.length < 3) { alert('Please enter at least 3 characters'); return; }
         fetch(`/admin/guardians/search?term=${encodeURIComponent(term)}`)
             .then(res => res.json())
             .then(data => {
-                const resultsContainer = document.getElementById('guardianSearchResults');
-                resultsContainer.innerHTML = '';
-                
-                if (data.length === 0) {
-                    resultsContainer.innerHTML = '<div class="list-group-item text-center">No guardians found</div>';
-                    return;
-                }
-
+                const container = document.getElementById('guardianSearchResults');
+                container.innerHTML = '';
+                if (data.length === 0) { container.innerHTML = '<div style="text-align:center;padding:24px;color:var(--adm-text-3);">No guardians found</div>'; return; }
                 data.forEach(g => {
-                    const btn = document.createElement('button');
-                    btn.type = 'button';
-                    btn.className = 'list-group-item list-group-item-action';
-                    const inner = document.createElement('div');
-                    inner.className = 'd-flex justify-content-between align-items-center';
-                    inner.innerHTML = '<div class="d-flex justify-content-between align-items-center"><div></div><i class="bi bi-plus-circle text-primary"></i></div>';
-                    const textDiv = inner.querySelector('div');
-                    const h6 = document.createElement('h6');
-                    h6.className = 'mb-0';
-                    h6.textContent = g.name || '';
-                    textDiv.appendChild(h6);
-                    const small = document.createElement('small');
-                    small.className = 'text-muted';
-                    small.textContent = 'Code: ' + (g.code || '') + ' | Phone: ' + (g.phone || '');
-                    textDiv.appendChild(small);
-                    btn.innerHTML = '';
-                    btn.appendChild(inner);
-                    btn.onclick = () => linkGuardian(g);
-                    resultsContainer.appendChild(btn);
+                    const item = document.createElement('div');
+                    item.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border:1px solid var(--adm-border);border-radius:var(--adm-radius);margin-bottom:6px;cursor:pointer;transition:all var(--adm-transition);';
+                    item.onmouseover = function () { this.style.background = 'var(--adm-primary-bg)'; this.style.borderColor = 'var(--adm-primary)'; };
+                    item.onmouseout = function () { this.style.background = ''; this.style.borderColor = 'var(--adm-border)'; };
+                    item.innerHTML = '<div><div style="font-weight:600;color:var(--adm-text);">' + (g.name || '') + '</div><div style="font-size:12px;color:var(--adm-text-3);">Code: ' + (g.code || '') + ' | Phone: ' + (g.phone || '') + '</div></div><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--adm-primary)" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+                    item.onclick = function () { linkGuardian(g); };
+                    container.appendChild(item);
                 });
             });
     }
 
     function linkGuardian(g) {
         document.getElementById('hfLinkedGuardianId').value = g.id;
-        document.getElementById('lblLinkedGuardianName').innerText = `${g.name} (${g.code})`;
-        document.getElementById('linkedGuardianAlert').classList.remove('d-none');
-        
-        // Auto-fill fields if they are empty
+        document.getElementById('lblLinkedGuardianName').innerText = g.name + ' (' + g.code + ')';
+        document.getElementById('linkedGuardianAlert').style.display = 'block';
         const guardianNameInput = document.querySelector('[name="GuardianName"]');
-        if (guardianNameInput && !guardianNameInput.value) {
-            guardianNameInput.value = g.name;
-        }
-        
+        if (guardianNameInput && !guardianNameInput.value) guardianNameInput.value = g.name;
         const guardianPhoneInput = document.querySelector('[name="FatherOrGuardianMobileNo"]');
-        if (guardianPhoneInput && !guardianPhoneInput.value) {
-            guardianPhoneInput.value = g.phone;
-        }
-
+        if (guardianPhoneInput && !guardianPhoneInput.value) guardianPhoneInput.value = g.phone;
         const guardianEmailInput = document.querySelector('[name="GuardianEmail"]');
-        if (guardianEmailInput && !guardianEmailInput.value && g.email) {
-            guardianEmailInput.value = g.email;
-        }
-
+        if (guardianEmailInput && !guardianEmailInput.value && g.email) guardianEmailInput.value = g.email;
         const guardianMobileInput = document.querySelector('[name="GuardianMobileNumber"]');
-        if (guardianMobileInput && !guardianMobileInput.value && g.phone) {
-            guardianMobileInput.value = g.phone;
-        }
-
-        bootstrap.Modal.getInstance(document.getElementById('guardianSearchModal')).hide();
+        if (guardianMobileInput && !guardianMobileInput.value && g.phone) guardianMobileInput.value = g.phone;
+        closeGuardianModal();
     }
 
     function unlinkGuardian() {
         document.getElementById('hfLinkedGuardianId').value = '';
-        document.getElementById('linkedGuardianAlert').classList.add('d-none');
+        document.getElementById('linkedGuardianAlert').style.display = 'none';
     }
+
+    function openGuardianModal() {
+        document.getElementById('guardianSearchModal').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeGuardianModal() {
+        document.getElementById('guardianSearchModal').style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    document.addEventListener('click', function (e) { if (e.target.id === 'guardianSearchModal') closeGuardianModal(); });
 </script>
 
-<!-- Guardian Search Modal -->
-<div class="modal fade" id="guardianSearchModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Search Existing Guardian</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="input-group mb-3">
-                    <input type="text" id="txtGuardianSearch" class="form-control" placeholder="Search by name, code or phone...">
-                    <button class="btn btn-primary" type="button" onclick="searchGuardians()">Search</button>
-                </div>
-                <div id="guardianSearchResults" class="list-group">
-                    <!-- Search results here -->
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 @section Scripts { @{await Html.RenderPartialAsync("_ValidationScriptsPartial");} }

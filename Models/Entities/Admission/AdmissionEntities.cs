@@ -171,6 +171,13 @@ public class AdmissionApplication : BaseEntity
     [MaxLength(260)]
     public string? ProfilePicturePath { get; set; }
 
+    public bool AllDocumentsVerified { get; set; }
+
+    public DateTime? DocumentsVerifiedAt { get; set; }
+
+    [MaxLength(64)]
+    public string? DocumentsVerifiedBy { get; set; }
+
     public ICollection<AdmissionDocument> Documents { get; set; } = new List<AdmissionDocument>();
 }
 
@@ -188,4 +195,24 @@ public class AdmissionDocument : BaseEntity
     [Required]
     [MaxLength(260)]
     public string FilePath { get; set; } = string.Empty;
+
+    public DocumentVerificationStatus VerificationStatus { get; set; }
+
+    [MaxLength(260)]
+    public string? OriginalFileName { get; set; }
+
+    public long FileSize { get; set; }
+
+    [MaxLength(100)]
+    public string? ContentType { get; set; }
+
+    public DateTime? VerifiedAt { get; set; }
+
+    [MaxLength(64)]
+    public string? VerifiedBy { get; set; }
+
+    [MaxLength(500)]
+    public string? VerificationRemarks { get; set; }
+
+    public int VersionNumber { get; set; }
 }

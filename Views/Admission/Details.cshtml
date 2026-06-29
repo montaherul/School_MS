@@ -1,261 +1,308 @@
 @model SchoolManagementSystem.Models.Entities.Admission.AdmissionApplication
 @{
     ViewData["Title"] = "Admission Details";
+    var statusClass = Model.Status == SchoolManagementSystem.Models.Enums.AdmissionStatus.Pending ? "pending" : Model.Status == SchoolManagementSystem.Models.Enums.AdmissionStatus.Approved ? "converted" : "rejected";
 }
 
-<div class="row g-4 mb-4">
-    <div class="col-12">
-        <div class="card border-0 shadow-sm rounded-4">
-            <div class="card-body p-4">
-                <div class="row align-items-center">
-                    <div class="col-auto">
-                        <div class="avatar-xl rounded-circle bg-primary bg-opacity-10 d-flex align-items-center justify-content-center">
-                            @if (!string.IsNullOrEmpty(Model.ProfilePicturePath))
-                            {
-                                <img src="@Model.ProfilePicturePath" class="rounded-circle w-100 h-100 object-fit-cover shadow-sm" alt="Profile" />
-                            }
-                            else
-                            {
-                                <i class="bi bi-person text-primary fs-1"></i>
-                            }
-                        </div>
-                    </div>
-                    <div class="col">
-                        <h3 class="fw-bold mb-1">@Model.ApplicantName</h3>
-                        <p class="text-muted mb-0">
-                            <span class="badge @(Model.Status == SchoolManagementSystem.Models.Enums.AdmissionStatus.Pending ? "bg-warning" : Model.Status == SchoolManagementSystem.Models.Enums.AdmissionStatus.Approved ? "bg-success" : "bg-danger") rounded-pill px-3">
-                                @Model.Status
-                            </span>
-                            <span class="ms-2">Application ID: <strong class="text-dark">@Model.ApplicationNo</strong></span>
-                        </p>
-                    </div>
-                    <div class="col-auto">
-                        <div class="btn-group">
-                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-primary rounded-start-pill px-4">
-                                <i class="bi bi-pencil me-2"></i>Edit
-                            </a>
-                            <button onclick="window.print()" class="btn btn-primary rounded-end-pill px-4">
-                                <i class="bi bi-printer me-2"></i>Print
-                            </button>
-                        </div>
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 2 4 3 6 3s6-1 6-3v-5"/></svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">@Model.ApplicantName</h1>
+                <p class="adm-header__sub">
+                    <span class="adm-status adm-status--@statusClass">@Model.Status</span>
+                    <span style="margin-left:12px;font-weight:600;">App No: @Model.ApplicationNo</span>
+                </p>
+            </div>
+        </div>
+        <div class="adm-btn-group">
+            <a href="/Admission/CreateEdit/@Model.Id" class="adm-btn adm-btn--ghost adm-btn--sm">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                Edit
+            </a>
+            <button onclick="window.print()" class="adm-btn adm-btn--primary adm-btn--sm">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                Print
+            </button>
+            <a href="/Admission/Index" class="adm-btn adm-btn--ghost adm-btn--sm">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                Back
+            </a>
+        </div>
+    </div>
+
+    <!-- Applicant Profile Header -->
+    <div class="adm-card" style="margin-bottom:24px;">
+        <div class="adm-card__body">
+            <div class="adm-info-row" style="gap:20px;border:none;padding:0;">
+                <div class="adm-avatar-xl">
+                    @if (!string.IsNullOrEmpty(Model.ProfilePicturePath))
+                    {
+                        <img src="@Model.ProfilePicturePath" alt="Profile" />
+                    }
+                    else
+                    {
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--adm-text-3)" stroke-width="1.5" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    }
+                </div>
+                <div>
+                    <h2 style="font-size:20px;font-weight:700;margin:0 0 4px;color:var(--adm-text);">@Model.ApplicantName</h2>
+                    <div style="display:flex;align-items:center;gap:12px;font-size:13px;color:var(--adm-text-2);">
+                        <span><strong>Application:</strong> @Model.ApplicationNo</span>
+                        <span><strong>Class:</strong> @Model.AppliedClassId</span>
+                        <span><strong>Submitted:</strong> @Model.CreatedAt.ToString("dd MMM yyyy")</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Personal & Family Info -->
-    <div class="col-md-8">
-        <div class="card border-0 shadow-sm rounded-4 h-100">
-            <div class="card-header bg-white border-0 p-4 pb-0">
-                <h5 class="fw-bold mb-0">Applicant Information</h5>
+    <!-- Stats Row -->
+    <div class="adm-stat-grid" style="margin-bottom:24px;">
+        <div class="adm-stat">
+            <div class="adm-stat__icon adm-stat__icon--primary">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             </div>
-            <div class="card-body p-4">
-                <div class="row g-4">
-                    <div class="col-sm-6">
-                        <label class="text-muted small text-uppercase fw-bold d-block">Full Name (Bangla)</label>
-                        <span class="fw-medium">@(Model.ApplicantNameBangla ?? "N/A")</span>
-                    </div>
-                    <div class="col-sm-6">
-                        <label class="text-muted small text-uppercase fw-bold d-block">Date of Birth</label>
-                        <span class="fw-medium">@Model.DateOfBirth.ToString("dd MMM yyyy")</span>
-                    </div>
-                    <div class="col-sm-6">
-                        <label class="text-muted small text-uppercase fw-bold d-block">Gender</label>
-                        <span class="fw-medium">@Model.Gender</span>
-                    </div>
-                    <div class="col-sm-6">
-                        <label class="text-muted small text-uppercase fw-bold d-block">Religion</label>
-                        <span class="fw-medium">@Model.Religion</span>
-                    </div>
-                    <div class="col-sm-6">
-                        <label class="text-muted small text-uppercase fw-bold d-block">Blood Group</label>
-                        <span class="fw-medium">@(Model.BloodGroup ?? "N/A")</span>
-                    </div>
-                    <div class="col-sm-6">
-                        <label class="text-muted small text-uppercase fw-bold d-block">Birth Certificate No</label>
-                        <span class="fw-medium">@(Model.BirthCertificateNo ?? "N/A")</span>
-                    </div>
-                    
-                    <hr class="my-2 opacity-50" />
-                    
-                    <div class="col-sm-6">
-                        <label class="text-muted small text-uppercase fw-bold d-block">Father's Name</label>
-                        <span class="fw-medium">@Model.FatherName</span>
-                        <div class="small text-muted mt-1">@Model.FatherOccupation</div>
-                    </div>
-                    <div class="col-sm-6">
-                        <label class="text-muted small text-uppercase fw-bold d-block">Mother's Name</label>
-                        <span class="fw-medium">@Model.MotherName</span>
-                        <div class="small text-muted mt-1">@Model.MotherOccupation</div>
-                    </div>
-                    <div class="col-sm-6">
-                        <label class="text-muted small text-uppercase fw-bold d-block">Guardian's Name</label>
-                        <span class="fw-medium">@(Model.GuardianName ?? "N/A")</span>
-                        <div class="small text-muted mt-1">@Model.GuardianOccupation</div>
-                    </div>
-                    <div class="col-sm-6">
-                        <label class="text-muted small text-uppercase fw-bold d-block">Guardian's Mobile</label>
-                        <span class="fw-medium text-primary fw-bold">@Model.FatherOrGuardianMobileNo</span>
-                    </div>
-                </div>
+            <div class="adm-stat__body">
+                <span class="adm-stat__label">Status</span>
+                <span class="adm-stat__value" style="font-size:18px;">
+                    <span class="adm-status adm-status--@statusClass" style="font-size:13px;">@Model.Status</span>
+                </span>
+            </div>
+        </div>
+        <div class="adm-stat">
+            <div class="adm-stat__icon adm-stat__icon--info">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+            <div class="adm-stat__body">
+                <span class="adm-stat__label">Applied Class</span>
+                <span class="adm-stat__value" style="font-size:18px;">Class @Model.AppliedClassId</span>
+            </div>
+        </div>
+        <div class="adm-stat">
+            <div class="adm-stat__icon adm-stat__icon--success">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            </div>
+            <div class="adm-stat__body">
+                <span class="adm-stat__label">Phone</span>
+                <span class="adm-stat__value" style="font-size:18px;">@Model.ApplicantMobileNumber</span>
+            </div>
+        </div>
+        <div class="adm-stat">
+            <div class="adm-stat__icon adm-stat__icon--warning">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            </div>
+            <div class="adm-stat__body">
+                <span class="adm-stat__label">Payment</span>
+                <span class="adm-stat__value" style="font-size:18px;">@(Model.PaymentMethod ?? "N/A")</span>
             </div>
         </div>
     </div>
 
-    <!-- Guardian Information -->
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm rounded-4 mb-4">
-            <div class="card-header bg-white border-0 p-4 pb-0">
-                <h5 class="fw-bold mb-0">
-                    <span class="badge" style="background-color:#6f42c1;color:#fff;padding:6px 10px;border-radius:8px;margin-right:8px;">
-                        <i class="bi bi-shield-fill"></i>
-                    </span>
-                    Guardian Information
-                </h5>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+        <!-- Personal & Family Info -->
+        <div class="adm-card">
+            <div class="adm-card__header">
+                <div class="adm-card__header-left">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    <h3 class="adm-card__title">Personal & Family Info</h3>
+                </div>
             </div>
-            <div class="card-body p-4">
+            <div class="adm-card__body">
+                <div class="adm-details-grid">
+                    <div class="adm-detail-item">
+                        <span class="adm-detail-item__label">Full Name (Bangla)</span>
+                        <span class="adm-detail-item__value">@(Model.ApplicantNameBangla ?? "N/A")</span>
+                    </div>
+                    <div class="adm-detail-item">
+                        <span class="adm-detail-item__label">Date of Birth</span>
+                        <span class="adm-detail-item__value">@Model.DateOfBirth.ToString("dd MMM yyyy")</span>
+                    </div>
+                    <div class="adm-detail-item">
+                        <span class="adm-detail-item__label">Gender</span>
+                        <span class="adm-detail-item__value">@Model.Gender</span>
+                    </div>
+                    <div class="adm-detail-item">
+                        <span class="adm-detail-item__label">Religion</span>
+                        <span class="adm-detail-item__value">@Model.Religion</span>
+                    </div>
+                    <div class="adm-detail-item">
+                        <span class="adm-detail-item__label">Blood Group</span>
+                        <span class="adm-detail-item__value">@(Model.BloodGroup ?? "N/A")</span>
+                    </div>
+                    <div class="adm-detail-item">
+                        <span class="adm-detail-item__label">Birth Certificate No</span>
+                        <span class="adm-detail-item__value">@(Model.BirthCertificateNo ?? "N/A")</span>
+                    </div>
+                </div>
+                <hr style="border:none;border-top:1px solid var(--adm-border);margin:16px 0;" />
+                <div class="adm-details-grid">
+                    <div class="adm-detail-item">
+                        <span class="adm-detail-item__label">Father's Name</span>
+                        <span class="adm-detail-item__value">@Model.FatherName</span>
+                        <span class="adm-detail-item__sub">@Model.FatherOccupation</span>
+                    </div>
+                    <div class="adm-detail-item">
+                        <span class="adm-detail-item__label">Mother's Name</span>
+                        <span class="adm-detail-item__value">@Model.MotherName</span>
+                        <span class="adm-detail-item__sub">@Model.MotherOccupation</span>
+                    </div>
+                    <div class="adm-detail-item">
+                        <span class="adm-detail-item__label">Guardian's Name</span>
+                        <span class="adm-detail-item__value">@(Model.GuardianName ?? "N/A")</span>
+                        <span class="adm-detail-item__sub">@Model.GuardianOccupation</span>
+                    </div>
+                    <div class="adm-detail-item">
+                        <span class="adm-detail-item__label">Guardian's Mobile</span>
+                        <span class="adm-detail-item__value">@Model.FatherOrGuardianMobileNo</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Guardian Information -->
+        <div class="adm-card">
+            <div class="adm-card__header">
+                <div class="adm-card__header-left">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    <h3 class="adm-card__title">Guardian Information</h3>
+                </div>
+            </div>
+            <div class="adm-card__body">
                 @if (!string.IsNullOrEmpty(Model.GuardianPhoto))
                 {
-                    <div class="text-center mb-3">
-                        <img src="@Model.GuardianPhoto" class="rounded-circle shadow-sm" style="width:80px;height:80px;object-fit:cover;" alt="Guardian Photo" />
+                    <div style="text-align:center;margin-bottom:16px;">
+                        <img src="@Model.GuardianPhoto" style="width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid var(--adm-border);" alt="Guardian Photo" />
                     </div>
                 }
-                <div class="mb-3">
-                    <label class="text-muted small text-uppercase fw-bold d-block mb-1">Guardian Name</label>
-                    <p class="fw-medium mb-0">@(Model.GuardianName ?? "N/A")</p>
-                    <small class="text-muted">@Model.GuardianOccupation</small>
+                <div class="adm-info-row">
+                    <span class="adm-info-row__label">Guardian Name</span>
+                    <span class="adm-info-row__value">@(Model.GuardianName ?? "N/A")</span>
                 </div>
-                <div class="mb-3">
-                    <label class="text-muted small text-uppercase fw-bold d-block mb-1">Relationship</label>
-                    <p class="fw-medium mb-0">@(Model.GuardianRelationship ?? "N/A")</p>
+                <div class="adm-info-row">
+                    <span class="adm-info-row__label">Occupation</span>
+                    <span class="adm-info-row__value">@Model.GuardianOccupation</span>
                 </div>
-                <div class="mb-3">
-                    <label class="text-muted small text-uppercase fw-bold d-block mb-1">Email</label>
-                    <p class="fw-medium mb-0">
-                        <i class="bi bi-envelope me-1 text-muted"></i>
-                        @(string.IsNullOrEmpty(Model.GuardianEmail) ? "N/A" : Model.GuardianEmail)
-                    </p>
+                <div class="adm-info-row">
+                    <span class="adm-info-row__label">Relationship</span>
+                    <span class="adm-info-row__value">@(Model.GuardianRelationship ?? "N/A")</span>
                 </div>
-                <div class="mb-3">
-                    <label class="text-muted small text-uppercase fw-bold d-block mb-1">Mobile</label>
-                    <p class="fw-medium mb-0">
-                        <i class="bi bi-phone me-1 text-muted"></i>
-                        @(string.IsNullOrEmpty(Model.GuardianMobileNumber) ? "N/A" : Model.GuardianMobileNumber)
-                    </p>
+                <div class="adm-info-row">
+                    <span class="adm-info-row__label">Email</span>
+                    <span class="adm-info-row__value">@(string.IsNullOrEmpty(Model.GuardianEmail) ? "N/A" : Model.GuardianEmail)</span>
                 </div>
-                <div class="mb-3">
-                    <label class="text-muted small text-uppercase fw-bold d-block mb-1">National ID</label>
-                    <p class="fw-medium mb-0">@(Model.GuardianNationalId ?? "N/A")</p>
+                <div class="adm-info-row">
+                    <span class="adm-info-row__label">Mobile</span>
+                    <span class="adm-info-row__value">@(string.IsNullOrEmpty(Model.GuardianMobileNumber) ? "N/A" : Model.GuardianMobileNumber)</span>
                 </div>
-                <div class="mb-3">
-                    <label class="text-muted small text-uppercase fw-bold d-block mb-1">Address</label>
-                    <p class="fw-medium mb-0 small">@(Model.GuardianAddress ?? "N/A")</p>
+                <div class="adm-info-row">
+                    <span class="adm-info-row__label">National ID</span>
+                    <span class="adm-info-row__value">@(Model.GuardianNationalId ?? "N/A")</span>
                 </div>
-                <div class="mb-0">
-                    <label class="text-muted small text-uppercase fw-bold d-block mb-1">Remarks</label>
-                    <p class="fw-medium mb-0 small">@(Model.GuardianRemarks ?? "N/A")</p>
+                <div class="adm-info-row">
+                    <span class="adm-info-row__label">Address</span>
+                    <span class="adm-info-row__value">@(Model.GuardianAddress ?? "N/A")</span>
+                </div>
+                <div class="adm-info-row" style="border-bottom:none;">
+                    <span class="adm-info-row__label">Remarks</span>
+                    <span class="adm-info-row__value">@(Model.GuardianRemarks ?? "N/A")</span>
                 </div>
                 @if (Model.LinkedGuardianId.HasValue)
                 {
-                    <hr class="my-3" />
-                    <div class="d-flex align-items-center text-success">
-                        <i class="bi bi-link-45deg me-2"></i>
-                        <span class="fw-bold">Linked to Guardian ID: @Model.LinkedGuardianId</span>
+                    <hr style="border:none;border-top:1px solid var(--adm-border);margin:12px 0;" />
+                    <div style="display:flex;align-items:center;gap:6px;color:var(--adm-success);font-size:13px;font-weight:600;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                        Linked to Guardian ID: @Model.LinkedGuardianId
                     </div>
                 }
             </div>
         </div>
     </div>
 
-    <!-- Application Info -->
-    <div class="col-md-4">
-        <div class="card border-0 shadow-sm rounded-4 mb-4">
-            <div class="card-header bg-white border-0 p-4 pb-0">
-                <h5 class="fw-bold mb-0">Application Detail</h5>
+    <!-- Address Information -->
+    <div class="adm-card" style="margin-top:24px;">
+        <div class="adm-card__header">
+            <div class="adm-card__header-left">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                <h3 class="adm-card__title">Address Information</h3>
             </div>
-            <div class="card-body p-4">
-                <div class="mb-4">
-                    <label class="text-muted small text-uppercase fw-bold d-block mb-1">Applied For</label>
-                    <div class="d-flex align-items-center">
-                        <div class="icon-box bg-primary bg-opacity-10 text-primary rounded-3 p-2 me-3">
-                            <i class="bi bi-building fs-4"></i>
-                        </div>
-                        <div>
-                            <span class="fw-bold d-block">Class @Model.AppliedClassId</span>
-                            <span class="small text-muted">Session 2026</span>
-                        </div>
-                    </div>
+        </div>
+        <div class="adm-card__body">
+            <div class="adm-details-grid">
+                <div class="adm-detail-item">
+                    <span class="adm-detail-item__label">Present Address</span>
+                    <span class="adm-detail-item__value">@Model.PresentVillage, @Model.PresentPostOffice, @Model.PresentThana, @Model.PresentDistrict</span>
                 </div>
-                
-                <div class="mb-4">
-                    <label class="text-muted small text-uppercase fw-bold d-block mb-1">Contact Info</label>
-                    <div class="mb-2">
-                        <i class="bi bi-phone me-2 text-muted"></i>
-                        <span class="fw-medium">@Model.ApplicantMobileNumber</span>
-                    </div>
-                    <div class="mb-0">
-                        <i class="bi bi-envelope me-2 text-muted"></i>
-                        <span class="fw-medium">@(Model.ApplicantEmail ?? "No Email Provided")</span>
-                    </div>
-                </div>
-
-                <div class="mb-0">
-                    <label class="text-muted small text-uppercase fw-bold d-block mb-1">Submitted On</label>
-                    <div class="d-flex align-items-center">
-                        <i class="bi bi-calendar-event me-2 text-muted"></i>
-                        <span class="fw-medium">@Model.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</span>
-                    </div>
+                <div class="adm-detail-item">
+                    <span class="adm-detail-item__label">Permanent Address</span>
+                    <span class="adm-detail-item__value">@Model.PermanentVillage, @Model.PermanentPostOffice, @Model.PermanentThana, @Model.PermanentDistrict</span>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Address Card -->
-        <div class="card border-0 shadow-sm rounded-4">
-            <div class="card-header bg-white border-0 p-4 pb-0">
-                <h5 class="fw-bold mb-0">Address Information</h5>
+    <!-- Application Timeline -->
+    <div class="adm-card" style="margin-top:24px;">
+        <div class="adm-card__header">
+            <div class="adm-card__header-left">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <h3 class="adm-card__title">Application Timeline</h3>
             </div>
-            <div class="card-body p-4">
-                <div class="mb-4">
-                    <label class="text-muted small text-uppercase fw-bold d-block mb-1">Present Address</label>
-                    <p class="small mb-0 text-muted">
-                        @Model.PresentVillage, @Model.PresentPostOffice, @Model.PresentThana, @Model.PresentDistrict
-                    </p>
+        </div>
+        <div class="adm-card__body">
+            <div class="adm-timeline">
+                <div class="adm-timeline__item">
+                    <div class="adm-timeline__dot adm-timeline__dot--info">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
+                    <div class="adm-timeline__body">
+                        <h4 class="adm-timeline__title">Application Submitted</h4>
+                        <p class="adm-timeline__meta">@Model.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</p>
+                    </div>
                 </div>
-                <div class="mb-0">
-                    <label class="text-muted small text-uppercase fw-bold d-block mb-1">Permanent Address</label>
-                    <p class="small mb-0 text-muted">
-                        @Model.PermanentVillage, @Model.PermanentPostOffice, @Model.PermanentThana, @Model.PermanentDistrict
-                    </p>
-                </div>
+                @if (Model.UpdatedAt.HasValue && Model.UpdatedAt != Model.CreatedAt)
+                {
+                    <div class="adm-timeline__item">
+                        <div class="adm-timeline__dot @(Model.Status == SchoolManagementSystem.Models.Enums.AdmissionStatus.Approved ? "adm-timeline__dot--success" : "adm-timeline__dot--pending")">
+                            @if (Model.Status == SchoolManagementSystem.Models.Enums.AdmissionStatus.Approved)
+                            {
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+                            }
+                            else
+                            {
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                            }
+                        </div>
+                        <div class="adm-timeline__body">
+                            <h4 class="adm-timeline__title">Status Updated to @Model.Status</h4>
+                            <p class="adm-timeline__meta">@Model.UpdatedAt.Value.ToString("dd MMM yyyy, hh:mm tt")</p>
+                        </div>
+                    </div>
+                }
             </div>
         </div>
     </div>
 </div>
 
 <style>
-    .avatar-xl {
-        width: 80px;
-        height: 80px;
-    }
-    .icon-box {
-        width: 48px;
-        height: 48px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
     @@media print {
-        .topbar, .sidebar, .btn-group, .sidebar-overlay {
+        .topbar, .sidebar, .sidebar-overlay, .adm-header .adm-btn {
             display: none !important;
         }
         .main-panel {
             margin-left: 0 !important;
             padding: 0 !important;
         }
-        .card {
+        .adm-card {
             box-shadow: none !important;
-            border: 1px solid #eee !important;
+            border: 1px solid #ddd !important;
+            break-inside: avoid;
+        }
+        .adm-card:hover {
+            box-shadow: none !important;
         }
     }
 </style>

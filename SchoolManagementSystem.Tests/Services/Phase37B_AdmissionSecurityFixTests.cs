@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Caching.Memory;
 using Xunit;
 using Moq;
 using SchoolManagementSystem.Helpers.Email;
@@ -8,6 +9,7 @@ using SchoolManagementSystem.Services.Implementations.Admissions;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using SchoolManagementSystem.Repositories.Interfaces.Admission;
 using SchoolManagementSystem.Repositories.Interfaces;
+using SchoolManagementSystem.Services.Interfaces.Admissions;
 using SchoolManagementSystem.Services.Interfaces.Students;
 using SchoolManagementSystem.Services.Interfaces.Email;
 using SchoolManagementSystem.Repositories.Interfaces.Auth;
@@ -43,6 +45,10 @@ public class Phase37B_AdmissionSecurityFixTests
     private readonly Mock<ILogger<AdmissionService>> _loggerMock = new(MockBehavior.Loose);
     private readonly Mock<ISchoolSettingRepository> _settingRepoMock = new(MockBehavior.Loose);
     private readonly Mock<IHttpContextAccessor> _httpMock = new(MockBehavior.Loose);
+    private readonly Mock<IWorkflowService> _workflowServiceMock = new(MockBehavior.Loose);
+    private readonly Mock<IAdmissionFinanceService> _admissionFinanceMock = new(MockBehavior.Loose);
+    private readonly Mock<IConversionPipelineService> _conversionPipelineMock = new(MockBehavior.Loose);
+    private readonly Mock<IMemoryCache> _cacheMock = new(MockBehavior.Loose);
 
     private AdmissionService CreateService()
     {
@@ -53,7 +59,9 @@ public class Phase37B_AdmissionSecurityFixTests
             _userRoleRepoMock.Object, _classRepoMock.Object,
             _studentRepoMock.Object, _sectionRepoMock.Object,
             _guardianServiceMock.Object, _settingRepoMock.Object, _loggerMock.Object,
-            _httpMock.Object);
+            _httpMock.Object, _workflowServiceMock.Object, _admissionFinanceMock.Object,
+            _conversionPipelineMock.Object,
+            _cacheMock.Object);
     }
 
     // ─── P6: Status Transition Guards ────────────────────────────
@@ -160,6 +168,8 @@ public class Phase37B_AdmissionSecurityFixTests
     public async Task ApproveAndConvertAsync_Throws_WhenFeeUnpaid()
     {
         SetupApproveConvertBase(false, AdmissionStatus.Pending);
+        _conversionPipelineMock.Setup(p => p.ExecuteAsync(1, 1, "user", default))
+            .ThrowsAsync(new InvalidOperationException("Admission fee must be paid before conversion."));
         var svc = CreateService();
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => svc.ApproveAndConvertAsync(1, 1, "user", default));
         Assert.Contains("fee", ex.Message, System.StringComparison.OrdinalIgnoreCase);
@@ -169,6 +179,8 @@ public class Phase37B_AdmissionSecurityFixTests
     public async Task ApproveAndConvertAsync_Throws_WhenRejected()
     {
         SetupApproveConvertBase(true, AdmissionStatus.Rejected);
+        _conversionPipelineMock.Setup(p => p.ExecuteAsync(1, 1, "user", default))
+            .ThrowsAsync(new InvalidOperationException("Cannot convert a rejected application."));
         var svc = CreateService();
         var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => svc.ApproveAndConvertAsync(1, 1, "user", default));
         Assert.Contains("cannot convert", ex.Message, System.StringComparison.OrdinalIgnoreCase);

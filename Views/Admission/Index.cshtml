@@ -145,6 +145,10 @@
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
                     <span id="capacityInfoText"></span>
                 </div>
+                <div id="appliedGroupInfo" class="adm-capacity-info" style="display:none;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
+                    <span id="appliedGroupInfoText"></span>
+                </div>
             </div>
             <div id="approveError" class="adm-alert adm-alert--error" style="display:none;"></div>
         </div>
@@ -258,7 +262,8 @@
                             { url: '/Admission/CreateEdit/' + d.id, className: 'action-btn--edit', icon: 'pencil', title: 'Edit' }
                         ];
                         if (d.status === 'Pending') {
-                            actions.push({ className: 'action-btn--success', icon: 'check-lg', title: 'Convert', onClick: 'openApproveModal(' + d.id + ', ' + d.appliedClassId + ')' });
+                            var gName = d.appliedStudentGroupName ? d.appliedStudentGroupName : '';
+                            actions.push({ className: 'action-btn--success', icon: 'check-lg', title: 'Convert', onClick: 'openApproveModal(' + d.id + ', ' + d.appliedClassId + ', \'' + gName + '\')' });
                             actions.push({ className: 'action-btn--delete', icon: 'x-lg', title: 'Reject', onClick: 'rejectItem(' + d.id + ')' });
                         }
                         return buildActionGroup(actions);
@@ -381,12 +386,20 @@
         $('#exportExcel').click(exportToExcel);
         $('#exportPdf').click(exportToPdf);
 
-        function openApproveModal(applicationId, classId) {
+        function openApproveModal(applicationId, classId, appliedGroupName) {
             document.getElementById('approveApplicationId').value = applicationId;
             var errEl = document.getElementById('approveError');
             errEl.style.display = 'none'; errEl.textContent = '';
             currentClassIdForSection = classId;
             document.getElementById('sectionSelect').innerHTML = '<option value="">Loading sections...</option>';
+            var groupInfo = document.getElementById('appliedGroupInfo');
+            var groupInfoText = document.getElementById('appliedGroupInfoText');
+            if (appliedGroupName) {
+                groupInfoText.textContent = 'Applied Group: ' + appliedGroupName;
+                groupInfo.style.display = 'flex';
+            } else {
+                groupInfo.style.display = 'none';
+            }
             document.getElementById('approveModal').style.display = 'flex';
             document.body.style.overflow = 'hidden';
             loadSectionsDropdown();

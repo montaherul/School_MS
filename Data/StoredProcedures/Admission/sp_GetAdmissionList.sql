@@ -30,6 +30,8 @@ BEGIN
             a.DateOfBirth,
             a.Gender,
             a.AppliedClassId,
+            a.AppliedStudentGroupId,
+            sg.Name AS AppliedStudentGroupName,
             c.Name AS ClassName,
             -- Convert Enum Int to String Label
             CASE a.[Status]
@@ -82,6 +84,8 @@ BEGIN
 Admissions a WITH(NOLOCK)
         LEFT JOIN 
 Classes c WITH(NOLOCK) ON a.AppliedClassId = c.Id
+        LEFT JOIN 
+StudentGroups sg WITH(NOLOCK) ON a.AppliedStudentGroupId = sg.Id
         WHERE 
             a.IsDeleted = 0
             AND (@ClassId = 0 OR a.AppliedClassId = @ClassId)

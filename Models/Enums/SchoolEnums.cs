@@ -56,3 +56,51 @@ public enum RoutineVersionStatus { Draft = 1, Approved = 2, Published = 3, Archi
 public enum ConflictType { TeacherConflict = 1, RoomConflict = 2, StudentConflict = 3, LabConflict = 4, SectionConflict = 5, GroupConflict = 6, Duplicate = 7, UnavailableTeacher = 8, UnavailableRoom = 9, HolidayConflict = 10, BreakConflict = 11 }
 public enum RoomType { Classroom = 1, Laboratory = 2, ComputerLab = 3, PhysicsLab = 4, ChemistryLab = 5, BiologyLab = 6, SeminarHall = 7, Auditorium = 8, Library = 9, StaffRoom = 10 }
 public enum DayOfWeek { Sunday = 0, Monday = 1, Tuesday = 2, Wednesday = 3, Thursday = 4, Friday = 5, Saturday = 6 }
+
+// Phase XX+12: Enterprise Admission Workflow
+public enum WorkflowState
+{
+    ApplicationSubmitted = 1,
+    DocumentVerification = 2,
+    AcademicReview = 3,
+    InterviewScheduled = 4,
+    InterviewCompleted = 5,
+    FeeVerification = 6,
+    PrincipalApproval = 7,
+    StudentCreation = 8,
+    GuardianCreation = 9,
+    UserProvisioning = 10,
+    StudentIdGeneration = 11,
+    IdCardGeneration = 12,
+    WelcomeEmail = 13,
+    AdmissionCompleted = 14,
+    Rejected = 15,
+    Cancelled = 16,
+    OnHold = 17
+}
+
+public enum WorkflowTransitionType
+{
+    Automatic = 1,
+    ManualApproval = 2,
+    Conditional = 3,
+    SystemAction = 4
+}
+
+public enum DocumentVerificationStatus
+{
+    Pending = 1,
+    Verified = 2,
+    Rejected = 3,
+    Expired = 4,
+    ReUploadRequested = 5
+}
+
+public enum InterviewResult
+{
+    Scheduled = 1,
+    Completed = 2,
+    Passed = 3,
+    Failed = 4,
+    Rescheduled = 5
+}

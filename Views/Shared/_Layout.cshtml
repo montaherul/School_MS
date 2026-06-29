@@ -455,6 +455,10 @@
                         {
                             <span class="nav-section-label"><span class="nav-text">Admission Management</span></span>
                             <a asp-controller="Admission" asp-action="Index" data-title="Admissions"><i class="bi bi-person-plus"></i><span class="nav-text">Applications</span></a>
+                            @if (Can("Reports.View"))
+                            {
+                                <a asp-controller="Admission" asp-action="Reports" data-title="Reports"><i class="bi bi-file-earmark-bar-graph"></i><span class="nav-text">Admission Reports</span></a>
+                            }
                         }
 
                         @* ── 4. Student Management ── *@

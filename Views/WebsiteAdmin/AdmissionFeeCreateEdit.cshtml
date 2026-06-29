@@ -5,66 +5,98 @@
 }
 
 <div class="adm-page">
-    <div style="margin-bottom:16px;">
-        <a href="/Admin/Website" class="adm-btn adm-btn--ghost"><i style="margin-right:4px;" class="bi bi-arrow-left"></i> Back to Console</a>
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">@(Model.Id > 0 ? "Edit" : "Add") Admission Fee Structure</h1>
+                <p class="adm-header__sub">Manage fee structure for school classes</p>
+            </div>
+        </div>
+        <a href="/Admin/Website" class="adm-btn adm-btn--ghost adm-btn--sm">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            Back to Console
+        </a>
     </div>
 
-    <div style="background:var(--adm-surface);border:1px solid var(--adm-border);border-radius:var(--adm-radius-lg);box-shadow:var(--adm-shadow);overflow:hidden;">
-        <div style="padding:16px 20px;border-bottom:1px solid var(--adm-border);">
-            <h5 style="font-size:16px;font-weight:700;color:var(--adm-primary);margin:0;">
-                <i style="margin-right:8px;" class="bi bi-cash-stack"></i>
-                @(Model.Id > 0 ? "Edit" : "Add") Admission Fee Structure
-            </h5>
+    <div class="adm-card">
+        <div class="adm-card__header">
+            <div class="adm-card__header-left">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                <h3 class="adm-card__title">Fee Structure Details</h3>
+            </div>
         </div>
-        <div style="padding:20px;">
+        <div class="adm-card__body">
             <form action="/Admin/Website/AdmissionFees/CreateEdit/@(Model.Id > 0 ? Model.Id.ToString() : "")" method="post">
                 @Html.AntiForgeryToken()
 
-                <div style="display:flex;flex-wrap:wrap;gap:16px;">
-                    <div style="flex:1 1 calc(33.33% - 16px);min-width:240px;">
+                <div class="adm-form-grid" style="grid-template-columns:repeat(3,1fr);">
+                    <div class="adm-form-group">
                         <label class="adm-form-label">Class Name</label>
-                        <input type="text" name="ClassName" value="@Model.ClassName" class="adm-input" required placeholder="e.g., Class VI"/>
+                        <input type="text" name="ClassName" value="@Model.ClassName" class="adm-input adm-input--full" required placeholder="e.g., Class VI"/>
                     </div>
-                    <div style="flex:1 1 calc(33.33% - 16px);min-width:240px;">
+                    <div class="adm-form-group">
                         <label class="adm-form-label">School Class ID</label>
-                        <input type="number" name="SchoolClassId" value="@Model.SchoolClassId" class="adm-input" required/>
+                        <input type="number" name="SchoolClassId" value="@Model.SchoolClassId" class="adm-input adm-input--full" required/>
                     </div>
-                    <div style="flex:1 1 calc(33.33% - 16px);min-width:240px;">
+                    <div class="adm-form-group">
                         <label class="adm-form-label">Display Order</label>
-                        <input type="number" name="DisplayOrder" value="@Model.DisplayOrder" class="adm-input"/>
+                        <input type="number" name="DisplayOrder" value="@Model.DisplayOrder" class="adm-input adm-input--full"/>
                     </div>
-                    <div style="flex:1 1 calc(16.66% - 16px);min-width:150px;">
+                    <div class="adm-form-group">
                         <label class="adm-form-label">Admission Fee</label>
-                        <input type="number" name="AdmissionFee" value="@Model.AdmissionFee" class="adm-input" step="0.01" min="0"/>
+                        <input type="number" name="AdmissionFee" value="@Model.AdmissionFee" class="adm-input adm-input--full" step="0.01" min="0"/>
                     </div>
-                    <div style="flex:1 1 calc(16.66% - 16px);min-width:150px;">
+                    <div class="adm-form-group">
                         <label class="adm-form-label">Monthly Fee</label>
-                        <input type="number" name="MonthlyFee" value="@Model.MonthlyFee" class="adm-input" step="0.01" min="0"/>
+                        <input type="number" name="MonthlyFee" value="@Model.MonthlyFee" class="adm-input adm-input--full" step="0.01" min="0"/>
                     </div>
-                    <div style="flex:1 1 calc(16.66% - 16px);min-width:150px;">
+                    <div class="adm-form-group">
                         <label class="adm-form-label">Session Fee</label>
-                        <input type="number" name="SessionFee" value="@Model.SessionFee" class="adm-input" step="0.01" min="0"/>
+                        <input type="number" name="SessionFee" value="@Model.SessionFee" class="adm-input adm-input--full" step="0.01" min="0"/>
                     </div>
-                    <div style="flex:1 1 calc(16.66% - 16px);min-width:150px;">
+                    <div class="adm-form-group">
                         <label class="adm-form-label">Exam Fee</label>
-                        <input type="number" name="ExamFee" value="@Model.ExamFee" class="adm-input" step="0.01" min="0"/>
+                        <input type="number" name="ExamFee" value="@Model.ExamFee" class="adm-input adm-input--full" step="0.01" min="0"/>
                     </div>
-                    <div style="flex:1 1 calc(16.66% - 16px);min-width:150px;">
+                    <div class="adm-form-group">
                         <label class="adm-form-label">Other Fee</label>
-                        <input type="number" name="OtherFee" value="@Model.OtherFee" class="adm-input" step="0.01" min="0"/>
+                        <input type="number" name="OtherFee" value="@Model.OtherFee" class="adm-input adm-input--full" step="0.01" min="0"/>
                     </div>
-                    <div style="flex:1 1 calc(16.66% - 16px);min-width:150px;">
+                    <div class="adm-form-group">
+                        <label class="adm-form-label">Registration Fee</label>
+                        <input type="number" name="RegistrationFee" value="@Model.RegistrationFee" class="adm-input adm-input--full" step="0.01" min="0"/>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="adm-form-label">Development Fee</label>
+                        <input type="number" name="DevelopmentFee" value="@Model.DevelopmentFee" class="adm-input adm-input--full" step="0.01" min="0"/>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="adm-form-label">Library Fee</label>
+                        <input type="number" name="LibraryFee" value="@Model.LibraryFee" class="adm-input adm-input--full" step="0.01" min="0"/>
+                    </div>
+                    <div class="adm-form-group">
+                        <label class="adm-form-label">Laboratory Fee</label>
+                        <input type="number" name="LaboratoryFee" value="@Model.LaboratoryFee" class="adm-input adm-input--full" step="0.01" min="0"/>
+                    </div>
+                    <div class="adm-form-group">
                         <label class="adm-form-label">Status</label>
                         <div style="display:flex;align-items:center;gap:10px;margin-top:8px;">
-                            <input class="form-check-input" type="checkbox" name="IsActive" value="true" @(Model.IsActive ? "checked" : "") id="chkActive"/>
+                            <input type="checkbox" name="IsActive" value="true" @(Model.IsActive ? "checked" : "") id="chkActive" style="width:18px;height:18px;" />
                             <input type="hidden" name="IsActive" value="false"/>
-                            <label class="form-check-label" for="chkActive">Active</label>
+                            <label for="chkActive" style="font-size:14px;color:var(--adm-text-2);">Active</label>
                         </div>
                     </div>
                 </div>
 
-                <div style="flex:1 1 100%;text-align:right;padding-top:16px;margin-top:16px;border-top:1px solid var(--adm-border);">
-                    <button type="submit" class="adm-btn adm-btn--primary"><i style="margin-right:4px;" class="bi bi-save"></i> Save Fee Structure</button>
+                <div class="adm-form-actions">
+                    <button type="submit" class="adm-btn adm-btn--primary adm-btn--lg">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                        Save Fee Structure
+                    </button>
+                    <a href="/Admin/Website" class="adm-btn adm-btn--ghost adm-btn--lg">Cancel</a>
                 </div>
             </form>
         </div>

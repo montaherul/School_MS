@@ -14,17 +14,29 @@ namespace SchoolManagementSystem.Controllers.Admission;
 public class AdmissionController : Controller
 {
     private readonly IAdmissionService _admissionService;
-    private readonly ISchoolClassService _classService;
     private readonly ISectionService _sectionService;
+    private readonly IAdmissionDashboardService _admissionDashboardService;
+    private readonly IAdmissionFinanceService _admissionFinanceService;
+    private readonly IDocumentVerificationService _documentVerificationService;
+    private readonly IAdmissionReportService _admissionReportService;
+    private readonly ILogger<AdmissionController> _logger;
 
     public AdmissionController(
         IAdmissionService admissionService,
-        ISchoolClassService classService,
-        ISectionService sectionService)
+        ISectionService sectionService,
+        IAdmissionDashboardService admissionDashboardService,
+        IAdmissionFinanceService admissionFinanceService,
+        IDocumentVerificationService documentVerificationService,
+        IAdmissionReportService admissionReportService,
+        ILogger<AdmissionController> logger)
     {
         _admissionService = admissionService;
-        _classService = classService;
         _sectionService = sectionService;
+        _admissionDashboardService = admissionDashboardService;
+        _admissionFinanceService = admissionFinanceService;
+        _documentVerificationService = documentVerificationService;
+        _admissionReportService = admissionReportService;
+        _logger = logger;
     }
 
     [HttpGet]
@@ -66,6 +78,7 @@ public class AdmissionController : Controller
         }
     }
 
+    [HttpGet]
     [RequirePermission("Admission.View")]
     public async Task<IActionResult> Index(int page = 1, int pageSize = 10, string? search = null, int? classId = null, string? status = null, CancellationToken ct = default)
     {
@@ -73,7 +86,9 @@ public class AdmissionController : Controller
 
         if (isAjax)
         {
-            int? statusValue = !string.IsNullOrEmpty(status) ? (int)Enum.Parse(typeof(AdmissionStatus), status) : null;
+            int? statusValue = null;
+            if (!string.IsNullOrEmpty(status) && Enum.TryParse<AdmissionStatus>(status, ignoreCase: true, out var parsedStatus))
+                statusValue = (int)parsedStatus;
 
             var (items, totalRecords, counts) = await _admissionService.GetListByStoredProcedureAsync(
                 pageNumber: Math.Max(page, 1),
@@ -96,14 +111,6 @@ public class AdmissionController : Controller
         ViewBag.Classes = await _admissionService.GetAvailableClassesAsync(ct);
         return View();
     }
-
-    [HttpGet]
-    [RequirePermission("Admission.Create")]
-    public IActionResult Create() => RedirectToAction(nameof(CreateEdit));
-
-    [HttpGet]
-    [RequirePermission("Admission.Create")]
-    public IActionResult Edit(int id) => RedirectToAction(nameof(CreateEdit), new { id });
 
     [HttpGet]
     [RequirePermission("Admission.Create")]
@@ -196,9 +203,11 @@ public class AdmissionController : Controller
 
     [HttpPost]
     [RequirePermission("Admission.Approve")]
-    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Approve([FromBody] AdmissionApproveRequest request, CancellationToken ct)
     {
+        if (request is null || request.Id <= 0 || request.SectionId <= 0)
+            return Json(new { success = false, message = "Invalid request." });
+
         try
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
@@ -206,15 +215,19 @@ public class AdmissionController : Controller
             TempData["SuccessMessage"] = "Application approved and converted successfully. Invoice generated.";
             return Json(new { success = true, message = "Application converted successfully." });
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
         {
             return Json(new { success = false, message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Approval failed for admission {Id}", request?.Id);
+            return Json(new { success = false, message = "An unexpected error occurred. Please try again." });
         }
     }
 
     [HttpPost]
     [RequirePermission("Admission.Approve")]
-    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Reject(int id, [FromForm] string? rejectionReason, CancellationToken ct)
     {
         try
@@ -223,9 +236,14 @@ public class AdmissionController : Controller
             await _admissionService.RejectAsync(id, userId, rejectionReason, ct);
             return Json(new { success = true, message = "Application rejected successfully." });
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
         {
             return Json(new { success = false, message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Rejection failed for admission {Id}", id);
+            return Json(new { success = false, message = "An unexpected error occurred. Please try again." });
         }
     }
 
@@ -239,17 +257,392 @@ public class AdmissionController : Controller
 
     [HttpPost]
     [RequirePermission("Admission.Create")]
-    [ValidateAntiForgeryToken]
     public async Task<IActionResult> CreateSectionAjax(int schoolClassId, string name, int? parentSectionId = null, CancellationToken ct = default)
     {
+        if (string.IsNullOrWhiteSpace(name))
+            return Json(new { success = false, message = "Section name is required." });
+
         try
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
             int id = await _sectionService.CreateAjaxAsync(schoolClassId, name.Trim(), parentSectionId, userId, ct);
             return Json(new { success = true, id = id, name = name.Trim() });
         }
+        catch (InvalidOperationException ex)
+        {
+            return Json(new { success = false, message = ex.Message });
+        }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "CreateSection failed for class {ClassId}", schoolClassId);
+            return Json(new { success = false, message = "An error occurred. Please try again." });
+        }
+    }
+
+    [HttpPost]
+    [RequirePermission("Admission.Approve")]
+    public async Task<IActionResult> BulkApprove([FromBody] BulkAssignRequest request, CancellationToken ct)
+    {
+        if (request?.Ids == null || !request.Ids.Any())
+            return Json(new { success = false, message = "No applications selected." });
+
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
+            var progress = await _admissionService.BulkApproveAsync(request.Ids, request.SectionId ?? 0, userId, ct);
+            return Json(new { success = true, message = $"{progress.Succeeded} approved, {progress.Failed} failed.", errors = progress.Errors });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Bulk approve failed");
+            return Json(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpPost]
+    [RequirePermission("Admission.Approve")]
+    public async Task<IActionResult> BulkReject([FromBody] BulkIdsRequest request, CancellationToken ct)
+    {
+        if (request?.Ids == null || !request.Ids.Any())
+            return Json(new { success = false, message = "No applications selected." });
+
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
+            var progress = await _admissionService.BulkRejectAsync(request.Ids, userId, null, ct);
+            return Json(new { success = true, message = $"{progress.Succeeded} rejected, {progress.Failed} failed." });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Bulk reject failed");
+            return Json(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpPost]
+    [RequirePermission("Admission.Delete")]
+    public async Task<IActionResult> BulkDelete([FromBody] BulkIdsRequest request, CancellationToken ct)
+    {
+        if (request?.Ids == null || !request.Ids.Any())
+            return Json(new { success = false, message = "No applications selected." });
+
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
+            var progress = await _admissionService.BulkDeleteAsync(request.Ids, userId, ct);
+            return Json(new { success = true, message = $"{progress.Succeeded} deleted, {progress.Failed} failed." });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Bulk delete failed");
+            return Json(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpPost]
+    [RequirePermission("Admission.Delete")]
+    public async Task<IActionResult> BulkRestore([FromBody] BulkIdsRequest request, CancellationToken ct)
+    {
+        if (request?.Ids == null || !request.Ids.Any())
+            return Json(new { success = false, message = "No applications selected." });
+
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
+            var progress = await _admissionService.BulkRestoreAsync(request.Ids, userId, ct);
+            return Json(new { success = true, message = $"{progress.Succeeded} restored, {progress.Failed} failed." });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Bulk restore failed");
+            return Json(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpPost]
+    [RequirePermission("Admission.Export")]
+    public async Task<IActionResult> BulkExportExcel([FromBody] BulkIdsRequest? request, CancellationToken ct)
+    {
+        try
+        {
+            var data = await _admissionService.BulkExportExcelAsync(request?.Ids, ct);
+            return File(data, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"admissions_bulk_{DateTime.UtcNow:yyyyMMdd}.xlsx");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Bulk export failed");
+            return Json(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpGet]
+    [RequirePermission("Admission.View")]
+    public async Task<IActionResult> Dashboard(CancellationToken ct)
+    {
+        return View();
+    }
+
+    [HttpGet]
+    [RequirePermission("Admission.View")]
+    public async Task<IActionResult> GetDashboardData(DateTime? dateFrom = null, DateTime? dateTo = null, CancellationToken ct = default)
+    {
+        try
+        {
+            var data = await _admissionDashboardService.GetDashboardAsync(dateFrom, dateTo, ct);
+            return Json(new { success = true, data });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to load admission dashboard data");
+            return Json(new { success = false, message = "Failed to load dashboard data." });
+        }
+    }
+
+    [HttpGet]
+    [RequirePermission("Admission.View")]
+    public async Task<IActionResult> Documents(int id, CancellationToken ct)
+    {
+        var application = await _admissionService.GetByIdAsync(id, ct);
+        if (application == null) return NotFound();
+
+        var docs = await _documentVerificationService.GetDocumentsByApplicationAsync(id, ct);
+        ViewBag.Application = application;
+        return View(docs);
+    }
+
+    [HttpPost]
+    [RequirePermission("Admission.Verify")]
+    public async Task<IActionResult> VerifyDocument([FromBody] DocumentVerificationRequest request, CancellationToken ct)
+    {
+        if (request == null || request.DocumentId <= 0)
+            return Json(new { success = false, message = "Invalid request." });
+
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
+            var doc = await _documentVerificationService.VerifyDocumentAsync(request.DocumentId, request.Status, userId, request.Remarks, ct);
+            return Json(new { success = true, message = $"Document marked as {request.Status}.", data = doc });
+        }
+        catch (Exception ex)
+        {
+            return Json(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpPost]
+    [RequirePermission("Admission.Verify")]
+    public async Task<IActionResult> UploadDocument(int applicationId, [FromForm] string documentType, [FromForm] IFormFile file, CancellationToken ct)
+    {
+        if (file == null || file.Length == 0)
+            return Json(new { success = false, message = "No file provided." });
+
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
+            var doc = await _documentVerificationService.UploadDocumentAsync(applicationId, documentType, file, userId, ct);
+            return Json(new { success = true, message = "Document uploaded.", data = doc });
+        }
+        catch (Exception ex)
+        {
+            return Json(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpPost]
+    [RequirePermission("Admission.Verify")]
+    public async Task<IActionResult> RequestReUpload(int documentId, string? remarks, CancellationToken ct)
+    {
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
+            await _documentVerificationService.RequestReUploadAsync(documentId, userId, remarks, ct);
+            return Json(new { success = true, message = "Re-upload requested." });
+        }
+        catch (Exception ex)
+        {
+            return Json(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpGet]
+    [RequirePermission("Admission.Finance")]
+    public async Task<IActionResult> Finance(int id, CancellationToken ct)
+    {
+        var application = await _admissionService.GetByIdAsync(id, ct);
+        if (application == null) return NotFound();
+
+        var summary = await _admissionFinanceService.GetFeeSummaryAsync(id, ct);
+        ViewBag.Application = application;
+        return View(summary);
+    }
+
+    [HttpPost]
+    [RequirePermission("Admission.Finance")]
+    public async Task<IActionResult> RecordPayment([FromBody] AdmissionFeePaymentRequest request, CancellationToken ct)
+    {
+        if (request == null || request.ApplicationId <= 0)
+            return Json(new { success = false, message = "Invalid request." });
+
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
+            var payment = await _admissionFinanceService.RecordPaymentAsync(request, userId, ct);
+            return Json(new { success = true, message = "Payment recorded successfully.", data = payment });
+        }
+        catch (Exception ex)
+        {
+            return Json(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpPost]
+    [RequirePermission("Admission.Finance")]
+    public async Task<IActionResult> ApplyScholarship(int applicationId, decimal percentage, string? description, CancellationToken ct)
+    {
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
+            await _admissionFinanceService.ApplyScholarshipAsync(applicationId, percentage, description, userId, ct);
+            return Json(new { success = true, message = $"Scholarship of {percentage}% applied." });
+        }
+        catch (Exception ex)
+        {
+            return Json(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpPost]
+    [RequirePermission("Admission.Finance")]
+    public async Task<IActionResult> ProcessRefund(int applicationId, decimal amount, string reason, CancellationToken ct)
+    {
+        try
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
+            await _admissionFinanceService.ProcessRefundAsync(applicationId, amount, reason, userId, ct);
+            return Json(new { success = true, message = "Refund processed successfully." });
+        }
+        catch (Exception ex)
+        {
+            return Json(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpGet]
+    [RequirePermission("Admission.View")]
+    public async Task<IActionResult> Reports(CancellationToken ct)
+    {
+        ViewBag.Classes = await _admissionService.GetAvailableClassesAsync(ct);
+        return View();
+    }
+
+    [HttpGet]
+    [RequirePermission("Admission.View")]
+    public async Task<IActionResult> RegisterReport(CancellationToken ct)
+    {
+        ViewBag.Classes = await _admissionService.GetAvailableClassesAsync(ct);
+        return View();
+    }
+
+    [HttpGet]
+    [RequirePermission("Admission.View")]
+    public async Task<IActionResult> Analytics(CancellationToken ct)
+    {
+        ViewBag.Classes = await _admissionService.GetAvailableClassesAsync(ct);
+        return View();
+    }
+
+    [HttpPost]
+    [RequirePermission("Admission.Export")]
+    public async Task<IActionResult> GetRegisterReport([FromBody] AdmissionReportRequest request, CancellationToken ct)
+    {
+        try
+        {
+            var report = await _admissionDashboardService.GetRegisterReportAsync(request, ct);
+            return Json(new { success = true, data = report });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to generate register report");
+            return Json(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpPost]
+    [RequirePermission("Admission.Export")]
+    public async Task<IActionResult> ExportReportExcel([FromBody] AdmissionReportRequest request, CancellationToken ct)
+    {
+        try
+        {
+            var data = await _admissionReportService.ExportRegisterToExcelAsync(request, ct);
+            return File(data, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"admission_register_{DateTime.UtcNow:yyyyMMdd}.xlsx");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to export report");
+            return Json(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpGet]
+    [RequirePermission("Admission.View")]
+    public async Task<IActionResult> GetConversionFunnel(DateTime? dateFrom = null, DateTime? dateTo = null, CancellationToken ct = default)
+    {
+        try
+        {
+            var funnel = await _admissionDashboardService.GetConversionFunnelAsync(dateFrom, dateTo, ct);
+            return Json(new { success = true, data = funnel });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to get conversion funnel");
+            return Json(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpGet]
+    [RequirePermission("Admission.View")]
+    public async Task<IActionResult> GetTrendAnalysis(DateTime? dateFrom = null, DateTime? dateTo = null, string? groupBy = "Month", CancellationToken ct = default)
+    {
+        try
+        {
+            var data = await _admissionDashboardService.GetTrendAnalysisAsync(dateFrom, dateTo, groupBy, ct);
+            return Json(new { success = true, data });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to get trend analysis");
+            return Json(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpGet]
+    [RequirePermission("Admission.View")]
+    public async Task<IActionResult> GetClassDemand(DateTime? dateFrom = null, DateTime? dateTo = null, CancellationToken ct = default)
+    {
+        try
+        {
+            var data = await _admissionDashboardService.GetClassDemandAsync(dateFrom, dateTo, ct);
+            return Json(new { success = true, data });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to get class demand");
+            return Json(new { success = false, message = ex.Message });
+        }
+    }
+
+    [HttpGet]
+    [RequirePermission("Admission.View")]
+    public async Task<IActionResult> GetRevenueReport(DateTime? dateFrom = null, DateTime? dateTo = null, CancellationToken ct = default)
+    {
+        try
+        {
+            var data = await _admissionDashboardService.GetRevenueReportAsync(dateFrom, dateTo, ct);
+            return Json(new { success = true, data });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to get revenue report");
             return Json(new { success = false, message = ex.Message });
         }
     }

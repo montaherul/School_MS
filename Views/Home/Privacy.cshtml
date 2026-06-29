@@ -1,33 +1,63 @@
 @{
     ViewData["Title"] = "Privacy Policy";
+    Layout = "~/Views/Shared/_PublicLayout.cshtml";
 }
-<div class="container py-5">
-    <div class="card border-0 shadow-sm rounded-4 p-5">
-        <h1 class="fw-bold mb-4">Student Data Privacy Policy</h1>
-        <p class="lead text-muted">This policy outlines how our school management system collects, protects, and handles student and staff information.</p>
-        <hr class="my-4">
-        
-        <div class="row g-4">
-            <div class="col-md-6">
-                <h5 class="fw-bold text-primary"><i class="bi bi-shield-lock me-2"></i>Data Security</h5>
-                <p class="text-muted">All academic and personal records are encrypted and stored securely. Access is strictly limited based on authorized system roles (Admin, Teacher, Student).</p>
-            </div>
-            <div class="col-md-6">
-                <h5 class="fw-bold text-primary"><i class="bi bi-person-check me-2"></i>Information Use</h5>
-                <p class="text-muted">Personal data is used exclusively for academic administration, attendance tracking, and internal school communications. We do not share data with third parties.</p>
-            </div>
-            <div class="col-md-6">
-                <h5 class="fw-bold text-primary"><i class="bi bi-eye-slash me-2"></i>Student Privacy</h5>
-                <p class="text-muted">Students can only view their own academic and financial records. Staff can only access information necessary for their specific teaching or administrative duties.</p>
-            </div>
-            <div class="col-md-6">
-                <h5 class="fw-bold text-primary"><i class="bi bi-clock-history me-2"></i>Data Retention</h5>
-                <p class="text-muted">School records are maintained for the duration of the student's enrollment and archived according to national educational standards upon graduation or transfer.</p>
-            </div>
-        </div>
 
-        <div class="alert alert-info mt-5 border-0 rounded-4">
-            <i class="bi bi-info-circle me-2"></i> For any questions regarding your data or to request a record correction, please contact the school administrative office.
-        </div>
+<div class="ws-page-hero">
+    <div class="ws-container">
+        <h1>Privacy Policy</h1>
+        <p>How we collect, protect, and handle student and staff information</p>
     </div>
 </div>
+
+<section class="ws-section">
+    <div class="ws-container">
+        <div class="ws-row ws-g-6">
+            <div class="ws-col-12 ws-col-lg-8">
+                <span class="ws-section__label">Data Protection</span>
+                <h2 class="ws-fw-800 ws-mb-4">Student Data Privacy Policy</h2>
+                <p class="ws-fs-17 ws-text-light ws-lh-lg ws-mb-6">This policy outlines how our school management system collects, protects, and handles student and staff information.</p>
+                <div class="ws-border-bottom ws-mb-8"></div>
+
+                <div class="ws-row ws-g-4 ws-mb-6">
+                    <div class="ws-col-12 ws-col-sm-6">
+                        <div class="ws-card ws-card--bordered-left ws-h-full">
+                            <div class="ws-card__body">
+                                <h5 class="ws-fw-700 ws-text-primary ws-mb-4"><i class="bi bi-shield-lock ws-me-2"></i>Data Security</h5>
+                                <p class="ws-text-muted ws-fs-14">All academic and personal records are encrypted and stored securely. Access is strictly limited based on authorized system roles (Admin, Teacher, Student).</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ws-col-12 ws-col-sm-6">
+                        <div class="ws-card ws-card--bordered-left ws-h-full">
+                            <div class="ws-card__body">
+                                <h5 class="ws-fw-700 ws-text-primary ws-mb-4"><i class="bi bi-person-check ws-me-2"></i>Information Use</h5>
+                                <p class="ws-text-muted ws-fs-14">Personal data is used exclusively for academic administration, attendance tracking, and internal school communications. We do not share data with third parties.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ws-col-12 ws-col-sm-6">
+                        <div class="ws-card ws-card--bordered-left ws-h-full">
+                            <div class="ws-card__body">
+                                <h5 class="ws-fw-700 ws-text-primary ws-mb-4"><i class="bi bi-eye-slash ws-me-2"></i>Student Privacy</h5>
+                                <p class="ws-text-muted ws-fs-14">Students can only view their own academic and financial records. Staff can only access information necessary for their specific teaching or administrative duties.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ws-col-12 ws-col-sm-6">
+                        <div class="ws-card ws-card--bordered-left ws-h-full">
+                            <div class="ws-card__body">
+                                <h5 class="ws-fw-700 ws-text-primary ws-mb-4"><i class="bi bi-clock-history ws-me-2"></i>Data Retention</h5>
+                                <p class="ws-text-muted ws-fs-14">School records are maintained for the duration of the student's enrollment and archived according to national educational standards upon graduation or transfer.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="ws-form-alert ws-form-alert--info">
+                    <i class="bi bi-info-circle ws-me-2"></i> For any questions regarding your data or to request a record correction, please contact the school administrative office.
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,200 @@
+@{
+    ViewData["Title"] = "Admission Register";
+}
+
+@Html.AntiForgeryToken()
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Admission Register</h1>
+                <p class="adm-header__sub">Detailed admission register with advanced filters</p>
+            </div>
+        </div>
+        <div class="adm-btn-group">
+            <a href="/Admission/Reports" class="adm-btn adm-btn--ghost">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></svg>
+                Back to Reports
+            </a>
+        </div>
+    </div>
+
+    <div class="adm-card" style="margin-bottom:24px;">
+        <div class="adm-card__body">
+            <div class="adm-filters__row">
+                <div class="adm-filters__field">
+                    <label class="adm-label">From</label>
+                    <input type="date" id="dateFrom" class="adm-input" value="@DateTime.UtcNow.AddMonths(-1).ToString("yyyy-MM-dd")" />
+                </div>
+                <div class="adm-filters__field">
+                    <label class="adm-label">To</label>
+                    <input type="date" id="dateTo" class="adm-input" value="@DateTime.UtcNow.ToString("yyyy-MM-dd")" />
+                </div>
+                <div class="adm-filters__field">
+                    <label class="adm-label">Class</label>
+                    <select id="classFilter" class="adm-select">
+                        <option value="">All Classes</option>
+                    </select>
+                </div>
+                <div class="adm-filters__field">
+                    <label class="adm-label">Status</label>
+                    <select id="statusFilter" class="adm-select">
+                        <option value="">All Statuses</option>
+                        <option value="1">Pending</option>
+                        <option value="2">Approved</option>
+                        <option value="3">Rejected</option>
+                        <option value="4">Converted</option>
+                    </select>
+                </div>
+                <div class="adm-filters__field">
+                    <label class="adm-label">Gender</label>
+                    <select id="genderFilter" class="adm-select">
+                        <option value="">All</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                    </select>
+                </div>
+                <div class="adm-filters__field">
+                    <label class="adm-label">Religion</label>
+                    <select id="religionFilter" class="adm-select">
+                        <option value="">All</option>
+                        <option value="Islam">Islam</option>
+                        <option value="Hinduism">Hinduism</option>
+                        <option value="Christianity">Christianity</option>
+                        <option value="Buddhism">Buddhism</option>
+                    </select>
+                </div>
+                <div class="adm-filters__field adm-filters__field--actions">
+                    <label class="adm-label">&nbsp;</label>
+                    <div class="adm-btn-group">
+                        <button type="button" class="adm-btn adm-btn--primary" onclick="loadRegister()">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+                            Generate
+                        </button>
+                        <button type="button" class="adm-btn adm-btn--ghost" onclick="exportExcel()">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+                            Excel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="registerContainer">
+        <div class="adm-card">
+            <div class="adm-card__body" style="text-align:center;padding:60px 20px;">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+                <p style="margin-top:16px;color:#64748b;">Select filters and click <strong>Generate</strong> to view the register.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script>
+        (function() {
+            'use strict';
+            var tokenEl = document.querySelector('input[name="__RequestVerificationToken"]');
+            var csrfToken = tokenEl ? tokenEl.value : '';
+
+            function ajaxHeaders() {
+                return { 'RequestVerificationToken': csrfToken };
+            }
+
+            var classes = @Html.Raw(Json.Serialize(ViewBag.Classes));
+
+            $(function() {
+                var sel = document.getElementById('classFilter');
+                if (classes && classes.length) {
+                    classes.forEach(function(c) {
+                        var o = document.createElement('option');
+                        o.value = c.id; o.textContent = c.name;
+                        sel.appendChild(o);
+                    });
+                }
+            });
+
+            function getRequest() {
+                return {
+                    dateFrom: document.getElementById('dateFrom').value || null,
+                    dateTo: document.getElementById('dateTo').value || null,
+                    classId: parseInt(document.getElementById('classFilter').value) || null,
+                    status: parseInt(document.getElementById('statusFilter').value) || null,
+                    gender: document.getElementById('genderFilter').value || null,
+                    religion: document.getElementById('religionFilter').value || null
+                };
+            }
+
+            function loadRegister() {
+                var container = document.getElementById('registerContainer');
+                $.ajax({
+                    url: '/Admission/GetRegisterReport', type: 'POST', contentType: 'application/json',
+                    headers: ajaxHeaders(),
+                    data: JSON.stringify(getRequest()),
+                    success: function(res) {
+                        if (!res.success) {
+                            container.innerHTML = '<div class="adm-alert adm-alert--error">' + res.message + '</div>';
+                            return;
+                        }
+                        var data = res.data;
+                        if (!data.rows || !data.rows.length) {
+                            container.innerHTML = '<div class="adm-card"><div class="adm-card__body" style="text-align:center;padding:40px;"><p>No records found for the selected filters.</p></div></div>';
+                            return;
+                        }
+                        var html = '<div class="adm-card"><div class="adm-card__header"><h3>Admission Register</h3><span>' + data.totalRecords + ' records</span></div><div class="adm-card__body"><div class="adm-table-wrap"><table class="adm-table adm-table--striped"><thead><tr><th>#</th><th>App No</th><th>Name</th><th>DOB</th><th>Gender</th><th>Father</th><th>Mother</th><th>Mobile</th><th>Religion</th><th>Class</th><th>Status</th><th>Submitted</th></tr></thead><tbody>';
+                        data.rows.forEach(function(r) {
+                            var dob = r.dateOfBirth ? new Date(r.dateOfBirth).toLocaleDateString() : '';
+                            var sub = r.submittedAt ? new Date(r.submittedAt).toLocaleDateString() : '';
+                            html += '<tr><td>' + r.serialNo + '</td><td>' + escHtml(r.applicationNo) + '</td><td>' + escHtml(r.applicantName) + '</td><td>' + dob + '</td><td>' + escHtml(r.gender) + '</td><td>' + escHtml(r.fatherName) + '</td><td>' + escHtml(r.motherName) + '</td><td>' + escHtml(r.mobile) + '</td><td>' + escHtml(r.religion) + '</td><td>' + escHtml(r.appliedClass) + '</td><td><span class="adm-badge adm-badge--' + statusClass(r.status) + '">' + escHtml(r.status) + '</span></td><td>' + sub + '</td></tr>';
+                        });
+                        html += '</tbody></table></div></div></div>';
+                        container.innerHTML = html;
+                    },
+                    error: function() { container.innerHTML = '<div class="adm-alert adm-alert--error">Failed to load report.</div>'; }
+                });
+            }
+
+            function statusClass(s) {
+                switch ((s || '').toLowerCase()) {
+                    case 'pending': return 'warning';
+                    case 'approved': return 'info';
+                    case 'rejected': return 'error';
+                    case 'converted': return 'success';
+                    default: return 'neutral';
+                }
+            }
+
+            function escHtml(str) {
+                if (!str) return '—';
+                var d = document.createElement('div');
+                d.textContent = str;
+                return d.innerHTML;
+            }
+
+            function exportExcel() {
+                $.ajax({
+                    url: '/Admission/ExportReportExcel', type: 'POST', contentType: 'application/json',
+                    headers: ajaxHeaders(),
+                    data: JSON.stringify(getRequest()),
+                    xhrFields: { responseType: 'blob' },
+                    success: function(blob) {
+                        var link = document.createElement('a');
+                        link.href = URL.createObjectURL(blob);
+                        link.download = 'admission_register_' + Date.now() + '.xlsx';
+                        link.click();
+                    },
+                    error: function() { alert('Export failed.'); }
+                });
+            }
+
+            window.loadRegister = loadRegister;
+            window.exportExcel = exportExcel;
+        })();
+    </script>
+}

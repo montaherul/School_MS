@@ -974,6 +974,10 @@ public class AdmissionFeeStructureService : IAdmissionFeeStructureService
             existing.SessionFee = fee.SessionFee;
             existing.ExamFee = fee.ExamFee;
             existing.OtherFee = fee.OtherFee;
+            existing.RegistrationFee = fee.RegistrationFee;
+            existing.DevelopmentFee = fee.DevelopmentFee;
+            existing.LibraryFee = fee.LibraryFee;
+            existing.LaboratoryFee = fee.LaboratoryFee;
             existing.DisplayOrder = fee.DisplayOrder;
             existing.IsActive = fee.IsActive;
             existing.UpdatedAt = DateTime.UtcNow;

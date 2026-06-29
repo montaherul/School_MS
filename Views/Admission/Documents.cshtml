@@ -1,0 +1,191 @@
+@using SchoolManagementSystem.Models.DTOs.Admission
+@using SchoolManagementSystem.Models.Entities.Admission
+@model DocumentSummaryDto
+@{
+    ViewData["Title"] = "Documents";
+    var app = ViewBag.Application as AdmissionApplication;
+}
+
+<div class="adm-page">
+    <!-- Header -->
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /></svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Document Verification</h1>
+                <p class="adm-header__sub">@app?.ApplicantName — @app?.ApplicationNo</p>
+            </div>
+        </div>
+        <a href="/Admission/Details/@app?.Id" class="adm-btn adm-btn--ghost adm-btn--sm">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></svg>
+            Back to Details
+        </a>
+    </div>
+
+    <!-- Summary cards -->
+    <div class="dash-stats" style="grid-template-columns:repeat(5,1fr);margin-bottom:24px;">
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__body" style="text-align:center;">
+                <div class="dash-stat-card__value">@Model.TotalDocuments</div>
+                <div class="dash-stat-card__label">Total</div>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__body" style="text-align:center;">
+                <div class="dash-stat-card__value" style="color:var(--adm-success);">@Model.VerifiedCount</div>
+                <div class="dash-stat-card__label">Verified</div>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__body" style="text-align:center;">
+                <div class="dash-stat-card__value" style="color:var(--adm-pending);">@Model.PendingCount</div>
+                <div class="dash-stat-card__label">Pending</div>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__body" style="text-align:center;">
+                <div class="dash-stat-card__value" style="color:var(--adm-rejected);">@Model.RejectedCount</div>
+                <div class="dash-stat-card__label">Rejected</div>
+            </div>
+        </div>
+        <div class="dash-stat-card">
+            <div class="dash-stat-card__body" style="text-align:center;">
+                <div class="dash-stat-card__value">@Model.ExpiredCount</div>
+                <div class="dash-stat-card__label">Expired</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Document list -->
+    <div class="adm-card">
+        <div class="adm-card__header">
+            <h3 class="adm-card__title">Uploaded Documents</h3>
+            <button type="button" class="adm-btn adm-btn--primary adm-btn--sm" onclick="showUploadModal()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                Upload Document
+            </button>
+        </div>
+        <div class="adm-card__body">
+            @if (!Model.Documents.Any())
+            {
+                <div class="dash-empty">
+                    <i class="bi bi-file-earmark-text fs-1"></i>
+                    <div class="dash-empty__title">No documents uploaded</div>
+                    <div class="dash-empty__sub">Upload documents for this application.</div>
+                </div>
+            }
+            else
+            {
+                <div class="adm-table-wrap">
+                    <table class="adm-table">
+                        <thead>
+                            <tr>
+                                <th>Document Type</th>
+                                <th>File</th>
+                                <th>Size</th>
+                                <th>Version</th>
+                                <th>Status</th>
+                                <th>Verified By</th>
+                                <th>Remarks</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var doc in Model.Documents)
+                            {
+                                <tr>
+                                    <td><strong>@doc.DocumentType</strong></td>
+                                    <td><a href="@doc.FilePath" target="_blank" class="adm-link">@(doc.OriginalFileName ?? "View File")</a></td>
+                                    <td>@(doc.FileSize > 1024 ? $"{doc.FileSize / 1024} KB" : $"{doc.FileSize} B")</td>
+                                    <td>v@(doc.VersionNumber)</td>
+                                    <td>@Html.Raw(GetStatusBadge(doc.VerificationStatus))</td>
+                                    <td>@(doc.VerifiedBy ?? "-")</td>
+                                    <td>@(doc.VerificationRemarks ?? "-")</td>
+                                    <td>
+                                        <div class="adm-action-group">
+                                            @if (doc.VerificationStatus == "Pending" || doc.VerificationStatus == "ReUploadRequested")
+                                            {
+                                                <button type="button" class="adm-btn-icon adm-btn-icon--success" title="Verify" onclick="verifyDocument(@doc.Id, 'Verified')">
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12" /></svg>
+                                                </button>
+                                                <button type="button" class="adm-btn-icon adm-btn-icon--danger" title="Reject" onclick="verifyDocument(@doc.Id, 'Rejected')">
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                                                </button>
+                                                <button type="button" class="adm-btn-icon adm-btn-icon--warning" title="Request Re-upload" onclick="requestReUpload(@doc.Id)">
+                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>
+                                                </button>
+                                            }
+                                            <a href="@doc.FilePath" target="_blank" class="adm-btn-icon adm-btn-icon--info" title="Download">
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" /></svg>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@functions {
+    static string GetStatusBadge(string status) => status switch
+    {
+        "Verified" => "<span class='adm-badge adm-badge--success'>Verified</span>",
+        "Rejected" => "<span class='adm-badge adm-badge--danger'>Rejected</span>",
+        "Expired" => "<span class='adm-badge adm-badge--warning'>Expired</span>",
+        "ReUploadRequested" => "<span class='adm-badge adm-badge--info'>Re-upload Requested</span>",
+        _ => "<span class='adm-badge adm-badge--neutral'>Pending</span>"
+    };
+}
+
+@section Scripts {
+    <script>
+        function verifyDocument(docId, status) {
+            var remarks = status === 'Rejected' ? prompt('Enter rejection reason:') : '';
+            $.ajax({
+                url: '/Admission/VerifyDocument', type: 'POST', contentType: 'application/json',
+                data: JSON.stringify({ documentId: docId, status: status, remarks: remarks }),
+                success: function(res) { if (res.success) location.reload(); else alert(res.message); },
+                error: function() { alert('Network error.'); }
+            });
+        }
+
+        function requestReUpload(docId) {
+            var remarks = prompt('Enter reason for re-upload:');
+            if (remarks) {
+                $.ajax({
+                    url: '/Admission/RequestReUpload?documentId=' + docId + '&remarks=' + encodeURIComponent(remarks),
+                    type: 'POST',
+                    success: function(res) { if (res.success) location.reload(); else alert(res.message); },
+                    error: function() { alert('Network error.'); }
+                });
+            }
+        }
+
+        function showUploadModal() {
+            var docType = prompt('Enter document type (e.g., BirthCertificate, Transcript):');
+            if (docType && docType.trim()) {
+                var formData = new FormData();
+                var fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.onchange = function() {
+                    formData.append('file', fileInput.files[0]);
+                    formData.append('applicationId', '@app?.Id');
+                    formData.append('documentType', docType.trim());
+                    $.ajax({
+                        url: '/Admission/UploadDocument', type: 'POST', data: formData,
+                        contentType: false, processData: false,
+                        success: function(res) { if (res.success) location.reload(); else alert(res.message); },
+                        error: function() { alert('Upload failed.'); }
+                    });
+                };
+                fileInput.click();
+            }
+        }
+    </script>
+}

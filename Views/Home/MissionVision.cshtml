@@ -11,17 +11,17 @@
     </div>
 </div>
 
-<section class="ws-section">
+<section class="ws-section ws-section--tertiary">
     <div class="ws-container">
         <div class="ws-row ws-g-6">
-            <!-- Mission -->
             <div class="ws-col-12 ws-col-md-6">
-                <div style="padding:40px;background:var(--ws-bg-alt);border-radius:var(--ws-radius-lg);height:100%;border-left:6px solid var(--ws-primary);box-shadow:var(--ws-shadow-sm);">
-                    <div style="width:60px;height:60px;background:var(--ws-card);border-radius:var(--ws-radius-lg);display:flex;align-items:center;justify-content:center;margin-bottom:20px;box-shadow:var(--ws-shadow-sm);color:var(--ws-secondary);font-size:28px;">
+                <div class="ws-card ws-bg-secondary-bg ws-p-10 ws-h-full ws-reveal-left" style="border-left:6px solid var(--ws-primary);">
+                    <div class="ws-flex-center ws-mb-5 ws-w-60 ws-h-60 ws-rounded-lg ws-shadow ws-bg-surface ws-text-secondary ws-fs-28">
                         <i class="bi bi-compass-fill"></i>
                     </div>
-                    <h3 style="font-weight:700;margin-bottom:16px;">Our Core Mission</h3>
-                    <p style="color:var(--ws-text-light);font-size:15px;line-height:1.7;">
+                    <span class="ws-section__label">Our Purpose</span>
+                    <h3 class="ws-fw-700 ws-mb-4">Our Core Mission</h3>
+                    <p class="ws-text-light ws-fs-15 ws-lh-lg">
                         @if (!string.IsNullOrEmpty(Model.Mission))
                         {
                             @Model.Mission
@@ -34,14 +34,13 @@
                 </div>
             </div>
 
-            <!-- Vision -->
             <div class="ws-col-12 ws-col-md-6">
-                <div style="padding:40px;background:var(--ws-bg-alt);border-radius:var(--ws-radius-lg);height:100%;border-left:6px solid var(--ws-accent);box-shadow:var(--ws-shadow-sm);">
-                    <div style="width:60px;height:60px;background:var(--ws-card);border-radius:var(--ws-radius-lg);display:flex;align-items:center;justify-content:center;margin-bottom:20px;box-shadow:var(--ws-shadow-sm);color:var(--ws-accent);font-size:28px;">
+                <div class="ws-card ws-bg-secondary-bg ws-p-10 ws-h-full ws-reveal-right" style="border-left:6px solid var(--ws-accent);">
+                    <div class="ws-flex-center ws-mb-5 ws-w-60 ws-h-60 ws-rounded-lg ws-shadow ws-bg-surface ws-text-accent ws-fs-28">
                         <i class="bi bi-eye-fill"></i>
                     </div>
-                    <h3 style="font-weight:700;margin-bottom:16px;">Our Strategic Vision</h3>
-                    <p style="color:var(--ws-text-light);font-size:15px;line-height:1.7;">
+                    <h3 class="ws-fw-700 ws-mb-4">Our Strategic Vision</h3>
+                    <p class="ws-text-light ws-fs-15 ws-lh-lg">
                         @if (!string.IsNullOrEmpty(Model.Vision))
                         {
                             @Model.Vision
@@ -55,12 +54,11 @@
             </div>
         </div>
 
-        <!-- CTA -->
-        <div style="margin-top:48px;padding:40px;background:var(--ws-card);border-radius:var(--ws-radius-xl);box-shadow:var(--ws-shadow-md);border:1px solid var(--ws-border-light);">
-            <div class="ws-row ws-g-4" style="align-items:center;">
+        <div class="ws-card ws-p-10 ws-mt-8 ws-reveal">
+            <div class="ws-row ws-g-4 ws-items-center">
                 <div class="ws-col-12 ws-col-md-9 ws-text-center ws-text-md-left">
-                    <h4 style="font-weight:700;margin-bottom:4px;">Join Our Family Today</h4>
-                    <p style="color:var(--ws-muted);margin:0;">Admissions are open for multiple classes. Enrolling online takes less than five minutes.</p>
+                    <h4 class="ws-fw-700 ws-mb-1">Join Our Family Today</h4>
+                    <p class="ws-text-muted ws-m-0">Admissions are open for multiple classes. Enrolling online takes less than five minutes.</p>
                 </div>
                 <div class="ws-col-12 ws-col-md-3 ws-text-center ws-text-md-right">
                     <a href="/Admission/Apply" class="ws-btn ws-btn--accent">Apply Online Now</a>

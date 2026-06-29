@@ -80,6 +80,8 @@ public static class ServiceRegistration
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<IUserRoleRepository, UserRoleRepository>();
         services.AddScoped<IAdmissionRepository, AdmissionRepository>();
+        services.AddScoped<IAdmissionDashboardRepository, AdmissionDashboardRepository>();
+        services.AddScoped<IWorkflowRepository, WorkflowRepository>();
         services.AddScoped<IAttendanceRepository, AttendanceRepository>();
         services.AddScoped<IFeeCategoryRepository, FeeCategoryRepository>();
         services.AddScoped<IFeeStructureRepository, FeeStructureRepository>();
@@ -157,6 +159,14 @@ public static class ServiceRegistration
         services.AddScoped<IDashboardService, DashboardService>();
         services.AddScoped<IStudentService, StudentService>();
         services.AddScoped<IAdmissionService, AdmissionService>();
+        services.AddScoped<IAdmissionFinanceService, AdmissionFinanceService>();
+        services.AddScoped<IStudentRollGenerationService, StudentRollGenerationService>();
+        services.AddScoped<ISectionAllocationService, SectionAllocationService>();
+        services.AddScoped<IConversionPipelineService, ConversionPipelineService>();
+        services.AddScoped<IAdmissionDashboardService, AdmissionDashboardService>();
+        services.AddScoped<IAdmissionReportService, AdmissionReportService>();
+        services.AddScoped<IDocumentVerificationService, DocumentVerificationService>();
+        services.AddScoped<IWorkflowService, WorkflowService>();
         services.AddScoped<IGuardianService, GuardianService>();
         services.AddScoped<IFeeCategoryService, FeeCategoryService>();
         services.AddScoped<IFeeStructureService, FeeStructureService>();
@@ -302,6 +312,9 @@ public static class ServiceRegistration
 
         services.AddSingleton<RoutineGenerationQueue>();
         services.AddHostedService<RoutineGenerationWorker>();
+
+        services.AddSingleton<AdmissionBackgroundQueue>();
+        services.AddHostedService<AdmissionBackgroundWorker>();
 
         return services;
     }

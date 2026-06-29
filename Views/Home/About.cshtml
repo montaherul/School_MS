@@ -11,64 +11,65 @@
     </div>
 </div>
 
-<section class="ws-section">
+<section class="ws-section ws-section--tertiary">
     <div class="ws-container">
         <div class="ws-row ws-g-6">
             <div class="ws-col-12 ws-col-lg-8">
-                <h2 style="font-size:var(--ws-text-4xl);font-weight:800;margin-bottom:16px;">Welcome to @Model.SchoolName</h2>
-                <div style="width:64px;height:4px;background:var(--ws-accent);border-radius:2px;margin-bottom:24px;"></div>
-                <p style="font-size:1.1rem;color:var(--ws-text-light);margin-bottom:24px;line-height:1.7;">
+                <span class="ws-section__label">Our Legacy</span>
+                <h2 class="ws-fw-800 ws-mb-4">Welcome to @Model.SchoolName</h2>
+                <div class="ws-accent-divider"></div>
+                <p class="ws-fs-17 ws-text-light ws-mb-6 ws-lh-lg">
                     Founded with a passion to deliver high-quality, moral, and standard education, @Model.SchoolName has been a hallmark of learning for years, fostering academic excellence and social responsibility in Bangladesh.
                 </p>
 
-                <div class="ws-feature" style="margin-top:40px;">
-                    <div class="ws-feature__icon" style="color:var(--ws-accent);"><i class="bi bi-award"></i></div>
+                <div class="ws-feature ws-mt-8">
+                    <div class="ws-feature__icon ws-text-accent"><i class="bi bi-award"></i></div>
                     <div>
-                        <h4 class="ws-feature__title" style="font-size:1.3rem;">Our Historic Achievements</h4>
+                        <h4 class="ws-feature__title ws-fs-20">Our Historic Achievements</h4>
                         <p class="ws-feature__text">We consistently achieve top standings in public board examinations (JSC, SSC) within the region. Our student debate club, sports team, and science Olympiad cohorts hold multiple national championship trophies.</p>
                     </div>
                 </div>
 
-                <div class="ws-feature" style="margin-top:24px;">
-                    <div class="ws-feature__icon" style="color:var(--ws-accent);"><i class="bi bi-briefcase"></i></div>
+                <div class="ws-feature ws-mt-6">
+                    <div class="ws-feature__icon ws-text-accent"><i class="bi bi-briefcase"></i></div>
                     <div>
-                        <h4 class="ws-feature__title" style="font-size:1.3rem;">Modern Infrastructure & Facilities</h4>
+                        <h4 class="ws-feature__title ws-fs-20">Modern Infrastructure & Facilities</h4>
                         <p class="ws-feature__text">Equipped with state-of-the-art physics, chemistry, and biology labs, a rich multimedia library containing over 5,000 reference books, computerized smart classrooms, and an expansive playground.</p>
                     </div>
                 </div>
 
-                <div class="ws-feature" style="margin-top:24px;">
-                    <div class="ws-feature__icon" style="color:var(--ws-accent);"><i class="bi bi-palette"></i></div>
+                <div class="ws-feature ws-mt-6">
+                    <div class="ws-feature__icon ws-text-accent"><i class="bi bi-palette"></i></div>
                     <div>
-                        <h4 class="ws-feature__title" style="font-size:1.3rem;">Extracurricular Activities</h4>
+                        <h4 class="ws-feature__title ws-fs-20">Extracurricular Activities</h4>
                         <p class="ws-feature__text">Beyond standard textbooks, we host dynamic science fairs, cultural programs, physical education boot camps, and volunteer scouts camps. This ensures a holistic character growth program.</p>
                     </div>
                 </div>
             </div>
 
             <div class="ws-col-12 ws-col-lg-4">
-                <div class="ws-card" style="border-top:4px solid var(--ws-accent);background:var(--ws-bg-alt);padding:24px;">
-                    <h4 style="font-weight:700;margin-bottom:16px;">At a Glance</h4>
-                    <div class="ws-flex" style="flex-direction:column;gap:12px;">
-                        <div class="ws-flex-between" style="padding-bottom:8px;border-bottom:1px solid var(--ws-border);">
-                            <span style="color:var(--ws-muted);">Establishment:</span>
-                            <span style="font-weight:700;">@(Model.EstablishedYear?.ToString() ?? "2005")</span>
+                <div class="ws-card ws-card--bordered-top ws-p-6 ws-bg-secondary-bg">
+                    <h4 class="ws-fw-700 ws-mb-4">At a Glance</h4>
+                    <div class="ws-flex ws-flex-col ws-gap-3">
+                        <div class="ws-flex-between ws-pb-2 ws-border-bottom">
+                            <span class="ws-text-muted">Establishment:</span>
+                            <span class="ws-fw-700">@(Model.EstablishedYear?.ToString() ?? "2005")</span>
                         </div>
-                        <div class="ws-flex-between" style="padding-bottom:8px;border-bottom:1px solid var(--ws-border);">
-                            <span style="color:var(--ws-muted);">Government EIIN:</span>
-                            <span style="font-weight:700;">@Model.EIIN</span>
+                        <div class="ws-flex-between ws-pb-2 ws-border-bottom">
+                            <span class="ws-text-muted">Government EIIN:</span>
+                            <span class="ws-fw-700">@Model.EIIN</span>
                         </div>
-                        <div class="ws-flex-between" style="padding-bottom:8px;border-bottom:1px solid var(--ws-border);">
-                            <span style="color:var(--ws-muted);">Institution Level:</span>
-                            <span style="font-weight:700;">Secondary (VI - X)</span>
+                        <div class="ws-flex-between ws-pb-2 ws-border-bottom">
+                            <span class="ws-text-muted">Institution Level:</span>
+                            <span class="ws-fw-700">Secondary (VI - X)</span>
                         </div>
-                        <div class="ws-flex-between" style="padding-bottom:8px;border-bottom:1px solid var(--ws-border);">
-                            <span style="color:var(--ws-muted);">Medium:</span>
-                            <span style="font-weight:700;">Bangla</span>
+                        <div class="ws-flex-between ws-pb-2 ws-border-bottom">
+                            <span class="ws-text-muted">Medium:</span>
+                            <span class="ws-fw-700">Bangla</span>
                         </div>
                         <div class="ws-flex-between">
-                            <span style="color:var(--ws-muted);">Location:</span>
-                            <span style="font-weight:700;text-align:right;max-width:180px;">@Model.Address</span>
+                            <span class="ws-text-muted">Location:</span>
+                            <span class="ws-fw-700 ws-text-right ws-max-w-280">@Model.Address</span>
                         </div>
                     </div>
                 </div>

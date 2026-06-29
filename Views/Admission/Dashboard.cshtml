@@ -1,0 +1,366 @@
+@{
+    ViewData["Title"] = "Admission Dashboard";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z" /><path d="M6 12v5c0 2 4 3 6 3s6-1 6-3v-5" /></svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Admission Dashboard</h1>
+                <p class="adm-header__sub">Real-time analytics and KPIs for admission applications</p>
+            </div>
+        </div>
+        <div class="adm-btn-group">
+            <a href="/Admission/Index" class="adm-btn adm-btn--ghost">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /></svg>
+                View All Applications
+            </a>
+            <button type="button" class="adm-btn adm-btn--primary" onclick="refreshDashboard()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10" /><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" /></svg>
+                Refresh
+            </button>
+        </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="dash-stats">
+        <div class="dash-stat-card" style="background:linear-gradient(135deg,#1e40af,#3b82f6);color:#fff;border:none;flex-direction:column;text-align:center;padding:20px;">
+            <div style="font-size:13px;opacity:.85;">Today's Applications</div>
+            <div class="dash-stat-card__value" id="kpi-today" style="color:#fff;">—</div>
+        </div>
+        <div class="dash-stat-card" style="background:linear-gradient(135deg,#0f766e,#14b8a6);color:#fff;border:none;flex-direction:column;text-align:center;padding:20px;">
+            <div style="font-size:13px;opacity:.85;">This Week</div>
+            <div class="dash-stat-card__value" id="kpi-week" style="color:#fff;">—</div>
+        </div>
+        <div class="dash-stat-card" style="background:linear-gradient(135deg,#6d28d9,#8b5cf6);color:#fff;border:none;flex-direction:column;text-align:center;padding:20px;">
+            <div style="font-size:13px;opacity:.85;">This Month</div>
+            <div class="dash-stat-card__value" id="kpi-month" style="color:#fff;">—</div>
+        </div>
+        <div class="dash-stat-card" style="background:linear-gradient(135deg,#b45309,#f59e0b);color:#fff;border:none;flex-direction:column;text-align:center;padding:20px;">
+            <div style="font-size:13px;opacity:.85;">Conversion Rate</div>
+            <div class="dash-stat-card__value" id="kpi-conversion" style="color:#fff;">—</div>
+        </div>
+    </div>
+
+    <!-- Status Breakdown Cards -->
+    <div class="dash-stats" style="grid-template-columns:repeat(4,1fr);">
+        <div class="dash-stat-card" style="padding:16px;border-left:4px solid #f59e0b;">
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label" style="color:#6b7280;">Pending</span>
+                <span class="dash-stat-card__value" id="stat-pending" style="font-size:24px;color:#92400e;">—</span>
+            </div>
+        </div>
+        <div class="dash-stat-card" style="padding:16px;border-left:4px solid #3b82f6;">
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label" style="color:#6b7280;">Approved</span>
+                <span class="dash-stat-card__value" id="stat-approved" style="font-size:24px;color:#1e40af;">—</span>
+            </div>
+        </div>
+        <div class="dash-stat-card" style="padding:16px;border-left:4px solid #ef4444;">
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label" style="color:#6b7280;">Rejected</span>
+                <span class="dash-stat-card__value" id="stat-rejected" style="font-size:24px;color:#991b1b;">—</span>
+            </div>
+        </div>
+        <div class="dash-stat-card" style="padding:16px;border-left:4px solid #10b981;">
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label" style="color:#6b7280;">Converted</span>
+                <span class="dash-stat-card__value" id="stat-converted" style="font-size:24px;color:#065f46;">—</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Charts Row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+        <div class="adm-card">
+            <div class="adm-card__body" style="padding:20px;">
+                <h3 style="margin:0 0 16px;font-size:15px;font-weight:600;">Monthly Trend (12 Months)</h3>
+                <canvas id="monthlyTrendChart" height="280"></canvas>
+            </div>
+        </div>
+        <div class="adm-card">
+            <div class="adm-card__body" style="padding:20px;">
+                <h3 style="margin:0 0 16px;font-size:15px;font-weight:600;">Revenue Summary</h3>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div style="background:#f0fdf4;border-radius:8px;padding:14px;">
+                        <div style="font-size:12px;color:var(--adm-text-3);">Total Invoiced</div>
+                        <div style="font-size:20px;font-weight:700;color:#065f46;" id="rev-invoiced">—</div>
+                    </div>
+                    <div style="background:#fef3c7;border-radius:8px;padding:14px;">
+                        <div style="font-size:12px;color:var(--adm-text-3);">Total Collected</div>
+                        <div style="font-size:20px;font-weight:700;color:#92400e;" id="rev-collected">—</div>
+                    </div>
+                    <div style="background:#eff6ff;border-radius:8px;padding:14px;">
+                        <div style="font-size:12px;color:var(--adm-text-3);">Total Invoices</div>
+                        <div style="font-size:20px;font-weight:700;color:#1e40af;" id="rev-invoices">—</div>
+                    </div>
+                    <div style="background:#f0fdf4;border-radius:8px;padding:14px;">
+                        <div style="font-size:12px;color:var(--adm-text-3);">Paid Invoices</div>
+                        <div style="font-size:20px;font-weight:700;color:#065f46;" id="rev-paid">—</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 2 -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:24px;">
+        <div class="adm-card">
+            <div class="adm-card__body" style="padding:20px;">
+                <h3 style="margin:0 0 16px;font-size:15px;font-weight:600;">Gender Distribution</h3>
+                <canvas id="genderChart" height="220"></canvas>
+            </div>
+        </div>
+        <div class="adm-card">
+            <div class="adm-card__body" style="padding:20px;">
+                <h3 style="margin:0 0 16px;font-size:15px;font-weight:600;">Religion</h3>
+                <canvas id="religionChart" height="220"></canvas>
+            </div>
+        </div>
+        <div class="adm-card">
+            <div class="adm-card__body" style="padding:20px;">
+                <h3 style="margin:0 0 16px;font-size:15px;font-weight:600;">Class Distribution</h3>
+                <canvas id="classChart" height="220"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tables Row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+        <div class="adm-card">
+            <div class="adm-card__body" style="padding:20px;">
+                <h3 style="margin:0 0 12px;font-size:15px;font-weight:600;">District Distribution</h3>
+                <div style="max-height:300px;overflow-y:auto;">
+                    <table class="adm-table">
+                        <thead>
+                            <tr>
+                                <th style="padding:10px 12px;text-align:left;">District</th>
+                                <th style="padding:10px 12px;text-align:right;">Count</th>
+                            </tr>
+                        </thead>
+                        <tbody id="districtTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="adm-card">
+            <div class="adm-card__body" style="padding:20px;">
+                <h3 style="margin:0 0 12px;font-size:15px;font-weight:600;">Top 5 Classes by Volume</h3>
+                <table class="adm-table">
+                    <thead>
+                        <tr>
+                            <th style="padding:10px 12px;text-align:left;">Class</th>
+                            <th style="padding:10px 12px;text-align:right;">Applications</th>
+                        </tr>
+                    </thead>
+                    <tbody id="topClassesTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Application Heatmap Table -->
+    <div class="adm-card">
+        <div class="adm-card__body" style="padding:20px;">
+            <h3 style="margin:0 0 12px;font-size:15px;font-weight:600;">Daily Application Activity</h3>
+            <div style="max-height:360px;overflow-y:auto;">
+                <table class="adm-table">
+                    <thead>
+                        <tr>
+                            <th style="padding:10px 12px;text-align:left;">Date</th>
+                            <th style="padding:10px 12px;text-align:right;">Applications</th>
+                        </tr>
+                    </thead>
+                    <tbody id="heatmapTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script>
+        let monthlyTrendChart, genderChart, religionChart, classChart;
+
+        function fmt(n) {
+            if (n == null) return '—';
+            return n.toLocaleString();
+        }
+
+        function fmtCurr(n) {
+            if (n == null) return '—';
+            return n.toLocaleString('en-BD', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        function monthName(m) {
+            const names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+            return names[m - 1] || m;
+        }
+
+        function destroyCharts() {
+            if (monthlyTrendChart) { monthlyTrendChart.destroy(); monthlyTrendChart = null; }
+            if (genderChart) { genderChart.destroy(); genderChart = null; }
+            if (religionChart) { religionChart.destroy(); religionChart = null; }
+            if (classChart) { classChart.destroy(); classChart = null; }
+        }
+
+        function loadDashboard() {
+            $.getJSON('/Admission/GetDashboardData', function (res) {
+                if (!res.success) return;
+                const d = res.data;
+
+                // KPI
+                document.getElementById('kpi-today').textContent = fmt(d.todayApplications);
+                document.getElementById('kpi-week').textContent = fmt(d.weekApplications);
+                document.getElementById('kpi-month').textContent = fmt(d.monthApplications);
+                document.getElementById('kpi-conversion').textContent = d.conversionRate ? d.conversionRate.toFixed(1) + '%' : '0%';
+
+                // Status
+                document.getElementById('stat-pending').textContent = fmt(d.pendingVerification);
+                document.getElementById('stat-approved').textContent = fmt(d.approved);
+                document.getElementById('stat-rejected').textContent = fmt(d.rejected);
+                document.getElementById('stat-converted').textContent = fmt(d.converted);
+
+                // Revenue
+                document.getElementById('rev-invoiced').textContent = fmtCurr(d.totalInvoiceAmount);
+                document.getElementById('rev-collected').textContent = fmtCurr(d.totalPaidAmount);
+                document.getElementById('rev-invoices').textContent = fmt(d.totalInvoices);
+                document.getElementById('rev-paid').textContent = fmt(d.paidInvoices);
+
+                // District table
+                const distBody = document.getElementById('districtTableBody');
+                distBody.innerHTML = '';
+                (d.districtDistribution || []).forEach(function (item) {
+                    const tr = document.createElement('tr');
+                    tr.style.borderBottom = '1px solid #f3f4f6';
+                    tr.innerHTML = '<td style="padding:8px 12px;">' + escHtml(item.name) + '</td><td style="padding:8px 12px;text-align:right;font-weight:600;">' + fmt(item.count) + '</td>';
+                    distBody.appendChild(tr);
+                });
+
+                // Top classes
+                const topBody = document.getElementById('topClassesTableBody');
+                topBody.innerHTML = '';
+                (d.topClasses || []).forEach(function (item) {
+                    const tr = document.createElement('tr');
+                    tr.style.borderBottom = '1px solid #f3f4f6';
+                    tr.innerHTML = '<td style="padding:8px 12px;">' + escHtml(item.name) + '</td><td style="padding:8px 12px;text-align:right;font-weight:600;">' + fmt(item.count) + '</td>';
+                    topBody.appendChild(tr);
+                });
+
+                // Heatmap
+                const heatBody = document.getElementById('heatmapTableBody');
+                heatBody.innerHTML = '';
+                (d.applicationHeatmap || []).forEach(function (item) {
+                    const tr = document.createElement('tr');
+                    tr.style.borderBottom = '1px solid #f3f4f6';
+                    const dt = new Date(item.date);
+                    const dateStr = dt.toLocaleDateString('en-BD', { year: 'numeric', month: 'short', day: 'numeric' });
+                    tr.innerHTML = '<td style="padding:8px 12px;">' + dateStr + '</td><td style="padding:8px 12px;text-align:right;font-weight:600;">' + fmt(item.count) + '</td>';
+                    heatBody.appendChild(tr);
+                });
+
+                // Charts
+                destroyCharts();
+
+                // Monthly Trend
+                const trendLabels = (d.monthlyTrend || []).map(function (m) { return monthName(m.month) + ' ' + m.year; });
+                const trendCtx = document.getElementById('monthlyTrendChart').getContext('2d');
+                monthlyTrendChart = new Chart(trendCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: trendLabels,
+                        datasets: [
+                            { label: 'Pending', data: (d.monthlyTrend || []).map(function (m) { return m.pendingCount; }), backgroundColor: '#f59e0b', borderRadius: 4 },
+                            { label: 'Approved', data: (d.monthlyTrend || []).map(function (m) { return m.approvedCount; }), backgroundColor: '#3b82f6', borderRadius: 4 },
+                            { label: 'Rejected', data: (d.monthlyTrend || []).map(function (m) { return m.rejectedCount; }), backgroundColor: '#ef4444', borderRadius: 4 },
+                            { label: 'Converted', data: (d.monthlyTrend || []).map(function (m) { return m.convertedCount; }), backgroundColor: '#10b981', borderRadius: 4 }
+                        ]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 12, font: { size: 11 } } } },
+                        scales: {
+                            x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+                            y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 } } }
+                        }
+                    }
+                });
+
+                // Gender
+                const genderCtx = document.getElementById('genderChart').getContext('2d');
+                const genderLabels = (d.genderDistribution || []).map(function (g) { return g.name; });
+                const genderData = (d.genderDistribution || []).map(function (g) { return g.count; });
+                genderChart = new Chart(genderCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: genderLabels,
+                        datasets: [{ data: genderData, backgroundColor: ['#3b82f6', '#ec4899', '#6b7280'], borderWidth: 0 }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 10, font: { size: 11 } } } }
+                    }
+                });
+
+                // Religion
+                const religionCtx = document.getElementById('religionChart').getContext('2d');
+                const religionLabels = (d.religionDistribution || []).map(function (r) { return r.name; });
+                const religionData = (d.religionDistribution || []).map(function (r) { return r.count; });
+                const colors = ['#10b981','#f59e0b','#3b82f6','#ef4444','#8b5cf6','#ec4899','#14b8a6','#f97316'];
+                religionChart = new Chart(religionCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: religionLabels,
+                        datasets: [{ data: religionData, backgroundColor: colors.slice(0, religionLabels.length), borderWidth: 0 }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 10, font: { size: 11 } } } }
+                    }
+                });
+
+                // Class distribution
+                const classCtx = document.getElementById('classChart').getContext('2d');
+                const classLabels = (d.classDistribution || []).map(function (c) { return c.name; });
+                const classData = (d.classDistribution || []).map(function (c) { return c.count; });
+                classChart = new Chart(classCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: classLabels,
+                        datasets: [{ label: 'Applications', data: classData, backgroundColor: '#3b82f6', borderRadius: 4 }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        indexAxis: 'y',
+                        plugins: { legend: { display: false } },
+                        scales: {
+                            x: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 } } },
+                            y: { grid: { display: false }, ticks: { font: { size: 10 } } }
+                        }
+                    }
+                });
+            }).fail(function () {
+                console.error('Failed to load dashboard data');
+            });
+        }
+
+        function escHtml(str) {
+            if (!str) return '—';
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        function refreshDashboard() {
+            loadDashboard();
+        }
+
+        $(document).ready(function () {
+            loadDashboard();
+        });
+    </script>
+}

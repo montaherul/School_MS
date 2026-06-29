@@ -1,0 +1,32 @@
+Build started 6/28/2026 11:49:40 AM.
+     1>Project "G:\PROJECT .NET\SchoolMS\full clone\SchoolManagementSystem.sln" on node 1 (Restore target(s)).
+     1>ValidateSolutionConfiguration:
+         Building solution configuration "Debug|Any CPU".
+       _GetAllRestoreProjectPathItems:
+         Determining projects to restore...
+       Restore:
+         X.509 certificate chain validation will use the default trust store selected by .NET for code signing.
+         X.509 certificate chain validation will use the default trust store selected by .NET for timestamping.
+         Assets file has not changed. Skipping assets file writing. Path: G:\PROJECT .NET\SchoolMS\full clone\obj\project.assets.json
+         Restored G:\PROJECT .NET\SchoolMS\full clone\SchoolManagementSystem.csproj (in 50 ms).
+         
+         NuGet Config files used:
+             C:\Users\islam\AppData\Roaming\NuGet\NuGet.Config
+             C:\Program Files (x86)\NuGet\Config\Microsoft.VisualStudio.FallbackLocation.config
+             C:\Program Files (x86)\NuGet\Config\Microsoft.VisualStudio.Offline.config
+         
+         Feeds used:
+             https://api.nuget.org/v3/index.json
+             C:\Program Files (x86)\Microsoft SDKs\NuGetPackages\
+         All projects are up-to-date for restore.
+     1>Done Building Project "G:\PROJECT .NET\SchoolMS\full clone\SchoolManagementSystem.sln" (Restore target(s)).
+   1:2>Project "G:\PROJECT .NET\SchoolMS\full clone\SchoolManagementSystem.sln" on node 1 (VSTest target(s)).
+     1>ValidateSolutionConfiguration:
+         Building solution configuration "Debug|Any CPU".
+     1>Done Building Project "G:\PROJECT .NET\SchoolMS\full clone\SchoolManagementSystem.sln" (VSTest target(s)).
+
+Build succeeded.
+    0 Warning(s)
+    0 Error(s)
+
+Time Elapsed 00:00:01.14

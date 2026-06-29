@@ -116,7 +116,10 @@ public class AdmissionDecisionDto
 
 public class AdmissionApproveRequest
 {
+    [Required, Range(1, int.MaxValue, ErrorMessage = "Invalid application ID.")]
     public int Id { get; set; }
+
+    [Required, Range(1, int.MaxValue, ErrorMessage = "Invalid section ID.")]
     public int SectionId { get; set; }
 }
 
@@ -133,6 +136,8 @@ public class AdmissionListResultDto
     public string Gender { get; set; } = string.Empty;
     public int AppliedClassId { get; set; }
     public string ClassName { get; set; } = string.Empty;
+    public int? AppliedStudentGroupId { get; set; }
+    public string? AppliedStudentGroupName { get; set; }
     public string ApplicantMobileNumber { get; set; } = string.Empty;
     public string FatherOrGuardianMobileNo { get; set; } = string.Empty;
     public string? AlternativeNumber { get; set; }

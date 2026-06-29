@@ -1,0 +1,322 @@
+@{
+    ViewData["Title"] = "Admission Analytics";
+}
+
+<div class="adm-page">
+    <div class="adm-header">
+        <div class="adm-header__left">
+            <div class="adm-header__icon-wrap">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></svg>
+            </div>
+            <div>
+                <h1 class="adm-header__title">Admission Analytics</h1>
+                <p class="adm-header__sub">Conversion funnel, trend analysis, class demand, and revenue insights</p>
+            </div>
+        </div>
+        <div class="adm-btn-group">
+            <a href="/Admission/Reports" class="adm-btn adm-btn--ghost">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></svg>
+                Back to Reports
+            </a>
+            <button type="button" class="adm-btn adm-btn--primary" onclick="refreshAll()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="23 4 23 10 17 10" /><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" /></svg>
+                Refresh
+            </button>
+        </div>
+    </div>
+
+    <div class="adm-card" style="margin-bottom:24px;">
+        <div class="adm-card__body">
+            <div class="adm-filters__row">
+                <div class="adm-filters__field">
+                    <label class="adm-label">From</label>
+                    <input type="date" id="dateFrom" class="adm-input" value="@DateTime.UtcNow.AddMonths(-6).ToString("yyyy-MM-dd")" />
+                </div>
+                <div class="adm-filters__field">
+                    <label class="adm-label">To</label>
+                    <input type="date" id="dateTo" class="adm-input" value="@DateTime.UtcNow.ToString("yyyy-MM-dd")" />
+                </div>
+                <div class="adm-filters__field">
+                    <label class="adm-label">Group By</label>
+                    <select id="groupBy" class="adm-select">
+                        <option value="Month">Monthly</option>
+                        <option value="Year">Yearly</option>
+                    </select>
+                </div>
+                <div class="adm-filters__field adm-filters__field--actions">
+                    <label class="adm-label">&nbsp;</label>
+                    <button type="button" class="adm-btn adm-btn--primary" onclick="refreshAll()">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>
+                        Apply
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+        <div class="adm-card">
+            <div class="adm-card__body" style="padding:20px;">
+                <h3 style="margin:0 0 16px;font-size:15px;font-weight:600;">Conversion Funnel</h3>
+                <div id="funnelContainer">
+                    <p style="color:var(--adm-text-3);text-align:center;padding:40px 0;">Loading...</p>
+                </div>
+            </div>
+        </div>
+        <div class="adm-card">
+            <div class="adm-card__body" style="padding:20px;">
+                <h3 style="margin:0 0 16px;font-size:15px;font-weight:600;">Trend Analysis</h3>
+                <canvas id="trendChart" height="260"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+        <div class="adm-card">
+            <div class="adm-card__body" style="padding:20px;">
+                <h3 style="margin:0 0 16px;font-size:15px;font-weight:600;">Class Demand</h3>
+                <canvas id="classDemandChart" height="260"></canvas>
+            </div>
+        </div>
+        <div class="adm-card">
+            <div class="adm-card__body" style="padding:20px;">
+                <h3 style="margin:0 0 16px;font-size:15px;font-weight:600;">Revenue Report</h3>
+                <div id="revenueContainer"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="adm-card" style="margin-bottom:24px;">
+        <div class="adm-card__body" style="padding:20px;">
+            <h3 style="margin:0 0 16px;font-size:15px;font-weight:600;">Revenue Trend</h3>
+            <canvas id="revenueTrendChart" height="260"></canvas>
+        </div>
+    </div>
+
+    <div class="adm-card">
+        <div class="adm-card__body" style="padding:20px;">
+            <h3 style="margin:0 0 16px;font-size:15px;font-weight:600;">Class-wise Revenue</h3>
+            <div style="max-height:360px;overflow-y:auto;">
+                <table class="adm-table adm-table--striped">
+                    <thead>
+                        <tr>
+                            <th style="padding:10px 12px;text-align:left;">Class</th>
+                            <th style="padding:10px 12px;text-align:right;">Invoiced</th>
+                            <th style="padding:10px 12px;text-align:right;">Collected</th>
+                            <th style="padding:10px 12px;text-align:right;">Invoices</th>
+                            <th style="padding:10px 12px;text-align:right;">Paid</th>
+                        </tr>
+                    </thead>
+                    <tbody id="revenueByClassBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function() {
+            'use strict';
+            var trendChart, classDemandChart, revenueTrendChart;
+
+            function getDates() {
+                return {
+                    dateFrom: document.getElementById('dateFrom').value || null,
+                    dateTo: document.getElementById('dateTo').value || null,
+                    groupBy: document.getElementById('groupBy').value || 'Month'
+                };
+            }
+
+            function destroyCharts() {
+                if (trendChart) { trendChart.destroy(); trendChart = null; }
+                if (classDemandChart) { classDemandChart.destroy(); classDemandChart = null; }
+                if (revenueTrendChart) { revenueTrendChart.destroy(); revenueTrendChart = null; }
+            }
+
+            function fmtCurr(n) {
+                if (n == null) return '\u2014';
+                return n.toLocaleString('en-BD', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            }
+
+            function fmt(n) {
+                if (n == null) return '\u2014';
+                return n.toLocaleString();
+            }
+
+            function escHtml(str) {
+                if (!str) return '\u2014';
+                var d = document.createElement('div');
+                d.textContent = str;
+                return d.innerHTML;
+            }
+
+            function renderFunnelBar(label, value, max, color) {
+                var pct = max > 0 ? (value / max * 100) : 0;
+                return '<div style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;margin-bottom:2px;"><span style="font-size:13px;">' + label + '</span><strong style="font-size:13px;">' + fmt(value) + '</strong></div>' +
+                    '<div style="height:24px;background:#E2E8F0;border-radius:4px;overflow:hidden;display:flex;">' +
+                    '<div style="height:100%;width:' + pct + '%;background:' + color + ';border-radius:4px;display:flex;align-items:center;padding-left:6px;color:white;font-size:11px;font-weight:600;transition:width 0.3s;">' + pct.toFixed(0) + '%</div>' +
+                    '</div></div>';
+            }
+
+            function ajaxError(containerId, label) {
+                var el = document.getElementById(containerId);
+                if (el) el.innerHTML = '<div class="adm-alert adm-alert--error">Failed to load ' + label + '.</div>';
+            }
+
+            function loadFunnel() {
+                var d = getDates();
+                $.get('/Admission/GetConversionFunnel', { dateFrom: d.dateFrom, dateTo: d.dateTo }, function(res) {
+                    if (!res || !res.success) { ajaxError('funnelContainer', 'funnel'); return; }
+                    var f = res.data;
+                    var container = document.getElementById('funnelContainer');
+                    var maxVal = f.totalApplications || 1;
+                    container.innerHTML =
+                        renderFunnelBar('Total Applications', f.totalApplications, maxVal, '#0F766E') +
+                        renderFunnelBar('Documents Verified', f.documentVerified, maxVal, '#2563EB') +
+                        renderFunnelBar('Interview Completed', f.interviewCompleted, maxVal, '#7C3AED') +
+                        renderFunnelBar('Fee Paid', f.feePaid, maxVal, '#D97706') +
+                        renderFunnelBar('Approved', f.approved, maxVal, '#059669') +
+                        renderFunnelBar('Converted', f.converted, maxVal, '#16A34A') +
+                        '<div style="margin-top:12px;padding:10px;background:#F0FDF4;border-radius:8px;display:flex;justify-content:space-between;">' +
+                        '<span style="font-size:13px;font-weight:600;">Conversion Rate</span>' +
+                        '<span style="font-size:16px;font-weight:700;color:#065F46;">' + (f.conversionRate || 0).toFixed(1) + '%</span></div>';
+                }).fail(function() { ajaxError('funnelContainer', 'funnel'); });
+            }
+
+            function loadTrend() {
+                var d = getDates();
+                $.get('/Admission/GetTrendAnalysis', { dateFrom: d.dateFrom, dateTo: d.dateTo, groupBy: d.groupBy }, function(res) {
+                    if (!res || !res.success) { ajaxError('trendChart', 'trend'); return; }
+                    var data = res.data || [];
+                    var labels = data.map(function(r) { return r.periodLabel; });
+                    var ctx = document.getElementById('trendChart').getContext('2d');
+                    if (trendChart) trendChart.destroy();
+                    trendChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [
+                                { label: 'Pending', data: data.map(function(r) { return r.pendingCount; }), backgroundColor: '#f59e0b', borderRadius: 4 },
+                                { label: 'Approved', data: data.map(function(r) { return r.approvedCount; }), backgroundColor: '#3b82f6', borderRadius: 4 },
+                                { label: 'Rejected', data: data.map(function(r) { return r.rejectedCount; }), backgroundColor: '#ef4444', borderRadius: 4 },
+                                { label: 'Converted', data: data.map(function(r) { return r.convertedCount; }), backgroundColor: '#10b981', borderRadius: 4 }
+                            ]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 10, font: { size: 11 } } } },
+                            scales: {
+                                x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+                                y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 } } }
+                            }
+                        }
+                    });
+                }).fail(function() { ajaxError('trendChart', 'trend'); });
+            }
+
+            function loadClassDemand() {
+                var d = getDates();
+                $.get('/Admission/GetClassDemand', { dateFrom: d.dateFrom, dateTo: d.dateTo }, function(res) {
+                    if (!res || !res.success) { ajaxError('classDemandChart', 'class demand'); return; }
+                    var data = res.data || [];
+                    var labels = data.map(function(r) { return r.className; });
+                    var ctx = document.getElementById('classDemandChart').getContext('2d');
+                    if (classDemandChart) classDemandChart.destroy();
+                    classDemandChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [
+                                { label: 'Applied', data: data.map(function(r) { return r.totalApplications; }), backgroundColor: '#3b82f6', borderRadius: 4 },
+                                { label: 'Converted', data: data.map(function(r) { return r.convertedCount; }), backgroundColor: '#10b981', borderRadius: 4 },
+                                { label: 'Pending', data: data.map(function(r) { return r.pendingCount; }), backgroundColor: '#f59e0b', borderRadius: 4 }
+                            ]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            indexAxis: 'y',
+                            plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 10, font: { size: 11 } } } },
+                            scales: {
+                                x: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 10 } } },
+                                y: { grid: { display: false }, ticks: { font: { size: 10 } } }
+                            }
+                        }
+                    });
+                }).fail(function() { ajaxError('classDemandChart', 'class demand'); });
+            }
+
+            function loadRevenue() {
+                var d = getDates();
+                $.get('/Admission/GetRevenueReport', { dateFrom: d.dateFrom, dateTo: d.dateTo }, function(res) {
+                    if (!res || !res.success) { ajaxError('revenueContainer', 'revenue'); return; }
+                    var r = res.data;
+
+                    var container = document.getElementById('revenueContainer');
+                    container.innerHTML =
+                        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+                        '<div style="background:#F0FDF4;border-radius:8px;padding:14px;"><div style="font-size:11px;color:#6b7280;">Total Invoiced</div><div style="font-size:20px;font-weight:700;color:#065f46;">' + fmtCurr(r.totalInvoiceAmount) + '</div></div>' +
+                        '<div style="background:#EFF6FF;border-radius:8px;padding:14px;"><div style="font-size:11px;color:#6b7280;">Total Collected</div><div style="font-size:20px;font-weight:700;color:#1e40af;">' + fmtCurr(r.totalPaidAmount) + '</div></div>' +
+                        '</div>' +
+                        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
+                        '<div style="background:#FEF3C7;border-radius:8px;padding:14px;"><div style="font-size:11px;color:#6b7280;">Total Due</div><div style="font-size:20px;font-weight:700;color:#92400e;">' + fmtCurr(r.totalDueAmount) + '</div></div>' +
+                        '<div style="background:#F0FDF4;border-radius:8px;padding:14px;"><div style="font-size:11px;color:#6b7280;">Collection Rate</div><div style="font-size:20px;font-weight:700;color:#065f46;">' + (r.collectionRate || 0).toFixed(1) + '%</div></div>' +
+                        '</div>' +
+                        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
+                        '<div style="padding:10px;background:#FAFAFA;border-radius:6px;"><span style="font-size:12px;color:#6b7280;">Invoices: </span><strong>' + fmt(r.totalInvoices) + '</strong> <span style="font-size:11px;color:#6b7280;">(' + fmt(r.paidInvoices) + ' paid)</span></div>' +
+                        '<div style="padding:10px;background:#FAFAFA;border-radius:6px;"><span style="font-size:12px;color:#6b7280;">Waivers: </span><strong>' + fmt((r.waiverSummary || {}).totalWaivers) + '</strong> <span style="font-size:11px;color:#6b7280;">(' + fmtCurr((r.waiverSummary || {}).totalWaiverAmount) + ')</span></div>' +
+                        '</div>';
+
+                    var tbody = document.getElementById('revenueByClassBody');
+                    tbody.innerHTML = '';
+                    (r.byClass || []).forEach(function(item) {
+                        var tr = document.createElement('tr');
+                        tr.style.borderBottom = '1px solid #f3f4f6';
+                        tr.innerHTML = '<td style="padding:8px 12px;">' + escHtml(item.className) + '</td>' +
+                            '<td style="padding:8px 12px;text-align:right;font-weight:600;">' + fmtCurr(item.totalInvoiceAmount) + '</td>' +
+                            '<td style="padding:8px 12px;text-align:right;font-weight:600;color:#065f46;">' + fmtCurr(item.totalPaidAmount) + '</td>' +
+                            '<td style="padding:8px 12px;text-align:right;">' + fmt(item.invoiceCount) + '</td>' +
+                            '<td style="padding:8px 12px;text-align:right;">' + fmt(item.paidCount) + '</td>';
+                        tbody.appendChild(tr);
+                    });
+
+                    var labels = (r.monthlyTrend || []).map(function(m) { return m.periodLabel; });
+                    var ctx = document.getElementById('revenueTrendChart').getContext('2d');
+                    if (revenueTrendChart) revenueTrendChart.destroy();
+                    revenueTrendChart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: labels,
+                            datasets: [
+                                { label: 'Invoiced', data: (r.monthlyTrend || []).map(function(m) { return m.totalInvoiceAmount; }), borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.1)', fill: true, tension: 0.3, pointRadius: 3 },
+                                { label: 'Collected', data: (r.monthlyTrend || []).map(function(m) { return m.totalPaidAmount; }), borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', fill: true, tension: 0.3, pointRadius: 3 }
+                            ]
+                        },
+                        options: {
+                            responsive: true, maintainAspectRatio: false,
+                            plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, padding: 10, font: { size: 11 } } } },
+                            scales: {
+                                x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+                                y: { beginAtZero: true, ticks: { font: { size: 10 }, callback: function(v) { return v.toLocaleString(); } } }
+                            }
+                        }
+                    });
+                }).fail(function() { ajaxError('revenueContainer', 'revenue'); });
+            }
+
+            function refreshAll() {
+                destroyCharts();
+                loadFunnel();
+                loadTrend();
+                loadClassDemand();
+                loadRevenue();
+            }
+
+            $(document).ready(function() {
+                refreshAll();
+            });
+
+            window.refreshAll = refreshAll;
+        })();
+    </script>
+}

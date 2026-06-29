@@ -484,6 +484,47 @@ public static class DbInitializer
             new LeaveType { Name = "Unpaid Leave", Id = 5, MaxDays = 30, IsPaid = false, IsActive = true }
         );
 
+        // Workflow Definition
+        modelBuilder.Entity<WorkflowDefinition>().HasData(
+            new WorkflowDefinition { Id = 1, Name = "Standard Admission Workflow", Description = "Default workflow for student admissions (17 states)", IsActive = true, SortOrder = 1, CreatedAt = createdAt }
+        );
+
+        // Workflow Transitions (forward flow: ApplicationSubmitted → AdmissionCompleted)
+        modelBuilder.Entity<WorkflowTransition>().HasData(
+            new WorkflowTransition { Id = 1, WorkflowDefinitionId = 1, FromState = WorkflowState.ApplicationSubmitted, ToState = WorkflowState.DocumentVerification, TransitionType = WorkflowTransitionType.Automatic, RequiresApproval = false, SortOrder = 1, IsActive = true, CreatedAt = createdAt },
+            new WorkflowTransition { Id = 2, WorkflowDefinitionId = 1, FromState = WorkflowState.DocumentVerification, ToState = WorkflowState.AcademicReview, TransitionType = WorkflowTransitionType.Automatic, ConditionExpression = "AllDocumentsVerified", RequiresApproval = false, SortOrder = 2, IsActive = true, CreatedAt = createdAt },
+            new WorkflowTransition { Id = 3, WorkflowDefinitionId = 1, FromState = WorkflowState.AcademicReview, ToState = WorkflowState.InterviewScheduled, TransitionType = WorkflowTransitionType.ManualApproval, RequiresApproval = true, SortOrder = 3, IsActive = true, CreatedAt = createdAt },
+            new WorkflowTransition { Id = 4, WorkflowDefinitionId = 1, FromState = WorkflowState.InterviewScheduled, ToState = WorkflowState.InterviewCompleted, TransitionType = WorkflowTransitionType.Automatic, RequiresApproval = false, SortOrder = 4, IsActive = true, CreatedAt = createdAt },
+            new WorkflowTransition { Id = 5, WorkflowDefinitionId = 1, FromState = WorkflowState.InterviewCompleted, ToState = WorkflowState.FeeVerification, TransitionType = WorkflowTransitionType.Automatic, RequiresApproval = false, SortOrder = 5, IsActive = true, CreatedAt = createdAt },
+            new WorkflowTransition { Id = 6, WorkflowDefinitionId = 1, FromState = WorkflowState.FeeVerification, ToState = WorkflowState.PrincipalApproval, TransitionType = WorkflowTransitionType.ManualApproval, RequiresApproval = true, SortOrder = 6, IsActive = true, CreatedAt = createdAt },
+            new WorkflowTransition { Id = 7, WorkflowDefinitionId = 1, FromState = WorkflowState.PrincipalApproval, ToState = WorkflowState.StudentCreation, TransitionType = WorkflowTransitionType.Automatic, RequiresApproval = false, SortOrder = 7, IsActive = true, CreatedAt = createdAt },
+            new WorkflowTransition { Id = 8, WorkflowDefinitionId = 1, FromState = WorkflowState.StudentCreation, ToState = WorkflowState.GuardianCreation, TransitionType = WorkflowTransitionType.Automatic, RequiresApproval = false, SortOrder = 8, IsActive = true, CreatedAt = createdAt },
+            new WorkflowTransition { Id = 9, WorkflowDefinitionId = 1, FromState = WorkflowState.GuardianCreation, ToState = WorkflowState.UserProvisioning, TransitionType = WorkflowTransitionType.Automatic, RequiresApproval = false, SortOrder = 9, IsActive = true, CreatedAt = createdAt },
+            new WorkflowTransition { Id = 10, WorkflowDefinitionId = 1, FromState = WorkflowState.UserProvisioning, ToState = WorkflowState.StudentIdGeneration, TransitionType = WorkflowTransitionType.Automatic, RequiresApproval = false, SortOrder = 10, IsActive = true, CreatedAt = createdAt },
+            new WorkflowTransition { Id = 11, WorkflowDefinitionId = 1, FromState = WorkflowState.StudentIdGeneration, ToState = WorkflowState.IdCardGeneration, TransitionType = WorkflowTransitionType.Automatic, RequiresApproval = false, SortOrder = 11, IsActive = true, CreatedAt = createdAt },
+            new WorkflowTransition { Id = 12, WorkflowDefinitionId = 1, FromState = WorkflowState.IdCardGeneration, ToState = WorkflowState.WelcomeEmail, TransitionType = WorkflowTransitionType.Automatic, RequiresApproval = false, SortOrder = 12, IsActive = true, CreatedAt = createdAt },
+            new WorkflowTransition { Id = 13, WorkflowDefinitionId = 1, FromState = WorkflowState.WelcomeEmail, ToState = WorkflowState.AdmissionCompleted, TransitionType = WorkflowTransitionType.Automatic, RequiresApproval = false, SortOrder = 13, IsActive = true, CreatedAt = createdAt },
+            // Hold/Resume transitions
+            new WorkflowTransition { Id = 14, WorkflowDefinitionId = 1, FromState = WorkflowState.ApplicationSubmitted, ToState = WorkflowState.OnHold, TransitionType = WorkflowTransitionType.ManualApproval, RequiresApproval = true, SortOrder = 14, IsActive = true, CreatedAt = createdAt },
+            new WorkflowTransition { Id = 15, WorkflowDefinitionId = 1, FromState = WorkflowState.OnHold, ToState = WorkflowState.DocumentVerification, TransitionType = WorkflowTransitionType.ManualApproval, RequiresApproval = true, SortOrder = 15, IsActive = true, CreatedAt = createdAt },
+            // Reject transitions (from key states)
+            new WorkflowTransition { Id = 16, WorkflowDefinitionId = 1, FromState = WorkflowState.DocumentVerification, ToState = WorkflowState.Rejected, TransitionType = WorkflowTransitionType.ManualApproval, RequiresApproval = true, SortOrder = 16, IsActive = true, CreatedAt = createdAt },
+            new WorkflowTransition { Id = 17, WorkflowDefinitionId = 1, FromState = WorkflowState.AcademicReview, ToState = WorkflowState.Rejected, TransitionType = WorkflowTransitionType.ManualApproval, RequiresApproval = true, SortOrder = 17, IsActive = true, CreatedAt = createdAt },
+            new WorkflowTransition { Id = 18, WorkflowDefinitionId = 1, FromState = WorkflowState.InterviewCompleted, ToState = WorkflowState.Rejected, TransitionType = WorkflowTransitionType.ManualApproval, RequiresApproval = true, SortOrder = 18, IsActive = true, CreatedAt = createdAt },
+            new WorkflowTransition { Id = 19, WorkflowDefinitionId = 1, FromState = WorkflowState.FeeVerification, ToState = WorkflowState.Rejected, TransitionType = WorkflowTransitionType.ManualApproval, RequiresApproval = true, SortOrder = 19, IsActive = true, CreatedAt = createdAt },
+            new WorkflowTransition { Id = 20, WorkflowDefinitionId = 1, FromState = WorkflowState.PrincipalApproval, ToState = WorkflowState.Rejected, TransitionType = WorkflowTransitionType.ManualApproval, RequiresApproval = true, SortOrder = 20, IsActive = true, CreatedAt = createdAt }
+        );
+
+        // WorkflowInstance for existing test admission (Id=1, Pending status)
+        modelBuilder.Entity<WorkflowInstance>().HasData(
+            new WorkflowInstance { Id = 1, AdmissionApplicationId = 1, WorkflowDefinitionId = 1, CurrentState = WorkflowState.ApplicationSubmitted, IsCompleted = false, CreatedAt = createdAt }
+        );
+
+        // WorkflowHistoryEntry for initial submission
+        modelBuilder.Entity<WorkflowHistoryEntry>().HasData(
+            new WorkflowHistoryEntry { Id = 1, WorkflowInstanceId = 1, FromState = WorkflowState.ApplicationSubmitted, ToState = WorkflowState.ApplicationSubmitted, Remarks = "Application submitted by applicant", ActionedBy = "applicant", ActionedAt = createdAt, CreatedAt = createdAt }
+        );
+
         modelBuilder.Entity<GradingRule>().HasData(
             new GradingRule { Id = 1, Grade = "A+", MinMarks = 80, MaxMarks = 100, GradePoint = 5.0m, CreatedAt = createdAt },
             new GradingRule { Id = 2, Grade = "A", MinMarks = 70, MaxMarks = 79, GradePoint = 4.0m, CreatedAt = createdAt },

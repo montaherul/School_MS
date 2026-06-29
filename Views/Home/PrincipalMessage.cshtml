@@ -11,33 +11,33 @@
     </div>
 </div>
 
-<section class="ws-section">
+<section class="ws-section ws-section--alt">
     <div class="ws-container">
         <div class="ws-row ws-g-6">
             <div class="ws-col-12 ws-col-lg-4 ws-text-center">
-                <div style="padding:24px;background:var(--ws-bg-alt);border-radius:var(--ws-radius-lg);box-shadow:var(--ws-shadow-sm);border:1px solid var(--ws-border-light);">
+                <div class="ws-card ws-p-6 ws-bg-secondary-bg">
                     @if (!string.IsNullOrEmpty(Model.PrincipalImagePath))
                     {
-                        <img src="@Model.PrincipalImagePath" style="width:100%;max-height:360px;object-fit:cover;border-radius:var(--ws-radius-lg);box-shadow:var(--ws-shadow-md);margin-bottom:16px;" alt="Principal" />
+                        <img src="@Model.PrincipalImagePath" class="ws-w-full ws-object-cover ws-mb-4 ws-rounded-lg ws-shadow ws-h-360" alt="Principal" />
                     }
                     else
                     {
-                        <div style="width:100%;height:280px;background:var(--ws-muted);border-radius:var(--ws-radius-lg);display:flex;align-items:center;justify-content:center;color:#fff;font-size:64px;margin-bottom:16px;">
+                        <div class="ws-flex-center ws-w-full ws-mb-4 ws-text-white ws-h-280 ws-rounded-lg ws-fs-64 ws-bg-tertiary-bg ws-text-muted">
                             <i class="bi bi-person-fill"></i>
                         </div>
                     }
-                    <h4 style="font-weight:700;margin-bottom:4px;">@Model.PrincipalName</h4>
-                    <p style="color:var(--ws-accent);font-weight:600;margin-bottom:0;">Principal & CEO</p>
-                    <p style="color:var(--ws-muted);font-size:14px;">@Model.SchoolName</p>
+                    <h4 class="ws-fw-700 ws-mb-1">@Model.PrincipalName</h4>
+                    <p class="ws-text-accent ws-fw-600 ws-mb-0">Principal & CEO</p>
+                    <p class="ws-text-muted ws-fs-14">@Model.SchoolName</p>
                 </div>
             </div>
 
             <div class="ws-col-12 ws-col-lg-8">
-                <span class="ws-section__label">Welcome Note</span>
-                <h2 style="font-size:var(--ws-text-4xl);font-weight:800;margin-bottom:16px;">Message from the Head</h2>
-                <div style="width:64px;height:4px;background:var(--ws-accent);border-radius:2px;margin-bottom:24px;"></div>
+                <span class="ws-section__label">From the Principal's Desk</span>
+                <h2 class="ws-fs-42 ws-fw-800 ws-mb-4">Message from the Head</h2>
+                <div class="ws-accent-divider"></div>
 
-                <div style="color:var(--ws-text-light);font-size:16px;line-height:1.8;">
+                <div class="ws-text-light ws-fs-16 ws-lh-lg">
                     @if (!string.IsNullOrEmpty(Model.PrincipalMessage))
                     {
                         @Html.Raw(Model.PrincipalMessage.Replace("\r\n", "<br/>").Replace("\n", "<br/>"))
@@ -49,13 +49,13 @@
                     }
                 </div>
 
-                <div style="margin-top:40px;padding-top:24px;border-top:1px solid var(--ws-border);">
-                    <h5 style="font-weight:700;margin-bottom:8px;">Sincerely,</h5>
-                    <div style="margin:12px 0;">
-                        <span style="font-family:'Courier New',monospace;font-size:24px;font-style:italic;color:var(--ws-secondary);">@Model.PrincipalName</span>
+                <div class="ws-mt-8 ws-pt-6 ws-border-top">
+                    <h5 class="ws-fw-700 ws-mb-2">Sincerely,</h5>
+                    <div class="ws-my-4">
+                        <span class="ws-fs-24 ws-fst-italic ws-text-secondary" style="font-family:'Courier New',monospace;">@Model.PrincipalName</span>
                     </div>
-                    <h6 style="font-weight:700;color:var(--ws-muted);margin-bottom:0;">Principal</h6>
-                    <span style="font-size:14px;color:var(--ws-muted);">@Model.SchoolName</span>
+                    <h6 class="ws-fw-700 ws-text-muted ws-mb-0">Principal</h6>
+                    <span class="ws-fs-14 ws-text-muted">@Model.SchoolName</span>
                 </div>
             </div>
         </div>
