@@ -290,98 +290,81 @@ namespace SchoolManagementSystem.Services.Implementations.Attendance
                 }
 
 
-                // Use UnitOfWork transaction methods now exposed on IUnitOfWork
                 await _uow.ExecuteInTransactionAsync(async () =>
                 {
-                    try
+                    if (recordsToAdd.Any())
                     {
-                        if (recordsToAdd.Any())
-                        {
-                            await repo.AddRangeAsync(recordsToAdd, ct);
-                        }
-
-                        if (recordsToUpdate.Any())
-                        {
-                            foreach (var record in recordsToUpdate)
-                            {
-                                // Create revision entries for any status changes
-                                var trackedOld = record; // existing record already modified in-memory
-                                // Note: we captured status changes earlier in statusChanges list
-                                repo.Update(record);
-                            }
-                        }
-
-                        await _uow.SaveChangesAsync(ct);
-
-                        // Create or update attendance session as Draft -> Submitted.
-                        // Locking is now an explicit admin action (no workflow bypass).
-                        if (existingSession == null)
-                        {
-                            existingSession = new AttendanceSession
-                            {
-                                SchoolClassId = dto.ClassId,
-                                SectionId = dto.SectionId,
-                                StudentGroupId = dto.StudentGroupId,
-                                AttendanceDate = date,
-                                Status = AttendanceSessionStatus.Submitted,
-                                SubmittedBy = recordedBy,
-                                SubmittedAt = DateTime.UtcNow,
-                                CreatedBy = recordedBy,
-                                CreatedAt = DateTime.UtcNow
-                            };
-                            await sessionRepo.AddAsync(existingSession, ct);
-                        }
-                        else
-                        {
-                            existingSession.Status = AttendanceSessionStatus.Submitted;
-                            existingSession.SubmittedBy = recordedBy;
-                            existingSession.SubmittedAt = DateTime.UtcNow;
-                            existingSession.UpdatedBy = recordedBy;
-                            existingSession.UpdatedAt = DateTime.UtcNow;
-                            sessionRepo.Update(existingSession);
-                        }
-
-                        await _uow.SaveChangesAsync(ct);
-
-                        // Refresh record IDs for revision entries on newly inserted rows
-                        if (recordsToAdd.Any())
-                        {
-                            var newIds = await repo.Query()
-                                .Where(a => recordsToAdd.Select(r => r.StudentId).Contains(a.StudentId)
-                                    && a.AttendanceDate == date && !a.IsDeleted)
-                                .ToListAsync(ct);
-                            foreach (var record in newIds)
-                                existingDict[record.StudentId] = record;
-                        }
-
-                        // Create attendance revision logs for changed statuses
-                        var revisionRepo = _uow.Repository<AttendanceRevision>();
-                        foreach (var sc in statusChanges)
-                        {
-                            var rev = new AttendanceRevision
-                            {
-                                AttendanceRecordId = existingDict.TryGetValue(sc.StudentId, out var rec) ? rec.Id : 0,
-                                StudentId = sc.StudentId,
-                                AttendanceDate = date,
-                                OldStatus = sc.OldStatus.ToString(),
-                                NewStatus = sc.NewStatus.ToString(),
-                                Reason = null,
-                                ChangedBy = recordedBy,
-                                ChangedAt = DateTime.UtcNow,
-                                CreatedBy = recordedBy,
-                                CreatedAt = DateTime.UtcNow
-                            };
-                            await revisionRepo.AddAsync(rev, ct);
-                        }
-
-                        await _uow.SaveChangesAsync(ct);
-                        await _uow.CommitTransactionAsync(ct);
+                        await repo.AddRangeAsync(recordsToAdd, ct);
                     }
-                    catch (Exception)
+
+                    if (recordsToUpdate.Any())
                     {
-                        await _uow.RollbackTransactionAsync(ct);
-                        throw;
+                        foreach (var record in recordsToUpdate)
+                        {
+                            repo.Update(record);
+                        }
                     }
+
+                    await _uow.SaveChangesAsync(ct);
+
+                    if (existingSession == null)
+                    {
+                        existingSession = new AttendanceSession
+                        {
+                            SchoolClassId = dto.ClassId,
+                            SectionId = dto.SectionId,
+                            StudentGroupId = dto.StudentGroupId,
+                            AttendanceDate = date,
+                            Status = AttendanceSessionStatus.Submitted,
+                            SubmittedBy = recordedBy,
+                            SubmittedAt = DateTime.UtcNow,
+                            CreatedBy = recordedBy,
+                            CreatedAt = DateTime.UtcNow
+                        };
+                        await sessionRepo.AddAsync(existingSession, ct);
+                    }
+                    else
+                    {
+                        existingSession.Status = AttendanceSessionStatus.Submitted;
+                        existingSession.SubmittedBy = recordedBy;
+                        existingSession.SubmittedAt = DateTime.UtcNow;
+                        existingSession.UpdatedBy = recordedBy;
+                        existingSession.UpdatedAt = DateTime.UtcNow;
+                        sessionRepo.Update(existingSession);
+                    }
+
+                    await _uow.SaveChangesAsync(ct);
+
+                    if (recordsToAdd.Any())
+                    {
+                        var newIds = await repo.Query()
+                            .Where(a => recordsToAdd.Select(r => r.StudentId).Contains(a.StudentId)
+                                && a.AttendanceDate == date && !a.IsDeleted)
+                            .ToListAsync(ct);
+                        foreach (var record in newIds)
+                            existingDict[record.StudentId] = record;
+                    }
+
+                    var revisionRepo = _uow.Repository<AttendanceRevision>();
+                    foreach (var sc in statusChanges)
+                    {
+                        var rev = new AttendanceRevision
+                        {
+                            AttendanceRecordId = existingDict.TryGetValue(sc.StudentId, out var rec) ? rec.Id : 0,
+                            StudentId = sc.StudentId,
+                            AttendanceDate = date,
+                            OldStatus = sc.OldStatus.ToString(),
+                            NewStatus = sc.NewStatus.ToString(),
+                            Reason = null,
+                            ChangedBy = recordedBy,
+                            ChangedAt = DateTime.UtcNow,
+                            CreatedBy = recordedBy,
+                            CreatedAt = DateTime.UtcNow
+                        };
+                        await revisionRepo.AddAsync(rev, ct);
+                    }
+
+                    await _uow.SaveChangesAsync(ct);
                 }, ct);
 
                 response.RecordsSaved = recordsToAdd.Count + recordsToUpdate.Count;

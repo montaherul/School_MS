@@ -277,6 +277,35 @@ public class EmailService : IEmailService
         await SendWorkflowEmailAsync("GuardianActivation", toEmail, "Guardian Portal - Activate Your Account", htmlBody, cancellationToken);
     }
 
+    public async Task SendWelcomeEmailAsync(string toEmail, string studentName, string userName, int studentId, string className, string sectionName, string portalUrl, CancellationToken cancellationToken = default)
+    {
+        var schoolName = await ResolveSchoolNameAsync();
+        var safeName = HtmlEncoder.Default.Encode(studentName);
+        var safeUser = HtmlEncoder.Default.Encode(userName);
+
+        var htmlBody = $@"
+<div style=""font-family:Arial,sans-serif;max-width:560px;margin:0 auto;padding:20px;"">
+    <h2 style=""color:#1a56db;margin-bottom:8px;"">Welcome to {schoolName}!</h2>
+    <p>Dear <strong>{safeName}</strong>,</p>
+    <p>We are delighted to welcome you to our school community. Your admission has been confirmed and your student account is ready.</p>
+    <table style=""border-collapse:collapse;width:100%;max-width:520px;margin:14px 0"">
+        <tr><td style=""padding:6px 0;font-weight:bold;width:140px"">Student ID</td><td>{safeUser}</td></tr>
+        <tr><td style=""padding:6px 0;font-weight:bold"">Class</td><td>{className}</td></tr>
+        <tr><td style=""padding:6px 0;font-weight:bold"">Section</td><td>{sectionName}</td></tr>
+    </table>
+    <p>To get started, please activate your account by setting your password:</p>
+    <p>
+        <a href=""{portalUrl}/Auth/Activate"" style=""background-color:#1a56db;color:white;padding:12px 25px;text-decoration:none;border-radius:5px;font-weight:bold;display:inline-block"">
+            Activate Your Account
+        </a>
+    </p>
+    <hr style=""border:0;border-top:1px solid #eee;margin:20px 0"" />
+    <p>Regards,<br/>{schoolName} Admission Team</p>
+</div>";
+
+        await SendWorkflowEmailAsync("WelcomeEmail", toEmail, $"Welcome to {schoolName}!", htmlBody, cancellationToken);
+    }
+
     private async Task<string> ResolveSchoolNameAsync()
     {
         try

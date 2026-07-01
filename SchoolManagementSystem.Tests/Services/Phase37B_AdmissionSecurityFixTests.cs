@@ -112,6 +112,8 @@ public class Phase37B_AdmissionSecurityFixTests
     {
         _admissionRepoMock.Setup(r => r.FirstOrDefaultAsync(It.IsAny<System.Linq.Expressions.Expression<System.Func<AdmissionApplication, bool>>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new AdmissionApplication { Id = 1, Status = AdmissionStatus.Pending });
+        _uowMock.Setup(u => u.ExecuteInTransactionAsync(It.IsAny<Func<Task>>(), It.IsAny<CancellationToken>()))
+            .Returns<Func<Task>, CancellationToken>((callback, ct) => callback());
         var svc = CreateService();
         await svc.RejectAsync(1, "user");
         _uowMock.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.AtLeastOnce);
@@ -147,6 +149,8 @@ public class Phase37B_AdmissionSecurityFixTests
             .ReturnsAsync(app);
         _uowMock.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
+        _uowMock.Setup(u => u.ExecuteInTransactionAsync(It.IsAny<Func<Task>>(), It.IsAny<CancellationToken>()))
+            .Returns<Func<Task>, CancellationToken>((callback, ct) => callback());
         var svc = CreateService();
         await svc.RejectAsync(1, "42");
         Assert.Equal(42, app.ReviewedByUserId);

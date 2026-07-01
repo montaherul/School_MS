@@ -25,7 +25,7 @@
         </div>
     </div>
 
-    <div class="adm-card" style="margin-bottom:24px;">
+    <div class="adm-card dash-section">
         <div class="adm-card__body">
             <div class="adm-filters__row">
                 <div class="adm-filters__field">
@@ -54,57 +54,57 @@
         </div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+    <div class="dash-grid dash-grid--2">
         <div class="adm-card">
-            <div class="adm-card__body" style="padding:20px;">
-                <h3 style="margin:0 0 16px;font-size:15px;font-weight:600;">Conversion Funnel</h3>
+            <div class="adm-card__body">
+                <h3 class="chart-heading">Conversion Funnel</h3>
                 <div id="funnelContainer">
-                    <p style="color:var(--adm-text-3);text-align:center;padding:40px 0;">Loading...</p>
+                    <div class="loading-state">Loading...</div>
                 </div>
             </div>
         </div>
         <div class="adm-card">
-            <div class="adm-card__body" style="padding:20px;">
-                <h3 style="margin:0 0 16px;font-size:15px;font-weight:600;">Trend Analysis</h3>
+            <div class="adm-card__body">
+                <h3 class="chart-heading">Trend Analysis</h3>
                 <canvas id="trendChart" height="260"></canvas>
             </div>
         </div>
     </div>
 
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+    <div class="dash-grid dash-grid--2">
         <div class="adm-card">
-            <div class="adm-card__body" style="padding:20px;">
-                <h3 style="margin:0 0 16px;font-size:15px;font-weight:600;">Class Demand</h3>
+            <div class="adm-card__body">
+                <h3 class="chart-heading">Class Demand</h3>
                 <canvas id="classDemandChart" height="260"></canvas>
             </div>
         </div>
         <div class="adm-card">
-            <div class="adm-card__body" style="padding:20px;">
-                <h3 style="margin:0 0 16px;font-size:15px;font-weight:600;">Revenue Report</h3>
+            <div class="adm-card__body">
+                <h3 class="chart-heading">Revenue Report</h3>
                 <div id="revenueContainer"></div>
             </div>
         </div>
     </div>
 
-    <div class="adm-card" style="margin-bottom:24px;">
-        <div class="adm-card__body" style="padding:20px;">
-            <h3 style="margin:0 0 16px;font-size:15px;font-weight:600;">Revenue Trend</h3>
+    <div class="adm-card dash-section">
+        <div class="adm-card__body">
+            <h3 class="chart-heading">Revenue Trend</h3>
             <canvas id="revenueTrendChart" height="260"></canvas>
         </div>
     </div>
 
     <div class="adm-card">
-        <div class="adm-card__body" style="padding:20px;">
-            <h3 style="margin:0 0 16px;font-size:15px;font-weight:600;">Class-wise Revenue</h3>
-            <div style="max-height:360px;overflow-y:auto;">
+        <div class="adm-card__body">
+            <h3 class="chart-heading" style="margin:0 0 16px;">Class-wise Revenue</h3>
+            <div class="scroll-y scroll-y--360">
                 <table class="adm-table adm-table--striped">
                     <thead>
                         <tr>
-                            <th style="padding:10px 12px;text-align:left;">Class</th>
-                            <th style="padding:10px 12px;text-align:right;">Invoiced</th>
-                            <th style="padding:10px 12px;text-align:right;">Collected</th>
-                            <th style="padding:10px 12px;text-align:right;">Invoices</th>
-                            <th style="padding:10px 12px;text-align:right;">Paid</th>
+                            <th class="adm-table th--left">Class</th>
+                            <th class="adm-table th--right">Invoiced</th>
+                            <th class="adm-table th--right">Collected</th>
+                            <th class="adm-table th--right">Invoices</th>
+                            <th class="adm-table th--right">Paid</th>
                         </tr>
                     </thead>
                     <tbody id="revenueByClassBody"></tbody>
@@ -153,9 +153,9 @@
 
             function renderFunnelBar(label, value, max, color) {
                 var pct = max > 0 ? (value / max * 100) : 0;
-                return '<div style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;margin-bottom:2px;"><span style="font-size:13px;">' + label + '</span><strong style="font-size:13px;">' + fmt(value) + '</strong></div>' +
-                    '<div style="height:24px;background:#E2E8F0;border-radius:4px;overflow:hidden;display:flex;">' +
-                    '<div style="height:100%;width:' + pct + '%;background:' + color + ';border-radius:4px;display:flex;align-items:center;padding-left:6px;color:white;font-size:11px;font-weight:600;transition:width 0.3s;">' + pct.toFixed(0) + '%</div>' +
+                return '<div class="funnel-bar"><div class="funnel-bar__row"><span class="funnel-bar__label">' + label + '</span><strong class="funnel-bar__value">' + fmt(value) + '</strong></div>' +
+                    '<div class="funnel-bar__track">' +
+                    '<div class="funnel-bar__fill" style="width:' + pct + '%;background:' + color + ';">' + pct.toFixed(0) + '%</div>' +
                     '</div></div>';
             }
 
@@ -178,9 +178,8 @@
                         renderFunnelBar('Fee Paid', f.feePaid, maxVal, '#D97706') +
                         renderFunnelBar('Approved', f.approved, maxVal, '#059669') +
                         renderFunnelBar('Converted', f.converted, maxVal, '#16A34A') +
-                        '<div style="margin-top:12px;padding:10px;background:#F0FDF4;border-radius:8px;display:flex;justify-content:space-between;">' +
-                        '<span style="font-size:13px;font-weight:600;">Conversion Rate</span>' +
-                        '<span style="font-size:16px;font-weight:700;color:#065F46;">' + (f.conversionRate || 0).toFixed(1) + '%</span></div>';
+                        '<div class="funnel-rate"><span class="funnel-rate__label">Conversion Rate</span>' +
+                        '<span class="funnel-rate__value">' + (f.conversionRate || 0).toFixed(1) + '%</span></div>';
                 }).fail(function() { ajaxError('funnelContainer', 'funnel'); });
             }
 
@@ -254,29 +253,29 @@
 
                     var container = document.getElementById('revenueContainer');
                     container.innerHTML =
-                        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
-                        '<div style="background:#F0FDF4;border-radius:8px;padding:14px;"><div style="font-size:11px;color:#6b7280;">Total Invoiced</div><div style="font-size:20px;font-weight:700;color:#065f46;">' + fmtCurr(r.totalInvoiceAmount) + '</div></div>' +
-                        '<div style="background:#EFF6FF;border-radius:8px;padding:14px;"><div style="font-size:11px;color:#6b7280;">Total Collected</div><div style="font-size:20px;font-weight:700;color:#1e40af;">' + fmtCurr(r.totalPaidAmount) + '</div></div>' +
+                        '<div class="dash-grid--rev-2">' +
+                        '<div class="rev-card rev-card--success"><div class="rev-card__title">Total Invoiced</div><div class="rev-card__value">' + fmtCurr(r.totalInvoiceAmount) + '</div></div>' +
+                        '<div class="rev-card rev-card--info"><div class="rev-card__title">Total Collected</div><div class="rev-card__value">' + fmtCurr(r.totalPaidAmount) + '</div></div>' +
                         '</div>' +
-                        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">' +
-                        '<div style="background:#FEF3C7;border-radius:8px;padding:14px;"><div style="font-size:11px;color:#6b7280;">Total Due</div><div style="font-size:20px;font-weight:700;color:#92400e;">' + fmtCurr(r.totalDueAmount) + '</div></div>' +
-                        '<div style="background:#F0FDF4;border-radius:8px;padding:14px;"><div style="font-size:11px;color:#6b7280;">Collection Rate</div><div style="font-size:20px;font-weight:700;color:#065f46;">' + (r.collectionRate || 0).toFixed(1) + '%</div></div>' +
+                        '<div class="dash-grid--rev-2">' +
+                        '<div class="rev-card rev-card--warning"><div class="rev-card__title">Total Due</div><div class="rev-card__value">' + fmtCurr(r.totalDueAmount) + '</div></div>' +
+                        '<div class="rev-card rev-card--success"><div class="rev-card__title">Collection Rate</div><div class="rev-card__value">' + (r.collectionRate || 0).toFixed(1) + '%</div></div>' +
                         '</div>' +
-                        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">' +
-                        '<div style="padding:10px;background:#FAFAFA;border-radius:6px;"><span style="font-size:12px;color:#6b7280;">Invoices: </span><strong>' + fmt(r.totalInvoices) + '</strong> <span style="font-size:11px;color:#6b7280;">(' + fmt(r.paidInvoices) + ' paid)</span></div>' +
-                        '<div style="padding:10px;background:#FAFAFA;border-radius:6px;"><span style="font-size:12px;color:#6b7280;">Waivers: </span><strong>' + fmt((r.waiverSummary || {}).totalWaivers) + '</strong> <span style="font-size:11px;color:#6b7280;">(' + fmtCurr((r.waiverSummary || {}).totalWaiverAmount) + ')</span></div>' +
+                        '<div class="dash-grid--rev-2">' +
+                        '<div class="rev-card rev-card--muted"><span class="rev-card__title">Invoices: </span><strong>' + fmt(r.totalInvoices) + '</strong> <span class="rev-card__title">(' + fmt(r.paidInvoices) + ' paid)</span></div>' +
+                        '<div class="rev-card rev-card--muted"><span class="rev-card__title">Waivers: </span><strong>' + fmt((r.waiverSummary || {}).totalWaivers) + '</strong> <span class="rev-card__title">(' + fmtCurr((r.waiverSummary || {}).totalWaiverAmount) + ')</span></div>' +
                         '</div>';
 
                     var tbody = document.getElementById('revenueByClassBody');
                     tbody.innerHTML = '';
                     (r.byClass || []).forEach(function(item) {
                         var tr = document.createElement('tr');
-                        tr.style.borderBottom = '1px solid #f3f4f6';
-                        tr.innerHTML = '<td style="padding:8px 12px;">' + escHtml(item.className) + '</td>' +
-                            '<td style="padding:8px 12px;text-align:right;font-weight:600;">' + fmtCurr(item.totalInvoiceAmount) + '</td>' +
-                            '<td style="padding:8px 12px;text-align:right;font-weight:600;color:#065f46;">' + fmtCurr(item.totalPaidAmount) + '</td>' +
-                            '<td style="padding:8px 12px;text-align:right;">' + fmt(item.invoiceCount) + '</td>' +
-                            '<td style="padding:8px 12px;text-align:right;">' + fmt(item.paidCount) + '</td>';
+                        tr.className = 'js-row';
+                        tr.innerHTML = '<td class="js-table">' + escHtml(item.className) + '</td>' +
+                            '<td class="js-table td--right">' + fmtCurr(item.totalInvoiceAmount) + '</td>' +
+                            '<td class="js-table td--right" style="color:var(--adm-success);">' + fmtCurr(item.totalPaidAmount) + '</td>' +
+                            '<td class="js-table td--right">' + fmt(item.invoiceCount) + '</td>' +
+                            '<td class="js-table td--right">' + fmt(item.paidCount) + '</td>';
                         tbody.appendChild(tr);
                     });
 

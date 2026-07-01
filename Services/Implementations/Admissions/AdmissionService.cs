@@ -151,6 +151,19 @@ public class AdmissionService : IAdmissionService
             dto.GuardianPhotoPath = await SaveFileAsync(dto.GuardianPhoto, "admissions/guardians", cancellationToken);
         }
 
+        // Validate group based on GroupStartsFromClassId setting
+        var schoolClass = await _classRepository.Query().AsNoTracking()
+            .FirstOrDefaultAsync(c => c.Id == dto.AppliedClassId && !c.IsDeleted, cancellationToken);
+        if (schoolClass != null)
+        {
+            var settings = await _settingRepo.GetCurrentSettingsAsync(cancellationToken);
+            bool classRequiresGroup = settings != null && schoolClass.SortOrder >= settings.GroupStartsFromClassId;
+            if (classRequiresGroup && !dto.AppliedStudentGroupId.HasValue)
+                throw new InvalidOperationException("An academic group (Science, Humanities, Business Studies) is required for the selected class.");
+            if (!classRequiresGroup)
+                dto.AppliedStudentGroupId = null;
+        }
+
         // Look up admission fee from fee structure
         decimal admissionFee = 0;
         var feeStructure = await _unitOfWork.Repository<AdmissionFeeStructure>()
@@ -158,114 +171,110 @@ public class AdmissionService : IAdmissionService
         if (feeStructure != null)
             admissionFee = feeStructure.AdmissionFee;
 
-        string applicationNo;
+        string applicationNo = string.Empty;
+        AdmissionApplication? application = null;
         const int maxRetries = 3;
         for (int attempt = 1; attempt <= maxRetries; attempt++)
         {
-            await _unitOfWork.BeginTransactionAsync(cancellationToken);
             try
             {
-                var year = DateTime.UtcNow.Year;
-                var prefix = $"APP-{year}-";
-                var maxAppNo = await _admissionRepository.Query().AsNoTracking()
-                    .Where(x => x.ApplicationNo.StartsWith(prefix) && !x.IsDeleted)
-                    .OrderByDescending(x => x.ApplicationNo.Length)
-                    .ThenByDescending(x => x.ApplicationNo)
-                    .Select(x => x.ApplicationNo)
-                    .FirstOrDefaultAsync(cancellationToken);
-
-                var nextSeq = 1;
-                if (!string.IsNullOrEmpty(maxAppNo))
+                await _unitOfWork.ExecuteInTransactionAsync(async () =>
                 {
-                    var dash = maxAppNo.LastIndexOf('-');
-                    if (dash >= 0 && int.TryParse(maxAppNo.AsSpan(dash + 1), out var lastSeq))
-                        nextSeq = lastSeq + 1;
+                    var year = DateTime.UtcNow.Year;
+                    var prefix = $"APP-{year}-";
+                    var maxAppNo = await _admissionRepository.Query().AsNoTracking()
+                        .Where(x => x.ApplicationNo.StartsWith(prefix) && !x.IsDeleted)
+                        .OrderByDescending(x => x.ApplicationNo.Length)
+                        .ThenByDescending(x => x.ApplicationNo)
+                        .Select(x => x.ApplicationNo)
+                        .FirstOrDefaultAsync(cancellationToken);
+
+                    var nextSeq = 1;
+                    if (!string.IsNullOrEmpty(maxAppNo))
+                    {
+                        var dash = maxAppNo.LastIndexOf('-');
+                        if (dash >= 0 && int.TryParse(maxAppNo.AsSpan(dash + 1), out var lastSeq))
+                            nextSeq = lastSeq + 1;
+                    }
+
+                    applicationNo = $"APP-{year}-{nextSeq:0000}";
+
+                    application = new AdmissionApplication
+                    {
+                        ApplicationNo = applicationNo,
+                        ApplicantName = dto.ApplicantName.Trim(),
+                        ApplicantNameBangla = dto.ApplicantNameBangla?.Trim(),
+                        DateOfBirth = dto.DateOfBirth,
+                        Gender = dto.Gender.Trim(),
+                        FatherName = dto.FatherName.Trim(),
+                        FatherOccupation = dto.FatherOccupation?.Trim(),
+                        MotherName = dto.MotherName.Trim(),
+                        MotherOccupation = dto.MotherOccupation?.Trim(),
+                        GuardianName = dto.GuardianName?.Trim(),
+                        GuardianOccupation = dto.GuardianOccupation?.Trim(),
+                        GuardianEmail = dto.GuardianEmail?.Trim(),
+                        GuardianMobileNumber = dto.GuardianMobileNumber?.Trim(),
+                        GuardianRelationship = dto.GuardianRelationship?.Trim(),
+                        GuardianNationalId = dto.GuardianNationalId?.Trim(),
+                        GuardianAddress = dto.GuardianAddress?.Trim(),
+                        GuardianPhoto = dto.GuardianPhotoPath,
+                        GuardianRemarks = dto.GuardianRemarks?.Trim(),
+                        ApplicantMobileNumber = dto.ApplicantMobileNumber.Trim(),
+                        AlternativeNumber = dto.AlternativeNumber?.Trim(),
+                        FatherOrGuardianMobileNo = dto.FatherOrGuardianMobileNo.Trim(),
+                        ApplicantEmail = dto.ApplicantEmail?.Trim(),
+                        Nationality = dto.Nationality.Trim(),
+                        Country = dto.Country.Trim(),
+                        MaritalStatus = dto.MaritalStatus.Trim(),
+                        Religion = dto.Religion.Trim(),
+                        BloodGroup = dto.BloodGroup?.Trim(),
+                        BirthCertificateNo = dto.BirthCertificateNo?.Trim(),
+                        BirthCertificatePath = dto.BirthCertificatePath,
+                        PaymentSlipPath = dto.PaymentSlipPath,
+                        PaymentMethod = dto.PaymentMethod?.Trim(),
+                        TransactionDetails = dto.TransactionDetails?.Trim(),
+                        PresentVillage = dto.PresentVillage?.Trim(),
+                        PresentPostOffice = dto.PresentPostOffice?.Trim(),
+                        PresentThana = dto.PresentThana?.Trim(),
+                        PresentDistrict = dto.PresentDistrict?.Trim(),
+                        PermanentVillage = dto.PermanentVillage?.Trim(),
+                        PermanentPostOffice = dto.PermanentPostOffice?.Trim(),
+                        PermanentThana = dto.PermanentThana?.Trim(),
+                        PermanentDistrict = dto.PermanentDistrict?.Trim(),
+                        ProfilePicturePath = dto.ProfilePicturePath,
+                        AppliedClassId = dto.AppliedClassId,
+                        AppliedStudentGroupId = dto.AppliedStudentGroupId,
+                        LinkedGuardianId = dto.LinkedGuardianId,
+                        AdmissionFee = admissionFee,
+                        AdmissionFeePaid = false,
+                        Status = AdmissionStatus.Pending,
+                        CreatedBy = createdBy
+                    };
+
+                    await _admissionRepository.AddAsync(application, cancellationToken);
+                    await _unitOfWork.SaveChangesAsync(cancellationToken);
+                }, cancellationToken);
+
+                try { await _workflowService.InitializeWorkflowAsync(application.Id, cancellationToken); }
+                catch (Exception ex) { _logger.LogWarning(ex, "Workflow initialization failed for application {AppNo}", applicationNo); }
+
+                await LogAuditAsync("Admission", "Admission.Apply", application.Id.ToString(), $"Application submitted: {application.ApplicantName} ({application.ApplicationNo})", cancellationToken);
+
+                if (!string.IsNullOrWhiteSpace(application.ApplicantEmail))
+                {
+                    try { await _emailService.SendAdmissionReceivedAsync(application.ApplicantEmail, application.ApplicantName, application.ApplicationNo, cancellationToken); }
+                    catch (Exception ex) { _logger.LogError(ex, "Admission confirmation email failed for application {ApplicationNo}", application.ApplicationNo); }
                 }
 
-                applicationNo = $"APP-{year}-{nextSeq:0000}";
-
-                var application = new AdmissionApplication
-            {
-                ApplicationNo = applicationNo,
-            ApplicantName = dto.ApplicantName.Trim(),
-            ApplicantNameBangla = dto.ApplicantNameBangla?.Trim(),
-            DateOfBirth = dto.DateOfBirth,
-            Gender = dto.Gender.Trim(),
-            FatherName = dto.FatherName.Trim(),
-            FatherOccupation = dto.FatherOccupation?.Trim(),
-            MotherName = dto.MotherName.Trim(),
-            MotherOccupation = dto.MotherOccupation?.Trim(),
-            GuardianName = dto.GuardianName?.Trim(),
-            GuardianOccupation = dto.GuardianOccupation?.Trim(),
-            GuardianEmail = dto.GuardianEmail?.Trim(),
-            GuardianMobileNumber = dto.GuardianMobileNumber?.Trim(),
-            GuardianRelationship = dto.GuardianRelationship?.Trim(),
-            GuardianNationalId = dto.GuardianNationalId?.Trim(),
-            GuardianAddress = dto.GuardianAddress?.Trim(),
-            GuardianPhoto = dto.GuardianPhotoPath,
-            GuardianRemarks = dto.GuardianRemarks?.Trim(),
-            ApplicantMobileNumber = dto.ApplicantMobileNumber.Trim(),
-            AlternativeNumber = dto.AlternativeNumber?.Trim(),
-            FatherOrGuardianMobileNo = dto.FatherOrGuardianMobileNo.Trim(),
-            ApplicantEmail = dto.ApplicantEmail?.Trim(),
-            Nationality = dto.Nationality.Trim(),
-            Country = dto.Country.Trim(),
-            MaritalStatus = dto.MaritalStatus.Trim(),
-            Religion = dto.Religion.Trim(),
-            BloodGroup = dto.BloodGroup?.Trim(),
-            BirthCertificateNo = dto.BirthCertificateNo?.Trim(),
-            BirthCertificatePath = dto.BirthCertificatePath,
-            PaymentSlipPath = dto.PaymentSlipPath,
-            PaymentMethod = dto.PaymentMethod?.Trim(),
-            TransactionDetails = dto.TransactionDetails?.Trim(),
-            PresentVillage = dto.PresentVillage?.Trim(),
-            PresentPostOffice = dto.PresentPostOffice?.Trim(),
-            PresentThana = dto.PresentThana?.Trim(),
-            PresentDistrict = dto.PresentDistrict?.Trim(),
-            PermanentVillage = dto.PermanentVillage?.Trim(),
-            PermanentPostOffice = dto.PermanentPostOffice?.Trim(),
-            PermanentThana = dto.PermanentThana?.Trim(),
-            PermanentDistrict = dto.PermanentDistrict?.Trim(),
-            ProfilePicturePath = dto.ProfilePicturePath,
-            AppliedClassId = dto.AppliedClassId,
-            AppliedStudentGroupId = dto.AppliedStudentGroupId,
-            LinkedGuardianId = dto.LinkedGuardianId,
-            AdmissionFee = admissionFee,
-            AdmissionFeePaid = false,
-            Status = AdmissionStatus.Pending,
-            CreatedBy = createdBy
-        };
-
-            await _admissionRepository.AddAsync(application, cancellationToken);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
-            await _unitOfWork.CommitTransactionAsync(cancellationToken);
-
-            try { await _workflowService.InitializeWorkflowAsync(application.Id, cancellationToken); }
-            catch (Exception ex) { _logger.LogWarning(ex, "Workflow initialization failed for application {AppNo}", applicationNo); }
-
-            await LogAuditAsync("Admission", "Admission.Apply", application.Id.ToString(), $"Application submitted: {application.ApplicantName} ({application.ApplicationNo})", cancellationToken);
-
-            if (!string.IsNullOrWhiteSpace(application.ApplicantEmail))
-            {
-                try { await _emailService.SendAdmissionReceivedAsync(application.ApplicantEmail, application.ApplicantName, application.ApplicationNo, cancellationToken); }
-                catch (Exception ex) { _logger.LogError(ex, "Admission confirmation email failed for application {ApplicationNo}", application.ApplicationNo); }
+                return application.ApplicationNo;
             }
+            catch (DbUpdateException ex) when (attempt < maxRetries && ex.InnerException is SqlException sqlEx && (sqlEx.Number == 2601 || sqlEx.Number == 2627))
+            {
+                continue;
+            }
+        }
 
-            return application.ApplicationNo;
-        }
-        catch (DbUpdateException ex) when (attempt < maxRetries && ex.InnerException is SqlException sqlEx && (sqlEx.Number == 2601 || sqlEx.Number == 2627))
-        {
-            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
-            continue;
-        }
-        catch
-        {
-            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
-            throw;
-        }
-    }
-
-    throw new InvalidOperationException("Failed to generate unique application number after multiple retries.");
+        throw new InvalidOperationException("Failed to generate unique application number after multiple retries.");
     }
 
     public async Task<int> ApproveAndConvertAsync(int applicationId, int sectionId, string approvedBy, CancellationToken cancellationToken = default)
@@ -290,6 +299,22 @@ public class AdmissionService : IAdmissionService
             throw new InvalidOperationException("Cannot update a converted application.");
         if (application.Status == AdmissionStatus.Rejected)
             throw new InvalidOperationException("Cannot update a rejected application.");
+
+        // Validate group based on GroupStartsFromClassId setting
+        if (dto.AppliedClassId != application.AppliedClassId)
+        {
+            var schoolClass = await _classRepository.Query().AsNoTracking()
+                .FirstOrDefaultAsync(c => c.Id == dto.AppliedClassId && !c.IsDeleted, cancellationToken);
+            if (schoolClass != null)
+            {
+                var settings = await _settingRepo.GetCurrentSettingsAsync(cancellationToken);
+                bool classRequiresGroup = settings != null && schoolClass.SortOrder >= settings.GroupStartsFromClassId;
+                if (classRequiresGroup && !dto.AppliedStudentGroupId.HasValue)
+                    throw new InvalidOperationException("An academic group (Science, Humanities, Business Studies) is required for the selected class.");
+                if (!classRequiresGroup)
+                    dto.AppliedStudentGroupId = null;
+            }
+        }
 
         if (dto.ProfilePicture != null && dto.ProfilePicture.Length > 0)
         {
@@ -371,8 +396,7 @@ public class AdmissionService : IAdmissionService
         if (application.Status == AdmissionStatus.Rejected)
             throw new InvalidOperationException("Application has already been rejected.");
 
-        await _unitOfWork.BeginTransactionAsync(cancellationToken);
-        try
+        await _unitOfWork.ExecuteInTransactionAsync(async () =>
         {
             application.Status = AdmissionStatus.Rejected;
             application.ReviewedAt = DateTime.UtcNow;
@@ -383,14 +407,7 @@ public class AdmissionService : IAdmissionService
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             await LogAuditAsync("Admission", "Admission.Reject", applicationId.ToString(), $"Application rejected: {application.ApplicantName} ({application.ApplicationNo})", cancellationToken);
-
-            await _unitOfWork.CommitTransactionAsync(cancellationToken);
-        }
-        catch
-        {
-            await _unitOfWork.RollbackTransactionAsync(cancellationToken);
-            throw;
-        }
+        }, cancellationToken);
 
         if (!string.IsNullOrWhiteSpace(application.ApplicantEmail))
         {
@@ -426,10 +443,8 @@ public class AdmissionService : IAdmissionService
         if (application.Status == AdmissionStatus.Converted)
             throw new InvalidOperationException("Cannot delete a converted application.");
 
-        await _unitOfWork.BeginTransactionAsync(ct);
-        try
+        await _unitOfWork.ExecuteInTransactionAsync(async () =>
         {
-            // Cascade soft-delete to associated documents to prevent orphans
             var docs = await _unitOfWork.Repository<AdmissionDocument>().Query()
                 .Where(d => d.AdmissionApplicationId == id && !d.IsDeleted)
                 .ToListAsync(ct);
@@ -439,7 +454,6 @@ public class AdmissionService : IAdmissionService
                 DeleteFile(doc.FilePath);
             }
 
-            // Also clean up uploaded files for this application
             DeleteFile(application.ProfilePicturePath);
             DeleteFile(application.BirthCertificatePath);
             DeleteFile(application.PaymentSlipPath);
@@ -452,14 +466,7 @@ public class AdmissionService : IAdmissionService
             await _unitOfWork.SaveChangesAsync(ct);
 
             await LogAuditAsync("Admission", "Admission.Delete", id.ToString(), $"Admission deleted: {application.ApplicationNo} ({application.ApplicantName})", ct);
-
-            await _unitOfWork.CommitTransactionAsync(ct);
-        }
-        catch
-        {
-            await _unitOfWork.RollbackTransactionAsync(ct);
-            throw;
-        }
+        }, ct);
     }
 
     public async Task<IEnumerable<dynamic>> GetAvailableClassesAsync(CancellationToken ct = default)

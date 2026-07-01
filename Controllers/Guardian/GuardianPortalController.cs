@@ -1,9 +1,14 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using SchoolManagementSystem.Models.DTOs.Attendance;
+using SchoolManagementSystem.Models.DTOs.Dashboard;
+using SchoolManagementSystem.Models.Entities.Fees;
 using SchoolManagementSystem.Models.Entities.Student;
+using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Models.ViewModels.Dashboard;
 using SchoolManagementSystem.Repositories.Guardian;
+using SchoolManagementSystem.Repositories.Interfaces.Dashboard;
 using SchoolManagementSystem.Repositories.Interfaces.Website;
 using SchoolManagementSystem.Service.Interfaces.Dashboard;
 using SchoolManagementSystem.Services.Interfaces.Guardian;
@@ -97,6 +102,10 @@ public class GuardianPortalController : Controller
         var detail = await _guardianService.GetChildDetailAsync(userId, studentId, ct);
         if (detail == null) return;
 
+        // Clear previous state
+        model.Alerts = new List<string>();
+
+        // Basic info from service
         model.StudentName = detail.FullName;
         model.ClassName = detail.ClassName;
         model.SectionName = detail.SectionName;
@@ -126,7 +135,7 @@ public class GuardianPortalController : Controller
             }
         }).ToList();
 
-        model.Alerts ??= new List<string>();
+        // Alerts (fresh each time)
         if (detail.AttendancePercentage > 0 && detail.AttendancePercentage < 75.0)
         {
             model.Alerts.Add($"Low Attendance Alert: {detail.FullName}'s attendance is {detail.AttendancePercentage}%, below the 75% minimum.");
@@ -135,5 +144,51 @@ public class GuardianPortalController : Controller
         {
             model.Alerts.Add($"Outstanding Fees: {detail.FullName} has an outstanding balance of ৳{detail.OutstandingFees:N2}.");
         }
+
+        // Look up the student entity for classId, sectionId, userId
+        var student = await _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>().Query()
+            .Include(s => s.Class)
+            .Include(s => s.Section)
+            .FirstOrDefaultAsync(s => s.Id == studentId && !s.IsDeleted, ct);
+        if (student == null) return;
+        model.SelectedChildId = studentId;
+
+        // Finance data (fresh from DB)
+        var invoices = await _uow.Repository<FeeInvoice>().Query()
+            .Where(fi => fi.StudentId == studentId && !fi.IsDeleted)
+            .ToListAsync(ct);
+        model.SelectedChildOutstandingFees = invoices.Where(i => i.Status != PaymentStatus.Paid).Sum(i => i.TotalAmount - i.PaidAmount);
+        model.SelectedChildTotalPaid = invoices.Sum(i => i.PaidAmount);
+        model.SelectedChildInvoiceCount = invoices.Count;
+        model.SelectedChildTotalInvoiced = invoices.Sum(i => i.TotalAmount + i.LateFee);
+        model.SelectedChildTotalPaidFinance = invoices.Sum(i => i.PaidAmount);
+        model.SelectedChildTotalDue = model.SelectedChildTotalInvoiced - model.SelectedChildTotalPaidFinance;
+
+        // Latest result
+        var latestResult = await _uow.Repository<SchoolManagementSystem.Models.Entities.Result.StudentExamResult>().Query()
+            .Where(r => r.StudentId == studentId && !r.IsDeleted)
+            .OrderByDescending(r => r.ExamId)
+            .FirstOrDefaultAsync(ct);
+        if (latestResult != null)
+        {
+            model.SelectedChildLatestGPA = latestResult.Gpa;
+            model.SelectedChildLatestGrade = latestResult.Grade ?? string.Empty;
+            model.SelectedChildLatestPassed = latestResult.IsPassed;
+        }
+
+        // Leave counts
+        var leaveRepo = _uow.Repository<SchoolManagementSystem.Models.Entities.Attendance.StudentLeaveApplication>();
+        model.SelectedChildLeaveCount = await leaveRepo.Query()
+            .CountAsync(l => l.StudentId == studentId, ct);
+        model.SelectedChildPendingLeaveCount = await leaveRepo.Query()
+            .CountAsync(l => l.StudentId == studentId
+                && l.ApprovalStatus == SchoolManagementSystem.Models.Entities.Attendance.StudentLeaveApplication.ApprovalStatusEnum.Pending, ct);
+
+        // Widget data - best-effort
+        model.SelectedChildUserId = student.UserId ?? 0;
+        try { model.SelectedChildRoutineWidget = new StudentRoutineWidgetDto(); } catch { }
+        try { model.SelectedChildRecentAssignments = new List<StudentAssignmentDto>(); } catch { }
+        try { model.SelectedChildIssuedBooks = new List<StudentLibraryBookDto>(); } catch { }
+        try { model.SelectedChildRecentNotifications = new List<StudentNotificationItemDto>(); } catch { }
     }
 }

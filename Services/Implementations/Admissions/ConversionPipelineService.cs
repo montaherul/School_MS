@@ -89,121 +89,136 @@ public class ConversionPipelineService : IConversionPipelineService
     {
         var result = new ConversionResult();
 
-        await _unitOfWork.BeginTransactionAsync(ct);
+        var application = await ValidateAsync(applicationId, ct);
+        if (application == null)
+        {
+            result.Success = false;
+            result.ErrorMessage = "Application not found.";
+            return result;
+        }
+
+        // State captured inside transaction, needed after commit
+        string? pendingUserEmail = null;
+        string? pendingUserName = null;
+        string? applicantName = null;
+        string? applicationNo = null;
+        string? activationToken = null;
+        bool guardianPortalEnabled = false;
+        bool guardianActivationEnabled = false;
+        string? guardianActivationTokenResult = null;
+        string? guardianEmailResult = null;
+        string? guardianFullNameResult = null;
+        string? guardianCodeResult = null;
+        string? guardianName = null;
+        string? fatherName = null;
+        string? className = null;
+        string? sectionName = null;
+        int capturedStudentId = 0;
+        int? capturedGuardianId = null;
+
         try
         {
-            // Step 1: Validate
-            var application = await ValidateAsync(applicationId, ct);
-            if (application == null)
+            await _unitOfWork.ExecuteInTransactionAsync(async () =>
             {
-                result.Success = false;
-                result.ErrorMessage = "Application not found.";
-                return result;
-            }
+                var settings = await GetCachedSettingsAsync(ct);
+                int groupStartClass = settings.GroupStartsFromClassId;
+                bool allowDirectClass10 = settings.AllowDirectAdmissionToClass10;
+                guardianPortalEnabled = settings.EnableGuardianPortal;
+                guardianActivationEnabled = settings.EnableGuardianActivation;
 
-            // Step 2: Load settings (cached)
-            var settings = await GetCachedSettingsAsync(ct);
-            int groupStartClass = settings.GroupStartsFromClassId;
-            bool allowDirectClass10 = settings.AllowDirectAdmissionToClass10;
-            bool guardianPortalEnabled = settings.EnableGuardianPortal;
-            bool guardianActivationEnabled = settings.EnableGuardianActivation;
+                if (application.AppliedClassId >= 10 && !allowDirectClass10)
+                    throw new InvalidOperationException("Direct admission to Class 10 is not allowed. Students are promoted from Class 9.");
 
-            // Step 3: Check Class 10 direct admission rule
-            if (application.AppliedClassId >= 10 && !allowDirectClass10)
-                throw new InvalidOperationException("Direct admission to Class 10 is not allowed. Students are promoted from Class 9.");
+                var section = await _sectionRepository.Query().AsNoTracking()
+                    .FirstOrDefaultAsync(x => x.Id == sectionId && !x.IsDeleted, ct)
+                    ?? throw new InvalidOperationException("Selected section not found.");
+                var schoolClass = await _classRepository.Query().AsNoTracking()
+                    .FirstOrDefaultAsync(x => x.Id == application.AppliedClassId && !x.IsDeleted, ct);
 
-            // Step 4: Resolve section and class info
-            var section = await _sectionRepository.Query().AsNoTracking()
-                .FirstOrDefaultAsync(x => x.Id == sectionId && !x.IsDeleted, ct)
-                ?? throw new InvalidOperationException("Selected section not found.");
-            var schoolClass = await _classRepository.Query().AsNoTracking()
-                .FirstOrDefaultAsync(x => x.Id == application.AppliedClassId && !x.IsDeleted, ct);
+                int? studentGroupId = await ResolveGroupAsync(applicationId, sectionId, schoolClass?.SortOrder ?? 0, groupStartClass, ct);
 
-            // Step 5: Resolve Group
-            int? studentGroupId = await ResolveGroupAsync(applicationId, sectionId, schoolClass?.SortOrder ?? 0, groupStartClass, ct);
+                if (!await _sectionAllocationService.IsSectionAvailableAsync(sectionId, ct))
+                    throw new InvalidOperationException("Selected section has reached its capacity.");
 
-            // Step 6: Check section capacity
-            if (!await _sectionAllocationService.IsSectionAvailableAsync(sectionId, ct))
-                throw new InvalidOperationException("Selected section has reached its capacity.");
+                int rollNumber = await GenerateRollNumberAsync(application.AppliedClassId, sectionId, ct);
+                result.RollNumber = rollNumber.ToString();
 
-            // Step 7: Generate roll number
-            int rollNumber = await GenerateRollNumberAsync(application.AppliedClassId, sectionId, ct);
-            result.RollNumber = rollNumber.ToString();
+                var (pendingUser, activationTokenInner) = await CreateUserAsync(applicationId, approvedBy, ct);
+                result.UserId = pendingUser.Id;
+                result.UserName = pendingUser.UserName;
+                pendingUserEmail = pendingUser.Email;
+                pendingUserName = pendingUser.UserName;
+                activationToken = activationTokenInner;
 
-            // Step 8: Create user
-            var (pendingUser, activationToken) = await CreateUserAsync(applicationId, approvedBy, ct);
-            result.UserId = pendingUser.Id;
-            result.UserName = pendingUser.UserName;
+                await LogWorkflowTransitionAsync(applicationId, WorkflowState.UserProvisioning, approvedBy, $"User {pendingUser.UserName} created", ct);
 
-            await LogWorkflowTransitionAsync(applicationId, WorkflowState.UserProvisioning, approvedBy, $"User {pendingUser.UserName} created", ct);
+                int? linkedGuardianId = null;
 
-            // Step 9: Create guardian (if portal enabled)
-            int? linkedGuardianId = null;
-            string? guardianActivationTokenResult = null;
-            string? guardianEmailResult = null;
-            string? guardianFullNameResult = null;
-            string? guardianCodeResult = null;
-
-            if (guardianPortalEnabled)
-            {
-                var (guardian, activationTokenResult2) = await CreateGuardianAsync(applicationId, guardianPortalEnabled, guardianActivationEnabled, approvedBy, ct);
-                if (guardian != null)
+                if (guardianPortalEnabled)
                 {
-                    linkedGuardianId = guardian.Id;
-                    application.LinkedGuardianId = guardian.Id;
-                    guardianEmailResult = guardian.Email;
-                    guardianFullNameResult = guardian.FullName;
-                    guardianCodeResult = guardian.GuardianCode;
-                    guardianActivationTokenResult = activationTokenResult2;
+                    var (guardian, activationTokenResult2) = await CreateGuardianAsync(applicationId, guardianPortalEnabled, guardianActivationEnabled, approvedBy, ct);
+                    if (guardian != null)
+                    {
+                        linkedGuardianId = guardian.Id;
+                        application.LinkedGuardianId = guardian.Id;
+                        guardianEmailResult = guardian.Email;
+                        guardianFullNameResult = guardian.FullName;
+                        guardianCodeResult = guardian.GuardianCode;
+                        guardianActivationTokenResult = activationTokenResult2;
+                    }
                 }
-            }
-            else
-            {
-                application.LinkedGuardianId = null;
-            }
+                else
+                {
+                    application.LinkedGuardianId = null;
+                }
 
-            result.GuardianId = linkedGuardianId;
+                result.GuardianId = linkedGuardianId;
+                capturedGuardianId = linkedGuardianId;
 
-            if (linkedGuardianId.HasValue)
-            {
-                await LogWorkflowTransitionAsync(applicationId, WorkflowState.GuardianCreation, approvedBy, $"Guardian {linkedGuardianId} linked", ct);
-            }
+                if (linkedGuardianId.HasValue)
+                {
+                    await LogWorkflowTransitionAsync(applicationId, WorkflowState.GuardianCreation, approvedBy, $"Guardian {linkedGuardianId} linked", ct);
+                }
 
-            // Step 10: Create student
-            int studentId = await CreateStudentAsync(applicationId, sectionId, studentGroupId, rollNumber, pendingUser.Id, approvedBy, ct);
-            result.StudentId = studentId;
-            result.StudentNo = pendingUser.UserName;
+                int studentId = await CreateStudentAsync(applicationId, sectionId, studentGroupId, rollNumber, pendingUser.Id, approvedBy, ct);
+                result.StudentId = studentId;
+                result.StudentNo = pendingUser.UserName;
+                capturedStudentId = studentId;
+                className = schoolClass?.Name ?? $"Class {application.AppliedClassId}";
+                sectionName = section?.Name ?? "N/A";
 
-            await LogWorkflowTransitionAsync(applicationId, WorkflowState.StudentCreation, approvedBy, $"Student {studentId} created", ct);
+                await LogWorkflowTransitionAsync(applicationId, WorkflowState.StudentCreation, approvedBy, $"Student {studentId} created", ct);
 
-            // Step 11: Mark application Converted
-            application.Status = AdmissionStatus.Converted;
-            application.ReviewedAt = DateTime.UtcNow;
-            if (int.TryParse(approvedBy, out var reviewerId)) application.ReviewedByUserId = reviewerId;
-            application.UpdatedBy = approvedBy;
-            application.UpdatedAt = DateTime.UtcNow;
-            _admissionRepository.Update(application);
-            await _unitOfWork.SaveChangesAsync(ct);
+                application.Status = AdmissionStatus.Converted;
+                application.ReviewedAt = DateTime.UtcNow;
+                if (int.TryParse(approvedBy, out var reviewerId)) application.ReviewedByUserId = reviewerId;
+                application.UpdatedBy = approvedBy;
+                application.UpdatedAt = DateTime.UtcNow;
+                _admissionRepository.Update(application);
+                await _unitOfWork.SaveChangesAsync(ct);
 
-            // Step 12: Create fee invoice
-            await CreateFeeInvoiceAsync(applicationId, studentId, approvedBy, ct);
+                await CreateFeeInvoiceAsync(applicationId, studentId, approvedBy, ct);
 
-            await LogWorkflowTransitionAsync(applicationId, WorkflowState.AdmissionCompleted, approvedBy, $"Conversion complete: student {studentId}", ct);
+                await LogWorkflowTransitionAsync(applicationId, WorkflowState.AdmissionCompleted, approvedBy, $"Conversion complete: student {studentId}", ct);
 
-            await _unitOfWork.CommitTransactionAsync(ct);
+                applicantName = application.ApplicantName;
+                applicationNo = application.ApplicationNo;
+                guardianName = application.GuardianName;
+                fatherName = application.FatherName;
+            }, ct);
+
             result.Success = true;
 
-            // Step 13: Send emails (outside transaction — fire and forget on failure)
-            if (!string.IsNullOrEmpty(pendingUser.Email))
+            if (!string.IsNullOrEmpty(pendingUserEmail))
             {
                 try
                 {
                     await _emailService.SendStudentActivationAsync(
-                        pendingUser.Email, application.ApplicantName, pendingUser.UserName, activationToken, ct);
+                        pendingUserEmail, applicantName ?? "", pendingUserName ?? "", activationToken ?? "", ct);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogWarning(ex, "Student activation email failed for {AppNo}", application.ApplicationNo);
+                    _logger.LogWarning(ex, "Student activation email failed for {AppNo}", applicationNo);
                 }
             }
 
@@ -213,7 +228,7 @@ public class ConversionPipelineService : IConversionPipelineService
                 {
                     await _emailService.SendGuardianActivationAsync(
                         guardianEmailResult,
-                        guardianFullNameResult ?? application.GuardianName ?? application.FatherName ?? "Guardian",
+                        guardianFullNameResult ?? guardianName ?? fatherName ?? "Guardian",
                         $"gdn-{(guardianCodeResult ?? "guardian").Replace("-", string.Empty)}",
                         guardianActivationTokenResult,
                         string.Empty,
@@ -221,13 +236,51 @@ public class ConversionPipelineService : IConversionPipelineService
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, "Guardian activation email failed for admission {AppNo}", application.ApplicationNo);
+                    _logger.LogError(ex, "Guardian activation email failed for admission {AppNo}", applicationNo);
+                }
+            }
+
+            // Send Welcome email (fire-and-forget)
+            if (!string.IsNullOrEmpty(pendingUserEmail) && capturedStudentId > 0)
+            {
+                try
+                {
+                    await _emailService.SendWelcomeEmailAsync(
+                        pendingUserEmail,
+                        applicantName ?? "Student",
+                        pendingUserName ?? "",
+                        capturedStudentId,
+                        className ?? "N/A",
+                        sectionName ?? "N/A",
+                        "",
+                        ct);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Welcome email failed for {AppNo}", applicationNo);
+                }
+            }
+
+            // Create Guardian notification (fire-and-forget)
+            if (capturedGuardianId.HasValue && capturedGuardianId.Value > 0)
+            {
+                try
+                {
+                    await _guardianService.CreateNotificationAsync(
+                        capturedGuardianId.Value,
+                        "Admission Approved",
+                        $"Your child {applicantName ?? "Student"} has been admitted to {className ?? "N/A"} - {sectionName ?? "N/A"}. Student ID: {pendingUserName ?? "N/A"}",
+                        "Admission",
+                        ct);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Guardian notification failed for admission {AppNo}", applicationNo);
                 }
             }
         }
         catch (Exception ex)
         {
-            await _unitOfWork.RollbackTransactionAsync(ct);
             result.Success = false;
             result.ErrorMessage = ex.Message;
         }

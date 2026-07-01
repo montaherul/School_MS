@@ -1119,6 +1119,11 @@ body {
     color: var(--adm-rejected);
 }
 
+.adm-badge--error {
+    background: var(--adm-rejected-bg);
+    color: var(--adm-rejected);
+}
+
 .adm-badge--warning {
     background: var(--adm-pending-bg);
     color: var(--adm-pending);
@@ -2576,6 +2581,117 @@ body {
 }
 
 /* ─────────────────────────────────────────────────────────────────
+    21j. ADM DETAILS HELPERS (replaces inline styles)
+    ───────────────────────────────────────────────────────────────── */
+.adm-details-name {
+    font-size: 20px;
+    font-weight: 700;
+    margin: 0 0 4px;
+    color: var(--adm-text);
+}
+.adm-details-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+    color: var(--adm-text-2);
+}
+.adm-details-meta strong {
+    font-weight: 700;
+}
+.adm-divider {
+    border: none;
+    border-top: 1px solid var(--adm-border);
+    margin: 16px 0;
+}
+.adm-divider--sm {
+    margin: 12px 0;
+}
+.adm-linked-guardian {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--adm-success);
+    font-size: 13px;
+    font-weight: 600;
+}
+.adm-guardian-photo-wrap {
+    text-align: center;
+    margin-bottom: 16px;
+}
+.adm-guardian-photo {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--adm-border);
+}
+.adm-details-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+.adm-card--spaced {
+    margin-top: 24px;
+}
+
+/* ── Delete Confirmation ── */
+.adm-delete-card {
+    max-width: 560px;
+    margin: 40px auto;
+}
+.adm-delete-body {
+    text-align: center;
+    padding: 40px 32px;
+}
+.adm-delete-title {
+    margin: 20px 0 8px;
+    font-size: 20px;
+    color: var(--adm-text);
+}
+.adm-delete-desc {
+    color: var(--adm-text-3);
+    margin-bottom: 24px;
+    line-height: 1.6;
+}
+.adm-delete-warning {
+    background: var(--adm-rejected-bg);
+    border: 1px solid rgba(220,38,38,0.12);
+    border-radius: var(--adm-radius);
+    padding: 16px;
+    margin-bottom: 24px;
+}
+.adm-delete-applicant {
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--adm-text);
+    margin: 0 0 4px;
+}
+.adm-delete-appno {
+    font-size: 13px;
+    color: var(--adm-text-3);
+    margin: 0;
+}
+.adm-delete-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+@media (max-width: 767px) {
+    .adm-details-2col {
+        grid-template-columns: 1fr;
+    }
+    .adm-delete-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .adm-delete-actions .adm-btn {
+        justify-content: center;
+    }
+}
+
+/* ─────────────────────────────────────────────────────────────────
     22. DASHBOARD COMPONENTS
     ───────────────────────────────────────────────────────────────── */
 
@@ -2634,6 +2750,11 @@ body {
     color: var(--adm-pending);
 }
 
+.dash-stat-card__icon--danger {
+    background: var(--adm-rejected-bg);
+    color: var(--adm-rejected);
+}
+
 .dash-stat-card__body {
     display: flex;
     flex-direction: column;
@@ -2660,6 +2781,52 @@ body {
 .dash-stat-card__unit {
     font-size: 18px;
     font-weight: 600;
+    color: var(--adm-text-3);
+}
+
+/* ── Compact stats grid (for inline widget rows) ── */
+.dash-stats--compact {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 10px;
+    margin-bottom: 0;
+}
+
+/* ── Mini stat card (smaller variant for widget panels) ── */
+.dash-stat-card--mini {
+    padding: 12px;
+    gap: 10px;
+    border-radius: var(--adm-radius);
+}
+
+    .dash-stat-card--mini .dash-stat-card__icon {
+        width: 36px;
+        height: 36px;
+    }
+
+    .dash-stat-card--mini .dash-stat-card__label {
+        font-size: 11px;
+    }
+
+    .dash-stat-card--mini .dash-stat-card__value {
+        font-size: 20px;
+    }
+
+    .dash-stat-card--mini .dash-stat-card__unit {
+        font-size: 14px;
+    }
+
+/* ── Panel footer (used inside dash-panel for summary lines) ── */
+.dash-panel__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    border-top: 1px solid var(--adm-border);
+    font-size: 12px;
+    gap: 12px;
+}
+
+.dash-text-muted {
     color: var(--adm-text-3);
 }
 
@@ -3412,6 +3579,61 @@ body {
     background: transparent !important;
     padding: 0 !important;
 }
+
+/* ─────────────────────────────────────────────────────────────────
+    18b. EXECUTIVE DASHBOARD COMPONENTS
+   ───────────────────────────────────────────────────────────────── */
+
+.dash-stat-card__icon--teal { background: rgba(13,148,136,.1); color: var(--adm-converted); }
+.dash-stat-card__icon--danger { background: rgba(239,68,68,.1); color: var(--adm-rejected); }
+.dash-panel--wide { grid-column: 1 / -1; }
+
+/* Academic Assignment Grid */
+.dash-assign-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 16px; }
+.dash-assign-card { background: var(--adm-surface); border: 1px solid var(--adm-border); border-radius: var(--adm-radius-lg); padding: 16px; }
+.dash-assign-card__label { display: block; font-size: 13px; font-weight: 600; color: var(--adm-text); margin-bottom: 10px; text-transform: uppercase; letter-spacing: .03em; }
+.dash-assign-card__row { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--adm-text-light); }
+.dash-assign-card__row strong { color: var(--adm-text); font-weight: 600; }
+@media (max-width: 575px) { .dash-assign-grid { grid-template-columns: 1fr; } }
+
+/* Examination & Results Cards */
+.dash-exam-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; padding: 16px; }
+.dash-exam-card { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 20px 12px; background: var(--adm-surface); border: 1px solid var(--adm-border); border-radius: var(--adm-radius-lg); text-decoration: none; color: var(--adm-text); transition: border-color .15s, box-shadow .15s, transform .15s; text-align: center; }
+.dash-exam-card:hover { border-color: var(--adm-primary); box-shadow: var(--adm-shadow-md); transform: translateY(-2px); }
+.dash-exam-card__icon { display: flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: var(--adm-radius-lg); }
+.dash-exam-card__icon--primary { background: rgba(15,118,110,.1); color: var(--adm-primary); }
+.dash-exam-card__icon--success { background: rgba(16,185,129,.1); color: var(--adm-converted); }
+.dash-exam-card__icon--warning { background: rgba(245,158,11,.1); color: var(--adm-pending); }
+.dash-exam-card__icon--info { background: rgba(59,130,246,.1); color: var(--adm-info); }
+.dash-exam-card__icon--danger { background: rgba(239,68,68,.1); color: var(--adm-rejected); }
+.dash-exam-card__title { font-size: 13px; font-weight: 600; color: var(--adm-text); }
+.dash-exam-card__desc { font-size: 11px; color: var(--adm-text-light); line-height: 1.4; }
+@media (max-width: 991px) { .dash-exam-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 575px) { .dash-exam-grid { grid-template-columns: 1fr; } }
+
+/* Calendar Widgets */
+.dash-calendar-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 16px; }
+.dash-calendar-card { background: var(--adm-surface); border: 1px solid var(--adm-border); border-radius: var(--adm-radius-lg); overflow: hidden; }
+.dash-calendar-card__header { display: flex; align-items: center; gap: 6px; padding: 10px 14px; font-size: 12px; font-weight: 600; color: #fff; text-transform: uppercase; letter-spacing: .04em; }
+.dash-calendar-card__header--danger { background: var(--adm-rejected); }
+.dash-calendar-card__header--warning { background: var(--adm-pending); color: #000; }
+.dash-calendar-card__header--purple { background: #7c3aed; }
+.dash-calendar-card__header--primary { background: var(--adm-primary); }
+.dash-calendar-card__body { padding: 12px 14px; min-height: 120px; font-size: 12px; }
+.dash-calendar-list { list-style: none; margin: 0; padding: 0; }
+.dash-calendar-item { display: flex; flex-direction: column; gap: 2px; padding: 8px 0; border-bottom: 1px solid var(--adm-border-light); }
+.dash-calendar-item:last-child { border-bottom: none; }
+.dash-calendar-item strong { font-size: 12px; font-weight: 600; color: var(--adm-text); }
+.dash-calendar-item span { font-size: 11px; color: var(--adm-text-light); }
+.dash-calendar-item--success strong { color: var(--adm-converted); }
+.dash-calendar-item--danger strong { color: var(--adm-rejected); }
+.dash-calendar-item--warning strong { color: var(--adm-pending); }
+.dash-calendar-empty { padding: 20px 0; text-align: center; font-size: 12px; color: var(--adm-text-light); }
+.dash-spinner { width: 20px; height: 20px; border: 2px solid var(--adm-border); border-top-color: var(--adm-primary); border-radius: 50%; animation: dash-spin .6s linear infinite; margin: 20px auto; }
+@keyframes dash-spin { to { transform: rotate(360deg); } }
+@media (max-width: 991px) { .dash-calendar-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 575px) { .dash-calendar-grid { grid-template-columns: 1fr; } }
+
 /* ─────────────────────────────────────────────────────────────────
     26. (reserved)
    ───────────────────────────────────────────────────────────────── */
@@ -3676,6 +3898,54 @@ body {
   height: 14px;
 }
 
+/* Review panel */
+.ws-review {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.ws-review-section {
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.ws-review-section-title {
+  background: var(--clr-canvas);
+  margin: 0;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--clr-text);
+  border-bottom: 1px solid var(--clr-border);
+}
+
+.ws-review-row {
+  display: grid;
+  grid-template-columns: 160px 1fr;
+  gap: 8px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--clr-border);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.ws-review-row:last-child {
+  border-bottom: none;
+}
+
+.ws-review-label {
+  color: var(--clr-text-muted);
+  font-weight: 600;
+}
+
+.ws-review-value {
+  color: var(--clr-text);
+  font-weight: 500;
+  word-break: break-word;
+}
+
 /* Upload zone */
 .adm-upload-zone {
   border: 2px dashed var(--clr-border);
@@ -3846,4 +4116,539 @@ body {
   .adm-wizard__actions-right .adm-btn { width: 100%; }
   .adm-photo-upload { flex-direction: column; align-items: center; }
   .adm-wizard__panel-header { flex-direction: column; align-items: flex-start; gap: 4px; }
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   22. ADMISSION DASHBOARD VARIANTS
+   ───────────────────────────────────────────────────────────────── */
+
+/* Gradient KPI cards */
+.dash-stat-card--gradient {
+    flex-direction: column;
+    text-align: center;
+    border: none;
+    color: #fff;
+}
+
+.dash-stat-card--gradient .dash-stat-card__label,
+.dash-stat-card--gradient .dash-stat-card__value {
+    color: inherit;
+}
+
+.dash-stat-card--gradient .dash-stat-card__label {
+    font-size: 13px;
+    opacity: .85;
+    text-transform: none;
+    letter-spacing: normal;
+}
+
+.dash-stat-card--blue {
+    background: linear-gradient(135deg, #1e40af, #3b82f6);
+}
+
+.dash-stat-card--teal {
+    background: linear-gradient(135deg, #0f766e, #14b8a6);
+}
+
+.dash-stat-card--purple {
+    background: linear-gradient(135deg, #6d28d9, #8b5cf6);
+}
+
+.dash-stat-card--amber {
+    background: linear-gradient(135deg, #b45309, #f59e0b);
+}
+
+.dash-stat-card--red {
+    background: linear-gradient(135deg, #991b1b, #ef4444);
+}
+
+.dash-stat-card--indigo {
+    background: linear-gradient(135deg, #6b21a8, #a855f7);
+}
+
+/* Status cards with colored left border */
+.dash-stat-card--border-warning {
+    border-left: 4px solid #f59e0b;
+}
+
+.dash-stat-card--border-info {
+    border-left: 4px solid #3b82f6;
+}
+
+.dash-stat-card--border-danger {
+    border-left: 4px solid #ef4444;
+}
+
+.dash-stat-card--border-success {
+    border-left: 4px solid #10b981;
+}
+
+.dash-stat-card--status {
+    padding: 16px;
+}
+
+.dash-stat-card--status .dash-stat-card__label {
+    color: #6b7280;
+}
+
+.dash-stat-card--status .dash-stat-card__value {
+    font-size: 24px;
+}
+
+.dash-stat-card--status.dash-stat-card--border-warning .dash-stat-card__value {
+    color: #92400e;
+}
+
+.dash-stat-card--status.dash-stat-card--border-info .dash-stat-card__value {
+    color: #1e40af;
+}
+
+.dash-stat-card--status.dash-stat-card--border-danger .dash-stat-card__value {
+    color: #991b1b;
+}
+
+.dash-stat-card--status.dash-stat-card--border-success .dash-stat-card__value {
+    color: #065f46;
+}
+
+/* Revenue mini-cards */
+.rev-card {
+    border-radius: 8px;
+    padding: 14px;
+}
+
+.rev-card__title {
+    font-size: 12px;
+    color: var(--adm-text-3);
+}
+
+.rev-card__value {
+    font-size: 20px;
+    font-weight: 700;
+}
+
+.rev-card--success {
+    background: #f0fdf4;
+}
+
+.rev-card--success .rev-card__value {
+    color: #065f46;
+}
+
+.rev-card--warning {
+    background: #fef3c7;
+}
+
+.rev-card--warning .rev-card__value {
+    color: #92400e;
+}
+
+.rev-card--info {
+    background: #eff6ff;
+}
+
+.rev-card--info .rev-card__value {
+    color: #1e40af;
+}
+
+.rev-card--muted {
+    background: #fafafa;
+}
+
+.rev-card--muted .rev-card__value {
+    color: var(--adm-text);
+}
+
+/* Chart section heading */
+.chart-heading {
+    margin: 0 0 16px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--adm-text);
+}
+
+/* Grid column variants */
+.dash-grid {
+    display: grid;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.dash-grid--2 {
+    grid-template-columns: 1fr 1fr;
+}
+
+.dash-grid--3 {
+    grid-template-columns: 1fr 1fr 1fr;
+}
+
+.dash-grid--2-1 {
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+}
+
+.dash-grid--rev-2 {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.dash-grid--rev-2-last {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+@media (max-width: 992px) {
+    .dash-grid--2,
+    .dash-grid--3,
+    .dash-grid--2-1 {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 600px) {
+    .dash-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .dash-grid--2,
+    .dash-grid--3 {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Table cell modifiers */
+.adm-table th,
+.adm-table td {
+    padding: 10px 12px;
+}
+
+.adm-table th--left {
+    text-align: left;
+}
+
+.adm-table th--right,
+.adm-table td--right {
+    text-align: right;
+}
+
+.adm-table td--fw {
+    font-weight: 600;
+}
+
+.adm-table td--fw700 {
+    font-weight: 700;
+}
+
+/* Scrollable container */
+.scroll-y {
+    overflow-y: auto;
+}
+
+.scroll-y--300 {
+    max-height: 300px;
+}
+
+.scroll-y--360 {
+    max-height: 360px;
+}
+
+/* JS-generated row style */
+.js-row {
+    border-bottom: 1px solid #f3f4f6;
+}
+
+/* Analytics funnel bar */
+.funnel-bar {
+    margin-bottom: 8px;
+}
+
+.funnel-bar__row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2px;
+}
+
+.funnel-bar__label {
+    font-size: 13px;
+}
+
+.funnel-bar__value {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.funnel-bar__track {
+    height: 24px;
+    background: #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+    display: flex;
+}
+
+.funnel-bar__fill {
+    height: 100%;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    padding-left: 6px;
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    transition: width 0.3s;
+}
+
+.funnel-rate {
+    margin-top: 12px;
+    padding: 10px;
+    background: #f0fdf4;
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.funnel-rate__label {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.funnel-rate__value {
+    font-size: 16px;
+    font-weight: 700;
+    color: #065f46;
+}
+
+/* JsTable row */
+.js-table td {
+    padding: 8px 12px;
+}
+
+.js-table td--right {
+    text-align: right;
+    font-weight: 600;
+}
+
+/* Progress bar */
+.progress-bar {
+    height: 8px;
+    background: var(--adm-border);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 16px;
+}
+
+.progress-bar__fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--adm-success), var(--adm-primary));
+    border-radius: 4px;
+    transition: width 0.5s;
+}
+
+/* KPI mini grid */
+.kpi-mini {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.kpi-mini__item {
+    flex-direction: column;
+    text-align: center;
+    padding: 16px;
+}
+
+.kpi-mini__label {
+    font-size: 12px;
+    color: var(--adm-text-3);
+    font-weight: 600;
+}
+
+.kpi-mini__value {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--adm-text);
+}
+
+.kpi-mini__value--success {
+    color: var(--adm-success);
+}
+
+.kpi-mini__value--danger {
+    color: var(--adm-rejected);
+}
+
+/* Section heading */
+.section-heading {
+    font-size: 14px;
+    font-weight: 600;
+    margin: 20px 0 12px;
+    color: var(--adm-text);
+}
+
+.section-heading--first {
+    margin: 0 0 12px;
+}
+
+/* Full width button */
+.adm-btn--full {
+    width: 100%;
+}
+
+/* Admission table badge */
+.adm-badge--sm {
+    font-size: 12px;
+}
+
+.adm-badge--md {
+    font-size: 13px;
+    padding: 6px 14px;
+}
+
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: 40px;
+    color: var(--adm-text-3);
+}
+
+.empty-state--compact {
+    text-align: center;
+    padding: 20px;
+    color: var(--adm-text-3);
+}
+
+/* Input addon */
+.adm-input-wrap__addon--fw {
+    font-weight: 600;
+}
+
+/* Installment table */
+.adm-table--flush {
+    margin: 0;
+}
+
+.adm-table--striped tbody tr:nth-child(even) {
+    background: var(--adm-surface-2);
+}
+
+/* Link utility */
+.adm-link {
+    color: var(--adm-primary);
+    text-decoration: none;
+    transition: color .15s;
+}
+.adm-link:hover {
+    color: var(--adm-primary-hover, var(--adm-primary));
+    text-decoration: underline;
+}
+
+/* Loading state */
+.loading-state {
+    color: var(--adm-text-3);
+    text-align: center;
+    padding: 40px 0;
+}
+
+/* Funnel container spacing */
+#funnelContainer .funnel-bar:last-child {
+    margin-bottom: 0;
+}
+
+/* ═══════════════════════════════════════════
+   Executive KPI Strip
+   ═══════════════════════════════════════════ */
+.dash-exec-kpis {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.dash-exec-kpi {
+    background: var(--adm-surface);
+    border: 1px solid var(--adm-border);
+    border-radius: var(--adm-radius);
+    padding: 14px 12px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    border-top: 3px solid var(--adm-primary);
+}
+
+.dash-exec-kpi--success { border-top-color: var(--adm-success); }
+.dash-exec-kpi--primary { border-top-color: var(--adm-primary); }
+.dash-exec-kpi--warning { border-top-color: var(--adm-pending); }
+.dash-exec-kpi--danger  { border-top-color: var(--adm-rejected); }
+.dash-exec-kpi--info    { border-top-color: var(--adm-converted); }
+
+.dash-exec-kpi__value {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--adm-text);
+    line-height: 1.1;
+}
+
+.dash-exec-kpi__label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--adm-text-3);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* ═══════════════════════════════════════════
+   Executive Alerts
+   ═══════════════════════════════════════════ */
+.dash-alerts {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.dash-alert {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--adm-border);
+    font-size: 13px;
+}
+
+.dash-alert:last-child {
+    border-bottom: none;
+}
+
+.dash-alert__icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
+
+.dash-alert__msg {
+    color: var(--adm-text);
+    line-height: 1.4;
+}
+
+.dash-alert--danger .dash-alert__icon { color: var(--adm-rejected); }
+.dash-alert--warning .dash-alert__icon { color: var(--adm-pending); }
+.dash-alert--success .dash-alert__icon { color: var(--adm-success); }
+
+.dash-alert--danger { background: var(--adm-rejected-bg); }
+.dash-alert--warning { background: var(--adm-pending-bg); }
+.dash-alert--success { background: var(--adm-success-bg); }
+
+@media (max-width: 1199px) {
+    .dash-exec-kpis {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (max-width: 767px) {
+    .dash-exec-kpis {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .dash-exec-kpi__value {
+        font-size: 18px;
+    }
 }

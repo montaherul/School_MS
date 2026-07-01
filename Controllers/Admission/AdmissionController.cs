@@ -48,6 +48,16 @@ public class AdmissionController : Controller
         return View(new AdmissionCreateDto { DateOfBirth = DateTime.Today.AddYears(-6) });
     }
 
+    [HttpGet("ApplySuccess")]
+    [AllowAnonymous]
+    public IActionResult ApplySuccess()
+    {
+        ViewBag.ApplicationNo = TempData["ApplicationNo"] as string;
+        if (string.IsNullOrEmpty(ViewBag.ApplicationNo))
+            return RedirectToAction("Apply");
+        return View();
+    }
+
     [HttpPost]
     [AllowAnonymous]
     [ValidateAntiForgeryToken]
@@ -66,11 +76,12 @@ public class AdmissionController : Controller
             // Anonymous applications are attributed to "Public_Applicant" or "System"
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "Public_Applicant";
             string applicationNo = await _admissionService.SubmitAsync(model, userId, ct);
-            ViewBag.ApplicationNo = applicationNo;
-            return View("ApplySuccess");
+            TempData["ApplicationNo"] = applicationNo;
+            return RedirectToAction(nameof(ApplySuccess));
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Admission Apply failed");
             ModelState.AddModelError(string.Empty, ex.Message);
             ViewBag.Classes = await _admissionService.GetAvailableClassesAsync(ct);
             ViewBag.StudentGroups = await _admissionService.GetActiveStudentGroupsAsync(ct);
@@ -179,6 +190,10 @@ public class AdmissionController : Controller
     {
         var application = await _admissionService.GetByIdAsync(id, ct);
         if (application == null) return NotFound();
+        var classes = await _admissionService.GetAvailableClassesAsync(ct);
+        ViewBag.ClassLookup = classes.ToDictionary(
+            c => (int)c.GetType().GetProperty("Id")!.GetValue(c)!,
+            c => (string)c.GetType().GetProperty("Name")!.GetValue(c)!);
         return View(application);
     }
 
@@ -464,9 +479,17 @@ public class AdmissionController : Controller
         }
     }
 
-    [HttpGet]
+    [HttpGet("Finance")]
     [RequirePermission("Admission.Finance")]
-    public async Task<IActionResult> Finance(int id, CancellationToken ct)
+    public async Task<IActionResult> Finance(CancellationToken ct)
+    {
+        var summaries = await _admissionFinanceService.GetAllFeeSummariesAsync(ct);
+        return View(summaries);
+    }
+
+    [HttpGet("Finance/{id:int}")]
+    [RequirePermission("Admission.Finance")]
+    public async Task<IActionResult> FinanceDetail(int id, CancellationToken ct)
     {
         var application = await _admissionService.GetByIdAsync(id, ct);
         if (application == null) return NotFound();

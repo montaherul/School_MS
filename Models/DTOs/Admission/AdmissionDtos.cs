@@ -3,7 +3,7 @@ using SchoolManagementSystem.Models.Enums;
 
 namespace SchoolManagementSystem.Models.DTOs.Admission;
 
-public class AdmissionCreateDto
+public class AdmissionCreateDto : IValidatableObject
 {
         [Required, MaxLength(120)]
         public string ApplicantName { get; set; } = string.Empty;
@@ -72,13 +72,17 @@ public class AdmissionCreateDto
         [MaxLength(30)]
         public string? AlternativeNumber { get; set; }
 
-        [EmailAddress]
+        [Required, EmailAddress]
         public string? ApplicantEmail { get; set; }
 
         // Identity
+        [Required]
         public string Nationality { get; set; } = "Bangladeshi";
+        [Required]
         public string Country { get; set; } = "Bangladesh";
+        [Required]
         public string MaritalStatus { get; set; } = string.Empty;
+        [Required]
         public string Religion { get; set; } = string.Empty;
         public string? BloodGroup { get; set; }
         public string? BirthCertificateNo { get; set; }
@@ -93,19 +97,37 @@ public class AdmissionCreateDto
         public string? PaymentSlipPath { get; set; }
         public IFormFile? PaymentSlipFile { get; set; }
 
+        [Required, Range(1, int.MaxValue, ErrorMessage = "Please select a valid class.")]
         public int AppliedClassId { get; set; }
         public int? AppliedStudentGroupId { get; set; }
         // Present
         public string? PresentVillage { get; set; }
+        [Required]
         public string? PresentPostOffice { get; set; }
+        [Required]
         public string? PresentThana { get; set; }
+        [Required]
         public string? PresentDistrict { get; set; }
 
         // Permanent
         public string? PermanentVillage { get; set; }
+        [Required]
         public string? PermanentPostOffice { get; set; }
+        [Required]
         public string? PermanentThana { get; set; }
+        [Required]
         public string? PermanentDistrict { get; set; }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (!string.IsNullOrWhiteSpace(GuardianEmail) && !string.IsNullOrWhiteSpace(ApplicantEmail)
+            && string.Equals(GuardianEmail, ApplicantEmail, StringComparison.OrdinalIgnoreCase))
+        {
+            yield return new ValidationResult(
+                "Guardian email must not be the same as applicant email.",
+                new[] { nameof(GuardianEmail), nameof(ApplicantEmail) });
+        }
+    }
 }
 
 public class AdmissionDecisionDto

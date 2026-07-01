@@ -10,5 +10,6 @@ public interface IEmailService
     Task SendPasswordResetAsync(string toEmail, string userName, string otp, CancellationToken cancellationToken = default);
     Task SendAttendanceNotificationAsync(string toEmail, string studentName, string rollNumber, string className, string sectionName, DateOnly attendanceDate, string schoolName, CancellationToken cancellationToken = default);
     Task SendGuardianActivationAsync(string toEmail, string guardianName, string userName, string token, string activationBaseUrl, CancellationToken cancellationToken = default);
+    Task SendWelcomeEmailAsync(string toEmail, string studentName, string userName, int studentId, string className, string sectionName, string portalUrl, CancellationToken cancellationToken = default);
 }
 

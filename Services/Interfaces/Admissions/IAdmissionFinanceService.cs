@@ -4,6 +4,7 @@ namespace SchoolManagementSystem.Services.Interfaces.Admissions;
 
 public interface IAdmissionFinanceService
 {
+    Task<List<AdmissionFeeSummaryListItemDto>> GetAllFeeSummariesAsync(CancellationToken ct = default);
     Task<AdmissionFeeSummaryDto> GetFeeSummaryAsync(int applicationId, CancellationToken ct = default);
     Task<AdmissionPaymentHistoryDto> RecordPaymentAsync(AdmissionFeePaymentRequest request, string receivedBy, CancellationToken ct = default);
     Task<bool> ApplyScholarshipAsync(int applicationId, decimal percentage, string? description, string appliedBy, CancellationToken ct = default);

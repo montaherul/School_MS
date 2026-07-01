@@ -1,23 +1,100 @@
 @{
     ViewData["Title"] = "Application Submitted";
     Layout = "_PublicLayout";
+    var appNo = ViewBag.ApplicationNo as string ?? "N/A";
 }
 
-<div class="adm-page" style="max-width:560px;margin:60px auto;padding:0 20px;">
-    <div class="adm-card" style="text-align:center;padding:60px 40px;">
-        <div style="width:80px;height:80px;border-radius:50%;background:var(--adm-success-bg);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--adm-success)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+<div class="ws-page-hero">
+    <div class="ws-container ws-text-center">
+        <div class="ws-flex-center ws-mb-5">
+            <div class="ws-icon-circle ws-icon-circle--success" style="width:80px;height:80px;">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
         </div>
-        <h2 style="margin:0 0 8px;font-size:24px;color:var(--adm-text);font-weight:700;">Application Submitted!</h2>
-        <p style="color:var(--adm-text-3);margin:0 0 24px;font-size:15px;line-height:1.6;">Thank you for applying. Your application has been successfully received and is currently under review.</p>
-        <div style="background:var(--adm-surface-2);border:1px solid var(--adm-border);border-radius:var(--adm-radius-lg);padding:24px;margin-bottom:24px;">
-            <p style="color:var(--adm-text-3);margin:0 0 4px;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;">Your Application Number</p>
-            <p style="font-size:28px;font-weight:800;color:var(--adm-primary);letter-spacing:1px;margin:0;">@ViewBag.ApplicationNo</p>
+        <h1 class="ws-title-hero ws-mb-2">Application Submitted!</h1>
+        <p class="ws-text-muted ws-fs-17 ws-mb-6 ws-lh-lg">Thank you for applying. Your application has been successfully received.</p>
+        <div class="ws-card ws-card--highlighted ws-mx-auto ws-max-w-560 ws-mb-6">
+            <div class="ws-card__body ws-text-center ws-p-6">
+                <p class="ws-text-muted ws-fs-12 ws-fw-600 ws-text-uppercase ws-tracked ws-mb-2">Your Application Number</p>
+                <p class="ws-fs-32 ws-fw-800 ws-text-primary ws-tracked-1 ws-mb-0" id="appNo">@appNo</p>
+            </div>
         </div>
-        <p style="color:var(--adm-text-3);font-size:14px;margin:0 0 24px;line-height:1.6;">Please save this number for future reference. A confirmation has been sent to your registered email.</p>
-        <a href="/" class="adm-btn adm-btn--primary adm-btn--lg" style="border-radius:var(--adm-radius-xl);padding:14px 40px;">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-            Back to Home
-        </a>
     </div>
 </div>
+
+<section class="ws-section">
+    <div class="ws-container ws-max-w-720">
+        <h2 class="ws-title-section ws-text-center ws-mb-6">Next Steps</h2>
+        <div class="ws-timeline ws-mb-8">
+            <div class="ws-timeline__item">
+                <div class="ws-timeline__marker ws-bg-accent"></div>
+                <div class="ws-timeline__content">
+                    <h4 class="ws-fw-700 ws-mb-1">Step 1: Document Verification</h4>
+                    <p class="ws-text-muted ws-fs-14">Our admissions team will review your documents. This typically takes 3-5 business days.</p>
+                </div>
+            </div>
+            <div class="ws-timeline__item">
+                <div class="ws-timeline__marker ws-bg-accent"></div>
+                <div class="ws-timeline__content">
+                    <h4 class="ws-fw-700 ws-mb-1">Step 2: Application Review</h4>
+                    <p class="ws-text-muted ws-fs-14">Your application will be evaluated based on the provided information and document submissions.</p>
+                </div>
+            </div>
+            <div class="ws-timeline__item">
+                <div class="ws-timeline__marker ws-bg-accent"></div>
+                <div class="ws-timeline__content">
+                    <h4 class="ws-fw-700 ws-mb-1">Step 3: Interview (if applicable)</h4>
+                    <p class="ws-text-muted ws-fs-14">Some classes require an interview. You will be notified via email or phone if one is needed.</p>
+                </div>
+            </div>
+            <div class="ws-timeline__item">
+                <div class="ws-timeline__marker ws-bg-accent"></div>
+                <div class="ws-timeline__content">
+                    <h4 class="ws-fw-700 ws-mb-1">Step 4: Admission Decision</h4>
+                    <p class="ws-text-muted ws-fs-14">Once reviewed, you will receive the admission decision via email. Check your inbox regularly.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="ws-card ws-card--bordered ws-p-6 ws-mb-8" style="background:var(--ws-surface-2);">
+            <div class="ws-row ws-g-3 ws-items-center ws-justify-center">
+                <div class="ws-col-auto">
+                    <button type="button" class="ws-btn ws-btn--outline ws-btn--sm" onclick="window.print()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:6px;"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                        Print
+                    </button>
+                </div>
+                <div class="ws-col-auto">
+                    <button type="button" class="ws-btn ws-btn--outline ws-btn--sm" onclick="copyAppNo()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:6px;"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                        Copy Number
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="ws-text-center">
+            <p class="ws-text-muted ws-fs-14 ws-mb-4">A confirmation email has been sent to your registered email address.</p>
+            <a href="/" class="ws-btn ws-btn--primary ws-btn--lg">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:6px;"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+                Back to Home
+            </a>
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        function copyAppNo() {
+            var appNo = document.getElementById('appNo');
+            if (appNo && navigator.clipboard) {
+                navigator.clipboard.writeText(appNo.textContent).then(function () {
+                    var btn = event.target.closest('button');
+                    var orig = btn.innerHTML;
+                    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" style="margin-right:6px;"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+                    setTimeout(function () { btn.innerHTML = orig; }, 2000);
+                });
+            }
+        }
+    </script>
+}

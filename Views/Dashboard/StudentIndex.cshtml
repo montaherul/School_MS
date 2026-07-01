@@ -10,30 +10,13 @@
 <div class="adm-page">
 
     <!-- HERO -->
-    <div class="adm-table-card mb-4"
-         style="border-top:1px solid var(--adm-border); border-radius:var(--adm-radius-lg); overflow:hidden;">
+    <div class="adm-table-card mb-4">
 
-        <div style="
-            background:linear-gradient(135deg,var(--clr-primary),#3b82f6);
-            color:#fff;
-            padding:32px;">
+        <div class="dash-hero-gradient">
 
-            <div style="
-                display:flex;
-                align-items:center;
-                gap:24px;
-                flex-wrap:wrap;">
+            <div class="dash-hero-flex">
 
-                <div style="
-                    width:72px;
-                    height:72px;
-                    border-radius:50%;
-                    background:rgba(255,255,255,0.15);
-                    display:flex;
-                    align-items:center;
-                    justify-content:center;
-                    font-size:32px;
-                    flex-shrink:0;">
+                <div class="dash-hero-avatar">
 
                     <i class="bi bi-person-badge"></i>
 
@@ -41,21 +24,13 @@
 
                 <div>
 
-                    <h2 style="
-                        margin:0 0 8px;
-                        font-size:28px;
-                        font-weight:800;">
+                    <h2 class="dash-hero-name">
 
                         Welcome, @Model.FullName
 
                     </h2>
 
-                    <div style="
-                        display:flex;
-                        flex-wrap:wrap;
-                        gap:10px;
-                        color:rgba(255,255,255,0.8);
-                        font-size:13px;">
+                    <div class="dash-hero-details">
 
                         <span>ID: @Model.StudentNo</span>
 
@@ -93,8 +68,8 @@
         <div style="margin-bottom:28px;">
             @foreach (var alert in Model.Alerts)
             {
-                <div style="background:#fff5f5;border-left:5px solid #ef4444;border-radius:8px;padding:16px 20px;margin-bottom:12px;display:flex;align-items:center;gap:16px;color:#b91c1c;font-size:14px;font-weight:500;box-shadow:0 2px 8px rgba(239,68,68,0.08);">
-                    <i class="bi bi-exclamation-triangle-fill" style="font-size:20px;color:#ef4444;"></i>
+                <div class="dash-alert dash-alert--danger">
+                    <i class="bi bi-exclamation-triangle-fill dash-alert__icon"></i>
                     <div>@alert</div>
                 </div>
             }
@@ -309,7 +284,7 @@
             </h5>
         </div>
         <div class="p-4">
-            <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px;">
+            <div style="overflow-x:auto;"><div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; min-width:560px;">
                 @for (int i = 1; i <= DateTime.DaysInMonth(DateTime.Now.Year, DateTime.Now.Month); i++)
                 {
                     var date = new DateTime(DateTime.Now.Year, DateTime.Now.Month, i);
@@ -340,7 +315,7 @@
                         }
                     </div>
                 }
-            </div>
+            </div></div>
         </div>
     </div>
 
@@ -354,7 +329,7 @@
                     </h5>
                 </div>
                 <div class="p-4" style="text-align:center;">
-                    <div style="position:relative;width:220px;height:220px;margin:0 auto;">
+                    <div class="dash-chart-container">
                         <canvas id="studentAttChart" width="220" height="220"></canvas>
                         <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;">
                             <span style="font-size:32px;font-weight:800;color:#0f172a;line-height:1;">@Model.AttendancePercentage%</span>
@@ -1188,7 +1163,7 @@
                     },
                     options: {
                         cutout: '72%',
-                        responsive: false,
+                        responsive: true,
                         plugins: {
                             legend: { display: true, position: 'bottom', labels: { usePointStyle: true, padding: 16, font: { size: 11 } } },
                             tooltip: { callbacks: { label: function(ctx) { return ' ' + ctx.label + ': ' + ctx.parsed + ' days'; } } }

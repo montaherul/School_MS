@@ -27,79 +27,79 @@
 
     <!-- KPI Cards -->
     <div class="dash-stats">
-        <div class="dash-stat-card" style="background:linear-gradient(135deg,#1e40af,#3b82f6);color:#fff;border:none;flex-direction:column;text-align:center;padding:20px;">
-            <div style="font-size:13px;opacity:.85;">Today's Applications</div>
-            <div class="dash-stat-card__value" id="kpi-today" style="color:#fff;">—</div>
+        <div class="dash-stat-card dash-stat-card--gradient dash-stat-card--blue">
+            <div class="dash-stat-card__label">Today's Applications</div>
+            <div class="dash-stat-card__value" id="kpi-today">—</div>
         </div>
-        <div class="dash-stat-card" style="background:linear-gradient(135deg,#0f766e,#14b8a6);color:#fff;border:none;flex-direction:column;text-align:center;padding:20px;">
-            <div style="font-size:13px;opacity:.85;">This Week</div>
-            <div class="dash-stat-card__value" id="kpi-week" style="color:#fff;">—</div>
+        <div class="dash-stat-card dash-stat-card--gradient dash-stat-card--teal">
+            <div class="dash-stat-card__label">This Week</div>
+            <div class="dash-stat-card__value" id="kpi-week">—</div>
         </div>
-        <div class="dash-stat-card" style="background:linear-gradient(135deg,#6d28d9,#8b5cf6);color:#fff;border:none;flex-direction:column;text-align:center;padding:20px;">
-            <div style="font-size:13px;opacity:.85;">This Month</div>
-            <div class="dash-stat-card__value" id="kpi-month" style="color:#fff;">—</div>
+        <div class="dash-stat-card dash-stat-card--gradient dash-stat-card--purple">
+            <div class="dash-stat-card__label">This Month</div>
+            <div class="dash-stat-card__value" id="kpi-month">—</div>
         </div>
-        <div class="dash-stat-card" style="background:linear-gradient(135deg,#b45309,#f59e0b);color:#fff;border:none;flex-direction:column;text-align:center;padding:20px;">
-            <div style="font-size:13px;opacity:.85;">Conversion Rate</div>
-            <div class="dash-stat-card__value" id="kpi-conversion" style="color:#fff;">—</div>
+        <div class="dash-stat-card dash-stat-card--gradient dash-stat-card--amber">
+            <div class="dash-stat-card__label">Conversion Rate</div>
+            <div class="dash-stat-card__value" id="kpi-conversion">—</div>
         </div>
     </div>
 
     <!-- Status Breakdown Cards -->
-    <div class="dash-stats" style="grid-template-columns:repeat(4,1fr);">
-        <div class="dash-stat-card" style="padding:16px;border-left:4px solid #f59e0b;">
+    <div class="dash-stats">
+        <div class="dash-stat-card dash-stat-card--status dash-stat-card--border-warning">
             <div class="dash-stat-card__body">
-                <span class="dash-stat-card__label" style="color:#6b7280;">Pending</span>
-                <span class="dash-stat-card__value" id="stat-pending" style="font-size:24px;color:#92400e;">—</span>
+                <span class="dash-stat-card__label">Pending</span>
+                <span class="dash-stat-card__value" id="stat-pending">—</span>
             </div>
         </div>
-        <div class="dash-stat-card" style="padding:16px;border-left:4px solid #3b82f6;">
+        <div class="dash-stat-card dash-stat-card--status dash-stat-card--border-info">
             <div class="dash-stat-card__body">
-                <span class="dash-stat-card__label" style="color:#6b7280;">Approved</span>
-                <span class="dash-stat-card__value" id="stat-approved" style="font-size:24px;color:#1e40af;">—</span>
+                <span class="dash-stat-card__label">Approved</span>
+                <span class="dash-stat-card__value" id="stat-approved">—</span>
             </div>
         </div>
-        <div class="dash-stat-card" style="padding:16px;border-left:4px solid #ef4444;">
+        <div class="dash-stat-card dash-stat-card--status dash-stat-card--border-danger">
             <div class="dash-stat-card__body">
-                <span class="dash-stat-card__label" style="color:#6b7280;">Rejected</span>
-                <span class="dash-stat-card__value" id="stat-rejected" style="font-size:24px;color:#991b1b;">—</span>
+                <span class="dash-stat-card__label">Rejected</span>
+                <span class="dash-stat-card__value" id="stat-rejected">—</span>
             </div>
         </div>
-        <div class="dash-stat-card" style="padding:16px;border-left:4px solid #10b981;">
+        <div class="dash-stat-card dash-stat-card--status dash-stat-card--border-success">
             <div class="dash-stat-card__body">
-                <span class="dash-stat-card__label" style="color:#6b7280;">Converted</span>
-                <span class="dash-stat-card__value" id="stat-converted" style="font-size:24px;color:#065f46;">—</span>
+                <span class="dash-stat-card__label">Converted</span>
+                <span class="dash-stat-card__value" id="stat-converted">—</span>
             </div>
         </div>
     </div>
 
     <!-- Main Charts Row -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+    <div class="dash-grid dash-grid--2">
         <div class="adm-card">
-            <div class="adm-card__body" style="padding:20px;">
-                <h3 style="margin:0 0 16px;font-size:15px;font-weight:600;">Monthly Trend (12 Months)</h3>
+            <div class="adm-card__body">
+                <h3 class="chart-heading">Monthly Trend (12 Months)</h3>
                 <canvas id="monthlyTrendChart" height="280"></canvas>
             </div>
         </div>
         <div class="adm-card">
-            <div class="adm-card__body" style="padding:20px;">
-                <h3 style="margin:0 0 16px;font-size:15px;font-weight:600;">Revenue Summary</h3>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-                    <div style="background:#f0fdf4;border-radius:8px;padding:14px;">
-                        <div style="font-size:12px;color:var(--adm-text-3);">Total Invoiced</div>
-                        <div style="font-size:20px;font-weight:700;color:#065f46;" id="rev-invoiced">—</div>
+            <div class="adm-card__body">
+                <h3 class="chart-heading">Revenue Summary</h3>
+                <div class="dash-grid--rev-2">
+                    <div class="rev-card rev-card--success">
+                        <div class="rev-card__title">Total Invoiced</div>
+                        <div class="rev-card__value" id="rev-invoiced">—</div>
                     </div>
-                    <div style="background:#fef3c7;border-radius:8px;padding:14px;">
-                        <div style="font-size:12px;color:var(--adm-text-3);">Total Collected</div>
-                        <div style="font-size:20px;font-weight:700;color:#92400e;" id="rev-collected">—</div>
+                    <div class="rev-card rev-card--warning">
+                        <div class="rev-card__title">Total Collected</div>
+                        <div class="rev-card__value" id="rev-collected">—</div>
                     </div>
-                    <div style="background:#eff6ff;border-radius:8px;padding:14px;">
-                        <div style="font-size:12px;color:var(--adm-text-3);">Total Invoices</div>
-                        <div style="font-size:20px;font-weight:700;color:#1e40af;" id="rev-invoices">—</div>
+                    <div class="rev-card rev-card--info">
+                        <div class="rev-card__title">Total Invoices</div>
+                        <div class="rev-card__value" id="rev-invoices">—</div>
                     </div>
-                    <div style="background:#f0fdf4;border-radius:8px;padding:14px;">
-                        <div style="font-size:12px;color:var(--adm-text-3);">Paid Invoices</div>
-                        <div style="font-size:20px;font-weight:700;color:#065f46;" id="rev-paid">—</div>
+                    <div class="rev-card rev-card--success">
+                        <div class="rev-card__title">Paid Invoices</div>
+                        <div class="rev-card__value" id="rev-paid">—</div>
                     </div>
                 </div>
             </div>
@@ -107,38 +107,38 @@
     </div>
 
     <!-- Charts Row 2 -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:24px;">
+    <div class="dash-grid dash-grid--3">
         <div class="adm-card">
-            <div class="adm-card__body" style="padding:20px;">
-                <h3 style="margin:0 0 16px;font-size:15px;font-weight:600;">Gender Distribution</h3>
+            <div class="adm-card__body">
+                <h3 class="chart-heading">Gender Distribution</h3>
                 <canvas id="genderChart" height="220"></canvas>
             </div>
         </div>
         <div class="adm-card">
-            <div class="adm-card__body" style="padding:20px;">
-                <h3 style="margin:0 0 16px;font-size:15px;font-weight:600;">Religion</h3>
+            <div class="adm-card__body">
+                <h3 class="chart-heading">Religion</h3>
                 <canvas id="religionChart" height="220"></canvas>
             </div>
         </div>
         <div class="adm-card">
-            <div class="adm-card__body" style="padding:20px;">
-                <h3 style="margin:0 0 16px;font-size:15px;font-weight:600;">Class Distribution</h3>
+            <div class="adm-card__body">
+                <h3 class="chart-heading">Class Distribution</h3>
                 <canvas id="classChart" height="220"></canvas>
             </div>
         </div>
     </div>
 
     <!-- Tables Row -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+    <div class="dash-grid dash-grid--2">
         <div class="adm-card">
-            <div class="adm-card__body" style="padding:20px;">
-                <h3 style="margin:0 0 12px;font-size:15px;font-weight:600;">District Distribution</h3>
-                <div style="max-height:300px;overflow-y:auto;">
+            <div class="adm-card__body">
+                <h3 class="chart-heading" style="margin:0 0 12px;">District Distribution</h3>
+                <div class="scroll-y scroll-y--300">
                     <table class="adm-table">
                         <thead>
                             <tr>
-                                <th style="padding:10px 12px;text-align:left;">District</th>
-                                <th style="padding:10px 12px;text-align:right;">Count</th>
+                                <th class="adm-table th--left">District</th>
+                                <th class="adm-table th--right">Count</th>
                             </tr>
                         </thead>
                         <tbody id="districtTableBody"></tbody>
@@ -147,13 +147,13 @@
             </div>
         </div>
         <div class="adm-card">
-            <div class="adm-card__body" style="padding:20px;">
-                <h3 style="margin:0 0 12px;font-size:15px;font-weight:600;">Top 5 Classes by Volume</h3>
+            <div class="adm-card__body">
+                <h3 class="chart-heading" style="margin:0 0 12px;">Top 5 Classes by Volume</h3>
                 <table class="adm-table">
                     <thead>
                         <tr>
-                            <th style="padding:10px 12px;text-align:left;">Class</th>
-                            <th style="padding:10px 12px;text-align:right;">Applications</th>
+                            <th class="adm-table th--left">Class</th>
+                            <th class="adm-table th--right">Applications</th>
                         </tr>
                     </thead>
                     <tbody id="topClassesTableBody"></tbody>
@@ -164,14 +164,14 @@
 
     <!-- Application Heatmap Table -->
     <div class="adm-card">
-        <div class="adm-card__body" style="padding:20px;">
-            <h3 style="margin:0 0 12px;font-size:15px;font-weight:600;">Daily Application Activity</h3>
-            <div style="max-height:360px;overflow-y:auto;">
+        <div class="adm-card__body">
+            <h3 class="chart-heading" style="margin:0 0 12px;">Daily Application Activity</h3>
+            <div class="scroll-y scroll-y--360">
                 <table class="adm-table">
                     <thead>
                         <tr>
-                            <th style="padding:10px 12px;text-align:left;">Date</th>
-                            <th style="padding:10px 12px;text-align:right;">Applications</th>
+                            <th class="adm-table th--left">Date</th>
+                            <th class="adm-table th--right">Applications</th>
                         </tr>
                     </thead>
                     <tbody id="heatmapTableBody"></tbody>
@@ -213,60 +213,52 @@
                 if (!res.success) return;
                 const d = res.data;
 
-                // KPI
                 document.getElementById('kpi-today').textContent = fmt(d.todayApplications);
                 document.getElementById('kpi-week').textContent = fmt(d.weekApplications);
                 document.getElementById('kpi-month').textContent = fmt(d.monthApplications);
                 document.getElementById('kpi-conversion').textContent = d.conversionRate ? d.conversionRate.toFixed(1) + '%' : '0%';
 
-                // Status
                 document.getElementById('stat-pending').textContent = fmt(d.pendingVerification);
                 document.getElementById('stat-approved').textContent = fmt(d.approved);
                 document.getElementById('stat-rejected').textContent = fmt(d.rejected);
                 document.getElementById('stat-converted').textContent = fmt(d.converted);
 
-                // Revenue
                 document.getElementById('rev-invoiced').textContent = fmtCurr(d.totalInvoiceAmount);
                 document.getElementById('rev-collected').textContent = fmtCurr(d.totalPaidAmount);
                 document.getElementById('rev-invoices').textContent = fmt(d.totalInvoices);
                 document.getElementById('rev-paid').textContent = fmt(d.paidInvoices);
 
-                // District table
                 const distBody = document.getElementById('districtTableBody');
                 distBody.innerHTML = '';
                 (d.districtDistribution || []).forEach(function (item) {
                     const tr = document.createElement('tr');
-                    tr.style.borderBottom = '1px solid #f3f4f6';
-                    tr.innerHTML = '<td style="padding:8px 12px;">' + escHtml(item.name) + '</td><td style="padding:8px 12px;text-align:right;font-weight:600;">' + fmt(item.count) + '</td>';
+                    tr.className = 'js-row';
+                    tr.innerHTML = '<td class="js-table">' + escHtml(item.name) + '</td><td class="js-table td--right">' + fmt(item.count) + '</td>';
                     distBody.appendChild(tr);
                 });
 
-                // Top classes
                 const topBody = document.getElementById('topClassesTableBody');
                 topBody.innerHTML = '';
                 (d.topClasses || []).forEach(function (item) {
                     const tr = document.createElement('tr');
-                    tr.style.borderBottom = '1px solid #f3f4f6';
-                    tr.innerHTML = '<td style="padding:8px 12px;">' + escHtml(item.name) + '</td><td style="padding:8px 12px;text-align:right;font-weight:600;">' + fmt(item.count) + '</td>';
+                    tr.className = 'js-row';
+                    tr.innerHTML = '<td class="js-table">' + escHtml(item.name) + '</td><td class="js-table td--right">' + fmt(item.count) + '</td>';
                     topBody.appendChild(tr);
                 });
 
-                // Heatmap
                 const heatBody = document.getElementById('heatmapTableBody');
                 heatBody.innerHTML = '';
                 (d.applicationHeatmap || []).forEach(function (item) {
                     const tr = document.createElement('tr');
-                    tr.style.borderBottom = '1px solid #f3f4f6';
+                    tr.className = 'js-row';
                     const dt = new Date(item.date);
                     const dateStr = dt.toLocaleDateString('en-BD', { year: 'numeric', month: 'short', day: 'numeric' });
-                    tr.innerHTML = '<td style="padding:8px 12px;">' + dateStr + '</td><td style="padding:8px 12px;text-align:right;font-weight:600;">' + fmt(item.count) + '</td>';
+                    tr.innerHTML = '<td class="js-table">' + dateStr + '</td><td class="js-table td--right">' + fmt(item.count) + '</td>';
                     heatBody.appendChild(tr);
                 });
 
-                // Charts
                 destroyCharts();
 
-                // Monthly Trend
                 const trendLabels = (d.monthlyTrend || []).map(function (m) { return monthName(m.month) + ' ' + m.year; });
                 const trendCtx = document.getElementById('monthlyTrendChart').getContext('2d');
                 monthlyTrendChart = new Chart(trendCtx, {
@@ -290,7 +282,6 @@
                     }
                 });
 
-                // Gender
                 const genderCtx = document.getElementById('genderChart').getContext('2d');
                 const genderLabels = (d.genderDistribution || []).map(function (g) { return g.name; });
                 const genderData = (d.genderDistribution || []).map(function (g) { return g.count; });
@@ -306,7 +297,6 @@
                     }
                 });
 
-                // Religion
                 const religionCtx = document.getElementById('religionChart').getContext('2d');
                 const religionLabels = (d.religionDistribution || []).map(function (r) { return r.name; });
                 const religionData = (d.religionDistribution || []).map(function (r) { return r.count; });
@@ -323,7 +313,6 @@
                     }
                 });
 
-                // Class distribution
                 const classCtx = document.getElementById('classChart').getContext('2d');
                 const classLabels = (d.classDistribution || []).map(function (c) { return c.name; });
                 const classData = (d.classDistribution || []).map(function (c) { return c.count; });

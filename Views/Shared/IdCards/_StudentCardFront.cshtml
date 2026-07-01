@@ -23,7 +23,7 @@
         : (Model.SchoolName?.Length >= 3 ? Model.SchoolName[..3].ToUpperInvariant() : "SCH");
 }
 
-<div class="id-card-print front">
+<div class="id-card-print front student">
     <div class="card-header">
         <div class="logo-box">@shortName</div>
         <div class="school-details">
@@ -33,7 +33,7 @@
                 <p class="eiin-web">@schoolSub</p>
             }
         </div>
-        <span class="badge-student">STUDENT</span>
+        <span class="badge">STUDENT</span>
     </div>
 
     <div class="card-body">
@@ -44,25 +44,25 @@
             }
             else
             {
-                <div class="photo-img" style="background:#e2e8f0;display:flex;align-items:center;justify-content:center;color:#64748b;font-size:6pt;font-weight:600;">PHOTO</div>
+                <div class="photo-img placeholder">PHOTO</div>
             }
         </div>
 
         <h2 class="student-name">@name.ToUpperInvariant()</h2>
-        <div class="class-tag">@cls – @sec</div>
+        <div class="role-tag">@cls – @sec</div>
 
         <div class="info-grid-front">
-            <span class="lbl">STUDENT ID</span><span class="val highlight">@idNo</span>
-            <span class="lbl">ROLL</span><span class="val">@roll</span>
+            <span class="lbl">Student ID</span><span class="val highlight">@idNo</span>
+            <span class="lbl">Roll</span><span class="val">@roll</span>
 
-            <span class="lbl">CLASS</span><span class="val">@cls</span>
-            <span class="lbl">SECTION</span><span class="val">@sec</span>
+            <span class="lbl">Class</span><span class="val">@cls</span>
+            <span class="lbl">Section</span><span class="val">@sec</span>
 
-            <span class="lbl">GROUP</span><span class="val">@group</span>
-            <span class="lbl">BLOOD</span><span class="val">@blood</span>
+            <span class="lbl">Group</span><span class="val">@group</span>
+            <span class="lbl">Blood</span><span class="val">@blood</span>
 
             <span class="lbl">DOB</span><span class="val">@dob</span>
-            <span class="lbl">SESSION</span><span class="val">@session</span>
+            <span class="lbl">Session</span><span class="val">@session</span>
         </div>
     </div>
 

@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using SchoolManagementSystem.Models.DTOs.Admission;
 using SchoolManagementSystem.Models.DTOs.Fees;
+using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Models.Entities.Admission;
 using SchoolManagementSystem.Models.Entities.Fees;
 using SchoolManagementSystem.Models.Enums;
@@ -43,14 +44,80 @@ public class AdmissionFinanceService : IAdmissionFinanceService
         _feeRefundService = feeRefundService;
     }
 
+    public async Task<List<AdmissionFeeSummaryListItemDto>> GetAllFeeSummariesAsync(CancellationToken ct = default)
+    {
+        var apps = await _admissionRepository.Query().AsNoTracking()
+            .Where(a => !a.IsDeleted)
+            .OrderByDescending(a => a.CreatedAt)
+            .ToListAsync(ct);
+
+        var appIds = apps.Select(a => a.Id).ToList();
+        var allPayments = await _unitOfWork.Repository<Payment>().Query().AsNoTracking()
+            .Where(p => appIds.Any(id => p.Remarks != null && p.Remarks.Contains($"ADM-{id}")) && !p.IsDeleted)
+            .ToListAsync(ct);
+
+        var paymentLookup = allPayments
+            .GroupBy(p =>
+            {
+                var prefix = "ADM-";
+                var idx = p.Remarks?.IndexOf(prefix, StringComparison.OrdinalIgnoreCase) ?? -1;
+                if (idx < 0) return -1;
+                var after = p.Remarks!.Substring(idx + prefix.Length);
+                var end = after.IndexOf(':');
+                if (end < 0) end = after.IndexOf(' ');
+                if (end < 0) end = after.Length;
+                return int.TryParse(after.AsSpan(0, end), out var id) ? id : -1;
+            })
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        var classIds = apps.Where(a => a.AppliedClassId > 0).Select(a => a.AppliedClassId).Distinct().ToList();
+        var classes = classIds.Count > 0
+            ? await _unitOfWork.Repository<SchoolClass>().Query().AsNoTracking()
+                .Where(c => classIds.Contains(c.Id))
+                .ToDictionaryAsync(c => c.Id, c => c.Name, ct)
+            : new Dictionary<int, string>();
+
+        return apps.Select(app =>
+        {
+            var payments = paymentLookup.GetValueOrDefault(app.Id, new List<Payment>());
+            var totalPaid = payments.Sum(p => p.Amount);
+            return new AdmissionFeeSummaryListItemDto
+            {
+                ApplicationId = app.Id,
+                ApplicationNo = app.ApplicationNo,
+                ApplicantName = app.ApplicantName,
+                AppliedClass = app.AppliedClassId > 0 && classes.ContainsKey(app.AppliedClassId) ? classes[app.AppliedClassId] : null,
+                AdmissionFee = app.AdmissionFee,
+                PaidAmount = totalPaid,
+                Status = app.Status,
+                AppliedAt = app.CreatedAt,
+                LastPaymentAt = payments.Count > 0 ? payments.Max(p => p.PaidAt) : null
+            };
+        }).ToList();
+    }
+
     public async Task<AdmissionFeeSummaryDto> GetFeeSummaryAsync(int applicationId, CancellationToken ct = default)
     {
         var app = await _admissionRepository.FirstOrDefaultAsync(x => x.Id == applicationId && !x.IsDeleted, ct)
             ?? throw new InvalidOperationException("Application not found.");
 
-        var payments = await _unitOfWork.Repository<Payment>().Query().AsNoTracking()
-            .Where(p => p.Remarks != null && p.Remarks.Contains($"ADM-{applicationId}") && !p.IsDeleted)
-            .ToListAsync(ct);
+        var invoiceKey = $"AdmissionApp_{applicationId}";
+        var invoice = await _unitOfWork.Repository<FeeInvoice>().Query().AsNoTracking()
+            .FirstOrDefaultAsync(i => i.Remarks == invoiceKey && !i.IsDeleted, ct);
+
+        List<Payment> payments;
+        if (invoice != null)
+        {
+            payments = await _unitOfWork.Repository<Payment>().Query().AsNoTracking()
+                .Where(p => p.FeeInvoiceId == invoice.Id && !p.IsDeleted)
+                .ToListAsync(ct);
+        }
+        else
+        {
+            payments = await _unitOfWork.Repository<Payment>().Query().AsNoTracking()
+                .Where(p => p.Remarks != null && p.Remarks.Contains($"ADM-{applicationId}") && !p.IsDeleted)
+                .ToListAsync(ct);
+        }
 
         var totalPaid = payments.Sum(p => p.Amount);
 
@@ -79,15 +146,57 @@ public class AdmissionFinanceService : IAdmissionFinanceService
 
     public async Task<AdmissionPaymentHistoryDto> RecordPaymentAsync(AdmissionFeePaymentRequest request, string receivedBy, CancellationToken ct = default)
     {
+        if (request.Amount <= 0)
+            throw new InvalidOperationException("Payment amount must be greater than zero.");
+
         var app = await _admissionRepository.FirstOrDefaultAsync(x => x.Id == request.ApplicationId && !x.IsDeleted, ct)
             ?? throw new InvalidOperationException("Application not found.");
 
-        await _unitOfWork.BeginTransactionAsync(ct);
-        try
+        AdmissionPaymentHistoryDto? result = null;
+        Payment? payment = null;
+        int invoiceId;
+
+        await _unitOfWork.ExecuteInTransactionAsync(async () =>
         {
-            var payment = new Payment
+            var invoiceKey = $"AdmissionApp_{request.ApplicationId}";
+            var invoice = await _unitOfWork.Repository<FeeInvoice>().FirstOrDefaultAsync(i => i.Remarks == invoiceKey && !i.IsDeleted, ct);
+
+            if (invoice == null)
             {
-                FeeInvoiceId = 0,
+                var invoiceNo = $"INV-ADM-{DateTime.UtcNow:yyyyMMdd}-{Random.Shared.Next(1000, 9999):D4}";
+                invoice = new FeeInvoice
+                {
+                    InvoiceNo = invoiceNo,
+                    StudentId = 0,
+                    DueDate = DateOnly.FromDateTime(DateTime.UtcNow.Date.AddDays(30)),
+                    TotalAmount = app.AdmissionFee,
+                    PaidAmount = 0,
+                    Status = PaymentStatus.Unpaid,
+                    Remarks = invoiceKey,
+                    CreatedBy = receivedBy,
+                    CreatedAt = DateTime.UtcNow
+                };
+                await _unitOfWork.Repository<FeeInvoice>().AddAsync(invoice, ct);
+                await _unitOfWork.SaveChangesAsync(ct);
+                invoiceId = invoice.Id;
+
+                var itemDto = new FeeInvoiceItemUpsertDto
+                {
+                    FeeInvoiceId = invoiceId,
+                    Description = $"Admission Fee - {app.ApplicantName}",
+                    Amount = app.AdmissionFee,
+                    NetAmount = app.AdmissionFee
+                };
+                await _feeInvoiceItemService.CreateAsync(itemDto, receivedBy, ct);
+            }
+            else
+            {
+                invoiceId = invoice.Id;
+            }
+
+            payment = new Payment
+            {
+                FeeInvoiceId = invoiceId,
                 Amount = request.Amount,
                 LateFee = 0,
                 DiscountAmount = 0,
@@ -103,8 +212,17 @@ public class AdmissionFinanceService : IAdmissionFinanceService
             await _unitOfWork.SaveChangesAsync(ct);
 
             var totalPaid = await _unitOfWork.Repository<Payment>().Query().AsNoTracking()
-                .Where(p => p.Remarks != null && p.Remarks.Contains($"ADM-{request.ApplicationId}") && !p.IsDeleted)
+                .Where(p => p.FeeInvoiceId == invoiceId && !p.IsDeleted)
                 .SumAsync(p => (decimal?)p.Amount, ct) ?? 0;
+
+            invoice.PaidAmount = totalPaid;
+            invoice.UpdatedAt = DateTime.UtcNow;
+            if (totalPaid >= invoice.TotalAmount)
+                invoice.Status = PaymentStatus.Paid;
+            else if (totalPaid > 0)
+                invoice.Status = PaymentStatus.Partial;
+            _unitOfWork.Repository<FeeInvoice>().Update(invoice);
+            await _unitOfWork.SaveChangesAsync(ct);
 
             if (totalPaid >= app.AdmissionFee)
             {
@@ -115,9 +233,24 @@ public class AdmissionFinanceService : IAdmissionFinanceService
                 await _unitOfWork.SaveChangesAsync(ct);
             }
 
-            await _unitOfWork.CommitTransactionAsync(ct);
+            var ledger = new FeeLedger
+            {
+                StudentId = invoice.StudentId,
+                FeeInvoiceId = invoiceId,
+                FeePaymentId = payment.Id,
+                TransactionType = FeeLedgerType.Payment,
+                Debit = 0,
+                Credit = request.Amount,
+                Balance = -(request.Amount),
+                Description = $"Admission payment: {request.TransactionId ?? "N/A"}",
+                TransactionDate = DateTime.UtcNow,
+                CreatedBy = receivedBy,
+                CreatedAt = DateTime.UtcNow
+            };
+            await _unitOfWork.Repository<FeeLedger>().AddAsync(ledger, ct);
+            await _unitOfWork.SaveChangesAsync(ct);
 
-            return new AdmissionPaymentHistoryDto
+            result = new AdmissionPaymentHistoryDto
             {
                 Id = payment.Id,
                 ApplicationId = request.ApplicationId,
@@ -130,12 +263,9 @@ public class AdmissionFinanceService : IAdmissionFinanceService
                 Remarks = request.Remarks,
                 ReceivedBy = receivedBy
             };
-        }
-        catch
-        {
-            await _unitOfWork.RollbackTransactionAsync(ct);
-            throw;
-        }
+        }, ct);
+
+        return result!;
     }
 
     public async Task<bool> ApplyScholarshipAsync(int applicationId, decimal percentage, string? description, string appliedBy, CancellationToken ct = default)
@@ -204,12 +334,14 @@ public class AdmissionFinanceService : IAdmissionFinanceService
         var app = await _admissionRepository.FirstOrDefaultAsync(x => x.Id == applicationId && !x.IsDeleted, ct);
         if (app == null) return false;
 
-        await _unitOfWork.BeginTransactionAsync(ct);
-        try
+        var invoiceKey = $"AdmissionApp_{applicationId}";
+        var invoice = await _unitOfWork.Repository<FeeInvoice>().FirstOrDefaultAsync(i => i.Remarks == invoiceKey && !i.IsDeleted, ct);
+
+        await _unitOfWork.ExecuteInTransactionAsync(async () =>
         {
-            await _unitOfWork.Repository<FeeRefund>().AddAsync(new FeeRefund
+            var refund = new FeeRefund
             {
-                FeePaymentId = 0,
+                FeePaymentId = invoice?.Id ?? 0,
                 RefundAmount = amount,
                 RefundMethod = PaymentMethod.Cash,
                 Reason = reason,
@@ -218,24 +350,38 @@ public class AdmissionFinanceService : IAdmissionFinanceService
                 ApprovedAt = DateTime.UtcNow,
                 CreatedBy = processedBy,
                 CreatedAt = DateTime.UtcNow
-            }, ct);
+            };
 
+            await _unitOfWork.Repository<FeeRefund>().AddAsync(refund, ct);
             await _unitOfWork.SaveChangesAsync(ct);
+
+            if (invoice != null)
+            {
+                var ledger = new FeeLedger
+                {
+                    StudentId = invoice.StudentId,
+                    FeeInvoiceId = invoice.Id,
+                    TransactionType = FeeLedgerType.Refund,
+                    Debit = 0,
+                    Credit = amount,
+                    Balance = -(amount),
+                    Description = $"Admission fee refund: {reason}",
+                    TransactionDate = DateTime.UtcNow,
+                    CreatedBy = processedBy,
+                    CreatedAt = DateTime.UtcNow
+                };
+                await _unitOfWork.Repository<FeeLedger>().AddAsync(ledger, ct);
+                await _unitOfWork.SaveChangesAsync(ct);
+            }
 
             app.AdmissionFeePaid = false;
             app.UpdatedBy = processedBy;
             app.UpdatedAt = DateTime.UtcNow;
             _admissionRepository.Update(app);
             await _unitOfWork.SaveChangesAsync(ct);
+        }, ct);
 
-            await _unitOfWork.CommitTransactionAsync(ct);
-            return true;
-        }
-        catch
-        {
-            await _unitOfWork.RollbackTransactionAsync(ct);
-            throw;
-        }
+        return true;
     }
 
     public async Task<int> CreateAdmissionInvoiceAsync(int applicationId, int studentId, decimal admissionFee, bool isPaid, string? className, string? paymentMethod, string? transactionDetails, string createdBy, CancellationToken ct = default)
@@ -280,17 +426,7 @@ public class AdmissionFinanceService : IAdmissionFinanceService
                 && Enum.TryParse<PaymentMethod>(paymentMethod, true, out var parsedMethod)
                 ? parsedMethod : PaymentMethod.Cash;
 
-            var paymentDto = new FeePaymentUpsertDto
-            {
-                FeeInvoiceId = invoiceId,
-                Amount = admissionFee,
-                Method = (int)paymentMethodParsed,
-                ReferenceNo = transactionDetails,
-                PaidAt = DateTime.UtcNow,
-                Remarks = $"Admission payment for {invoiceNo}"
-            };
-
-            await _unitOfWork.Repository<Payment>().AddAsync(new Payment
+            var paymentEntity = new Payment
             {
                 FeeInvoiceId = invoiceId,
                 Amount = admissionFee,
@@ -300,7 +436,9 @@ public class AdmissionFinanceService : IAdmissionFinanceService
                 Remarks = $"Admission payment for {invoiceNo}",
                 CreatedBy = createdBy,
                 CreatedAt = DateTime.UtcNow
-            }, ct);
+            };
+
+            await _unitOfWork.Repository<Payment>().AddAsync(paymentEntity, ct);
 
             var invoiceEntity = await _unitOfWork.Repository<FeeInvoice>().FirstOrDefaultAsync(x => x.Id == invoiceId && !x.IsDeleted, ct);
             if (invoiceEntity != null)
@@ -312,6 +450,23 @@ public class AdmissionFinanceService : IAdmissionFinanceService
                 _unitOfWork.Repository<FeeInvoice>().Update(invoiceEntity);
             }
 
+            await _unitOfWork.SaveChangesAsync(ct);
+
+            var ledger = new FeeLedger
+            {
+                StudentId = studentId,
+                FeeInvoiceId = invoiceId,
+                FeePaymentId = paymentEntity.Id,
+                TransactionType = FeeLedgerType.Payment,
+                Debit = 0,
+                Credit = admissionFee,
+                Balance = -(admissionFee),
+                Description = $"Admission payment for {invoiceNo}",
+                TransactionDate = DateTime.UtcNow,
+                CreatedBy = createdBy,
+                CreatedAt = DateTime.UtcNow
+            };
+            await _unitOfWork.Repository<FeeLedger>().AddAsync(ledger, ct);
             await _unitOfWork.SaveChangesAsync(ct);
         }
 

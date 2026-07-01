@@ -444,7 +444,7 @@
                         var og = document.createElement('optgroup'); og.label = gn;
                         groups[gn].forEach(function (s) {
                             var o = document.createElement('option'); o.value = s.id; o.textContent = s.displayName;
-                            if (s.isFull) { o.disabled = true; o.style.color = '#dc3545'; }
+                            if (s.isFull) { o.disabled = true; o.style.color = 'var(--adm-rejected)'; }
                             og.appendChild(o);
                         });
                         sel.appendChild(og);
@@ -453,7 +453,7 @@
                     sel.innerHTML = '<option value="">-- Select Section --</option>';
                     data.forEach(function (s) {
                         var o = document.createElement('option'); o.value = s.id; o.textContent = s.displayName;
-                        if (s.isFull) { o.disabled = true; o.style.color = '#dc3545'; }
+                        if (s.isFull) { o.disabled = true; o.style.color = 'var(--adm-rejected)'; }
                         sel.appendChild(o);
                     });
                 }

@@ -385,9 +385,7 @@ public class AdminResultController : Controller
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
 
-            // Use stored procedure for publish operation
-            var db = GetDbContext();
-            var rows = await db.Database.ExecuteSqlRawAsync(
+            var rows = await _uow.ExecuteSqlRawAsync(
                 "EXEC sp_PublishResults @ExamId, @AcademicYearId, @PublishedByUserId, @LockResults, @Remarks",
                 new SqlParameter("@ExamId", request.ExamId),
                 new SqlParameter("@AcademicYearId", await GetAcademicYearIdForExam(request.ExamId)),
@@ -411,9 +409,7 @@ public class AdminResultController : Controller
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
 
-            // Use stored procedure for unpublish
-            var db = GetDbContext();
-            var rows = await db.Database.ExecuteSqlRawAsync(
+            var rows = await _uow.ExecuteSqlRawAsync(
                 "EXEC sp_UnpublishResults @ExamId, @UnpublishedByUserId, @Reason",
                 new SqlParameter("@ExamId", request.ExamId),
                 new SqlParameter("@UnpublishedByUserId", userId),
@@ -470,8 +466,7 @@ public class AdminResultController : Controller
     {
         try
         {
-            var db = GetDbContext();
-            var rows = await db.Database.ExecuteSqlRawAsync(
+            var rows = await _uow.ExecuteSqlRawAsync(
                 "UPDATE StudentExamResults SET Status = @Status, UpdatedAt = GETUTCDATE(), UpdatedBy = @UpdatedBy WHERE ExamId = @ExamId AND IsDeleted = 0",
                 new SqlParameter("@Status", (int)ResultWorkflowStatus.Draft),
                 new SqlParameter("@UpdatedBy", User.Identity?.Name ?? "admin"),
@@ -482,11 +477,6 @@ public class AdminResultController : Controller
         {
             return Json(new { success = false, message = ex.Message });
         }
-    }
-
-    private SchoolDbContext GetDbContext()
-    {
-        return HttpContext.RequestServices.GetRequiredService<SchoolDbContext>();
     }
 
     public class PublishRequest
@@ -510,9 +500,8 @@ public class AdminResultController : Controller
         try
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "0");
-            var db = GetDbContext();
             var academicYearId = await GetAcademicYearIdForExam(examId);
-            await db.Database.ExecuteSqlRawAsync(
+            await _uow.ExecuteSqlRawAsync(
                 "EXEC sp_RecalculateResults @ExamId, @AcademicYearId, @RecalculatedByUserId, @Reason",
                 new SqlParameter("@ExamId", examId),
                 new SqlParameter("@AcademicYearId", academicYearId),
@@ -532,8 +521,7 @@ public class AdminResultController : Controller
     {
         try
         {
-            var db = GetDbContext();
-            await db.Database.ExecuteSqlRawAsync(
+            await _uow.ExecuteSqlRawAsync(
                 "EXEC sp_CalculateMerit @ExamGroupKey",
                 new SqlParameter("@ExamGroupKey", await GetExamName(examId)));
             TempData["Success"] = "Merit positions recalculated successfully.";

@@ -32,23 +32,23 @@ public class AdmissionDashboardRepository : IAdmissionDashboardRepository
             using var reader = await command.ExecuteReaderAsync(ct);
 
             if (await reader.ReadAsync(ct))
-                dto.TodayApplications = reader.GetInt32(0);
+                dto.TodayApplications = reader.IsDBNull(0) ? 0 : reader.GetInt32(0);
 
             await reader.NextResultAsync(ct);
             if (await reader.ReadAsync(ct))
-                dto.WeekApplications = reader.GetInt32(0);
+                dto.WeekApplications = reader.IsDBNull(0) ? 0 : reader.GetInt32(0);
 
             await reader.NextResultAsync(ct);
             if (await reader.ReadAsync(ct))
-                dto.MonthApplications = reader.GetInt32(0);
+                dto.MonthApplications = reader.IsDBNull(0) ? 0 : reader.GetInt32(0);
 
             await reader.NextResultAsync(ct);
             if (await reader.ReadAsync(ct))
             {
-                dto.PendingVerification = reader.GetInt32(0);
-                dto.Approved = reader.GetInt32(1);
-                dto.Rejected = reader.GetInt32(2);
-                dto.Converted = reader.GetInt32(3);
+                dto.PendingVerification = reader.IsDBNull(0) ? 0 : reader.GetInt32(0);
+                dto.Approved = reader.IsDBNull(1) ? 0 : reader.GetInt32(1);
+                dto.Rejected = reader.IsDBNull(2) ? 0 : reader.GetInt32(2);
+                dto.Converted = reader.IsDBNull(3) ? 0 : reader.GetInt32(3);
             }
 
             await reader.NextResultAsync(ct);
@@ -56,13 +56,13 @@ public class AdmissionDashboardRepository : IAdmissionDashboardRepository
             {
                 dto.MonthlyTrend.Add(new MonthlyTrendDto
                 {
-                    Year = reader.GetInt32(0),
-                    Month = reader.GetInt32(1),
-                    Count = reader.GetInt32(2),
-                    PendingCount = reader.GetInt32(3),
-                    ApprovedCount = reader.GetInt32(4),
-                    RejectedCount = reader.GetInt32(5),
-                    ConvertedCount = reader.GetInt32(6)
+                    Year = reader.IsDBNull(0) ? 0 : reader.GetInt32(0),
+                    Month = reader.IsDBNull(1) ? 0 : reader.GetInt32(1),
+                    Count = reader.IsDBNull(2) ? 0 : reader.GetInt32(2),
+                    PendingCount = reader.IsDBNull(3) ? 0 : reader.GetInt32(3),
+                    ApprovedCount = reader.IsDBNull(4) ? 0 : reader.GetInt32(4),
+                    RejectedCount = reader.IsDBNull(5) ? 0 : reader.GetInt32(5),
+                    ConvertedCount = reader.IsDBNull(6) ? 0 : reader.GetInt32(6)
                 });
             }
 
@@ -71,8 +71,8 @@ public class AdmissionDashboardRepository : IAdmissionDashboardRepository
             {
                 dto.ClassDistribution.Add(new NameCountDto
                 {
-                    Name = reader.GetString(0),
-                    Count = reader.GetInt32(1)
+                    Name = reader.IsDBNull(0) ? "Unknown" : reader.GetString(0),
+                    Count = reader.IsDBNull(1) ? 0 : reader.GetInt32(1)
                 });
             }
 
@@ -81,8 +81,8 @@ public class AdmissionDashboardRepository : IAdmissionDashboardRepository
             {
                 dto.GenderDistribution.Add(new NameCountDto
                 {
-                    Name = reader.GetString(0),
-                    Count = reader.GetInt32(1)
+                    Name = reader.IsDBNull(0) ? "Unknown" : reader.GetString(0),
+                    Count = reader.IsDBNull(1) ? 0 : reader.GetInt32(1)
                 });
             }
 
@@ -91,8 +91,8 @@ public class AdmissionDashboardRepository : IAdmissionDashboardRepository
             {
                 dto.ReligionDistribution.Add(new NameCountDto
                 {
-                    Name = reader.GetString(0),
-                    Count = reader.GetInt32(1)
+                    Name = reader.IsDBNull(0) ? "Unknown" : reader.GetString(0),
+                    Count = reader.IsDBNull(1) ? 0 : reader.GetInt32(1)
                 });
             }
 
@@ -102,25 +102,25 @@ public class AdmissionDashboardRepository : IAdmissionDashboardRepository
                 dto.DistrictDistribution.Add(new NameCountDto
                 {
                     Name = reader.IsDBNull(0) ? "Unknown" : reader.GetString(0),
-                    Count = reader.GetInt32(1)
+                    Count = reader.IsDBNull(1) ? 0 : reader.GetInt32(1)
                 });
             }
 
             await reader.NextResultAsync(ct);
             if (await reader.ReadAsync(ct))
             {
-                dto.TotalApplications = reader.GetInt32(0);
-                dto.ConvertedCount = reader.GetInt32(1);
-                dto.ConversionRate = reader.GetDouble(2);
+                dto.TotalApplications = reader.IsDBNull(0) ? 0 : reader.GetInt32(0);
+                dto.ConvertedCount = reader.IsDBNull(1) ? 0 : reader.GetInt32(1);
+                dto.ConversionRate = reader.IsDBNull(2) ? 0 : reader.GetDouble(2);
             }
 
             await reader.NextResultAsync(ct);
             if (await reader.ReadAsync(ct))
             {
-                dto.TotalInvoiceAmount = reader.GetDecimal(0);
-                dto.TotalPaidAmount = reader.GetDecimal(1);
-                dto.TotalInvoices = reader.GetInt32(2);
-                dto.PaidInvoices = reader.GetInt32(3);
+                dto.TotalInvoiceAmount = reader.IsDBNull(0) ? 0 : reader.GetDecimal(0);
+                dto.TotalPaidAmount = reader.IsDBNull(1) ? 0 : reader.GetDecimal(1);
+                dto.TotalInvoices = reader.IsDBNull(2) ? 0 : reader.GetInt32(2);
+                dto.PaidInvoices = reader.IsDBNull(3) ? 0 : reader.GetInt32(3);
             }
 
             await reader.NextResultAsync(ct);
@@ -128,8 +128,8 @@ public class AdmissionDashboardRepository : IAdmissionDashboardRepository
             {
                 dto.ApplicationHeatmap.Add(new DateCountDto
                 {
-                    Date = reader.GetDateTime(0),
-                    Count = reader.GetInt32(1)
+                    Date = reader.IsDBNull(0) ? DateTime.MinValue : reader.GetDateTime(0),
+                    Count = reader.IsDBNull(1) ? 0 : reader.GetInt32(1)
                 });
             }
 
@@ -138,8 +138,8 @@ public class AdmissionDashboardRepository : IAdmissionDashboardRepository
             {
                 dto.TopClasses.Add(new NameCountDto
                 {
-                    Name = reader.GetString(0),
-                    Count = reader.GetInt32(1)
+                    Name = reader.IsDBNull(0) ? "Unknown" : reader.GetString(0),
+                    Count = reader.IsDBNull(1) ? 0 : reader.GetInt32(1)
                 });
             }
         }
@@ -174,19 +174,19 @@ public class AdmissionDashboardRepository : IAdmissionDashboardRepository
             {
                 dto.Rows.Add(new AdmissionRegisterRow
                 {
-                    SerialNo = reader.GetInt32(0),
-                    ApplicationNo = reader.GetString(1),
-                    ApplicantName = reader.GetString(2),
+                    SerialNo = reader.IsDBNull(0) ? 0 : reader.GetInt32(0),
+                    ApplicationNo = reader.IsDBNull(1) ? "" : reader.GetString(1),
+                    ApplicantName = reader.IsDBNull(2) ? "" : reader.GetString(2),
                     NameBangla = reader.IsDBNull(3) ? null : reader.GetString(3),
-                    DateOfBirth = reader.GetDateTime(4),
-                    Gender = reader.GetString(5),
-                    FatherName = reader.GetString(6),
-                    MotherName = reader.GetString(7),
+                    DateOfBirth = reader.IsDBNull(4) ? DateTime.MinValue : reader.GetDateTime(4),
+                    Gender = reader.IsDBNull(5) ? "" : reader.GetString(5),
+                    FatherName = reader.IsDBNull(6) ? "" : reader.GetString(6),
+                    MotherName = reader.IsDBNull(7) ? "" : reader.GetString(7),
                     Mobile = reader.IsDBNull(8) ? string.Empty : reader.GetString(8),
                     Religion = reader.IsDBNull(9) ? string.Empty : reader.GetString(9),
-                    AppliedClass = reader.GetString(10),
-                    Status = reader.GetString(11),
-                    SubmittedAt = reader.GetDateTime(12)
+                    AppliedClass = reader.IsDBNull(10) ? "" : reader.GetString(10),
+                    Status = reader.IsDBNull(11) ? "" : reader.GetString(11),
+                    SubmittedAt = reader.IsDBNull(12) ? DateTime.MinValue : reader.GetDateTime(12)
                 });
             }
         }
@@ -217,15 +217,15 @@ public class AdmissionDashboardRepository : IAdmissionDashboardRepository
             {
                 result.Add(new TrendAnalysisDto
                 {
-                    PeriodLabel = reader.GetString(0),
-                    PeriodYear = reader.GetInt32(1),
-                    PeriodMonth = reader.GetInt32(2),
-                    TotalApplications = reader.GetInt32(3),
-                    PendingCount = reader.GetInt32(4),
-                    ApprovedCount = reader.GetInt32(5),
-                    RejectedCount = reader.GetInt32(6),
-                    ConvertedCount = reader.GetInt32(7),
-                    ConversionRate = reader.GetDouble(8)
+                    PeriodLabel = reader.IsDBNull(0) ? "" : reader.GetString(0),
+                    PeriodYear = reader.IsDBNull(1) ? 0 : reader.GetInt32(1),
+                    PeriodMonth = reader.IsDBNull(2) ? 0 : reader.GetInt32(2),
+                    TotalApplications = reader.IsDBNull(3) ? 0 : reader.GetInt32(3),
+                    PendingCount = reader.IsDBNull(4) ? 0 : reader.GetInt32(4),
+                    ApprovedCount = reader.IsDBNull(5) ? 0 : reader.GetInt32(5),
+                    RejectedCount = reader.IsDBNull(6) ? 0 : reader.GetInt32(6),
+                    ConvertedCount = reader.IsDBNull(7) ? 0 : reader.GetInt32(7),
+                    ConversionRate = reader.IsDBNull(8) ? 0 : reader.GetDouble(8)
                 });
             }
         }
@@ -253,13 +253,13 @@ public class AdmissionDashboardRepository : IAdmissionDashboardRepository
             using var reader = await command.ExecuteReaderAsync(ct);
             if (await reader.ReadAsync(ct))
             {
-                dto.TotalApplications = reader.GetInt32(2);
-                dto.DocumentVerified = reader.GetInt32(3);
-                dto.InterviewCompleted = reader.GetInt32(4);
-                dto.FeePaid = reader.GetInt32(5);
-                dto.Approved = reader.GetInt32(6);
-                dto.Converted = reader.GetInt32(7);
-                dto.ConversionRate = reader.GetDouble(8);
+                dto.TotalApplications = reader.IsDBNull(2) ? 0 : reader.GetInt32(2);
+                dto.DocumentVerified = reader.IsDBNull(3) ? 0 : reader.GetInt32(3);
+                dto.InterviewCompleted = reader.IsDBNull(4) ? 0 : reader.GetInt32(4);
+                dto.FeePaid = reader.IsDBNull(5) ? 0 : reader.GetInt32(5);
+                dto.Approved = reader.IsDBNull(6) ? 0 : reader.GetInt32(6);
+                dto.Converted = reader.IsDBNull(7) ? 0 : reader.GetInt32(7);
+                dto.ConversionRate = reader.IsDBNull(8) ? 0 : reader.GetDouble(8);
             }
         }
         finally
@@ -288,15 +288,15 @@ public class AdmissionDashboardRepository : IAdmissionDashboardRepository
             {
                 result.Add(new ClassDemandDto
                 {
-                    ClassName = reader.GetString(0),
-                    SortOrder = reader.GetInt32(1),
-                    TotalApplications = reader.GetInt32(2),
-                    ConvertedCount = reader.GetInt32(3),
-                    PendingCount = reader.GetInt32(4),
-                    ApprovedCount = reader.GetInt32(5),
-                    ConversionRate = reader.GetDouble(6),
-                    GenderCount = reader.GetInt32(7),
-                    ReligionDiversity = reader.GetInt32(8)
+                    ClassName = reader.IsDBNull(0) ? "Unknown" : reader.GetString(0),
+                    SortOrder = reader.IsDBNull(1) ? 0 : reader.GetInt32(1),
+                    TotalApplications = reader.IsDBNull(2) ? 0 : reader.GetInt32(2),
+                    ConvertedCount = reader.IsDBNull(3) ? 0 : reader.GetInt32(3),
+                    PendingCount = reader.IsDBNull(4) ? 0 : reader.GetInt32(4),
+                    ApprovedCount = reader.IsDBNull(5) ? 0 : reader.GetInt32(5),
+                    ConversionRate = reader.IsDBNull(6) ? 0 : reader.GetDouble(6),
+                    GenderCount = reader.IsDBNull(7) ? 0 : reader.GetInt32(7),
+                    ReligionDiversity = reader.IsDBNull(8) ? 0 : reader.GetInt32(8)
                 });
             }
 
@@ -304,13 +304,13 @@ public class AdmissionDashboardRepository : IAdmissionDashboardRepository
             var classMap = result.ToDictionary(r => r.ClassName, r => r);
             while (await reader.ReadAsync(ct))
             {
-                var className = reader.GetString(0);
+                var className = reader.IsDBNull(0) ? "Unknown" : reader.GetString(0);
                 if (classMap.TryGetValue(className, out var dto))
                 {
                     dto.GenderBreakdown.Add(new NameCountDto
                     {
-                        Name = reader.GetString(1),
-                        Count = reader.GetInt32(2)
+                        Name = reader.IsDBNull(1) ? "Unknown" : reader.GetString(1),
+                        Count = reader.IsDBNull(2) ? 0 : reader.GetInt32(2)
                     });
                 }
             }
@@ -339,13 +339,13 @@ public class AdmissionDashboardRepository : IAdmissionDashboardRepository
             using var reader = await command.ExecuteReaderAsync(ct);
             if (await reader.ReadAsync(ct))
             {
-                dto.TotalInvoiceAmount = reader.GetDecimal(0);
-                dto.TotalPaidAmount = reader.GetDecimal(1);
-                dto.TotalDueAmount = reader.GetDecimal(2);
-                dto.TotalInvoices = reader.GetInt32(3);
-                dto.PaidInvoices = reader.GetInt32(4);
-                dto.PendingInvoices = reader.GetInt32(5);
-                dto.CollectionRate = reader.GetDouble(6);
+                dto.TotalInvoiceAmount = reader.IsDBNull(0) ? 0 : reader.GetDecimal(0);
+                dto.TotalPaidAmount = reader.IsDBNull(1) ? 0 : reader.GetDecimal(1);
+                dto.TotalDueAmount = reader.IsDBNull(2) ? 0 : reader.GetDecimal(2);
+                dto.TotalInvoices = reader.IsDBNull(3) ? 0 : reader.GetInt32(3);
+                dto.PaidInvoices = reader.IsDBNull(4) ? 0 : reader.GetInt32(4);
+                dto.PendingInvoices = reader.IsDBNull(5) ? 0 : reader.GetInt32(5);
+                dto.CollectionRate = reader.IsDBNull(6) ? 0 : reader.GetDouble(6);
             }
 
             await reader.NextResultAsync(ct);
@@ -353,11 +353,11 @@ public class AdmissionDashboardRepository : IAdmissionDashboardRepository
             {
                 dto.ByClass.Add(new RevenueByClassDto
                 {
-                    ClassName = reader.GetString(0),
-                    TotalInvoiceAmount = reader.GetDecimal(1),
-                    TotalPaidAmount = reader.GetDecimal(2),
-                    InvoiceCount = reader.GetInt32(3),
-                    PaidCount = reader.GetInt32(4)
+                    ClassName = reader.IsDBNull(0) ? "Unknown" : reader.GetString(0),
+                    TotalInvoiceAmount = reader.IsDBNull(1) ? 0 : reader.GetDecimal(1),
+                    TotalPaidAmount = reader.IsDBNull(2) ? 0 : reader.GetDecimal(2),
+                    InvoiceCount = reader.IsDBNull(3) ? 0 : reader.GetInt32(3),
+                    PaidCount = reader.IsDBNull(4) ? 0 : reader.GetInt32(4)
                 });
             }
 
@@ -366,12 +366,12 @@ public class AdmissionDashboardRepository : IAdmissionDashboardRepository
             {
                 dto.MonthlyTrend.Add(new RevenueTrendDto
                 {
-                    PeriodLabel = reader.GetString(0),
-                    PeriodYear = reader.GetInt32(1),
-                    PeriodMonth = reader.GetInt32(2),
-                    TotalInvoiceAmount = reader.GetDecimal(3),
-                    TotalPaidAmount = reader.GetDecimal(4),
-                    InvoiceCount = reader.GetInt32(5)
+                    PeriodLabel = reader.IsDBNull(0) ? "" : reader.GetString(0),
+                    PeriodYear = reader.IsDBNull(1) ? 0 : reader.GetInt32(1),
+                    PeriodMonth = reader.IsDBNull(2) ? 0 : reader.GetInt32(2),
+                    TotalInvoiceAmount = reader.IsDBNull(3) ? 0 : reader.GetDecimal(3),
+                    TotalPaidAmount = reader.IsDBNull(4) ? 0 : reader.GetDecimal(4),
+                    InvoiceCount = reader.IsDBNull(5) ? 0 : reader.GetInt32(5)
                 });
             }
 
@@ -380,9 +380,9 @@ public class AdmissionDashboardRepository : IAdmissionDashboardRepository
             {
                 dto.WaiverSummary = new WaiverSummaryDto
                 {
-                    TotalWaivers = reader.GetInt32(0),
-                    TotalWaiverAmount = reader.GetDecimal(1),
-                    AvgWaiverPercentage = reader.GetDouble(2)
+                    TotalWaivers = reader.IsDBNull(0) ? 0 : reader.GetInt32(0),
+                    TotalWaiverAmount = reader.IsDBNull(1) ? 0 : reader.GetDecimal(1),
+                    AvgWaiverPercentage = reader.IsDBNull(2) ? 0 : reader.GetDouble(2)
                 };
             }
         }

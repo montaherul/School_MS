@@ -1,288 +1,174 @@
 @using SchoolManagementSystem.Models.DTOs.Admission
 @using SchoolManagementSystem.Models.Enums
-@model AdmissionFeeSummaryDto
+@using SchoolManagementSystem.Models.Entities.Admission
+@model List<AdmissionFeeSummaryListItemDto>
 @{
-    ViewData["Title"] = "Fee Management - " + Model.ApplicantName;
-    var app = ViewBag.Application as dynamic;
+    ViewData["Title"] = "Admission Finance";
+    var totalFee = Model.Sum(m => m.AdmissionFee);
+    var totalPaid = Model.Sum(m => m.PaidAmount);
+    var totalDue = totalFee - totalPaid;
+    var paidCount = Model.Count(m => m.IsPaid);
+    var unpaidCount = Model.Count(m => !m.IsPaid);
 }
 
 <div class="adm-page">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="adm-alert adm-alert--success">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="margin-right:6px;"><polyline points="20 6 9 17 4 12"/></svg> @TempData["SuccessMessage"]
+        </div>
+    }
+
     <div class="adm-header">
         <div class="adm-header__left">
             <div class="adm-header__icon-wrap">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
             </div>
             <div>
-                <h1 class="adm-header__title">@Model.ApplicantName</h1>
-                <p class="adm-header__sub">Admission Fee Management</p>
+                <h1 class="adm-header__title">Admission Finance</h1>
+                <p class="adm-header__sub">@Model.Count application(s) — @totalPaid.ToString("N2") collected</p>
             </div>
         </div>
         <div class="adm-btn-group">
-            <a href="@Url.Action("Details", new { id = Model.ApplicationId })" class="adm-btn adm-btn--ghost adm-btn--sm">
+            <a href="/Admission/Dashboard" class="adm-btn adm-btn--ghost adm-btn--sm">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-                Back to Details
+                Dashboard
             </a>
-            <span class="adm-badge @(Model.IsPaid ? "adm-badge--success" : "adm-badge--warning")" style="font-size:13px;padding:6px 14px;">@Model.PaymentStatus</span>
+            <a href="/Admission/Analytics" class="adm-btn adm-btn--ghost adm-btn--sm">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                Analytics
+            </a>
         </div>
     </div>
 
-    <div style="display:grid;grid-template-columns:2fr 1fr;gap:24px;">
-        <div>
-            <!-- Fee Summary -->
-            <div class="adm-card" style="margin-bottom:24px;">
-                <div class="adm-card__header">
-                    <div class="adm-card__header-left">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-                        <h3 class="adm-card__title">Fee Summary</h3>
-                    </div>
+    <div class="dash-stats dash-section">
+        <div class="dash-stat-card dash-stat-card--gradient dash-stat-card--blue">
+            <span class="dash-stat-card__label">Total Fee</span>
+            <span class="dash-stat-card__value">@totalFee.ToString("N2")</span>
+        </div>
+        <div class="dash-stat-card dash-stat-card--gradient dash-stat-card--teal">
+            <span class="dash-stat-card__label">Collected</span>
+            <span class="dash-stat-card__value">@totalPaid.ToString("N2")</span>
+        </div>
+        <div class="dash-stat-card dash-stat-card--gradient dash-stat-card--red">
+            <span class="dash-stat-card__label">Due</span>
+            <span class="dash-stat-card__value">@totalDue.ToString("N2")</span>
+        </div>
+        <div class="dash-stat-card dash-stat-card--gradient dash-stat-card--indigo">
+            <span class="dash-stat-card__label">Paid / Unpaid</span>
+            <span class="dash-stat-card__value">@paidCount / @unpaidCount</span>
+        </div>
+    </div>
+
+    <div class="adm-filters">
+        <div class="adm-filters__row">
+            <div class="adm-filters__field adm-filters__field--search">
+                <label class="adm-label">Search</label>
+                <div class="adm-input-wrap">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--adm-text-3);pointer-events:none;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <input type="text" id="searchInput" class="adm-input" style="padding-left:32px;" placeholder="Name, App No..." />
                 </div>
-                <div class="adm-card__body">
-                    <div class="adm-stat-grid" style="grid-template-columns:repeat(3,1fr);">
-                        <div class="adm-stat" style="flex-direction:column;text-align:center;padding:16px;">
-                            <span style="font-size:12px;color:var(--adm-text-3);font-weight:600;">Admission Fee</span>
-                            <span style="font-size:24px;font-weight:800;color:var(--adm-text);">@Model.AdmissionFee.ToString("N2")</span>
-                        </div>
-                        <div class="adm-stat" style="flex-direction:column;text-align:center;padding:16px;">
-                            <span style="font-size:12px;color:var(--adm-text-3);font-weight:600;">Paid</span>
-                            <span style="font-size:24px;font-weight:800;color:var(--adm-success);">@Model.PaidAmount.ToString("N2")</span>
-                        </div>
-                        <div class="adm-stat" style="flex-direction:column;text-align:center;padding:16px;">
-                            <span style="font-size:12px;color:var(--adm-text-3);font-weight:600;">Due</span>
-                            <span style="font-size:24px;font-weight:800;color:@(Model.DueAmount > 0 ? "var(--adm-rejected)" : "var(--adm-success)");">@Model.DueAmount.ToString("N2")</span>
-                        </div>
-                    </div>
-
-                    @{
-                        var pct = Model.AdmissionFee > 0 ? (Model.PaidAmount / Model.AdmissionFee) * 100 : 0;
-                    }
-                    <div style="height:8px;background:var(--adm-border);border-radius:4px;overflow:hidden;margin-top:16px;">
-                        <div style="height:100%;width:@Math.Min(pct, 100)%;background:linear-gradient(90deg,var(--adm-success),var(--adm-primary));border-radius:4px;transition:width 0.5s;"></div>
-                    </div>
-
-                    <h4 style="font-size:14px;font-weight:600;margin:20px 0 12px;color:var(--adm-text);">Payment History</h4>
-                    <div style="max-height:300px;overflow-y:auto;">
-                        <table class="adm-table adm-table--striped">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Date</th>
-                                    <th>Amount</th>
-                                    <th>Method</th>
-                                    <th>Transaction ID</th>
-                                    <th>Received By</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @if (Model.Payments.Count == 0)
-                                {
-                                    <tr><td colspan="6" style="text-align:center;padding:20px;color:var(--adm-text-3);">No payments recorded yet.</td></tr>
-                                }
-                                @foreach (var pmt in Model.Payments.OrderByDescending(p => p.PaidAt))
-                                {
-                                    <tr>
-                                        <td>@pmt.Id</td>
-                                        <td>@pmt.PaidAt.ToString("dd-MMM-yyyy HH:mm")</td>
-                                        <td style="font-weight:700;color:var(--adm-success);">@pmt.Amount.ToString("N2")</td>
-                                        <td><span class="adm-badge adm-badge--info">@pmt.PaymentMethod</span></td>
-                                        <td><code>@(pmt.TransactionId ?? "—")</code></td>
-                                        <td>@(pmt.ReceivedBy ?? "—")</td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- Record Payment -->
-                    <h4 style="font-size:14px;font-weight:600;margin:24px 0 12px;color:var(--adm-text);">Record Payment</h4>
-                    <form id="paymentForm">
-                        <input type="hidden" id="ApplicationId" value="@Model.ApplicationId" />
-                        <div class="adm-form-grid" style="grid-template-columns:1fr 1fr 1fr;">
-                            <div class="adm-form-group">
-                                <label class="adm-form-label">Amount</label>
-                                <div class="adm-input-wrap">
-                                    <span class="adm-input-wrap__addon" style="font-weight:600;">৳</span>
-                                    <input type="number" id="Amount" class="adm-input" step="0.01" min="0" max="@Model.DueAmount" value="@Model.DueAmount" required />
-                                </div>
-                            </div>
-                            <div class="adm-form-group">
-                                <label class="adm-form-label">Payment Method</label>
-                                <select id="PaymentMethod" class="adm-select adm-select--full">
-                                    @foreach (var m in Enum.GetValues<PaymentMethod>())
-                                    {
-                                        <option value="@((int)m)">@m</option>
-                                    }
-                                </select>
-                            </div>
-                            <div class="adm-form-group">
-                                <label class="adm-form-label">Transaction ID</label>
-                                <input type="text" id="TransactionId" class="adm-input adm-input--full" placeholder="Optional" />
-                            </div>
-                            <div class="adm-form-group" style="grid-column:1/-1;">
-                                <label class="adm-form-label">Remarks</label>
-                                <input type="text" id="Remarks" class="adm-input adm-input--full" placeholder="Optional remarks" />
-                            </div>
-                            <div style="grid-column:1/-1;">
-                                <button type="submit" class="adm-btn adm-btn--success" id="recordPaymentBtn">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-                                    Record Payment
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
+            </div>
+            <div class="adm-filters__field">
+                <label class="adm-label">Status</label>
+                <select id="statusFilter" class="adm-select">
+                    <option value="">All</option>
+                    <option value="paid">Paid</option>
+                    <option value="unpaid">Unpaid</option>
+                </select>
+            </div>
+            <div class="adm-filters__field adm-filters__field--right">
+                <label class="adm-label">&nbsp;</label>
+                <span class="adm-table-meta" id="tableMeta">@Model.Count record(s)</span>
             </div>
         </div>
+    </div>
 
-        <div>
-            <!-- Scholarship -->
-            <div class="adm-card" style="margin-bottom:16px;">
-                <div class="adm-card__header">
-                    <div class="adm-card__header-left">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c0 2 4 3 6 3s6-1 6-3v-5"/></svg>
-                        <h3 class="adm-card__title">Scholarship</h3>
-                    </div>
-                </div>
-                <div class="adm-card__body">
-                    <form id="scholarshipForm">
-                        <input type="hidden" name="applicationId" value="@Model.ApplicationId" />
-                        <div class="adm-form-group">
-                            <label class="adm-form-label">Discount Percentage</label>
-                            <div class="adm-input-wrap">
-                                <input type="number" name="percentage" class="adm-input" step="0.1" min="0" max="100" placeholder="e.g. 25" required />
-                                <span class="adm-input-wrap__addon">%</span>
-                            </div>
-                        </div>
-                        <div class="adm-form-group">
-                            <label class="adm-form-label">Description (optional)</label>
-                            <input type="text" name="description" class="adm-input adm-input--full" placeholder="Merit scholarship" />
-                        </div>
-                        <button type="submit" class="adm-btn adm-btn--primary" style="width:100%;">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
-                            Apply Scholarship
-                        </button>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Refund -->
-            <div class="adm-card" style="margin-bottom:16px;">
-                <div class="adm-card__header">
-                    <div class="adm-card__header-left">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="11 17 6 12 11 7"/><path d="M6 12h10a4 4 0 0 1 4 4v1"/></svg>
-                        <h3 class="adm-card__title">Refund</h3>
-                    </div>
-                </div>
-                <div class="adm-card__body">
-                    <form id="refundForm">
-                        <input type="hidden" name="applicationId" value="@Model.ApplicationId" />
-                        <div class="adm-form-group">
-                            <label class="adm-form-label">Refund Amount</label>
-                            <div class="adm-input-wrap">
-                                <span class="adm-input-wrap__addon" style="font-weight:600;">৳</span>
-                                <input type="number" name="amount" class="adm-input" step="0.01" min="0" max="@Model.PaidAmount" value="@Model.PaidAmount" required />
-                            </div>
-                        </div>
-                        <div class="adm-form-group">
-                            <label class="adm-form-label">Reason</label>
-                            <input type="text" name="reason" class="adm-input adm-input--full" placeholder="Cancellation / Withdrawal" required />
-                        </div>
-                        <button type="submit" class="adm-btn adm-btn--warning" style="width:100%;">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="11 17 6 12 11 7"/><path d="M6 12h10a4 4 0 0 1 4 4v1"/></svg>
-                            Process Refund
-                        </button>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Installment Plan -->
-            <div class="adm-card">
-                <div class="adm-card__header">
-                    <div class="adm-card__header-left">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
-                        <h3 class="adm-card__title">Installment Plan</h3>
-                    </div>
-                </div>
-                <div class="adm-card__body">
-                    <div class="adm-form-group">
-                        <label class="adm-form-label">Number of Installments</label>
-                        <select id="installmentCount" class="adm-select adm-select--full">
-                            <option value="2">2</option>
-                            <option value="3" selected>3</option>
-                            <option value="4">4</option>
-                            <option value="6">6</option>
-                        </select>
-                    </div>
-                    <button type="button" class="adm-btn adm-btn--ghost" style="width:100%;" id="generatePlanBtn">
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 20V10M18 20V4M6 20v-4"/></svg>
-                        Generate Plan
-                    </button>
-                    <div id="installmentPlan" style="display:none;margin-top:12px;">
-                        <table class="adm-table adm-table--striped" style="margin:0;">
-                            <thead><tr><th>#</th><th>Due Date</th><th>Amount</th><th>Status</th></tr></thead>
-                            <tbody id="installmentBody"></tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+    <div class="adm-table-card">
+        <div class="adm-table-card__body" style="overflow-x:auto;">
+            <table class="adm-table adm-table--striped" id="financeTable">
+                <thead>
+                    <tr>
+                        <th>App No</th>
+                        <th>Applicant</th>
+                        <th>Class</th>
+                        <th>Fee (৳)</th>
+                        <th>Paid (৳)</th>
+                        <th>Due (৳)</th>
+                        <th>Payment Status</th>
+                        <th>App Status</th>
+                        <th>Last Payment</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td><code>@item.ApplicationNo</code></td>
+                            <td><strong>@item.ApplicantName</strong></td>
+                            <td>@(item.AppliedClass ?? "—")</td>
+                            <td class="td--fw700">@item.AdmissionFee.ToString("N2")</td>
+                            <td class="td--fw700" style="color:var(--adm-success);">@item.PaidAmount.ToString("N2")</td>
+                            <td class="td--fw700" style="color:@(item.DueAmount > 0 ? "var(--adm-rejected)" : "var(--adm-success)");">@item.DueAmount.ToString("N2")</td>
+                            <td>
+                                <span class="adm-badge adm-badge--sm @(item.IsPaid ? "adm-badge--success" : "adm-badge--warning")">
+                                    @item.PaymentStatus
+                                </span>
+                            </td>
+                            <td>
+                                @{
+                                    var badgeClass = item.Status == AdmissionStatus.Pending ? "adm-badge--warning" :
+                                        item.Status == AdmissionStatus.Approved ? "adm-badge--info" :
+                                        item.Status == AdmissionStatus.Converted ? "adm-badge--success" : "adm-badge--error";
+                                }
+                                <span class="adm-badge adm-badge--sm @badgeClass">@item.Status</span>
+                            </td>
+                            <td style="font-size:13px;color:var(--adm-text-3);">@(item.LastPaymentAt?.ToString("dd-MMM-yyyy") ?? "—")</td>
+                            <td>
+                                <a href="/Admission/Finance/@item.ApplicationId" class="adm-btn adm-btn--ghost adm-btn--sm" title="Manage Fee">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                                    Fee
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                    @if (Model.Count == 0)
+                    {
+                        <tr><td colspan="10" class="empty-state">No fee records found.</td></tr>
+                    }
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
 
 @section Scripts {
     <script>
-        const baseUrl = '@Url.Action("RecordPayment", "Admission")';
-        const scholarshipUrl = '@Url.Action("ApplyScholarship", "Admission")';
-        const refundUrl = '@Url.Action("ProcessRefund", "Admission")';
+        (function() {
+            var searchInput = document.getElementById('searchInput');
+            var statusFilter = document.getElementById('statusFilter');
+            var table = document.getElementById('financeTable');
+            var meta = document.getElementById('tableMeta');
 
-        $('#paymentForm').on('submit', function (e) {
-            e.preventDefault();
-            const btn = $('#recordPaymentBtn').prop('disabled', true);
-            $.post(baseUrl, JSON.stringify({
-                applicationId: @Model.ApplicationId,
-                amount: parseFloat($('#Amount').val()),
-                paymentMethod: parseInt($('#PaymentMethod').val()),
-                transactionId: $('#TransactionId').val() || null,
-                remarks: $('#Remarks').val() || null
-            }), function (res) {
-                if (res.success) location.reload();
-                else alert(res.message);
-            }).fail(function (x) { alert(x.responseJSON?.message || 'Error'); })
-              .always(function () { btn.prop('disabled', false); });
-        });
-
-        $('#scholarshipForm').on('submit', function (e) {
-            e.preventDefault();
-            const f = $(this).serialize() + '&description=' + encodeURIComponent($('[name="description"]').val() || '');
-            $.post(scholarshipUrl, f, function (res) {
-                alert(res.message);
-                if (res.success) { $('[name="percentage"]').val(''); $('[name="description"]').val(''); }
-            }).fail(function (x) { alert(x.responseJSON?.message || 'Error'); });
-        });
-
-        $('#refundForm').on('submit', function (e) {
-            e.preventDefault();
-            if (!confirm('Confirm refund?')) return;
-            const f = $(this).serialize();
-            $.post(refundUrl, f, function (res) {
-                alert(res.message);
-                if (res.success) location.reload();
-            }).fail(function (x) { alert(x.responseJSON?.message || 'Error'); });
-        });
-
-        $('#generatePlanBtn').on('click', function () {
-            const count = $('#installmentCount').val();
-            const fee = @Model.AdmissionFee;
-            const due = new Date();
-            due.setDate(due.getDate() + 30);
-            const perInstallment = Math.round((fee / count) * 100) / 100;
-            let rows = '';
-            for (let i = 1; i <= count; i++) {
-                const amt = i === parseInt(count) ? (fee - perInstallment * (count - 1)).toFixed(2) : perInstallment.toFixed(2);
-                const d = new Date(due); d.setMonth(d.getMonth() + i - 1);
-                rows += '<tr><td>' + i + '</td><td>' + d.toLocaleDateString() + '</td><td>' + amt + '</td><td><span class="adm-badge adm-badge--neutral">Pending</span></td></tr>';
+            function filterRows() {
+                var q = (searchInput.value || '').toLowerCase();
+                var s = statusFilter.value;
+                var rows = table.querySelectorAll('tbody tr');
+                var visible = 0;
+                rows.forEach(function(row) {
+                    if (row.children.length < 10) return;
+                    var text = row.textContent.toLowerCase();
+                    var statusCell = row.children[6].textContent.trim().toLowerCase();
+                    var match = (!q || text.includes(q)) && (!s || statusCell === s);
+                    row.style.display = match ? '' : 'none';
+                    if (match) visible++;
+                });
+                meta.textContent = visible + ' record(s)';
             }
-            $('#installmentBody').html(rows);
-            $('#installmentPlan').show();
-        });
+
+            searchInput.addEventListener('input', filterRows);
+            statusFilter.addEventListener('change', filterRows);
+        })();
     </script>
 }

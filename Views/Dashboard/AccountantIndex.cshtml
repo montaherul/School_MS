@@ -6,76 +6,52 @@
 <div class="adm-page">
 
     <!-- Header -->
-    <div class="dashboard-hero mb-4">
+    <div class="dashboard-hero">
         <div class="dashboard-hero__content">
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <h2 class="fw-bold mb-1"><i class="bi bi-calculator me-2"></i>Finance Dashboard</h2>
-                    <p class="opacity-75 mb-0">Fee collection overview, outstanding balances and payment summaries</p>
-                </div>
-                <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                    <div class="dashboard-date-pill">
-                        <i class="bi bi-calendar-event"></i>
-                        <span>@DateTime.Now.ToString("dddd, MMM dd")</span>
+            <div class="dash-section__header">
+                <div class="dash-section__header-left">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                    <div>
+                        <h2 class="dash-section__title">Finance Dashboard</h2>
+                        <p class="dash-section__desc">Fee collection overview, outstanding balances and payment summaries</p>
                     </div>
+                </div>
+                <div class="dashboard-date-pill">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <span>@DateTime.Now.ToString("dddd, MMM dd")</span>
                 </div>
             </div>
         </div>
-        <div class="dashboard-hero__decor"></div>
     </div>
 
     <!-- Summary Cards -->
-    <div class="row g-3 mb-4">
-        <div class="col-md-3">
-            <div class="card shadow-sm border-0 bg-primary bg-gradient text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <p class="mb-1 small opacity-75">Total Assigned</p>
-                            <h3 class="mb-0 fw-bold">৳@Model.TotalAssigned.ToString("N2")</h3>
-                        </div>
-                        <i class="bi bi-cash-stack fs-1 opacity-50"></i>
-                    </div>
-                </div>
+    <div class="dash-stats">
+        <div class="dash-stat-card dash-stat-card--gradient-blue">
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Total Assigned</span>
+                <span class="dash-stat-card__value">৳@Model.TotalAssigned.ToString("N2")</span>
+                <svg class="dash-stat-card__icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card shadow-sm border-0 bg-success bg-gradient text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <p class="mb-1 small opacity-75">Total Collected</p>
-                            <h3 class="mb-0 fw-bold">৳@Model.TotalCollected.ToString("N2")</h3>
-                        </div>
-                        <i class="bi bi-wallet2 fs-1 opacity-50"></i>
-                    </div>
-                </div>
+        <div class="dash-stat-card dash-stat-card--gradient-teal">
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Total Collected</span>
+                <span class="dash-stat-card__value">৳@Model.TotalCollected.ToString("N2")</span>
+                <svg class="dash-stat-card__icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card shadow-sm border-0 bg-danger bg-gradient text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <p class="mb-1 small opacity-75">Total Outstanding</p>
-                            <h3 class="mb-0 fw-bold">৳@Model.TotalOutstanding.ToString("N2")</h3>
-                        </div>
-                        <i class="bi bi-exclamation-triangle fs-1 opacity-50"></i>
-                    </div>
-                </div>
+        <div class="dash-stat-card dash-stat-card--gradient-amber">
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Total Outstanding</span>
+                <span class="dash-stat-card__value">৳@Model.TotalOutstanding.ToString("N2")</span>
+                <svg class="dash-stat-card__icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card shadow-sm border-0 bg-info bg-gradient text-white">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <p class="mb-1 small opacity-75">Collection Rate</p>
-                            <h3 class="mb-0 fw-bold">@Model.CollectionRate.ToString("N1")%</h3>
-                        </div>
-                        <i class="bi bi-graph-up-arrow fs-1 opacity-50"></i>
-                    </div>
-                </div>
+        <div class="dash-stat-card dash-stat-card--gradient-purple">
+            <div class="dash-stat-card__body">
+                <span class="dash-stat-card__label">Collection Rate</span>
+                <span class="dash-stat-card__value">@Model.CollectionRate.ToString("N1")%</span>
+                <svg class="dash-stat-card__icon" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
             </div>
         </div>
     </div>
@@ -83,67 +59,71 @@
     <!-- Payment Method Breakdown -->
     @if (Model.PaymentMethodBreakdown.Count != 0)
     {
-        <div class="row g-4 mb-4">
-            <div class="col-12">
-                <div class="adm-table-card">
-                    <div class="dash-section__header p-4 border-bottom">
-                        <h5 class="dash-section__title"><i class="bi bi-pie-chart me-2"></i>Payment Method Breakdown</h5>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="dash-table">
-                            <thead>
+        <div class="adm-card">
+            <div class="adm-card__header">
+                <div class="adm-card__header-left">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <h3 class="adm-card__title">Payment Method Breakdown</h3>
+                </div>
+            </div>
+            <div class="adm-card__body">
+                <div class="adm-table-scroll">
+                    <table class="adm-table">
+                        <thead>
+                            <tr>
+                                <th>Method</th>
+                                <th class="adm-table__cell--right">Count</th>
+                                <th class="adm-table__cell--right">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.PaymentMethodBreakdown)
+                            {
                                 <tr>
-                                    <th>Method</th>
-                                    <th class="text-end">Count</th>
-                                    <th class="text-end">Total</th>
+                                    <td>Method @item.Method</td>
+                                    <td class="adm-table__cell--right">@item.Count</td>
+                                    <td class="adm-table__cell--right">৳@item.Total.ToString("N2")</td>
                                 </tr>
-                            </thead>
-                            <tbody>
-                                @foreach (var item in Model.PaymentMethodBreakdown)
-                                {
-                                    <tr>
-                                        <td class="fw-medium">Method @item.Method</td>
-                                        <td class="text-end">@item.Count</td>
-                                        <td class="text-end fw-bold text-success">৳@item.Total.ToString("N2")</td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
+                            }
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     }
 
-    <div class="row g-4">
+    <div class="dash-grid dash-grid--2-1">
         <!-- Monthly Collections -->
-        <div class="col-lg-7">
-            <div class="adm-table-card">
-                <div class="dash-section__header p-4 border-bottom">
-                    <h5 class="dash-section__title"><i class="bi bi-calendar3 me-2"></i>Monthly Collections</h5>
+        <div class="adm-card">
+            <div class="adm-card__header">
+                <div class="adm-card__header-left">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    <h3 class="adm-card__title">Monthly Collections</h3>
                 </div>
-                <div class="table-responsive">
-                    <table class="dash-table">
+            </div>
+            <div class="adm-card__body">
+                <div class="adm-table-scroll">
+                    <table class="adm-table">
                         <thead>
                             <tr>
-                                <th class="ps-3">Period</th>
-                                <th class="text-end">Collected</th>
-                                <th class="text-center">Transactions</th>
+                                <th>Period</th>
+                                <th class="adm-table__cell--right">Collected</th>
+                                <th class="adm-table__cell--center">Transactions</th>
                             </tr>
                         </thead>
                         <tbody>
                             @if (Model.MonthlyCollections.Count == 0)
                             {
                                 <tr>
-                                    <td colspan="3" class="text-center text-muted py-4">No monthly collection data available</td>
+                                    <td colspan="3" class="adm-table__empty">No monthly collection data available</td>
                                 </tr>
                             }
                             @foreach (var item in Model.MonthlyCollections)
                             {
                                 <tr>
-                                    <td class="ps-3 fw-medium">@(new DateTime(item.Year, item.Month, 1).ToString("MMMM yyyy"))</td>
-                                    <td class="text-end fw-bold text-success">৳@item.Collected.ToString("N2")</td>
-                                    <td class="text-center"><span class="badge bg-light text-dark rounded-pill">@item.TransactionCount</span></td>
+                                    <td>@(new DateTime(item.Year, item.Month, 1).ToString("MMMM yyyy"))</td>
+                                    <td class="adm-table__cell--right">৳@item.Collected.ToString("N2")</td>
+                                    <td class="adm-table__cell--center"><span class="adm-badge adm-badge--sm">@item.TransactionCount</span></td>
                                 </tr>
                             }
                         </tbody>
@@ -153,47 +133,50 @@
         </div>
 
         <!-- Due Soon Invoices -->
-        <div class="col-lg-5">
-            <div class="adm-table-card">
-                <div class="dash-section__header p-4 border-bottom">
-                    <h5 class="dash-section__title"><i class="bi bi-clock-history me-2"></i>Due Soon Invoices</h5>
-                    <span class="badge bg-warning rounded-pill">@Model.OverdueInvoices Overdue</span>
+        <div class="adm-card">
+            <div class="adm-card__header">
+                <div class="adm-card__header-left">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    <h3 class="adm-card__title">Due Soon Invoices</h3>
                 </div>
-                <div class="table-responsive">
-                    <table class="dash-table">
+                <span class="adm-badge adm-badge--warning">@Model.OverdueInvoices Overdue</span>
+            </div>
+            <div class="adm-card__body">
+                <div class="adm-table-scroll">
+                    <table class="adm-table">
                         <thead>
                             <tr>
-                                <th class="ps-3">Invoice</th>
+                                <th>Invoice</th>
                                 <th>Student</th>
-                                <th class="text-end">Due</th>
-                                <th class="text-center">Status</th>
+                                <th class="adm-table__cell--right">Due</th>
+                                <th class="adm-table__cell--center">Status</th>
                             </tr>
                         </thead>
                         <tbody>
                             @if (Model.DueSoonInvoices.Count == 0)
                             {
                                 <tr>
-                                    <td colspan="4" class="text-center text-muted py-4">No due invoices</td>
+                                    <td colspan="4" class="adm-table__empty">No due invoices</td>
                                 </tr>
                             }
                             @foreach (var item in Model.DueSoonInvoices)
                             {
                                 <tr>
-                                    <td class="ps-3"><span class="fw-medium">@item.InvoiceNo</span></td>
-                                    <td class="small text-muted">@item.StudentName</td>
-                                    <td class="text-end fw-bold text-danger">৳@item.DueAmount.ToString("N2")</td>
-                                    <td class="text-center">
+                                    <td>@item.InvoiceNo</td>
+                                    <td>@item.StudentName</td>
+                                    <td class="adm-table__cell--right">৳@item.DueAmount.ToString("N2")</td>
+                                    <td class="adm-table__cell--center">
                                         @if (item.DaysRemaining <= 0)
                                         {
-                                            <span class="badge bg-danger rounded-pill">Overdue</span>
+                                            <span class="adm-badge adm-badge--danger">Overdue</span>
                                         }
                                         else if (item.DaysRemaining <= 3)
                                         {
-                                            <span class="badge bg-warning text-dark rounded-pill">@item.DaysRemaining days</span>
+                                            <span class="adm-badge adm-badge--warning">@item.DaysRemaining days</span>
                                         }
                                         else
                                         {
-                                            <span class="badge bg-info rounded-pill">@item.DaysRemaining days</span>
+                                            <span class="adm-badge adm-badge--info">@item.DaysRemaining days</span>
                                         }
                                     </td>
                                 </tr>
@@ -206,21 +189,35 @@
     </div>
 
     <!-- Quick Links -->
-    <div class="row g-4 mt-2">
-        <div class="col-12">
-            <div class="adm-table-card">
-                <div class="dash-section__header p-4 border-bottom">
-                    <h5 class="dash-section__title"><i class="bi bi-link-45deg me-2"></i>Quick Links</h5>
-                </div>
-                <div class="p-4">
-                    <div class="d-flex flex-wrap gap-2">
-                        <a href="/FeeInvoice/Index" class="adm-btn adm-btn--primary adm-btn--sm"><i class="bi bi-receipt me-1"></i>Invoices</a>
-                        <a href="/FeePayment/Index" class="adm-btn adm-btn--success adm-btn--sm"><i class="bi bi-credit-card me-1"></i>Payments</a>
-                        <a href="/FeeStructure/Index" class="adm-btn adm-btn--info adm-btn--sm"><i class="bi bi-cash-coin me-1"></i>Fee Structures</a>
-                        <a href="/FeeReport/Index" class="adm-btn adm-btn--ghost adm-btn--sm"><i class="bi bi-file-earmark-bar-graph me-1"></i>Reports</a>
-                        <a href="/FeeDashboard/Index" class="adm-btn adm-btn--ghost adm-btn--sm"><i class="bi bi-speedometer2 me-1"></i>Full Fee Dashboard</a>
-                    </div>
-                </div>
+    <div class="adm-card">
+        <div class="adm-card__header">
+            <div class="adm-card__header-left">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                <h3 class="adm-card__title">Quick Links</h3>
+            </div>
+        </div>
+        <div class="adm-card__body">
+            <div class="adm-btn-group">
+                <a href="/FeeInvoice/Index" class="adm-btn adm-btn--primary adm-btn--sm">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    Invoices
+                </a>
+                <a href="/FeePayment/Index" class="adm-btn adm-btn--success adm-btn--sm">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                    Payments
+                </a>
+                <a href="/FeeStructure/Index" class="adm-btn adm-btn--info adm-btn--sm">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    Fee Structures
+                </a>
+                <a href="/FeeReport/Index" class="adm-btn adm-btn--ghost adm-btn--sm">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    Reports
+                </a>
+                <a href="/FeeDashboard/Index" class="adm-btn adm-btn--ghost adm-btn--sm">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    Full Fee Dashboard
+                </a>
             </div>
         </div>
     </div>

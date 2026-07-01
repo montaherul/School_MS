@@ -1,3 +1,4 @@
+using SchoolManagementSystem.Models.Entities.Admission;
 using SchoolManagementSystem.Models.Enums;
 
 namespace SchoolManagementSystem.Models.DTOs.Admission;
@@ -23,6 +24,22 @@ public class AdmissionPaymentHistoryDto
     public DateTime PaidAt { get; set; }
     public string? Remarks { get; set; }
     public string? ReceivedBy { get; set; }
+}
+
+public class AdmissionFeeSummaryListItemDto
+{
+    public int ApplicationId { get; set; }
+    public string ApplicationNo { get; set; } = string.Empty;
+    public string ApplicantName { get; set; } = string.Empty;
+    public string? AppliedClass { get; set; }
+    public decimal AdmissionFee { get; set; }
+    public decimal PaidAmount { get; set; }
+    public decimal DueAmount => AdmissionFee - PaidAmount;
+    public bool IsPaid => DueAmount <= 0;
+    public string PaymentStatus => IsPaid ? "Paid" : "Unpaid";
+    public AdmissionStatus Status { get; set; }
+    public DateTime AppliedAt { get; set; }
+    public DateTime? LastPaymentAt { get; set; }
 }
 
 public class AdmissionFeeSummaryDto

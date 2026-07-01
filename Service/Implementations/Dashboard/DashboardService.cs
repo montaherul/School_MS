@@ -12,6 +12,7 @@ using SchoolManagementSystem.Models.DTOs.Attendance;
 using SchoolManagementSystem.Services.Interfaces.Guardian;
 using SchoolManagementSystem.Services.Interfaces.Academic;
 using SchoolManagementSystem.Services.Interfaces.Fees;
+using SchoolManagementSystem.Services.Interfaces.Admissions;
 using SchoolManagementSystem.Services.Interfaces.Result;
 using SchoolManagementSystem.Models.Entities.Result;
 using SchoolManagementSystem.Models.Entities.Exam;
@@ -31,6 +32,7 @@ public class DashboardService : IDashboardService
     private readonly IResultPublicationRepository _publicationRepository;
     private readonly IStudentExamResultRepository _examResultRepository;
     private readonly IFeeDashboardService _feeDashboardService;
+    private readonly IAdmissionDashboardService _admissionDashboardService;
     private readonly IReportCardService _reportCardService;
 
     public DashboardService(
@@ -43,6 +45,7 @@ public class DashboardService : IDashboardService
         IResultPublicationRepository publicationRepository,
         IStudentExamResultRepository examResultRepository,
         IFeeDashboardService feeDashboardService,
+        IAdmissionDashboardService admissionDashboardService,
         IReportCardService reportCardService)
     {
         _dashboardRepository = dashboardRepository;
@@ -54,6 +57,7 @@ public class DashboardService : IDashboardService
         _publicationRepository = publicationRepository;
         _examResultRepository = examResultRepository;
         _feeDashboardService = feeDashboardService;
+        _admissionDashboardService = admissionDashboardService;
         _reportCardService = reportCardService;
     }
 
@@ -102,8 +106,48 @@ public class DashboardService : IDashboardService
         var classWisePoints = await GetClassAttendanceAnalyticsAsync(DateTime.Today, cancellationToken);
         var calendarWidgets = await _calendarDashboardService.GetAllWidgetsAsync(cancellationToken);
 
+        // ── Admission summary (for summary card + alerts) ──
+        var admissionDto = await _admissionDashboardService.GetDashboardAsync(ct: cancellationToken);
+
+        var today = DateTime.Today;
+        var studentsCreatedToday = await studentRepo.CountAsync(s => !s.IsDeleted && s.CreatedAt >= today, cancellationToken);
+
+        var admissionRepo = _uow.Repository<SchoolManagementSystem.Models.Entities.Admission.AdmissionApplication>();
+        var pendingReviewCount = await admissionRepo.CountAsync(a => a.Status == SchoolManagementSystem.Models.Enums.AdmissionStatus.Pending && !a.IsDeleted, cancellationToken);
+
+        var admissionDocRepo = _uow.Repository<SchoolManagementSystem.Models.Entities.Admission.AdmissionDocument>();
+        var pendingDocCount = await admissionDocRepo.CountAsync(d => d.VerificationStatus == SchoolManagementSystem.Models.Enums.DocumentVerificationStatus.Pending && !d.IsDeleted, cancellationToken);
+
+        var pendingInterviewCount = await admissionRepo.CountAsync(a =>
+            a.Status == SchoolManagementSystem.Models.Enums.AdmissionStatus.Pending
+            && a.AllDocumentsVerified && !a.IsDeleted, cancellationToken);
+
+        // ── Finance summary (revenue today + this month) ──
+        var feeInvoiceRepo = _uow.Repository<SchoolManagementSystem.Models.Entities.Fees.FeeInvoice>();
+        var feePaymentRepo = _uow.Repository<SchoolManagementSystem.Models.Entities.Fees.FeeLedger>();
+
+        var pendingPaymentCount = await feeInvoiceRepo.CountAsync(f => f.Status != SchoolManagementSystem.Models.Enums.PaymentStatus.Paid && !f.IsDeleted, cancellationToken);
+
+        var revenueToday = await feePaymentRepo.Query()
+            .Where(p => p.TransactionType == SchoolManagementSystem.Models.Enums.FeeLedgerType.Payment && p.TransactionDate >= today && p.TransactionDate < today.AddDays(1))
+            .SumAsync(p => p.Credit, cancellationToken);
+
+        var monthStart = new DateTime(today.Year, today.Month, 1);
+        var revenueThisMonth = await feePaymentRepo.Query()
+            .Where(p => p.TransactionType == SchoolManagementSystem.Models.Enums.FeeLedgerType.Payment && p.TransactionDate >= monthStart && p.TransactionDate <= today)
+            .SumAsync(p => p.Credit, cancellationToken);
+
         return new DashboardViewModel
         {
+            // ── Executive KPIs (used by summary cards) ──
+            AdmissionsToday = admissionDto.TodayApplications,
+            PendingReviews = pendingReviewCount,
+            PendingPayments = pendingPaymentCount,
+            PendingDocuments = pendingDocCount,
+            PendingInterviews = pendingInterviewCount,
+            RevenueToday = revenueToday,
+            RevenueThisMonth = revenueThisMonth,
+
             TotalStudents = data.totalStudents,
             PendingAdmissions = data.pendingAdmissions,
             FeesCollected = data.feesCollected,
@@ -137,7 +181,15 @@ public class DashboardService : IDashboardService
             ActiveStudentsWithCards = activeStudentsWithCards,
             TotalEmployeesWithCards = totalEmployeesWithCards,
             ActiveEmployeesWithCards = activeEmployeesWithCards,
-            CalendarWidgets = calendarWidgets
+            CalendarWidgets = calendarWidgets,
+
+            // ── Admission summary (for card) ──
+            AdmissionConverted = admissionDto.Converted,
+
+            // ══════════════════════════════════════
+            //  EXECUTIVE ALERTS
+            // ══════════════════════════════════════
+            Alerts = await BuildAlertsAsync(admissionDto, pendingDocCount, pendingInterviewCount, revenueToday, studentsCreatedToday, cancellationToken)
         };
     }
 
@@ -151,6 +203,41 @@ public class DashboardService : IDashboardService
     {
         var points = await _dashboardRepository.GetClassAttendanceAnalyticsAsync(date, ct);
         return points.Select(MapChart).ToList();
+    }
+
+    private async Task<List<DashboardAlert>> BuildAlertsAsync(
+        SchoolManagementSystem.Models.DTOs.Admission.AdmissionDashboardDto admissionDto,
+        int pendingDocCount, int pendingInterviewCount, decimal revenueToday, int studentsCreatedToday,
+        CancellationToken ct)
+    {
+        var alerts = new List<DashboardAlert>();
+
+        if (admissionDto.PendingVerification > 0)
+            alerts.Add(new DashboardAlert("danger", $"{admissionDto.PendingVerification} application(s) waiting > 3 days for review"));
+
+        if (pendingDocCount > 0)
+            alerts.Add(new DashboardAlert("warning", $"{pendingDocCount} document(s) awaiting verification"));
+
+        if (revenueToday > 0)
+            alerts.Add(new DashboardAlert("success", $"৳{revenueToday:N0} admission payment(s) received today"));
+
+        if (admissionDto.Rejected > 0)
+            alerts.Add(new DashboardAlert("danger", $"{admissionDto.Rejected} application(s) rejected — review failed conversions"));
+
+        var guardianRepo = _uow.Repository<SchoolManagementSystem.Models.Entities.Guardian.Guardian>();
+        var guardiansWithoutUser = await guardianRepo.CountAsync(g => !g.IsDeleted && g.UserId == null, ct);
+        if (guardiansWithoutUser > 0)
+            alerts.Add(new DashboardAlert("warning", $"{guardiansWithoutUser} guardian(s) missing user accounts"));
+
+        var studentRepo = _uow.Repository<SchoolManagementSystem.Models.Entities.Student.Student>();
+        var studentsWithoutUser = await studentRepo.CountAsync(s => !s.IsDeleted && s.UserId == null, ct);
+        if (studentsWithoutUser > 0)
+            alerts.Add(new DashboardAlert("danger", $"{studentsWithoutUser} student(s) missing user accounts"));
+
+        if (studentsCreatedToday > 0)
+            alerts.Add(new DashboardAlert("success", $"{studentsCreatedToday} student(s) created today"));
+
+        return alerts;
     }
 
     public async Task<StudentDashboardViewModel> GetStudentDashboardAsync(int userId, CancellationToken cancellationToken = default)

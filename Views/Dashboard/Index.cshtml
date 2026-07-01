@@ -14,7 +14,7 @@
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" /><rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" /></svg>
             </div>
             <div>
-                <h1 class="adm-header__title">Dashboard</h1>
+                <h1 class="adm-header__title">Executive Dashboard</h1>
                 <p class="adm-header__sub">School overview, metrics and recent activity</p>
             </div>
         </div>
@@ -24,8 +24,8 @@
         </a>
     </div>
 
-    <!-- ── Metric Cards ── -->
-    <div class="dash-stats" style="grid-template-columns: repeat(8,1fr);">
+    <!-- ── Core Metric Cards ── -->
+    <div class="dash-stats">
         <div class="dash-stat-card">
             <div class="dash-stat-card__icon dash-stat-card__icon--primary">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
@@ -36,7 +36,7 @@
             </div>
         </div>
         <div class="dash-stat-card">
-            <div class="dash-stat-card__icon" style="background: rgba(13,148,136,.1); color: #0d9488;">
+            <div class="dash-stat-card__icon dash-stat-card__icon--teal">
                 <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
             </div>
             <div class="dash-stat-card__body">
@@ -80,24 +80,6 @@
                 <span class="dash-stat-card__value">@Model.AttendancePercentage<span class="dash-stat-card__unit">%</span></span>
             </div>
         </div>
-        <div class="dash-stat-card">
-            <div class="dash-stat-card__icon" style="background: rgba(124,58,237,.1); color: #7c3aed;">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 10h10M7 14h6"/></svg>
-            </div>
-            <div class="dash-stat-card__body">
-                <span class="dash-stat-card__label">Student ID Cards</span>
-                <span class="dash-stat-card__value">@Model.ActiveStudentsWithCards<span class="dash-stat-card__unit">/<span class="dash-stat-card__unit">@Model.TotalStudentsWithCards</span></span></span>
-            </div>
-        </div>
-        <div class="dash-stat-card">
-            <div class="dash-stat-card__icon" style="background: rgba(234,179,8,.1); color: #eab308;">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 10h10M7 14h6"/></svg>
-            </div>
-            <div class="dash-stat-card__body">
-                <span class="dash-stat-card__label">Employee ID Cards</span>
-                <span class="dash-stat-card__value">@Model.ActiveEmployeesWithCards<span class="dash-stat-card__unit">/<span class="dash-stat-card__unit">@Model.TotalEmployeesWithCards</span></span></span>
-            </div>
-        </div>
     </div>
 
     <!-- ── Charts + Activity + Modules ── -->
@@ -119,11 +101,168 @@
             <canvas id="feesChart" height="160"></canvas>
         </div>
 
+        <!-- ── Admission Summary (Executive) ── -->
+        <div class="dash-panel">
+            <div class="dash-panel__header">
+                <h2 class="dash-panel__title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--adm-primary)" stroke-width="2" stroke-linecap="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                    Admission Summary
+                </h2>
+                <a href="/Admission/Dashboard" class="adm-btn adm-btn--sm">Open Dashboard</a>
+            </div>
+            <div class="dash-stats dash-stats--compact">
+                <div class="dash-stat-card dash-stat-card--mini">
+                    <div class="dash-stat-card__icon dash-stat-card__icon--primary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/></svg>
+                    </div>
+                    <div class="dash-stat-card__body">
+                        <span class="dash-stat-card__label">Admissions Today</span>
+                        <span class="dash-stat-card__value">@Model.AdmissionsToday</span>
+                    </div>
+                </div>
+                <div class="dash-stat-card dash-stat-card--mini">
+                    <div class="dash-stat-card__icon dash-stat-card__icon--warning">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
+                    <div class="dash-stat-card__body">
+                        <span class="dash-stat-card__label">Pending Review</span>
+                        <span class="dash-stat-card__value">@Model.PendingReviews</span>
+                    </div>
+                </div>
+                <div class="dash-stat-card dash-stat-card--mini">
+                    <div class="dash-stat-card__icon dash-stat-card__icon--success">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <div class="dash-stat-card__body">
+                        <span class="dash-stat-card__label">Converted</span>
+                        <span class="dash-stat-card__value">@Model.AdmissionConverted</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Finance Summary (Executive) ── -->
+        <div class="dash-panel">
+            <div class="dash-panel__header">
+                <h2 class="dash-panel__title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--adm-converted)" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    Finance Summary
+                </h2>
+                <a href="/FeeDashboard/Index" class="adm-btn adm-btn--sm">Open Dashboard</a>
+            </div>
+            <div class="dash-stats dash-stats--compact">
+                <div class="dash-stat-card dash-stat-card--mini">
+                    <div class="dash-stat-card__icon dash-stat-card__icon--success">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13 15 8 10 1 17"/></svg>
+                    </div>
+                    <div class="dash-stat-card__body">
+                        <span class="dash-stat-card__label">Revenue Today</span>
+                        <span class="dash-stat-card__value">৳@Model.RevenueToday.ToString("N0")</span>
+                    </div>
+                </div>
+                <div class="dash-stat-card dash-stat-card--mini">
+                    <div class="dash-stat-card__icon dash-stat-card__icon--primary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    </div>
+                    <div class="dash-stat-card__body">
+                        <span class="dash-stat-card__label">Revenue This Month</span>
+                        <span class="dash-stat-card__value">৳@Model.RevenueThisMonth.ToString("N0")</span>
+                    </div>
+                </div>
+                <div class="dash-stat-card dash-stat-card--mini">
+                    <div class="dash-stat-card__icon dash-stat-card__icon--warning">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                    </div>
+                    <div class="dash-stat-card__body">
+                        <span class="dash-stat-card__label">Outstanding</span>
+                        <span class="dash-stat-card__value">@Model.FeesDue.ToString("N0")</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Quick Actions ── -->
+        <div class="dash-panel">
+            <div class="dash-panel__header">
+                <h2 class="dash-panel__title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--adm-primary)" stroke-width="2" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                    Quick Actions
+                </h2>
+            </div>
+            <div class="dash-modules">
+                <a class="dash-module-btn dash-module-btn--primary" href="/Admission/Index">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                    Review Applications
+                </a>
+                <a class="dash-module-btn" href="/Admission/Dashboard">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                    Admission Dashboard
+                </a>
+                <a class="dash-module-btn" href="/FeeDashboard/Index">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    Finance Dashboard
+                </a>
+                <a class="dash-module-btn" href="/Student/Index">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+                    Students
+                </a>
+                <a class="dash-module-btn" href="/Teacher/Index">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                    Teachers
+                </a>
+                <a class="dash-module-btn" href="/AttendanceRecord/Index">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    Attendance
+                </a>
+            </div>
+        </div>
+
+        <!-- ── Executive Alerts ── -->
+        <div class="dash-panel">
+            <div class="dash-panel__header">
+                <h2 class="dash-panel__title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--adm-rejected)" stroke-width="2" stroke-linecap="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    Alerts
+                </h2>
+            </div>
+            <div class="dash-alerts">
+                @foreach (var alert in Model.Alerts)
+                {
+                    <div class="dash-alert dash-alert--@alert.Level">
+                        <span class="dash-alert__icon">
+                            @if (alert.Level == "danger")
+                            {
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+                            }
+                            else if (alert.Level == "warning")
+                            {
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                            }
+                            else
+                            {
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                            }
+                        </span>
+                        <span class="dash-alert__msg">@alert.Message</span>
+                    </div>
+                }
+                @if (!Model.Alerts.Any())
+                {
+                    <div class="dash-alert dash-alert--success">
+                        <span class="dash-alert__icon">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                        </span>
+                        <span class="dash-alert__msg">All systems operational — no alerts</span>
+                    </div>
+                }
+            </div>
+        </div>
+
         <!-- Recent Activity -->
         <div class="dash-panel">
             <div class="dash-panel__header">
                 <h2 class="dash-panel__title">
-                    <i class="bi bi-lightning-charge" style="color:var(--adm-pending);"></i>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--adm-pending)" stroke-width="2" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
                     Recent Activity
                 </h2>
             </div>
@@ -134,141 +273,133 @@
         <div class="dash-panel">
             <div class="dash-panel__header">
                 <h2 class="dash-panel__title">
-                    <i class="bi bi-person-workspace" style="color:var(--adm-primary);"></i>
-                    Academic Assignment Summary
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--adm-primary)" stroke-width="2" stroke-linecap="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    Academic Assignment
                 </h2>
             </div>
-            <div class="p-4">
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <div class="p-3 border rounded">
-                            <h6 class="fw-bold mb-2">Classes</h6>
-                            <div class="d-flex justify-content-between">
-                                <span>Total Classes:</span>
-                                <span class="fw-bold">@Model.TotalClasses</span>
-                            </div>
-                            <div class="d-flex justify-content-between">
-                                <span>Assigned:</span>
-                                <span class="text-success">@Model.AssignedClasses</span>
-                            </div>
-                            <div class="d-flex justify-content-between">
-                                <span>Unassigned:</span>
-                                <span class="@(Model.UnassignedClasses > 0 ? "text-danger" : "text-muted")">@Model.UnassignedClasses</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="p-3 border rounded">
-                            <h6 class="fw-bold mb-2">Subjects</h6>
-                            <div class="d-flex justify-content-between">
-                                <span>Total Subjects:</span>
-                                <span class="fw-bold">@Model.TotalSubjects</span>
-                            </div>
-                            <div class="d-flex justify-content-between">
-                                <span>Assigned:</span>
-                                <span class="text-success">@Model.AssignedSubjects</span>
-                            </div>
-                            <div class="d-flex justify-content-between">
-                                <span>Unassigned:</span>
-                                <span class="@(Model.UnassignedSubjects > 0 ? "text-danger" : "text-muted")">@Model.UnassignedSubjects</span>
-                            </div>
-                        </div>
+            <div class="dash-assign-grid">
+                <div class="dash-assign-card">
+                    <span class="dash-assign-card__label">Classes</span>
+                    <div class="dash-assign-card__row">
+                        <span>Total: <strong>@Model.TotalClasses</strong></span>
+                        <span>Assigned: <strong>@Model.AssignedClasses</strong></span>
+                        <span>Unassigned: <strong>@Model.UnassignedClasses</strong></span>
                     </div>
                 </div>
-                <div class="mt-4 d-flex flex-wrap gap-2">
-                    <a href="/Teacher/Index" class="adm-btn adm-btn--sm adm-btn--primary">Manage Assignments</a>
-                    <a href="/Teacher/Logs" class="adm-btn adm-btn--sm adm-btn--ghost">Assignment Logs</a>
-                    <a href="/Teacher/Conflicts" class="adm-btn adm-btn--sm adm-btn--ghost">Conflict Resolver</a>
+                <div class="dash-assign-card">
+                    <span class="dash-assign-card__label">Subjects</span>
+                    <div class="dash-assign-card__row">
+                        <span>Total: <strong>@Model.TotalSubjects</strong></span>
+                        <span>Assigned: <strong>@Model.AssignedSubjects</strong></span>
+                        <span>Unassigned: <strong>@Model.UnassignedSubjects</strong></span>
+                    </div>
                 </div>
+            </div>
+            <div class="dash-panel__footer">
+                <a href="/Teacher/Index" class="adm-btn adm-btn--sm adm-btn--primary">Manage Assignments</a>
+                <a href="/Teacher/Index" class="adm-btn adm-btn--sm adm-btn--ghost">Manage Teachers</a>
+                <a href="/Routine/Conflicts" class="adm-btn adm-btn--sm adm-btn--ghost">Schedule Conflicts</a>
             </div>
         </div>
 
-        <!-- Academic Result Operations -->
-        <div class="dash-panel" style="grid-column: span 2;">
+        <!-- Examination & Academic Results -->
+        <div class="dash-panel dash-panel--wide">
             <div class="dash-panel__header">
                 <h2 class="dash-panel__title">
-                    <i class="bi bi-award dash-icon-success" style="color: var(--adm-primary);"></i>
-                    Examination & Academic Results Center
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--adm-primary)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+                    Examination & Results
                 </h2>
             </div>
-            <div class="row p-3 g-3">
-                <div class="col-md-4">
-                    <div class="card bg-dark text-white border-secondary p-3 h-100" style="background: rgba(15, 118, 110, 0.05) !important;">
-                        <h5 class="card-title text-primary"><i class="bi bi-calendar3"></i> Exam Scheduling</h5>
-                        <p class="card-text text-muted" style="font-size: 0.85rem; margin-bottom: 12px;">Create datesheets, prevent room slot double-bookings, and print ready routines.</p>
-                        <a href="/ExamSchedule/Index" class="btn btn-outline-primary btn-sm mt-auto w-100">Schedule & Routine</a>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card bg-dark text-white border-secondary p-3 h-100" style="background: rgba(15, 118, 110, 0.05) !important;">
-                        <h5 class="card-title text-success"><i class="bi bi-input-cursor-text"></i> Grade Entry Sheet</h5>
-                        <p class="card-text text-muted" style="font-size: 0.85rem; margin-bottom: 12px;">Assigned subject markentry sheets for teachers. Rounding rules & modifications audit trail.</p>
-                        <a href="/Marks/Index" class="btn btn-outline-success btn-sm mt-auto w-100">Enter Academic Marks</a>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card bg-dark text-white border-secondary p-3 h-100" style="background: rgba(15, 118, 110, 0.05) !important;">
-                        <h5 class="card-title text-warning"><i class="bi bi-file-earmark-bar-graph"></i> Report Cards</h5>
-                        <p class="card-text text-muted" style="font-size: 0.85rem; margin-bottom: 12px;">Class-wise aggregate positions, NCTB standard letter grades, and printable PDF cards.</p>
-                        <a href="/ReportCard/Index" class="btn btn-outline-warning btn-sm mt-auto w-100">Student Progress Sheets</a>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card bg-dark text-white border-secondary p-3 h-100" style="background: rgba(15, 118, 110, 0.05) !important;">
-                        <h5 class="card-title text-info"><i class="bi bi-trophy"></i> School Standings</h5>
-                        <p class="card-text text-muted" style="font-size: 0.85rem; margin-bottom: 12px;">School-wide, class-wise, section-wise and group ranking merit lists.</p>
-                        <a href="/MeritList/Index" class="btn btn-outline-info btn-sm mt-auto w-100">Merit Rankings</a>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card bg-dark text-white border-secondary p-3 h-100" style="background: rgba(15, 118, 110, 0.05) !important;">
-                        <h5 class="card-title text-danger"><i class="bi bi-grid-3x3"></i> Tabulation Matrix</h5>
-                        <p class="card-text text-muted" style="font-size: 0.85rem; margin-bottom: 12px;">Standard full-view dynamic subject-by-subject school grade book tabulation sheets.</p>
-                        <a href="/AdminResult/TabulationSheet" class="btn btn-outline-danger btn-sm mt-auto w-100">Generate Grade Book</a>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card bg-dark text-white border-secondary p-3 h-100" style="background: rgba(15, 118, 110, 0.05) !important;">
-                        <h5 class="card-title text-primary"><i class="bi bi-pie-chart"></i> Subject Analytics</h5>
-                        <p class="card-text text-muted" style="font-size: 0.85rem; margin-bottom: 12px;">Deep exam analysis including subject pass-percentages and average/min/max metrics.</p>
-                        <a href="/AdminResult/Dashboard" class="btn btn-outline-primary btn-sm mt-auto w-100">Analytics Dashboard</a>
-                    </div>
-                </div>
+            <div class="dash-exam-grid">
+                <a href="/ExamSchedule/Index" class="dash-exam-card">
+                    <span class="dash-exam-card__icon dash-exam-card__icon--primary">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                    </span>
+                    <span class="dash-exam-card__title">Exam Scheduling</span>
+                    <span class="dash-exam-card__desc">Datesheets, routines, room bookings</span>
+                </a>
+                <a href="/Marks/Index" class="dash-exam-card">
+                    <span class="dash-exam-card__icon dash-exam-card__icon--success">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    </span>
+                    <span class="dash-exam-card__title">Grade Entry</span>
+                    <span class="dash-exam-card__desc">Mark entry sheets, rounding rules</span>
+                </a>
+                <a href="/ReportCard/Index" class="dash-exam-card">
+                    <span class="dash-exam-card__icon dash-exam-card__icon--warning">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                    </span>
+                    <span class="dash-exam-card__title">Report Cards</span>
+                    <span class="dash-exam-card__desc">NCTB grades, printable PDFs</span>
+                </a>
+                <a href="/MeritList/Index" class="dash-exam-card">
+                    <span class="dash-exam-card__icon dash-exam-card__icon--info">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg>
+                    </span>
+                    <span class="dash-exam-card__title">Rankings</span>
+                    <span class="dash-exam-card__desc">Merit lists, class standings</span>
+                </a>
+                <a href="/AdminResult/Dashboard" class="dash-exam-card">
+                    <span class="dash-exam-card__icon dash-exam-card__icon--primary">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                    </span>
+                    <span class="dash-exam-card__title">Analytics</span>
+                    <span class="dash-exam-card__desc">Subject analysis, pass rates</span>
+                </a>
+                <a href="/AdminResult/TabulationSheet" class="dash-exam-card">
+                    <span class="dash-exam-card__icon dash-exam-card__icon--danger">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                    </span>
+                    <span class="dash-exam-card__title">Grade Book</span>
+                    <span class="dash-exam-card__desc">Tabulation matrix sheets</span>
+                </a>
             </div>
         </div>
 
         <!-- Calendar Widgets (AJAX loaded) -->
-        <div class="dash-panel">
+        <div class="dash-panel dash-panel--wide">
             <div class="dash-panel__header">
                 <h2 class="dash-panel__title">
-                    <i class="bi bi-calendar3 dash-icon-primary"></i>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--adm-primary)" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
                     Academic Calendar
                 </h2>
                 <a href="/AcademicCalendar/Index" class="adm-btn adm-btn--sm">View Full Calendar</a>
             </div>
-            <div class="row g-3" id="calendarWidgets">
-                <div class="col-md-3">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-header bg-danger text-white py-2"><i class="bi bi-sun me-1"></i> Upcoming Holidays</div>
-                        <div class="card-body p-2" id="widgetHolidays"><div class="text-center text-muted py-3"><div class="spinner-border spinner-border-sm"></div></div></div>
+            <div class="dash-calendar-grid" id="calendarWidgets">
+                <div class="dash-calendar-card">
+                    <div class="dash-calendar-card__header dash-calendar-card__header--danger">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                        Upcoming Holidays
+                    </div>
+                    <div class="dash-calendar-card__body" id="widgetHolidays">
+                        <div class="dash-spinner"></div>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-header bg-warning text-dark py-2"><i class="bi bi-pencil-square me-1"></i> Upcoming Exams</div>
-                        <div class="card-body p-2" id="widgetExams"><div class="text-center text-muted py-3"><div class="spinner-border spinner-border-sm"></div></div></div>
+                <div class="dash-calendar-card">
+                    <div class="dash-calendar-card__header dash-calendar-card__header--warning">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        Upcoming Exams
+                    </div>
+                    <div class="dash-calendar-card__body" id="widgetExams">
+                        <div class="dash-spinner"></div>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-header" style="background:#7c3aed;color:#fff;py-2"><i class="bi bi-star me-1"></i> Upcoming Events</div>
-                        <div class="card-body p-2" id="widgetEvents"><div class="text-center text-muted py-3"><div class="spinner-border spinner-border-sm"></div></div></div>
+                <div class="dash-calendar-card">
+                    <div class="dash-calendar-card__header dash-calendar-card__header--purple">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        Upcoming Events
+                    </div>
+                    <div class="dash-calendar-card__body" id="widgetEvents">
+                        <div class="dash-spinner"></div>
                     </div>
                 </div>
-                <div class="col-md-3">
-                    <div class="card border-0 shadow-sm h-100">
-                        <div class="card-header bg-primary text-white py-2"><i class="bi bi-bar-chart me-1"></i> This Month</div>
-                        <div class="card-body p-2" id="widgetMonthSummary"><div class="text-center text-muted py-3"><div class="spinner-border spinner-border-sm"></div></div></div>
+                <div class="dash-calendar-card">
+                    <div class="dash-calendar-card__header dash-calendar-card__header--primary">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                        This Month
+                    </div>
+                    <div class="dash-calendar-card__body" id="widgetMonthSummary">
+                        <div class="dash-spinner"></div>
                     </div>
                 </div>
             </div>
@@ -278,36 +409,21 @@
         <div class="dash-panel">
             <div class="dash-panel__header">
                 <h2 class="dash-panel__title">
-                    <i class="bi bi-stack dash-icon-primary"></i>
-                    Operational Modules
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--adm-primary)" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                    Modules
                 </h2>
             </div>
             <div class="dash-modules">
-                <a class="dash-module-btn" href="/Admission/Index"><i class="bi bi-person-plus"></i> Admissions</a>
-                <a class="dash-module-btn" href="/Student/Index"><i class="bi bi-people"></i> Students</a>
-                <a class="dash-module-btn" href="/AttendanceRecord/Index"><i class="bi bi-calendar-check"></i> Attendance</a>
-                @if (Can("FeeStructures.Read"))
-                {
-                    <a class="dash-module-btn" href="/FeeStructure/Index"><i class="bi bi-cash-coin"></i> Fee Structures</a>
-                }
-                <a class="dash-module-btn" href="/SchoolClass/Index"><i class="bi bi-building"></i> Classes</a>
-                <a class="dash-module-btn" href="/Section/Index"><i class="bi bi-grid-3x3-gap"></i> Sections</a>
-                <a class="dash-module-btn" href="/Subject/Index"><i class="bi bi-book"></i> Subjects</a>
-                <a class="dash-module-btn" href="/Teacher/Index"><i class="bi bi-person-badge"></i> Teachers</a>
-                <a class="dash-module-btn" href="/Employee"><i class="bi bi-person-workspace"></i> Employees</a>
-                <a class="dash-module-btn dash-module-btn--primary" href="/IdCard/Students"><i class="bi bi-person-vcard"></i> Student ID Cards</a>
-                <a class="dash-module-btn dash-module-btn--primary" href="/IdCard/Employees"><i class="bi bi-person-badge"></i> Employee ID Cards</a>
-                <a class="dash-module-btn" href="/ExamSchedule/Index"><i class="bi bi-calendar4-event"></i> Schedules</a>
-                <a class="dash-module-btn" href="/Admin/ExamRoutine"><i class="bi bi-calendar-event"></i> Exam Routine</a>
-                <a class="dash-module-btn" href="/Marks/Index"><i class="bi bi-pen"></i> Marks Entry</a>
-                <a class="dash-module-btn" href="/ReportCard/Index"><i class="bi bi-file-earmark-pdf"></i> Report Cards</a>
-                <a class="dash-module-btn" href="/MeritList/Index"><i class="bi bi-trophy"></i> Rankings</a>
-                <a class="dash-module-btn" href="/AdminResult/Dashboard"><i class="bi bi-bar-chart-line"></i> Exam Analytics</a>
-                @if (User.IsInRole("Super Admin") || User.IsInRole("Principal"))
-                {
-                    <a class="dash-module-btn dash-module-btn--primary" href="/ResultManagement/AdminIndex"><i class="bi bi-shield-check"></i> Result Management</a>
-                    <a class="dash-module-btn dash-module-btn--primary" href="/Teacher/Index"><i class="bi bi-person-gear"></i> Assign Teachers</a>
-                }
+                <a class="dash-module-btn" href="/Admission/Index"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/></svg> Admissions</a>
+                <a class="dash-module-btn" href="/Student/Index"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> Students</a>
+                <a class="dash-module-btn" href="/AttendanceRecord/Index"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Attendance</a>
+                <a class="dash-module-btn" href="/SchoolClass/Index"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/></svg> Classes</a>
+                <a class="dash-module-btn" href="/Section/Index"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> Sections</a>
+                <a class="dash-module-btn" href="/Subject/Index"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> Subjects</a>
+                <a class="dash-module-btn" href="/Teacher/Index"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Teachers</a>
+                <a class="dash-module-btn" href="/Employee"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> Employees</a>
+                <a class="dash-module-btn" href="/IdCard/Students"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 10h10M7 14h6"/></svg> Student ID Cards</a>
+                <a class="dash-module-btn" href="/IdCard/Employees"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 10h10M7 14h6"/></svg> Employee ID Cards</a>
             </div>
 
             <div class="dash-divider"></div>
@@ -319,7 +435,7 @@
                     <span>Database Connected</span>
                 </div>
                 <div class="dash-health__item">
-                    <i class="bi bi-cpu" style="color:var(--adm-converted);font-size:13px;"></i>
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--adm-converted)" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3"/></svg>
                     <span>Service Load: Optimal</span>
                 </div>
             </div>
@@ -330,39 +446,38 @@
 
 @section Scripts {
     <script>
-        // Calendar Widgets AJAX Loading
         function loadCalendarWidgets() {
             fetch('/AcademicCalendar/WidgetUpcomingHolidays?count=4')
                 .then(r => r.json())
                 .then(data => {
                     const el = document.getElementById('widgetHolidays');
-                    if (!data.length) { el.innerHTML = '<div class="text-center text-muted py-2 small">No upcoming holidays</div>'; return; }
-                    el.innerHTML = '<ul class="list-unstyled mb-0 small">' + data.map(h => `<li class="py-1 border-bottom border-light"><span class="fw-semibold">${h.name}</span><br><span class="text-muted">${h.date} (${h.holidayType})</span></li>`).join('') + '</ul>';
+                    if (!data.length) { el.innerHTML = '<div class="dash-calendar-empty">No upcoming holidays</div>'; return; }
+                    el.innerHTML = '<ul class="dash-calendar-list">' + data.map(h => '<li class="dash-calendar-item"><strong>' + h.name + '</strong><span>' + h.date + ' (' + h.holidayType + ')</span></li>').join('') + '</ul>';
                 });
             fetch('/AcademicCalendar/WidgetUpcomingExams?count=4')
                 .then(r => r.json())
                 .then(data => {
                     const el = document.getElementById('widgetExams');
-                    if (!data.length) { el.innerHTML = '<div class="text-center text-muted py-2 small">No upcoming exams</div>'; return; }
-                    el.innerHTML = '<ul class="list-unstyled mb-0 small">' + data.map(e => `<li class="py-1 border-bottom border-light"><span class="fw-semibold">${e.examName}</span><br><span class="text-muted">${e.date} (${e.dayOfWeek})</span></li>`).join('') + '</ul>';
+                    if (!data.length) { el.innerHTML = '<div class="dash-calendar-empty">No upcoming exams</div>'; return; }
+                    el.innerHTML = '<ul class="dash-calendar-list">' + data.map(e => '<li class="dash-calendar-item"><strong>' + e.examName + '</strong><span>' + e.date + ' (' + e.dayOfWeek + ')</span></li>').join('') + '</ul>';
                 });
             fetch('/AcademicCalendar/WidgetUpcomingEvents?count=4')
                 .then(r => r.json())
                 .then(data => {
                     const el = document.getElementById('widgetEvents');
-                    if (!data.length) { el.innerHTML = '<div class="text-center text-muted py-2 small">No upcoming events</div>'; return; }
-                    el.innerHTML = '<ul class="list-unstyled mb-0 small">' + data.map(e => `<li class="py-1 border-bottom border-light"><span class="fw-semibold">${e.title}</span><br><span class="text-muted">${e.date}</span></li>`).join('') + '</ul>';
+                    if (!data.length) { el.innerHTML = '<div class="dash-calendar-empty">No upcoming events</div>'; return; }
+                    el.innerHTML = '<ul class="dash-calendar-list">' + data.map(e => '<li class="dash-calendar-item"><strong>' + e.title + '</strong><span>' + e.date + '</span></li>').join('') + '</ul>';
                 });
             fetch('/AcademicCalendar/WidgetMonthSummary')
                 .then(r => r.json())
                 .then(data => {
                     const el = document.getElementById('widgetMonthSummary');
-                    el.innerHTML = `<div class="small">
-                        <div class="d-flex justify-content-between py-1"><span class="text-muted">Total Days</span><span class="fw-semibold">${data.totalDays}</span></div>
-                        <div class="d-flex justify-content-between py-1"><span class="text-success">Working Days</span><span class="fw-semibold text-success">${data.workingDays}</span></div>
-                        <div class="d-flex justify-content-between py-1"><span class="text-danger">Holidays</span><span class="fw-semibold text-danger">${data.holidayCount}</span></div>
-                        <div class="d-flex justify-content-between py-1"><span class="text-warning">Exam Days</span><span class="fw-semibold text-warning">${data.examDayCount}</span></div>
-                    </div>`;
+                    el.innerHTML = '<ul class="dash-calendar-list">' +
+                        '<li class="dash-calendar-item"><span>Total Days</span><strong>' + data.totalDays + '</strong></li>' +
+                        '<li class="dash-calendar-item dash-calendar-item--success"><span>Working Days</span><strong>' + data.workingDays + '</strong></li>' +
+                        '<li class="dash-calendar-item dash-calendar-item--danger"><span>Holidays</span><strong>' + data.holidayCount + '</strong></li>' +
+                        '<li class="dash-calendar-item dash-calendar-item--warning"><span>Exam Days</span><strong>' + data.examDayCount + '</strong></li>' +
+                        '</ul>';
                 });
         }
         document.addEventListener('DOMContentLoaded', loadCalendarWidgets);
@@ -375,18 +490,18 @@
             type: "bar",
             data: {
                 labels: studentsByClass.map(x => x.Label),
-                datasets: [{ label: "Students", data: studentsByClass.map(x => x.Value), backgroundColor: "#0F766E", borderRadius: 6 }]
+                datasets: [{ label: "Students", data: studentsByClass.map(x => x.Value), backgroundColor: "var(--adm-primary)", borderRadius: 6 }]
             },
-            options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: "#f1f5f9" } }, x: { grid: { display: false } } } }
+            options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: "var(--adm-border-light)" } }, x: { grid: { display: false } } } }
         });
 
         new Chart(document.getElementById("feesChart"), {
             type: "line",
             data: {
                 labels: monthlyCollections.map(x => x.Label),
-                datasets: [{ label: "Collections", data: monthlyCollections.map(x => x.Value), borderColor: "#059669", backgroundColor: "rgba(5,150,105,.1)", fill: true, tension: 0.4, pointBackgroundColor: "#059669" }]
+                datasets: [{ label: "Collections", data: monthlyCollections.map(x => x.Value), borderColor: "var(--adm-converted)", backgroundColor: "rgba(16,185,129,.1)", fill: true, tension: 0.4, pointBackgroundColor: "var(--adm-converted)" }]
             },
-            options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: "#f1f5f9" } }, x: { grid: { display: false } } } }
+            options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: "var(--adm-border-light)" } }, x: { grid: { display: false } } } }
         });
 
         new Tabulator("#activity-table", {
@@ -398,17 +513,17 @@
                     title: "Module", field: "Module", width: 100, formatter: function (cell) {
                         var val = cell.getValue();
                         var cls = val === "Admission" ? "adm-status--converted" : "adm-status--pending";
-                        return `<span class="adm-status ${cls}">${val}</span>`;
+                        return '<span class="adm-status ' + cls + '">' + val + '</span>';
                     }
                 },
                 {
                     title: "Description", field: "Title", widthGrow: 2, formatter: function (cell) {
-                        return `<div class="adm-cell-name">${cell.getValue()}</div><div class="adm-cell-dob__date">${cell.getData().Summary || ""}</div>`;
+                        return '<div class="adm-cell-name">' + cell.getValue() + '</div><div class="adm-cell-dob__date">' + (cell.getData().Summary || "") + '</div>';
                     }
                 },
                 {
                     title: "Time", field: "At", width: 100, formatter: function (cell) {
-                        return `<span class="adm-cell-dob__date">${new Date(cell.getValue()).toLocaleDateString()}</span>`;
+                        return '<span class="adm-cell-dob__date">' + new Date(cell.getValue()).toLocaleDateString() + '</span>';
                     }
                 }
             ],

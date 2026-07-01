@@ -490,16 +490,7 @@
                                         </div>
                                     </div>
 
-                                    <div id="reviewSummary" class="ws-card ws-card ws-mb-4">
-                                        <div class="ws-card__body">
-                                            <div style="text-align:center;padding:24px 0;">
-                                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--clr-text-muted)" stroke-width="1.5" aria-hidden="true">
-                                                    <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
-                                                </svg>
-                                                <p class="ws-text-muted ws-mt-2">Review data will appear here once all steps are completed.</p>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    <div id="reviewSummary" class="ws-card ws-card ws-mb-4"></div>
 
                                     <div class="ws-card ws-card">
                                         <div class="ws-card__body">
@@ -642,6 +633,40 @@
             const autoSaveIndicator = document.getElementById('autoSaveIndicator');
             const summaryStepLabel = document.getElementById('summaryStepLabel');
 
+            /* ---- Step field mapping for validation ---- */
+            var stepFields = [
+                ['ApplicantName', 'DateOfBirth', 'Gender', 'MaritalStatus', 'Religion'],           // Step 0: Personal
+                ['FatherName', 'MotherName'],                                                       // Step 1: Family
+                [],                                                                                 // Step 2: Guardian (all optional)
+                ['FatherOrGuardianMobileNo', 'ApplicantMobileNumber', 'ApplicantEmail', 'Nationality', 'Country'], // Step 3: Contact
+                ['PresentPostOffice', 'PresentThana', 'PresentDistrict', 'PermanentPostOffice', 'PermanentThana', 'PermanentDistrict'], // Step 4: Address
+                [],                                                                                 // Step 5: Documents (file uploads optional)
+                [],                                                                                 // Step 6: Finance (payment optional)
+                []                                                                                  // Step 7: Review
+            ];
+
+            function validateStep(stepIndex) {
+                var fields = stepFields[stepIndex];
+                if (!fields || fields.length === 0) return true;
+                var valid = true;
+                var firstInvalid = null;
+                fields.forEach(function (name) {
+                    var el = document.getElementById(name) || document.querySelector('[name="' + name + '"]');
+                    if (!el) return;
+                    el.classList.remove('ws-form-input--error', 'ws-form-select--error');
+                    var errorSpan = document.getElementById(name + '-error') || el.parentNode.querySelector('.adm-field-error');
+                    if (errorSpan) errorSpan.textContent = '';
+                    if (el.hasAttribute('required') && !el.value.trim()) {
+                        valid = false;
+                        el.classList.add(el.tagName === 'SELECT' ? 'ws-form-select--error' : 'ws-form-input--error');
+                        if (errorSpan) errorSpan.textContent = 'This field is required.';
+                        if (!firstInvalid) firstInvalid = el;
+                    }
+                });
+                if (!valid && firstInvalid) firstInvalid.focus();
+                return valid;
+            }
+
             /* ---- Navigation ---- */
             function goToStep(index) {
                 if (index < 0 || index >= totalSteps) return;
@@ -663,16 +688,22 @@
 
                 prevBtn.style.display = index === 0 ? 'none' : '';
                 nextBtn.style.display = index === totalSteps - 1 ? 'none' : '';
-                submitBtn.style.display = index === totalSteps - 1 ? '' : 'none';
+                submitBtn.style.display = index === totalSteps - 1 ? '' : '';
 
                 summaryStepLabel.textContent = 'Step ' + (index + 1) + ' of ' + totalSteps;
+
+                if (index === totalSteps - 1) { renderReview(); }
 
                 document.querySelector('.adm-wizard__progress').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }
 
             function nextStep() {
                 if (currentStep < totalSteps - 1) {
-                    goToStep(currentStep + 1);
+                    if (validateStep(currentStep)) {
+                        goToStep(currentStep + 1);
+                    } else {
+                        document.querySelector('.adm-wizard__progress').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    }
                 }
             }
 
@@ -687,6 +718,10 @@
                     var idx = parseInt(s.getAttribute('data-step'));
                     if (idx < currentStep) {
                         goToStep(idx);
+                    } else if (idx > currentStep) {
+                        if (validateStep(currentStep)) {
+                            goToStep(idx);
+                        }
                     }
                 });
             });
@@ -798,6 +833,81 @@
 
             form.addEventListener('input', updateSidebar);
             form.addEventListener('change', updateSidebar);
+
+            /* ---- Review panel ---- */
+            function renderReview() {
+                function v(id) {
+                    var el = document.getElementById(id);
+                    if (!el) return '—';
+                    if (el.type === 'file') return el.files && el.files.length > 0 ? el.files[0].name : '—';
+                    if (el.tagName === 'SELECT') return el.selectedIndex > 0 ? el.options[el.selectedIndex].text : '—';
+                    return el.value || '—';
+                }
+                function row(label, val) {
+                    return '<div class="ws-review-row"><span class="ws-review-label">' + label + '</span><span class="ws-review-value">' + val + '</span></div>';
+                }
+                function section(title, rows) {
+                    return '<div class="ws-review-section"><h3 class="ws-review-section-title">' + title + '</h3>' + rows + '</div>';
+                }
+                var html = '';
+                html += section('Personal Information',
+                    row('Name (English)', v('ApplicantName')) +
+                    row('Name (Bangla)', v('ApplicantNameBangla')) +
+                    row('Date of Birth', v('DateOfBirth')) +
+                    row('Gender', v('Gender')) +
+                    row('Blood Group', v('BloodGroup')) +
+                    row('Marital Status', v('MaritalStatus')) +
+                    row('Religion', v('Religion'))
+                );
+                html += section('Family Information',
+                    row('Father\'s Name', v('FatherName')) +
+                    row('Father\'s Occupation', v('FatherOccupation')) +
+                    row('Mother\'s Name', v('MotherName')) +
+                    row('Mother\'s Occupation', v('MotherOccupation')) +
+                    row('Guardian Name', v('GuardianName')) +
+                    row('Guardian Occupation', v('GuardianOccupation'))
+                );
+                html += section('Guardian Contact',
+                    row('Guardian Email', v('GuardianEmail')) +
+                    row('Guardian Mobile', v('GuardianMobileNumber')) +
+                    row('Relationship', v('GuardianRelationship')) +
+                    row('National ID', v('GuardianNationalId')) +
+                    row('Address', v('GuardianAddress')) +
+                    row('Remarks', v('GuardianRemarks'))
+                );
+                html += section('Contact Details',
+                    row('Applicant Mobile', v('ApplicantMobileNumber')) +
+                    row('Father/Guardian Mobile', v('FatherOrGuardianMobileNo')) +
+                    row('Alternative Number', v('AlternativeNumber')) +
+                    row('Email', v('ApplicantEmail')) +
+                    row('Nationality', v('Nationality')) +
+                    row('Country', v('Country'))
+                );
+                html += section('Present Address',
+                    row('Village', v('PresentVillage')) +
+                    row('Area/Post Office', v('PresentPostOffice')) +
+                    row('Thana/Upazila', v('PresentThana')) +
+                    row('District', v('PresentDistrict'))
+                );
+                html += section('Permanent Address',
+                    row('Village', v('PermanentVillage')) +
+                    row('Area/Post Office', v('PermanentPostOffice')) +
+                    row('Thana/Upazila', v('PermanentThana')) +
+                    row('District', v('PermanentDistrict'))
+                );
+                html += section('Documents',
+                    row('Birth Certificate No.', v('BirthCertificateNo')) +
+                    row('Birth Certificate File', v('BirthCertificateFile')) +
+                    row('Payment Slip File', v('PaymentSlipFile'))
+                );
+                html += section('Academic &amp; Payment',
+                    row('Applied Class', v('AppliedClassId')) +
+                    row('Section/Group', v('AppliedStudentGroupId')) +
+                    row('Payment Method', v('PaymentMethod')) +
+                    row('Transaction Details', v('TransactionDetails'))
+                );
+                document.getElementById('reviewSummary').innerHTML = '<div class="ws-card__body ws-review">' + html + '</div>';
+            }
 
             /* ---- Same address checkbox ---- */
             var sameAddrCheckbox = document.getElementById('sameAddress');

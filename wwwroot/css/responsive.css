@@ -1,4 +1,4 @@
-/* ============================================
+﻿/* ============================================
    ENTERPRISE RESPONSIVE UI — MASTER STYLESHEET
    School Management System
    All responsive overrides centralized here.
@@ -249,7 +249,7 @@
         display: flex !important;
         flex-direction: column !important;
         padding: 10px 8px !important;
-        border-bottom: 1px solid #e9ecef !important;
+        border-bottom: 1px solid var(--adm-border-light, #e5e7eb) !important;
         min-height: 0 !important;
     }
 
@@ -258,7 +258,7 @@
         justify-content: space-between !important;
         align-items: center !important;
         padding: 4px 0 !important;
-        border-bottom: 1px dashed #f0f0f0 !important;
+        border-bottom: 1px dashed var(--adm-border-light, #e5e7eb) !important;
         height: auto !important;
         min-height: 0 !important;
         white-space: normal !important;
@@ -273,7 +273,7 @@
     .tabulator-responsive-collapse .tabulator-cell::before {
         content: attr(data-title) ": ";
         font-weight: 600 !important;
-        color: #6c757d !important;
+        color: var(--adm-text-light, #6b7280) !important;
         margin-right: 8px !important;
         flex-shrink: 0 !important;
     }
@@ -1278,8 +1278,8 @@ img {
     }
 
     .entity-mobile-card {
-        background: #fff;
-        border: 1px solid var(--clr-border, #e2e8f0);
+        background: var(--adm-surface, #fff);
+        border: 1px solid var(--adm-border, #e5e7eb);
         border-radius: var(--radius-md, 10px);
         overflow: hidden;
         box-shadow: 0 1px 3px rgba(0,0,0,0.06);
@@ -1443,7 +1443,7 @@ img {
         font-size: 12px;
         font-weight: 600;
         text-decoration: none;
-        background: #fff;
+        background: var(--adm-surface, #fff);
         transition: background 0.15s ease, color 0.15s ease;
         border: none;
         cursor: pointer;
@@ -1462,10 +1462,9 @@ img {
     }
 
     .entity-mobile-card__action--edit {
-        color: #ca8a04;
-    }
-    .entity-mobile-card__action--edit:hover {
-        background: #fefce8;
+        color: var(--adm-pending, #d97706);
+
+        background: var(--adm-pending-bg, rgba(245,158,11,.1));
     }
 
     .entity-mobile-card__action--success {
@@ -1476,10 +1475,9 @@ img {
     }
 
     .entity-mobile-card__action--delete {
-        color: #dc2626;
-    }
-    .entity-mobile-card__action--delete:hover {
-        background: #fef2f2;
+        color: var(--adm-rejected, #dc2626);
+
+        background: var(--adm-rejected-bg, rgba(239,68,68,.1));
     }
 
     .entity-mobile-card__action--primary {
@@ -1971,3 +1969,125 @@ img {
         padding: 10px 12px !important;
     }
 }
+
+/* ============================================
+   PHASE 5B - DASHBOARD HERO & WIDGETS
+   ============================================ */
+
+/* Chart container - responsive sizing */
+.dash-chart-container {
+    position: relative !important;
+    max-width: 220px !important;
+    height: 220px !important;
+    margin: 0 auto !important;
+}
+
+@media (max-width: 480px) {
+    .dash-chart-container {
+        max-width: 160px !important;
+        height: 160px !important;
+    }
+}
+
+/* Dash hero gradient - used in StudentIndex.cshtml */
+.dash-hero-gradient {
+    background: linear-gradient(135deg, var(--adm-primary, #0f766e), var(--adm-info, #3b82f6)) !important;
+    color: #fff !important;
+    padding: 32px !important;
+}
+
+.dash-hero-flex {
+    display: flex !important;
+    align-items: center !important;
+    gap: 24px !important;
+    flex-wrap: wrap !important;
+}
+
+.dash-hero-avatar {
+    width: 72px !important;
+    height: 72px !important;
+    border-radius: 50% !important;
+    background: rgba(255,255,255,0.15) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 32px !important;
+    flex-shrink: 0 !important;
+}
+
+.dash-hero-name {
+    margin: 0 0 8px !important;
+    font-size: 28px !important;
+    font-weight: 800 !important;
+}
+
+.dash-hero-details {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+    color: rgba(255,255,255,0.8) !important;
+    font-size: 13px !important;
+}
+
+@media (max-width: 480px) {
+    .dash-hero-gradient { padding: 20px !important; }
+    .dash-hero-name { font-size: 22px !important; }
+    .dash-hero-avatar { width: 56px !important; height: 56px !important; font-size: 24px !important; }
+    .dash-hero-flex { gap: 16px !important; }
+}
+
+/* Dash alert */
+.dash-alert {
+    border-radius: 8px !important;
+    padding: 16px 20px !important;
+    margin-bottom: 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 16px !important;
+    font-size: 14px !important;
+    font-weight: 500 !important;
+}
+
+.dash-alert--danger {
+    background: var(--adm-rejected-bg, rgba(239,68,68,.1)) !important;
+    border-left: 5px solid var(--adm-rejected, #ef4444) !important;
+    color: var(--adm-rejected, #b91c1c) !important;
+    box-shadow: 0 2px 8px rgba(239,68,68,0.08) !important;
+}
+
+.dash-alert__icon {
+    font-size: 20px !important;
+    color: var(--adm-rejected, #ef4444) !important;
+}
+
+/* Teacher tab horizontal scroll */
+.teacher-tab {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    flex-wrap: nowrap !important;
+}
+
+.teacher-tab__btn {
+    white-space: nowrap !important;
+    flex-shrink: 0 !important;
+}
+
+/* Guardian/Librarian widget grid */
+.widget-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
+}
+
+@media (max-width: 767.98px) {
+    .widget-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 12px !important; }
+}
+
+@media (max-width: 480px) {
+    .widget-grid { grid-template-columns: 1fr !important; }
+}
+
+/* Child switcher */
+.child-switcher { flex-wrap: wrap !important; }
+.child-card { min-width: 160px !important; flex: 1 1 180px !important; }
+
+/* Librarian reports grid */
+.reports-grid { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)) !important; }

@@ -5,10 +5,12 @@ using SchoolManagementSystem.Models.DTOs.Student;
 using SchoolManagementSystem.Models.Entities.Academic;
 using SchoolManagementSystem.Models.Entities.Auth;
 using SchoolManagementSystem.Models.Entities.Student;
+using SchoolManagementSystem.Models.Entities.Website;
 using SchoolManagementSystem.Models.Enums;
 using SchoolManagementSystem.Services.Interfaces.Students;
 using SchoolManagementSystem.Repositories.Interfaces.Academic;
 using SchoolManagementSystem.Repositories.Interfaces.Students;
+using SchoolManagementSystem.Repositories.Interfaces.Website;
 using SchoolManagementSystem.UnitOfWork.Interfaces;
 using System.Data;
 
@@ -20,6 +22,7 @@ public class StudentService : IStudentService
     private readonly IStudentRepository _studentRepository;
     private readonly ISectionRepository _sectionRepository;
     private readonly ISchoolClassRepository _classRepository;
+    private readonly ISchoolSettingRepository _settingRepo;
     private readonly IHttpContextAccessor _httpContextAccessor;
 
     public StudentService(
@@ -27,12 +30,14 @@ public class StudentService : IStudentService
         IStudentRepository studentRepository,
         ISectionRepository sectionRepository,
         ISchoolClassRepository classRepository,
+        ISchoolSettingRepository settingRepo,
         IHttpContextAccessor httpContextAccessor) 
     { 
         _unitOfWork = unitOfWork;
         _studentRepository = studentRepository;
         _sectionRepository = sectionRepository;
         _classRepository = classRepository;
+        _settingRepo = settingRepo;
         _httpContextAccessor = httpContextAccessor;
     }
 
@@ -47,6 +52,21 @@ public class StudentService : IStudentService
         }
 
         var groupId = dto.StudentGroupId ?? section?.StudentGroupId;
+
+        // Validate group against GroupStartsFromClassId setting
+        var schoolClassForGroup = await _classRepository.GetByIdAsync(dto.ClassId, cancellationToken);
+        if (schoolClassForGroup != null)
+        {
+            var settings = await _settingRepo.GetCurrentSettingsAsync(cancellationToken);
+            if (settings != null)
+            {
+                bool classRequiresGroup = schoolClassForGroup.SortOrder >= settings.GroupStartsFromClassId;
+                if (classRequiresGroup && !groupId.HasValue)
+                    throw new InvalidOperationException("An academic group is required for the selected class.");
+                if (!classRequiresGroup)
+                    groupId = null;
+            }
+        }
 
         // Fallback: if no group set and exactly one StudentGroup matches this class, auto-assign
         if (!groupId.HasValue)
